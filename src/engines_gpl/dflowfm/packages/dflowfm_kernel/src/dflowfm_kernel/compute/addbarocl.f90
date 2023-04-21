@@ -105,7 +105,7 @@
        if (insigpart == 0) then
           dzz = zws(kz) - zws(kz-1)    ! shallow side
 
-          rhovol(L-Lb+1) = dzz*0.5d0*(rho(k) + rho(kz) )*dx(LL)
+          rhovol(1)  = dzz*0.5d0*(rho(k) + rho(kz) )*dx(LL)
           if (jarhoxu > 0) then
              rhou(L) = 0.5d0*( rho(k) + rho(kz) )
           endif
