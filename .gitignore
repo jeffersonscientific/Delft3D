@@ -12,3 +12,7 @@ install_*/**
 # folders to exclude
 /src/**/obj/**
 
+/src/utils_lgpl/version/ec_version_number.ini
+/src/utils_lgpl/ec_module/packages/ec_module/include/ec_version_number.ini
+/src/utils_lgpl/ec_module/packages/ec_module/include/ec_version_number.rc
+/src/utils_lgpl/ec_module/packages/ec_module/include/RCa01108
