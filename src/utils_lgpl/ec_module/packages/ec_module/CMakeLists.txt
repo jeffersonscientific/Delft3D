@@ -65,7 +65,7 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     add_library(${library_name} SHARED ${src_path}/ec_module_api.f90 ${rc_version_file})
     include_directories(${version_include_dir})
     set(oss_dependencies deltares_common kdtree2 kdtree_wrapper gridgeom io_netcdf ec_module)
-    oss_include_libraries(${library_name} oss_dependencies )
+    oss_include_libraries(${library_name} oss_dependencies)
 	
 	target_link_libraries(${library_name} ${oss_dependencies})
 
