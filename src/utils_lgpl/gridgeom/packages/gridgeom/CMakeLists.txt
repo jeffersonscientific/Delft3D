@@ -4,7 +4,7 @@ set(src_path src)
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to the location of where this CMakeLists file is defined in.
 set(fortran_version_file "${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/gridgeom_version.F90")
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-set(rc_dir ${CMAKE_SOURCE_DIR}/../utils_lgpl/version)
+set(rc_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(rc_version_file ${rc_dir}/gridgeom_version_number.rc)
 
 # Gather source files

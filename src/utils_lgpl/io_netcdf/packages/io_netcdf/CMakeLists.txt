@@ -2,7 +2,7 @@
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/io_netcdf_version.F90)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-set(rc_dir ${CMAKE_SOURCE_DIR}/../utils_lgpl/version)
+set(rc_dir ${CMAKE_CURRENT_SOURCE_DIR}/version)
 set(rc_version_file ${rc_dir}/io_netcdf_version_number.rc)
 
 if(UNIX)
