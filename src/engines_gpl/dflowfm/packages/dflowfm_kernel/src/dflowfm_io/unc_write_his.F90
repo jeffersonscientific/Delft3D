@@ -3245,35 +3245,6 @@ subroutine unc_write_his(tim)            ! wrihis
          end if
          if (ngenstru > 0) then
             valobsT(1:ngenstru, 1:NUMVALS_GENSTRU) = transpose(valgenstru)
-            !do i=1,ngenstru
-            !   !igen = genstru2cgen(i)
-            !   ierr = nf90_put_var(ihisfile, id_genstru_dis   , valgenstru(2,i),  (/ i, it_his /))
-            !   ierr = nf90_put_var(ihisfile, id_genstru_crestl, valgenstru(9,i),  (/ i, it_his /)) ! changed
-            !   ierr = nf90_put_var(ihisfile, id_genstru_edgel , valgenstru(14,i), (/ i, it_his /)) ! changed
-            !   ierr = nf90_put_var(ihisfile, id_genstru_openw , valgenstru(13,i), (/ i, it_his /)) ! changed
-            !   ierr = nf90_put_var(ihisfile, id_genstru_s1up  , valgenstru(3,i),  (/ i, it_his /))
-            !   ierr = nf90_put_var(ihisfile, id_genstru_s1dn  , valgenstru(4,i),  (/ i, it_his /))
-            !   ierr = nf90_put_var(ihisfile, id_genstru_head,          valgenstru(5,i),  (/ i, it_his /))
-            !   ierr = nf90_put_var(ihisfile, id_genstru_au,            valgenstru(6,i),  (/ i, it_his /))
-            !   ierr = nf90_put_var(ihisfile, id_genstru_vel,           valgenstru(7,i),  (/ i, it_his /))
-            !   if (network%sts%numGeneralStructures > 0) then
-            !      ierr = nf90_put_var(ihisfile, id_genstru_s1crest,       valgenstru(8,i),  (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_crestw,        valgenstru(10,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_stat,     int(valgenstru(11,i)), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_forcedif,      valgenstru(12,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_openh,         valgenstru(15,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_uppl,          valgenstru(16,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_open, valgenstru(17,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_over, valgenstru(18,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_under,valgenstru(19,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_au_open,       valgenstru(20,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_au_over,        valgenstru(21,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_au_under,      valgenstru(22,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_velgateopen,   valgenstru(23,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_velgateover,   valgenstru(24,i), (/ i, it_his /))
-            !      ierr = nf90_put_var(ihisfile, id_genstru_velgateunder,  valgenstru(25,i), (/ i, it_his /))
-            !   end if
-            !enddo
             ierr = nf90_put_var(ihisfile, id_genstru_dis   , valobsT(1:ngenstru,IVAL_DIS),       (/ 1, it_his /))
             ierr = nf90_put_var(ihisfile, id_genstru_crestl, valobsT(1:ngenstru,IVAL_CRESTL),    (/ 1, it_his /)) ! changed
             ierr = nf90_put_var(ihisfile, id_genstru_edgel , valobsT(1:ngenstru,IVAL_EDGEL),     (/ 1, it_his /)) ! changed
@@ -3356,7 +3327,7 @@ subroutine unc_write_his(tim)            ! wrihis
          ierr = nf90_put_var(ihisfile, id_pump_struhead,valobsT(1:npumpsg,IVAL_HEAD),     (/ 1, it_his /))
          ierr = nf90_put_var(ihisfile, id_pump_cap,     valobsT(1:npumpsg,IVAL_PP_CAP),   (/ 1, it_his /))
          ierr = nf90_put_var(ihisfile, id_pump_disdir,  valobsT(1:npumpsg,IVAL_PP_DISDIR),(/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_stage,int(valobsT(1:npumpsg,IVAL_PP_STAG)),(/ 1, it_his /))
+        ierr = nf90_put_var(ihisfile, id_pump_stage,int(valobsT(1:npumpsg,IVAL_PP_STAG)),(/ 1, it_his /))
          ierr = nf90_put_var(ihisfile, id_pump_head,    valobsT(1:npumpsg,IVAL_PP_HEAD),  (/ 1, it_his /))
          ierr = nf90_put_var(ihisfile, id_pump_redufact,valobsT(1:npumpsg,IVAL_PP_RED),   (/ 1, it_his /))
          ierr = nf90_put_var(ihisfile, id_pump_s1del,   valobsT(1:npumpsg,IVAL_PP_S1DEL), (/ 1, it_his /))
@@ -3624,21 +3595,6 @@ subroutine unc_write_his(tim)            ! wrihis
 
       if (jahisweir > 0 .and. nweirgen > 0) then
          valobsT(1:nweirgen, 1:NUMVALS_WEIRGEN) = transpose(valweirgen)
-         !do i = 1,nweirgen
-         !   ierr = nf90_put_var(ihisfile, id_weirgen_dis   , valweirgen(2,i), (/ i, it_his /))
-         !   ierr = nf90_put_var(ihisfile, id_weirgen_s1up  , valweirgen(3,i), (/ i, it_his /))
-         !   ierr = nf90_put_var(ihisfile, id_weirgen_s1dn  , valweirgen(4,i), (/ i, it_his /))
-         !   ierr = nf90_put_var(ihisfile, id_weirgen_crestl, valweirgen(9,i), (/ i, it_his /))
-         !   ierr = nf90_put_var(ihisfile, id_weirgen_crestw, valweirgen(10,i),(/ i, it_his /))
-         !   if (network%sts%numWeirs > 0) then ! write extra files for new weirs
-         !      ierr = nf90_put_var(ihisfile, id_weirgen_head  , valweirgen(5,i),  (/ i, it_his /))
-         !      ierr = nf90_put_var(ihisfile, id_weirgen_au    , valweirgen(6,i),  (/ i, it_his /))
-         !      ierr = nf90_put_var(ihisfile, id_weirgen_vel   , valweirgen(7,i),  (/ i, it_his /))
-         !      ierr = nf90_put_var(ihisfile, id_weirgen_s1crest,valweirgen(8,i),  (/ i, it_his /))
-         !      ierr = nf90_put_var(ihisfile, id_weir_stat, int(valweirgen(11,i)),(/ i, it_his /))
-         !      ierr = nf90_put_var(ihisfile, id_weirgen_forcedif,valweirgen(12,i),(/i, it_his /))
-         !   end if
-         !end do
          ierr = nf90_put_var(ihisfile, id_weirgen_dis   , valobsT(1:nweirgen,IVAL_DIS),    (/ 1, it_his /))
          ierr = nf90_put_var(ihisfile, id_weirgen_s1up  , valobsT(1:nweirgen,IVAL_S1UP),   (/ 1, it_his /))
          ierr = nf90_put_var(ihisfile, id_weirgen_s1dn  , valobsT(1:nweirgen,IVAL_S1DN),   (/ 1, it_his /))

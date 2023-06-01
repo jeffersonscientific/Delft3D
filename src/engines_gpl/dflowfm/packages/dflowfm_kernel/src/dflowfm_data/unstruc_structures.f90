@@ -84,13 +84,13 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: NUMVALS_WEIRGEN = NUMVALS_COMMON + NUMEXTVALS_WEIRGEN  !< Total number of variables for weir
  integer, parameter :: NUMVALS_ORIFGEN = NUMVALS_COMMON + NUMEXTVALS_ORIFGEN  !< Total number of variables for orifice
 
- double precision, dimension(:,:), allocatable :: valgenstru   !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+ double precision, dimension(:,:), allocatable, target :: valgenstru   !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
                                                                !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
                                                                !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH,
                                                                !<                                   IVAL_UPPL, IVAL_DIS_OPEN, IVAL_DIS_OVER, IVAL_DIS_UNDER,
                                                                !<                                   IVAL_AREA_OPEN, IVAL_AREA_OVER, IVAL_AREA_UNDER, IVAL_VEL_OPEN, IVAL_VEL_OVER,
                                                                !<                                   IVAL_VEL_UNDER, IVAL_COUNT.
- double precision, dimension(:,:), allocatable :: valweirgen   !< Array for weir, (1:NUMVALS_WEIRGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+ double precision, dimension(:,:), allocatable, target :: valweirgen   !< Array for weir, (1:NUMVALS_WEIRGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
                                                                !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
                                                                !<                                   IVAL_FORCEDIF, NUMVALS_WEIRGEN is the counter
  double precision, dimension(:,:), allocatable :: valorifgen   !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
@@ -142,7 +142,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 6               !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
  integer, parameter :: NUMEXTVALS_GATE    = 6                                     !< Number of extra variables for gate
  integer, parameter :: NUMVALS_GATEGEN    = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
- double precision, dimension(:,:), allocatable :: valgategen                   !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valgategen                   !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
                                                                                !< NUMVALS_COMMON_GATE common variables (see definitation at top) and NUMEXTVALS_GATE extra variables.
  
  ! Compound structure
@@ -173,8 +173,8 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer                           :: NUMVALS_GATE = 5        !< Number of variables for gate
  integer                           :: NUMVALS_CDAM = 4        !< Number of variables for controble dam
  integer                           :: NUMVALS_CGEN = 4        !< Number of variables for general structure (old ext file)
- double precision, dimension(:,:), allocatable :: valgate     !< Array for gate;      (1,:) discharge through gate
- double precision, dimension(:,:), allocatable :: valcdam     !< Array for cdam;      (1,:) discharge through controlable dam
+ double precision, dimension(:,:), allocatable, target :: valgate     !< Array for gate;      (1,:) discharge through gate
+ double precision, dimension(:,:), allocatable, target :: valcdam     !< Array for cdam;      (1,:) discharge through controlable dam
                                                               !<                      (2,:) Upstream average water levels
                                                               !<                      (3,:) downstream average water level
                                                               !<                      (4,0) width of dam
