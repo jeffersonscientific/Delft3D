@@ -714,7 +714,7 @@ double precision, external :: setrhofixedp
      dk(0:kxL) = dtiL*tureps0(Lb0:Lt)
                                                            ! Vertical diffusion; Neumann condition on surface;
                                                            ! Dirichlet condition on bed ; teta method:
-     if (faclaxtureps > 0) then 
+     if (faclaxtureps > 0 ) then 
         do L  = Lb,Lt-1
            k1 = ln(1,L) ; k2 = ln(2,L) 
            if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
