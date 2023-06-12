@@ -20,11 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-
+   
+module QSCallBack
+   abstract interface
+      double precision function QS_callbackiface(igrid)
+         integer, intent(in) :: igrid !grid number
+      end function QS_callbackiface
+   end interface
+end module QSCallBack
+   
 !> This module implements the statistical output in D-Flow FM.
 module m_statistical_output
    use MessageHandling
    use m_output_config
+   use QsCallBack
    
 private
 
@@ -69,9 +78,10 @@ private
       double precision                          :: timestep_sum         !< sum of timesteps (for moving average/ average calculation)
       
       double precision, pointer, dimension(:)   :: timesteps            !< array of timesteps belonging to samples in samples array
-
+      procedure(QS_callbackiface), nopass, pointer      :: function_pointer => NULL()          !< function pointer for operation that needs to be performed on the source_input 
+      
    end type t_output_variable_item
-
+   
    !> Derived type to store the cross-section set
    type, public :: t_output_variable_set
       integer                                                :: size = 0                  !< 
@@ -218,6 +228,8 @@ contains
    use m_flowexternalforcings
    use m_structures
    use m_observations
+   use m_sediment, only: stm_included
+   USE, INTRINSIC :: ISO_C_BINDING
    
       type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
       type(t_output_quantity_config_set), intent(in)  :: output_config !> output config for which an output set is needed.
@@ -438,19 +450,19 @@ contains
       endif
       if ( kmx.gt.0 ) then
          if (iturbulencemodel >= 3 .and. jahistur > 0) then
-            call c_f_pointer (c_loc(valobs(IPNT_TKIN +1:IPNT_TKIN+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IPNT_TKIN:IPNT_TKIN+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TKE      ),temp_pointer                            )
          endif
          if (iturbulencemodel == 3 .and. jahistur >0) then
-            call c_f_pointer (c_loc(valobs(IDX_HIS_EPS +1:IDX_HIS_EPS+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IDX_HIS_EPS:IDX_HIS_EPS+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EPS      ),temp_pointer                     )
          endif
          if (iturbulencemodel > 1) then
-            call c_f_pointer (c_loc(valobs(IPNT_VICWW +1:IPNT_VICWW+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IPNT_VICWW:IPNT_VICWW+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VICWW    ),temp_pointer                         )
          endif
          if (iturbulencemodel == 4 .and. jahistur > 0) then
-            call c_f_pointer (c_loc(valobs(id_tureps +1:id_tureps+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(id_tureps:id_tureps+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAU     ),temp_pointer                      )
          endif
       endif
@@ -486,7 +498,7 @@ contains
       endif
       if (jasal > 0 .and. jahissal > 0) then
          if (kmx>0) then
-            call c_f_pointer (c_loc(valobs(IPNT_SA1 +1:IPNT_SA1+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IPNT_SA1:IPNT_SA1+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SALINITY   ),temp_pointer                                )
          else
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SALINITY   ),valobs(IPNT_SA1,:)                                )
@@ -494,13 +506,13 @@ contains
       endif
       if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
          if (kmx>0) then
-            call c_f_pointer (c_loc(valobs(IPNT_RHOP +1:IPNT_RHOP+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IPNT_RHOP:IPNT_RHOP+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
             
-            call c_f_pointer (c_loc(valobs(IPNT_BRUV +1:IPNT_BRUV+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IPNT_BRUV:IPNT_BRUV+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
             if (idensform > 10) then
-               call c_f_pointer (c_loc(valobs(IPNT_RHO +1:IPNT_RHO+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+               call c_f_pointer (c_loc(valobs(IPNT_RHO:IPNT_RHO+kmx,1:ntot)), temp_pointer, [kmx*ntot])
                call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DENSITY),temp_pointer                                )
             endif
          else
@@ -522,45 +534,100 @@ contains
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RLABDA  ),valobs(IPNT_WAVEL,:)                              )
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UORB    ),valobs(IPNT_WAVEU,:)                              )
          if ( kmx>0 .and. .not. flowwithoutwaves) then
-            call c_f_pointer (c_loc(valobs(IPNT_UCXST +1:IPNT_UCXST+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IPNT_UCXST:IPNT_UCXST+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
             
-            call c_f_pointer (c_loc(valobs(IPNT_UCYST +1:IPNT_UCYST+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call c_f_pointer (c_loc(valobs(IPNT_UCYST:IPNT_UCYST+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VSTOKES),temp_pointer)
          else
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_USTOKES),valobs(IPNT_UCXST,:)                                 )
             call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VSTOKES),valobs(IPNT_UCYST,:)                                 )
          endif
       endif
-      !if( jahisvelvec > 0 ) then
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_X_VELOCITY                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Y_VELOCITY                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Z_VELOCITY                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY                                 )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY                                 )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SED                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WS                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SEDDIF                                                    )
+      if( jahisvelvec > 0 ) then
+         if (numobs+nummovobs > 0) then
+            if ( kmx>0 ) then
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY),valobs(IPNT_UCXQ,:)             )
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY),valobs(IPNT_UCYQ,:)             )
+
+               call c_f_pointer (c_loc(valobs(IPNT_UCX:IPNT_UCX+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
+               
+               call c_f_pointer (c_loc(valobs(IPNT_UCY:IPNT_UCY+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
+               
+               call c_f_pointer (c_loc(valobs(IPNT_UCZ:IPNT_UCZ+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),temp_pointer)
+            else
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_X_VELOCITY),valobs(IPNT_UCX,:)                             )
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),valobs(IPNT_UCY,:)                             )
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),valobs(IPNT_UCZ,:)                            )
+            endif
+         endif
+      endif
+      if (jased > 0 .and. .not. stm_included) then
+         if (kmx >0) then
+               call c_f_pointer (c_loc(valobs(IPNT_SED:IPNT_SED+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
+         else
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SED),valobs(IPNT_SED,:)                                  )
+         endif
+      endif
+      if (IVAL_WS1 > 0) then
+         if (kmx > 0) then
+            call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
+         else
+            call c_f_pointer (c_loc(valobs(IPNT_WS1:IVAL_WSN,1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*ntot])
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
+         endif
+      endif
+      if (IVAL_SEDDIF1 > 0) then
+         call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
+      endif
+      
       !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS                                              )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE                      )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS                  )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAUSX                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAUSY                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN                               )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RICH                                                      )
-         
-         
-         
-         
-         
-         
-         
-         
-         
+      if (jahislateral > 0 .and. numlatsg > 0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
+      endif
+      if (jahistaucurrent>0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAUSX),valobs(IPNT_TAUX,:)                                                    )
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAUSY),valobs(IPNT_TAUY,:)                                                    )
+      endif
+      if (jahisvelocity > 0) then
+         if (jaeulervel==0) then
+            if(kmx>0) then
+               call c_f_pointer (c_loc(valobs(IPNT_UMAG:IPNT_UMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),temp_pointer)
+            else
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),valobs(IPNT_UMAG,:)                                        )
+            endif
+         else
+            if(kmx>0) then
+               call c_f_pointer (c_loc(valobs(IPNT_UMAG:IPNT_UMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),temp_pointer)
+            else
+               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),valobs(IPNT_UMAG,:)                                        )
+            endif
+         endif
+      endif
+      if (jahisdischarge > 0) then
+         if(kmx>0) then
+            call c_f_pointer (c_loc(valobs(IPNT_QMAG:IPNT_QMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),temp_pointer)
+         else
+            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),valobs(IPNT_QMAG,:)                                       )
+         endif
+      endif
+      if (idensform > 0 .and. jaRichardsononoutput > 0 .and. kmx > 0) then
+         call c_f_pointer (c_loc(valobs(IPNT_RICH:IPNT_RICH+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RICH),temp_pointer)
+      endif
+
          
          
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0                                                        )
@@ -719,11 +786,13 @@ contains
          
    end subroutine flow_init_statistical_output_his
    
-   subroutine add_stat_output_item(output_set, output_config, data_pointer)
+   subroutine add_stat_output_item(output_set, output_config, data_pointer, function_pointer)
+   use QSCallBack
    
       type(t_output_variable_set), intent(inout) :: output_set             !> output set that items need to be added to
       type(t_output_quantity_config), pointer, intent(in) :: output_config !> output quantity config linked to output item
       double precision, pointer, dimension(:), intent(in) :: data_pointer  !> pointer to output quantity data
+      procedure(QS_callbackiface), optional, pointer, intent(in) :: function_pointer
       
       type(t_output_variable_item) :: item !> new item to be added
       
@@ -735,6 +804,9 @@ contains
       item%output_config => output_config
       item%operation_id = set_operation_id(output_config)
       item%source_input => data_pointer
+      if (present(function_pointer)) then
+         item%function_pointer => function_pointer
+      endif
       
       output_set%statout(output_set%count) = item
       
