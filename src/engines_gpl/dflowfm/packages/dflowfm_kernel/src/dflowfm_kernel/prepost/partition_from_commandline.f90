@@ -30,7 +30,10 @@
 ! 
 ! 
 
-!>  perform partitioning from command line
+!> Perform partitioning from command line
+!! Two possible methods:
+!! * via METIS, specify md_Ndomains > 0
+!! * via user-defined polygon file: must already be loaded before, active in m_polygon state variables.
 subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
 
    use network_data
@@ -43,10 +46,10 @@ subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icg
 
    implicit none
 
-   character(len=255), intent(in) :: fnam             !< filename
+   character(len=255), intent(in) :: fnam             !< filename of original (unpartitioned) network/grid file (_net.nc)
    integer,            intent(in) :: md_Ndomains      !< number of subdomains, Metis (>0) or polygon (0)
    integer,            intent(in) :: md_jacontiguous  !< contiguous domains, Metis (1) or not (0)
-   integer,            intent(in) :: md_icgsolver     !< intended solver
+   integer,            intent(in) :: md_icgsolver     !< intended pressure solver (6: PETSc, 7: parallel Stelling/Gaus Seidel)
    integer,            intent(in) :: md_pmethod       !< partition method: K-way (=1, default), Recursive Bisection(=2), Mesh-dual(=3)
    character(len=255), intent(in) :: md_dryptsfile    !< dry points file
    character(len=255), intent(in) :: md_encfile       !< Enclosure file to clip outer parts from the grid *.pol
