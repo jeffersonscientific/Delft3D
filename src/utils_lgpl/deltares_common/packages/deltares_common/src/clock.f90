@@ -31,7 +31,7 @@
 ! 
 
 !> wall clock timer
-   subroutine klok(t)
+   subroutine clock(t)
    use MessageHandling
    implicit none
 
@@ -61,4 +61,4 @@
    t = ndays*3600d0*24d0 + timing(5)*3600d0 + timing(6)*60d0 + timing(7) + dble(timing(8))/1000d0
 
 
-   end subroutine klok
+   end subroutine clock
