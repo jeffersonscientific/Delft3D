@@ -167,9 +167,7 @@ class TestSetRunner(ABC):
 
             # Check for errors during execution of testcase
             if len(testcase.getErrors()) > 0:
-                errstr = "\n"
-                for error in testcase.getErrors():
-                    errstr = errstr + str(error) + "\n"
+                errstr = ",".join(str(e) for e in testcase.getErrors())
                 logger.error("Errors during testcase: " + errstr)
                 raise TestCaseFailure("Errors during testcase: " + errstr)
 

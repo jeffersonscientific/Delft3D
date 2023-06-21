@@ -9,7 +9,7 @@ import os
 import threading
 import time
 from itertools import groupby
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from src.config.test_case_config import TestCaseConfig
 from src.suite.program import Program
@@ -87,7 +87,7 @@ class TestCase(object):
             for rt in list(self.__threads):
                 # implicit call to Program().terminate, __keepsync__ cleans up lingering threads
                 if rt.is_alive():
-                    self.__threads[rt].terminate()
+                    self.__threads[rt].terminate(logger)
             raise RuntimeError(
                 "Execution of test timed out (s) > " + str(self.__maxRunTime)
             )
@@ -188,7 +188,7 @@ class TestCase(object):
                 break
             # dictionary needed for calling terminate
             logger.debug(f"Creating thread group {str(k)}")
-            self.__threads = {}
+            self.__threads: Dict[threading.Thread, Program] = {}
             # start threads in specific group
             for program in g:
                 logger.debug(f"Adding thread for {program[1].name}")
