@@ -1,5 +1,4 @@
 # Sets the location of unix based script files
-set(update_version_script scripts_lgpl/linux/update_version.sh)
 set(CMAKE_INSTALL_RPATH "$ORIGIN:$ORIGIN/../lib")
 
 # use, i.e. don't skip the full RPATH for the build tree

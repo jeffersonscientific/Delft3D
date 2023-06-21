@@ -14,27 +14,6 @@ function(create_library library_name source_group_name)
     source_group(${source_group_name} FILES ${source})
 endfunction()
 
-
-
-    message(STATUS "Adding prebuild event step for ${library_name}")
-
-    if (UNIX)
-        execute_process(COMMAND /bin/bash ${update_version_script_path} ${fortran_version_file} ${svn_version_path} ${version_file} ${checkout_src_root} ${CMAKE_BINARY_DIR})
-    endif(UNIX)
-    if (WIN32)
-       IF(DEFINED ARGV4 AND ARGV4)
-            add_custom_command( TARGET ${library_name}
-                              PRE_BUILD
-                              COMMAND  call ${update_version_script_path} ${fortran_version_file} ${svn_version_path} ${version_file} --onlyifmissing)
-        ELSE()
-           add_custom_command( TARGET ${library_name}
-                               PRE_BUILD
-                               COMMAND  call ${update_version_script_path} ${fortran_version_file} ${svn_version_path} ${version_file})
-        ENDIF()
-    endif(WIN32)
-endfunction()
-
-
 # oss_include_libraries
 # Adds oss dependencies to the specified library.
 #
@@ -81,29 +60,29 @@ endfunction()
 #
 # Argument
 # target_name : The name of the target to add this postbuild event to.
-function(add_postbuild_event target_name)
-    # Perform a precheck to determine if the post build event script is defined.
-    IF(NOT DEFINED postbuild_event_path)
-        message(FATAL_ERROR "Variable 'postbuild_event_path' is undefined.")
-    ENDIF()
+# function(add_postbuild_event target_name)
+    # # Perform a precheck to determine if the post build event script is defined.
+    # IF(NOT DEFINED postbuild_event_path)
+        # message(FATAL_ERROR "Variable 'postbuild_event_path' is undefined.")
+    # ENDIF()
 
-    message(STATUS "Adding postbuild event step for ${target_name}")
-    if (UNIX)
-       execute_process(COMMAND /bin/bash ${postbuild_event_path})
-    endif(UNIX)
+    # message(STATUS "Adding postbuild event step for ${target_name}")
+    # if (UNIX)
+       # execute_process(COMMAND /bin/bash ${postbuild_event_path})
+    # endif(UNIX)
     
-    if (WIN32)
-       IF(DEFINED ARGV5 AND ARGV5)
-          add_custom_command( TARGET ${target_name}
-                              POST_BUILD
-                              COMMAND  call ${postbuild_event_path})
-        ELSE()
-           add_custom_command( TARGET ${target_name}
-                               POST_BUILD
-                               COMMAND  call ${postbuild_event_path})
-        ENDIF()
-    endif()
-endfunction()
+    # if (WIN32)
+       # IF(DEFINED ARGV5 AND ARGV5)
+          # add_custom_command( TARGET ${target_name}
+                              # POST_BUILD
+                              # COMMAND  call ${postbuild_event_path})
+        # ELSE()
+           # add_custom_command( TARGET ${target_name}
+                               # POST_BUILD
+                               # COMMAND  call ${postbuild_event_path})
+        # ENDIF()
+    # endif()
+# endfunction()
 
 
 
@@ -115,39 +94,39 @@ endfunction()
 # build_dir           : The directory where to copy the binaries
 # checkout_src_root   : The checkout directory
 # build_project       : The name of the project
-function(post_build_target target_name install_dir build_dir checkout_src_root build_project)
+# function(post_build_target target_name install_dir build_dir checkout_src_root build_project)
 
-   if (CMAKE_GENERATOR MATCHES "Visual Studio")
+   # if (CMAKE_GENERATOR MATCHES "Visual Studio")
    
-    # compiler_redist_dir : Compiler dlls (Windows only)
-    # mkl_redist_dir      : mkl dlls (Windows only)
+    # # compiler_redist_dir : Compiler dlls (Windows only)
+    # # mkl_redist_dir      : mkl dlls (Windows only)
 
-      if (DEFINED ENV{ONEAPI_ROOT})  
-         set(oneapi_root $ENV{ONEAPI_ROOT})
-         set(compiler_redist_dir "${oneapi_root}/compiler/latest/windows/redist/intel64_win/compiler/")
-         set(mkl_redist_dir   "${oneapi_root}/mkl/latest/redist/intel64/")   
-         set(mpi_redist_dir "${oneapi_root}/mpi/latest/")
-      else()
-         set(compiler_redist_dir "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/compiler/")
-         set(mkl_redist_dir   "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/mkl/")   
-      endif()
+      # if (DEFINED ENV{ONEAPI_ROOT})  
+         # set(oneapi_root $ENV{ONEAPI_ROOT})
+         # set(compiler_redist_dir "${oneapi_root}/compiler/latest/windows/redist/intel64_win/compiler/")
+         # set(mkl_redist_dir   "${oneapi_root}/mkl/latest/redist/intel64/")   
+         # set(mpi_redist_dir "${oneapi_root}/mpi/latest/")
+      # else()
+         # set(compiler_redist_dir "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/compiler/")
+         # set(mkl_redist_dir   "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/mkl/")   
+      # endif()
 
-      set(build_config $<CONFIG>) 
+      # set(build_config $<CONFIG>) 
 
-      add_custom_command(TARGET ${target_name}
-                         POST_BUILD
-                         COMMAND call "${checkout_src_root}/scripts_lgpl/win64/oss-post_build.cmd"  
-                         ${install_dir} 
-                         ${build_dir} 
-                         ${checkout_src_root} 
-                         ${build_config}
-                         ${build_project}
-                         ${compiler_redist_dir}
-                         ${mkl_redist_dir}
-                         ${mpi_redist_dir}) 
-   endif(CMAKE_GENERATOR MATCHES "Visual Studio")
+      # add_custom_command(TARGET ${target_name}
+                         # POST_BUILD
+                         # COMMAND call "${checkout_src_root}/scripts_lgpl/win64/oss-post_build.cmd"  
+                         # ${install_dir} 
+                         # ${build_dir} 
+                         # ${checkout_src_root} 
+                         # ${build_config}
+                         # ${build_project}
+                         # ${compiler_redist_dir}
+                         # ${mkl_redist_dir}
+                         # ${mpi_redist_dir}) 
+   # endif(CMAKE_GENERATOR MATCHES "Visual Studio")
    
-endfunction()
+# endfunction()
 
 
 

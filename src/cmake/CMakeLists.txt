@@ -123,10 +123,11 @@ endif(WIN32)
 
 # Set the location of the update_version script
 set(update_version_script_path ${checkout_src_root}/${update_version_script})
-set(postbuild_event_path ${checkout_src_root}/${postbuild_event_script})
 
-# Set root name of the projects in the root UI of Visual Studio
-set(visual_studio_source_group_name "Source Files")
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+   # Set root name of the projects in the root UI of Visual Studio
+   set(visual_studio_source_group_name "Source Files")
+endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
 ### Configuration names
 
