@@ -12734,16 +12734,17 @@ subroutine unc_read_map_or_rst(filename, ierr)
 
     call readyy('Reading map data',0.10d0)
 
-    iostat = 0
-    ! Add _ between date and time string
-    tmpstr = ''
-    tmpstr = restartdatetime(1:8)//'_'//restartdatetime(9:14)
-    call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
-    mdu_has_date = (iostat==0)
-
-    ! Restart from *yyyymmdd_hhmmss_rst.nc
-    !              15    0 8  5   1^tok1
     if (tok1 .gt. 0) then
+        iostat = 0
+        ! Add _ between date and time string
+        tmpstr = ''
+        tmpstr = restartdatetime(1:8)//'_'//restartdatetime(9:14)
+        call datetimestring_to_seconds(trim(tmpstr), refdat, trefdat_rst, iostat)    ! result: refdatnew in seconds  w.r.t. absolute MDU refdat
+        mdu_has_date = (iostat==0)
+
+        ! Restart from *yyyymmdd_hhmmss_rst.nc
+        !              15    0 8  5   1^tok1
+    
 
        ! Derive time from restart file name (first: check if the string length is larger than 15 characters at all!)
        it_read     = 1
