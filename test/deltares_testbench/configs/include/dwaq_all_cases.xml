@@ -9556,4 +9556,17 @@
             </file>
         </checks>
     </testCase>
+
+    <!-- Test cases for robust input -->
+    <testCase name="e03_f14_c01_rewind_timeseries" ref="dwaq_default">
+    <path>e03_waq/f14_robust_input/robust-001</path>
+        <checks>
+            <file name="robust-001.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
 </testCases>
