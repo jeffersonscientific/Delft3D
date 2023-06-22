@@ -409,11 +409,10 @@ function dfm_run_computational_timestep(dtactual) result(iresult) bind(C, name="
    real(c_double), intent(inout) :: dtactual !< The actual timestep to be used (may have changed upon return, if time setbacks have occurred)
    integer(c_int)                :: iresult  !< Result status, DFM_NOERR(=0) if successful.
 
-   integer :: dummykey
 
    dts = dtactual
 
-   call flow_run_single_timestep(dummykey, iresult) ! TODO: AvD/ JN: do we need a nonzero iresult on SETBACK/other errors? YES
+   call flow_run_single_timestep(iresult)
 
    dtactual = dts
 

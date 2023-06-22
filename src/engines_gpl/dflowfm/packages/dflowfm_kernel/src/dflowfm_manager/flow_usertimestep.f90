@@ -31,7 +31,7 @@
 ! 
 
 !> A complete single user time step (init-run-finalize).
- subroutine flow_usertimestep(key, iresult)                   ! do computational flowsteps until timeuser
+ subroutine flow_usertimestep(iresult)                   ! do computational flowsteps until timeuser
  use m_flowtimes
  use timers
  use unstruc_messages
@@ -40,20 +40,18 @@
  use m_timer
  use dfm_error
  implicit none
-   integer, intent(out) :: key     !< Key number if any key was pressed in GUI.
- integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
+ integer, intent(out) :: iresult !< Error status (DFM_NOERR==0 if successful, DFM_USERINTERRUPT if user interrupted in GUI. Other nonzero value in case of true error.)
 
    call timstrt('User time loop', handle_user)
 
    iresult = DFM_GENERICERROR
-   key = 0
 
    call flow_init_usertimestep(iresult)
    if (iresult /= DFM_NOERR) then
       goto 888
    end if
 
-   call flow_run_usertimestep(key, iresult)
+   call flow_run_usertimestep(iresult)
    if (iresult /= DFM_NOERR) then
       goto 888
    end if

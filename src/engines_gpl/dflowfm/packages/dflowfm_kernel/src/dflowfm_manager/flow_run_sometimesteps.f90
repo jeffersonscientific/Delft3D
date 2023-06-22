@@ -34,8 +34,6 @@
 subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do computational flowsteps for as long as timeinterval dtrange
    use m_flowtimes
    use unstruc_messages
-   use m_partitioninfo
-   use unstruc_display, only: jaGUI
    use dfm_error
    implicit none
    double precision, intent(in)  :: dtrange
@@ -65,9 +63,9 @@ subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do compu
        end if
     end if
 
-    !! RUN actual SINGLE computational timestep
-    call flow_single_timestep(key, iresult)
-    if (iresult /= DFM_NOERR) then
+    !! RUN actual SINGLE computational timestep in this loop
+    call flow_single_timestep(iresult)
+    if (iresult /= DFM_NOERR .and. iresult /= DFM_TIMESETBACK) then
        goto 888
     end if
 
@@ -78,6 +76,9 @@ subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do compu
        if (iresult /= DFM_NOERR) then
           goto 888
        end if
+
+       call try_gui_redraw() ! Will redraw only in GUI mode and only if refresh interval was reached
+
     end if
 
  enddo

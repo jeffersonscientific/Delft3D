@@ -30,7 +30,7 @@
 ! 
 ! 
 
- subroutine step_reduce(key)                         ! do a flow timestep dts guus, reduce once, then elimin conjugate grad substi
+ subroutine step_reduce()                            ! do a flow timestep dts guus, reduce once, then elimin conjugate grad substi
  use m_flow                                          ! when entering this subroutine, s1=s0, u1=u0, etc
  use m_flowgeom
  use m_sediment, only: stm_included, stmpar, mtd
@@ -131,8 +131,7 @@
        jposhchk = -1
     endif
 
-    call poshcheck(key)                                 ! s1 above local bottom? (return through key only for easier interactive)
-
+    call poshcheck(key)                                 ! s1 above local bottom?
 
     if (firstnniteration .and. nonlin1D >=3) then
        ! reset JPOSCHK to original value
@@ -140,7 +139,7 @@
     endif
 
     if (key == 1) then
-       return                                           ! for easier mouse interrupt
+       return                                           ! no further timestep reduction, abort this solve step and return
     else if (key == 2 ) then
        if (nonlin1D >= 3 .and. firstnniteration) then   ! jposhcheck==-1
          ! Negative depth(s): retry with restarted Nested Newton
@@ -214,9 +213,9 @@
           dsetb  = dsetb + 1                               ! total nr of setbacks
           s1     = s0
           if (dts .lt. dtmin) then
+              ! Timestep is too small, don't reduce any longer, abort timestep.
               s1 = max(s1,bl)                              ! above bottom
-              call okay(0)
-              key = 1                                      ! for easier mouse interrupt
+              key = 1
               return
           endif
           call setkfs()

@@ -215,16 +215,14 @@ end subroutine batch
   use unstruc_messages
   use unstruc_display 
   use unstruc_model 
-    integer             :: jastop
     
     iresult = DFM_NOERR
     call mess(LEVEL_INFO, 'Start of the computation time loop')
     iresult = flowinit()
-    jastop = 0
-    do while (time_user .lt. tstop_user .and. jastop.eq.0 .and. iresult == DFM_NOERR)                ! time loop
-       call flowstep(jastop, iresult)
+    do while (time_user < tstop_user .and. iresult == DFM_NOERR)                ! time loop
+       call flowstep(iresult)
     end do
-    if (iresult /= DFM_NOERR) then
+    if (iresult /= DFM_NOERR .and. iresult /= DFM_USERINTERRUPT) then
        call mess(LEVEL_WARN, 'Error during computation time loop. Details follow:')
        call dfm_strerror(msgbuf, iresult)
        call warn_flush()
@@ -237,7 +235,7 @@ end subroutine batch
     endif  
 
     
-    if (jastop == 0 .and. jaGUI == 0) then
+    if (iresult == DFM_NOERR .and. jaGUI == 0) then
        call flowfinalize()
     endif   
   
@@ -338,61 +336,26 @@ end subroutine api_loadmodel
     end if
   end function flowinit
 
- subroutine flowstep(jastop, iresult)
- use unstruc_display, only : ntek, plottofile, jaGUI
+ subroutine flowstep(iresult)
  use dfm_error
- integer, intent(out) :: jastop  !< Communicate back to caller: whether to stop computations (1) or not (0)
  integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-integer                   :: ndraw
- 
- COMMON /DRAWTHIS/ ndraw(50)
- 
-
-   integer                 :: key
    
-   jastop = 0
    iresult = DFM_GENERICERROR
     
    if ( jatimer.eq.1 ) call starttimer(ITOTAL)
    
    if (ndx == 0) then                                ! No valid flow network was initialized
-      jastop=1
-      goto 1234
+      iresult = DFM_MODELNOTINITIALIZED
+      goto 888
    end if
 
   ! call inctime_user()
 
-   call flow_usertimestep(key, iresult)                         ! one user_step consists of several flow computational time steps
+   call flow_usertimestep(iresult)                         ! one user_step consists of several flow computational time steps
 
    if (iresult /= DFM_NOERR) then
-      jastop = 1
       goto 888
    end if
-
-   if (key .eq. 1) then
-       jastop = 1
-       goto 1234
-   endif
-
-   if ( jaGUI.eq.1 ) then
-      key = 3                                          ! this part is for online visualisation
-      if (ntek > 0) then
-         if (mod(int(dnt_user),ntek) .eq. 0) then
-             if (plottofile == 1) then
-                ndraw(10) = plottofile 
-             endif      
-             call drawnu(key)
-             if (key .eq. 1) then
-                goto 1234
-             endif
-         endif
-      endif
-   end if
-    
-1234  if ( jatimer.eq.1 ) call stoptimer(ITOTAL)
-
-   iresult = DFM_NOERR
-   return ! Return with success
 
 888 continue
    ! Error

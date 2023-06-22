@@ -59,7 +59,7 @@
 
  ! call flow_externalinput(time_user)                  ! receive RTC signals etc
 
- call flow_single_timestep(key, ierr)
+ call flow_single_timestep(ierr)
 
  call updateValuesOnObservationStations()
 

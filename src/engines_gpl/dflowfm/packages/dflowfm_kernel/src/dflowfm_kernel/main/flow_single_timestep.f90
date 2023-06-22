@@ -31,7 +31,7 @@
 ! 
 
  !> A complete single computational time step (init-perform-finalize).
- subroutine flow_single_timestep(key, iresult)                ! do only 1 flow timestep
+ subroutine flow_single_timestep(iresult)                ! do only 1 flow timestep
  use m_flow
  use m_flowgeom
  use m_flowtimes
@@ -43,7 +43,6 @@
  use m_sedtrails_netcdf, only: sedtrails_write_stats
  implicit none
 
- integer :: key
  integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
  integer :: N, L
@@ -55,7 +54,8 @@
       goto 888
    end if
 
-   call flow_run_single_timestep(key, iresult)
+   call flow_run_single_timestep(iresult)
+
    if (iresult /= DFM_NOERR .and. iresult /= DFM_TIMESETBACK) then
       goto 888
    end if

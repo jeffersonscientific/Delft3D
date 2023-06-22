@@ -27,19 +27,21 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
-
-      SUBROUTINE get_s_key(JA) ! s or left mouse
+      !> Detects S-keypress or left mouse, indicating user-interrupt in the GUI.
+      SUBROUTINE get_s_key(was_pressed)
       implicit none
-      integer :: ja
+      integer, intent(  out) :: was_pressed !< Whether or not (1/0) S-key or left-mouse button was pressed since previous time an Interacter event was checked.
+
       integer :: numkey
-!     kappen met muis
-      JA = 0
+
+      was_pressed = 0
+
       CALL INKEYEVENTIMM(NUMKEY)
+
+      ! Check lower- and uppercase 's' and left mouse click
       IF (NUMKEY == 115 .or. NUMKEY == 115-32 .or. NUMKEY == 251) then
-         JA = 1
+         was_pressed = 1
          call inflush()
       endif
       RETURN
-      END
+      END SUBROUTINE get_s_key

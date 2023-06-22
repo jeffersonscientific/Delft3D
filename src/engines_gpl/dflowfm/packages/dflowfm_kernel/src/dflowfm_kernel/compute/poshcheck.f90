@@ -27,8 +27,9 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
+ !> Checks all active flow nodes for drying/negative water depth and prepares
+ !! for a a redo of this solve step.
+ !! Argument key returns information to the caller.
 
  subroutine poshcheck(key)
  use m_flow                                          ! when entering this subroutine, s1=s0, u1=u0, etc
@@ -40,7 +41,7 @@
 
  implicit none
 
- integer :: key
+ integer, intent(  out) :: key !< Returns suggested action to the caller (0: do nothing, no new drying detected, 1: abort timestep, 2: redo setkfs and solve)
 
  integer :: n, L, LL, LLL, jaHuChanged
 
@@ -136,7 +137,6 @@
     idum = (/ key, nodneg /)
 
     if ( jatimer.eq.1 ) call starttimer(IMPIREDUCE)
-!    call reduce_key(key)
     call reduce_int_max(2,idum)
     if ( jatimer.eq.1 ) call stoptimer(IMPIREDUCE)
 
@@ -152,9 +152,9 @@
     s1     = s0
     vol1 = vol0
     if (dts .lt. dtmin) then
+        ! Timestep is too small, don't reduce any longer, abort timestep.
         s1 = max(s1,bl)                              ! above bottom
-        call okay(0)
-        key = 1                                      ! for easier mouse interrupt
+        key = 1
     endif
  endif
 

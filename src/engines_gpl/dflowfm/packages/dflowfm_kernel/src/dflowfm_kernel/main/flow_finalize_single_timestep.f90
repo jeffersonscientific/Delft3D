@@ -54,6 +54,8 @@ use m_update_fourier, only : update_fourier
 implicit none
 integer, intent(out) :: iresult
 
+logical, external :: check_gui_interrupt
+
    ! Timestep has been performed, now finalize it.
 
    if (ti_waqproc < 0d0) then
@@ -136,6 +138,12 @@ integer, intent(out) :: iresult
  call timstop(handle_steps)
  iresult = dfm_check_signals()                      ! Abort when Ctrl-C was pressed
  if (iresult /= DFM_NOERR) goto 888
+
+ !DIR$ INLINE
+ if (check_gui_interrupt()) then                    ! Abort when in GUI-mode user has interrupted
+    iresult = DFM_USERINTERRUPT
+    goto 888
+ end if
 
  if (validateon) then
     call flow_validatestate(iresult)                ! abort when the solution becomes unphysical
