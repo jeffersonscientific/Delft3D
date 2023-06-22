@@ -169,7 +169,7 @@ class Program:
         try:
             logger.debug(
                 f"Starting {self.__program_config.absolute_bin_path} with"
-                + " delay {str(self.__program_config.delay)}"
+                + f" delay {str(self.__program_config.delay)}"
             )
             time.sleep(self.__program_config.delay)
             execmd = self.__buildExeCommand__(logger)
@@ -189,7 +189,7 @@ class Program:
                 logger.info(f"Executing :: {str(stripPassword(execmd))}")
                 logger.debug(
                     f"Executing (in separate thread)::{str(stripPassword(execmd))}"
-                    + "::in directory::{self.__program_config.working_directory}"
+                    + f"::in directory::{self.__program_config.working_directory}"
                 )
 
                 program_env = self.__program_config.environment

@@ -8,7 +8,6 @@ import multiprocessing
 import os
 import sys
 from abc import ABC, abstractmethod
-from email import message
 from multiprocessing.pool import AsyncResult
 from typing import Iterable, List
 
@@ -63,6 +62,9 @@ class TestSetRunner(ABC):
                     "##teamcity[testFailed name='Update programs' message='Exception occurred']\n"
                 )
 
+        for config in self.__settings.configs:
+            self.__download_dependencies(config, self.__logger)
+
         n_testcases = len(self.__settings.configs)
         log_sub_header("Running tests", self.__logger)
 
@@ -73,10 +75,9 @@ class TestSetRunner(ABC):
             result_futures: List[AsyncResult] = []
 
             for i_testcase, config in enumerate(self.__settings.configs):
-                test_logger = self.__logger.create_test_case_logger(config.name)
                 config_result_future = pool.apply_async(
                     self.run_test_case,
-                    [config, i_testcase, n_testcases, test_logger],
+                    [config, i_testcase, n_testcases],
                     callback=self.__log_successful_test,
                     error_callback=self.__log_failed_test,
                 )
@@ -119,7 +120,6 @@ class TestSetRunner(ABC):
         config: TestCaseConfig,
         i_testcase: int,
         n_testcases: int,
-        logger: ITestLogger,
     ) -> TestCaseResult:
         """Runs one test configuration (in a separate process)
 
@@ -127,9 +127,9 @@ class TestSetRunner(ABC):
             config (TestCaseConfig): configuration to run
             i_testcase (int): test case index
             n_testcases (int): total amount of test cases
-            logger (ITestLogger): logger for this test case
         """
         test_result: TestCaseResult = TestCaseResult(config)
+        logger = self.__logger.create_test_case_logger(config.name)
 
         skip_testcase, skip_postprocessing = self.__check_for_skipping(config)
         if not skip_testcase:
@@ -446,12 +446,14 @@ class TestSetRunner(ABC):
             )
             raise TestBenchError(error_message)
 
+
+
         for location in config.locations:
             if location.root == "" or location.from_path == "":
                 error_message: str = (
                     f"Could not update case {config.name}"
-                    + ", invalid network input path part (root:{location.root},"
-                    + " from:{location.from_path}) given"
+                    + f", invalid network input path part (root:{location.root},"
+                    + f" from:{location.from_path}) given"
                 )
                 raise TestBenchError(error_message)
 
@@ -546,3 +548,28 @@ class TestSetRunner(ABC):
             # We need always case input data
             logger.error(f"Could not download from {remote_path}")
             raise exception
+
+    def __download_dependencies(self, config: TestCaseConfig, logger: ILogger):
+        if not config.dependency:
+            return
+
+        location = next(loc for loc in config.locations if loc.type == PathType.INPUT)
+        destination_dir = self.__settings.local_paths.cases_path
+
+        localPath = Paths().rebuildToLocalPath(
+            Paths().mergeFullPath(
+                destination_dir,
+                location.to_path,
+                config.dependency,
+            )
+        )
+
+        if os.path.exists(localPath):
+            return
+
+        remote_path = Paths().mergeFullPath(
+                location.root, location.from_path, config.dependency
+            )
+        self.__download_file(
+            location, remote_path, localPath, "dependency", logger
+        )
