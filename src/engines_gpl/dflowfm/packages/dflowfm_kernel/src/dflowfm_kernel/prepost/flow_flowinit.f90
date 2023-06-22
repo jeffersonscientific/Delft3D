@@ -271,8 +271,8 @@ contains
    call set_initial_velocity_in_3D()
    call set_wave_modelling()
    call initialize_salinity_from_bottom_or_top()
-
-   call question1()
+   call initialize_temperature_3D()
+   call initialize_sediment_3D()
 
  ! hk: and, make sure this is done prior to fill constituents
    if (jarestart /= OFF) then
@@ -1315,8 +1315,32 @@ subroutine initialize_salinity_from_bottom_or_top()
 
 end subroutine initialize_salinity_from_bottom_or_top
 
+!> initialize_temperature_3D
+subroutine initialize_temperature_3D()
+   use m_flow,                 only : kmx, tem1
+   use m_flowparameters,       only : initem2D
+   use m_cell_geometry,        only : ndx
 
-subroutine question1()
+   implicit none
+
+   integer            :: cell 
+   integer            :: bottom_cell 
+   integer            :: top_cell 
+   integer            :: cell3D
+
+   if (kmx > 0 .and. initem2D > 0 ) then
+      do cell = 1, ndx
+         call getkbotktop(cell,bottom_cell,top_cell)
+         do cell3D = bottom_cell, top_cell
+             tem1(cell3D) = tem1(cell)
+         end do
+      end do
+   end if
+ 
+end subroutine initialize_temperature_3D
+
+!> initialize_sediment_3D
+subroutine initialize_sediment_3D()
    use m_flow,                 only : kmx
    use m_flowparameters,       only : inised2D
    use m_cell_geometry,        only : ndx
@@ -1343,7 +1367,7 @@ subroutine question1()
       inised2D = 0
    end if
  
-end subroutine question1
+end subroutine initialize_sediment_3D
 
 !> initialize salinity, temperature, sediment on boundary
 subroutine initialize_salinity_temperature_sediment_on_boundary()
