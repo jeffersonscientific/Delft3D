@@ -771,9 +771,9 @@ subroutine load_restart_file(file_exist, error)
             call setbobs()
          end if
 
-         u1_tmp(:)  = u1(:)
-         u1(:)      = u0(:)
-         hs(:)      = s0(:) - bl(:)
+         u1_tmp  = u1
+         u1(:)   = u0(:)
+         hs(:)   = s0(:) - bl(:)
          if (iperot == NOT_DEFINED ) then
             call reconst2nd ()
          end if
