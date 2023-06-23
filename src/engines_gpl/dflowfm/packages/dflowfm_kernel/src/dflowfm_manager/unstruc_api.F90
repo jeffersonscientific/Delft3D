@@ -344,12 +344,12 @@ end subroutine api_loadmodel
     
    if ( jatimer.eq.1 ) call starttimer(ITOTAL)
    
-   if (ndx == 0) then                                ! No valid flow network was initialized
+   if (ndx == 0) then                                 ! No valid flow network was initialized
       iresult = DFM_MODELNOTINITIALIZED
       goto 888
    end if
 
-   call flow_usertimestep(iresult)                   ! one user_step consists of several flow computational time steps
+   call flow_usertimestep(iresult)                    ! one user_step consists of several flow computational time steps
 
    if (iresult /= DFM_NOERR) then
       goto 888
