@@ -107,4 +107,6 @@ set_target_properties (${library_name} PROPERTIES OUTPUT_NAME wave)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-install(TARGETS ${library_name} DESTINATION lib)
+install(TARGETS ${library_name} ARCHIVE DESTINATION lib
+         LIBRARY DESTINATION lib
+         RUNTIME DESTINATION bin)
