@@ -349,8 +349,6 @@ end subroutine api_loadmodel
       goto 888
    end if
 
-  ! call inctime_user()
-
    call flow_usertimestep(iresult)                         ! one user_step consists of several flow computational time steps
 
    if (iresult /= DFM_NOERR) then
