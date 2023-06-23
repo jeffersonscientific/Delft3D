@@ -105,4 +105,6 @@ set(build_dir ${CMAKE_BINARY_DIR})
                    # ${checkout_src_root} 
                    # ${library_name} )
 
-install(TARGETS ${library_name} DESTINATION lib)
+install(TARGETS ${library_name} ARCHIVE DESTINATION lib
+         LIBRARY DESTINATION lib
+         RUNTIME DESTINATION bin)
