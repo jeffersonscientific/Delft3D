@@ -98,6 +98,12 @@ set_target_properties (${executable_name} PROPERTIES FOLDER third_party_open/swa
 
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+	configure_file(
+    ${userfilename}
+    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
+    @ONLY
+	)
 endif(WIN32)
 
 # Set post-build step
