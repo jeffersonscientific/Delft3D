@@ -95,7 +95,7 @@ set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dimr)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
 	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
-	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/")
+	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
     file(
         WRITE "${userfilename}"
