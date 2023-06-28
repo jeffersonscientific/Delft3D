@@ -124,6 +124,12 @@ target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/waq)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+	configure_file(
+    ${userfilename}
+    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
+    @ONLY
+	)
 endif(WIN32)
 
 # Set post-build step
