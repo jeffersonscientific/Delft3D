@@ -60,11 +60,8 @@ echo Working directory: %workdir%
 set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
 set exedir=%D3D_HOME%\bin
-echo exedir : %exedir%
 set sharedir=%D3D_HOME%\share
-echo sharedir=%sharedir%
 set libdir=%D3D_HOME%\lib
-echo libdir 	      : %libdir%
 
     rem Run
 set PATH=%sharedir%;%libdir%
