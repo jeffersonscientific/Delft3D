@@ -64,23 +64,21 @@ subroutine calculate_advection()
  double precision, external        :: QufPer         ! testing adv of face velocities instead of centre upwind velocities
 
  integer                           :: isg, iadvL
- integer                           :: mu, md, mdd, iad, n, kk, kb
- double precision                  :: qxm, qxmu, uam, uamu, uamd, qxmd, du
- double precision                  :: vv1, vv2, dv1, dv2, quk, que
- double precision                  :: ucxku, ucyku, ai, ae, abh, vu1Di, volu, volui, hh, huvL, baik1, baik2
+ integer                           :: iad, n, kk, kb
+ double precision                  :: ucxku, ucyku, ai, ae, abh, volu, volui, huvL, baik1, baik2
  double precision                  :: vol_k1        !< representative volume for node k1
  double precision                  :: vol_k2        !< representative volume for node k2
- double precision                  :: ucin, fdx, ql, qucx, qucy, ac1, ac2, uqn, qn, rhoinsrc, dzss, qnn
- integer                           :: LL,LLL,LLLL, Lb, Lt, Lay, i
+ double precision                  :: ucin, fdx, ql, ac1, ac2, uqn, qn, dzss, qnn
+ integer                           :: LL, Lb, Lt, i
 
- integer                           :: ierror, ku, kd, k, nfw, kt
+ integer                           :: ku, kd, k, nfw, kt
  integer                           :: n12
 
  double precision                  :: quk1(3,kmxx), quk2(3,kmxx), volukk(kmxx)   ! 3D for 1=u, 2=turkin, 3=tureps
 
  integer                           :: kt1, kt2, n1, n2, kb1, kb2, Ltx0, ktx01, ktx02 , ktx1 , ktx2, Ltx, L1, ksb, kst
- double precision                  :: sigu, alf, bet1, bet2, hs1, hs2, vo1, vo2, zz1, zz2, econsfac
- double precision                  :: tol=1d-4 , sl, dzu, dzk, du1, du2, dux, duy, expl
+ double precision                  :: hs1, hs2, vo1, vo2
+ double precision                  :: tol=1d-4 , sl, dzu, dzk, du1, du2, dux, duy
 
  double precision                  :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
  double precision                  :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
@@ -88,18 +86,16 @@ subroutine calculate_advection()
 
  double precision,        external :: lin2nodx, lin2nody
  double precision,        external :: nod2linx, nod2liny
- double precision,        external :: dlimiter, dslim
-
- japiaczek33 = 0
+ double precision,        external :: dslim
 
  if (ifixedweirscheme >= 3 .and. ifixedweirscheme <= 5) then
     do L  = 1,lnxi
        if (iadv(L) == 21) then
-          if (u0(L) > 0) then
+!          if (u0(L) > 0) then
              kd = ln(2,L) ; ku = ln(1,L)
-          else
-             kd = ln(1,L) ; ku = ln(2,L)
-          endif
+!          else
+!             kd = ln(1,L) ; ku = ln(2,L)
+!          endif
           call getucxucyweironly ( kd, ucx(kd), ucy(kd), ifixedweirscheme )
           call getucxucyweironly ( ku, ucx(ku), ucy(ku), ifixedweirscheme )
        endif
@@ -128,7 +124,9 @@ subroutine calculate_advection()
 
  call sethigherorderadvectionvelocities()
 
- uqcx = 0d0 ; uqcy = 0d0 ; sqa = 0d0
+ uqcx(:) = 0d0
+ uqcy(:) = 0d0
+ sqa (:) = 0d0
 
  if (kmx == 0) then
 
@@ -295,7 +293,6 @@ subroutine calculate_advection()
              uqn = qn*qnn / arsrc(n)
 
              if (jarhoxu > 0) then
-                rhoinsrc = rhomean   ! just for now
                 qn       = qn* rhoinsrc
                 uqn      = uqn*rhoinsrc
              endif
@@ -322,7 +319,7 @@ subroutine calculate_advection()
      
 
  !$OMP PARALLEL DO                                                                   &
- !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,hh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2)
+ !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2)
 
  do L  = 1,lnx
 
