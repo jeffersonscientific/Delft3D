@@ -231,12 +231,13 @@ if (WIN32)
 		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
 		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
 )
-	
-	configure_file(
-    ${userfilename}
-    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
-    @ONLY
-	)
+	if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
+		configure_file(
+		${userfilename}
+		"${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
+		@ONLY
+		)
+	endif()
 endif(WIN32)
 
 # post-build
