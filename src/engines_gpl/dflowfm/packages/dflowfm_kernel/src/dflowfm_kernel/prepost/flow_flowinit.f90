@@ -59,6 +59,8 @@
  use timers
  use m_setucxcuy_leastsquare, only: reconst2nd
  use mathconsts, only: sqrt2_hp
+ use m_sethu
+ use m_external_forcings
 
  implicit none
 
@@ -407,7 +409,7 @@ end if
  call setkbotktop(1)                                            ! set sigmabnds for ec
 
  if ( janudge.eq.1 ) call setzcs()
- call flow_setexternalforcings(tstart_user, .true., iresult)             ! set field oriented external forcings, flag that the call is from the initialization phase
+ call set_external_forcings(tstart_user, .true., iresult)             ! set field oriented external forcings, flag that the call is from the initialization phase
 
  if (iresult /= DFM_NOERR) then
     goto 888
@@ -636,7 +638,7 @@ end if
     if (allocated(kcsini)) deallocate(kcsini)
  endif
 
- call sethu(1)
+ call calculate_hu_au_and_advection_for_dams_weirs(1)
  if (kmx > 0) then ! temporary fix for sepr 3D
     do L = 1,lnx
        if (abs(kcu(L)) == 1) then
@@ -917,6 +919,7 @@ subroutine apply_hardcoded_specific_input()
  use unstruc_model
  use m_partitioninfo
  use geometry_module , only: dbdistance, half, normalout
+ use m_sethu
 
  implicit none
 
@@ -1293,7 +1296,7 @@ subroutine apply_hardcoded_specific_input()
 
     do j = 1,300
        fout = 0d0
-       call sethu(1)             ! was just call sethu()
+       call calculate_hu_au_and_advection_for_dams_weirs(1)             ! was just call sethu()
        do k = 1,ndx
           sq(k) = 0d0
           do kk = 1,nd(k)%lnx
