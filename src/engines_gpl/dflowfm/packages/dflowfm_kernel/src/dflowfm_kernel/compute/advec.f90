@@ -34,12 +34,10 @@ public :: advec
 
 contains
     
-!> calculate_advection, based on u0, q0 24
+!> calculate_advection, based on u0, q0
 subroutine calculate_advection()
-   use m_flowtimes
    use m_flowgeom
    use m_flow
-   use m_fixedweirs
    use m_sferic
    use unstruc_channel_flow, only: network
 
@@ -54,32 +52,26 @@ subroutine calculate_advection()
    integer, parameter  :: SCALAR_APPROACH_USING_VOL1_F = 1
    integer, parameter  :: SPHERIC = 1
    
-   integer                        :: link, k1, k2   !< link, nd1, nd2
+   integer                        :: link, k1, k2   !< link, nd1, nd2 
+   integer                        :: iadvL
+   integer                        :: source, kk, kb
+   integer                        :: LL, Lb, Lt
+   integer                        :: cell
+   integer                        :: ksb, kst
    double precision               :: advel          !< local adve
    double precision               :: qu1            !< Flux times advection velocity node 1 (m4/s2)
    double precision               :: qu2            !< idem                          node 2
-   double precision               :: cs, sn
-
-   double precision, external     :: QucPer         !< idem, include own link
-   double precision, external     :: QucPerq1       !< ..
-
-   integer                        :: iadvL
-   integer                        :: source, kk, kb
+   double precision               :: cs             !< cosine of link direction (+1 for link in positive x-direction)
+   double precision               :: sn             !< sine of link direction (+1 for link in positive y-direction)
    double precision               :: volu
    double precision               :: ac1, ac2
-   integer                        :: LL, Lb, Lt
 
-   integer                        :: cell
-
-   double precision               :: quk1(3,kmxx), quk2(3,kmxx), volukk(kmxx)   !< 3D for 1=u, 2=turkin, 3=tureps
-
-   integer                        :: ksb, kst
-
+   double precision               :: quk1(3,kmxx) , quk2(3,kmxx) , volukk(kmxx)   !< 3D for 1=u, 2=turkin, 3=tureps
    double precision               :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
    double precision               :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
    double precision               :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
-
-   double precision,     external :: nod2linx, nod2liny
+   
+   double precision, external     :: nod2linx, nod2liny
 
    if (ifixedweirscheme >= 3 .and. ifixedweirscheme <= 5) then
       call set_ucx_ucy_for_weirs_at_semi_subgrid()
@@ -639,7 +631,6 @@ end subroutine calculate_advection_using_scheme_3
 !! explicit first order mom conservative based upon cell center excess advection velocity
 subroutine calculate_advection_using_scheme_103()
 
-   double precision, external     :: QucPerpure1D   ! idem, include own link
    double precision               :: vol_k1        !< representative volume for node k1
    double precision               :: vol_k2        !< representative volume for node k2
    
@@ -1092,276 +1083,240 @@ subroutine calculate_advection_3D_schemes_33_40_6()
     double precision               :: hs1, hs2, vo1, vo2
 
     if (layertype == 1) then
+        do link = Lb, Lt
+            k1  = ln(1,link)
+            k2  = ln(2,link)
+            if (jasfer3d == SPHERIC) then
+                qu1   =  cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) +  sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
+                qu2   =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) +  sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
+            else
+                qu1   =  cs*uqcx(k1) + sn*uqcy(k1) - u1(link)*sqa(k1)
+                qu2   =  cs*uqcx(k2) + sn*uqcy(k2) - u1(link)*sqa(k2)
+            end if
 
-        if (iadv(LL) == -6 ) then 
+            if (jarhoxu > 0) then
+                volu  = ac1*vol1(k1)*rho(k1) + ac2*vol1(k2)*rho(k2)
+            else
+                volu  = ac1*vol1(k1)         + ac2*vol1(k2)
+            end if
 
-            do link = Lb, Lt
-                if (u1(link) > 0) then
-                    cell = ln(1,link)
-                    n12 = 1
-                else
-                    cell = ln(2,link)
-                    n12 = 2
-                end if
+            if (volu > 0) then
+                adve(link) = adve(link) + (ac1*qu1 + ac2*qu2) / volu
+            end if
+        end do
+
+    else if (layertype == 2 .and. jahazlayer == 0) then ! default fixed layers
+        Ltx = Lt - Lb + 1
+        volukk(1:Ltx) = 0d0
+        do link = Lb, Lt
+            k1  = ln(1,link)
+            k2  = ln(2,link)
+            if (jarhoxu > 0) then
+                volukk(link-Lb+1)  = volukk(link-Lb+1) + ac1*vol1(k1)*rho(k1) + ac2*vol1(k2)*rho(k2)
+            else
+                volukk(link-Lb+1)  = volukk(link-Lb+1) + ac1*vol1(k1) + ac2*vol1(k2)
+            end if
+        end do
+        do cell = k1 + 1, ktop(ln(1,LL) )
+            if (jarhoxu > 0) then
+                volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(cell)*rho(cell)
+            else
+                volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(cell)
+            end if
+        end do
+        do cell = k2 + 1, ktop(ln(2,LL) )
+            if (jarhoxu > 0) then
+                volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(cell)*rho(cell)
+            else
+                volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(cell)
+            end if
+        end do
+        do link = Lb, Lt
+            k1  = ln(1,link)
+            k2  = ln(2,link)
+            if (jasfer3d == SPHERIC) then
+                qu1    = cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
+                qu2    = cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
+            else
+                qu1    = cs*uqcx(k1) + sn*uqcy(k1) - u1(link)*sqa(k1)
+                qu2    = cs*uqcx(k2) + sn*uqcy(k2) - u1(link)*sqa(k2)
+            end if
+            if (volukk(link-Lb+1) > 0) then
+                adve(link) = adve(link) +  (ac1*qu1 + ac2*qu2) / volukk(link-Lb+1)
+            end if
+        end do
+
+    else if (layertype == 2 .and. jahazlayer == 1) then
+        n1 = ln(1,LL)
+        n2 = ln(2,LL)
+        call getkbotktop(n1, kb1, kt1)
+        ktx1 = kt1 - kb1 + 1
+        call getkbotktop(n2, kb2, kt2)
+        ktx2 = kt2 - kb2 + 1
+        Ltx  = Lt - Lb + 1
+
+        volukk(1:Ltx) = 0d0
+        do link = Lb, Lt
+			L1 = link - Lb + 1
+            volukk(L1) = volukk(L1) + ac1*vol1(ln(1,link)) + ac2*vol1(ln(2,link))
+        end do
+        do cell = k1 + 1, kt1
+            volukk(Ltx) = volukk(Ltx) + ac1*vol1(cell)
+        end do
+        do cell = k2 + 1, kt2
+            volukk(Ltx) = volukk(Ltx) + ac2*vol1(cell)
+        end do
+        do link = Lb, Lt
+            k1  = ln(1,link)
+            k2  = ln(2,link)
+            L1  = link - Lb + 1
+            if (volukk(L1) > 0) then
                 if (jasfer3d == SPHERIC) then
-                    advel   = 2d0*( u1(link) - (cs*nod2linx(LL,n12,ucx(cell),ucy(cell)) + sn*nod2liny(LL,n12,ucx(cell),ucy(cell)) ) )*dxi(LL)
+                    qu1   =  cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) +  sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
+                    qu2   =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) +  sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
                 else
-                    advel   = 2d0*( u1(link) - (cs*ucx(cell) + sn*ucy(cell) ) )*dxi(LL)
+                    qu1     = cs*uqcx(k1) + sn*uqcy(k1) - u1(link)*sqa(k1)
+                    qu2     = cs*uqcx(k2) + sn*uqcy(k2) - u1(link)*sqa(k2)
                 end if
-                if ( advel > 0d0 ) then
-                    advi(link) = advi(link) + advel
-                else
-                    adve(link) = adve(link) - cs*u1(link)*advel
+                adve(link) = adve(link) + (ac1*qu1 + ac2*qu2) / volukk(link-Lb+1)
+            end if
+        end do
+
+    else if (layertype == 2 .and. jahazlayer == 2) then  ! lineinterp
+        n1 = ln(1,LL)
+        n2 = ln(2,LL)
+        call getkbotktop(n1, kb1, kt1)
+        call getkbotktop(n2, kb2, kt2)
+        hs1 = max(epshs, zws(kt1) - zws(kb1-1) )
+        hs2 = max(epshs, zws(kt2) - zws(kb2-1) )
+
+        ktx01 = kt1 - kb1 + 1
+        ktx02 = kt2 - kb2 + 1
+
+        volk1(0) = 0d0
+        quuk1(0) = 0d0
+        sqak1(0) = 0d0
+        sigk1(0) = 0d0
+        do cell = kb1, kt1
+            volk1(cell-kb1+1) = volk1(cell-kb1) + vol1(cell)
+            if (jasfer3d == SPHERIC) then
+                quuk1(cell-kb1+1) = quuk1(cell-kb1) + cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell))
+            else
+                quuk1(cell-kb1+1) = quuk1(cell-kb1) + cs*uqcx(cell) + sn*uqcy(cell)
+            end if
+            sqak1(cell-kb1+1) = sqak1(cell-kb1) + sqa(cell)
+            sigk1(cell-kb1+1) = ( zws(cell) - zws(kb1-1) ) / hs1
+        end do
+
+        volk2(0) = 0d0
+        quuk2(0) = 0d0
+        sqak2(0) = 0d0
+        sigk2(0) = 0d0
+        do cell = kb2, kt2
+            volk2(cell-kb2+1) = volk2(cell-kb2) + vol1(cell)
+            if (jasfer3d == SPHERIC) then
+                quuk2(cell-kb2+1) = quuk2(cell-kb2) + cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell))
+            else
+                quuk2(cell-kb2+1) = quuk2(cell-kb2) + cs*uqcx(cell) + sn*uqcy(cell)
+            end if
+            sqak2(cell-kb2+1) = sqak2(cell-kb2) + sqa(cell)
+            sigk2(cell-kb2+1) = ( zws(cell) - zws(kb2-1) ) / hs2
+        end do
+        do link = Lb, Lt  ;  Ltx0 = Lt - Lb + 1 ; siguL(0) = 0d0
+            siguL(link-Lb+1) = hu(link) / hu(LL)
+        end do
+
+        call lineinterp3( siguL, quuL1, volL1, sqaL1, Ltx0, sigk1, quuk1, volk1, sqak1, ktx01)
+        call lineinterp3( siguL, quuL2, volL2, sqaL2, Ltx0, sigk2, quuk2, volk2, sqak2, ktx02)
+
+        do link = Lb, Lt
+            volu = (volL1(link-Lb+1) - volL1(link-Lb))*ac1 + (volL2(link-Lb+1) - volL2(link-Lb))*ac2
+            if (volu > 0) then
+                qu1   = quuL1(link-Lb+1) - quuL1(link-Lb) - u1(link)*( sqaL1(link-Lb+1) - sqaL1(link-Lb) )
+                qu2   = quuL2(link-Lb+1) - quuL2(link-Lb) - u1(link)*( sqaL2(link-Lb+1) - sqaL2(link-Lb) )
+                advel = ( ac1*qu1 + ac2*qu2 ) / volu
+                adve(link) = adve(link) + advel
+            end if
+        end do
+
+    else if (layertype == 2 .and. jahazlayer == 4) then
+        n1 = ln(1,LL)
+        n2 = ln(2,LL)
+        call getkbotktop(n1, kb1, kt1)
+        ktx1 = kb1 + kmxn(n1) - 1
+        call getkbotktop(n2, kb2, kt2)
+        ktx2 = kb2 + kmxn(n2) - 1
+        Ltx  = Lt-Lb+1
+
+        volukk(1:Ltx) = 0d0
+        quuk1(1:Ltx)  = 0d0
+        sqak1(1:Ltx)  = 0d0
+        do cell = kb1, ln(1,Lb) - 1                   ! below Lb n1
+            volukk(1) = volukk(1)     + ac1*vol1(cell)
+            if (jasfer3d == SPHERIC) then
+                quuk1(1) = quuk1(1) + ac1*(cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell)))
+            else
+                quuk1(1) = quuk1 (1) + ac1*(cs*uqcx(cell) + sn*uqcy(cell))
+            end if
+            sqak1(1) = sqak1(1) + ac1*sqa(cell)
+        end do
+
+        do cell = kb2, ln(2,Lb) - 1                   ! below Lb n2
+            volukk(1) = volukk(1)     + ac2*vol1(cell)
+            if (jasfer3d == SPHERIC) then
+                quuk1(1) = quuk1(1) + ac2*(cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell)))
+            else
+                quuk1(1) = quuk1 (1) + ac2*(cs*uqcx(cell) + sn*uqcy(cell))
+            end if
+            sqak1(1) = sqak1(1) + ac2*sqa(cell)
+        end do
+
+        do link = Lb, Lt                              ! intermediate
+            k1  = ln(1,link)
+            k2  = ln(2,link)
+            L1  = link-Lb+1
+            volukk(L1) = volukk(L1) + ac1*vol1(k1)                    + ac2*vol1(k2)
+            if (jasfer3d == SPHERIC) then
+                quuk1 (L1) = quuk1(L1) + ac1*(cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1))) +   &
+                                        ac2*(cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)))
+            else
+                quuk1 (L1) = quuk1 (L1) + ac1*(cs*uqcx(k1) + sn*uqcy(k1)) + ac2*(cs*uqcx(k2) + sn*uqcy(k2))
+            end if
+            sqak1 (L1) = sqak1 (L1) + ac1*sqa(k1) + ac2*sqa(k2)
+        end do
+
+        do cell = k1+1, ktx1                          ! above Lt n1
+            volukk(Ltx) = volukk(Ltx) + ac1*vol1(cell)
+            if (jasfer3d == SPHERIC) then
+                quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell)))
+            else
+                quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*uqcx(cell) + sn*uqcy(cell))
+            end if
+            sqak1 (Ltx) = sqak1(Ltx)  + ac1*sqa(cell)
+        end do
+
+        do cell = k2+1, ktx2                          ! above Lt n2
+            volukk(Ltx) = volukk(Ltx) + ac2*vol1(cell)
+            if (jasfer3d == SPHERIC) then
+                quuk1 (Ltx) = quuk1(Ltx)  + ac2*(cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell)))
+            else
+                quuk1 (Ltx) = quuk1 (Ltx) + ac2*(cs*uqcx(cell) + sn*uqcy(cell))
+            end if
+            sqak1 (Ltx) = sqak1 (Ltx) + ac2*sqa(cell)
+        end do
+
+        do link  = Lb, Lt
+            L1 = link-Lb+1
+            if (volukk(L1) > 0) then
+                adveL   = ( quuk1(L1) - u1(link)*sqak1(L1) ) / volukk(L1)
+                if (abs(advel) > 0.05) then
+                    advel = 1d0*advel
                 end if
-            end do
-
-        else
-
-            do link = Lb, Lt
-                k1    = ln(1,link) ; k2 = ln(2,link)
-                if (jasfer3d == SPHERIC) then
-                   qu1   =  cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) +  sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
-                   qu2   =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) +  sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
-                else
-                   qu1   =  cs*uqcx(k1) + sn*uqcy(k1) - u1(link)*sqa(k1)
-                   qu2   =  cs*uqcx(k2) + sn*uqcy(k2) - u1(link)*sqa(k2)
-                end if
-
-                if (jarhoxu > 0) then
-                      volu  = ac1*vol1(k1)*rho(k1) + ac2*vol1(k2)*rho(k2)
-                else
-                      volu  = ac1*vol1(k1)         + ac2*vol1(k2)
-                end if
-
-                if (volu > 0) then
-
-                   adve(link) = adve(link) + (ac1*qu1 + ac2*qu2) / volu
-
-                end if
-             end do
-
-             end if
-
-          else if (layertype == 2 .and. jahazlayer == 0) then ! default fixed layers
-
-             Ltx = Lt-Lb+1
-             volukk(1:Ltx) = 0d0
-             do link = Lb, Lt
-                k1    = ln(1,link) ; k2 = ln(2,link)
-                if (jarhoxu > 0) then
-                   volukk(link-Lb+1)  = volukk(link-Lb+1) + ac1*vol1(k1)*rho(k1) + ac2*vol1(k2)*rho(k2)
-                else
-                   volukk(link-Lb+1)  = volukk(link-Lb+1) + ac1*vol1(k1) + ac2*vol1(k2)
-                end if
-             end do
-             do cell = k1+1, ktop(ln(1,LL) )
-                if (jarhoxu > 0) then
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(cell)*rho(cell)
-                else
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac1*vol1(cell)
-                end if
-             end do
-             do cell = k2+1, ktop(ln(2,LL) )
-                if (jarhoxu > 0) then
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(cell)*rho(cell)
-                else
-                   volukk(Lt-Lb+1) = volukk(Lt-Lb+1) + ac2*vol1(cell)
-                end if
-             end do
-
-             do link = Lb, Lt
-                k1    = ln(1,link) ; k2 = ln(2,link)
-                if (jasfer3d == SPHERIC) then
-                   qu1    = cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
-                   qu2    = cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
-                else
-                   qu1    = cs*uqcx(k1) + sn*uqcy(k1) - u1(link)*sqa(k1)
-                   qu2    = cs*uqcx(k2) + sn*uqcy(k2) - u1(link)*sqa(k2)
-                end if
-
-                if (volukk(link-Lb+1) > 0) then
-                   adve(link) = adve(link) +  (ac1*qu1 + ac2*qu2) / volukk(link-Lb+1)
-                end if
-
-             end do
-
-          else if (layertype == 2 .and. jahazlayer == 1) then
-
-             n1 = ln(1,LL)
-             n2 = ln(2,LL)
-             call getkbotktop(n1, kb1, kt1)
-             ktx1 = kt1 - kb1 + 1
-             call getkbotktop(n2, kb2, kt2)
-             ktx2 = kt2 - kb2 + 1
-             Ltx  = Lt - Lb + 1
-
-             volukk(1:Ltx) = 0d0
-
-             do link = Lb, Lt
-                k1    = ln(1,link) ; k2 = ln(2,link) ; L1 = link-Lb+1
-                volukk(L1) = volukk(L1) + ac1*vol1(k1) + ac2*vol1(k2)
-             end do
-
-             do cell = k1+1, kt1
-                volukk(Ltx) = volukk(Ltx) + ac1*vol1(cell)
-             end do
-
-             do cell = k2+1, kt2
-                volukk(Ltx) = volukk(Ltx) + ac2*vol1(cell)
-             end do
-
-             do link = Lb, Lt
-                k1    = ln(1,link) ; k2 = ln(2,link) ; L1 = link-Lb+1
-                if (volukk(L1) > 0) then
-                   if (jasfer3d == SPHERIC) then
-                      qu1   =  cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) +  sn*nod2liny(LL,1,uqcx(k1),uqcy(k1)) - u1(link)*sqa(k1)
-                      qu2   =  cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) +  sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)) - u1(link)*sqa(k2)
-                   else
-                      qu1     = cs*uqcx(k1) + sn*uqcy(k1) - u1(link)*sqa(k1)
-                      qu2     = cs*uqcx(k2) + sn*uqcy(k2) - u1(link)*sqa(k2)
-
-                   end if
-                   adve(link) = adve(link) + (ac1*qu1 + ac2*qu2) / volukk(link-Lb+1)
-                end if
-             end do
-
-          else if (layertype == 2 .and. jahazlayer == 2 ) then  ! lineinterp
-
-             n1 = ln(1,LL)
-             n2 = ln(2,LL)
-             call getkbotktop(n1, kb1, kt1)
-             call getkbotktop(n2, kb2, kt2)
-             hs1 = max(epshs, zws(kt1) - zws(kb1-1) )
-             hs2 = max(epshs, zws(kt2) - zws(kb2-1) )
-
-             ktx01 = kt1 - kb1 + 1
-             ktx02 = kt2 - kb2 + 1
-
-             volk1(0) = 0d0
-             quuk1(0) = 0d0
-             sqak1(0) = 0d0
-             sigk1(0) = 0d0
-             do cell = kb1, kt1
-                volk1(cell-kb1+1) = volk1(cell-kb1) + vol1(cell)
-                if (jasfer3d == SPHERIC) then
-                   quuk1(cell-kb1+1) = quuk1(cell-kb1) + cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell))
-                else
-                   quuk1(cell-kb1+1) = quuk1(cell-kb1) + cs*uqcx(cell) + sn*uqcy(cell)
-                end if
-                sqak1(cell-kb1+1) = sqak1(cell-kb1) + sqa(cell)
-                sigk1(cell-kb1+1) = ( zws(cell) - zws(kb1-1) ) / hs1
-             end do
-
-             volk2(0) = 0d0 ; quuk2(0) = 0d0 ; sqak2(0) = 0d0 ; sigk2(0) = 0d0
-             do cell = kb2, kt2
-                volk2(cell-kb2+1) = volk2(cell-kb2) + vol1(cell)
-                if (jasfer3d == SPHERIC) then
-                   quuk2(cell-kb2+1) = quuk2(cell-kb2) + cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell))
-                else
-                   quuk2(cell-kb2+1) = quuk2(cell-kb2) + cs*uqcx(cell) + sn*uqcy(cell)
-                end if
-                sqak2(cell-kb2+1) = sqak2(cell-kb2) + sqa(cell)
-                sigk2(cell-kb2+1) = ( zws(cell) - zws(kb2-1) ) / hs2
-             end do
-
-             do link = Lb, Lt  ;  Ltx0 = Lt - Lb + 1 ; siguL(0) = 0d0
-                siguL(link-Lb+1) = hu(link) / hu(LL)
-             end do
-
-             call lineinterp3( siguL, quuL1, volL1, sqaL1, Ltx0, sigk1, quuk1, volk1, sqak1, ktx01)
-             call lineinterp3( siguL, quuL2, volL2, sqaL2, Ltx0, sigk2, quuk2, volk2, sqak2, ktx02)
-
-             do link = Lb, Lt
-                vo1  = volL1(link-Lb+1) - volL1(link-Lb)
-                vo2  = volL2(link-Lb+1) - volL2(link-Lb)
-                volu = vo1*ac1 + vo2*ac2
-
-                if (volu > 0) then
-                   qu1   = quuL1(link-Lb+1) - quuL1(link-Lb) - u1(link)*( sqaL1(link-Lb+1) - sqaL1(link-Lb) )
-                   qu2   = quuL2(link-Lb+1) - quuL2(link-Lb) - u1(link)*( sqaL2(link-Lb+1) - sqaL2(link-Lb) )
-                   advel = ( ac1*qu1 + ac2*qu2 ) / volu
-                   adve(link) = adve(link) + advel
-                end if
-             end do
-
-          else if (layertype == 2 .and. jahazlayer == 4) then
-
-             n1 = ln(1,LL)
-             n2 = ln(2,LL)
-             call getkbotktop(n1, kb1, kt1)
-             ktx1 = kb1 + kmxn(n1) - 1
-             call getkbotktop(n2, kb2, kt2)
-             ktx2 = kb2 + kmxn(n2) - 1
-             Ltx  = Lt-Lb+1
-
-             volukk(1:Ltx) = 0d0
-             quuk1(1:Ltx)  = 0d0
-             sqak1(1:Ltx)  = 0d0
-
-             do cell = kb1, ln(1,Lb) - 1                   ! below Lb n1
-                volukk(1) = volukk(1)     + ac1*vol1(cell)
-                if (jasfer3d == SPHERIC) then
-                   quuk1(1) = quuk1(1) + ac1*(cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell)))
-                else
-                   quuk1(1) = quuk1 (1)     + ac1*(cs*uqcx(cell) + sn*uqcy(cell))
-                end if
-                sqak1 (1) = sqak1 (1)     + ac1*sqa(cell)
-             end do
-
-             do cell = kb2, ln(2,Lb) - 1                   ! below Lb n2
-                volukk(1) = volukk(1)     + ac2*vol1(cell)
-                if (jasfer3d == SPHERIC) then
-                   quuk1(1) = quuk1(1) + ac2*(cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell)))
-                else
-                   quuk1(1) = quuk1 (1)     + ac2*(cs*uqcx(cell) + sn*uqcy(cell))
-                end if
-                sqak1 (1) = sqak1 (1)     + ac2*sqa(cell)
-             end do
-
-             do link = Lb, Lt                              ! intermediate
-                k1    = ln(1,link) ; k2 = ln(2,link) ; L1 = link-Lb+1
-                volukk(L1) = volukk(L1) + ac1*vol1(k1)                    + ac2*vol1(k2)
-                if (jasfer3d == SPHERIC) then
-                   quuk1 (L1) = quuk1(L1) + ac1*(cs*nod2linx(LL,1,uqcx(k1),uqcy(k1)) + sn*nod2liny(LL,1,uqcx(k1),uqcy(k1))) +   &
-                                            ac2*(cs*nod2linx(LL,2,uqcx(k2),uqcy(k2)) + sn*nod2liny(LL,2,uqcx(k2),uqcy(k2)))
-                else
-                   quuk1 (L1) = quuk1 (L1) + ac1*(cs*uqcx(k1) + sn*uqcy(k1)) + ac2*(cs*uqcx(k2) + sn*uqcy(k2))
-                end if
-                sqak1 (L1) = sqak1 (L1) + ac1*sqa(k1)                     + ac2*sqa(k2)
-             end do
-
-             do cell = k1+1, ktx1                          ! above Lt n1
-                volukk(Ltx) = volukk(Ltx) + ac1*vol1(cell)
-                if (jasfer3d == SPHERIC) then
-                   quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*nod2linx(LL,1,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,1,uqcx(cell),uqcy(cell)))
-                else
-                   quuk1 (Ltx) = quuk1(Ltx)  + ac1*(cs*uqcx(cell) + sn*uqcy(cell))
-                end if
-                sqak1 (Ltx) = sqak1(Ltx)  + ac1*sqa(cell)
-             end do
-
-             do cell = k2+1, ktx2                          ! above Lt n2
-                volukk(Ltx) = volukk(Ltx) + ac2*vol1(cell)
-                if (jasfer3d == SPHERIC) then
-                   quuk1 (Ltx) = quuk1(Ltx)  + ac2*(cs*nod2linx(LL,2,uqcx(cell),uqcy(cell)) + sn*nod2liny(LL,2,uqcx(cell),uqcy(cell)))
-                else
-                   quuk1 (Ltx) = quuk1 (Ltx) + ac2*(cs*uqcx(cell) + sn*uqcy(cell))
-                end if
-                sqak1 (Ltx) = sqak1 (Ltx) + ac2*sqa(cell)
-             end do
-
-             do link  = Lb, Lt
-                L1 = link-Lb+1
-                if (volukk(L1) > 0) then
-                   adveL   = ( quuk1(L1) - u1(link)*sqak1(L1) ) / volukk(L1)
-                   if (abs(advel) > 0.05) then
-                      advel = 1d0*advel
-                   end if
-                   adve(link) = adve(link) + adveL
-               end if
-             end do
-
-          end if
+                adve(link) = adve(link) + adveL
+            end if
+        end do
+    end if
+    
 end subroutine calculate_advection_3D_schemes_33_40_6
 
 
@@ -1431,7 +1386,142 @@ subroutine calculate_advection_3D_scheme_44()
     
 end subroutine calculate_advection_3D_scheme_44
 
+!> ! sum of (Q*uc cell centre upwind normal) at side n12 of link L
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+double precision function QucPer(n12,L)   
+
+ integer, intent(in) :: n12                                      !< find normal velocity components of the other links
+ integer, intent(in) :: L                                        !< for link L,
+
+ integer             :: LL, LLL, LLLL                            !< for links LL,
+ integer             :: k12, kup                                 !< relevant node, 1 or 2, L/R
+ integer :: nn12
+ double precision    :: ucin, ucinx, uciny
+
+ double precision, external:: lin2nodx, lin2nody, nod2linx, nod2liny
+
+ QucPer = 0d0
+ cs     = csu(L)
+ sn     = snu(L)
+
+ k12  = ln(n12,L)
+ do LL   = 1, nd(k12)%lnx                            ! loop over all attached links
+    LLL  = nd(k12)%ln(LL)
+    LLLL = iabs(LLL)
+
+    if ( qa(LLLL) == 0d0) then                       ! include own link
+
+    else
+       nn12 = 1
+       if ( LLL > 0 ) then
+           nn12 = 2
+       end if
+       ucinx = lin2nodx(LLLL,nn12,ucxu(LLLL),ucyu(LLLL))
+       uciny = lin2nody(LLLL,nn12,ucxu(LLLL),ucyu(LLLL))
+       ucin = nod2linx(L,n12,ucinx,uciny)*cs + nod2liny(L,n12,ucinx,uciny)*sn - u1(L)
+
+       if (LLL > 0) then                             ! incoming link
+          QucPer = QucPer - qa(LLLL)*ucin
+       else
+          QucPer = QucPer + qa(LLLL)*ucin
+       end if
+    end if
+ end do
+
+end function QucPer
+
+!> ! sum of (Q*uc cell centre upwind normal) at side n12 of link L
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+double precision function QucPerq1(n12,L)
+
+ integer, intent(in)      :: n12                                      !< find normal velocity components of the other links
+ integer, intent(in)      :: L                                        !< for link L,
+
+ integer                  :: LL, LLL, LLLL                            !< for links LL,
+ integer                  :: k12, kup                                 !< relevant node, 1 or 2, L/R
+ integer                  :: nn12
+ double precision         :: ucin, ucinx, uciny
+
+ double precision, external:: lin2nodx, lin2nody, nod2linx, nod2liny
+
+ QucPerq1 = 0d0
+ cs       = csu(L)
+ sn       = snu(L)
+
+ k12     = ln(n12,L)
+ do LL   = 1, nd(k12)%lnx                            ! loop over all attached links
+    LLL  = nd(k12)%ln(LL)
+    LLLL = iabs(LLL)
+
+    if ( qa(LLLL) == 0d0) then                       ! include own link
+
+    else
+       nn12 = 1
+       if ( LLL >  0 ) then
+           nn12 = 2
+       end if
+       ucinx = lin2nodx(LLLL,nn12,ucxu(LLLL),ucyu(LLLL))
+       uciny = lin2nody(LLLL,nn12,ucxu(LLLL),ucyu(LLLL))
+       ucin  = nod2linx(L,n12,ucinx,uciny)*cs + nod2liny(L,n12,ucinx,uciny)*sn - u1(L)
+
+       if (LLL > 0) then                             ! incoming link
+          QucPerq1 = QucPerq1 - q1(LLLL) * ucin
+       else
+          QucPerq1 = QucPerq1 + q1(LLLL) * ucin
+       end if
+    end if
+ end do
+
+end function QucPerq1
+
+!> ! sum of (Q*uc cell centre upwind normal) at side n12 of link L
+!! advect the cell center velocities (dimension: m4/s2)
+!! leaving the cell = +
+double precision function QucPerpure1D(n12,L)       
+
+ integer, intent(in) :: L                            !< link number
+ integer, intent(in) :: n12                          !< index of the node to be processed: 1 (from node) or 2 (to node)
+
+ logical          :: process1D                       !< process node as 1D
+ integer          :: k12                             !< node to be processed
+ 
+ integer          :: LL                              !< index counting the links connected to k12
+ integer          :: L2                              !< signed link number of link LL of node k12 (positive if link points to node, negative if link points away from node)
+ integer          :: L2a                             !< link number of link LL of node k12
+ integer          :: L2s                             !< sign of L2
+ 
+ double precision :: ucin                            !< representative velocity transported along link
+
+ if (kcu(L) == -1) then
+     QucPerpure1D = 0d0
+     return
+ endif
+ 
+ k12 = ln(n12,L)
+ QucPerpure1D = 0d0
+ cs           = csu(L)
+ sn           = snu(L)
+ process1D    = jaPure1D > 0
+ if (jaJunction1D == 0 .and. nd(k12)%lnx > 2) process1D = .false.
+ 
+ do LL   = 1, nd(k12)%lnx                            ! loop over all attached links
+    L2   = nd(k12)%ln(LL)
+    L2a  = iabs(L2)
+    L2s  = sign(1,L2)
     
+    ! distinguish between vectorial treatment of momentum and pure 1D approach
+    if (process1D) then
+        ucin = u1Du(L2a)
+    else
+        ucin = ucxu(L2a)*cs + ucyu(L2a)*sn
+    endif
+    QucPerpure1D = QucPerpure1D - L2s * qa(L2a) * (ucin - u1(L))
+ enddo
+
+ end function QucPerpure1D
+
 end subroutine calculate_advection
 
 end module m_advection
