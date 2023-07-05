@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_advtra
+
+      implicit none
+
+      contains
+
 
       subroutine advtra ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -53,7 +59,7 @@
 !    integer :: topsedsed  ! first within collumn exchange number
 !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
 !
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
       USE BottomSet     !  Module with derived types and add function
 
 !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -78,6 +84,7 @@
      J         INRVOL, INSVOL, INBVOL, INPORI, INPORA,
      J         INDVOL, INDVEL, INSEEP
 
+      integer  IPSWRE, IPALPH, IPCFLX, INSWRE, INALPH, INCFLX
 !     Include column structure
 !     we define a double column structure, one for downward,
 !     and one for upward transport
@@ -159,7 +166,7 @@
 
 !     Zero output quantities on segment level
 
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
          IF (IKMRK1.EQ.3) THEN
             PMSA ( IPCFLX ) =  0.0
             PMSA ( IPRFLX ) =  0.0
@@ -515,6 +522,7 @@
      J           FLRES , PRES  , TCRR  , RESTH , RESMX , SURFW ,
      J           SURFB , ZRESLE, VELRES, DM    , DMTOP
       LOGICAL    SW_PARTHENIADES
+      real       TIME_LEFT, ALPHA
 
 !     Resuspension submodel for DELWAQ-G, equals Restra, bug fixed ZRESLE
 !     AM (august 2018) ZRESLE is not actually used
@@ -794,7 +802,7 @@
 !
       use m_srstop
       use m_monsys
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
       USE BottomSet     !  Module with derived types and add function
 
 !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -807,7 +815,7 @@
       LOGICAL          KOLOM
       logical, save :: FIRST
       INTEGER  IK    , IQ    , ivan  , inaar , ikmrkv, ikmrkn,
-     j         lenkol , nkolom
+     j         lenkol , nkolom, ist, iw1, iw2, isb
       DATA FIRST / .true. /
       INTEGER lunrep, errorcode
 
@@ -838,9 +846,9 @@
 !        Zoek eerste kenmerk van- en naar-segmenten
 
          IKMRKV = -1
-         IF ( IVAN  .GT. 0 ) CALL DHKMRK(1,IKNMRK(IVAN ),IKMRKV)
+         IF ( IVAN  .GT. 0 ) CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
          IKMRKN = -1
-         IF ( INAAR .GT. 0 ) CALL DHKMRK(1,IKNMRK(INAAR),IKMRKN)
+         IF ( INAAR .GT. 0 ) CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
 
 !        Bottom-water exchange, the collumn starts
 
@@ -961,3 +969,5 @@
 
       RETURN
       END
+
+      end module m_advtra

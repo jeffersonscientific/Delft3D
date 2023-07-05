@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_sedcar
+
+      implicit none
+
+      contains
+
 
       subroutine sedcar ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -58,17 +64,18 @@
 
       use m_monsys
       use m_getcom
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
       USE BottomSet     !  Module with definition of the waterbottom segments
 
-      IMPLICIT REAL (A-H,J-Z)
-
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
+      
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
       REAL     MINDEP, MINDE2, DEPTH , DEPTH2
-
+      
       LOGICAL, SAVE :: FIRST = .TRUE.
       LOGICAL       :: SW_PSEDMIN
       INTEGER       :: IDUMMY
@@ -128,9 +135,9 @@
 
 !     sedimentation towards the bottom
 
-      CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+      CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
       IF (IKMRK1.EQ.1) THEN
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
 !
       CONC    = MAX (0.0, PMSA(IP1) )
@@ -221,8 +228,8 @@
 
 !           Zoek eerste kenmerk van- en naar-segmenten
 
-            CALL DHKMRK(1,IKNMRK(IVAN ),IKMRKV)
-            CALL DHKMRK(1,IKNMRK(INAAR),IKMRKN)
+            CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
+            CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
             IF (IKMRKV.EQ.1.AND.IKMRKN.EQ.3) THEN
 
 !               Bodem-water uitwisseling: NUL FLUX OM OOK OUDE PDF's
@@ -326,3 +333,5 @@
 !
       RETURN
       END
+
+      end module m_sedcar

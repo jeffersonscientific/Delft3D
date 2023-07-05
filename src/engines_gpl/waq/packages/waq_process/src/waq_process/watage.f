@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_watage
+
+      implicit none
+
+      contains
+
 
       subroutine watage ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
-      use m_errsys
+      use m_write_error_message
 
 !>\file
 !>       Age of water through the tracer substances
@@ -70,7 +76,7 @@
       CONCTR = PMSA(IP2 )
       DECAYR = PMSA(IP3 )
 !
-      IF (DECAYR .LT. 1E-20 ) CALL ERRSYS ('RCDECTR in WATAGE zero', 1 )
+      IF (DECAYR .LT. 1E-20 ) CALL write_error_message ('RCDECTR in WATAGE zero')
 
 !     Calculate age
 !
@@ -112,3 +118,5 @@
 !
       RETURN
       END
+
+      end module m_watage

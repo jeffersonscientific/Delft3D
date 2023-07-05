@@ -20,12 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_prpagg
+
+implicit none
+
+contains
+
 
 
 subroutine PRPAGG   (  pmsa  , fl    , ipoint, increm, noseg , &
                        noflux, iexpnt, iknmrk, noq1  , noq2  , &
                        noq3  , noq4  )
-use m_dhkmrk
+use m_properties
+use m_evaluate_waq_attribute
 
 
 !>\file
@@ -85,9 +92,9 @@ use m_dhkmrk
     ipnt(1:nitem) = ipoint(1:nitem)
  
     do iseg = 1 , noseg
-        call dhkmrk(1,iknmrk(iseg),ikmrk1)
+        call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
         if (ikmrk1.eq.1) then
-            call dhkmrk(2,iknmrk(iseg),ikmrk2)
+            call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
             if (ikmrk2.le.4) then   ! surface water
 
                 ! input independentt of fractions
@@ -157,3 +164,5 @@ use m_dhkmrk
     
 end
 
+
+end module m_prpagg

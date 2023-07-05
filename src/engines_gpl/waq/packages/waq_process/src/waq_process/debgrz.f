@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_debgrz
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DEBGRZ  (PMSA , FL , IPOINT , INCREM , NOSEG , NOFLUX ,
      +                   IEXPNT, IKNMRK, IPODIM, NOQ1, NOQ2, NOQ3, NOQ4)
       use m_monsys
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 !**********************************************************************
 !     +----------------------------------------+
@@ -212,7 +218,7 @@
          !benthics can only occur in the bottom layer, they are put to zero in other layers
          BENTHS      =                   NINT(PMSA( IP( 9)))
          DO ISEG = 1, NOSEG
-            CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
             IF ( (IKMRK2 == 1 .OR. IKMRK2 == 2) .AND. BENTHS.eq.1 ) then
                Depth = PMSA( IP( 4))
                Vtot  = PMSA( IP(10))
@@ -235,10 +241,10 @@
 
       IFLUX = 0
       DO 9000 ISEG = 1, NOSEG
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
 !        !if cell is active
          IF (IKMRK1.EQ.1) THEN
-            CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
             ! pelagics can occur everywhere, but benthic grazers can only exist in bottom layer
             IF ( (IKMRK2 == 1 .OR. IKMRK2 == 2 ) .AND. BENTHS.eq.1 ) then
                ! skip calculations
@@ -788,3 +794,5 @@
 
       RETURN
       END
+
+      end module m_debgrz

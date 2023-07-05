@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dayrad
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DAYRAD ( PMSA   , FL     , IPOINT , INCREM , NOSEG  ,
      +                    NOFLUX , IEXPNT , IKNMRK , NOQ1   , NOQ2   ,
      +                    NOQ3   , NOQ4   )
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 
 !***********************************************************************
@@ -147,7 +153,7 @@
       ENDIF
 !
       DO ISEG = 1 , NOSEG
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
 
             RADSURF = PMSA( IP1 )
 
@@ -210,3 +216,5 @@
       RETURN
 !
       END
+
+      end module m_dayrad

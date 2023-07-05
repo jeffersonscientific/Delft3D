@@ -20,12 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwqip
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE DLWQIP ( LUNWRP, LCH   , LUREP , NOTOT , NIPMSA,
      +                    NPROC , NOLOC , NFLUX , NODEF , PRVNIO,
      +                    IFLUX , PRVVAR, PRVTYP, DEFAUL, STOCHI,
-     +                    PRONAM, IMODU , IERR  , IPBLOO, IPCHAR,
-     +                    IOFFBL, IOFFCH, NOSYS , NDSPX , NVELX ,
+     +                    PRONAM, IMODU , IERR  , IPBLOO,
+     +                    IOFFBL, NOSYS , NDSPX , NVELX ,
      +                    DSTO  , VSTO  , NDSPN , IDPNW , NVELN ,
      +                    IVPNW , NLOCX , PROGRD, PRONDT, NOVAR ,
      +                    VARARR, VARIDX, VARTDA, VARDAG, VARTAG,
@@ -69,9 +75,7 @@
 !     IMODU   INTEGER       *     OUTPUT  Module number proces
 !     IERR    INTEGER       1     IN/OUT  Error count
 !     IPBLOO  INTEGER       1     INPUT   Number of Bloom module (if >0)
-!     IPCHAR  INTEGER       1     INPUT   Number of Charon module (if >0)
 !     IOFFBL  INTEGER       1     INPUT   Offset in IPMSA for Bloom
-!     IOFFCH  INTEGER       1     INPUT   Offset in IPMSA for Charon
 !     NOSYS   INTEGER       1     INPUT   Number of active substances
 !     NDSPX   INTEGER       1     INPUT   Number of extra dispersion array
 !     NVELX   INTEGER       1     INPUT   Number of extra velocity array
@@ -90,8 +94,8 @@
       use process_registration
 
       INTEGER       LUNWRP, LUREP , NOTOT , NIPMSA, NPROC ,
-     +              NOLOC , NFLUX , NODEF , IPBLOO, IPCHAR,
-     +              IOFFBL, IOFFCH, NOSYS , NDSPX , NVELX ,
+     +              NOLOC , NFLUX , NODEF , IPBLOO, 
+     +              IOFFBL, NOSYS , NDSPX , NVELX ,
      +              NDSPN , NVELN , NOVAR , nrref
       INTEGER       PRVNIO(*)     , IFLUX(*)      , PRVVAR(*)    ,
      +              PRVTYP(*)     , IMODU(*)      , IDPNW(*)     ,
@@ -105,10 +109,12 @@
       CHARACTER*10  PRONAM(*)
 !
 !     Local declarations
-      PARAMETER   ( VERSI1 = 5.10  , VERSI2 = 5.10 )
       INTEGER       NIPMSD, NPROCD, NOLOCD, NFLUXD, NODEFD,
-     +              NOTOTD, IOFF
+     +              NOTOTD, IOFF, NOSYSD, NDSPXD, NVELXD,
+     +              NLOCXD, NDSPND, NVELND, NOVARD, nrrefD
       REAL          VERSIO
+
+      integer       k, ierr, nlocx, iproc, ifracs, ipdgrd
 !
 !jvb  Store fractional step flag in common CFRACS
 !
@@ -120,18 +126,6 @@
 !     read and check version number
 !
       READ (LUNWRP, ERR=900, END=900) VERSIO
-!
-!     less than lowest supported version, ERROR
-!
-      IF ( VERSIO .LT. VERSI1 ) THEN
-         WRITE ( LUREP, 2000 ) VERSIO , VERSI1
-      ENDIF
-!
-!     greater than this version, WARNING
-!
-      IF ( VERSIO .GT. VERSI2 ) THEN
-         WRITE ( LUREP, 2010 ) VERSIO , VERSI2
-      ENDIF
 !
 !     read and check dimensions
 !
@@ -255,23 +249,16 @@
          ENDDO
       ENDIF
 !
-!     Check for Bloom and Charon connection
+!     Check for Bloom connection
 !
       IPBLOO = 0
-      IPCHAR = 0
       IOFFBL = 0
-      IOFFCH = 0
       IOFF   = 1
       DO 30 K = 1,NPROC
          IF ( PRONAM(K)(1:6) .EQ. 'D40BLO' ) THEN
             IPBLOO = K
             IOFFBL = IOFF
             WRITE ( LUREP, 2100 )
-         ENDIF
-         IF ( PRONAM(K)(1:6) .EQ. 'D40CHA' ) THEN
-            IPCHAR = K
-            IOFFCH = IOFF
-            WRITE ( LUREP, 2110 )
          ENDIF
          IOFF = IOFF + PRVNIO(K)
    30 CONTINUE
@@ -318,7 +305,6 @@
  2090 FORMAT ( ' ERROR  : Reading proces work file;',A,
      &        /'          on unit number ',I3)
  2100 FORMAT ( ' MESSAGE: Bloom fractional step switched on')
- 2110 FORMAT ( ' MESSAGE: Charon fractional step switched on')
  2120 FORMAT ( ' ERROR  : Proces work file doesn''t match dimensions in'
      &        /'          DELWAQ boot file for NOSYS ',
      &        /'          ',I6,' in proces,',I6,' in boot file.')
@@ -349,3 +335,5 @@
  3020 FORMAT (/' Process decomposition active')
 !
       END
+
+      end module m_dlwqip

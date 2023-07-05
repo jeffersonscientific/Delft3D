@@ -20,13 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_consbl
+
+      implicit none
+
+      contains
+
 
       subroutine consbl ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
       use m_srstop
       use m_monsys
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 !>\file
 !>       Grazing module
@@ -126,7 +132,7 @@
      G        FRDBOT_SAVE(NTOGRZ)           ,
      H        GRZMC (NTOGRZ)
       INTEGER BENTHS(NTOGRZ)
-      INTEGER IKMRK2
+      INTEGER IKMRK2, iflux, iseg
       integer lunrep
       REAL    GEM, MaxFiltration, MaxUptake, GrowthResp,
      j        DetrGrazing
@@ -253,7 +259,7 @@
       DO 9000 ISEG = 1 , NOSEG
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
 
 !     RESET FLUXES
       DO 31 I=1,5*NTONUT+NTOALG
@@ -279,7 +285,7 @@
           GRZNEW(IFILSP) = GRZNEW(IFILSP)/DEPTH
           GRZOLD(IFILSP) = GRZOLD(IFILSP)/DEPTH
 !         FRDBOT(IFILSP) = FRDBOT_SAVE(IFILSP)
-          CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+          CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
           IF ((IKMRK2.EQ.1).OR.(IKMRK2.EQ.2)) THEN
              GRZNEW(IFILSP) = 0.0
              FRDBOT(IFILSP) = 0.0
@@ -560,3 +566,5 @@
       RETURN
 !
       END
+
+      end module m_consbl

@@ -295,7 +295,7 @@
 
 
 ! link related, dim = lnkx
- double precision, allocatable     :: u0    (:)   !< flow velocity (m/s)  at start of timestep
+ double precision, allocatable, target     :: u0    (:)   !< flow velocity (m/s)  at start of timestep
  double precision, allocatable, target     :: u1(:)   !< [m/s]  flow velocity (m/s)  at   end of timestep {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable, target     :: u_to_umain(:)   !< [-]  Factor for translating general velocity to the flow velocity in the main channel at end of timestep (1d) {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable, target     :: q1(:)   !< [m3/s] discharge     (m3/s) at   end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array {"location": "edge", "shape": ["lnkx"]}
@@ -314,7 +314,7 @@
  double precision, allocatable     :: advi  (:)   !< advection implicit part (1/s)
  double precision, allocatable     :: adve  (:)   !< advection explicit part (m/s2)
  double precision, allocatable     :: adve0 (:)   !< advection explicit part (m/s2) prevstep
- double precision, allocatable, target     :: hu    (:)   !< [m] upwind waterheight at u-point (m) {"location": "edge", "shape": ["lnx"]}
+ double precision, allocatable, target     :: hu    (:)   !< [m] upwind waterheight at u-point; for 3D layers the distance from the top of layer to the bed (m) {"location": "edge", "shape": ["lnx"]}
  double precision, allocatable     :: huvli (:)   !< inverse alfa weighted waterheight at u-point (m) (volume representative)
  double precision, allocatable     :: v     (:)   !< tangential velocity in u point (m/s)
  double precision, allocatable     :: suu   (:)   !< stress u dir (m/s2)

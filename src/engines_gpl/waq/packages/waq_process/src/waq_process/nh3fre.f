@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_nh3fre
+
+      implicit none
+
+      contains
+
 
       subroutine nh3fre ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -51,14 +57,15 @@
 !-----------------------------------------------------------------------
 !     Name     Type   Library
 !     ------   -----  ------------
-      use m_errsys
+      use m_write_error_message
       USE PHYSICALCONSTS, ONLY: CtoKelvin
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-!
+      integer  iseg
       PARAMETER ( MNITRO =    14.0    ,
      +            KELVIN =    real(CtoKelvin),
      +            M3TOL  =     1.0E-3   )
@@ -100,7 +107,7 @@
 !     Error messages
 !
       IF ( TEMP .LE. -KELVIN) CALL
-     &                 ERRSYS ('TEMP in NH3FREE < 0 KELVIN', 1 )
+     &                 write_error_message ('TEMP in NH3FREE < 0 KELVIN')
 !
 !---- Procesformuleringen ---------------------------------------
       NH3   = 0.0
@@ -140,7 +147,7 @@
 
             FRNH3 = NH3 / TNH4
          ELSE
-            CALL ERRSYS ('INH3SW in NH3FRE not 1 or 2', 1 )
+            CALL write_error_message ('INH3SW in NH3FRE not 1 or 2')
          ENDIF
 
       ENDIF
@@ -166,3 +173,5 @@
 !
       RETURN
       END
+
+      end module m_nh3fre

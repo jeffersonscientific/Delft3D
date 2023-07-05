@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_nlalg
+
+      implicit none
+
+      contains
+
 
       subroutine nlalg  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
-      use m_errsys
+      use m_write_error_message
 
 !>\file
 !>       Nutrient limiation function for DYNAMO algae
@@ -53,11 +59,13 @@
 
 !     Name     Type   Library
 !     ------   -----  ------------
-      IMPLICIT REAL (A-H,J-Z)
+      IMPLICIT REAL    (A-H,J-Z)
+      IMPLICIT INTEGER (I)
 
       REAL     PMSA  ( * ) , FL    (*)
       INTEGER  IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX,
      +         IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+      integer  iseg
 !
       IP1  = IPOINT( 1)
       IP2  = IPOINT( 2)
@@ -86,7 +94,7 @@
       PO4       = PMSA( IP7)
       SI        = PMSA( IP8)
 
-      IF (AMOPRF .LT. 1E-20 )  CALL ERRSYS ('AMOPRF in NLALG zero', 1 )
+      IF (AMOPRF .LT. 1E-20 )  CALL write_error_message ('AMOPRF in NLALG zero' )
 
 !     Calculation of available dissolved N (NO3 corrected with AMOPRF)
       DIN = NO3 / AMOPRF + NH4
@@ -139,3 +147,5 @@
 
       END
 !
+
+      end module m_nlalg

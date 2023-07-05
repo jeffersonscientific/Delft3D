@@ -51,6 +51,7 @@
  use m_alloc
  use m_1d_structures, only: initialize_structures_actual_params, t_structure
  use m_oned_functions, only: set_max_volume_for_1d_nodes
+ use m_waves 
  use m_structures
  use m_longculverts
  use unstruc_channel_flow, only: useVolumeTables
@@ -58,12 +59,14 @@
  use timers
  use m_setucxcuy_leastsquare, only: reconst2nd
  use mathconsts, only: sqrt2_hp
+ use m_sethu
+ use m_external_forcings
 
  implicit none
 
  ! locals
- integer          :: k, L, k1, k2, n, jw, msam
- integer          :: kb, kt, ki, LL
+ integer :: k, L, k1, k2, n, jw, msam
+ integer :: kb, kt, ki, LL
 
  double precision :: ss
  double precision :: zz, slope
@@ -72,15 +75,15 @@
  double precision, allocatable:: u1_tmp(:)
 
  integer              :: ierr, mrst, kk, j, nq, ierror, N1, N2, Lb, Lt, nat, ntmp
- integer              :: ihandle
+ integer :: ihandle
  double precision     :: rr
- character(len=255)   :: rstfile
+ character(len=255) :: rstfile
  character(len=Idlen) :: fileName
- character(len=4)     :: EXT
- logical              :: jawel, jawelrestart
- integer              :: nstrucsg, L0, istru
+ character(len=4)   :: EXT
+ logical :: jawel, jawelrestart
+ integer :: nstrucsg, L0, istru
  type(t_structure), pointer :: pstru
- integer, external    :: flow_initexternalforcings
+ integer, external :: flow_initexternalforcings
  double precision, external :: setrho
 
  double precision  :: trshcorioi
@@ -406,7 +409,7 @@ end if
  call setkbotktop(1)                                            ! set sigmabnds for ec
 
  if ( janudge.eq.1 ) call setzcs()
- call flow_setexternalforcings(tstart_user, .true., iresult)             ! set field oriented external forcings, flag that the call is from the initialization phase
+ call set_external_forcings(tstart_user, .true., iresult)             ! set field oriented external forcings, flag that the call is from the initialization phase
 
  if (iresult /= DFM_NOERR) then
     goto 888
@@ -635,7 +638,7 @@ end if
     if (allocated(kcsini)) deallocate(kcsini)
  endif
 
- call sethu(1)
+ call calculate_hu_au_and_advection_for_dams_weirs(1)
  if (kmx > 0) then ! temporary fix for sepr 3D
     do L = 1,lnx
        if (abs(kcu(L)) == 1) then
@@ -768,6 +771,15 @@ end if
 
  endif
 
+ if (kmx > 0 .and. initem2D > 0 ) then
+    do kk = 1,ndx
+       call getkbotktop(kk,kb,kt)
+       do k = kb, kt
+           tem1(k) = tem1(kk)
+       enddo
+    enddo
+ endif
+
  if (kmx > 0 .and. inised2D > 0 ) then
     do kk = 1,ndx
        if (sedh(kk) .ne. dmiss) then
@@ -896,7 +908,7 @@ end if
  endif
 
 end function flow_flowinit
-    
+
 !> apply hradcoded specific input    
 subroutine apply_hardcoded_specific_input()
  use m_netw
@@ -907,6 +919,7 @@ subroutine apply_hardcoded_specific_input()
  use unstruc_model
  use m_partitioninfo
  use geometry_module , only: dbdistance, half, normalout
+ use m_sethu
 
  implicit none
 
@@ -1283,7 +1296,7 @@ subroutine apply_hardcoded_specific_input()
 
     do j = 1,300
        fout = 0d0
-       call sethu(1)             ! was just call sethu()
+       call calculate_hu_au_and_advection_for_dams_weirs(1)             ! was just call sethu()
        do k = 1,ndx
           sq(k) = 0d0
           do kk = 1,nd(k)%lnx

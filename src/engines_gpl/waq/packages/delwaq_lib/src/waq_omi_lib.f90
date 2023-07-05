@@ -31,7 +31,8 @@
 
 !> Utilities for the routines here (effectively a private module)
 module waq_omi_utils
-    use m_dhopnf
+    use m_dlwqp1
+    use m_open_waq_files
 
     integer, parameter :: LEVEL_FATAL   = 1
     integer, parameter :: LEVEL_ERROR   = 2
@@ -1561,7 +1562,7 @@ integer function WriteRestartFile ( lcharmap )
     !DEC$ ATTRIBUTES DECORATE, ALIAS : 'WRITERESTARTFILE' :: WriteRestartFile
 
     use delwaq2_global_data
-    use m_dhopnf
+    use m_open_waq_files
     use m_sysn          ! System characteristics
     use m_sysc          ! Pointers in character array workspace
     use m_sysa          ! Pointers in real array workspace
@@ -1571,7 +1572,7 @@ integer function WriteRestartFile ( lcharmap )
     character (len=*) lcharmap
     integer    i, k, ierr
 
-    call dhopnf ( lun(23), lcharmap, 23    , 1     , ierr  )
+    call open_waq_files ( lun(23), lcharmap, 23    , 1     , ierr  )
     if ( ierr == 0 ) then
       write ( lun(23) ) (dlwqd%chbuf(imnam+k-1) , k=1,160 )
       write ( lun(23) ) notot, noseg
@@ -1627,7 +1628,7 @@ integer function ModelInitialize ()
     !
     lunrep = lun(19)
     ! VORTech: early, otherwise we get those fort.1 files
-    call dhopnf ( lunrep , lchar(19) , 19    , 1    , ierr  )
+    call open_waq_files ( lunrep , lchar(19) , 19    , 1    , ierr  )
 
     !
     ! Make sure the harmonic work file exists
@@ -1969,8 +1970,6 @@ subroutine handle_processes( name )
 
     character(len=*) :: name
 
-!    integer                   :: lun(50)         ! unit numbers
-!    character(len=250)        :: lchar(50)       ! filenames
     type(procespropcoll)      :: statprocesdef   ! the statistical proces definition
     type(itempropcoll)        :: allitems        ! all items of the proces system
     integer                   :: ioutps(7,10)    ! (old) output structure
@@ -1989,15 +1988,14 @@ subroutine handle_processes( name )
 
     integer, parameter                    :: icmax = 2000
     integer, parameter                    :: iimax = 2000
-!    character(len=1)                      :: cchar
     character(len=20), dimension(icmax)   :: car
     integer, dimension(iimax)             :: iar
-!    integer                               :: npos
     integer                               :: iwidth
     integer                               :: ibflag
     integer                               :: iwar
     integer                               :: ioutpt ! Dummy
     real                                  :: version = 4.9
+    integer                               :: refday
 
     StatProcesDef%maxsize = 0
     StatProcesDef%cursize = 0
@@ -2015,33 +2013,6 @@ subroutine handle_processes( name )
     !
     ! For the moment: only output the substances, nothing extra
     !
-!   nbufmx = noseg * notot
-
-    !nrvart = 4 * (notot + size(output_param) ! Four files
-!   nrvart = 4 * notot ! Four files
-
-!   ioutps = 0
-!   ioutps(:,1) = (/ imstrt, imstop, imstep, notot, imo3, 0, 0 /)
-!   ioutps(:,2) = (/      0,     -1,      1, notot, idmp, 0, 0 /)
-!   ioutps(:,3) = (/ idstrt, idstop, idstep, notot, imap, 0, 0 /)
-!   ioutps(:,4) = (/ ihstrt, ihstop, ihstep, notot, ihi3, 0, 0 /)
-!   allocate( outputs%names(nrvart), outputs%pointers(nrvart) )
-
-!    k = 0
-!    do j = 1,4
-!        do i = 1,notot
-!            k = k + 1
-!            outputs%names(k)    = substance_name(i)
-!            outputs%pointers(k) = ioconc + i - 1
-!        enddo
-!        !do i = 1,size(output_param)
-!        !    k = k + 1
-!        !    outputs%names(k)    = output_param(i)
-!        !    outputs%pointers(k) = ioconc + i - 1
-!        !enddo
-!    enddo
-
-!   outputs%cursize = nrvart
 
     open( 9,      file = trim(name) // '.inp'      )
     open( lun(29), file = trim(name) // '.lstdummy' )
@@ -2065,7 +2036,7 @@ subroutine handle_processes( name )
 
     call dlwqp1( lun, lchar, statprocesdef, allitems, &
              ioutps, outputs, nomult, mult, constants, &
-             noinfo, nowarn, ierr )
+             noinfo, refday, nowarn, ierr )
 
     noutp = org_noutp
 

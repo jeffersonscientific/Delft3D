@@ -20,6 +20,34 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_dlwqp1
+      use m_wr_proceswrk
+      use m_wrwrko
+      use m_wrtoys
+      use m_set_stat_output
+      use m_set_old_items
+      use m_set_fractions
+      use m_set_active
+      use m_setprg
+      use m_setopp
+      use m_setopo
+      use m_setdvp
+      use m_repuse
+      use m_reaalg
+      use m_rd_tabs
+      use m_prsort
+      use m_prprop
+      use m_proc_totals
+      use m_primpro
+      use m_outbo2
+      use m_makbar
+      use m_getinv
+
+
+      implicit none
+
+      contains
+
 
       subroutine dlwqp1 ( lun          , lchar        ,
      +                    statprocesdef, allitems     ,
@@ -41,13 +69,18 @@
 !>                             .
 !>                          to a consistent set of sequential processes for the simulation part
 
+      use m_fill_old_items
+      use m_cnfrep
+      use m_blmeff
+      use m_algrep
+      use m_actrep
       use m_zoek
       use m_startup_screen
       use m_srstop
       use m_rdwrk4
       use m_monsys
       use m_getcom
-      use m_dhopnf
+      use m_open_waq_files
       use timers       !   performance timers
       use dlwq_data
       use processet
@@ -64,7 +97,7 @@
       integer             , intent(inout) :: lun(*)          !< unit numbers
       character(len=*)    , intent(inout) :: lchar(*)        !< filenames
       type(procespropcoll), intent(in   ) :: statprocesdef   !< the statistical proces definition
-      type(itempropcoll)  , intent(in   ) :: allitems        !< all items of the proces system
+      type(itempropcoll)  , intent(inout) :: allitems        !< all items of the proces system
       integer             , intent(inout) :: ioutps(7,*)     !< (old) output structure
       type(outputcoll)    , intent(inout) :: outputs         !< output structure
       integer  ( 4)       , intent(in   ) :: nomult          !< number of multiple substances
@@ -186,11 +219,6 @@
       logical        lfound, laswi , swi_nopro
       integer        blm_act                       ! index of ACTIVE_BLOOM_P
 
-      ! charon coupling
-
-      type(procesprop)      :: procha              ! charon (extra) process definition
-      character*256  chemid
-      logical        l_chem
 
       ! information
 
@@ -267,7 +295,7 @@
 
       ! open report file
 
-      call dhopnf ( lun(35) , lchar(35), 35    , 1     , ierr2 )
+      call open_waq_files ( lun(35) , lchar(35), 35    , 1     , ierr2 )
       lurep = lun(35)
       line = ' '
       call setmlu ( lurep )
@@ -478,27 +506,6 @@
      +                 algcof , outgrp , outtyp , noprot , namprot,
      +                 nampact, nopralg, nampralg)
       endif
-      ! chem coupling
-
-      call getcom ( '-chem'  , 3    , lfound, idummy, rdummy,
-     +              chemid, ierr2)
-      if ( lfound ) then
-         l_chem = .true.
-         write(line,'(a)' ) ' found -chem command line switch'
-         call monsys(line,1)
-         write(line,'(a)' ) ' chem coupling activated'
-         call monsys(line,1)
-         if ( ierr2.ne. 0 ) then
-            chemid = 'charon'
-            write(line,'(a30,a50)') ' using default chem input id: ', chemid
-            call monsys(line,1)
-         else
-            write(line,'(a22,a58)') ' using chem input id: ', chemid
-            call monsys(line,1)
-         endif
-      else
-         l_chem = .false.
-      endif
 
       ! check local dimensions
 
@@ -518,7 +525,7 @@
 
       ! read ( rest ) of relevant delwaq files
 
-      call dhopnf ( lun(2) , lchar(2), 2     , 2     , ierr2 )
+      call open_waq_files ( lun(2) , lchar(2), 2     , 2     , ierr2 )
       call rdwrk4 ( lun(2) , lurep  , modid  , syname , notot  ,
      +              nodump , nosys  , nobnd  , nowst  , nocons ,
      +              nopa   , noseg  , nseg2  , coname , paname ,
@@ -606,9 +613,7 @@
 
       if ( .not. laswi ) then
          if ( config .eq. ' ' ) then
-            if ( l_chem ) then
-               config = 'chem'
-            elseif ( l_eco ) then
+            if ( l_eco ) then
                config = 'eco'
             else
                config = 'waq'
@@ -639,12 +644,6 @@
 
       else
          nbpr   = 0
-      endif
-
-      ! charon coupling
-
-      if ( l_chem ) then
-
       endif
 
       ! add the statistical processes in the structure
@@ -793,7 +792,7 @@
       ! if not all input present , stop with exit code
 
       if ( nmis .gt. 0 ) then
-         call dhopnf ( lun(24) , lchar(24), 24    , 1     , ierr2 )
+         call open_waq_files ( lun(24) , lchar(24), 24    , 1     , ierr2 )
          close ( lun(24) )
          write(lurep,*) ' not all input available.'
          write(lurep,*) ' number off missing variables :',nmis
@@ -857,6 +856,12 @@
             subunit(isys) = allitems%itemproppnts(iindx)%pnt%stdu
             subdescr(isys) = trim(allitems%itemproppnts(iindx)%pnt%text)//' '//
      &                            allitems%itemproppnts(iindx)%pnt%unit
+            if ( substdname(isys) == ' ' ) then
+                substdname(isys) = allitems%itemproppnts(iindx)%pnt%text
+            endif
+            if ( subunit(isys) == ' ' ) then
+                subunit(isys) = allitems%itemproppnts(iindx)%pnt%unit
+            endif
          else
             ! Is it an algae?
             call zoek( subname(1:10), maxtyp, algtyp, 10 , ialg )
@@ -913,7 +918,7 @@
       enddo
       ! write updated output work file ( output.wrk )
 
-      call dhopnf ( lun(25), lchar(25), 25    , 1     , ierr2 )
+      call open_waq_files ( lun(25), lchar(25), 25    , 1     , ierr2 )
       call wrwrko ( lun(25), noutp , nbufmx , ioutps, outputs,
      &              notot,  substdname, subunit, subdescr )
       close ( lun(25) )
@@ -934,3 +939,5 @@
  2020 format (//' Model :            ',a40,/20x,a40 )
  2030 format (//' Run   :            ',a40,/20x,a40//)
       end
+
+      end module m_dlwqp1

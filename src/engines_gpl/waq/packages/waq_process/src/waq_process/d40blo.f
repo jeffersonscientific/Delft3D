@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_d40blo
+      use m_set_effi
+
+
+      implicit none
+
+      contains
+
 
       subroutine d40blo ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -41,11 +49,20 @@
 !     ------   -----  ------------
 
 ! 3DL
+      use m_bloom_3dl
+      use m_blinit
+      use m_iblbal
+      use m_blprim
+      use m_bloutc
+      use m_blmort
+      use m_blinpu
+      use m_blfile
+      use m_blclmort
       use m_srstop
       use m_monsys
       use m_dhnoseg
       use m_dhnolay
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
       use      bloom_data_3dl
       use      bloom_data_vtrans
 ! END3DL
@@ -469,10 +486,10 @@
 ! 3DL
       IF (.NOT.ACTIVE_EFFT) THEN
          DO ISEG = 1 , NOSEG
-            CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+            CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
 
             IF (BTEST(IKNMRK(ISEG),0)) THEN
-               CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+               CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
                ISEG_3DL = ISEG
                ILAY_3DL = (ISEG-1)/NOSEGL_3DL+1
                EXTTOT = PMSA(IP2 )
@@ -573,9 +590,9 @@
 
       IFLUX = 0
       DO 9000 ISEG = 1 , NOSEG
-      CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+      CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
       IF (IKMRK1.EQ.1 .OR. IKMRK1.EQ.3) THEN
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
 !
 ! 3DL
       IF (.NOT.ACTIVE_EFFT) THEN
@@ -910,8 +927,8 @@
       subroutine blstopinit(lunrep, inputname)
       use m_srstop
 
-
-      character*10 inputname
+      integer  lunrep
+      character(*) inputname
 
       write(lunrep,*) 'ERROR in bloom: ',inputname,' must be a constant!'
       write(*,*) 'ERROR in bloom: ',inputname,' must be a constant!'
@@ -928,8 +945,8 @@
       use m_monsys
 
 
-      character*12 mes
-      integer      lunrep
+      character(*) mes
+      integer      lunrep, i
 
       call getmlu(lunrep)
       write(lunrep,*) 'ERROR in bloom: '
@@ -972,3 +989,5 @@
       availn(1:mt) = org_availn(1:mt)
 
       end subroutine bl_restore_autolyse
+
+      end module m_d40blo
