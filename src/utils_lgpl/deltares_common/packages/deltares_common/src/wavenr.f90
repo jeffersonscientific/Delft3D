@@ -29,22 +29,21 @@ subroutine wavenr(h         ,t         ,k         ,ag)
     !!--description-----------------------------------------------------------------
     !
     !    Function: Approximation of the dispersion, original sub-
-    !              routine Disp10 (L, T, h, g)
-    ! Method used: relation according to linear wave theory:
+    !              routine Disp10 (L, T, h, g) relation according to linear wave theory:
     !
-    !  = k TANH k
+    ! w^2 = k TANH k
     !
-    ! h k = 2 pi h / L and w = (2 pi / T) sqrt (h/g), and L as
-    ! nown.
-    ! ational function approximation is made of the form :
+    ! with k = 2 pi h / L and w = (2 pi / T) sqrt (h/g), and L as
+    ! unknown.
+    ! A rational function approximation is made of the form :
     !
-    !     1 + a1 w^2 + a2 w^4 + a3 w^6 + a4 w^8 + a5 w^10 + a6 w^12
-    ! w^2 ---------------------------------------------------------
-    !     1 + b1 w^2 + b2 w^4 + b3 w^6 + b4 w^8           + a6 w^10
+    ! 1 + a1 w^2 + a2 w^4 + a3 w^6 + a4 w^8 + a5 w^10 + a6 w^12
+    ! k^2 = w^2 ---------------------------------------------------------
+    ! 1 + b1 w^2 + b2 w^4 + b3 w^6 + b4 w^8           + a6 w^10
     !
-    ! ing the exact values for L for:
-    !  0.4, 0.7, 1.0, 1.3, 1.6, 1.95, 2.35, 2.9, 3.8 and 6.5,
-    !  a relative error less than 1.7E-6 for all w.
+    ! having the exact values for L for:
+    ! w = 0.4, 0.7, 1.0, 1.3, 1.6, 1.95, 2.35, 2.9, 3.8 and 6.5,
+    ! and a relative error less than 1.7E-6 for all w.
     !
     !
     !!--pseudo code and references--------------------------------------------------

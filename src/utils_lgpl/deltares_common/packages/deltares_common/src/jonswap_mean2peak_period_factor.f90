@@ -26,7 +26,7 @@
    !-------------------------------------------------------------------------------
 !                                                                               
 !-------------------------------------------------------------------------------
-subroutine factorise_waveperiod(gamma0, factor, ier)
+subroutine jonswap_mean2peak_period_factor(gamma0, factor, ier)
     !!--description-----------------------------------------------------------------
     !
     ! This routine as used in Delft3D-WAVE is based on subroutine PERPAR in
@@ -41,6 +41,10 @@ subroutine factorise_waveperiod(gamma0, factor, ier)
     ! laboratory measurements'; HISWA verification in the
     ! directional wave basin;
     ! H228 Part 1B; Nov. 1987; Appendix G, p. 208
+    !
+    ! Further notes: This function is used to derive the proportionality factor 
+    ! between the mean period of a spectrum and its peak period, assuming a theoretical 
+    ! JONSWAP shape with peakedness factor gamma().
     !
     ! VARIABLE   TYPE  I/O   DESCRIPTION
     !
@@ -103,4 +107,4 @@ subroutine factorise_waveperiod(gamma0, factor, ier)
             endif
         enddo
     endif
-    end subroutine factorise_waveperiod
+    end subroutine jonswap_mean2peak_period_factor

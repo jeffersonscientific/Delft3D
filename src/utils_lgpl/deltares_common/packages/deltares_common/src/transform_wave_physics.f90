@@ -95,7 +95,7 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
     !
     corht  = .false.
     perfac = 1.
-    call factorise_waveperiod(gamma0, perfac, ierr)
+    call jonswap_mean2peak_period_factor(gamma0, perfac, ierr)
     if (ierr < 0) then
         write(*,'(a,f10.5)') 'ERROR: gamma0 = ',gamma0,' lies outside allowed range [1,20]'
         goto 999
@@ -121,7 +121,7 @@ subroutine transform_wave_physics(hs        ,dir       ,period    ,depth     , &
         !
         wsbodyuu = 0.0
         wsbodyvv = 0.0
-        call wave_fluxes(dirh      ,deph      ,tpp       ,fxhis     , &
+        call wave_forces(dirh      ,deph      ,tpp       ,fxhis     , &
                        & fyhis     ,dish      ,diss      ,wavel     , &
                        & ldep      ,fxx       ,fyy       ,dismax    , &
                        & corht     ,swdis     ,grav      ,wsbodyuu  , wsbodyvv  )

@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-subroutine wave_fluxes(dir       ,deph      ,tp        ,fxhis     , &
+subroutine wave_forces(dir       ,deph      ,tp        ,fxhis     , &
                          & fyhis     ,dish      ,diss      ,wavel     , &
                          & ldep      ,fx        ,fy        ,dismax    , &
                          & corht     ,swdis     ,grav      ,wsbodyu   , wsbodyv   )
@@ -145,4 +145,4 @@ subroutine wave_fluxes(dir       ,deph      ,tp        ,fxhis     , &
         else
         endif
     endif
-end subroutine wave_fluxes
+end subroutine wave_forces
