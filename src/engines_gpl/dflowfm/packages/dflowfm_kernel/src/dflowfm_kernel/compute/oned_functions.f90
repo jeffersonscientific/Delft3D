@@ -846,7 +846,7 @@ module m_oned_functions
    type(t_administration_1d), pointer     :: adm
    integer                                :: i, istor, cc1, cc2, length, L, Lindex
    double precision                       :: f
-   double precision, save                 :: help = -huge(1d0)
+   double precision, parameter            :: help = -huge(1d0)
 
    groundlevel(:) = help
    groundStorage(:) = 0
