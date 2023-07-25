@@ -1187,7 +1187,7 @@ rem ==========================
     call :copyFile "!build_dir!\delwaq_lib_examples\prototype_dimr_dflowfm_delwaq\!configuration!\prototype_dflowfm_delwaq_dimr.*"                        !dest_bin!
 
     rem copy run scripts
-    rem call :copyFile "!checkout_src_root!\tools_gpl\prototype_dflowfm_delwaq_dimr\scripts\run_prototype_dflowfm_delwaq_dimr.bat"               !dest_scripts!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\run_prototype_dflowfm_delwaq_dimr.bat"               !dest_scripts!
 
 goto :endproc
 
