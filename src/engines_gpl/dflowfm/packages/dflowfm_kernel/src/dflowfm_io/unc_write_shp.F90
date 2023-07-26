@@ -49,7 +49,7 @@ subroutine unc_write_shp()
 
     ! cross sections
     if (jashp_crs > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (ncrs > 0) then
              call unc_write_shp_crs()
           else
@@ -75,7 +75,7 @@ subroutine unc_write_shp()
     endif
     ! observation stations
     if (jashp_obs > 0) then
-      if (jampi .eq. 0) then
+      if (jampi == 0) then
           if (NUMOBS > 0) then
              call unc_write_shp_obs()
           else
@@ -101,7 +101,7 @@ subroutine unc_write_shp()
     endif
     ! weirs
      if (jashp_weir > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (nweirgen > 0 .and. allocated(weir2cgen)) then
              call unc_write_shp_weir()
           else
@@ -127,7 +127,7 @@ subroutine unc_write_shp()
     endif
     ! thin dams
     if (jashp_thd > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (nthd > 0) then
              call unc_write_shp_thd()
           else
@@ -153,7 +153,7 @@ subroutine unc_write_shp()
     endif
     ! gates
     if (jashp_gate > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (ngategen > 0) then
              call unc_write_shp_gate()
           else
@@ -183,7 +183,7 @@ subroutine unc_write_shp()
        if (nbnd1d2d > 0) then
           call unc_write_shp_emb()
        else
-          if (jampi .eq. 0) then
+          if (jampi == 0) then
              call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for embankments is written because no embankment is found.')
           else
              call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for embankments is written because no embankment is found on subdomain:', my_rank)
@@ -195,7 +195,7 @@ subroutine unc_write_shp()
        if (nfxw > 0) then
           call unc_write_shp_fxw()
        else
-          if (jampi .eq. 0) then
+          if (jampi == 0) then
              call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for fixed weirs is written because no fixed weir is found.')
           else
              call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for fixed weirs is written because no fixed weir is found on subdomain:', my_rank)
@@ -204,7 +204,7 @@ subroutine unc_write_shp()
     endif
     ! source-sinks
      if (jashp_src > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (numsrc > 0) then
              call unc_write_shp_src()
           else
@@ -231,7 +231,7 @@ subroutine unc_write_shp()
 
      ! pumps
     if (jashp_pump > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (npumpsg > 0) then
              call unc_write_shp_pump()
           else
@@ -262,7 +262,7 @@ subroutine unc_write_shp()
           call get_netlinks_of_dryarea()
           call unc_write_shp_dry()
        else
-          if (jampi .eq. 0) then
+          if (jampi == 0) then
              call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for dry areas is written because no dry area is found.')
           else
              call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for dry areas is written because no dry area is found on subdomain:', my_rank)
@@ -272,7 +272,7 @@ subroutine unc_write_shp()
 
     ! general structures
     if (jashp_genstruc > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (ngenstru > 0 .and. allocated(genstru2cgen)) then
              call unc_write_shp_genstruc()
           else
@@ -301,7 +301,7 @@ subroutine unc_write_shp()
 
     ! dam break
     if (jashp_dambreak > 0) then
-       if (jampi .eq. 0) then
+       if (jampi == 0) then
           if (ndambreak > 0) then
              call unc_write_shp_dambreak()
           else
