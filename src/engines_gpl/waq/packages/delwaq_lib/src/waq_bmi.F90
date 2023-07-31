@@ -51,67 +51,7 @@ contains
       ! Somehow intel fortran compiler expects a main routine in the dll.
    end subroutine main
 
-
-
-  integer(c_int) function set_var(c_key, xptr) bind(C, name="set_var")
-    !DEC$ ATTRIBUTES DLLEXPORT::set_var
-    use iso_c_binding, only: c_char, c_ptr
-    use iso_c_utils
-    use delwaq2_global_data
-    use dhcommand
-    implicit none
-    character(kind=c_char),intent(in)    :: c_key(MAXSTRLEN)
-    type(c_ptr), value    ,intent(in)    :: xptr
-    !
-    character(kind=c_char),dimension(:), pointer :: c_value => null()
-    character(MAXSTRLEN)                         :: key_given
-    character(MAXSTRLEN)                         :: value_given
-    integer                                      :: argc
-    integer                                      :: argnew
-    integer                                      :: iarg
-    integer                                      :: errorcode
-    integer                                      :: i
-
-    ! Store the key and value
-    key_given = char_array_to_string(c_key)
-    call c_f_pointer(xptr, c_value,[MAXSTRLEN])
-    value_given = " "
-    if (associated(c_value)) then
-       do i=1,MAXSTRLEN
-          if (c_value(i) == c_null_char) exit
-          value_given(i:i) = c_value(i)
-       enddo
-    endif
-    !
-    argnew = 2
-    if (value_given(1:1) .eq. ' ')  argnew = 1
-    if (key_given(1:1) .eq. ' ')    argnew = 0
-    !
-    if (argnew .gt. 0) then
-       ! Add new arguments to argv
-       if ( allocated( argv_tmp ) ) deallocate( argv_tmp )
-       if ( allocated( argv )) then
-          argc = size(argv, 1)
-          allocate (argv_tmp(argc))
-          do iarg = 1, argc
-             argv_tmp(iarg) = argv(iarg)
-          end do
-          deallocate( argv )
-       else
-          argc = 0
-       end if
-       allocate( argv(argc+argnew) )
-       do iarg = 1, argc
-          argv(iarg) = argv_tmp(iarg)
-       end do
-       argv(argc+1) = key_given
-       if(argnew.eq.2) then
-          argv(argc+2) = value_given
-       endif
-    endif
-    set_var = 0
-  end function set_var
-
+ 
   ! Control
 
   !> The initialize() function accepts a string argument that
@@ -449,37 +389,53 @@ end subroutine get_var
 !
 !==============================================================================
 !> Provides a pointer to the variable
-! subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
-!    !DEC$ ATTRIBUTES DLLEXPORT :: set_var
-!    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-!    !
-!    ! Parameters
-!    character(kind=c_char), intent(in) :: c_var_name(*)
-!    type(c_ptr), value, intent(in)     :: var_ptr
-!    !
-!    ! Locals
-!    integer                            :: slen
-!    real(c_double)        , pointer    :: var_1d_double_ptr(:)
-!    real(c_double)        , pointer    :: var_2d_double_ptr(:,:)
-!    integer(c_int)        , pointer    :: var_0d_int_ptr
-!    integer(c_int)        , pointer    :: var_1d_int_ptr(:)
-!    character(kind=c_char), pointer    :: var_1d_char_ptr(:)
-!    character(len=1024)   , pointer    :: valuestr
-!    character(len=strlen(c_var_name))  :: var_name
+subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
+   !DEC$ ATTRIBUTES DLLEXPORT :: set_var
+   use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
+   use string_module
+   
+   ! MDK 31-07-2023 from old version
+      use iso_c_utils
+      use delwaq2_global_data
+      use dhcommand
+      implicit none
+      
+      character(MAXSTRLEN)                         :: value_given
+      integer                                      :: argc
+      integer                                      :: argnew
+      integer                                      :: iarg
+      integer                                      :: errorcode
+      integer                                      :: i
+   ! end MDK 31-07-2023 from old version
+
+   !
+   ! Parameters
+   character(kind=c_char), intent(in) :: c_var_name(*)
+   type(c_ptr), value, intent(in)     :: var_ptr
+   !
+   ! Locals
+   integer                            :: slen
+   real(c_double)        , pointer    :: var_1d_double_ptr(:)
+   real(c_double)        , pointer    :: var_2d_double_ptr(:,:)
+   integer(c_int)        , pointer    :: var_0d_int_ptr
+   integer(c_int)        , pointer    :: var_1d_int_ptr(:)
+   character(kind=c_char), pointer    :: var_1d_char_ptr(:)
+   character(len=1024)   , pointer    :: valuestr
+   character(len=strlen(c_var_name))  :: var_name
    !
    ! Body
    !
    ! Store the name and pointer to the value
    !
-   ! D-Flow FM ==> COSUMO_BMI
+   ! D-Flow FM ==> WAQ_BMI
    ! DIMR delivers a pointer to the variable in FM
    ! DIMR will first call set_var("parameter_shape",shape_array)
    !      where shape_array is an integer(6) array containing the dimensions of "parameter"
    ! Then DIMR will call set_var("parameter",parameter_pointer)
-   ! var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-   ! call c_f_pointer(var_ptr, valuestr)
-   ! slen = index(valuestr, c_null_char) - 1
-   ! select case (str_tolower(var_name))
+   var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+   call c_f_pointer(var_ptr, valuestr)
+   slen = index(valuestr, c_null_char) - 1
+   select case (str_tolower(var_name))
    ! case ("flow_xcc_shape")
    !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
    !     fm_ndx = var_1d_int_ptr(1)
@@ -568,71 +524,56 @@ end subroutine get_var
    !         skipuniqueid = .true.
    !     case ("0", "no", "false")
    !         skipuniqueid = .false.
-   !     end select
-   ! case default
-   !     call mess(LEVEL_ERROR, "'set_var(", var_name, ")' not implemented")
-   ! end select   
-! end subroutine set_var
-!
-!
-!==============================================================================
-!> Returns the shape of a variable, i.e., an array with length equal to this variables's rank.
-!! NOTE: the reported shape is in C-compatible row-major order.
-!!
-!! count(shape) = rank
-!! @see get_var_rank
-subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
-   !DEC$ ATTRIBUTES DLLEXPORT :: get_var_shape
-   use iso_c_binding, only: c_int, c_char, c_loc
-   use iso_c_utils, only: strlen
-   !
-   ! Parameters
-   character(kind=c_char), intent(in)    :: c_var_name(*)
-   integer(c_int)        , intent(inout) :: shape(MAXDIMS)
-   !
-   ! Locals
-   character(len=strlen(c_var_name)) :: var_name
-   !
-   ! Body
+      !  end select
+   case default
+       call mess(LEVEL_ERROR, "'set_var(", var_name, ")' not implemented")
+   end select   
+
+
+   ! MDK 31-07-2023 This is from the old routine. To be seen what to do with it.
+   ! (needed for running waq through dimr)
+   ! Store the key and value
    var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-   shape    = (/0, 0, 0, 0, 0, 0/)
+   call c_f_pointer(var_ptr, valuestr)
+   value_given = " "
+   if (associated(valuestr)) then
+      do i=1,MAXSTRLEN
+         if (c_value(i) == c_null_char) exit
+         value_given(i:i) = valuestr(i)
+      enddo
+   endif
    !
-   ! NOTE: report the shape below in row-major order (so, C-style, not FORTRAN-style)
-   ! select case(var_name)
-   ! case("nf_q_source")
-   !     shape(1) = nf_num_dif
-   !     return
-   ! case("nf_q_intake")
-   !     shape(1) = nf_num_dif
-   !     return
-   ! case("nf_const")
-   !     shape(1) = nf_num_dif
-   !     shape(2) = fm_numconst
-   !     return
-   ! case("nf_intake")
-   !     shape(1) = nf_num_dif
-   !     shape(2) = nf_intake_idimMAX
-   !     shape(3) = 3 ! X, Y, Z
-   !     return
-   ! case("nf_sink")
-   !     shape(1) = nf_num_dif
-   !     shape(2) = nf_sink_idimMAX
-   !     shape(3) = 6 ! X, Y, Z, S, H, B
-   !     return
-   ! case("nf_sour")
-   !     shape(1) = nf_num_dif
-   !     shape(2) = nf_sour_idimMAX
-   !     shape(3) = 8 ! X, Y, Z, S, H, B, Umag, Udir
-   !     return
-   ! case("nf_const_operator")
-   !     shape(1) = nf_num_dif
-   !     shape(2) = 10 ! Length of character string
-   !     return
-   ! case("nf_src_mom")
-   !     shape(1) = nf_num_dif
-   !     return
-   ! end select
-end subroutine get_var_shape
+   argnew = 2
+   if (value_given(1:1) .eq. ' ')  argnew = 1
+   if (var_name(1:1) .eq. ' ')    argnew = 0
+   !
+   if (argnew .gt. 0) then
+      ! Add new arguments to argv
+      if ( allocated( argv_tmp ) ) deallocate( argv_tmp )
+      if ( allocated( argv )) then
+         argc = size(argv, 1)
+         allocate (argv_tmp(argc))
+         do iarg = 1, argc
+            argv_tmp(iarg) = argv(iarg)
+         end do
+         deallocate( argv )
+      else
+         argc = 0
+      end if
+      allocate( argv(argc+argnew) )
+      do iarg = 1, argc
+         argv(iarg) = argv_tmp(iarg)
+      end do
+      argv(argc+1) = key_given
+      if(argnew.eq.2) then
+         argv(argc+2) = value_given
+      endif
+   endif
+!    set_var = 0
+!  end function set_var
+
+end subroutine set_var
+
 
 
 
