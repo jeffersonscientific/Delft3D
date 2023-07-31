@@ -38,11 +38,6 @@ module m_waq_bmi_data
     !
     integer, parameter :: MAXDIMS              = 6             !< Maximum number of dims as used in BMI communication
     integer, parameter :: MAXSTRLEN            = 1024          !< Maximum string length
-    integer, parameter :: READ_DIMENSIONS_ONLY = 1             !< The COSUMO configuration file is read in two steps:
-                                                               !< Step 1: READ_DIMENSIONS_ONLY
-    integer, parameter :: READ_FULL_CONTENTS   = 2             !< The COSUMO configuration file is read in two steps:
-                                                               !< Step 2: READ_FULL_CONTENTS
-    character(20), parameter :: KERNELNAME     = "COSUMO_BMI"  !< Name of this kernel
     integer, parameter :: UNIQUE_ID_LEN        = 6             !< Length of UniqueID
     !
     ! integers

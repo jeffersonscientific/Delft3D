@@ -121,10 +121,7 @@ contains
   integer(c_int) function initialize(c_config_file) bind(C, name="initialize")
     !DEC$ ATTRIBUTES DLLEXPORT :: initialize
     use iso_c_binding, only: c_char
-    !use iso_c_utils
-    !use delwaq2_global_data
-    !use dhcommand
-    !use m_actions
+    use delwaq2_global_data
     use m_waq_bmi_data
 
     implicit none
@@ -136,7 +133,7 @@ contains
 
 
     ! Store the name
-    runid_given = char_array_to_string(c_config_file)
+    runid_given = char_array_to_string(c_config_file, MAXSTRLEN)
 
     ! Add runid_given before the current arguments list
     if ( allocated( argv_tmp ) ) deallocate( argv_tmp )
@@ -227,11 +224,11 @@ end subroutine get_attribute
 
   integer function update(dt) bind(C, name="update")
     !DEC$ ATTRIBUTES DLLEXPORT :: update
-    !use delwaq2_global_data
-    !use messagehandling
+    use delwaq2_global_data
     use iso_c_binding, only: c_double
     use m_actions
-    !use m_sysi
+    use m_sysi
+    use m_waq_bmi_data
 
     implicit none
 
@@ -256,6 +253,7 @@ end subroutine get_attribute
     !DEC$ ATTRIBUTES DLLEXPORT :: finalize
     use delwaq2_global_data
     use m_actions
+    use m_waq_bmi_data
 
     implicit none
     character(len=20), dimension(0) :: argv_dummy
@@ -278,6 +276,7 @@ end subroutine get_attribute
 subroutine get_var(c_var_name, var_ptr) bind(C, name="get_var")
    !DEC$ ATTRIBUTES DLLEXPORT :: get_var
    use iso_c_binding, only: c_double, c_char, c_loc
+   use iso_c_utils, only: strlen
    !
    ! Parameters
    character(kind=c_char), intent(in)    :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
@@ -289,184 +288,184 @@ subroutine get_var(c_var_name, var_ptr) bind(C, name="get_var")
    ! Body
    !
    ! Store the name
-   var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+   !var_name = char_array_to_string(c_var_name, strlen(c_var_name))
 
    ! Please be conservative in adding variables here. Most variables
    ! can be computed outside.
    ! You can generate extra variables here.
-   select case(var_name)
+   !select case(var_name)
    !
    ! D-Flow FM ==> COSUMO_BMI
    ! When DIMR asks COSUMO_BMI for this variable and it is not associated yet, COSUMO_BMI must notify DIMR
    ! that it is able to accept that parameter by returning a dummy pointer
    !
-   case("flow_xcc")
-       if (.not.associated(fm_xzw)) then
-           return
-       endif
-       var_ptr = c_loc(fm_xzw)
-       continue
-   case("flow_ycc")
-       if (.not.associated(fm_yzw)) then
-           return
-       endif
-       var_ptr = c_loc(fm_yzw)
-       continue
-   case("z_level_cc")
-       if (.not.associated(fm_z_level)) then
-           return
-       endif
-       var_ptr = c_loc(fm_z_level)
-       continue
-   case("kbot")
-       if (.not.associated(fm_kbot)) then
-           return
-       endif
-       var_ptr = c_loc(fm_kbot)
-       continue
-   case("ktop")
-       if (.not.associated(fm_ktop)) then
-           return
-       endif
-       var_ptr = c_loc(fm_ktop)
-       continue
-   case("water_depth_cc")
-       if (.not.associated(fm_water_depth)) then
-           return
-       endif
-       var_ptr = c_loc(fm_water_depth)
-       continue
-   case("velocity_x_cc")
-       if (.not.associated(fm_velocity_x)) then
-           return
-       endif
-       var_ptr = c_loc(fm_velocity_x)
-       continue
-   case("velocity_y_cc")
-       if (.not.associated(fm_velocity_y)) then
-           return
-       endif
-       var_ptr = c_loc(fm_velocity_y)
-       continue
-   case("rho_cc")
-       if (.not.associated(fm_rho)) then
-           return
-       endif
-       var_ptr = c_loc(fm_rho)
-       continue
-   case("constituents")
-       if (.not.associated(fm_constituents)) then
-           return
-       endif
-       var_ptr = c_loc(fm_constituents)
-       continue
-   case("constituents_names")
-       if (.not.associated(fm_namcon)) then
-           return
-       endif
-       var_ptr = c_loc(fm_namcon)
-       continue
-   case("isalt")
-       if (.not.associated(fm_isalt)) then
-           allocate(fm_isalt)
-           fm_isalt = -999
-       endif
-       var_ptr = c_loc(fm_isalt)
-       continue
-   case("itemp")
-       if (.not.associated(fm_itemp)) then
-           allocate(fm_itemp)
-           fm_itemp = -999
-       endif
-       var_ptr = c_loc(fm_itemp)
-       continue
-   case("runid")
-       var_ptr = c_loc(runid)
-       continue
-   !
-   ! COSUMO_BMI ==> D-Flow FM 
-   !
-   case("nf_q_source")
-       if (.not.associated(nf_q_source)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_q_source)
-       continue
-   case("nf_q_intake")
-       if (.not.associated(nf_q_intake)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_q_intake)
-       continue
-   case("nf_const")
-       if (.not.associated(nf_const)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_const)
-       continue
-   case("nf_intake")
-       if (.not.associated(nf_intake)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_intake)
-       continue
-   case("nf_sink")
-       if (.not.associated(nf_sink)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_sink)
-       continue
-   case("nf_sour")
-       if (.not.associated(nf_sour)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_sour)
-       continue
-   case("nf_const_operator")
-       if (.not.associated(nf_const_operator)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_const_operator)
-       continue
-   case("nf_src_mom")
-       if (.not.associated(d0)) then
-           ! leave var_ptr undefined. It will be obtained via get_var later on
-           return
-       endif
-       var_ptr = c_loc(nf_src_mom)
-       continue
-   case default
-       call mess(LEVEL_ERROR, "'get_var(", var_name, ")' not implemented")
-   end select
+   ! case("flow_xcc")
+   !     if (.not.associated(fm_xzw)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_xzw)
+   !     continue
+   ! case("flow_ycc")
+   !     if (.not.associated(fm_yzw)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_yzw)
+   !     continue
+   ! case("z_level_cc")
+   !     if (.not.associated(fm_z_level)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_z_level)
+   !     continue
+   ! case("kbot")
+   !     if (.not.associated(fm_kbot)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_kbot)
+   !     continue
+   ! case("ktop")
+   !     if (.not.associated(fm_ktop)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_ktop)
+   !     continue
+   ! case("water_depth_cc")
+   !     if (.not.associated(fm_water_depth)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_water_depth)
+   !     continue
+   ! case("velocity_x_cc")
+   !     if (.not.associated(fm_velocity_x)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_velocity_x)
+   !     continue
+   ! case("velocity_y_cc")
+   !     if (.not.associated(fm_velocity_y)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_velocity_y)
+   !     continue
+   ! case("rho_cc")
+   !     if (.not.associated(fm_rho)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_rho)
+   !     continue
+   ! case("constituents")
+   !     if (.not.associated(fm_constituents)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_constituents)
+   !     continue
+   ! case("constituents_names")
+   !     if (.not.associated(fm_namcon)) then
+   !         return
+   !     endif
+   !     var_ptr = c_loc(fm_namcon)
+   !     continue
+   ! case("isalt")
+   !     if (.not.associated(fm_isalt)) then
+   !         allocate(fm_isalt)
+   !         fm_isalt = -999
+   !     endif
+   !     var_ptr = c_loc(fm_isalt)
+   !     continue
+   ! case("itemp")
+   !     if (.not.associated(fm_itemp)) then
+   !         allocate(fm_itemp)
+   !         fm_itemp = -999
+   !     endif
+   !     var_ptr = c_loc(fm_itemp)
+   !     continue
+   ! case("runid")
+   !     var_ptr = c_loc(runid)
+   !     continue
+   ! !
+   ! ! COSUMO_BMI ==> D-Flow FM 
+   ! !
+   ! case("nf_q_source")
+   !     if (.not.associated(nf_q_source)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_q_source)
+   !     continue
+   ! case("nf_q_intake")
+   !     if (.not.associated(nf_q_intake)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_q_intake)
+   !     continue
+   ! case("nf_const")
+   !     if (.not.associated(nf_const)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_const)
+   !     continue
+   ! case("nf_intake")
+   !     if (.not.associated(nf_intake)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_intake)
+   !     continue
+   ! case("nf_sink")
+   !     if (.not.associated(nf_sink)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_sink)
+   !     continue
+   ! case("nf_sour")
+   !     if (.not.associated(nf_sour)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_sour)
+   !     continue
+   ! case("nf_const_operator")
+   !     if (.not.associated(nf_const_operator)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_const_operator)
+   !     continue
+   ! case("nf_src_mom")
+   !     if (.not.associated(d0)) then
+   !         ! leave var_ptr undefined. It will be obtained via get_var later on
+   !         return
+   !     endif
+   !     var_ptr = c_loc(nf_src_mom)
+   !     continue
+   ! case default
+   !     call mess(LEVEL_ERROR, "'get_var(", var_name, ")' not implemented")
+   ! end select
 end subroutine get_var
 !
 !
 !==============================================================================
 !> Provides a pointer to the variable
-subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
-   !DEC$ ATTRIBUTES DLLEXPORT :: set_var
-   use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-   !
-   ! Parameters
-   character(kind=c_char), intent(in) :: c_var_name(*)
-   type(c_ptr), value, intent(in)     :: var_ptr
-   !
-   ! Locals
-   integer                            :: slen
-   real(c_double)        , pointer    :: var_1d_double_ptr(:)
-   real(c_double)        , pointer    :: var_2d_double_ptr(:,:)
-   integer(c_int)        , pointer    :: var_0d_int_ptr
-   integer(c_int)        , pointer    :: var_1d_int_ptr(:)
-   character(kind=c_char), pointer    :: var_1d_char_ptr(:)
-   character(len=1024)   , pointer    :: valuestr
-   character(len=strlen(c_var_name))  :: var_name
+! subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
+!    !DEC$ ATTRIBUTES DLLEXPORT :: set_var
+!    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
+!    !
+!    ! Parameters
+!    character(kind=c_char), intent(in) :: c_var_name(*)
+!    type(c_ptr), value, intent(in)     :: var_ptr
+!    !
+!    ! Locals
+!    integer                            :: slen
+!    real(c_double)        , pointer    :: var_1d_double_ptr(:)
+!    real(c_double)        , pointer    :: var_2d_double_ptr(:,:)
+!    integer(c_int)        , pointer    :: var_0d_int_ptr
+!    integer(c_int)        , pointer    :: var_1d_int_ptr(:)
+!    character(kind=c_char), pointer    :: var_1d_char_ptr(:)
+!    character(len=1024)   , pointer    :: valuestr
+!    character(len=strlen(c_var_name))  :: var_name
    !
    ! Body
    !
@@ -477,103 +476,103 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
    ! DIMR will first call set_var("parameter_shape",shape_array)
    !      where shape_array is an integer(6) array containing the dimensions of "parameter"
    ! Then DIMR will call set_var("parameter",parameter_pointer)
-   var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-   call c_f_pointer(var_ptr, valuestr)
-   slen = index(valuestr, c_null_char) - 1
-   select case (str_tolower(var_name))
-   case ("flow_xcc_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndx = var_1d_int_ptr(1)
-   case ("flow_xcc")
-       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
-       fm_xzw => var_1d_double_ptr
-   case ("flow_ycc_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndx = var_1d_int_ptr(1)
-   case ("flow_ycc")
-       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
-       fm_yzw => var_1d_double_ptr
-   case ("z_level_cc_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndkx = var_1d_int_ptr(1)
-   case ("z_level_cc")
-       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-       fm_z_level => var_1d_double_ptr
-   case ("kbot_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndx   = var_1d_int_ptr(1)
-   case ("kbot")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
-       fm_kbot => var_1d_int_ptr
-   case ("ktop_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndx   = var_1d_int_ptr(1)
-   case ("ktop")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
-       fm_ktop => var_1d_int_ptr
-   case ("water_depth_cc_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndx = var_1d_int_ptr(1)
-   case ("water_depth_cc")
-       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
-       fm_water_depth => var_1d_double_ptr
-   case ("velocity_x_cc_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndkx = var_1d_int_ptr(1)
-   case ("velocity_x_cc")
-       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-       fm_velocity_x => var_1d_double_ptr
-   case ("velocity_y_cc_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndkx = var_1d_int_ptr(1)
-   case ("velocity_y_cc")
-       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-       fm_velocity_y => var_1d_double_ptr
-   case ("rho_cc_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_ndkx = var_1d_int_ptr(1)
-   case ("rho_cc")
-       call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
-       fm_rho => var_1d_double_ptr
-   case ("constituents_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_numconst = var_1d_int_ptr(1)
-       fm_ndkx     = var_1d_int_ptr(2)
-   case ("constituents")
-       call c_f_pointer(var_ptr, var_2d_double_ptr, (/ fm_numconst, fm_ndkx /))
-       fm_constituents => var_2d_double_ptr
-   case ("constituents_names_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       fm_numconst = var_1d_int_ptr(1)
-       fm_namlen   = var_1d_int_ptr(2)
-       !
-       ! Constituent names are copied instead of referenced
-       allocate(character(fm_namlen) :: fm_namcon(fm_numconst))
-   case ("constituents_names")
-       call c_f_pointer(var_ptr, var_1d_char_ptr, (/ fm_numconst * fm_namlen /))
-       fm_namcon = transfer(var_1d_char_ptr,fm_namcon)
-   case ("isalt")
-       call c_f_pointer(var_ptr, var_0d_int_ptr)
-       fm_isalt => var_0d_int_ptr
-   case ("itemp")
-       call c_f_pointer(var_ptr, var_0d_int_ptr)
-       fm_itemp => var_0d_int_ptr
-   case ("runid_shape")
-       call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
-       slen = var_1d_int_ptr(2)
-   case ("runid")
-       runid = valuestr(1:slen)
-   case ("skipuniqueid")
-       select case (str_tolower(valuestr(1:slen)))
-       case ("1", "yes", "true")
-           skipuniqueid = .true.
-       case ("0", "no", "false")
-           skipuniqueid = .false.
-       end select
-   case default
-       call mess(LEVEL_ERROR, "'set_var(", var_name, ")' not implemented")
-   end select   
-end subroutine set_var
+   ! var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+   ! call c_f_pointer(var_ptr, valuestr)
+   ! slen = index(valuestr, c_null_char) - 1
+   ! select case (str_tolower(var_name))
+   ! case ("flow_xcc_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndx = var_1d_int_ptr(1)
+   ! case ("flow_xcc")
+   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
+   !     fm_xzw => var_1d_double_ptr
+   ! case ("flow_ycc_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndx = var_1d_int_ptr(1)
+   ! case ("flow_ycc")
+   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
+   !     fm_yzw => var_1d_double_ptr
+   ! case ("z_level_cc_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndkx = var_1d_int_ptr(1)
+   ! case ("z_level_cc")
+   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+   !     fm_z_level => var_1d_double_ptr
+   ! case ("kbot_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndx   = var_1d_int_ptr(1)
+   ! case ("kbot")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
+   !     fm_kbot => var_1d_int_ptr
+   ! case ("ktop_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndx   = var_1d_int_ptr(1)
+   ! case ("ktop")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ fm_ndx /))
+   !     fm_ktop => var_1d_int_ptr
+   ! case ("water_depth_cc_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndx = var_1d_int_ptr(1)
+   ! case ("water_depth_cc")
+   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndx /))
+   !     fm_water_depth => var_1d_double_ptr
+   ! case ("velocity_x_cc_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndkx = var_1d_int_ptr(1)
+   ! case ("velocity_x_cc")
+   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+   !     fm_velocity_x => var_1d_double_ptr
+   ! case ("velocity_y_cc_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndkx = var_1d_int_ptr(1)
+   ! case ("velocity_y_cc")
+   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+   !     fm_velocity_y => var_1d_double_ptr
+   ! case ("rho_cc_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_ndkx = var_1d_int_ptr(1)
+   ! case ("rho_cc")
+   !     call c_f_pointer(var_ptr, var_1d_double_ptr, (/ fm_ndkx /))
+   !     fm_rho => var_1d_double_ptr
+   ! case ("constituents_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_numconst = var_1d_int_ptr(1)
+   !     fm_ndkx     = var_1d_int_ptr(2)
+   ! case ("constituents")
+   !     call c_f_pointer(var_ptr, var_2d_double_ptr, (/ fm_numconst, fm_ndkx /))
+   !     fm_constituents => var_2d_double_ptr
+   ! case ("constituents_names_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     fm_numconst = var_1d_int_ptr(1)
+   !     fm_namlen   = var_1d_int_ptr(2)
+   !     !
+   !     ! Constituent names are copied instead of referenced
+   !     allocate(character(fm_namlen) :: fm_namcon(fm_numconst))
+   ! case ("constituents_names")
+   !     call c_f_pointer(var_ptr, var_1d_char_ptr, (/ fm_numconst * fm_namlen /))
+   !     fm_namcon = transfer(var_1d_char_ptr,fm_namcon)
+   ! case ("isalt")
+   !     call c_f_pointer(var_ptr, var_0d_int_ptr)
+   !     fm_isalt => var_0d_int_ptr
+   ! case ("itemp")
+   !     call c_f_pointer(var_ptr, var_0d_int_ptr)
+   !     fm_itemp => var_0d_int_ptr
+   ! case ("runid_shape")
+   !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
+   !     slen = var_1d_int_ptr(2)
+   ! case ("runid")
+   !     runid = valuestr(1:slen)
+   ! case ("skipuniqueid")
+   !     select case (str_tolower(valuestr(1:slen)))
+   !     case ("1", "yes", "true")
+   !         skipuniqueid = .true.
+   !     case ("0", "no", "false")
+   !         skipuniqueid = .false.
+   !     end select
+   ! case default
+   !     call mess(LEVEL_ERROR, "'set_var(", var_name, ")' not implemented")
+   ! end select   
+! end subroutine set_var
 !
 !
 !==============================================================================
@@ -585,6 +584,7 @@ end subroutine set_var
 subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
    !DEC$ ATTRIBUTES DLLEXPORT :: get_var_shape
    use iso_c_binding, only: c_int, c_char, c_loc
+   use iso_c_utils, only: strlen
    !
    ! Parameters
    character(kind=c_char), intent(in)    :: c_var_name(*)
@@ -598,40 +598,40 @@ subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
    shape    = (/0, 0, 0, 0, 0, 0/)
    !
    ! NOTE: report the shape below in row-major order (so, C-style, not FORTRAN-style)
-   select case(var_name)
-   case("nf_q_source")
-       shape(1) = nf_num_dif
-       return
-   case("nf_q_intake")
-       shape(1) = nf_num_dif
-       return
-   case("nf_const")
-       shape(1) = nf_num_dif
-       shape(2) = fm_numconst
-       return
-   case("nf_intake")
-       shape(1) = nf_num_dif
-       shape(2) = nf_intake_idimMAX
-       shape(3) = 3 ! X, Y, Z
-       return
-   case("nf_sink")
-       shape(1) = nf_num_dif
-       shape(2) = nf_sink_idimMAX
-       shape(3) = 6 ! X, Y, Z, S, H, B
-       return
-   case("nf_sour")
-       shape(1) = nf_num_dif
-       shape(2) = nf_sour_idimMAX
-       shape(3) = 8 ! X, Y, Z, S, H, B, Umag, Udir
-       return
-   case("nf_const_operator")
-       shape(1) = nf_num_dif
-       shape(2) = 10 ! Length of character string
-       return
-   case("nf_src_mom")
-       shape(1) = nf_num_dif
-       return
-   end select
+   ! select case(var_name)
+   ! case("nf_q_source")
+   !     shape(1) = nf_num_dif
+   !     return
+   ! case("nf_q_intake")
+   !     shape(1) = nf_num_dif
+   !     return
+   ! case("nf_const")
+   !     shape(1) = nf_num_dif
+   !     shape(2) = fm_numconst
+   !     return
+   ! case("nf_intake")
+   !     shape(1) = nf_num_dif
+   !     shape(2) = nf_intake_idimMAX
+   !     shape(3) = 3 ! X, Y, Z
+   !     return
+   ! case("nf_sink")
+   !     shape(1) = nf_num_dif
+   !     shape(2) = nf_sink_idimMAX
+   !     shape(3) = 6 ! X, Y, Z, S, H, B
+   !     return
+   ! case("nf_sour")
+   !     shape(1) = nf_num_dif
+   !     shape(2) = nf_sour_idimMAX
+   !     shape(3) = 8 ! X, Y, Z, S, H, B, Umag, Udir
+   !     return
+   ! case("nf_const_operator")
+   !     shape(1) = nf_num_dif
+   !     shape(2) = 10 ! Length of character string
+   !     return
+   ! case("nf_src_mom")
+   !     shape(1) = nf_num_dif
+   !     return
+   ! end select
 end subroutine get_var_shape
 
 
@@ -684,5 +684,21 @@ end subroutine get_var_shape
 
     t = real(dlwqd%otime,8) + real(dlwqd%itime,8) / real(dlwqd%tscale,8)
   end subroutine get_current_time
+
+  !==============================================================================
+   pure function char_array_to_string(char_array, length)
+      use iso_c_utils, only: strlen
+
+      integer(c_int), intent(in) :: length
+      character(c_char),intent(in) :: char_array(length)
+      character(len=length) :: char_array_to_string
+      integer :: i
+      do i = 1, min(strlen(char_array), length)
+         char_array_to_string(i:i) = char_array(i)
+      enddo
+      do i = min(strlen(char_array), length) + 1, length
+         char_array_to_string(i:i) = ' '
+      enddo
+   end function char_array_to_string
 
 end module bmi
