@@ -222,7 +222,7 @@ if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000" )
 	if (CMAKE_GENERATOR MATCHES "Visual Studio" AND CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
 		configure_file(
-		"${CMAKE_BINARY_DIR}/template.vcxproj.user"
+		"${CMAKE_BINARY_DIR}/template.vfproj.user"
 		"${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
 		@ONLY
 		)
