@@ -25,7 +25,7 @@
 #include "config.h"
 #endif
 
-module bmi
+module waq_bmi
   use m_delwaq2_main
   use m_delwaq1
   use m_getidentification
@@ -62,7 +62,8 @@ contains
     !DEC$ ATTRIBUTES DLLEXPORT :: initialize
     use iso_c_binding, only: c_char
     use delwaq2_global_data
-    use m_waq_bmi_data
+    use m_waq_bmi_data 
+    use MessageHandling
 
     implicit none
     character(kind=c_char),intent(in)    :: c_config_file(MAXSTRLEN)
@@ -70,7 +71,19 @@ contains
     integer                              :: argc
     integer                              :: iarg
     integer                              :: errorcode
+    
+    external :: waq_bmi_errorhandler ! MDK 01-08-2023: the arguments are incorrect, so for the moment I put it external to get it to compile
 
+    
+    call SetMessageHandling(write2screen = .true. , &
+                        useLog = .true., &
+                        lunMessages = diafile, &
+                        callback = waq_bmi_errorhandler, &
+                        thresholdLevel = LEVEL_INFO, &
+                        thresholdLevel_log = LEVEL_INFO, &
+                        thresholdLevel_callback = LEVEL_INFO, &
+                        reset_counters = .true., &
+                        prefix_logging = KERNELNAME)
 
     ! Store the name
     runid_given = char_array_to_string(c_config_file, MAXSTRLEN)
@@ -393,6 +406,7 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
    !DEC$ ATTRIBUTES DLLEXPORT :: set_var
    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
    use string_module
+   use MessageHandling 
    
    ! MDK 31-07-2023 from old version
       use iso_c_utils
@@ -432,9 +446,9 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
    ! DIMR will first call set_var("parameter_shape",shape_array)
    !      where shape_array is an integer(6) array containing the dimensions of "parameter"
    ! Then DIMR will call set_var("parameter",parameter_pointer)
-   var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-   call c_f_pointer(var_ptr, valuestr)
-   slen = index(valuestr, c_null_char) - 1
+   !var_name = char_array_to_string(c_var_name, strlen(c_var_name))adsasdsaddsadsdsad
+   !call c_f_pointer(var_ptr, valuestr)
+   !slen = index(valuestr, c_null_char) - 1
    select case (str_tolower(var_name))
    ! case ("flow_xcc_shape")
    !     call c_f_pointer(var_ptr, var_1d_int_ptr, (/ 6 /))
@@ -526,22 +540,22 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
    !         skipuniqueid = .false.
       !  end select
    case default
-       call mess(LEVEL_ERROR, "'set_var(", var_name, ")' not implemented")
+       call mess(LEVEL_INFO, "'set_var(", var_name, ")' not implemented")
    end select   
 
 
    ! MDK 31-07-2023 This is from the old routine. To be seen what to do with it.
    ! (needed for running waq through dimr)
    ! Store the key and value
-   var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-   call c_f_pointer(var_ptr, valuestr)
-   value_given = " "
-   if (associated(valuestr)) then
-      do i=1,MAXSTRLEN
-         if (c_value(i) == c_null_char) exit
-         value_given(i:i) = valuestr(i)
-      enddo
-   endif
+   !var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+   !call c_f_pointer(var_ptr, valuestr)
+   !value_given = " "
+   !if (associated(valuestr)) then
+   !   do i=1,MAXSTRLEN
+   !      if (valuestr(i) == c_null_char) exit
+   !      value_given(i:i) = valuestr(i)
+   !   enddo
+   !endif
    !
    argnew = 2
    if (value_given(1:1) .eq. ' ')  argnew = 1
@@ -564,7 +578,7 @@ subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
       do iarg = 1, argc
          argv(iarg) = argv_tmp(iarg)
       end do
-      argv(argc+1) = key_given
+      argv(argc+1) = var_name
       if(argnew.eq.2) then
          argv(argc+2) = value_given
       endif
@@ -641,5 +655,21 @@ end subroutine set_var
          char_array_to_string(i:i) = ' '
       enddo
    end function char_array_to_string
+     
 
-end module bmi
+  end module waq_bmi
+  
+  
+     
+   !
+    !
+    !==============================================================================
+  ! MDK 01-08-2023: the arguments are incorrect, so for the moment I put it outside of the module to get it to compile
+    subroutine waq_bmi_errorhandler(level)
+        use MessageHandling
+        integer, intent(in) :: level
+        if (level >= LEVEL_ERROR) then
+            call throwexception()
+        endif
+    end subroutine waq_bmi_errorhandler
+

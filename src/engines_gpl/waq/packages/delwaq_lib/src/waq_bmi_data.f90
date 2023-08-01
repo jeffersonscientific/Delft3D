@@ -39,6 +39,8 @@ module m_waq_bmi_data
     integer, parameter :: MAXDIMS              = 6             !< Maximum number of dims as used in BMI communication
     integer, parameter :: MAXSTRLEN            = 1024          !< Maximum string length
     integer, parameter :: UNIQUE_ID_LEN        = 6             !< Length of UniqueID
+    
+    character(20), parameter :: KERNELNAME     = "WAQ_BMI"    !< Name of this kernel
     !
     ! integers
     !
