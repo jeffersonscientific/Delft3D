@@ -243,8 +243,8 @@ contains
    !! The (external forcing) file is opened elsewhere and read block-by-block
    !! by consecutive calls to this routine.
    subroutine readprovider(minp,qid,filename,filetype,method,operand,transformcoef,ja,varname,smask, maxSearchRadius)
-     use m_strucs, only: generalkeywrd_old, numgeneralkeywrd
-     use MessageHandling, only : LEVEL_INFO, mess
+     use m_flowexternalforcings, only: NTRANSFORMCOEF
+     use MessageHandling, only : LEVEL_WARN, LEVEL_INFO, mess
      ! globals
      integer,           intent(in)            :: minp             !< File handle to already opened input file.
      integer,           intent(out)           :: filetype         !< File type of current quantity.
@@ -262,6 +262,36 @@ contains
      character (len=maxnamelen)       :: rec, keywrd
      integer                          :: l1, l2, jaopt, k, extrapolation
      logical, save                    :: alreadyPrinted = .false.  !< flag to avoid printing the same message many times
+     
+     integer, parameter :: NUMGENERALKEYWRD_OLD = 26
+     character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = (/ character(len=256) :: &
+      'widthleftW1',             & ! ( 1)
+      'levelleftZb1',            & ! ( 2)
+      'widthleftWsdl',           & ! ( 3)
+      'levelleftZbsl',           & ! ( 4)
+      'widthcenter',             & ! ( 5)
+      'levelcenter',             & ! ( 6)
+      'widthrightWsdr',          & ! ( 7)
+      'levelrightZbsr',          & ! ( 8)
+      'widthrightW2',            & ! ( 9)
+      'levelrightZb2',           & ! (10)
+      'gateheight',              & ! (11)
+      'gateheightintervalcntrl', & ! (12)
+      'pos_freegateflowcoeff',   & ! (13)
+      'pos_drowngateflowcoeff',  & ! (14)
+      'pos_freeweirflowcoeff',   & ! (15)
+      'pos_drownweirflowcoeff',  & ! (16)
+      'pos_contrcoeffreegate',   & ! (17)
+      'neg_freegateflowcoeff',   & ! (18)
+      'neg_drowngateflowcoeff',  & ! (19)
+      'neg_freeweirflowcoeff',   & ! (20)
+      'neg_drownweirflowcoeff',  & ! (21)
+      'neg_contrcoeffreegate',   & ! (22)
+      'extraresistance',         & ! (23)
+      'dynstructext',            & ! (24)
+      'gatedoorheight',          & ! (25)
+      'door_opening_width'       & ! (26)
+     /)
 
      if (minp == 0) then
         ja = 0
@@ -365,8 +395,12 @@ contains
 
      call readTransformcoefficients(minp, transformcoef)
 
-    if (qid == 'generalstructure') then 
-        do k = 1,numgeneralkeywrd        ! generalstructure 
+     if (qid == 'generalstructure') then 
+        call mess(LEVEL_WARN, 'Keyword [generalstructure] is not supported in the external forcing file. &
+                               Please use a structure file <*.ini> instead.')
+        if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) call mess(LEVEL_WARN,'Not all expected keywords are provided.')
+        if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) call mess(LEVEL_WARN,'More keywords provided than expected.')
+        do k = 1,NUMGENERALKEYWRD_OLD
            call readandchecknextrecord(minp, rec, generalkeywrd_old(k), jaopt)
            if (jaopt == 1) then
                L1 = index(rec,'=') + 1
@@ -6519,6 +6553,8 @@ module m_meteo
    integer, target :: item_stressy                                           !< Unique Item id of the ext-file's 'stressy' quantity's y-component.
    integer, target :: item_stressxy_x                                        !< Unique Item id of the ext-file's 'stressxy_x' quantity's x-component.
    integer, target :: item_stressxy_y                                        !< Unique Item id of the ext-file's 'stressxy_y' quantity's y-component.
+   
+   integer, target :: item_frcu                                              !< Unique Item id of the ext-file's 'frcu' quantity's component.
       
    integer, target :: item_apwxwy_p                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
    integer, target :: item_apwxwy_x                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'x'.
@@ -6633,7 +6669,9 @@ module m_meteo
       item_stressy                               = ec_undef_int
       item_stressxy_x                            = ec_undef_int
       item_stressxy_y                            = ec_undef_int
-   
+
+      item_frcu                                  = ec_undef_int
+            
       item_apwxwy_p                              = ec_undef_int
       item_apwxwy_x                              = ec_undef_int
       item_apwxwy_y                              = ec_undef_int
@@ -6919,6 +6957,9 @@ module m_meteo
             dataPtr1 => wdsu_x
             itemPtr2 => item_stressxy_y
             dataPtr2 => wdsu_y
+        case ( 'friction_coefficient_time_dependent')
+            itemPtr1 => item_frcu
+            dataPtr1 => frcu
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
             itemPtr1 => item_apwxwy_p
             dataPtr1 => patm
@@ -7687,7 +7728,7 @@ module m_meteo
          ! Each qhbnd polytim file replaces exactly one element in the target data array.
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', &
-            'airpressure_windx_windy_charnock', 'airpressure_stressx_stressy','humidity','airtemperature','cloudiness','solarradiation', 'longwaveradiation' )
+            'airpressure_windx_windy_charnock', 'airpressure_stressx_stressy','humidity','airtemperature','cloudiness','solarradiation', 'longwaveradiation')
          if (present(srcmaskfile)) then 
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not.ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -7981,6 +8022,13 @@ module m_meteo
             if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_y)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_x, connectionId)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
+        case ('friction_coefficient_time_dependent')
+             if (ec_filetype == provFile_netcdf) then
+               sourceItemName = 'friction_coefficient' 
+            else
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: friction_coefficient_time_dependent only implemented for NetCDF.')
+               return
+            end if
          case ('windxy')
             ! special case: m:n converter, (for now) handle here in case switch
             if (ec_filetype == provFile_unimagdir) then

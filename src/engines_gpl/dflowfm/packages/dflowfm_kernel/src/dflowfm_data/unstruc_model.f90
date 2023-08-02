@@ -708,7 +708,7 @@ subroutine readMDUFile(filename, istat)
     use m_physcoef
     use m_alloc
     use m_equatorial
-    use m_netw,                  only : Makeorthocenters
+    use m_netw,                  only : Makeorthocenters, strip_mesh
     use m_partitioninfo
     use m_fixedweirs
     use m_trachy, only: trtdef_ptr
@@ -983,6 +983,7 @@ subroutine readMDUFile(filename, istat)
        call prop_get_integer(md_ptr, 'geometry', 'Zlayeratubybob' , jaZlayeratubybob , success)
     endif
     call prop_get_integer( md_ptr, 'geometry', 'Makeorthocenters' , Makeorthocenters)
+    call prop_get_integer( md_ptr, 'geometry', 'stripMesh'        , strip_mesh)
     call prop_get_double ( md_ptr, 'geometry', 'Dcenterinside'    , Dcenterinside)
     call prop_get_string ( md_ptr, 'geometry', 'PartitionFile'    , md_partitionfile, success)
     if (jampi .eq. 1 .and. md_japartition .ne. 1) then
@@ -1375,6 +1376,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
     call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
     call prop_get_integer(md_ptr, 'sediment', 'Seddenscoupling'    ,  jaseddenscoupling)
+    call prop_get_integer(md_ptr, 'sediment', 'Tracers_density_coupling',  ja_tracers_density_coupling)
     call prop_get_integer(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
 
 
@@ -1981,6 +1983,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'output', 'Wrishp_pump', jashp_pump, success)
     call prop_get_integer(md_ptr, 'output', 'Wrishp_dryarea', jashp_dry, success)
     call prop_get_integer(md_ptr, 'output', 'wrishp_genstruc', jashp_genstruc, success)
+    call prop_get_integer(md_ptr, 'output', 'wrishp_dambreak', jashp_dambreak, success)
 
     call prop_get_integer(md_ptr, 'output', 'WriteDFMinterpretedvalues', jawriteDFMinterpretedvalues, success)
 
@@ -2331,12 +2334,14 @@ subroutine readMDUFile(filename, istat)
       jashp_obs = 0
    endif
 
-   if (len_trim(md_structurefile) == 0 .and. (jashp_weir > 0 .or. jashp_gate > 0 .or. jashp_genstruc > 0 )) then
+   if (len_trim(md_structurefile) == 0 .and. (jashp_weir > 0 .or. jashp_gate > 0 .or. jashp_genstruc > 0 .or. jashp_dambreak > 0)) then
       write (msgbuf, '(a)') 'MDU settings does not specify any structure: StructureFile =  , but sets to write a ' &
          //'shape file for structures (Wrishp_weir/Wrishp_gate/Wrishp_genstruc = 1). In this situation, no such shape file is written.'
       call warn_flush()
       jashp_weir = 0
       jashp_gate = 0
+      jashp_genstruc = 0
+      jashp_dambreak = 0
    endif
 
    if (len_trim(md_thdfile) == 0 .and. jashp_thd > 0) then
@@ -2627,7 +2632,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     use dflowfm_version_module
     use m_equatorial
     use m_sediment
-    use m_netw,                  only : Makeorthocenters
+    use m_netw,                  only : Makeorthocenters, strip_mesh
     use m_fixedweirs
     use m_reduce,                only : maxdge
     use m_grw
@@ -2842,6 +2847,9 @@ endif
     if (writeall .or. (Makeorthocenters > 0)) then
        call prop_set(prop_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters, 'Switch from circumcentres to orthocentres in geominit (i>=1: number of iterations, 0: do not use)')
     endif
+    if (writeall .or. (strip_mesh > 0)) then
+       call prop_set(prop_ptr, 'geometry', 'stripMesh', strip_mesh, 'Strip unused nodes and links from the mesh after clipping (1: strip, 0: do not strip)')
+    endif
     if (writeall .or. (Dcenterinside .ne. 1d0)) then
     call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
     endif
@@ -3040,6 +3048,7 @@ endif
     endif
 
     call prop_set(prop_ptr, 'numerics', 'Icgsolver',       Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)')
+    call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
     if (writeall .or. Maxdge .ne. 6) then
        call prop_set(prop_ptr, 'numerics', 'Maxdegree',  Maxdge,      'Maximum degree in Gauss elimination')
     end if
@@ -3474,6 +3483,10 @@ endif
        endif
     endif
 
+    if (writeall .or. ja_tracers_density_coupling > 0 ) then
+        call prop_set(prop_ptr, 'sediment', 'Tracers_density_coupling',  ja_tracers_density_coupling, 'tracers rho coupling (0=no, 1=yes), it is active when no sed rho coupling')
+    end if
+    
     if (writeall .or. javeg > 0) then
        call prop_set(prop_ptr, 'veg', 'Vegetationmodelnr', javeg      , 'Vegetation model nr, (0=no, 1=Baptist DFM)')
        call prop_set(prop_ptr, 'veg', 'Clveg'          , Clveg        , 'Stem distance factor, default 0.8 ()' )
@@ -4126,6 +4139,9 @@ endif
     end if
     if( writeall .or. jashp_genstruc > 0 ) then
        call prop_set(prop_ptr, 'output', 'wrishp_genstruc', jashp_genstruc, 'Write a shape file for general structures')
+    end if
+    if( writeall .or. jashp_dambreak > 0 ) then
+       call prop_set(prop_ptr, 'output', 'wrishp_dambreak', jashp_dambreak, 'Write a shape file for dam breaks')
     end if
 
     call prop_set(prop_ptr, 'output', 'WriteDFMinterpretedvalues', jaWriteDFMinterpretedvalues, 'Write DFMinterpretedvalues (1: yes, 0: no)' )

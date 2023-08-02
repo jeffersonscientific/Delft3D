@@ -161,6 +161,8 @@
  integer                           :: jaCdwusp          !< if 1 spatially varying windstress coefficient
 
  integer                           :: jaWindspeedfac    !< if 1 spatially varying windstress coefficient
+ 
+ integer                           :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
  integer                           :: javiuplus3D = 1   !< add vertical eddy viscosity to horizontal eddy viscosity (1 = yes, 0 = no)
 
@@ -572,6 +574,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jashp_pump                !< Write a shape file for pumps
  integer                           :: jashp_dry                 !< Write a shape file for dry areas
  integer                           :: jashp_genstruc            !< Write a shape file for general structures
+ integer                           :: jashp_dambreak            !< Write a shape file for dam breaks
 
  integer                           :: jambawritecsv             !< Option to write areas mass balance terms to a csv-file
 
@@ -1028,7 +1031,7 @@ subroutine default_flowparameters()
     jashp_pump= 0
     jashp_dry = 0
     jashp_genstruc = 0
-
+    jashp_dambreak = 0
     jambawritecsv = 0
 
     jambalumpmba = 0
