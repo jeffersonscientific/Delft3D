@@ -79,7 +79,7 @@ module m_waq_bmi_data
     !
     ! reals
     !
-    real(fp)                                       :: current_time       !< COSUMO_BMI starts at t=0.0 and is updated via BMI calls
+    real(fp)                                       :: current_time       !< WAQ_BMI starts at t=0.0 and is updated via BMI calls
     !
     ! logicals
     !
@@ -91,8 +91,6 @@ module m_waq_bmi_data
     character(6)                                   :: uniqueid           !< 6 capitals, randomly set in initialization phase
     character(MAXSTRLEN), target                   :: runid              !< As obtained from D-Flow FM
     character(MAXSTRLEN)                           :: infile             !< name of (XML) input/config file
-    character(MAXSTRLEN), dimension(3)             :: filename           !< 1: FF2NF file name
-                                                                         !< 2: NF2FF file name
 
 contains
 !
@@ -154,7 +152,6 @@ subroutine waq_bmi_data_init()
     !
     runid        = ' '
     infile       = ' '
-    filename     = ' '
     !
     ! other
     !
@@ -200,7 +197,6 @@ subroutine waq_bmi_data_finalize()
     infile    = ' '
     uniqueid  = ' '
     runid     = ' '
-    filename  = ' '
     !
     ! other
     !

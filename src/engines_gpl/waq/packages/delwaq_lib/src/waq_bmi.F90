@@ -187,17 +187,20 @@ end subroutine get_attribute
     real(c_double), value, intent(in) :: dt
     integer :: update_steps, step
     character(len=20), dimension(0) :: argv_dummy
-
-    update_steps = nint(dt * dlwqd%tscale) / idt
-    if(intsrt == 2) then
-      ! MDK 31-07-2023 this can be removed after when clean up the integration schemes, planned for september 2023
-       ! Correct update_steps for delwaq scheme 2, which does a double time step every call
-       update_steps = (update_steps + 1) / 2
-    end if
-    call realloc_waq_bmi_data()
-    do step = 1, update_steps
+    ! update_steps = nint(dt * dlwqd%tscale) / idt
+    ! call mess(LEVEL_INFO, "Update dt...Ba")
+    ! if(intsrt == 2) then
+    !   ! MDK 31-07-2023 this can be removed after when clean up the integration schemes, planned for september 2023
+    !    ! Correct update_steps for delwaq scheme 2, which does a double time step every call
+    !    update_steps = (update_steps + 1) / 2
+    ! end if
+    call mess(LEVEL_INFO, "Update dt...B")
+    !call realloc_waq_bmi_data()
+    call mess(LEVEL_INFO, "Update dt...C")
+    !do step = 1, update_steps
       call dlwqmain( ACTION_SINGLESTEP, 0, argv_dummy, dlwqd )
-    enddo
+    !enddo
+    call mess(LEVEL_INFO, "Update dt...D")
     update = 0
   end function update
 
