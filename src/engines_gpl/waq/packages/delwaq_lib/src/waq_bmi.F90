@@ -64,6 +64,7 @@ contains
     use delwaq2_global_data
     use m_waq_bmi_data 
     use MessageHandling
+    use m_actions
 
     implicit none
     character(kind=c_char),intent(in)    :: c_config_file(MAXSTRLEN)
@@ -110,9 +111,9 @@ contains
     call mess(LEVEL_INFO, "Initialize...")
     !call delwaq1(argc, argv, errorcode)
     if (errorcode==0) then
-       !call delwaq2_global_data_initialize(runid_given)
-       !call dlwqmain( ACTION_INITIALISATION, argc, argv, dlwqd )
-       !call delwaq2_global_data_copy( dlwqd )
+       call delwaq2_global_data_initialize(runid_given)
+       call dlwqmain( ACTION_INITIALISATION, argc, argv, dlwqd )
+       call delwaq2_global_data_copy( dlwqd )
        ! MDK 31-07-2023 why do we do this copy step? What does it achieve?
 
        call waq_bmi_data_init()
@@ -194,13 +195,10 @@ end subroutine get_attribute
     !    ! Correct update_steps for delwaq scheme 2, which does a double time step every call
     !    update_steps = (update_steps + 1) / 2
     ! end if
-    call mess(LEVEL_INFO, "Update dt...B")
-    !call realloc_waq_bmi_data()
-    call mess(LEVEL_INFO, "Update dt...C")
     !do step = 1, update_steps
       call dlwqmain( ACTION_SINGLESTEP, 0, argv_dummy, dlwqd )
     !enddo
-    call mess(LEVEL_INFO, "Update dt...D")
+
     update = 0
   end function update
 
