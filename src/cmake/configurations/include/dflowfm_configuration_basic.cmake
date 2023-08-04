@@ -233,4 +233,3 @@ endif()
 if(NOT TARGET plugin_delftflow_traform)
     add_subdirectory(${checkout_src_root}/plugins_lgpl/plugin_delftflow_traform plugin_delftflow_traform)
 endif()
-
