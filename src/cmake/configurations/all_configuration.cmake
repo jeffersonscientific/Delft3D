@@ -1,6 +1,6 @@
 # Specify the modules to be included
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/dflowfm_configuration.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dflowfm_configuration_basic.cmake)
  
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/dwaq_configuration.cmake)
  
@@ -23,6 +23,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/dimr_configuration.cmake)
 # Not officially supported yet: include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/tests_configuration.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/tools_configuration.cmake)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/windows_postbuild_configuration.cmake)
 
 # include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/tools_gpl_configuration.cmake)
 
