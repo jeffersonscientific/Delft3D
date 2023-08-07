@@ -429,9 +429,9 @@
       character*20,parameter   :: cdoprocesses = 'DoProcesses'
       character*20,parameter   :: cprocessesinactive = 'ProcessesInactive'
 
-      character*20,parameter   :: cWaveH = 'H' 
-      character*20,parameter   :: cWaveL = 'RL'
-      character*20,parameter   :: cWaveT = 'T'
+      character*20,parameter   :: cWaveH = 'WaveHeight' 
+      character*20,parameter   :: cWaveL = 'WaveLength'
+      character*20,parameter   :: cWaveT = 'WavePeriod'
       
       if (timon) call timstrt( "fm_wq_processes_ini_proc", ithndl )
 
@@ -1471,21 +1471,30 @@
          ipoiwaveheight  = arrpoi(iisfun) + (isfwaveheight-1)*noseg
          do kk=1,Ndxi
             call getkbotktopmax(kk,kb,kt,ktmax)
-            pmsa(ipoiwaveheight + ktmax-kbx) = hwav(kk)*sqrt(2.0_fp)
+            do k=kb,ktmax
+               pmsa(ipoiwaveheight  + k-kbx) = hwav(k)*sqrt(2.0_fp)
+            end do
+            !pmsa(ipoiwaveheight + ktmax-kbx) = hwav(kk)*sqrt(2.0_fp)
          end do
       endif
       if (isfwavelength.gt.0) then
          ipoiwavelength  = arrpoi(iisfun) + (isfwavelength-1)*noseg
          do kk=1,Ndxi
             call getkbotktopmax(kk,kb,kt,ktmax)
-            pmsa(ipoiwavelength + ktmax-kbx) = rlabda(kk)
+            do k=kb,ktmax
+               pmsa(ipoiwavelength  + k-kbx) = rlabda(k)
+            end do
+            !pmsa(ipoiwavelength + ktmax-kbx) = rlabda(kk)
          end do
       endif
       if (isfwaveperiod.gt.0) then
          ipoiwaveperiod  = arrpoi(iisfun) + (isfwaveperiod-1)*noseg
          do kk=1,Ndxi
             call getkbotktopmax(kk,kb,kt,ktmax)
-            pmsa(ipoiwaveperiod + ktmax-kbx) = twav(kk)
+            do k=kb,ktmax
+               pmsa(ipoiwaveperiod  + k-kbx) = twav(k)
+            end do
+            !pmsa(ipoiwaveperiod + ktmax-kbx) = twav(kk)
          end do
       endif
       
