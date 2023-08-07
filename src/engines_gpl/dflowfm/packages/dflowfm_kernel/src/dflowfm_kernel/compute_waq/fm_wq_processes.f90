@@ -1465,20 +1465,28 @@
          end do
       endif
       !
-      ! get wave params from dflow-fm.      
+      ! get wave params from dflow-fm and put to PMSA array.      
       !
-      ipoiwaveheight = arrpoi(iivol)
       if (isfwaveheight.gt.0) then
          ipoiwaveheight  = arrpoi(iisfun) + (isfwaveheight-1)*noseg
-         pmsa(ipoiwaveheight) = hwav
+         do kk=1,Ndxi
+            call getkbotktopmax(kk,kb,kt,ktmax)
+            pmsa(ipoiwaveheight + ktmax-kbx) = hwav(kk)*sqrt(2.0_fp)
+         end do
       endif
       if (isfwavelength.gt.0) then
          ipoiwavelength  = arrpoi(iisfun) + (isfwavelength-1)*noseg
-         pmsa(ipoiwavelength) = rlabda
+         do kk=1,Ndxi
+            call getkbotktopmax(kk,kb,kt,ktmax)
+            pmsa(ipoiwavelength + ktmax-kbx) = rlabda(kk)
+         end do
       endif
       if (isfwaveperiod.gt.0) then
          ipoiwaveperiod  = arrpoi(iisfun) + (isfwaveperiod-1)*noseg
-         pmsa(ipoiwaveperiod) = twav
+         do kk=1,Ndxi
+            call getkbotktopmax(kk,kb,kt,ktmax)
+            pmsa(ipoiwaveperiod + ktmax-kbx) = twav(kk)
+         end do
       endif
       
 
