@@ -151,7 +151,7 @@ subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1
          rightBreachWidth = 0d0
       endif
    enddo
-
+   
    ! check for any unprocessed breach width
    if (leftBreachWidth > 1.0d-6 * maxwidth .or. rightBreachWidth > 1.0d-6 * maxwidth) then
       write (msgbuf, '(3a)' ) 'The breach  of dam ''', trim(strucid), ''' exceeds the actual dam width on at least one side of the breach point.'
