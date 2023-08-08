@@ -37,6 +37,8 @@ module m_statistical_output
    use m_output_config
    use m_function_pointer
    
+   implicit none
+   
 private
 
    public realloc
@@ -232,9 +234,9 @@ contains
          item%stat_output = 0 
          item%timestep_sum = 0 !new sum every output interval
       case (SO_MAX)
-         item%stat_output = -huge
+         item%stat_output = -huge(1d0)
       case (SO_MIN)
-         item%stat_output = huge
+         item%stat_output = huge(1d0)
       case default 
          call mess(LEVEL_ERROR, 'update_statistical_output: invalid operation_id')
       end select
@@ -269,19 +271,20 @@ contains
    end subroutine add_stat_output_item
    
    integer function set_operation_type(output_config)
-   use string_module, only: str_tolower
+   use string_module, only: strcmpi
    
       type(t_output_quantity_config), intent(in) :: output_config          !> output quantity config linked to output item
       
       set_operation_type = -1
       
-      if      (trim(str_tolower(output_config%input_value)) == 'current' ) then
+      !if      (trim(str_tolower(output_config%input_value)) == 'current' ) then
+      if      (strcmpi(output_config%input_value, 'current')) then
          set_operation_type = SO_CURRENT
-      else if (trim(str_tolower(output_config%input_value)) == 'average' ) then
+      else if (strcmpi(output_config%input_value,  'average' )) then
          set_operation_type = SO_AVERAGE
-      else if (trim(str_tolower(output_config%input_value)) == 'max' ) then
-         set_operation_type = SO_MAX
-      else if (trim(str_tolower(output_config%input_value)) == 'min' ) then
+      else if (strcmpi(output_config%input_value, 'max' )) then
+         set_operation_type = SO_MAX             
+      else if (strcmpi(output_config%input_value, 'min' )) then
          set_operation_type = SO_MIN
       endif
          
@@ -293,7 +296,7 @@ contains
       type(t_output_variable_set), intent(inout) :: output_set !> output set that needs to be initialized
 
       type(t_output_variable_item), pointer  :: item 
-      integer :: j, inputsize
+      integer :: j, input_size
       logical :: success
       
       do j = 1, output_set%count
