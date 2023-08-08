@@ -22,4 +22,8 @@ set(build_project ${executable_name})
 
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION share)
+
+
 

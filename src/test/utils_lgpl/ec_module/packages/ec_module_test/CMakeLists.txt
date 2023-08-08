@@ -65,12 +65,8 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ec_module_test.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/src/m_ec_module_test.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-
-# post-build
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-set(build_project ${executable_name})
-
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION share PATTERN "src" EXCLUDE PATTERN "CMakeLists.txt" EXCLUDE PATTERN "Scripts" EXCLUDE)
 
 

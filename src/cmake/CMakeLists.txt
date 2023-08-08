@@ -119,6 +119,10 @@ if (WIN32)
     set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64)
 endif(WIN32)
 
+### Configuration names
+
+string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
+string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 
 # Set the location of the update_version script
 set(update_version_script_path ${checkout_src_root}/${update_version_script})
@@ -167,11 +171,6 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
     )
 
 endif(CMAKE_GENERATOR MATCHES "Visual Studio")
-
-### Configuration names
-
-string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
-string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 
 # Basic (single-component) configurations
 set(dflowfm_configuration "DFLOWFM")

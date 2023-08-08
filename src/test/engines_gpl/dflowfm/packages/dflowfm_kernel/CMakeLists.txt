@@ -142,10 +142,7 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tests/engines_gpl/dflowfm)
 
-# post-build
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-set(build_project ${executable_name})
-
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../test_dflowfm/test_data DESTINATION share)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 
