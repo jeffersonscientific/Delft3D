@@ -56,7 +56,7 @@
       use rd_token       ! for definition and storage of data
       use timers         ! performance timers
       use m_sysi          ! Timer characteristics
-      use m_gregor
+      use time_module
 
       implicit none
 
