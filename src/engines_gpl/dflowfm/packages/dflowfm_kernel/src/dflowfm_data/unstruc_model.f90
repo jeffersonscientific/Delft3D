@@ -1147,6 +1147,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
     call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
     call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
+    call prop_get_double (md_ptr, 'numerics', 'EpsTKE' , epstke)
+    call prop_get_double (md_ptr, 'numerics', 'EpsEPS' , epseps)
  
     call prop_get_double (md_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax)
     call prop_get_integer(md_ptr, 'numerics', 'AntiCreep' , jacreep)
@@ -3182,6 +3184,14 @@ endif
        call prop_set(prop_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp, '(Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)')
     endif
 
+    if (writeall .or. (epstke > 1d-32 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'EpsTKE' , epstke, '(TKE=max(TKE,EpsTKE), default=1d-32)')
+    endif
+
+    if (writeall .or. (epseps > 1d-32 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'EpsEPS' , epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
+    endif
+  
     if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
        call prop_set(prop_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax, 'Limit eddy viscosity at bed )')
     endif
