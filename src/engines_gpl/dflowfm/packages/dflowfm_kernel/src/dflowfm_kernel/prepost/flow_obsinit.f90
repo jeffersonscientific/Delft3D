@@ -35,7 +35,7 @@
  !! And bookkeeping for time series output on structures.
  subroutine flow_obsinit()
     use m_observations, only : init_valobs
-    use unstruc_model,  only : md_delete_obsevation_points_outside_grid
+    use unstruc_model,  only : md_delete_observation_points_outside_grid
     use m_wind
     use m_structures
     
@@ -50,7 +50,7 @@
 
     call obs_on_flowgeom(0)
     
-    if ( md_delete_obsevation_points_outside_grid ) then
+    if ( md_delete_observation_points_outside_grid ) then
        call delete_static_observation_points_outside_grid()
     end if
 
