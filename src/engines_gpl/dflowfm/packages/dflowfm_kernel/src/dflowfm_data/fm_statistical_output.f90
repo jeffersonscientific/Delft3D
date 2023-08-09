@@ -16,10 +16,71 @@ private
    type(t_output_variable_set), allocatable, public :: out_variable_set_clm
    
    double precision, dimension(:), allocatable, target, public :: constit_crs_obs_data !< constituent data on observation cross sections to be written
-   
-   public default_fm_statistical_output, aggregate_constit_crs_obs_data
+   double precision, dimension(:), allocatable, target, public :: ucmaga_data !< uc vector norm data to be written
+   double precision, dimension(:), allocatable, target, public :: viu_data !< viu data to be written
+
+   public default_fm_statistical_output
 
    contains
+   
+   !> calculates ucmaga vector norm
+   subroutine calculate_ucmaga(data_pointer)
+   use m_flow, only: ucx, ucy
+   use m_flowgeom, only: ndx, ndxi
+   use unstruc_model, only: md_unc_conv
+   use m_flowparameters, only: jamapbnd
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
+   
+   integer :: k, ndxndxi
+   
+   if (.not. allocated(ucmaga_data)) then
+      ! Include boundary cells in output (ndx) or not (ndxi)
+      if (md_unc_conv == 1 .AND. jamapbnd > 0) then
+         ndxndxi   = ndx
+      else
+         ndxndxi   = ndxi
+      end if
+      allocate(ucmaga_data(ndxndxi))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => ucmaga_data
+   endif
+   
+   do k = 1, ndxndxi
+      ucmaga_data(k) = sqrt(ucx(k)**2 + ucy(k)**2)
+   enddo
+   
+   end subroutine calculate_ucmaga
+   
+      !> calculates ucmaga vector norm
+   subroutine calculate_viu(data_pointer)
+   use m_flowgeom, only: lnx
+   use m_flow, only: viusp, viu, vicouv
+   use m_flowparameters, only: javiusp
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to viu
+   
+   integer :: ll, ndxndxi
+   double precision :: vicc
+   
+   if (.not. allocated(viu_data)) then
+      allocate(viu_data(lnx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => viu_data
+   endif
+   
+   do LL = 1,lnx
+      if (javiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+         vicc = viusp(LL)
+      else
+         vicc = vicouv
+      end if
+      viu_data(LL) = viu(LL) + vicc
+   end do
+   
+   end subroutine calculate_viu
    
    !> Aggregate constituent observation crossection data from crs()% value arrays into statistical_output data array.
    subroutine aggregate_constit_crs_obs_data(data_pointer)
@@ -1772,35 +1833,100 @@ private
 
          
          
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S1                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_POTEVAP                                                   )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_ACTEVAP                                                   )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PRESCREVAP                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOL1                                                      )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HU                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT                                                    )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT_CUM                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER                                                    )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER_CUM                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP                                                  )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP_CUM                                              )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_COURANT                                                   )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_AU                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U1                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U0                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ_EULERIAN                                             )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ_EULERIAN                                             )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ                                                      )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ                                                      )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG_EULER                                               )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM                                                )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA                                                    )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WW1                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHO                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU                                                       )
+   end subroutine flow_init_statistical_output_his
+
+   subroutine flow_init_statistical_output_map(output_config,output_set)
+   use m_flow
+   use m_hydrology_data, only: PotEvap, ActEvap
+   use m_wind, only: evap
+   use m_statistical_callback
+   USE, INTRINSIC :: ISO_C_BINDING
+   
+      type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
+      type(t_output_quantity_config_set), intent(in)  :: output_config !> output config for which an output set is needed.
+      double precision, pointer, dimension(:) :: temp_pointer
+      procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
+      
+      integer :: i, ntot
+      
+      if (jamaps0 > 0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0),s0                                                        )
+      endif
+      if (jamaps1 > 0) then
+          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S1),s1                                                        )
+      endif
+      if (jamapevap > 0) then
+         if(jadhyd == 1) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_POTEVAP),PotEvap                                                   )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_ACTEVAP),ActEvap                                            )
+         endif
+         if (jaevap == 1) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PRESCREVAP),evap                                                )
+         endif
+      endif
+      if (jamapvol1 == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOL1),vol1                                                      )
+      endif
+      if (jamaphs == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH),hs                                                )
+      endif
+      if (jamapu1 == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HU),hu                                                        )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U1),u1                                                        )
+      endif
+      if (jamapu0 == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U0),u0                                                      )
+      endif
+      if (jamapflowanalysis == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT      ), negativeDepths               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT_CUM  ), negativeDepths_cum           )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER      ), noIterations                 )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER_CUM  ), noIterations_cum             )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP    ), limitingTimestepEstimation          )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP_CUM), limitingTimestepEstimation_cum          )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_COURANT     ), flowCourantNumber            )
+      endif
+      if (jamapau == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_AU),au                                                      )
+      endif
+      if (jamapucqvec == 1) then
+         if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ_EULERIAN),ucxq                                           )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ_EULERIAN),ucyq                                           )
+         else
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ),ucxq                                                    )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ),ucyq                                                    )
+         endif
+      endif
+      if(jamapucmag > 0) then
+         if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG_EULER),ucmag                                               )
+         else
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG),ucmag                                                     )
+         endif
+         if (kmx > 0) then           
+            function_pointer => calculate_ucmaga
+            temp_pointer => null()
+            if (jaeulervel==1 .and. jawave>0) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+               call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),temp_pointer,function_pointer                                                )
+            else
+               call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA),temp_pointer,function_pointer                                                    )
+            endif
+         endif
+      endif
+      if (kmx > 0) then
+         if(jamapww1 > 0) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WW1),WW1                                                       )
+         endif
+         if(jamaprho > 0) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHO),rho                                                       )
+         endif
+         if (jamapviu > 0) then
+            function_pointer => calculate_viu
+            temp_pointer => null()
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU),temp_pointer,function_pointer                                                       )
+         endif
+      endif
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU                                                       )
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1                                                        )
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1_MAIN                                                   )
@@ -1926,6 +2052,6 @@ private
       
       call initialize_statistical_output(output_set)
          
-   end subroutine flow_init_statistical_output_his
+   end subroutine flow_init_statistical_output_map
    
 end module fm_statistical_output

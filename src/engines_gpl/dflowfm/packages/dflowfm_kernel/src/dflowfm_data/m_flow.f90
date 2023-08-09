@@ -176,16 +176,16 @@
  double precision, allocatable         :: s1mini(:)   !< initial of s1m
  double precision, allocatable         :: a1m(:)      !< surface area pressurized nonlin minus part
 
- double precision, allocatable         :: negativeDepths(:)                 !< Number of negative depths during output interval at nodes.
- double precision, allocatable         :: negativeDepths_cum(:)             !< Cumulative number of negative depths at nodes.
- double precision, allocatable         :: noIterations(:)                   !< Number of no iteration locations during output interval at nodes.
- double precision, allocatable         :: noIterations_cum(:)               !< Cumulative number of no iteration locations at nodes.
- double precision, allocatable         :: limitingTimestepEstimation(:)     !< Number of times during the output interval the conditions in a node is limiting the time step
- double precision, allocatable         :: limitingTimestepEstimation_cum(:) !< Cumulative number of times the conditions in a node is limiting the time step.
+ double precision, allocatable, target :: negativeDepths(:)                 !< Number of negative depths during output interval at nodes.
+ double precision, allocatable, target :: negativeDepths_cum(:)             !< Cumulative number of negative depths at nodes.
+ double precision, allocatable, target :: noIterations(:)                   !< Number of no iteration locations during output interval at nodes.
+ double precision, allocatable, target :: noIterations_cum(:)               !< Cumulative number of no iteration locations at nodes.
+ double precision, allocatable, target :: limitingTimestepEstimation(:)     !< Number of times during the output interval the conditions in a node is limiting the time step
+ double precision, allocatable, target :: limitingTimestepEstimation_cum(:) !< Cumulative number of times the conditions in a node is limiting the time step.
                                                                             !< Note: this doubles with variable numlimdt(:), which contains the same cumulative count, under a different MDU option.
                                                                             !< Note: these variables are double precision (in stead of integers) because post processing is
                                                                             !<       based on double precision variables.
- double precision, allocatable         :: flowCourantNumber(:)              !< Courant number
+ double precision, allocatable, target :: flowCourantNumber(:)              !< Courant number
 
 ! node related, dim = ndkx
 
@@ -280,7 +280,7 @@
  double precision, allocatable     :: sam1  (:)   !< salinity mass       (pptm3) at end   of timestep  ! remove later
  double precision, allocatable     :: same  (:)   !< salinity mass error (pptm3) at end   of timestep  ! remove later
 
- double precision, allocatable     :: ww1   (:)   !< vertical velocity (m/s) end of timestep
+ double precision, allocatable, target :: ww1   (:)   !< vertical velocity (m/s) end of timestep
  double precision, allocatable     :: qw    (:)   !< vertical flux through interface (m3/s)
  double precision, allocatable     :: tidep (:,:) !< tidal potential (m2/s2)
  double precision, allocatable     :: tidef (:)   !< tidal force (m/s2)
@@ -293,7 +293,7 @@
 
 
 ! link related, dim = lnkx
- double precision, allocatable     :: u0    (:)   !< flow velocity (m/s)  at start of timestep
+ double precision, allocatable, target     :: u0(:)   !< flow velocity (m/s)  at start of timestep
  double precision, allocatable, target     :: u1(:)   !< [m/s]  flow velocity (m/s)  at   end of timestep {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable, target     :: u_to_umain(:)   !< [-]  Factor for translating general velocity to the flow velocity in the main channel at end of timestep (1d) {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable, target     :: q1(:)   !< [m3/s] discharge     (m3/s) at   end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array {"location": "edge", "shape": ["lnkx"]}
