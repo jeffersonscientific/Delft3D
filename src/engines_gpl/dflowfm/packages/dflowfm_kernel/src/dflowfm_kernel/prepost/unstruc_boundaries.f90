@@ -1561,6 +1561,7 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
    double precision, pointer  :: dbleptr(:)
    integer            :: tgtitem
    integer, pointer   :: intptr, multuniptr
+   logical            :: file_exists
 
    success = .true.   ! initialization
    xdum = 1d0 ; ydum = 1d0; kdum = 1
@@ -1572,6 +1573,15 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
       ! Prepare time series relation, if the .pli file has an associated .tim file.
       L = index(locationfile,'.', back=.true.) - 1
       valuestring = locationfile(1:L)//'_0001.tim'
+      inquire(file=valuestring, exist=file_exists)
+      if ( .not. file_exists ) then
+          valuestring = locationfile(1:L)//'.tim'
+          inquire(file=valuestring, exist=file_exists)
+          if ( .not. file_exists ) then
+             call mess(LEVEL_WARN, 'Files '''//trim(valuestring)//''' and file '''//trim(locationfile(1:L)//'_0001.tim')//''' do not exist.')
+          end if
+      end if
+
    else
       ! TODO: AvD: error msg?
       success = .false.
