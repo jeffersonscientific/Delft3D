@@ -52,11 +52,10 @@
 
 !     Global declarations
 
-      use m_julian
+      use time_module
       use rd_token       ! for definition and storage of data
       use timers         ! performance timers
       use m_sysi          ! Timer characteristics
-      use time_module
 
       implicit none
 
@@ -79,6 +78,7 @@
       integer       isec    ! second of delayed reference time
       real(8)       dummy   ! second in double precision (not used)
       integer(4) :: ithndl = 0
+!      DOUBLE PRECISION :: JULIAN_v2
       if (timon) call timstrt( "read_time_delay", ithndl )
 
 !     tell what you are doing here
@@ -141,7 +141,7 @@
 
 !     compute the Julian time of the result
 
-      deltim = julian ( idate , itime )
+      deltim = JULIAN_v2 ( idate , itime )
 
 !       write meaningfull message to check procedure
 
