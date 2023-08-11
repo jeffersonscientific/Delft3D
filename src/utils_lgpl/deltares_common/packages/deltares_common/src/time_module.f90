@@ -1220,7 +1220,7 @@ module time_module
   999 RETURN
       END FUNCTION JULIAN
 
-      DOUBLE PRECISION FUNCTION JULIAN_v2 ( IDATE , ITIME )
+      DOUBLE PRECISION FUNCTION julian_with_leapyears ( IDATE , ITIME )
 !
 !     +----------------------------------------------------------------+
 !     |    W A T E R L O O P K U N D I G   L A B O R A T O R I U M     |
