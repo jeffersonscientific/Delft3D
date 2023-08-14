@@ -981,7 +981,7 @@ subroutine useBranchOrdersCrs(crs, brs)
    tempset%count = crsCount
    
    maxBranchId    = max(1,maxval(crs%cross(:)%branchId))
-   maxBranchOrder = max(1,maxval(brs%branch(:)%ordernumber))
+   maxBranchOrder = max(1,maxval(brs%branch(:)%ordernumber)+1)
    maxChainage    = maxval(crs%cross(:)%chainage)
    
    ! Multiplication factors for sorting 
@@ -989,18 +989,21 @@ subroutine useBranchOrdersCrs(crs, brs)
    F1 = (maxBranchId+1)*F2
    
    allocate(crsData(crsCount),crs%crossSectionIndex(crscount),crsIndices(crsCount),tempset%cross(crsCount),orderNumber(maxBranchOrder+2,2))
-   ! We want to sort the array on branchid, followed by order number and finally by chainage.
+   ! We want to sort the array by branch order and chainage, but in groups:
+   ! first cross sections that are not on any branch (order by crs index),
+   ! then cross sections on branches that have no branch order (order by chainage),
+   ! and finally by both order number and chainage.
    ! To this end we multiply branch id by F1 and branch order by F2 to be able to sort them all at once.
-   ! see: UNST-3680
+   ! See: UNST-3680
    do ics = 1, crsCount
       crsIndices(ics) = ics
       ibr = crs%cross(ics)%branchid
       if (ibr <= 0) then ! crs without branch first
          crsData(ics) = crs%cross(ics)%chainage
-      else if (getOrderNumber(brs, ibr) <= 0) then
+      else if (getOrderNumber(brs, ibr) < 0) then
          crsData(ics) = crs%cross(ics)%branchid*F2 + crs%cross(ics)%chainage
       else   
-         crsData(ics) = getOrderNumber(brs, ibr)*F1 + crs%cross(ics)%branchid*F2 + crs%cross(ics)%chainage
+         crsData(ics) = (getOrderNumber(brs, ibr)+1)*F1 + crs%cross(ics)%branchid*F2 + crs%cross(ics)%chainage
       endif
    enddo
    
@@ -1011,6 +1014,11 @@ subroutine useBranchOrdersCrs(crs, brs)
       crs%crossSectionIndex(crsIndices(ics)) = ics 
    enddo
    crs%cross(:) = tempset%cross(:) !copy temp array to real array
+   
+   !ENABLE THIS LOOP TO DEBUG SORTED BRANCH ORDERS IN CASE OF PROBLEMS IN USEBRANCHORDERSCRS
+   !do ics = 1, crsCount 
+   !   crsData(ics) = getOrderNumber(brs,crs%cross(ics)%branchId)    
+   !enddo
    
    !check for multiple crossSections on a branch and fill OrderNumber array
    minordernumber = -1
@@ -1075,7 +1083,7 @@ integer function getOrderNumber(brs, ibr)
    type(t_branchSet), intent(in)    :: brs       !< Set of reaches
    integer, intent(in)              :: ibr       !< branch index
 
-   if (ibr <= brs%count) then
+   if (ibr <= brs%count .and. ibr > 0) then
       getOrderNumber = brs%branch(ibr)%orderNumber
    else
       getOrderNumber = -1
