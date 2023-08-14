@@ -243,8 +243,8 @@
 ! double precision, allocatable, target     :: rsi    (:)   !< 1/R_s inverse streamline curvature         ,    (1/m)
 ! double precision, allocatable, target     :: rsiexact(:)   !< 1/R_s inverse streamline curvature (exact) ,    (1/m)
 ! double precision, allocatable, target     :: uc3rsi (:)   !< cell center u_mod^3/R_s                    ,    (m^2/s^3)
- double precision, dimension(:), allocatable :: spircrv   !< 1/R_s streamline curvature                 ,    (1/m)
- double precision, dimension(:), allocatable :: spirint   !< spiral flow intensity                      ,    (m/s)
+ double precision, dimension(:), allocatable, target :: spircrv   !< 1/R_s streamline curvature                 ,    (1/m)
+ double precision, dimension(:), allocatable, target :: spirint   !< spiral flow intensity                      ,    (m/s)
  double precision, dimension(:), allocatable :: spirsrc   !< source term for spiral flow intensity      ,    (m/s^2)
  double precision, dimension(:), allocatable :: spirfx    !< Secondary flow force for momentum in x-dir ,    (m/s^2)
  double precision, dimension(:), allocatable :: spirfy    !< Secondary flow force for momentum in y-dir ,    (m/s^2)
@@ -299,7 +299,7 @@
  double precision, allocatable, target     :: q1(:)   !< [m3/s] discharge     (m3/s) at   end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable, target     :: q1_main(:)   !< [m3/s] discharge     (m3/s) in main channel at {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable     :: qa    (:)   !< discharge (m3/s) used in advection, qa=au(n)*u1(n+1) instead of
- double precision, allocatable     :: map_fixed_weir_energy_loss(:)   !< fixed weir energy loss at end of timestep {"location": "edge", "shape": ["lnkx"]}
+ double precision, allocatable, target:: map_fixed_weir_energy_loss(:)   !< fixed weir energy loss at end of timestep {"location": "edge", "shape": ["lnkx"]}
  double precision, allocatable     :: cflj  (:)   !< courant nr link j to downwind volume i (    ) = Dt*Qj/Vi
  double precision, allocatable     :: tetaj (:)   !< 1-1/sum(upwind incoming courants)      (    )
  double precision, allocatable, target     :: au    (:)   !< [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
@@ -330,8 +330,8 @@
  integer,          allocatable     :: ifrcutp(:)  !< friction coefficient type   initial fields ( todo mag later ook single real worden)
  double precision, allocatable     :: Cdwusp(:)   !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
  double precision, allocatable     :: Windspeedfac(:) !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
- double precision, allocatable     :: z0ucur(:)   !< current related roughness, moved from waves, always needed
- double precision, allocatable     :: z0urou(:)   !< current and wave related roughness
+ double precision, allocatable, target :: z0ucur(:)   !< current related roughness, moved from waves, always needed
+ double precision, allocatable, target :: z0urou(:)   !< current and wave related roughness
  double precision, allocatable, target :: sul(:)  !< water level on flow links (needed in fourier_analysis)
 
  double precision, allocatable     :: frcuroofs(:)!< temp

@@ -17,17 +17,70 @@ private
    
    double precision, dimension(:), allocatable, target, public :: constit_crs_obs_data !< constituent data on observation cross sections to be written
    double precision, dimension(:), allocatable, target, public :: ucmaga_data !< uc vector norm data to be written
-   double precision, dimension(:), allocatable, target, public :: viu_data !< viu data to be written
+   double precision, dimension(:), allocatable, target, public :: viu_data, diu_data !< viu and diu data to be written
+   double precision, dimension(:), allocatable, target, public :: tausx_data, tausy_data !< viu and diu data to be written
 
    public default_fm_statistical_output
 
    contains
    
+      !> calculates ucmaga vector norm
+   subroutine calculate_tausxy(data_pointer)
+   use m_flowgeom, only: ndx
+   use m_flow, only: kmx, taus, ucx, ucy
+   use m_flowparameters, only: jawave
+   
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
+   
+   integer :: k, kb, kt
+   double precision :: ux, uy, um
+   
+   if (.not. allocated(tausx_data)) then
+      allocate(tausx_data(ndx),tausy_data(ndx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => tausx_data
+   endif
+   
+   if (jawave==0) then        ! Else, get taus from subroutine tauwave (taus = f(taucur,tauwave))
+      call gettaus(1,1)
+      !workx=DMISS; worky=DMISS
+      if (kmx==0) then
+         do k = 1, ndx   ! stack
+            tausx_data(k) = taus(k)*ucx(k)/max(hypot(ucx(k),ucy(k)),1d-4)  ! could use ucmag, but not guaranteed to exist
+            tausy_data(k) = taus(k)*ucy(k)/max(hypot(ucx(k),ucy(k)),1d-4)
+         enddo
+      else
+         do k = 1, ndx
+            call getkbotktop(k,kb,kt)
+            ux = ucx(kb); uy = ucy(kb)
+            um = max(hypot(ux,uy),1d-4)
+            tausx_data(k) = taus(k)*ux/um
+            tausy_data(k) = taus(k)*uy/um
+         enddo
+      endif
+   end if
+
+   end subroutine calculate_tausxy
+   
+   !> only sets data pointer since calculation and allocation is done above
+   subroutine set_pointer_tausy(data_pointer)
+   
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
+
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => tausy_data
+   endif
+   
+   end subroutine set_pointer_tausy
+   
    !> calculates ucmaga vector norm
    subroutine calculate_ucmaga(data_pointer)
    use m_flow, only: ucx, ucy
    use m_flowgeom, only: ndx, ndxi
-   use unstruc_model, only: md_unc_conv
+   !use unstruc_model, only: md_unc_conv
    use m_flowparameters, only: jamapbnd
    double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
    
@@ -35,7 +88,8 @@ private
    
    if (.not. allocated(ucmaga_data)) then
       ! Include boundary cells in output (ndx) or not (ndxi)
-      if (md_unc_conv == 1 .AND. jamapbnd > 0) then
+      !if (md_unc_conv == 1 .AND. jamapbnd > 0) then
+      if (jamapbnd > 0) then
          ndxndxi   = ndx
       else
          ndxndxi   = ndxi
@@ -53,14 +107,15 @@ private
    
    end subroutine calculate_ucmaga
    
-      !> calculates ucmaga vector norm
+      !> calculates viu
    subroutine calculate_viu(data_pointer)
    use m_flowgeom, only: lnx
-   use m_flow, only: viusp, viu, vicouv
+   use m_flow, only: viusp, viu, vicouv, kmx
    use m_flowparameters, only: javiusp
    double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to viu
    
-   integer :: ll, ndxndxi
+   integer :: ll, LB, LT, L
+   integer :: ndxndxi
    double precision :: vicc
    
    if (.not. allocated(viu_data)) then
@@ -71,16 +126,75 @@ private
       data_pointer => viu_data
    endif
    
-   do LL = 1,lnx
-      if (javiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
-         vicc = viusp(LL)
-      else
-         vicc = vicouv
-      end if
-      viu_data(LL) = viu(LL) + vicc
-   end do
-   
+   if (kmx > 0) then
+      do LL = 1,lnx
+         if (javiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+            vicc = viusp(LL)
+         else
+            vicc = vicouv
+         end if
+         call getLbotLtopmax(LL, Lb, Lt)
+         do L = Lb,Lt
+            viu_data(L) = viu(L) + vicc
+         end do
+      end do
+   else
+      do LL = 1,lnx
+         if (javiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+            vicc = viusp(LL)
+         else
+            vicc = vicouv
+         end if
+         viu_data(LL) = viu(LL) + vicc
+      end do
+   endif
+
    end subroutine calculate_viu
+   
+   !> calculates diu
+   subroutine calculate_diu(data_pointer)
+   use m_flowgeom, only: lnx
+   use m_flow, only: diusp, viu, dicouv, kmx
+   use m_flowparameters, only: jadiusp
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to diu
+   
+   integer :: LL, LB, LT, L
+   integer ::ndxndxi
+   double precision :: dicc
+   
+   if (.not. allocated(diu_data)) then
+      allocate(diu_data(lnx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => diu_data
+   endif
+   
+
+   if (kmx > 0) then
+      do LL = 1,lnx
+         if (jadiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+            dicc = diusp(LL)
+         else
+            dicc = dicouv
+         end if
+         call getLbotLtopmax(LL, Lb, Lt)
+         do L = Lb,Lt
+            diu_data(L) = viu(L) / 0.7 + dicc
+         end do
+      end do
+   else
+      do LL = 1,lnx
+         if (jadiusp == 1) then ! If horizontal eddy viscosity is spatially varying.
+            dicc = diusp(LL)
+         else
+            dicc = dicouv
+         end if
+         diu_data(LL) = viu(LL) / 0.7 + dicc
+      end do
+   endif
+
+   end subroutine calculate_diu
    
    !> Aggregate constituent observation crossection data from crs()% value arrays into statistical_output data array.
    subroutine aggregate_constit_crs_obs_data(data_pointer)
@@ -1837,9 +1951,13 @@ private
 
    subroutine flow_init_statistical_output_map(output_config,output_set)
    use m_flow
+   use m_flowgeom, only: ndxi
    use m_hydrology_data, only: PotEvap, ActEvap
    use m_wind, only: evap
    use m_statistical_callback
+   use m_flowparameters
+   use m_sediment, only: stm_included, sedtra
+   use m_transport, only: itemp, constituents
    USE, INTRINSIC :: ISO_C_BINDING
    
       type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
@@ -1914,6 +2032,16 @@ private
             endif
          endif
       endif
+      if (jamapviu > 0) then
+         function_pointer => calculate_viu
+         temp_pointer => null()
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU),temp_pointer,function_pointer                                                       )
+      endif
+      if (jamapdiu > 0) then
+         function_pointer => calculate_diu
+         temp_pointer => null()
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU),temp_pointer,function_pointer                                                       )
+      endif
       if (kmx > 0) then
          if(jamapww1 > 0) then
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WW1),WW1                                                       )
@@ -1921,26 +2049,44 @@ private
          if(jamaprho > 0) then
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHO),rho                                                       )
          endif
-         if (jamapviu > 0) then
-            function_pointer => calculate_viu
-            temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU),temp_pointer,function_pointer                                                       )
+      endif
+      if (jamapq1 == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1),q1                                                        )
+      endif
+      if (jamapq1main == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1_MAIN),q1_main                                                   )
+      endif
+      if (jamapfw == 1) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FIXED_WEIR_ENERGY_LOSS),map_fixed_weir_energy_loss                                    )
+      endif
+      if (jasecflow > 0 .and. jamapspir > 0) then
+         if (kmx == 0) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRCRV),spircrv                                                   )
+         endif
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRINT),spirint                                                   )
+      endif
+      if (jamapnumlimdt > 0) then
+         !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUMLIMDT),numlimdt                                                  )
+      endif
+      if (jamaptaucurrent>0) then
+         function_pointer => calculate_tausxy
+         temp_pointer => null()
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX),temp_pointer,function_pointer                                                     )
+         function_pointer => set_pointer_tausy
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),temp_pointer,function_pointer                      )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
+         if (stm_included) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSMAX),sedtra%taub                                                   )
          endif
       endif
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU                                                       )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1                                                        )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1_MAIN                                                   )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FIXED_WEIR_ENERGY_LOSS                                    )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRCRV                                                   )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRINT                                                   )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUMLIMDT                                                  )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY                                                     )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS                                                      )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSMAX                                                   )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UCUR                                                    )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UROU                                                    )
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SA1                                                       )
+      if (jamapz0>0) then  
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UCUR),z0ucur                                                    )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UROU),z0urou                                                    )
+      endif
+      if (jasal > 0) then  ! Write the data: salinity
+         call c_f_pointer (c_loc(constituents(itemp, 1:ndxi)), temp_pointer, [ndxi])
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SA1),temp_pointer                                                       )
+      endif
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZS                                                       )
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZU                                                       )
       !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFU                                                       )
