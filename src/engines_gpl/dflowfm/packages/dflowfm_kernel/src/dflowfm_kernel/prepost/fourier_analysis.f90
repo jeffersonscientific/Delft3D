@@ -297,6 +297,7 @@ module m_fourier_analysis
       use mathconsts
       use string_module
       use unstruc_messages
+      use m_flowtimes, only: Tudunitstr
       implicit none
       !
       ! Global variables
@@ -625,9 +626,19 @@ module m_fourier_analysis
                   call init_running_mean(fousma(ifou)%running, RMmeta)
                   icol1 = min(icol+1,ncols)
                   if (cdummy == 'max') then
-                     foutyp_new = merge('r', 'R', columns(icol1) /= 'time')
+                     if (columns(icol1) == 'time') then
+                         foutyp_new = 'R'
+                         icol = icol+1
+                     else
+                         foutyp_new = 'r'
+                     end if
                   else if (cdummy == 'min') then
-                     foutyp_new = merge('u', 'U', columns(icol1) /= 'time')
+                     if (columns(icol1) == 'time') then
+                         foutyp_new = 'U'
+                         icol = icol+1
+                     else
+                         foutyp_new = 'u'
+                     end if
                   end if
                   isRunningMean = .true.
                end if
@@ -669,22 +680,29 @@ module m_fourier_analysis
             fnumcy(ifou) = 0
             foufas(ifou) = 0.0_fp
             
-            icol = icol + 1
-            cdummy = trim(columns(icol))
-            select case (cdummy)
-            case ('above')
-               foutyp_new = '>'
-            case ('below')
-               foutyp_new = '<'
-            case default
+            if (icol < ncols-1) then
+               icol = icol + 1
+               cdummy = trim(columns(icol))
+               select case (cdummy)
+               case ('above')
+                  foutyp_new = '>'
+               case ('below')
+                  foutyp_new = '<'
+               case default
+                  write (msgbuf, '(3a,i0,2a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                        & ': expecting above or below after "time", instead of ', trim(cdummy)
+                  call warn_flush()
+                  goto 6666
+               end select
+            
+               icol = icol + 1
+               read (columns(icol), *, err=6666) fthresh(ifou)
+            else
                write (msgbuf, '(3a,i0,2a)') 'in file ', trim(filfou), ' line ', linenumber, &
-                     & ': expecting above or below, instead of ', trim(cdummy)
+                     & ': incomplete "time above/below <threshold>" flag found.'
                call warn_flush()
                goto 6666
-            end select
-            
-            icol = icol + 1
-            read (columns(icol), *, err=6666) fthresh(ifou)
+            endif
             
          case default
             if (cdummy /= 'mean') then
@@ -744,7 +762,7 @@ module m_fourier_analysis
                ivar = ivar + 1
                fouvarnam(ivar) = "maximum" // cref // "_time"
                fouvarnamlong(ivar) = "time of maximum value"
-               call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
+               fouvarunit(ivar) = trim(Tudunitstr)
                fouvarnamstd(ivar) = "time_max"
             end if
          case ('i', 'u', 'U')
@@ -769,7 +787,7 @@ module m_fourier_analysis
                ivar = ivar + 1
                fouvarnam(ivar) = "minimum" // cref // "_time"
                fouvarnamlong(ivar) = "time of minimum value"
-               call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
+               fouvarunit(ivar) = trim(Tudunitstr)
                fouvarnamstd(ivar) = "time_min"
             end if
          case ('c', 'C')
@@ -784,7 +802,6 @@ module m_fourier_analysis
             call remove_leading_spaces(message)
             fouvarnam(ivar) = "time_" // cref // "_above"
             fouvarnamlong(ivar) = "cumulative time above "//trim(message)
-            ! call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
             fouvarunit(ivar) = "s"
             fouvarnamstd(ivar) = ""
          case ('<')
@@ -793,7 +810,6 @@ module m_fourier_analysis
             call remove_leading_spaces(message)
             fouvarnam(ivar) = "time_" // cref // "_below"
             fouvarnamlong(ivar) = "cumulative time below "//trim(message)
-            ! call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
             fouvarunit(ivar) = "s"
             fouvarnamstd(ivar) = ""
          case ('l')
