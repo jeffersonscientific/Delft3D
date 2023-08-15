@@ -337,10 +337,10 @@ private
    integer, public :: IDX_MAP_TUREPS1
    integer, public :: IDX_MAP_TUREPS1_3
    integer, public :: IDX_MAP_TUREPS1_4
-   integer, public :: IDX_MAP_CFRT_0
-   integer, public :: IDX_MAP_CFRT_1
-   integer, public :: IDX_MAP_CFRT_2
-   integer, public :: IDX_MAP_CFRT
+   integer, public :: IDX_MAP_CFTRT_0
+   integer, public :: IDX_MAP_CFTRT_1
+   integer, public :: IDX_MAP_CFTRT_2
+   integer, public :: IDX_MAP_CFTRT
    integer, public :: IDX_MAP_CFCL
    integer, public :: IDX_MAP_RAINFALL_RATE
    integer, public :: IDX_MAP_INTERCEPTION_WATERDEPTH
