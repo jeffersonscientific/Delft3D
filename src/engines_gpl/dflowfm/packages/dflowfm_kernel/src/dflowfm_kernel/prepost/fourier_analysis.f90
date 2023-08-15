@@ -629,13 +629,23 @@ module m_fourier_analysis
                      if (columns(icol1) == 'time') then
                          foutyp_new = 'R'
                          icol = icol+1
+                     elseif (icol < ncols) then
+                         write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                               & ': invalid quantity ', trim(columns(icol+1)),' after max; only time supported for running mean quantities.'
+                         call warn_flush()
+                         goto 6666
                      else
                          foutyp_new = 'r'
-                     end if
-                  else if (cdummy == 'min') then
+                     endif
+                  elseif (cdummy == 'min') then
                      if (columns(icol1) == 'time') then
                          foutyp_new = 'U'
                          icol = icol+1
+                     elseif (icol < ncols) then
+                         write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                               & ': invalid quantity ', trim(columns(icol+1)),' after min; only time supported for running mean quantities.'
+                         call warn_flush()
+                         goto 6666
                      else
                          foutyp_new = 'u'
                      end if
@@ -650,25 +660,35 @@ module m_fourier_analysis
                   case ('max')
                      foutyp_new = 'x'
                      if (icol < ncols) then
-                        if (valid_combi(founam(ifou), columns(icol+1))) then
+                        if (columns(icol+1) == 'time') then
+                           gdfourier%withTime(ifou) = .true.
+                           icol = icol + 1
+                        else if (valid_combi(founam(ifou), columns(icol+1))) then
                            foutyp_new = 'c'
                            gdfourier%founamc(ifou) = columns(icol+1)
                            icol = icol + 1
-                        else if (columns(icol+1) == 'time') then
-                           gdfourier%withTime(ifou) = .true.
-                           icol = icol + 1
+                        else
+                           write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                                 & ': invalid quantity ', trim(columns(icol+1)),' after max; maybe its location isn''t consistent with that of the primary quantity.'
+                           call warn_flush()
+                           goto 6666
                         end if
                     end if
                   case ('min')
                      foutyp_new = 'i'
                      if (icol < ncols) then
-                        if (valid_combi(founam(ifou), columns(icol+1))) then
+                        if (columns(icol+1) == 'time') then
+                           gdfourier%withTime(ifou) = .true.
+                           icol = icol + 1
+                        else if (valid_combi(founam(ifou), columns(icol+1))) then
                            foutyp_new = 'C'
                            gdfourier%founamc(ifou) = columns(icol+1)
                            icol = icol + 1
-                        else if (columns(icol+1) == 'time') then
-                           gdfourier%withTime(ifou) = .true.
-                           icol = icol + 1
+                        else
+                           write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                                 & ': invalid quantity ', trim(columns(icol+1)),' after min; maybe its location isn''t consistent with that of the primary quantity.'
+                           call warn_flush()
+                           goto 6666
                         end if
                      end if
                   case ('avg')
