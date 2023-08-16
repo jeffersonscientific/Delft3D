@@ -282,7 +282,7 @@
 
  double precision, allocatable, target :: ww1   (:)   !< vertical velocity (m/s) end of timestep
  double precision, allocatable     :: qw    (:)   !< vertical flux through interface (m3/s)
- double precision, allocatable     :: tidep (:,:) !< tidal potential (m2/s2)
+ double precision, allocatable, target :: tidep (:,:) !< tidal potential (m2/s2)
  double precision, allocatable     :: tidef (:)   !< tidal force (m/s2)
  double precision, allocatable     :: s1init (:)   !< initial water level, for correction in SAL
 
@@ -442,7 +442,7 @@
  double precision, dimension(2)    :: voutextcum  !< Total outflow to  Qext (1D and 2D)        (m3) "
 
  double precision                  :: DissInternalTides  !< Total Internal Tides Dissipation (J/s)
- double precision, allocatable     :: DissInternalTidesPerArea(:)  !< Internal tides dissipation / area (J/(m^2 s))
+ double precision, allocatable, target :: DissInternalTidesPerArea(:)  !< Internal tides dissipation / area (J/(m^2 s))
  double precision                  :: GravInput          !< Total Gravitational Input (incl. SAL) (J/s)
  double precision                  :: SALInput           !< Total SAL Input (J/s)
  double precision                  :: SALInput2          !< Total SAL Input (J/s), different formulation

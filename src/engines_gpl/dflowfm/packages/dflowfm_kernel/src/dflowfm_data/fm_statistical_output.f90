@@ -20,16 +20,68 @@ private
    double precision, dimension(:), allocatable, target, public :: viu_data, diu_data !< viu and diu data to be written
    double precision, dimension(:), allocatable, target, public :: tausx_data, tausy_data !< viu and diu data to be written
    double precision, dimension(:), allocatable, target, public :: scaled_rain_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
-   double precision, dimension(:), allocatable, target, public :: wx_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
-   double precision, dimension(:), allocatable, target, public :: wy_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
-   double precision, dimension(:), allocatable, target, public :: wdsu_x_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
-   double precision, dimension(:), allocatable, target, public :: wdsu_y_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
+   double precision, dimension(:), allocatable, target, public :: wx_data 
+   double precision, dimension(:), allocatable, target, public :: wy_data 
+   double precision, dimension(:), allocatable, target, public :: wdsu_x_data 
+   double precision, dimension(:), allocatable, target, public :: wdsu_y_data 
+   double precision, dimension(:), allocatable, target, public :: tidepot_data
+   double precision, dimension(:), allocatable, target, public :: nudge_time_data
+   double precision, dimension(:), allocatable, target, public :: nudge_Dtemp_data
+   double precision, dimension(:), allocatable, target, public :: nudge_Dsal_data
 
    
    public default_fm_statistical_output
 
    contains
    
+   subroutine calculate_nudge_data(data_pointer)
+   use m_nudge
+   use m_transport
+   use m_flow, only: ndkx
+   use m_missing, only: dmiss
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   
+   integer :: k
+   
+   if (.not. allocated(nudge_time_data)) then
+      allocate(nudge_time_data(ndkx),nudge_Dtemp_data(ndkx),nudge_Dsal_data(ndkx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => nudge_time_data
+   endif
+   
+     do k=1,ndkx
+        if ( nudge_tem(k).ne.DMISS ) then
+           nudge_time_data(k) = 1d0/nudge_rate(k)
+           nudge_Dtemp_data(k) = nudge_tem(k)-constituents(itemp, k)
+           nudge_Dsal_data(k)  = nudge_sal(k)-constituents(isalt,k)
+        end if
+     end do
+   
+   end subroutine calculate_nudge_data
+   
+   subroutine calculate_tidpot(data_pointer)
+   use m_flow, only: tidep
+   use m_flowgeom, only: ndx
+
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   
+   integer :: k
+   
+   if (.not. allocated(tidepot_data)) then
+      allocate(tidepot_data(ndx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => tidepot_data
+   endif
+   
+   do k = 1, Ndx
+     tidepot_data(k) = tidep(1,k) - tidep(2,k)
+   end do
+   
+   end subroutine calculate_tidpot
    
    subroutine calculate_scaled_rain(data_pointer)
    use m_flowparameters, only: jamapbnd
@@ -2163,25 +2215,41 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY_SFERIC),wdsu_y_data                                       )
       endif
    endif
-   
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAIR                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHUM                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CLOU                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QSUN                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QEVA                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QCON                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QLONG                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QFREVA                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QFRCON                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QTOT                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIDALPOTENTIAL                                            )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SALPOTENTIAL                                              )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERNAL_TIDES_DISSIPATION                                )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TNUDGE                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_TEM                                                 )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_SAL                                                 )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM                                                )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL                                                )
+   if (jatem > 1) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAIR),Tair                                                     )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHUM),Rhum                                                     )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CLOU),Clou                                                     )
+      if (jatem == 5) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QSUN  ),Qsunmap                                           )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QEVA  ),Qevamap                                           )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QCON  ),Qconmap                                           )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QLONG ),Qlongmap                                          )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QFREVA),Qfrevamap                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QFRCON),Qfrconmap                                         )
+      endif
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QTOT), Qtotmap                                                      )
+   endif
+   if ( jatidep > 0 ) then
+      function_pointer => calculate_tidpot
+      temp_pointer => null()
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIDALPOTENTIAL),temp_pointer,function_pointer                                 )
+      if (jaselfal > 0) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SALPOTENTIAL),tidep(2,:)                                           )
+      endif
+   endif
+   if ( jaFrcInternalTides2D > 0) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERNAL_TIDES_DISSIPATION),DissInternalTidesPerArea                                )
+   endif
+   if (janudge.gt.0) then
+      function_pointer => calculate_nudge_data
+      temp_pointer => null()
+      call calculate_nudge_data(temp_pointer)
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TNUDGE    ),temp_pointer,function_pointer                                              )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_TEM ),nudge_tem                                              )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_SAL ),nudge_sal                                              )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM),nudge_Dtemp_data                                  )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL),nudge_Dsal_data                              )
+   endif
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV                                                      )
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG                                                  )
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TP                                                        )

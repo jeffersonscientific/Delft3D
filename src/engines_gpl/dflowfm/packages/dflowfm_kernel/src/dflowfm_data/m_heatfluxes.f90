@@ -61,12 +61,12 @@
  integer                           :: jaRoro               !< Use roair(n)/rho(ntop) in windstress 0,1
 
  double precision, allocatable, target :: Qsunmap(:) !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
- double precision, allocatable     :: Qevamap(:)
- double precision, allocatable     :: Qconmap(:)
- double precision, allocatable     :: Qlongmap(:)
- double precision, allocatable     :: Qfrevamap(:)
- double precision, allocatable     :: Qfrconmap(:)
- double precision, allocatable     :: Qtotmap(:)
+ double precision, allocatable, target :: Qevamap(:)
+ double precision, allocatable, target :: Qconmap(:)
+ double precision, allocatable, target :: Qlongmap(:)
+ double precision, allocatable, target :: Qfrevamap(:)
+ double precision, allocatable, target :: Qfrconmap(:)
+ double precision, allocatable, target :: Qtotmap(:)
 
  double precision, allocatable     :: Rich(:)
  double precision, allocatable     :: Secchisp(:)
