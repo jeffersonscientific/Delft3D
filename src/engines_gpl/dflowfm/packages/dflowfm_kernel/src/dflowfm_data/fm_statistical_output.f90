@@ -2137,7 +2137,7 @@ private
    function_pointer => calculate_tausxy
    temp_pointer => null()
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX),temp_pointer,function_pointer                                                     )
-   call calculate_tausxy(temp_pointer) !> ugly call to make sure tausy_data is allocated
+!   call calculate_tausxy(temp_pointer) !> ugly call to make sure tausy_data is allocated
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),tausy_data) ! This variable is updated by calculate_tausxy
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
    if (stm_included) then
@@ -2243,64 +2243,99 @@ private
    if (janudge.gt.0) then
       function_pointer => calculate_nudge_data
       temp_pointer => null()
-      call calculate_nudge_data(temp_pointer)
+!      call calculate_nudge_data(temp_pointer)
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TNUDGE    ),temp_pointer,function_pointer                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_TEM ),nudge_tem                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_SAL ),nudge_sal                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM),nudge_Dtemp_data                                  )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL),nudge_Dsal_data                              )
    endif
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG                                                  )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TP                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIR                                                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXWAV                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYWAV                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXBWAV                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYBWAV                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_MX                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_MY                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DISSURF                                                   )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DISWCAP                                                   )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UORB                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_E                                                         )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_R                                                         )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DR                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_D                                                         )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DF                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXX                                                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYY                                                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXY                                                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CWAV                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CGWAV                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIGMWAV                                                   )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_KWAV                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NWAV                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CTHETA                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_L1                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWE                                                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWT                                                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_CC                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VST_CC                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES                                                   )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES                                                   )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN                                                 )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV                                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FY                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFU                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFV                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DTCELL                                                    )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FREEBOARD                                                 )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND                                          )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D                             )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D                          )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL                          )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT                                      )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QIN                                                       )
+   if (flowWithoutWaves) then
+      if (allocated (hwav))
+      function_pointer => calculate_hwav_data
+      temp_pointer => null
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV),temp_pointer,function_pointer                                                      )
+      if(allocated(twav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_TP),twav                                                  )
+      endif
+      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIG                                                        )
+      if (allocated(phiwav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIR),phiwav                                                    )
+      endif
+      if (jamapwav_sxwav > 0  .and. allocated(sxwav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXWAV),sxwav                                                     )
+      endif
+      if (jamapwav_sywav > 0  .and. allocated(sywav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYWAV),sywav                                                     )
+      endif
+      if (jamapwav_sxbwav > 0 .and. allocated(sbxwav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXBWAV),sxbwav                                                    )
+      endif
+      if (jamapwav_sybwav > 0 .and. allocated(sbywav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYBWAV),sbywav                                                    )
+      endif
+      if (jamapwav_mxwav > 0  .and. allocated(mxwav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_MX),mxwav                                                        )
+      endif
+      if (jamapwav_mywav > 0  .and. allocated(mywav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_MY),mywav                                                        )
+      endif
+      if (jamapwav_dsurf > 0  .and. allocated(dsurf)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DISSURF),dsurf                                                   )
+      endif
+      if (jamapwav_dwcap > 0  .and. allocated(dwcap)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DISWCAP),dwcap                                                   )
+      endif
+      if (jamapwav_uorb > 0   .and. allocated(uorbwav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UORB),uorbwav                                                      )
+      endif
+   else
+              if (jawave .eq. 4) then
+
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_E),E                                                         )
+   if (roller>0) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_R),R                                                         )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DR),DR                                                        )
+   endif
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_D),D                                                         )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DF),DF                                                        )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXX),Sxx                                                       )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYY),Syy                                                       )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXY),Sxy                                                       )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CWAV),cwav                                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CGWAV),cgwav                                                     )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIGMWAV),sigmwav                                                   )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_KWAV),kwav                                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
+   call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndxndxi)), temp_pointer, [ndxndxi*ntheta])
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
+   if (windmodel .eq. 0) then
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
+              elseif ( (windmodel.eq.1) .and. (jawsource.eq.1 ) ) then
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
+              endif
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_CC                                                    )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VST_CC                                                    )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES                                                   )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES                                                   )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN                                                 )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV                                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX                                                        )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FY                                                        )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFU                                                     )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFV                                                     )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DTCELL                                                    )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FREEBOARD                                                 )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND                                          )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D                             )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D                          )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL                          )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL                       )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT                                      )
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QIN                                                       )
       !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_S1                                                        )
       !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_WATERDEPTH                                                )
       !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG                                                     )
