@@ -527,6 +527,19 @@ subroutine update_verticalprofiles()
             rich(L) = sigrho*bruva(k)/max(1d-8,dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
         endif
 
+        sourtu    = max(vicwwu(L),vicwminb)*dijdij(k)
+        !
+        if (iturbulencemodel == 3) then
+           sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
+           bk(k)  = bk(k)  + sinktu*2d0
+           dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
+        else if (iturbulencemodel == 4) then
+           sinktu =  1d0 / tureps0(L)                     ! + tkedis(L) / turkin0(L)
+           bk(k)  = bk(k)  + sinktu
+           dk(k)  = dk(k)  + sourtu
+        endif
+
+
         sourshear = max(vicwwu(L),vicwminb)*dijdij(k)
          
         if (iturbulencemodel == 3) then
@@ -539,8 +552,8 @@ subroutine update_verticalprofiles()
            call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy+sourshear+soureps)
         else 
            !call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy)
-           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourshear)
-           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),soureps)
+           !call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourshear)
+           !call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),soureps)
         endif
 
      enddo  ! Lb, Lt-1
