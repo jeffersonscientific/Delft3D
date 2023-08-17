@@ -381,8 +381,8 @@ private
    integer, public :: IDX_MAP_DIR
    integer, public :: IDX_MAP_SXWAV
    integer, public :: IDX_MAP_SYWAV
-   integer, public :: IDX_MAP_SXBWAV
-   integer, public :: IDX_MAP_SYBWAV
+   integer, public :: IDX_MAP_SBXWAV
+   integer, public :: IDX_MAP_SBYWAV
    integer, public :: IDX_MAP_MX
    integer, public :: IDX_MAP_MY
    integer, public :: IDX_MAP_DISSURF
@@ -405,8 +405,8 @@ private
    integer, public :: IDX_MAP_L1
    integer, public :: IDX_MAP_SWE
    integer, public :: IDX_MAP_SWT
-   integer, public :: IDX_MAP_UST_CC
-   integer, public :: IDX_MAP_VST_CC
+   integer, public :: IDX_MAP_UST_X
+   integer, public :: IDX_MAP_UST_Y
    integer, public :: IDX_MAP_USTOKES
    integer, public :: IDX_MAP_VSTOKES
    integer, public :: IDX_MAP_THETAMEAN

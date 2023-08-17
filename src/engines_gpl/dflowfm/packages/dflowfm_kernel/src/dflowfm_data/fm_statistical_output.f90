@@ -15,24 +15,114 @@ private
    type(t_output_variable_set), allocatable, public :: out_variable_set_map
    type(t_output_variable_set), allocatable, public :: out_variable_set_clm
    
-   double precision, dimension(:), allocatable, target, public :: constit_crs_obs_data !< constituent data on observation cross sections to be written
-   double precision, dimension(:), allocatable, target, public :: ucmaga_data !< uc vector norm data to be written
-   double precision, dimension(:), allocatable, target, public :: viu_data, diu_data !< viu and diu data to be written
-   double precision, dimension(:), allocatable, target, public :: tausx_data, tausy_data !< viu and diu data to be written
-   double precision, dimension(:), allocatable, target, public :: scaled_rain_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
-   double precision, dimension(:), allocatable, target, public :: wx_data 
-   double precision, dimension(:), allocatable, target, public :: wy_data 
-   double precision, dimension(:), allocatable, target, public :: wdsu_x_data 
-   double precision, dimension(:), allocatable, target, public :: wdsu_y_data 
-   double precision, dimension(:), allocatable, target, public :: tidepot_data
-   double precision, dimension(:), allocatable, target, public :: nudge_time_data
-   double precision, dimension(:), allocatable, target, public :: nudge_Dtemp_data
-   double precision, dimension(:), allocatable, target, public :: nudge_Dsal_data
-
+   double precision, dimension(:), allocatable, target :: constit_crs_obs_data !< constituent data on observation cross sections to be written
+   double precision, dimension(:), allocatable, target :: ucmaga_data !< uc vector norm data to be written
+   double precision, dimension(:), allocatable, target :: viu_data, diu_data !< viu and diu data to be written
+   double precision, dimension(:), allocatable, target :: tausx_data, tausy_data !< viu and diu data to be written
+   double precision, dimension(:), allocatable, target :: scaled_rain_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
+   double precision, dimension(:), allocatable, target :: wx_data 
+   double precision, dimension(:), allocatable, target :: wy_data 
+   double precision, dimension(:), allocatable, target :: wdsu_x_data 
+   double precision, dimension(:), allocatable, target :: wdsu_y_data 
+   double precision, dimension(:), allocatable, target :: tidepot_data
+   double precision, dimension(:), allocatable, target :: nudge_time_data
+   double precision, dimension(:), allocatable, target :: nudge_Dtemp_data
+   double precision, dimension(:), allocatable, target :: nudge_Dsal_data
+   double precision, dimension(:), allocatable, target :: ust_x_data
+   double precision, dimension(:), allocatable, target :: ust_y_data
+   double precision, dimension(:), allocatable, target :: theta_mean_data
+   double precision, dimension(:), allocatable, target :: FX_data
+   double precision, dimension(:), allocatable, target :: FY_data
+   double precision, dimension(:), allocatable, target :: wavfu_data
+   double precision, dimension(:), allocatable, target :: wavfv_data
+   double precision, dimension(:), allocatable, target :: hwav_sigma_data
    
    public default_fm_statistical_output
 
    contains
+   
+   subroutine calculate_FXY_data(data_pointer)
+   use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
+   use m_flow, only: kmx, ndkx, hu, wavfu, wavfv
+   use m_physcoef, only: rhomean
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   
+   integer :: L, LL, Lb, Lt, k1, k2
+   
+    if (.not. allocated(FX_data)) then
+      allocate(FX_data(ndkx),FY_data(ndkx),wavfu_data(ndkx),wavfv_data(ndkx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => FX_data
+   endif
+   
+   if (kmx==0) then
+      do L= 1, lnx
+         k1 = ln(1,L); k2=ln(2,L)
+         FX_data(k1)  = FX_data(k1) + wcx1(L)*wavfu(L)*hu(L)*rhomean
+         FX_data(k2)  = FX_data(k2) + wcx2(L)*wavfu(L)*hu(L)*rhomean
+         FY_data(k1)  = FY_data(k1) + wcy1(L)*wavfu(L)*hu(L)*rhomean
+         FY_data(k2)  = FY_data(k2) + wcy2(L)*wavfu(L)*hu(L)*rhomean
+         wavfu_data(L)  = wavfu(L)*hu(L)*rhomean   ! stack
+         wavfv_data(L)  = wavfv(L)*hu(L)*rhomean
+      end do
+   else
+      do L = 1, lnx
+         call getLbotLtop(L,Lb,Lt)
+         if (Lt<Lb) cycle
+         do LL=Lb, Lt
+            k1 = ln(1,LL); k2 = ln(2,LL)
+            FX_data(k1)   = FX_data(k1) + wcx1(L)*wavfu(LL)*hu(L)*rhomean   ! consider rhoL here
+            FX_data(k2)   = FX_data(k2) + wcx2(L)*wavfu(LL)*hu(L)*rhomean
+            FY_data(k1)   = FY_data(k1) + wcy1(L)*wavfu(LL)*hu(L)*rhomean
+            FY_data(k2)   = FY_data(k2) + wcy2(L)*wavfu(LL)*hu(L)*rhomean
+            wavfu_data(LL)  = wavfu(LL)*hu(L)*rhomean   ! stack
+            wavfv_data(LL) = wavfv(LL)*hu(L)*rhomean
+         enddo
+      enddo
+   endif
+
+   end subroutine calculate_FXY_data
+   
+   subroutine calculate_ustxy_data(data_pointer)
+   use m_flow, only: ndkx
+
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   
+   integer :: k
+   
+   if (.not. allocated(ust_x_data)) then
+      allocate(ust_x_data(ndkx),ust_y_data(ndkx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => ust_x_data
+   endif
+   
+   call reconstruct_cc_stokesdrift(ndkx,ust_x_data,ust_y_data)
+   
+   end subroutine calculate_ustxy_data
+   
+   subroutine calculate_hwav_sigma_data(data_pointer)
+   use m_waves, only: hwav
+   use m_flowgeom, only: ndx
+
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer
+   
+   integer :: k
+   
+   if (.not. allocated(hwav_sigma_data)) then
+      allocate(hwav_sigma_data(ndx))
+   endif
+   
+   if (.not. associated(data_pointer))then
+      data_pointer => hwav_sigma_data
+   endif
+   
+   hwav_sigma_data = sqrt(2d0)*hwav
+   
+   end subroutine calculate_hwav_sigma_data
    
    subroutine calculate_nudge_data(data_pointer)
    use m_nudge
@@ -1427,7 +1517,7 @@ private
       call addoutval(out_quan_conf_map, IDX_MAP_SYWAV,                               &
                      'Wrimap_waves', 'sywav', 'Surface layer wave forcing term, y-component',                             &
                      'sea_surface_y_wave_force_surface', 'N m-2', UNC_LOC_S)  
-      call addoutval(out_quan_conf_map, IDX_MAP_SYBWAV,                              &
+      call addoutval(out_quan_conf_map, IDX_MAP_SBYWAV,                              &
                      'Wrimap_waves', 'sybwav', 'Bottom layer wave forcing term, y-component',                              &
                      'sea_surface_y_wave_force_bottom', 'N m-2', UNC_LOC_S)  
       call addoutval(out_quan_conf_map, IDX_MAP_MX,                                  &
@@ -1496,13 +1586,13 @@ private
       call addoutval(out_quan_conf_map, IDX_MAP_SWT,                                 &
                      'Wrimap_waves', 'SwT', 'wind source term on wave period',                                          &
                      'source_term_wind_on_T', 's s-1', UNC_LOC_S)
-      call addoutval(out_quan_conf_map, IDX_MAP_SXBWAV,                              &
+      call addoutval(out_quan_conf_map, IDX_MAP_SBXWAV,                              &
                      'Wrimap_waves', 'sxbwav', 'Water body wave forcing term, x-component',                                &
                      'sea_surface_x_wave_force_bottom', 'N m-2', UNC_LOC_S)
-      call addoutval(out_quan_conf_map, IDX_MAP_UST_CC,                              &
+      call addoutval(out_quan_conf_map, IDX_MAP_UST_X,                              &
                      'Wrimap_waves', 'ust_cc', 'Stokes drift, x-component',                                                &
                      'sea_surface_x_stokes_drift', 'm s-1', UNC_LOC_S)
-      call addoutval(out_quan_conf_map, IDX_MAP_VST_CC,                              &
+      call addoutval(out_quan_conf_map, IDX_MAP_UST_Y,                              &
                      'Wrimap_waves', 'vst_cc', 'Stokes drift, y-component',                                                &
                      'sea_surface_y_stokes_drift', 'm s-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_USTOKES,                             &
@@ -2054,7 +2144,7 @@ private
 
    subroutine flow_init_statistical_output_map(output_config,output_set)
    use m_flow
-   use m_flowgeom, only: ndxi
+   use m_flowgeom, only: ndxi, ntheta, ndx, ndxi
    use m_hydrology_data, only: PotEvap, ActEvap
    use m_wind, only: evap
    use m_statistical_callback
@@ -2062,6 +2152,8 @@ private
    use m_sediment, only: stm_included, sedtra
    use m_transport, only: itemp, constituents, ITRA1,ITRAN
    use m_sferic, only: jsferic
+   use m_waves
+   use m_xbeach_data
    USE, INTRINSIC :: ISO_C_BINDING
    
       type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
@@ -2069,7 +2161,13 @@ private
       double precision, pointer, dimension(:) :: temp_pointer
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
       
-      integer :: i, ntot
+      integer :: i, ntot, ndxndxi
+      
+      if (jamapbnd > 0) then
+         ndxndxi   = ndx
+      else
+         ndxndxi   = ndxi
+      end if
       
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0),s0                                                        )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S1),s1                                                        )
@@ -2251,14 +2349,15 @@ private
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL),nudge_Dsal_data                              )
    endif
    if (flowWithoutWaves) then
-      if (allocated (hwav))
-      function_pointer => calculate_hwav_data
-      temp_pointer => null
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV),temp_pointer,function_pointer                                                      )
-      if(allocated(twav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_TP),twav                                                  )
+      if (allocated (hwav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV),hwav                                                      )
+         function_pointer => calculate_hwav_sigma_data
+         temp_pointer => null()
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG),temp_pointer,function_pointer                                                        )
       endif
-      !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIG                                                        )
+      if(allocated(twav)) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                  )
+      endif
       if (allocated(phiwav)) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIR),phiwav                                                    )
       endif
@@ -2269,10 +2368,10 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYWAV),sywav                                                     )
       endif
       if (jamapwav_sxbwav > 0 .and. allocated(sbxwav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXBWAV),sxbwav                                                    )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SBXWAV),sbxwav                                                    )
       endif
       if (jamapwav_sybwav > 0 .and. allocated(sbywav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYBWAV),sbywav                                                    )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SBYWAV),sbywav                                                    )
       endif
       if (jamapwav_mxwav > 0  .and. allocated(mxwav)) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_MX),mxwav                                                        )
@@ -2290,52 +2389,61 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UORB),uorbwav                                                      )
       endif
    else
-              if (jawave .eq. 4) then
-
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_E),E                                                         )
-   if (roller>0) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_R),R                                                         )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DR),DR                                                        )
-   endif
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_D),D                                                         )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DF),DF                                                        )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXX),Sxx                                                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYY),Syy                                                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXY),Sxy                                                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CWAV),cwav                                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CGWAV),cgwav                                                     )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIGMWAV),sigmwav                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_KWAV),kwav                                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
-   call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndxndxi)), temp_pointer, [ndxndxi*ntheta])
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
-   if (windmodel .eq. 0) then
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
-              elseif ( (windmodel.eq.1) .and. (jawsource.eq.1 ) ) then
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
-              endif
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_CC                                                    )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VST_CC                                                    )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN                                                 )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV                                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX                                                        )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FY                                                        )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFU                                                     )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFV                                                     )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DTCELL                                                    )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FREEBOARD                                                 )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND                                          )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D                             )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D                          )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL                          )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QIN                                                       )
+      if (jawave .eq. 4) then
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_E),E                                                         )
+         if (roller>0) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_R),R                                                         )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DR),DR                                                        )
+         endif
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_D),D                                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DF),DF                                                        )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXX),Sxx                                                       )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYY),Syy                                                       )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXY),Sxy                                                       )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CWAV),cwav                                                      )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CGWAV),cgwav                                                     )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIGMWAV),sigmwav                                                   )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_KWAV),kwav                                                      )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
+         call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndxndxi)), temp_pointer, [ndxndxi*ntheta])
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
+         if (windmodel .eq. 0) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
+         elseif ( (windmodel.eq.1) .and. (jawsource.eq.1 ) ) then
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
+         endif
+      endif
+      if (jawave .gt. 0) then
+         function_pointer => calculate_ustxy_data
+         temp_pointer => null()
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_X  ), temp_pointer,function_pointer                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_Y  ), ust_y_data                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES), ustokes                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES), vstokes                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN), theta_mean_data                                                 )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                      )
+         if (jawave == 3 .or. jawave==4) then
+            function_pointer => calculate_FXY_data
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX   ),temp_pointer,function_pointer                                            )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FY   ),FY_data                                            )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFU),WAVFU_data                                        )
+            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFV),WAVFV_data                                        )
+         endif
+      endif ! jawave gt. 0
+   endif !flowWithoutWaves - else case
+   
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DTCELL),dtcell                                                    )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND                                      )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FREEBOARD                                                 )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND                                      )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND                                          )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D                             )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D                          )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL                          )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL                       )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT                                      )
+   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QIN                                                       )
       !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_S1                                                        )
       !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_WATERDEPTH                                                )
       !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG                                                     )

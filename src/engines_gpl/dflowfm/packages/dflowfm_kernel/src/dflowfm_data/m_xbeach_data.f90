@@ -38,16 +38,16 @@ module m_xbeach_data
    !! Hydrodynamics arrays, allocatables
    double precision, allocatable              :: ee0(:,:)        !< wave energy at begin of timestep
    double precision, allocatable              :: ee1(:,:)        !< wave energy at end of timestep
-   double precision, allocatable              :: cwav(:)         !< phase speed (m/s)
+   double precision, allocatable, target      :: cwav(:)         !< phase speed (m/s)
    double precision, allocatable              :: cwav_s(:)       !< phase speed (m/s) single_dir
-   double precision, allocatable              :: cgwav(:)        !< wave group velocity (m/s)
+   double precision, allocatable, target      :: cgwav(:)        !< wave group velocity (m/s)
    double precision, allocatable              :: cgwav_s(:)      !< wave group velocity (m/s) single dir
    double precision, allocatable              :: ctheta_s(:,:)   !< propagation speed in theta space single dir
    double precision, allocatable              :: ee_s(:,:)       !< wave energy single dir
-   double precision, allocatable              :: kwav(:)         !< wavenumber k (rad/m)
-   double precision, allocatable              :: nwav(:)         !< cg/c (-)
+   double precision, allocatable, target      :: kwav(:)         !< wavenumber k (rad/m)
+   double precision, allocatable, target      :: nwav(:)         !< cg/c (-)
    double precision, allocatable              :: ctheta(:,:)     !< propagation speed in theta space
-   double precision, allocatable              :: sigmwav(:)      !< wave frequency (rad/s)
+   double precision, allocatable, target      :: sigmwav(:)      !< wave frequency (rad/s)
    double precision, allocatable              :: sigt(:,:)
    double precision, allocatable              :: horadvec(:,:)   !< horizontal advection
    double precision, allocatable              :: thetaadvec(:,:) !< directional advection
@@ -58,18 +58,18 @@ module m_xbeach_data
    double precision, allocatable              :: csx(:)
    double precision, allocatable              :: snx(:)
    double precision, allocatable              :: H(:)            !< hrms golfhoogte, onafh van instat
-   double precision, allocatable              :: E(:)            !< bulk wave energy in nodes
-   double precision, allocatable              :: DR(:)           !< Bulk roller dissipation
-   double precision, allocatable              :: R(:)            !< Bulk roller energy
+   double precision, allocatable, target      :: E(:)            !< bulk wave energy in nodes
+   double precision, allocatable, target      :: DR(:)           !< Bulk roller dissipation
+   double precision, allocatable, target      :: R(:)            !< Bulk roller energy
    double precision, allocatable              :: thet(:,:)       !< centre angle dir bin in each node
    double precision, allocatable              :: costh(:,:)
    double precision, allocatable              :: sinth(:,:)
    double precision, allocatable              :: thet_s(:,:)
    double precision, allocatable              :: sinth_s(:,:)
    double precision, allocatable              :: costh_s(:,:)
-   double precision, allocatable              :: Sxx(:)          !< Radiation stresses
-   double precision, allocatable              :: Syy(:)
-   double precision, allocatable              :: Sxy(:)
+   double precision, allocatable, target      :: Sxx(:)          !< Radiation stresses
+   double precision, allocatable, target      :: Syy(:)
+   double precision, allocatable, target      :: Sxy(:)
    double precision, allocatable              :: dhsdx(:)
    double precision, allocatable              :: dhsdy(:)
    double precision, allocatable              :: Fx(:)           !< wave forces, on links
@@ -88,8 +88,8 @@ module m_xbeach_data
 
    double precision, allocatable              :: thetamean(:)    !< mean wave angle
    double precision, allocatable              :: Qb(:)           !< Wave breaking proportion
-   double precision, allocatable              :: D(:)            !< Wave breaking dissipation
-   double precision, allocatable              :: Df(:)           !< Bottom frictional dissipation
+   double precision, allocatable, target      :: D(:)            !< Wave breaking dissipation
+   double precision, allocatable, target      :: Df(:)           !< Bottom frictional dissipation
    double precision, allocatable              :: Dtot(:)
    double precision, allocatable              :: BR(:)           !< Roller surface slope, also important for morph
    double precision, allocatable              :: uin(:)          !< xcomponent incoming long wave induced velocity
@@ -99,7 +99,7 @@ module m_xbeach_data
    double precision, allocatable              :: Tbore(:)        !< Bore period
 
    double precision, allocatable              :: Ltemp(:)
-   double precision, allocatable              :: L1(:)
+   double precision, allocatable, target      :: L1(:)
    double precision, allocatable              :: e01(:)
    double precision, allocatable              :: tE(:), dataE(:), databi(:)
    double precision, allocatable              :: L0(:),khdisp(:),hdisp(:)
@@ -308,8 +308,8 @@ module m_xbeach_data
    ! arrays
    double precision, allocatable              :: wmagcc(:)         !  [m/s] wind speed magnitude cell centered
    double precision, allocatable              :: windspreadfac(:,:)!  [-] distribution of inproducts thetabins per cell with wind direction
-   double precision, allocatable              :: SwE(:)            !  [-] nodal wind source term energy
-   double precision, allocatable              :: SwT(:)            !  [-] nodal wind source term period
+   double precision, allocatable, target      :: SwE(:)            !  [-] nodal wind source term energy
+   double precision, allocatable, target      :: SwT(:)            !  [-] nodal wind source term period
    double precision, allocatable              :: wsorE(:,:)        !  [J/m2/s] wind source term for ee1
    double precision, allocatable              :: wsorT(:,:)        !  [s/s] wind source term for tt1
    double precision, allocatable              :: egradcg(:,:)      !  [m/s/m] spatial gradient of cg
