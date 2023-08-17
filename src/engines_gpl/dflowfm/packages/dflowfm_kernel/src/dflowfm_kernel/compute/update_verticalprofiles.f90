@@ -75,7 +75,7 @@ subroutine update_verticalprofiles()
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
  integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
 
- integer          :: newtonlin = 1, jasumsoursink = 0
+ integer          :: newtonlin = 1, jasumsoursink = 1
  double precision :: sourbuoy, sourshear, soureps
  
 
@@ -424,7 +424,7 @@ subroutine update_verticalprofiles()
                          + difd*(turkin0(L-1) - turkin0(L ))*tetm1
         endif
 
-        sourbuoy = 0d0 ; sourshear = 0d0 ; soureps = 0d0
+        sourbuoy = 0d0 
 
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
@@ -538,7 +538,7 @@ subroutine update_verticalprofiles()
         if (jasumsoursink == 1) then 
            call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy+sourshear+soureps)
         else 
-           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy)
+           !call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy)
            call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourshear)
            call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),soureps)
         endif
