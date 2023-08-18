@@ -1401,7 +1401,6 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
     call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
     call prop_get_integer(md_ptr, 'sediment', 'Seddenscoupling'    ,  jaseddenscoupling)
-    call prop_get_integer(md_ptr, 'sediment', 'Tracers_density_coupling',  ja_tracers_density_coupling)
     call prop_get_integer(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
 
 
@@ -2300,6 +2299,8 @@ subroutine readMDUFile(filename, istat)
    call prop_get_integer(md_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, success)
    call prop_get_double (md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
    call prop_get_double (md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
+   call prop_get_integer(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling )
+
 
    call prop_get_double (md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
    ti_waqproc = md_dt_waqproc
@@ -3523,10 +3524,6 @@ endif
           end if
        endif
     endif
-
-    if (writeall .or. ja_tracers_density_coupling > 0 ) then
-        call prop_set(prop_ptr, 'sediment', 'Tracers_density_coupling',  ja_tracers_density_coupling, 'tracers rho coupling (0=no, 1=yes), it is active when no sed rho coupling')
-    end if
     
     if (writeall .or. javeg > 0) then
        call prop_set(prop_ptr, 'veg', 'Vegetationmodelnr', javeg      , 'Vegetation model nr, (0=no, 1=Baptist DFM)')
@@ -4228,6 +4225,7 @@ endif
    call prop_set_integer(prop_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, 'Write 3D water quality bottom variables (1: yes, 0: no)')
    call prop_set_double (prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
    call prop_set_double (prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
+   call prop_set        (prop_ptr, 'processes', 'SubstanceDensityCoupling',  jaSubstancedensitycoupling, 'substance rho coupling (0=no, 1=yes),  ')
 
     call datum(rundat)
     write(mout, '(a,a)') '# Generated on ', trim(rundat)
