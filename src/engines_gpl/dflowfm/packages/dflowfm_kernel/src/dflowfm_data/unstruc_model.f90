@@ -271,11 +271,14 @@ implicit none
                                                                     'netCFD and Tecplot', &
                                                                     'NetCDF-UGRID' ]
 
-    integer                                   :: md_mapformat     !< map file output format (one of IFORMAT_*)
-    integer                                   :: md_unc_conv      !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
-    integer                                   :: md_ncformat      !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-    integer                                   :: md_nc_precision  !< NetCDF data precission in map files (0: double, 1: float)
-    integer                                   :: md_fou_step      !< determines if fourier analysis is updated at the end of the user time step or comp. time step
+    integer                                   :: md_mapformat         !< map file output format (one of IFORMAT_*)
+    integer                                   :: md_unc_conv          !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
+    integer                                   :: md_ncformat          !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
+    integer                                   :: md_nc_map_precision  !< NetCDF data precision in map files (0: double, 1: float)
+    integer                                   :: md_fou_step          !< determines if fourier analysis is updated at the end of the user time step or comp. time step
+
+    integer, private                          :: ifixedweirscheme_input  !< input value of ifixedweirscheme in mdu file
+    integer, private                          :: idensform_input         !< input value of idensform in mdu file
 contains
 
 
@@ -757,8 +760,8 @@ subroutine readMDUFile(filename, istat)
     double precision :: sumlaycof
     double precision, parameter :: tolSumLay = 1d-12
     integer, parameter :: maxLayers = 300
-    integer :: major, minor
-    external :: unstruc_errorhandler
+    integer            :: major, minor
+    external           :: unstruc_errorhandler
     istat = 0 ! Success
 
 ! Put .mdu file into a property tree
@@ -1107,6 +1110,7 @@ subroutine readMDUFile(filename, istat)
     endif
     call prop_get_integer(md_ptr, 'numerics', 'jposhchk'       , jposhchk)
     call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme'  , ifixedweirscheme, success)
+    ifixedweirscheme_input = ifixedweirscheme
     call prop_get_double( md_ptr, 'numerics', 'FixedWeirContraction' , Fixedweircontraction, success)
 
     call prop_get_integer(md_ptr, 'numerics', 'Fixedweirfrictscheme'  , ifxedweirfrictscheme)
@@ -1148,6 +1152,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
     call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
     call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
+    call prop_get_double (md_ptr, 'numerics', 'EpsTKE' , epstke)
+    call prop_get_double (md_ptr, 'numerics', 'EpsEPS' , epseps)
  
     call prop_get_double (md_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax)
     call prop_get_integer(md_ptr, 'numerics', 'AntiCreep' , jacreep)
@@ -1227,6 +1233,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'numerics', 'Baorgfracmin'    , Baorgfracmin)
 
     call prop_get_integer(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
+    call prop_get_integer(md_ptr, 'numerics', 'Wridia_viscosity_diffusivity_limit', ja_vis_diff_limit)
     call prop_get_integer(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
     call prop_get_integer(md_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1)
     if (sdu_update_s1<0 .or. sdu_update_s1>1) then
@@ -1294,7 +1301,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'physics', 'Equili'         , jaequili ) ! TODO: Ottevanger/Nabi: consider changing the name of these settings: add "spiral/secondary flow" into it.
 
     call prop_get_integer(md_ptr, 'physics', 'Idensform'      , idensform)
-
+    idensform_input = idensform
+    
     !call prop_get_integer(md_ptr, 'physics', 'Baroczlaybed'   , jabaroczlaybed)
     !call prop_get_integer(md_ptr, 'physics', 'Barocponbnd'    , jaBarocponbnd)
     !call prop_get_integer(md_ptr, 'physics', 'Maxitpresdens'  , maxitpresdens)
@@ -1789,8 +1797,8 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'output', 'NcFormat', md_ncformat, success)
     call unc_set_ncformat(md_ncformat)
-    md_nc_precision = 0
-    call prop_get_integer(md_ptr, 'output', 'NcDataPrecision', md_nc_precision, success)
+    md_nc_map_precision = 0
+    call prop_get_integer(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
     call prop_get_integer(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
@@ -3045,7 +3053,7 @@ endif
     endif
  
  
-    if (writeall .or. jarhoxu .ne. 0 ) then
+    if (jarhoxu /= 0 ) then
       call prop_set(prop_ptr, 'numerics', 'Jarhoxu', Jarhoxu,   'Include density gradient in advection term (0: no(strongly advised), 1: yes, 2: Also in barotropic and baroclinic pressure term)')
     endif
     if (writeall .or. (jahazlayer .ne. 0 .and. layertype .ne. 1)) then
@@ -3069,6 +3077,7 @@ endif
 
     call prop_set(prop_ptr, 'numerics', 'Icgsolver',       Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)')
     call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
+    call prop_set(prop_ptr, 'numerics', 'Wridia_viscosity_diffusivity_limit', ja_vis_diff_limit, 'Write info in dia file when viscosity/diffusivity is limited (0: no, 1: yes)')
     if (writeall .or. Maxdge .ne. 6) then
        call prop_set(prop_ptr, 'numerics', 'Maxdegree',  Maxdge,      'Maximum degree in Gauss elimination')
     end if
@@ -3080,7 +3089,7 @@ endif
     end if
 
     if (writeall .or. (len_trim(md_fixedweirfile) > 0)) then
-       call prop_set(prop_ptr, 'numerics', 'FixedWeirScheme', ifixedweirscheme,            'Fixed weir scheme (0: none, 1: compact stencil, 2: whole tile lifted, full subgrid weir + factor)')
+       call prop_set(prop_ptr, 'numerics', 'FixedWeirScheme', ifixedweirscheme_input,      'Fixed weir scheme (0: none, 1: compact stencil, 2: whole tile lifted, full subgrid weir + factor)')
        call prop_set(prop_ptr, 'numerics', 'FixedWeirContraction', Fixedweircontraction,   'Fixed weir flow width contraction factor')
        call prop_set(prop_ptr, 'numerics', 'Fixedweirfrictscheme' , ifxedweirfrictscheme,  'Fixed weir friction scheme (0: friction based on hu, 1: friction based on subgrid weir friction scheme)')
        call prop_set(prop_ptr, 'numerics', 'Fixedweirtopwidth' , fixedweirtopwidth,        'Uniform width of the groyne part of fixed weirs')
@@ -3197,6 +3206,14 @@ endif
        call prop_set(prop_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp, '(Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)')
     endif
 
+    if (writeall .or. (epstke > 1d-32 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'EpsTKE' , epstke, '(TKE=max(TKE,EpsTKE), default=1d-32)')
+    endif
+
+    if (writeall .or. (epseps > 1d-32 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'EpsEPS' , epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
+    endif
+  
     if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
        call prop_set(prop_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax, 'Limit eddy viscosity at bed )')
     endif
@@ -3363,8 +3380,8 @@ endif
     call prop_set(prop_ptr, 'physics', 'wall_ks',          wall_ks,      'Wall roughness type (0: free slip, 1: partial slip using wall_ks)')
     call prop_set(prop_ptr, 'physics', 'Rhomean',          rhomean,      'Average water density (kg/m3)')
   
-    if (writeall .or. idensform .ne. 1) then
-       call prop_set(prop_ptr, 'physics', 'Idensform',     idensform,    'Density calulation (0: uniform, 1: Eckart, 2: UNESCO, 3=UNESCO83, 13=3+pressure)')
+    if (writeall .or. idensform_input /= 1) then
+       call prop_set(prop_ptr, 'physics', 'Idensform', idensform_input, 'Density calulation (0: uniform, 1: Eckart, 2: UNESCO, 3=UNESCO83, 13=3+pressure)')
     endif
   
     call prop_set(prop_ptr, 'physics', 'Ag'     ,          ag ,          'Gravitational acceleration')
@@ -3824,8 +3841,8 @@ endif
 
     call prop_set(prop_ptr, 'output', 'NcFormat',  md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 
-    call prop_set(prop_ptr, 'output', 'NcDataPrecision',  md_nc_precision, 'Precision for NetCDF data in map files (0: double, 1: float)')
-
+    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: float)')
+    
     if (writeall .or. unc_nounlimited /= 0) then
        call prop_set(prop_ptr, 'output', 'NcNoUnlimited',  unc_nounlimited, 'Write full-length time-dimension instead of unlimited dimension (1: yes, 0: no). (Might require NcFormat=4.)')
     end if
