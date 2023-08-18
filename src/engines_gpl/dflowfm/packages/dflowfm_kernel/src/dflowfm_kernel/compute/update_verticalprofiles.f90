@@ -75,10 +75,9 @@ subroutine update_verticalprofiles()
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
  integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
 
- integer          :: newtonlin = 1, jasumsoursink = 1
- double precision :: sourbuoy, sourshear, soureps
  
-
+ double precision :: sortkebuoy, sortkeshear, sortkeeps, sorsum
+ 
  double precision, external :: setrhofixedp
 
  if (iturbulencemodel <= 0 .or. kmx == 0) return
@@ -424,7 +423,7 @@ subroutine update_verticalprofiles()
                          + difd*(turkin0(L-1) - turkin0(L ))*tetm1
         endif
 
-        sourbuoy = 0d0 
+        sortkebuoy = 0d0 
 
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
@@ -501,7 +500,7 @@ subroutine update_verticalprofiles()
  !
             bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
             buoflu(k)  = max(vicwwu(L), vicwminb)*bruva(k)
-            sourbuoy   = -buoflu(k)
+            sortkebuoy = -buoflu(k)
 
         endif
 
@@ -527,33 +526,32 @@ subroutine update_verticalprofiles()
             rich(L) = sigrho*bruva(k)/max(1d-8,dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
         endif
 
-        sourtu    = max(vicwwu(L),vicwminb)*dijdij(k)
+        sourtu = max(vicwwu(L),vicwminb)*dijdij(k)
         !
+      !  if (iturbulencemodel == 3) then
+      !     sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
+      !     bk(k)  = bk(k)  + sinktu*2d0
+      !     dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
+      !  else if (iturbulencemodel == 4) then
+      !     sinktu =  1d0 / tureps0(L)                     ! + tkedis(L) / turkin0(L)
+      !     bk(k)  = bk(k)  + sinktu
+      !     dk(k)  = dk(k)  + sourtu
+      !  endif
+
+        sortkeshear = sourtu
         if (iturbulencemodel == 3) then
-           sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
-           bk(k)  = bk(k)  + sinktu*2d0
-           dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
+           sortkeeps = - tureps0(L)                  
         else if (iturbulencemodel == 4) then
-           sinktu =  1d0 / tureps0(L)                     ! + tkedis(L) / turkin0(L)
-           bk(k)  = bk(k)  + sinktu
-           dk(k)  = dk(k)  + sourtu
+           sortkeeps = - turkin0(L) / tureps0(L)                     
         endif
-
-
-        sourshear = max(vicwwu(L),vicwminb)*dijdij(k)
          
-        if (iturbulencemodel == 3) then
-           soureps = - tureps0(L)                  
-        else if (iturbulencemodel == 4) then
-           soureps = - turkin0(L) / tureps0(L)                     
-        endif
-
-        if (jasumsoursink == 1) then 
-           call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy+sourshear+soureps)
+        if (janettosplit == 1) then         ! splitting on netto 
+           sorsum = sortkebuoy+sortkeshear+sortkeeps
+           call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
         else 
-           !call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourbuoy)
-           !call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),sourshear)
-           !call addsoursink(newtonlin,bk(k),dk(k),turkin0(L),soureps)
+           sorsum = sortkeshear+sortkebuoy  ! shure positive, so add first
+           call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
+           call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
         endif
 
      enddo  ! Lb, Lt-1
@@ -802,12 +800,7 @@ subroutine update_verticalprofiles()
 
            bk(k) = bk(k) + sinktu*2d0
            dk(k) = dk(k) + sinktu*tureps0(L) + sourtu
-
-           !  bk(k) = bk(k) + sinktu
-           !  dk(k) = dk(k) + sourtu
-
-           ! dk(k) = dk(k) - sinktu*tureps0(L) + sourtu
-
+ 
         else if (iturbulencemodel == 4) then !                                               k-tau
 
            ! buoyancy term, we have in RHS :~ -Bruva*c3t
@@ -1069,21 +1062,17 @@ subroutine update_verticalprofiles()
 
  end subroutine update_verticalprofiles
 
- subroutine addsoursink(newtonlin,sor,tur,b,d) 
- ! add sor (or sink if <0) to diag and rhs to compute tur 
- integer         , intent(in)     :: newtonlin
- double precision, intent(in)     :: sor,tur
+ subroutine addsoursink(splitfac,sor,tur,b,d) 
+ ! add sor (or sink if <0) to diag and/or rhs to compute tur 
+ 
+ double precision, intent(in)     :: splitfac,sor,tur
  double precision, intent(inout)  :: b,d
 
  if (sor > 0) then 
     d = d + sor 
  else if (sor < 0) then 
-    if (newtonlin == 1) then 
-        b = b - sor*2d0/tur
-        d = d - sor 
-    else if (sork < 0) then 
-        b = b - sor/tur
-    endif  
+    b = b - sor*(splitfac + 1d0) / tur   ! splitfac : 0d0=Patankar, 1d0=Newton, 10d0=Guus
+    d = d - sor* splitfac 
  endif  
  
  end subroutine addsoursink
