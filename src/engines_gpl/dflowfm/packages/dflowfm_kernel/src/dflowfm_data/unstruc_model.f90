@@ -1151,7 +1151,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
     call prop_get_double (md_ptr, 'numerics', 'EpsTKE'          , epstke)
     call prop_get_double (md_ptr, 'numerics', 'EpsEPS'          , epseps)
-    call prop_get_integer(md_ptr, 'numerics', 'jaNettosplit'    , janettosplit)
+    call prop_get_integer(md_ptr, 'numerics', 'Nettosplit'      , janettosplit)
     call prop_get        (md_ptr, 'numerics', 'Splitfac'        , splitfac)
  
     call prop_get_double (md_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax)
