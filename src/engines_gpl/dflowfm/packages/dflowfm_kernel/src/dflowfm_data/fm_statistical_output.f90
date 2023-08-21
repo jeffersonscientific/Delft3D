@@ -68,6 +68,7 @@ private
       use coordinate_reference_system, only: nc_attribute
       use netcdf_utils
       use netcdf, only: nf90_int
+      use m_flow
       use m_missing
 
       out_quan_conf_his%count = 0
@@ -78,86 +79,86 @@ private
       ! HIS: Mass balances
       !
       call addoutval(out_quan_conf_his, IDX_HIS_VOLTOT,                                             &
-                     'Wrihis_balance', 'total_volume', '', '', 'm3', UNC_LOC_GLOBAL, description='Write mass balance totals to his file')                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_VOLTOT)), '', '', 'm3', UNC_LOC_GLOBAL, description='Write mass balance totals to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_STOR,                                               &
-                     'Wrihis_balance', 'storage', '', '', 'm3', UNC_LOC_GLOBAL)                
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_STOR)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_VOLERR,                                             &
-                     'Wrihis_balance', 'volume_error', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_VOLERR)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_BNDIN,                                             &
-                     'Wrihis_balance', 'boundaries_in', '', '', 'm3', UNC_LOC_GLOBAL)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_BNDIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_BNDOUT,                                            &
-                     'Wrihis_balance', 'boundaries_out', '', '', 'm3', UNC_LOC_GLOBAL)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_BNDOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_BNDTOT,                                            &
-                     'Wrihis_balance', 'boundaries_total', '', '', 'm3', UNC_LOC_GLOBAL)                                                          
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_BNDTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXCHIN,                                             &
-                     'Wrihis_balance', 'exchange_with_1D_in', '', '', 'm3', UNC_LOC_GLOBAL)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXCHIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXCHOUT,                                            &
-                     'Wrihis_balance', 'exchange_with_1D_out', '', '', 'm3', UNC_LOC_GLOBAL)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXCHOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXCHTOT,                                            &
-                     'Wrihis_balance', 'exchange_with_1D_total', '', '', 'm3', UNC_LOC_GLOBAL)                                                          
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXCHTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_PRECIP_TOTAL,                                       &
-                     'Wrihis_balance', 'precipitation_total', '', '', 'm3', UNC_LOC_GLOBAL)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_PRECIP_TOTAL)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EVAP,                                               &
-                     'Wrihis_balance', 'evaporation', '', '', 'm3', UNC_LOC_GLOBAL)                                  
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EVAP)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_SOUR,                                               &
-                     'Wrihis_balance', 'source_sink', '', '', 'm3', UNC_LOC_GLOBAL)                                        
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_SOUR)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_InternalTidesDissipation,                           &
-                     'Wrihis_balance', 'InternalTidesDissipation', '', '', 'TJ', UNC_LOC_GLOBAL)                                                             
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_INTERNALTIDESDISSIPATION)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GravInput,                                          &
-                     'Wrihis_balance', 'Gravitational_Input', '', '', 'TJ', UNC_LOC_GLOBAL)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GravInput)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_SalInput,                                           &
-                     'Wrihis_balance', 'SAL_Input', '', '', 'TJ', UNC_LOC_GLOBAL)                                  
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_SalInput)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_SalInput2,                                          &
-                     'Wrihis_balance', 'SAL_Input_2', '', '', 'TJ', UNC_LOC_GLOBAL)
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_SalInput2)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GRWIN,                                              &
-                     'Wrihis_balance', 'groundwater_in', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GRWIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GRWOUT,                                             &
-                     'Wrihis_balance', 'groundwater_out', '', '', 'm3', UNC_LOC_GLOBAL)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GRWOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GRWTOT,                                             &
-                     'Wrihis_balance', 'groundwater_total', '', '', 'm3', UNC_LOC_GLOBAL)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GRWTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATIN,                                              &
-                     'Wrihis_balance', 'laterals_in', '', '', 'm3', UNC_LOC_GLOBAL)
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATOUT,                                             &
-                     'Wrihis_balance', 'laterals_out', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATTOT,                                             &
-                     'Wrihis_balance', 'laterals_total', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATIN1D,                                            &
-                     'Wrihis_balance', 'laterals_in_1D', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATIN1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATOUT1D,                                           &
-                     'Wrihis_balance', 'laterals_out_1D', '', '', 'm3', UNC_LOC_GLOBAL)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATOUT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATTOT1D,                                           &
-                     'Wrihis_balance', 'laterals_total_1D', '', '', 'm3', UNC_LOC_GLOBAL)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATTOT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATIN2D,                                            &
-                     'Wrihis_balance', 'laterals_in_2D', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATIN2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATOUT2D,                                           &
-                     'Wrihis_balance', 'laterals_out_2D', '', '', 'm3', UNC_LOC_GLOBAL)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATOUT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATTOT2D,                                           &
-                     'Wrihis_balance', 'laterals_total_2D', '', '', 'm3', UNC_LOC_GLOBAL)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATTOT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTIN,                                              &
-                     'Wrihis_balance', 'Qext_in', '', '', 'm3', UNC_LOC_GLOBAL)                                     
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTOUT,                                             &
-                     'Wrihis_balance', 'Qext_out', '', '', 'm3', UNC_LOC_GLOBAL)                                        
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTTOT,                                             &
-                     'Wrihis_balance', 'Qext_total', '', '', 'm3', UNC_LOC_GLOBAL)                                              
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTIN1D,                                            &
-                     'Wrihis_balance', 'Qext_in_1D', '', '', 'm3', UNC_LOC_GLOBAL)                                        
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTIN1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTOUT1D,                                           &
-                     'Wrihis_balance', 'Qext_out_1D', '', '', 'm3', UNC_LOC_GLOBAL)                                     
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTOUT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTTOT1D,                                           &
-                     'Wrihis_balance', 'Qext_total_1D', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTTOT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTIN2D,                                            &
-                     'Wrihis_balance', 'Qext_in_2D', '', '', 'm3', UNC_LOC_GLOBAL)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTIN2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTOUT2D,                                           &
-                     'Wrihis_balance', 'Qext_out_2D', '', '', 'm3', UNC_LOC_GLOBAL)                                           
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTOUT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTTOT2D,                                           &
-                     'Wrihis_balance', 'Qext_total_2D', '', '', 'm3', UNC_LOC_GLOBAL)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTTOT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_ICEPT,                                              &
-                     'Wrihis_balance', 'total_volume_interception', '', '', 'm3', UNC_LOC_GLOBAL)                                                             
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_ICEPT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EVAP_ICEPT,                                         &
-                     'Wrihis_balance', 'evaporation_interception', '', '', 'm3', UNC_LOC_GLOBAL)                                                             
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EVAP_ICEPT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_PRECIP_GROUND,                                      &
-                     'Wrihis_balance', 'precipitation_on_ground', '', '', 'm3', UNC_LOC_GLOBAL)                                                          
-  
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_PRECIP_GROUND)), '', '', 'm3', UNC_LOC_GLOBAL)
+
       !
       ! HIS: source sinks
       !
