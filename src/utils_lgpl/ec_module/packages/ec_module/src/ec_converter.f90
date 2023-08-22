@@ -2815,7 +2815,7 @@ module m_ec_converter
                         n_phase_rows = sourceElementSet%n_rows
                         n_phase_cols = sourceElementSet%n_cols
                         omega = 2.0*PI/sourceItem%hframe%ec_period
-                        delta_t = timesteps - sourceItem%tframe%ec_refdate
+                        delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_hp  !< convert to seconds.
                         do jj = 1,n_phase_rows
                             do ii = 1,n_phase_cols
                                 ipt = (jj-1)*n_phase_cols + ii
