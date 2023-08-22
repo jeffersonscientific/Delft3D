@@ -7944,7 +7944,9 @@ module m_meteo
                 ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
                 fileReaderPtr%one_time_field = .true.
             endif
-         case ('wavesignificantheight', 'waveperiod', 'wavedirection', 'xwaveforce', 'ywaveforce','xwaveinducedvolumeflux','ywaveinducedvolumeflux','freesurfacedissipation','whitecappingdissipation','bottomorbitalvelocity','totalwaveenergydissipation','bottomdissipation')
+         case ( 'wavesignificantheight', 'waveperiod', 'wavedirection', 'xwaveforce', 'ywaveforce',                     &
+                'xwaveinducedvolumeflux','ywaveinducedvolumeflux','freesurfacedissipation','whitecappingdissipation',   &
+                'bottomorbitalvelocity','totalwaveenergydissipation','bottomdissipation')
              !BS OWC: wsbu,wsbv might be included here with more appropriate names. 'totalwaveenergydissipation','bottomdissipation': included for now, might be removed if unused
              ! the name of the source item created by the file reader will be the same as the ext.force. quant name
             sourceItemName = varname

@@ -80,7 +80,7 @@
  character(len=256)            :: filename, sourcemask
  integer                       :: L, Lf, mout, kb, LL, Lb, Lt, ierr, k, k1, k2, ja, method, n1, n2, kbi, Le, n, j, mx, n4, kk, kt, ktmax, layer, lenqidnam
  character (len=256)           :: fnam, rec, filename0
- character (len=64)            :: varname
+ character (len=256)           :: varname
  character (len=NAMTRACLEN)    :: tracnam, qidnam
  character (len=NAMWAQLEN)     :: wqbotnam
  character (len=NAMSFLEN)      :: sfnam, qidsfnam
@@ -2070,7 +2070,7 @@ if (mext /= 0) then
                call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
                call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
                success = .false.
-            endif 
+            endif
         else
            call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting unknown QUANTITY '//trim(qid) )
            call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', ' getting unknown QUANTITY ', trim(qid) )
