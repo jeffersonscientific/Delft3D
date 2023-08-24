@@ -2926,7 +2926,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     use m_GlobalParameters
     use m_longculverts
     use m_structures_saved_parameters
-    
+    use m_initsedtra, only: initsedtra
+
     integer,           intent(in) :: irstfile
     real(kind=hp),     intent(in) :: tim
 
@@ -13450,6 +13451,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
              endif   
           endif
        endif
+       ! Update the D50 based on the info in the restart file
+       call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx, ndx, stmpar%lsedsus, stmpar%lsedtot)
     end if
 
     ! Read Thatcher-Harleman boundary data
