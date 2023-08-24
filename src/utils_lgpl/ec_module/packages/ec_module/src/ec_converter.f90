@@ -2669,7 +2669,7 @@ module m_ec_converter
          real(hp) :: amplitude       ! harmonics: amplitude
          real(hp) :: omega           ! harmonics: omega of current component (radians/second)
          real(hp) :: delta_t         ! harmonics: time delta (in seconds) relative to reference time.
-         real(hp) :: phase           ! harmonics: current phase angle (in radians)
+         real(hp) :: phase0          ! harmonics: current phase offset angle (in radians)
          integer  :: n_phase_rows    ! harmonics: number of phase rows
          integer  :: n_phase_cols    ! harmonics: number of phase columns
          integer  :: index1d         ! harmonics: 1d array index.
@@ -2820,8 +2820,8 @@ module m_ec_converter
                             do ii = 1,n_phase_cols
                                 ipt = (jj-1)*n_phase_cols + ii
                                 amplitude = sourceT1Field%arr1d(ipt)
-                                phase = sourceItem%hframe%phases(ii,jj)*PI/180.0
-                                sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t + phase)
+                                phase0 = sourceItem%hframe%phases(ii,jj)*PI/180.0
+                                sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0)
                             end do
                         end do
                      end if
