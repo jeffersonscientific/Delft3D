@@ -166,7 +166,7 @@ target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     include_directories(${mpi_include_path}
-                        ${petsc_path}
+                        ${petsc_libdir}
                         ${tecplot_path}
                         ${version_include_dir}
                         ${dflowfm_version_path})
@@ -178,7 +178,7 @@ if (WIN32)
                             PRIVATE
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/lib/x64/Release"
+                            "${petsc_libdir}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
