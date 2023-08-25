@@ -52,7 +52,7 @@ rem substitute backslashes
 set "install_dir=!install_dir:/=\!"
 set "build_dir=!build_dir:/=\!"
 set "checkout_src_root=!checkout_src_root:/=\!"
-
+    
 if [%5] EQU [] (
     rem Install all engines
     set project=install_all
@@ -88,7 +88,11 @@ if [%8] EQU [] (
     set "mpi_redist_dir=!mpi_redist_dir:/=\!"
 )
 
-
+IF defined IFORT_COMPILER23 (
+    set petsc_dir="!checkout_src_root!\third_party_open\petsc\petsc-3.19.4\lib\x64\Release-oneAPI\*.dll"
+) else (
+    set petsc_dir="!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release-oneAPI\*.dll"
+)
 
 echo install_dir         : !install_dir!
 echo build_dir           : !build_dir!
@@ -99,6 +103,7 @@ echo compiler_redist_dir : !compiler_redist_dir!
 echo mkl_redist_dir      : !mkl_redist_dir!
 echo mpi_redist_dir      : !mpi_redist_dir!
 echo oss_mpi             : !oss_mpi!
+echo petsc_dir           : !petsc_dir!
 
 
 
@@ -227,9 +232,8 @@ rem ===============
         rem Note the awkward usage of !-characters
         call :copyFile !!localstring! !dest_bin!!
         if "!argument!" == "withPetsc" (
-            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"               !dest_bin!
-            rem is needed for dimr nuget package? please check
-            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"               !dest_share!
+            call :copyFile "!petsc_dir!"               !dest_bin!
+            call :copyFile "!petsc_dir!"               !dest_share!
         )
     )
 goto :endproc
@@ -260,15 +264,14 @@ rem ===============
         call :copyFile !!localstring! !dest_share!
         set localstring="!mkl_redist_dir!mkl_intel_thread*.dll"
         call :copyFile !!localstring! !dest_bin!
-        rem is needed for dimr nuget package?  please check
         call :copyFile !!localstring! !dest_share!
+        set localstring="!mkl_redist_dir!mkl_sequential*.dll"
+        call :copyFile !!localstring! !dest_bin!
         if "!argument!" == "withPetsc" (
             rem if 'mkl_redist_dir' contains 'oneAPI', use the version of petsc built with oneAPI Fortran
-            if not "x!mkl_redist_dir:oneAPI=!"=="x!mkl_redist_dir!" (
-                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release-oneAPI\*.dll"             !dest_bin!
-            ) else (
-                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"             !dest_bin!
-            )
+
+            call :copyFile "!petsc_dir!"             !dest_bin!
+            ) 
         )
     )
 goto :endproc
