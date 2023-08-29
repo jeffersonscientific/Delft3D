@@ -80,8 +80,14 @@ if (WIN32)
     # Set the Tecplot path 
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
     
-    # Set the petsc path
-    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
+    if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
+        # Set the petsc path
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
+    else()
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
+    endif()
+    #also set PETSC library directory
+    set (petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
 
     # Set the GDAL path
     set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)

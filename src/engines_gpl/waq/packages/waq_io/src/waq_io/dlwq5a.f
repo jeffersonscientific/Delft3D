@@ -37,7 +37,7 @@
       subroutine dlwq5a ( lun    , lchar  , iu     , iwidth , icmax  ,
      &                    car    , iimax  , iar    , irmax  , rar    ,
      &                    sname  , aname  , atype  , ntitm  , ntdim  ,
-     &                    nttype , drar   , dtflg1 , dtflg3 , vrsion ,
+     &                    nttype , drar   , dtflg1 , dtflg3 , 
      &                    ioutpt , ierr2  , ierr   , iwar   )
 
 !       Deltares Software Centre
@@ -121,7 +121,6 @@
       real     ( 8), intent(inout) :: drar (*)      !< Double precision workspace
       logical      , intent(in   ) :: dtflg1        !< 'date'-format 1st time scale
       logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      real     ( 4), intent(in   ) :: vrsion        !< version of input
       integer  ( 4), intent(in   ) :: ioutpt        !< how extensive will the output be
       integer  ( 4), intent(  out) :: ierr2         !< return code of this routine
       integer  ( 4), intent(inout) :: ierr          !< cumulative error   count
@@ -134,7 +133,7 @@
       character     callr*10, calit*10, caldit*10, strng1*10, strng2*10,
      *              strng3*10
       integer       iorder   , noitm , nodim , iflag  , itype ,
-     +              ittim    , chkflg, ident , nottc  , lunwr2,
+     +              ittim    , ident , nottc  , lunwr2,
      +              ifilsz   , jfilsz, ipro  , itfacw , iopt  ,
      +              nobrk    , itel  , ioerr , iblock , k     ,
      +              i        , ihulp , ioff  , icm    , iim   ,
@@ -317,13 +316,12 @@
          endif
 ! Now get the list of locations to apply the DATA_ITEM
          ioff   = 1
-         chkflg = 1
          icm    = icmax - ioff
          iim    = iimax - ioff
          call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff:),
-     *                 iar(ioff:), icm   , iim   , aname , atype    ,
-     *                 ntitm    , nttype, noitm , noits , chkflg   ,
-     *                 calit    , ilun  , lch   , lstack, vrsion   ,
+     *                 iar(ioff:), icm  , iim   , aname , atype    ,
+     *                 ntitm    , nttype, noitm , noits ,
+     *                 calit    , ilun  , lch   , lstack, 
      *                 itype    , rar   , nconst, itmnr , chulp    ,
      *                                    ioutpt, ierr2 , iwar     )
 ! Check if data_item already exists
@@ -388,22 +386,21 @@
             ioff  = nodim + idmnr + 1
             ident = 0
          endif
-         chkflg = 1
          icm    = icmax - ioff
          iim    = iimax - ioff
          if ( ident .le. 1) then
-            call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff:),
-     *                    iar(ioff:), icm   , iim   , aname , atype    ,
-     *                    ntitm    , nttype, noitm , noits , chkflg   ,
-     *                    calit    , ilun  , lch   , lstack, vrsion   ,
+            call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff),
+     *                    iar(ioff:), icm   , iim   , aname , atype   ,
+     *                    ntitm    , nttype, noitm , noits , 
+     *                    calit    , ilun  , lch   , lstack,
      *                    itype    , rar   , nconst, itmnr , chulp    ,
      *                                       ioutpt, ierr2 , iwar     )
          else
             call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff:),
      *                    iar(ioff:), icm   , iim   , dlwq_data_items%name(1:ndata_items) ,
      *                    dlwq_data_items%name(1:ndata_items) , ndata_items,
-     *                    ndata_items      , noitm , noits , chkflg   ,
-     *                    caldit   , ilun  , lch   , lstack, vrsion   ,
+     *                    ndata_items      , noitm , noits , 
+     *                    caldit   , ilun  , lch   , lstack,
      *                    itype    , rar   , nconst, itmnr , chulp    ,
      *                                       ioutpt, ierr2 , iwar     )
             if (noitm.ne.1) then
@@ -473,13 +470,12 @@
             ierr2 = 1
             goto 510
          endif
-         chkflg = 1
          icm    = icmax - ioff
          iim    = iimax - ioff
-         call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff:),
-     *                 iar(ioff:), icm   , iim   , sname , atype    ,
-     *                 ntdim    ,   0   , nodim , nodis , chkflg   ,
-     *                 callr    , ilun  , lch   , lstack, vrsion   ,
+         call dlwq5b ( lunut    , iposr , npos  , cchar , car(ioff),
+     *                 iar(ioff:), icm   , iim   , sname , atype   ,
+     *                 ntdim    ,   0   , nodim , nodis ,
+     *                 callr    , ilun  , lch   , lstack,
      *                 itype    , rar   , nconst, idmnr , chulp    ,
      *                                    ioutpt, ierr2 , iwar     )
          nocol = nodis
