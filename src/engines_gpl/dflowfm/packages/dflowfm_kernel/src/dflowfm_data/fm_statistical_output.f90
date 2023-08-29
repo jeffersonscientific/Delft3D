@@ -35,7 +35,7 @@ private
    double precision, dimension(:), allocatable, target :: FY_data
    double precision, dimension(:), allocatable, target :: wavfu_data
    double precision, dimension(:), allocatable, target :: wavfv_data
-   double precision, dimension(:), allocatable, target :: hwav_sigma
+   double precision, dimension(:), allocatable, target :: hwav_significant
    
    public default_fm_statistical_output
 
@@ -44,7 +44,7 @@ private
    !> Calculates wave force vectors for map output.
    !! Will allocate and fill both the fx and fy and wavfu_l and wafv_l arrays,
    !! but should be called only for the fx output item.
-   subroutine calculate_FXY_data(source_input)
+   subroutine calculate_FXY(source_input)
    use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
    use m_flow, only: kmx, ndkx, hu, wavfu, wavfv
    use m_physcoef, only: rhomean
@@ -107,7 +107,7 @@ private
    
    end subroutine calculate_ustxy
    
-   subroutine calculate_hwav_sigma(data_pointer)
+   subroutine calculate_hwav_significant(data_pointer)
    use m_waves, only: hwav
    use m_flowgeom, only: ndx
 
@@ -115,17 +115,17 @@ private
    
    integer :: k
    
-   if (.not. allocated(hwav_sigma)) then
-      allocate(hwav_sigma(ndx))
+   if (.not. allocated(hwav_significant)) then
+      allocate(hwav_significant(ndx))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => hwav_sigma
+      data_pointer => hwav_significant
    endif
    
-   hwav_sigma = sqrt(2d0)*hwav
+   hwav_significant = sqrt(2d0)*hwav
    
-   end subroutine calculate_hwav_sigma
+   end subroutine calculate_hwav_significant
    
    subroutine calculate_nudge(data_pointer)
    use m_nudge
@@ -2378,7 +2378,7 @@ private
    if (flowWithoutWaves) then
       if (allocated (hwav)) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV),hwav                                                      )
-         function_pointer => calculate_hwav_sigma
+         function_pointer => calculate_hwav_significant
          temp_pointer => null()
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG),temp_pointer,function_pointer                                                        )
       endif
