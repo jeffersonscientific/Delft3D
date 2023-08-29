@@ -15,33 +15,33 @@ private
    type(t_output_variable_set), allocatable, public :: out_variable_set_map
    type(t_output_variable_set), allocatable, public :: out_variable_set_clm
    
-   double precision, dimension(:), allocatable, target :: constit_crs_obs_data !< constituent data on observation cross sections to be written
-   double precision, dimension(:), allocatable, target :: ucmaga_data !< uc vector norm data to be written
-   double precision, dimension(:), allocatable, target :: viu_data, diu_data !< viu and diu data to be written
-   double precision, dimension(:), allocatable, target :: tausx_data, tausy_data !< viu and diu data to be written
-   double precision, dimension(:), allocatable, target :: scaled_rain_data !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
-   double precision, dimension(:), allocatable, target :: wx_data 
-   double precision, dimension(:), allocatable, target :: wy_data 
-   double precision, dimension(:), allocatable, target :: wdsu_x_data 
-   double precision, dimension(:), allocatable, target :: wdsu_y_data 
-   double precision, dimension(:), allocatable, target :: tidepot_data
+   double precision, dimension(:), allocatable, target :: constit_crs_obs !< constituent data on observation cross sections to be written
+   double precision, dimension(:), allocatable, target :: ucmaga !< uc vector norm data to be written
+   double precision, dimension(:), allocatable, target :: viu_data, diu !< viu and diu data to be written
+   double precision, dimension(:), allocatable, target :: tausx, tausy !< viu and diu data to be written
+   double precision, dimension(:), allocatable, target :: scaled_rain !<! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
+   double precision, dimension(:), allocatable, target :: wx 
+   double precision, dimension(:), allocatable, target :: wy 
+   double precision, dimension(:), allocatable, target :: wdsu_x 
+   double precision, dimension(:), allocatable, target :: wdsu_y 
+   double precision, dimension(:), allocatable, target :: tidepot
    double precision, dimension(:), allocatable, target :: nudge_time_data
-   double precision, dimension(:), allocatable, target :: nudge_Dtemp_data
-   double precision, dimension(:), allocatable, target :: nudge_Dsal_data
-   double precision, dimension(:), allocatable, target :: ust_x_data
-   double precision, dimension(:), allocatable, target :: ust_y_data
-   double precision, dimension(:), allocatable, target :: theta_mean_data
+   double precision, dimension(:), allocatable, target :: nudge_Dtemp
+   double precision, dimension(:), allocatable, target :: nudge_Dsal
+   double precision, dimension(:), allocatable, target :: ust_x
+   double precision, dimension(:), allocatable, target :: ust_y
+   double precision, dimension(:), allocatable, target :: theta_mean
    double precision, dimension(:), allocatable, target :: FX_data
    double precision, dimension(:), allocatable, target :: FY_data
    double precision, dimension(:), allocatable, target :: wavfu_data
    double precision, dimension(:), allocatable, target :: wavfv_data
-   double precision, dimension(:), allocatable, target :: hwav_sigma_data
+   double precision, dimension(:), allocatable, target :: hwav_sigma
    
    public default_fm_statistical_output
 
    contains
    
-   subroutine calculate_FXY_data(data_pointer)
+   subroutine calculate_FXY(data_pointer)
    use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
    use m_flow, only: kmx, ndkx, hu, wavfu, wavfv
    use m_physcoef, only: rhomean
@@ -83,28 +83,28 @@ private
       enddo
    endif
 
-   end subroutine calculate_FXY_data
+   end subroutine calculate_FXY
    
-   subroutine calculate_ustxy_data(data_pointer)
+   subroutine calculate_ustxy(data_pointer)
    use m_flow, only: ndkx
 
    double precision, pointer, dimension(:), intent(inout) :: data_pointer
    
    integer :: k
    
-   if (.not. allocated(ust_x_data)) then
-      allocate(ust_x_data(ndkx),ust_y_data(ndkx))
+   if (.not. allocated(ust_x)) then
+      allocate(ust_x(ndkx),ust_y(ndkx))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => ust_x_data
+      data_pointer => ust_x
    endif
    
-   call reconstruct_cc_stokesdrift(ndkx,ust_x_data,ust_y_data)
+   call reconstruct_cc_stokesdrift(ndkx,ust_x,ust_y)
    
-   end subroutine calculate_ustxy_data
+   end subroutine calculate_ustxy
    
-   subroutine calculate_hwav_sigma_data(data_pointer)
+   subroutine calculate_hwav_sigma(data_pointer)
    use m_waves, only: hwav
    use m_flowgeom, only: ndx
 
@@ -112,19 +112,19 @@ private
    
    integer :: k
    
-   if (.not. allocated(hwav_sigma_data)) then
-      allocate(hwav_sigma_data(ndx))
+   if (.not. allocated(hwav_sigma)) then
+      allocate(hwav_sigma(ndx))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => hwav_sigma_data
+      data_pointer => hwav_sigma
    endif
    
-   hwav_sigma_data = sqrt(2d0)*hwav
+   hwav_sigma = sqrt(2d0)*hwav
    
-   end subroutine calculate_hwav_sigma_data
+   end subroutine calculate_hwav_sigma
    
-   subroutine calculate_nudge_data(data_pointer)
+   subroutine calculate_nudge(data_pointer)
    use m_nudge
    use m_transport
    use m_flow, only: ndkx
@@ -134,7 +134,7 @@ private
    integer :: k
    
    if (.not. allocated(nudge_time_data)) then
-      allocate(nudge_time_data(ndkx),nudge_Dtemp_data(ndkx),nudge_Dsal_data(ndkx))
+      allocate(nudge_time_data(ndkx),nudge_Dtemp(ndkx),nudge_Dsal(ndkx))
    endif
    
    if (.not. associated(data_pointer))then
@@ -144,12 +144,12 @@ private
      do k=1,ndkx
         if ( nudge_tem(k).ne.DMISS ) then
            nudge_time_data(k) = 1d0/nudge_rate(k)
-           nudge_Dtemp_data(k) = nudge_tem(k)-constituents(itemp, k)
-           nudge_Dsal_data(k)  = nudge_sal(k)-constituents(isalt,k)
+           nudge_Dtemp(k) = nudge_tem(k)-constituents(itemp, k)
+           nudge_Dsal(k)  = nudge_sal(k)-constituents(isalt,k)
         end if
      end do
    
-   end subroutine calculate_nudge_data
+   end subroutine calculate_nudge
    
    subroutine calculate_tidpot(data_pointer)
    use m_flow, only: tidep
@@ -159,16 +159,16 @@ private
    
    integer :: k
    
-   if (.not. allocated(tidepot_data)) then
-      allocate(tidepot_data(ndx))
+   if (.not. allocated(tidepot)) then
+      allocate(tidepot(ndx))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => tidepot_data
+      data_pointer => tidepot
    endif
    
    do k = 1, Ndx
-     tidepot_data(k) = tidep(1,k) - tidep(2,k)
+     tidepot(k) = tidep(1,k) - tidep(2,k)
    end do
    
    end subroutine calculate_tidpot
@@ -181,7 +181,7 @@ private
    
    integer :: ndxndxi, n
    
-   if (.not. allocated(scaled_rain_data)) then
+   if (.not. allocated(scaled_rain)) then
       ! Include boundary cells in output (ndx) or not (ndxi)
       !if (md_unc_conv == 1 .AND. jamapbnd > 0) then
       if (jamapbnd > 0) then
@@ -189,15 +189,15 @@ private
       else
          ndxndxi   = ndxi
       end if
-      allocate(scaled_rain_data(ndxndxi))
+      allocate(scaled_rain(ndxndxi))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => scaled_rain_data
+      data_pointer => scaled_rain
    endif
    
    do n = 1, ndxndxi
-      scaled_rain_data(n) = rain(n)*bare(n)/ba(n)*1d-3/(24d0*3600d0)
+      scaled_rain(n) = rain(n)*bare(n)/ba(n)*1d-3/(24d0*3600d0)
    enddo
    
    end subroutine calculate_scaled_rain
@@ -213,12 +213,12 @@ private
    integer :: k, kb, kt
    double precision :: ux, uy, um
    
-   if (.not. allocated(tausx_data)) then
-      allocate(tausx_data(ndx),tausy_data(ndx))
+   if (.not. allocated(tausx)) then
+      allocate(tausx(ndx),tausy(ndx))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => tausx_data
+      data_pointer => tausx
    endif
    
    if (jawave==0) then        ! Else, get taus from subroutine tauwave (taus = f(taucur,tauwave))
@@ -226,16 +226,16 @@ private
       !workx=DMISS; worky=DMISS
       if (kmx==0) then
          do k = 1, ndx   ! stack
-            tausx_data(k) = taus(k)*ucx(k)/max(hypot(ucx(k),ucy(k)),1d-4)  ! could use ucmag, but not guaranteed to exist
-            tausy_data(k) = taus(k)*ucy(k)/max(hypot(ucx(k),ucy(k)),1d-4)
+            tausx(k) = taus(k)*ucx(k)/max(hypot(ucx(k),ucy(k)),1d-4)  ! could use ucmag, but not guaranteed to exist
+            tausy(k) = taus(k)*ucy(k)/max(hypot(ucx(k),ucy(k)),1d-4)
          enddo
       else
          do k = 1, ndx
             call getkbotktop(k,kb,kt)
             ux = ucx(kb); uy = ucy(kb)
             um = max(hypot(ux,uy),1d-4)
-            tausx_data(k) = taus(k)*ux/um
-            tausy_data(k) = taus(k)*uy/um
+            tausx(k) = taus(k)*ux/um
+            tausy(k) = taus(k)*uy/um
          enddo
       endif
    end if
@@ -281,16 +281,16 @@ private
       ndxndxi   = ndxi
    end if
       
-   if (.not. allocated(wx_data)) then
-      allocate(wx_data(ndxndxi),wy_data(ndxndxi),wdsu_x_data(ndxndxi),wdsu_y_data(ndxndxi))
+   if (.not. allocated(wx)) then
+      allocate(wx(ndxndxi),wy(ndxndxi),wdsu_x(ndxndxi),wdsu_y(ndxndxi))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => wx_data !the others are pointered separately. 
+      data_pointer => wx !the others are pointered separately. 
    endif
    
-   call linktonode2(wx,wy,wx_data,wy_data, ndxndxi)
-   call linktonode2(wdsu_x,wdsu_y,wdsu_x_data,wdsu_y_data, ndxndxi)
+   call linktonode2(wx,wy,wx,wy, ndxndxi)
+   call linktonode2(wdsu_x,wdsu_y,wdsu_x,wdsu_y, ndxndxi)
 
    end subroutine calculate_windxy
    
@@ -304,7 +304,7 @@ private
    
    integer :: k, ndxndxi
    
-   if (.not. allocated(ucmaga_data)) then
+   if (.not. allocated(ucmaga)) then
       ! Include boundary cells in output (ndx) or not (ndxi)
       !if (md_unc_conv == 1 .AND. jamapbnd > 0) then
       if (jamapbnd > 0) then
@@ -312,21 +312,21 @@ private
       else
          ndxndxi   = ndxi
       end if
-      allocate(ucmaga_data(ndxndxi))
+      allocate(ucmaga(ndxndxi))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => ucmaga_data
+      data_pointer => ucmaga
    endif
    
    do k = 1, ndxndxi
-      ucmaga_data(k) = sqrt(ucx(k)**2 + ucy(k)**2)
+      ucmaga(k) = sqrt(ucx(k)**2 + ucy(k)**2)
    enddo
    
    end subroutine calculate_ucmaga
    
       !> calculates viu
-   subroutine calculate_viu(data_pointer)
+   subroutine calculate_viu_data(data_pointer)
    use m_flowgeom, only: lnx
    use m_flow, only: viusp, viu, vicouv, kmx
    use m_flowparameters, only: javiusp
@@ -353,7 +353,7 @@ private
          end if
          call getLbotLtopmax(LL, Lb, Lt)
          do L = Lb,Lt
-            viu_data(L) = viu(L) + vicc
+            viu_data(L) = viu_data(L) + vicc
          end do
       end do
    else
@@ -363,11 +363,11 @@ private
          else
             vicc = vicouv
          end if
-         viu_data(LL) = viu(LL) + vicc
+         viu_data(LL) = viu_data(LL) + vicc
       end do
    endif
 
-   end subroutine calculate_viu
+   end subroutine calculate_viu_data
    
    !> calculates diu
    subroutine calculate_diu(data_pointer)
@@ -380,12 +380,12 @@ private
    integer ::ndxndxi
    double precision :: dicc
    
-   if (.not. allocated(diu_data)) then
-      allocate(diu_data(lnx))
+   if (.not. allocated(diu)) then
+      allocate(diu(lnx))
    endif
    
    if (.not. associated(data_pointer))then
-      data_pointer => diu_data
+      data_pointer => diu
    endif
    
 
@@ -398,7 +398,7 @@ private
          end if
          call getLbotLtopmax(LL, Lb, Lt)
          do L = Lb,Lt
-            diu_data(L) = viu(L) / 0.7 + dicc
+            diu(L) = viu(L) / 0.7 + dicc
          end do
       end do
    else
@@ -408,28 +408,28 @@ private
          else
             dicc = dicouv
          end if
-         diu_data(LL) = viu(LL) / 0.7 + dicc
+         diu(LL) = viu(LL) / 0.7 + dicc
       end do
    endif
 
    end subroutine calculate_diu
    
    !> Aggregate constituent observation crossection data from crs()% value arrays into statistical_output data array.
-   subroutine aggregate_constit_crs_obs_data(data_pointer)
+   subroutine aggregate_constit_crs_obs(data_pointer)
    use m_monitoring_crosssections
    use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
    use m_sediment, only: sedtot2sedsus, stmpar
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs_data
+   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs
 
    integer :: i, IP, num, l
    double precision :: rhol
    
    if (ncrs > 0) then
-      if (.not. allocated(constit_crs_obs_data)) then
-         allocate(constit_crs_obs_data(NUMCONST_MDU*ncrs))
+      if (.not. allocated(constit_crs_obs)) then
+         allocate(constit_crs_obs(NUMCONST_MDU*ncrs))
       endif
       if (.not. associated(data_pointer))then
-         data_pointer => constit_crs_obs_data
+         data_pointer => constit_crs_obs
       endif
       
       do i=1,ncrs
@@ -446,9 +446,9 @@ private
                case (2)
                   rhol = stmpar%sedpar%rhosol(l)
                end select
-               constit_crs_obs_data((i-1)*NUMCONST_MDU+num) = crs(i)%sumvalcur(IP)/rhol
+               constit_crs_obs((i-1)*NUMCONST_MDU+num) = crs(i)%sumvalcur(IP)/rhol
             else
-               constit_crs_obs_data((i-1)*NUMCONST_MDU+num) = crs(i)%sumvalcur(IP)
+               constit_crs_obs((i-1)*NUMCONST_MDU+num) = crs(i)%sumvalcur(IP)
             endif
          end do
       enddo
@@ -2147,7 +2147,7 @@ private
       ! Variables on observation cross sections
       !
       if (ncrs > 0 .and. NUMCONST_MDU > 0) then
-         function_pointer => aggregate_constit_crs_obs_data
+         function_pointer => aggregate_constit_crs_obs
          temp_pointer => null()
          call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS),temp_pointer,function_pointer                                 )
       endif
@@ -2170,7 +2170,7 @@ private
    subroutine flow_init_statistical_output_map(output_config,output_set)
    use m_flow
    use m_flowgeom, only: ndxi, ntheta, ndx, ndxi, ndx2d, lnx1d
-   use m_hydrology_data, only: PotEvap, ActEvap
+   use m_hydrology, only: PotEvap, ActEvap
    use m_wind, only: evap
    use m_statistical_callback
    use m_flowparameters
@@ -2239,7 +2239,7 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA),temp_pointer,function_pointer                                                    )
       endif
    endif
-      function_pointer => calculate_viu
+   function_pointer => calculate_viu_data
    temp_pointer => null()
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU),temp_pointer,function_pointer                                                       )
    function_pointer => calculate_diu
@@ -2262,8 +2262,8 @@ private
    function_pointer => calculate_tausxy
    temp_pointer => null()
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX),temp_pointer,function_pointer                                                     )
-!   call calculate_tausxy(temp_pointer) !> ugly call to make sure tausy_data is allocated
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),tausy_data) ! This variable is updated by calculate_tausxy
+!   call calculate_tausxy(temp_pointer) !> ugly call to make sure tausy is allocated
+   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),tausy) ! This variable is updated by calculate_tausxy
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
    if (stm_included) then
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSMAX),sedtra%taub                                                   )
@@ -2325,18 +2325,18 @@ private
       temp_pointer => null()
       if (jsferic == 0) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX ),temp_pointer,function_pointer                                              )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY ),wy_data                                               )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY ),wy                                               )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU),wx                                                   )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU),wy                                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX),wdsu_x_data                             )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY),wdsu_y_data                                     )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX),wdsu_x                             )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY),wdsu_y                                     )
       else
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX_SFERIC ),temp_pointer,function_pointer                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY_SFERIC ),wy_data                     )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY_SFERIC ),wy                     )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU_SFERIC),wx                               )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU_SFERIC),wy                               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX_SFERIC),wdsu_x_data                                       )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY_SFERIC),wdsu_y_data                                       )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX_SFERIC),wdsu_x                                       )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY_SFERIC),wdsu_y                                       )
       endif
    endif
    if (jatem > 1) then
@@ -2365,19 +2365,19 @@ private
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERNAL_TIDES_DISSIPATION),DissInternalTidesPerArea                                )
    endif
    if (janudge.gt.0) then
-      function_pointer => calculate_nudge_data
+      function_pointer => calculate_nudge
       temp_pointer => null()
-!      call calculate_nudge_data(temp_pointer)
+!      call calculate_nudge(temp_pointer)
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TNUDGE    ),temp_pointer,function_pointer                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_TEM ),nudge_tem                                              )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_SAL ),nudge_sal                                              )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM),nudge_Dtemp_data                                  )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL),nudge_Dsal_data                              )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM),nudge_Dtemp                                  )
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL),nudge_Dsal                              )
    endif
    if (flowWithoutWaves) then
       if (allocated (hwav)) then
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV),hwav                                                      )
-         function_pointer => calculate_hwav_sigma_data
+         function_pointer => calculate_hwav_sigma
          temp_pointer => null()
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG),temp_pointer,function_pointer                                                        )
       endif
@@ -2441,16 +2441,16 @@ private
          endif
       endif
       if (jawave .gt. 0) then
-         function_pointer => calculate_ustxy_data
+         function_pointer => calculate_ustxy
          temp_pointer => null()
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_X  ), temp_pointer,function_pointer                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_Y  ), ust_y_data                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_Y  ), ust_y                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES), ustokes                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES), vstokes                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN), theta_mean_data                                                 )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN), theta_mean                                                 )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                      )
          if (jawave == 3 .or. jawave==4) then
-            function_pointer => calculate_FXY_data
+            function_pointer => calculate_FXY
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX   ),temp_pointer,function_pointer                                            )
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FY   ),FY_data                                            )
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFU),WAVFU_data                                        )
