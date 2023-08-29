@@ -1,4 +1,4 @@
-subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
+subroutine dredge_d3d4(dps, s1, timhr, nst, gdp, gsqs)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -58,10 +58,10 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     integer   , dimension(:)  , pointer :: kfsed
     integer                   , pointer :: nmmax
     integer                   , pointer :: lsedtot
+    integer                   , pointer :: cutcell
     real(fp)  , dimension(:)  , pointer :: cdryb
     real(fp)  , dimension(:,:), pointer :: dbodsd
 	real(fp)  , dimension(:,:), pointer :: agsqs
-	real(fp)  , dimension(:,:), pointer :: gsqs
 
 !
 ! Global variables
@@ -70,6 +70,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     real(fp)                                                   , intent(in)  :: timhr   !< flow time in hours
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: s1      !< water level
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                             :: dps     !< bed level - positive down
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in) :: gsqs   !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -103,7 +104,6 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
 
 	cutcell             => gdp%gdimbound%cutcell
     agsqs               => gdp%gdimbound%agsqs
-    gsqs                => gdp%gdr_i_ch%gsqs
 
     morhr = real(gdmorpar%morft * 24.0_hp, fp)
     spinup = nst < gdmorpar%itmor
@@ -116,7 +116,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
               & dbodsd, kfsed, s1, timhr, morhr, gddredge, error, &
               & dredgecommunicate, gdbedformpar%duneheight, gdmorpar, hdt, ndomains, lundia, &
               & julday, nmlb, nmub, gderosed, gdmorlyr, &
-              & agsqs, gsqs, cutcell & 
+              & agsqs, gsqs, cutcell, & 
 			  & messages)
     !
     ! Update sediment administration for dumping only

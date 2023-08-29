@@ -130,7 +130,7 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
        morpar%morbnd(j)%npnt  = 0
        nullify(morpar%morbnd(j)%alfa_dist)
        nullify(morpar%morbnd(j)%alfa_mag)
-       nullify(morbnd(j)%width)
+       nullify(morpar%morbnd(j)%width)
        nullify(morpar%morbnd(j)%idir)
        nullify(morpar%morbnd(j)%nm)
        nullify(morpar%morbnd(j)%nxmx)
@@ -709,6 +709,8 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
     logical                                                 :: found
     integer                                                 :: i, j
     type(tree_data)                            , pointer    :: morbound_ptr
+    integer                                                 :: ic
+    character(256)                                          :: icstr
 !    
     bcmfilnam = ' '
     call prop_get_string(mor_ptr, 'Morphology', 'BcFil', bcmfilnam)

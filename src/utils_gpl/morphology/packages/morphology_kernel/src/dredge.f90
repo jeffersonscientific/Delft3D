@@ -77,7 +77,7 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
     logical                                              , intent(out)   :: error
     real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: agsqs
     real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: gsqs
-	integer   ,                                          , intent(in)    :: cutcell
+	integer                                              , intent(in)    :: cutcell
 !
     interface
        subroutine comm(a, n, error, msgstr)
@@ -1401,11 +1401,8 @@ subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lund
     real(fp)                                             , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
 	real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: agsqs
     real(fp)  , dimension(nmlb:nmub)                     , intent(in)    :: gsqs
-	integer   ,                                          , intent(in)    :: cutcell
+	integer                                              , intent(in)    :: cutcell
     logical                                              , intent(out)   :: error
-	
-    real(fp), dimension(nmlb:nmub)                         :: agsqs
-    real(fp), dimension(nmlb:nmub)                         :: gsqs
 	
     interface
        subroutine comm(a, n, error, msgstr)
@@ -1441,7 +1438,7 @@ subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lund
 
     if (cutcell==2) then ! areas of active cell can vary with bank erosion, recompute them (not ok for parellel/domain decomposition case since    globalareadump (=localareadump ) is simply overwriten
        do ib = 1, dadpar%nadump
-          pdump => dump_prop(ib)
+          pdump => dadpar%dump_prop(ib)
           area => pdump%area
           dadpar%globalareadump(ib) = 0._fp !I overwrite it
           do i = 1, dadpar%dump_prop(ib)%npnt

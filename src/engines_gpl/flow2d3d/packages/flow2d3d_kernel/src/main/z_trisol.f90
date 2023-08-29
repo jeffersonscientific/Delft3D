@@ -563,6 +563,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     character(8) :: stage       ! First or second half time step 
                                 ! Stage = 'both' means that in F0ISF1 the layering administration
                                 ! is copied for both the U- and the V-direction
+    real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                :: dps0
 !
 !! executable statements -------------------------------------------------------
 !

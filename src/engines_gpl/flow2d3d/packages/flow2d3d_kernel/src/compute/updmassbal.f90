@@ -251,7 +251,7 @@ subroutine updmassbal(imode     ,qxk       ,qyk       ,kcs       ,r1        , &
             QxDOWN = sum(qxk(nm-nmaxddb,1:kmax))
             QyUP   = sum(qyk(nm        ,1:kmax)) 
             QyDOWN = sum(qyk(nm-1      ,1:kmax)) 
-            EXITINGvolume(nm) = (QxUP-QxDOWN+QyUP-QyDOWN-Qloc)*hdt
+            EXITINGvolume(nm) = (QxUP-QxDOWN+QyUP-QyDOWN-Qloc)*dt
             STOREDvolume(nm) = (s1(nm)-s0(nm))*agsqs(nm)*gsqs(nm)
             balance(nm) = EXITINGvolume(nm)+STOREDvolume(nm)
          !   write(89898989,'(i6,45f35.15)') nst,QxUP,QxDOWN,QyUP,QyDOWN,s1(nm),s0(nm),agsqs(nm),EXITINGvolume(nm),(s1(nm)-s0(nm))*agsqs(nm)*gsqs(nm),balance(nm)
@@ -745,7 +745,7 @@ subroutine updmassbal(imode     ,qxk       ,qyk       ,kcs       ,r1        , &
     ! but in SSUU on the map-file.
     !
     if (lsedtot>0 .and. associated(ssuu)) then
-       hdtmor  = hdt*morfac
+       dtmor  = dt*morfac
        !
        do l = 1,lsedtot
           do nm = 1, nmmax
@@ -757,12 +757,12 @@ subroutine updmassbal(imode     ,qxk       ,qyk       ,kcs       ,r1        , &
                    nm2 = nm+nmaxddb
                    q = sbuu(nm,l)
                    if (l<=lsed) q = q+ssuu(nm,l)
-                   q = q*aguu(nm)*guu(nm)*hdtmor
+                   q = q*aguu(nm)*guu(nm)*dtmor
                 else
                    nm2 = nm+1
                    q = sbvv(nm,l)
                    if (l<=lsed) q = q+ssvv(nm,l)
-                   q = q*agvv(nm)*gvv(nm)*hdtmor
+                   q = q*agvv(nm)*gvv(nm)*dtmor
                 endif
                 !
                 jvol = volnr(nm2)
@@ -791,8 +791,8 @@ subroutine updmassbal(imode     ,qxk       ,qyk       ,kcs       ,r1        , &
                ! nm   = (mnksrc(5, i) + ddb) + ((mnksrc(4, i) - 1) + ddb)*icxy this is the one in sud
                   nmS = (mnksrc(4, i)-1)*gdp%d%nmax + mnksrc(5, i)
                   if (nm ==nmS) then
-                     fluxesLOC(ivol) = fluxesLOC(ivol) + disch(i)*hdt
-                     write(1919191,'(4i7,15f35.15)') nst,nm,mnksrc(4, i)-1, mnksrc(5, i),fluxesLOC(ivol),disch(i)*hdt
+                     fluxesLOC(ivol) = fluxesLOC(ivol) + disch(i)*dt
+                     write(1919191,'(4i7,15f35.15)') nst,nm,mnksrc(4, i)-1, mnksrc(5, i),fluxesLOC(ivol),disch(i)*dt
                   endif
                enddo
             endif

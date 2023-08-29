@@ -820,7 +820,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,timnow    ,lsedtot  , &
                 !
                 ! bed load transport always zero for mud fractions
                 !
-                if (sedtyp(l) == SEDTYP_COHESIVE) cycle
+                if (.not.has_bedload(tratyp(l))) cycle
                 li = li + 1
                 !
                 rate = bc_mor_array(li)
@@ -1545,7 +1545,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,timnow    ,lsedtot  , &
        ! Dredging and Dumping
        !
        if (dredge) then
-          call dredge_d3d4(dps, s1, timhr, nst, gdp)
+          call dredge_d3d4(dps, s1, timhr, nst, gdp, gsqs)
        endif
     endif
     ! -----------------------------------------------------------

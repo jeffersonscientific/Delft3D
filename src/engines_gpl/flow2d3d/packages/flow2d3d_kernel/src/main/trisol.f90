@@ -564,6 +564,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: distr_qtq
     logical                              , pointer :: distr_qtq_per
     integer(pntrsize)                    , pointer :: typbnd
+    integer(pntrsize)                    , pointer :: disnf
     integer                   , pointer :: cutcell
     integer                   , pointer :: GhostMethod
     integer                   , pointer :: dim_nmlist
@@ -1236,6 +1237,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     dryrun              => gdp%gdtmpfil%dryrun
     nrcmp               => gdp%gdtfzeta%nrcmp
     typbnd              => gdp%gdr_i_ch%typbnd
+    disnf               => gdp%gdr_i_ch%disnf !V: was not in branch. Not sure if this is the one. 
     !
     icx     = 0
     icy     = 0

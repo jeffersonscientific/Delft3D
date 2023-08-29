@@ -147,7 +147,7 @@ subroutine upwbed(su        ,sv        ,suu       ,svv       ,kfu       , &
 !
     if (bdslpINupwnbed) then   
     do l = 1, lsedtot
-       if (sedtyp(l) /= SEDTYP_COHESIVE) then
+       if (has_bedload(tratyp(l))) then
              di50        = sedd50(l)
              di50spatial = .false.
              if (di50<0 .and. lsedtot==1) di50spatial = .true.

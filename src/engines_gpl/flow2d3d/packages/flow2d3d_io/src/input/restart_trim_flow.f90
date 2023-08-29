@@ -611,21 +611,21 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
        !
        call rdarray_nm(fds, filename, filetype, grnam3, i_restart, &
                     & nf, nl, mf, ml, iarrc, gdp, &
-                    & ierror, lundia, dpL, 'dpL')
+                    & ierror, lundia, dpL, 'dpL', rdum) !V: filling with `rdnum` not sure is correct. 
        if (ierror /= 0) goto 9999
        !
        ! element 'dpH'
        !
        call rdarray_nm(fds, filename, filetype, grnam3, i_restart, &
                     & nf, nl, mf, ml, iarrc, gdp, &
-                    & ierror, lundia, dpH, 'dpH')
+                    & ierror, lundia, dpH, 'dpH', rdum) !V: filling with `rdnum` not sure is correct. 
        if (ierror /= 0) goto 9999
        !
        ! element 'poros'
        !
        call rdarray_nm(fds, filename, filetype, grnam3, i_restart, &
                     & nf, nl, mf, ml, iarrc, gdp, &
-                    & ierror, lundia, poros, 'poros')
+                    & ierror, lundia, poros, 'poros', rdum) !V: filling with `rdnum` not sure is correct. 
        if (ierror /= 0) goto 9999
     endif
     !
@@ -645,7 +645,7 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
     if (kmax>1) then
        call rdarray_nmk(fds, filename, filetype, grnam3, i_restart, &
                      & nf, nl, mf, ml, iarrc, gdp, &
-                     & 0, kmax, ierror, lundia, w1, 'W')
+                     & 0, kmax, ierror, lundia, w1, 'W', rdum) !V: filling with `rdnum` not sure is correct. 
        if (ierror /= 0) goto 9999
     endif
     !

@@ -219,6 +219,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: r1           !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: sink         !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: sour         !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: sournf       !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(kmax)                                     :: sig          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(kmax)                                     :: thick        !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(kmax, max(lstsc, 1), 2, norow+nocol)      :: rbnd         !  Description and declaration in esm_alloc_real.f90
