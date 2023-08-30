@@ -32,8 +32,8 @@
 
 
 ! Make output arrays for bed shear stress icm jawave>0, depending on waq coupling and 2D/3D
-subroutine gettauswave(waveswartdelwaq)
-   use m_flow
+subroutine gettauswave(waveswartdelwaq, workx, worky)
+   use m_flow, workx_illegal => workx, worky_illegal => worky
    use m_waves
    use m_flowgeom
    use m_sediment, only: sedtra, stm_included
@@ -42,6 +42,7 @@ subroutine gettauswave(waveswartdelwaq)
 
    ! Input variables
    integer, intent(in)  :: waveswartdelwaq
+   double precision, allocatable, intent(out) :: workx(:), worky(:)
 
    ! Local variables
    integer                          :: L, LL, k1, k2, k, kb, kt, nn

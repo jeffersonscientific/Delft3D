@@ -1424,7 +1424,7 @@ end subroutine setfoustandardname
             if (jawave==0 .or. flowWithoutWaves) then
                 call gettaus(1,1)
              else
-                call gettauswave(jawaveswartdelwaq)
+                call gettauswave(jawaveswartdelwaq, workx, worky)
              endif
           fieldptr => taus
        case ('fb')

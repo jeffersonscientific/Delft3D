@@ -1402,7 +1402,7 @@
          if (jawave==0 .or. flowWithoutWaves) then
             call gettaus(1,2)
          else
-            call gettauswave(jawaveswartdelwaq)
+            call gettauswave(jawaveswartdelwaq, workx, worky)
          endif   
          do kk=1,Ndxi
             call getkbotktop(kk,kb,kt)

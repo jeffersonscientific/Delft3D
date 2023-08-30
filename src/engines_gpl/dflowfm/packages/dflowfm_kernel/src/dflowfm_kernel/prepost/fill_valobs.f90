@@ -101,7 +101,7 @@ subroutine fill_valobs()
             enddo
          endif
       else
-         call gettauswave(jawaveswartdelwaq)
+         call gettauswave(jawaveswartdelwaq, workx, worky)
       endif
    endif
    !

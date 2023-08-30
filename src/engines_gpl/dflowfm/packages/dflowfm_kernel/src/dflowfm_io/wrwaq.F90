@@ -1813,7 +1813,7 @@ subroutine waq_wri_couple_files(time)
    if (jawave==0 .or. flowWithoutWaves) then   ! If jawave > 0, then taus is obtained from subroutine tauwave (taus = taucur + tauwave).
       call gettaus(1,2)
    else
-      call gettauswave(jawaveswartdelwaq)
+      call gettauswave(jawaveswartdelwaq, workx, worky)
    endif
    call waq_wri_tau(itim, defaultFilename('tau'), waqpar%luntau)
 

@@ -4029,7 +4029,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     end if
     !
     if (jawave>0 .and. .not. flowWithoutWaves) then  
-       call gettauswave(jawaveswartdelwaq)
+       call gettauswave(jawaveswartdelwaq, workx, worky)
     endif   
     !
     if(jamaptaucurrent > 0) then
@@ -7231,7 +7231,7 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
       end if
       
       if (jawave>0 .and. .not. flowWithoutWaves) then
-         call gettauswave(jawaveswartdelwaq)
+         call gettauswave(jawaveswartdelwaq,tausx,tausy)
       endif   
    end if
 
@@ -9293,7 +9293,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
              call gettaus(2,1)       ! Only update czs 
           end if
           if (jawave>0 .and. .not. flowWithoutWaves) then
-             call gettauswave(jawaveswartdelwaq)
+             call gettauswave(jawaveswartdelwaq, workx, worky)
           endif
        endif
        !

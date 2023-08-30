@@ -114,7 +114,7 @@ module m_sedtrails_stats
    !> Update the (time-)integral statistics for all flow nodes, typically after each time step.
    subroutine update_sedtrails_stats()
       use m_flowtimes, only: dts
-      use m_flow, only: hs, ucx, ucy, taus, kmx, ucxq, ucyq, hs, vol1
+      use m_flow, only: hs, ucx, ucy, taus, kmx, ucxq, ucyq, hs, vol1, workx, worky
       use m_flowgeom, only: ndx, bl, ba
       use m_fm_erosed
       use m_transport, only: constituents, ISED1
@@ -153,7 +153,7 @@ module m_sedtrails_stats
       if (jawave==0 .or. flowWithoutWaves) then      ! do not overwrite current+wave induced bed shear stresses from tauwave
          call gettaus(1, 1)                           
       else
-         call gettauswave(jawaveSwartdelwaq)
+         call gettauswave(jawaveswartdelwaq, workx, worky)
       endif
    
       do k=1,ndx

@@ -220,7 +220,7 @@ private
    subroutine calculate_tausxy(data_pointer)
    use m_flowgeom, only: ndx
    use m_flow, only: kmx, taus, ucx, ucy
-   use m_flowparameters, only: jawave
+   use m_flowparameters, only: jawave, flowWithoutWaves, jamap_chezy_links, jawaveSwartDelwaq
    
    double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
    
@@ -251,7 +251,13 @@ private
             tausy(k) = taus(k)*uy/um
          enddo
       endif
+   else if (jamap_chezy_links > 0) then
+      call gettaus(2,1)
    end if
+
+   if (jawave>0 .and. .not. flowWithoutWaves) then  
+      call gettauswave(jawaveswartdelwaq,tausx,tausy)
+   endif   
 
    end subroutine calculate_tausxy
 
@@ -1627,10 +1633,10 @@ private
       call addoutval(out_quan_conf_map, IDX_MAP_SBXWAV,                              &
                      'Wrimap_waves', 'sxbwav', 'Water body wave forcing term, x-component',                                &
                      'sea_surface_x_wave_force_bottom', 'N m-2', UNC_LOC_S)
-      call addoutval(out_quan_conf_map, IDX_MAP_UST_X,                              &
+      call addoutval(out_quan_conf_map, IDX_MAP_UXST_CC,                              &
                      'Wrimap_waves', 'ust_cc', 'Stokes drift, x-component',                                                &
                      'sea_surface_x_stokes_drift', 'm s-1', UNC_LOC_S)
-      call addoutval(out_quan_conf_map, IDX_MAP_UST_Y,                              &
+      call addoutval(out_quan_conf_map, IDX_MAP_UYST_CC,                              &
                      'Wrimap_waves', 'vst_cc', 'Stokes drift, y-component',                                                &
                      'sea_surface_y_stokes_drift', 'm s-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_USTOKES,                             &
@@ -2455,8 +2461,8 @@ private
       if (jawave .gt. 0) then
          function_pointer => calculate_ustxy
          temp_pointer => null()
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_X  ), temp_pointer,function_pointer                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UST_Y  ), ust_y                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UXST_CC  ), temp_pointer,function_pointer                                         )
+         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UYST_CC  ), ust_y                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES), ustokes                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES), vstokes                                         )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN), theta_mean                                                 )
