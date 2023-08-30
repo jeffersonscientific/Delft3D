@@ -202,21 +202,14 @@ private
    integer :: ndxndxi, n
    
    if (.not. allocated(scaled_rain)) then
-      ! Include boundary cells in output (ndx) or not (ndxi)
-      !if (md_unc_conv == 1 .AND. jamapbnd > 0) then
-      if (jamapbnd > 0) then
-         ndxndxi   = ndx
-      else
-         ndxndxi   = ndxi
-      end if
-      allocate(scaled_rain(ndxndxi))
+      allocate(scaled_rain(ndx))
    endif
    
    if (.not. associated(data_pointer))then
       data_pointer => scaled_rain
    endif
    
-   do n = 1, ndxndxi
+   do n = 1, ndx
       scaled_rain(n) = rain(n)*bare(n)/ba(n)*1d-3/(24d0*3600d0)
    enddo
    
@@ -299,25 +292,17 @@ private
    use m_flow, only: wx, wy, wdsu_x, wdsu_y
    use m_flowparameters, only: jamapbnd
    double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to ucmaga
-   
-   integer :: ndxndxi
-   
-   if (jamapbnd > 0) then
-      ndxndxi   = ndx
-   else
-      ndxndxi   = ndxi
-   end if
       
    if (.not. allocated(wx)) then
-      allocate(wx(ndxndxi),wy(ndxndxi),wdsu_x(ndxndxi),wdsu_y(ndxndxi))
+      allocate(wx(ndx),wy(ndx),wdsu_x(ndx),wdsu_y(ndx))
    endif
    
    if (.not. associated(data_pointer))then
       data_pointer => wx !the others are pointered separately. 
    endif
    
-   call linktonode2(wx,wy,wx,wy, ndxndxi)
-   call linktonode2(wdsu_x,wdsu_y,wdsu_x,wdsu_y, ndxndxi)
+   call linktonode2(wx,wy,wx,wy, ndx)
+   call linktonode2(wdsu_x,wdsu_y,wdsu_x,wdsu_y, ndx)
 
    end subroutine calculate_windxy
    
@@ -332,21 +317,14 @@ private
    integer :: k, ndxndxi
    
    if (.not. allocated(ucmaga)) then
-      ! Include boundary cells in output (ndx) or not (ndxi)
-      !if (md_unc_conv == 1 .AND. jamapbnd > 0) then
-      if (jamapbnd > 0) then
-         ndxndxi   = ndx
-      else
-         ndxndxi   = ndxi
-      end if
-      allocate(ucmaga(ndxndxi))
+      allocate(ucmaga(ndx))
    endif
    
    if (.not. associated(data_pointer))then
       data_pointer => ucmaga
    endif
    
-   do k = 1, ndxndxi
+   do k = 1, ndx
       ucmaga(k) = sqrt(ucx(k)**2 + ucy(k)**2)
    enddo
    
@@ -360,7 +338,6 @@ private
    double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to viu
    
    integer :: ll, LB, LT, L
-   integer :: ndxndxi
    double precision :: vicc
    
    if (.not. allocated(viu_data)) then
@@ -404,7 +381,6 @@ private
    double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to diu
    
    integer :: LL, LB, LT, L
-   integer ::ndxndxi
    double precision :: dicc
    
    if (.not. allocated(diu)) then
