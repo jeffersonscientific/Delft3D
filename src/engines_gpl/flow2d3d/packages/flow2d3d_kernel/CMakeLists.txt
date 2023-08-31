@@ -26,6 +26,7 @@ set(src_path src)
 
 # Gather source files
 get_fortran_source_files(${src_path}/compute compute_files)
+get_fortran_source_files(${src_path}/compute_banks compute_banks_files)
 get_fortran_source_files(${src_path}/compute_nearfar compute_nearfar_files)
 get_fortran_source_files(${src_path}/compute_roller compute_roller_files)
 get_fortran_source_files(${src_path}/compute_sediment compute_sediment_files)
@@ -41,6 +42,7 @@ file(GLOB preprocessor_files ${src_path}/general/pldep.F90)
 
 # Define library
 add_library(${library_name} ${compute_files}
+                            ${compute_banks_files}
                             ${compute_nearfar_files}
                             ${compute_roller_files}
                             ${compute_sediment_files}
@@ -75,6 +77,7 @@ endif(UNIX)
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${compute_files}
+                                                    ${compute_banks_files}
                                                     ${compute_nearfar_files}
                                                     ${compute_roller_files}
                                                     ${compute_sediment_files}
