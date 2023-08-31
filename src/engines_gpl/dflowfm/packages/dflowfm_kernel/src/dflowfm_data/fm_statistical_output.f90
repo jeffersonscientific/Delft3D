@@ -36,10 +36,38 @@ private
    double precision, dimension(:), allocatable, target :: wavfu_data
    double precision, dimension(:), allocatable, target :: wavfv_data
    double precision, dimension(:), allocatable, target :: hwav_significant
+   double precision, dimension(:), allocatable, target :: ucx_data
+   double precision, dimension(:), allocatable, target :: ucy_data
    
    public default_fm_statistical_output
 
    contains
+   
+   
+   !> Calculates ucx and ucy with getucxucyeulmag()
+   subroutine calculate_ucxy
+   use m_flowparameters, only: jawave, jaeulervel
+   double precision, pointer, dimension(:), intent(inout) :: source_input !< pointer to source input array for the "Fx" item, to be assigned once on first call.
+   
+   integer :: jaeulerloc
+   double precision :: dummy(ndx)
+   
+   if (.not. allocated(ucx_data)) then
+      allocate(ucx_data(ndkx), ucy_data(ndkx),)
+   endif
+   
+   if (.not. associated(source_input))then
+      source_input => ucx_data
+   endif
+   
+      jaeulerloc = 0
+    if (jaeulervel==1 .and. jawave.gt.0) then
+       jaeulerloc = 1
+    endif
+    !
+    call getucxucyeulmag(ndkx, ucx_data, ucy_data, dummy, jaeulerloc, 0)
+   
+   end subroutine calculate_ucxy
    
    !> Calculates wave force vectors for map output.
    !! Will allocate and fill both the fx and fy and wavfu_l and wafv_l arrays,
@@ -1288,6 +1316,19 @@ private
       call addoutval(out_quan_conf_map, IDX_MAP_UCYQ,                                               &
                      'Wrimap_velocity_vector', 'ucyq', 'Flow element center velocity vector based on discharge, y-component',           &
                      'ucyq_velocity', 'm s-1', UNC_LOC_S)
+      
+      call addoutval(out_quan_conf_map, IDX_MAP_UCX_EULERIAN,                                      &
+                     'Wrimap_velocity_vector', 'ucx', 'Flow element center eulerian velocity vector, x-component',  &
+                     'ucx_eulerian_velocity', 'm s-1', UNC_LOC_S, 'Write cell-center velocity vectors to map file')
+      call addoutval(out_quan_conf_map, IDX_MAP_UCY_EULERIAN,                                      &
+                     'Wrimap_velocity_vector', 'ucy', 'Flow element center eulerian velocity vector, y-component',  &
+                     'ucy_eulerian_velocity', 'm s-1', UNC_LOC_S)
+      call addoutval(out_quan_conf_map, IDX_MAP_UCX,                                               &
+                     'Wrimap_velocity_vector', 'ucx', 'Flow element center velocity vector, x-component',           &
+                     'ucx_velocity', 'm s-1', UNC_LOC_S)
+      call addoutval(out_quan_conf_map, IDX_MAP_UCY,                                               &
+                     'Wrimap_velocity_vector', 'ucy', 'Flow element center velocity vector, y-component',           &
+                     'ucy_velocity', 'm s-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_UCMAG,                                              &
                      'Wrimap_velocity_magnitude', 'ucmag', 'Flow element center velocity magnitude',                                        &
                      'sea_water_speed', 'm s-1', UNC_LOC_S, 'Write cell-center velocity vector magnitude to map file')
@@ -2235,6 +2276,14 @@ private
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP_CUM), limitingTimestepEstimation_cum          )
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_COURANT     ), flowCourantNumber            )
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_AU),au                                                      )
+   function_pointer => calculate_ucxy
+   if (jaeulervel == 1) then
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCX_EULERIAN),null(),function_pointer)
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCY_EULERIAN),ucy_data)
+   else
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCX),null(),function_pointer)
+      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCY),ucy_data)
+   endif
    if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ_EULERIAN),ucxq                                           )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ_EULERIAN),ucyq                                           )
