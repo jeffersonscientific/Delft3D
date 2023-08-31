@@ -300,6 +300,10 @@ private
    integer, public :: IDX_MAP_AU
    integer, public :: IDX_MAP_U1
    integer, public :: IDX_MAP_U0
+   integer, public :: IDX_MAP_UCX
+   integer, public :: IDX_MAP_UCY
+   integer, public :: IDX_MAP_UCX_EULERIAN
+   integer, public :: IDX_MAP_UCY_EULERIAN
    integer, public :: IDX_MAP_UCXQ_EULERIAN
    integer, public :: IDX_MAP_UCYQ_EULERIAN
    integer, public :: IDX_MAP_UCXQ
