@@ -2326,7 +2326,11 @@ private
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UCUR),z0ucur                                                    )
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UROU),z0urou                                                    )
    if (jasal > 0) then  ! Write the data: salinity
-      call c_f_pointer (c_loc(constituents(ISALT, 1:ndx)), temp_pointer, [ndx])
+      if (kmx == 0) then
+         call c_f_pointer (c_loc(constituents(ISALT, 1:ndx)), temp_pointer, [ndx])
+      else
+         call c_f_pointer (c_loc(constituents(ISALT, 1:ndkx)), temp_pointer, [ndkx])
+      endif
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SA1),temp_pointer                                                       )
    endif
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZS),czs                                                       )
@@ -2334,11 +2338,19 @@ private
    call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFU),frcu                                                       )
    !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFUTYP),ifrcutp                                                    )
    if (jatem > 0) then
-      call c_f_pointer (c_loc(constituents(ITEMP, 1:ndx)), temp_pointer, [ndx])
+      if (kmx == 0) then 
+         call c_f_pointer (c_loc(constituents(ITEMP, 1:ndx)), temp_pointer, [ndx])
+      else
+         call c_f_pointer (c_loc(constituents(ITEMP, 1:ndkx)), temp_pointer, [ndkx])
+      endif
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TEM1),temp_pointer                                                      )
    endif
    if (ITRA1 > 0) then
-      call c_f_pointer (c_loc(constituents(ITRA1:ITRAN, 1:ndx)), temp_pointer, [ndx*(ITRAN-ITRA1+1)])
+      if (kmx == 0) then 
+         call c_f_pointer (c_loc(constituents(ITRA1:ITRAN, 1:ndx)), temp_pointer, [ndx*(ITRAN-ITRA1+1)])
+      else
+         call c_f_pointer (c_loc(constituents(ITRA1:ITRAN, 1:ndkx)), temp_pointer, [ndkx*(ITRAN-ITRA1+1)])
+      endif
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CONST),temp_pointer                                                     )
    endif
    if (kmx > 0) then
