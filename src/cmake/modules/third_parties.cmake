@@ -61,3 +61,6 @@ set(solvesaphe_module ${third_party_open_path}/solveSAPHE/${cmake_directory})
 
 # lapack
 set(lapack_module ${third_party_open_path}/lapack/${cmake_directory})
+
+# clipper
+set(clipper_module ${third_party_open_path}/clipper/${cmake_directory})
