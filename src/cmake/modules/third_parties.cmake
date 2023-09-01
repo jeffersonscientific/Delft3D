@@ -58,3 +58,6 @@ set(swan_omp_module ${third_party_open_path}/swan/swan_omp)
 
 # solvesaphe
 set(solvesaphe_module ${third_party_open_path}/solveSAPHE/${cmake_directory})
+
+# lapack
+set(lapack_module ${third_party_open_path}/lapack/${cmake_directory})
