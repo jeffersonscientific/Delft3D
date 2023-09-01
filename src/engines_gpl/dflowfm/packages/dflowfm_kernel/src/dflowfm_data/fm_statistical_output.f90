@@ -232,12 +232,11 @@ private
    !> Wrapper function that computes scaled rain data.
    !! Will allocate and fill the scaled_rain array.
    subroutine calculate_scaled_rain(source_input)
-   use m_flowparameters, only: jamapbnd
    use m_flowgeom, only: ndx, ndxi, bare, ba
    use m_wind, only: rain
    double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "scaled_rain" item, to be assigned once on first call.
    
-   integer :: ndxndxi, n
+   integer :: n
    
    if (.not. allocated(scaled_rain)) then
       allocate(scaled_rain(ndx))
@@ -332,7 +331,6 @@ private
    subroutine calculate_windxy(source_input)
    use m_flowgeom, only: ndx, ndxi
    use m_flow, only: wx, wy, wdsu_x, wdsu_y
-   use m_flowparameters, only: jamapbnd
    double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "wx" item, to be assigned once on first call.
       
    if (.not. allocated(wx)) then
@@ -354,10 +352,9 @@ private
    use m_flow, only: ucx, ucy
    use m_flowgeom, only: ndx, ndxi
    !use unstruc_model, only: md_unc_conv
-   use m_flowparameters, only: jamapbnd
    double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "ucmaga" item, to be assigned once on first call.
    
-   integer :: k, ndxndxi
+   integer :: k
    
    if (.not. allocated(ucmaga)) then
       allocate(ucmaga(ndx))
@@ -2249,13 +2246,7 @@ private
       double precision, pointer, dimension(:) :: temp_pointer
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
       
-      integer :: i, ntot, ndxndxi
-      
-      if (jamapbnd > 0) then
-         ndxndxi   = ndx
-      else
-         ndxndxi   = ndxi
-      end if
+      integer :: i, ntot
       
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0),s0                                                        )
       call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S1),s1                                                        )
@@ -2499,7 +2490,7 @@ private
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIGMWAV),sigmwav                                                   )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_KWAV),kwav                                                      )
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
-         call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndxndxi)), temp_pointer, [ndxndxi*ntheta])
+         call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndx)), temp_pointer, [ndx*ntheta])
          call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
          if (windmodel == 0) then
             call add_stat_output_item(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
