@@ -1329,6 +1329,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'physics', 'Surftempsmofac'    , Surftempsmofac)
     call prop_get_integer(md_ptr, 'physics', 'RhoairRhowater'    , jaroro)
     call prop_get_integer(md_ptr, 'physics', 'Heat_eachstep'     , jaheat_eachstep)
+    call prop_get_integer(md_ptr, 'physics', 'Wind_eachstep'     , jawind_eachstep)
     call prop_get_double (md_ptr, 'physics', 'Soiltempthick'     , Soiltempthick)
     if (soiltempthick > 0d0) then
        jaheat_eachstep = 1
@@ -3451,6 +3452,9 @@ endif
        endif
        if (writeall .or. jaheat_eachstep > 0) then
           call prop_set(prop_ptr, 'physics', 'Heat_eachstep' , jaheat_eachstep,  '1=heat each timestep, 0=heat each usertimestep')
+       endif
+       if (writeall .or. jawind_eachstep > 0) then
+          call prop_set(prop_ptr, 'physics', 'Wind_eachstep' , jawind_eachstep,  '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
        endif
        if (writeall .or. jaroro > 0) then
           call prop_set(prop_ptr, 'physics', 'RhoairRhowater' , jaroro        ,  'windstress rhoa/rhow: 0=Rhoair/Rhomean, 1=Rhoair/rhow(), 2=rhoa0()/rhow(), 3=rhoa10()/Rhow()')

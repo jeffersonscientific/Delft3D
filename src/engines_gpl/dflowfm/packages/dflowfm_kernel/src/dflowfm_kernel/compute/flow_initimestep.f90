@@ -44,7 +44,8 @@
  use m_partitioninfo
  use m_sediment, only: stm_included
  use m_sethu
-
+ use m_external_forcings, only: get_and_apply_windstress
+ use m_wind, only: jawind_eachstep
  implicit none
 
  integer              :: jazws0
@@ -53,6 +54,7 @@
  double precision, parameter :: mmphr_to_mps = 1d-3/3600d0
 
  iresult = DFM_GENERICERROR
+
 
  call timstrt('Initialise timestep', handle_inistep)
 
@@ -117,6 +119,11 @@
  call timstrt('Setumod     ', handle_extra(43)) ! Start setumod
     call setumod(jazws0)                             ! set cell center velocities, should be here as prior to 2012 orso
  call timstop(handle_extra(43)) ! End setumod
+
+ if (jawind_eachstep > 0) then ! Update wind (and air pressure) in each computational timestep
+    call get_and_apply_windstress(time0)
+ end if
+
 
  call timstrt('Set conveyance       ', handle_extra(44)) ! Start cfuhi
  call setcfuhi()                                     ! set current related frictioncoefficient
