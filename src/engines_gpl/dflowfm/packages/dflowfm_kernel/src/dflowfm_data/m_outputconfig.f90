@@ -2,8 +2,10 @@
 !! MDU file.
 module m_output_config
    use MessageHandling
-   use coordinate_reference_system
-   
+   use netcdf_utils, only: realloc, nc_att_set
+   use coordinate_reference_system, only: nc_attribute
+   use netcdf, only: nf90_double
+   implicit none
 private
    
    public scan_input_tree
@@ -27,7 +29,7 @@ private
    integer, parameter, public :: UNC_LOC_U3D = 5  !< Data location: horizontal velocity point in all layers.
    integer, parameter, public :: UNC_LOC_W   = 6  !< Data location: vertical velocity point on all layer interfaces.
    integer, parameter, public :: UNC_LOC_WU  = 16 !< Data location: vertical viscosity point on all layer interfaces.
-   integer, parameter, public :: UNC_LOC_WB        = 21 !< Data location: his file water balance
+   integer, parameter, public :: UNC_LOC_GLOBAL    = 21 !< Data location: his file global variables (e.g. water balance)
    integer, parameter, public :: UNC_LOC_SOSI      = 22 !< Data location: his file sources and sinks
    integer, parameter, public :: UNC_LOC_GENSTRU   = 23 !< Data location: his file general structure data
    integer, parameter, public :: UNC_LOC_DAM       = 24   !< Data location: his file controllable dam data
@@ -41,8 +43,10 @@ private
    integer, parameter, public :: UNC_LOC_UNIWEIR   = 32   !< Data location: his file universal weir data
    integer, parameter, public :: UNC_LOC_CMPSTRU   = 33   !< Data location: his file compound structure data
    integer, parameter, public :: UNC_LOC_LONGCULVERT = 34 !< Data location: his file long culvert data
-   integer, parameter, public :: UNC_LOC_STATION     = 35 !< Data location: his file monitoring station data
-   integer, parameter, public :: UNC_LOC_LATERAL     = 36 !< Data location: his file lateral locations data
+   integer, parameter, public :: UNC_LOC_STATION     = 35 !< Data location: his file observation station data
+   integer, parameter, public :: UNC_LOC_OBSCRS      = 36 !< Data location: his file observation cross section data
+   integer, parameter, public :: UNC_LOC_LATERAL     = 37 !< Data location: his file lateral locations data
+   integer, parameter, public :: UNC_LOC_RUG         = 38 !< Data location: his file run-up gauge data
    
    !> indexes for output variables 
    integer, public :: IDX_HIS_VOLTOT
@@ -85,6 +89,7 @@ private
    integer, public :: IDX_HIS_ICEPT
    integer, public :: IDX_HIS_EVAP_ICEPT
    integer, public :: IDX_HIS_PRECIP_GROUND
+   integer, public :: IDX_HIS_RUG_RUHEIGHT
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT
@@ -275,7 +280,17 @@ private
    integer, public :: IDX_HIS_WS
    integer, public :: IDX_HIS_SEDDIF
 
-   integer, public :: IDX_HIS_CONSTITUENTS
+   integer, public :: IDX_HIS_OBSCRS_DISCHARGE
+   integer, public :: IDX_HIS_OBSCRS_DISCHARGE_CUM
+   integer, public :: IDX_HIS_OBSCRS_AREA
+   integer, public :: IDX_HIS_OBSCRS_VELOCITY
+   integer, public :: IDX_HIS_OBSCRS_CONST_ABSTRACT
+   integer, public :: IDX_HIS_OBSCRS_CONST_1
+   integer, public :: IDX_HIS_OBSCRS_CONST_N
+   integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT
+   integer, public :: IDX_HIS_OBSCRS_SED_STRANSPORT
+   integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_1
+   integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_N
 
    integer, public :: IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS
    integer, public :: IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE
@@ -442,6 +457,7 @@ private
    type t_output_quantity_config
       character(len=Idlen)             :: key             !< Key of the input item in the MDU file (e.g. wrimap_s1).                       
       character(len=Idlen)             :: name            !< Name of the output item on the NETCDF file.      
+      integer                          :: nc_type         !< NetCDF variable type, one of: nf90_double, nf90_int, etc.
       character(len=Idlen)             :: long_name       !< Long name of the output item on the NETCDF file.      
       character(len=Idlen)             :: unit            !< unit of the output item on the NETCDF file.      
       character(len=Idlen)             :: standard_name   !< Standard name of the output item on the NETCDF file.                     
@@ -449,8 +465,7 @@ private
       character(len=Idlen)             :: description     !< Description of the input paragraph, key combination.
       integer                          :: location_specifier !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
                                                              !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)
-      integer                          :: num_additional_attributes  !< number of additional attributes
-      type(nc_attribute), pointer      :: additional_attributes(:)   !< optional additional attributes for this entity
+      type(nc_att_set)                 :: additional_attributes !< optional additional NetCDF attributes for this quantity
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set
@@ -506,8 +521,8 @@ subroutine dealloc_config_output(confoutput)
    endif
 end subroutine dealloc_config_output
 
-   !> Define an output configuration quantity. And set the IDX variable to the current entry
-subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, description)
+!> Define an output configuration quantity. And set the IDX variable to the current entry
+subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_type, nc_atts, description)
    type(t_output_quantity_config_set),  intent(inout) :: config_set         !< Array containing all output quantity configs.
    integer,                         intent(inout) :: idx                 !< Index for the current variable.
    character(len=*),                intent(in   ) :: key                 !< Key in the MDU file.
@@ -516,9 +531,19 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    character(len=*),                intent(in   ) :: standard_name       !< Standard name of the variable on the NETCDF file.
    character(len=*),                intent(in   ) :: unit                !< Unit of the variable on the NETCDF file.
    integer,                         intent(in   ) :: location_specifier  !< Location specifier of the variable.
-   character(len=*), optional,      intent(in   ) :: description         !< Description for the 
+   integer,          optional,      intent(in   ) :: nc_type             !< NetCDF variable type, one of: nf90_double, nf90_int, etc. Default: nf90_double.
+   type(nc_attribute), optional,    intent(in   ) :: nc_atts(:)          !< (optional) list of additional NetCDF attributes to be stored for this output variable.
+   character(len=*), optional,      intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
 
    integer :: numentries
+   integer :: nc_type_
+   integer :: numatt
+   
+   if (present(nc_type)) then
+      nc_type_ = nc_type
+   else
+      nc_type_ = nf90_double
+   end if
 
    config_set%count = config_set%count+1
    if (config_set%count > config_set%size) then
@@ -528,11 +553,19 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    idx = numentries
    config_set%statout(numentries)%key                = key             
    config_set%statout(numentries)%name               = name            
+   config_set%statout(numentries)%nc_type            = nc_type_
    config_set%statout(numentries)%long_name          = long_name       
    config_set%statout(numentries)%standard_name      = standard_name   
    config_set%statout(numentries)%unit               = unit            
    config_set%statout(numentries)%location_specifier = location_specifier
-   config_set%statout(numentries)%num_additional_attributes = 0
+
+   if (present(nc_atts)) then
+      numatt = size(nc_atts)
+      call realloc(config_set%statout(numentries)%additional_attributes, numatt, keepExisting=.false.)
+      config_set%statout(numentries)%additional_attributes%count = numatt
+      config_set%statout(numentries)%additional_attributes%atts = nc_atts
+   end if
+
    if (present(description)) then
       config_set%statout(numentries)%description = description
    else

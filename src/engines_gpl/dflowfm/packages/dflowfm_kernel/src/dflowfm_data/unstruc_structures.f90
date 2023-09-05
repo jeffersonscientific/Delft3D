@@ -160,7 +160,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_PP_DISDIR = NUMVALS_COMMON_PUMP + 7               !< Pump discharge w.r.t. pumping orientation (same sign as capacity)
  integer, parameter :: NUMEXTVALS_PUMP = 7                                  !< Number of extra variables for pump
  integer, parameter :: NUMVALS_PUMP = NUMVALS_COMMON_PUMP + NUMEXTVALS_PUMP !< Total number of variables for pump
- double precision, dimension(:,:), allocatable :: valpump                   !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valpump                   !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
                                                                             !< NUMVALS_COMMON_PUMP common variables (see definitation at top) and NUMEXTVALS_PUMP extra variables.
 
  ! Long culvert
@@ -1121,17 +1121,18 @@ subroutine get_geom_coordinates_of_structure(istrtypein, i, nNodes, x, y, maskLo
    end if
 end subroutine get_geom_coordinates_of_structure
 
-!> Gets geometry coordinates of a structure, aligned along structure.
-!! Geometry coordinates can be used in a polyline representation of the placement
-!! of structures on flow links.
-subroutine get_geom_coordinates_of_structure_old(i, nNodes, x, y)
+!> Gets geometry coordinates of a generalstructure that was read from an old ext file.
+!! (this is either a generalstructure, gate or weir)
+!! Geometry coordinates are aligned along the structure's polyline orientation,
+!! and can be used in a polyline representation of the placement of structures on flow links.
+subroutine get_geom_coordinates_of_generalstructure_oldext(i, nNodes, x, y)
    use m_alloc
    use m_flowexternalforcings, only: ncgensg, kcgen, L1cgensg, L2cgensg
    use m_flowgeom, only: lncn
    use network_data, only: xk, yk
    implicit none
-   integer,                       intent(in   ) :: i           !< Structure index for this structure type.
-   integer,                       intent(in   ) :: nNodes      !< Number of geometry nodes in this structure.
+   integer,                       intent(in   ) :: i      !< Structure index for this structure type.
+   integer,                       intent(in   ) :: nNodes !< Number of geometry nodes in this structure.
    double precision, allocatable, intent(  out) :: x(:)   !< x-coordinates of the structure (will be reallocated when needed)
    double precision, allocatable, intent(  out) :: y(:)   !< y-coordinates of the structure (will be reallocated when needed)
 
@@ -1184,7 +1185,7 @@ subroutine get_geom_coordinates_of_structure_old(i, nNodes, x, y)
          k = k+1
       end do
    end if
-end subroutine get_geom_coordinates_of_structure_old
+end subroutine get_geom_coordinates_of_generalstructure_oldext
 
 !> Fills in the geometry arrays of a structure type for history output
 subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)

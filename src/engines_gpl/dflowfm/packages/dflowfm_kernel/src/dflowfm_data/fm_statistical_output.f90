@@ -11,11 +11,11 @@ private
    type(t_output_quantity_config_set), public :: out_quan_conf_map
    type(t_output_quantity_config_set), public :: out_quan_conf_clm
 
-   type(t_output_variable_set), allocatable, public :: out_variable_set_his
-   type(t_output_variable_set), allocatable, public :: out_variable_set_map
-   type(t_output_variable_set), allocatable, public :: out_variable_set_clm
+   type(t_output_variable_set), public :: out_variable_set_his
+   type(t_output_variable_set), public :: out_variable_set_map
+   type(t_output_variable_set), public :: out_variable_set_clm
    
-   double precision, dimension(:), allocatable, target :: constit_crs_obs  !< constituent data on observation cross sections to be written
+   double precision, dimension(:,:), allocatable, target :: constit_crs_obs  !< constituent data on observation cross sections to be written
    double precision, dimension(:), allocatable, target :: ucmaga           !< uc vector norm data to be written
    double precision, dimension(:), allocatable, target :: viu_data, diu    !< viu and diu data to be written
    double precision, dimension(:), allocatable, target :: tausx, tausy     !< tausx and tausy data to be written
@@ -38,8 +38,9 @@ private
    double precision, dimension(:), allocatable, target :: hwav_significant !< significant wave height
    double precision, dimension(:), allocatable, target :: ucx_data         !< Flow velocity vector on zeta points, x-component
    double precision, dimension(:), allocatable, target :: ucy_data         !< Flow velocity vector on zeta points, y-component
+   double precision, dimension(:), allocatable, target :: rug_ruheight !< Run-up height on run-up gauges to be written.
    
-   public default_fm_statistical_output
+   public default_fm_statistical_output, flow_init_statistical_output_his, flow_init_statistical_output_map
 
    contains
    
@@ -464,49 +465,120 @@ private
    subroutine aggregate_constit_crs_obs(source_input)
    use m_monitoring_crosssections
    use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
-   use m_sediment, only: sedtot2sedsus, stmpar
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "tausx" item, to be assigned once on first call.
+   use m_sediment, only: sedtot2sedsus, stmpar, jased
+   double precision, pointer, dimension(:), intent(inout) :: source_input  !< pointer to constit_crs_obs_data
 
-   integer :: i, IP, num, l
+   integer :: i, IP, num, l, lsed, numseddata
    double precision :: rhol
-   
+
+   if (jased == 4 .and. stmpar%lsedtot > 0) then
+      numseddata = 2 + stmpar%lsedtot
+   else
+      numseddata = 0
+   end if
+
    if (ncrs > 0) then
       if (.not. allocated(constit_crs_obs)) then
-         allocate(constit_crs_obs(NUMCONST_MDU*ncrs))
+         allocate(constit_crs_obs(ncrs, 5 + 2*NUMCONST_MDU + numseddata)) ! First 5 are for IPNT_Q1C:IPNT_HUA
       endif
       if (.not. associated(source_input))then
-         source_input => constit_crs_obs
+         source_input => constit_crs_obs(:,1) ! Only point to obscrs discharge, others are pointered separately.
       endif
-      
+
+      ! Fill basic flow quantities
       do i=1,ncrs
-         IP = IPNT_HUA
-         do num = 1,NUMCONST_MDU
-            IP = IP + 1
-            if (num >= ISED1 .and. num <= ISEDN) then
-               l = sedtot2sedsus(num-ISED1+1)
-               select case(stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1d0
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
-               constit_crs_obs((i-1)*NUMCONST_MDU+num) = crs(i)%sumvalcur(IP)/rhol
-            else
-               constit_crs_obs((i-1)*NUMCONST_MDU+num) = crs(i)%sumvalcur(IP)
-            endif
+         ! Discharge
+         constit_crs_obs(i, 1) = crs(i)%sumvalcur(IPNT_Q1C)
+         ! Cumulative discharge
+         constit_crs_obs(i, 2) = crs(i)%sumvalcum(IPNT_Q1C)
+         ! Cross sectional areas A*u
+         constit_crs_obs(i, 3) = crs(i)%sumvalcur(IPNT_AUC)
+          ! Average velocity Q/Au
+         constit_crs_obs(i, 4) = crs(i)%sumvalcur(IPNT_U1A)
+         ! Entry 5 intentionally left blank (IPNT_S1A)
+      end do
+
+      ! Fill all constituent transport through observation crosssection
+      do num = 1,NUMCONST_MDU
+         IP = IPNT_HUA + num
+         if (num >= ISED1 .and. num <= ISEDN) then
+            l = sedtot2sedsus(num-ISED1+1)
+            select case(stmpar%morpar%moroutput%transptype)
+            case (0)
+               rhol = 1d0
+            case (1)
+               rhol = stmpar%sedpar%cdryb(l)
+            case (2)
+               rhol = stmpar%sedpar%rhosol(l)
+            end select
+         else
+            rhol = 1d0 ! dummy
+         endif
+         do i=1,ncrs
+            constit_crs_obs(i, 5 + (num-1)*2 + 1) = crs(i)%sumvalcur(IP)/rhol
+            constit_crs_obs(i, 5 + (num-1)*2 + 2) = crs(i)%sumvalcum(IP)/rhol
          end do
       enddo
    endif
 
-   end subroutine
+   if (jased == 4 .and. stmpar%lsedtot > 0) then
+      IP = IPNT_HUA + NUMCONST_MDU + 1
+      ! Bed load
+      do i=1,ncrs
+         constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 1) = crs(i)%sumvalcum(IP)
+      end do
 
-   !> set all possible statistical quantity items
+      ! Suspended load
+      if( stmpar%lsedsus > 0 ) then
+         IP = IP + 1
+         do i=1,ncrs
+            constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 2) = crs(i)%sumvalcum(IP)
+         end do
+      endif
+
+      ! Bed load per fraction
+      do lsed = 1,stmpar%lsedtot
+         IP = IP + 1
+         do i=1,ncrs
+            constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 2 + lsed) = crs(i)%sumvalcum(IP)
+         end do
+      enddo
+   end if
+
+   end subroutine aggregate_constit_crs_obs
+   
+   
+   !> Calculates run-up gauge data for his output.
+   !! Will allocate and fill the rug_ruheight array.
+   subroutine calculate_rug_data(source_input)
+      use m_monitoring_runupgauges, only: nrug, rug
+      double precision, pointer, dimension(:), intent(inout) :: source_input
+   
+      integer :: i
+   
+      if (.not. allocated(rug_ruheight)) then
+         allocate(rug_ruheight(nrug))
+      endif
+   
+      if (.not. associated(source_input))then
+         source_input => rug_ruheight
+      endif
+
+      do i=1,nrug
+         rug_ruheight(i) = rug(i)%maxruh
+      end do
+   end subroutine calculate_rug_data
+
+   
+   !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
+      use netcdf_utils, only: ncu_set_att
       use coordinate_reference_system, only: nc_attribute
-      use netcdf_utils
+      use netcdf, only: nf90_int
+      use m_flow
       use m_missing
+      
+      type(nc_attribute) :: atts(5)
 
       out_quan_conf_his%count = 0
       out_quan_conf_map%count = 0
@@ -516,194 +588,206 @@ private
       ! HIS: Mass balances
       !
       call addoutval(out_quan_conf_his, IDX_HIS_VOLTOT,                                             &
-                     'Wrihis_balance', 'total_volume', '', '', 'TJ', UNC_LOC_WB, 'Write mass balance totals to his file')                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_VOLTOT)), '', '', 'm3', UNC_LOC_GLOBAL, description='Write mass balance totals to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_STOR,                                               &
-                     'Wrihis_balance', 'storage', '', '', 'TJ', UNC_LOC_WB)                
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_STOR)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_VOLERR,                                             &
-                     'Wrihis_balance', 'volume_error', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_VOLERR)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_BNDIN,                                             &
-                     'Wrihis_balance', 'boundaries_in', '', '', 'TJ', UNC_LOC_WB)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_BNDIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_BNDOUT,                                            &
-                     'Wrihis_balance', 'boundaries_out', '', '', 'TJ', UNC_LOC_WB)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_BNDOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_BNDTOT,                                            &
-                     'Wrihis_balance', 'boundaries_total', '', '', 'TJ', UNC_LOC_WB)                                                          
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_BNDTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXCHIN,                                             &
-                     'Wrihis_balance', 'exchange_with_1D_in', '', '', 'TJ', UNC_LOC_WB)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXCHIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXCHOUT,                                            &
-                     'Wrihis_balance', 'exchange_with_1D_out', '', '', 'TJ', UNC_LOC_WB)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXCHOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXCHTOT,                                            &
-                     'Wrihis_balance', 'exchange_with_1D_total', '', '', 'TJ', UNC_LOC_WB)                                                          
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXCHTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_PRECIP_TOTAL,                                       &
-                     'Wrihis_balance', 'precipitation_total', '', '', 'TJ', UNC_LOC_WB)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_PRECIP_TOTAL)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EVAP,                                               &
-                     'Wrihis_balance', 'evaporation', '', '', 'TJ', UNC_LOC_WB)                                  
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EVAP)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_SOUR,                                               &
-                     'Wrihis_balance', 'source_sink', '', '', 'TJ', UNC_LOC_WB)                                        
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_SOUR)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_InternalTidesDissipation,                           &
-                     'Wrihis_balance', 'InternalTidesDissipation', '', '', 'TJ', UNC_LOC_WB)                                                             
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_INTERNALTIDESDISSIPATION)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GravInput,                                          &
-                     'Wrihis_balance', 'Gravitational_Input', '', '', 'TJ', UNC_LOC_WB)                                                       
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GravInput)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_SalInput,                                           &
-                     'Wrihis_balance', 'SAL_Input', '', '', 'TJ', UNC_LOC_WB)                                  
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_SalInput)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_SalInput2,                                          &
-                     'Wrihis_balance', 'SAL_Input_2', '', '', 'TJ', UNC_LOC_WB)
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_SalInput2)), '', '', 'TJ', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GRWIN,                                              &
-                     'Wrihis_balance', 'groundwater_in', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GRWIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GRWOUT,                                             &
-                     'Wrihis_balance', 'groundwater_out', '', '', 'TJ', UNC_LOC_WB)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GRWOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_GRWTOT,                                             &
-                     'Wrihis_balance', 'groundwater_total', '', '', 'TJ', UNC_LOC_WB)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_GRWTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATIN,                                              &
-                     'Wrihis_balance', 'laterals_in', '', '', 'TJ', UNC_LOC_WB)
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATOUT,                                             &
-                     'Wrihis_balance', 'laterals_out', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATTOT,                                             &
-                     'Wrihis_balance', 'laterals_total', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATIN1D,                                            &
-                     'Wrihis_balance', 'laterals_in_1D', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATIN1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATOUT1D,                                           &
-                     'Wrihis_balance', 'laterals_out_1D', '', '', 'TJ', UNC_LOC_WB)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATOUT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATTOT1D,                                           &
-                     'Wrihis_balance', 'laterals_total_1D', '', '', 'TJ', UNC_LOC_WB)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATTOT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATIN2D,                                            &
-                     'Wrihis_balance', 'laterals_in_2D', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATIN2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATOUT2D,                                           &
-                     'Wrihis_balance', 'laterals_out_2D', '', '', 'TJ', UNC_LOC_WB)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATOUT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_LATTOT2D,                                           &
-                     'Wrihis_balance', 'laterals_total_2D', '', '', 'TJ', UNC_LOC_WB)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_LATTOT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTIN,                                              &
-                     'Wrihis_balance', 'Qext_in', '', '', 'TJ', UNC_LOC_WB)                                     
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTIN)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTOUT,                                             &
-                     'Wrihis_balance', 'Qext_out', '', '', 'TJ', UNC_LOC_WB)                                        
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTOUT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTTOT,                                             &
-                     'Wrihis_balance', 'Qext_total', '', '', 'TJ', UNC_LOC_WB)                                              
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTTOT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTIN1D,                                            &
-                     'Wrihis_balance', 'Qext_in_1D', '', '', 'TJ', UNC_LOC_WB)                                        
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTIN1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTOUT1D,                                           &
-                     'Wrihis_balance', 'Qext_out_1D', '', '', 'TJ', UNC_LOC_WB)                                     
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTOUT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTTOT1D,                                           &
-                     'Wrihis_balance', 'Qext_total_1D', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTTOT1D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTIN2D,                                            &
-                     'Wrihis_balance', 'Qext_in_2D', '', '', 'TJ', UNC_LOC_WB)                                                    
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTIN2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTOUT2D,                                           &
-                     'Wrihis_balance', 'Qext_out_2D', '', '', 'TJ', UNC_LOC_WB)                                           
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTOUT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EXTTOT2D,                                           &
-                     'Wrihis_balance', 'Qext_total_2D', '', '', 'TJ', UNC_LOC_WB)                                                 
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EXTTOT2D)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_ICEPT,                                              &
-                     'Wrihis_balance', 'total_volume_interception', '', '', 'TJ', UNC_LOC_WB)                                                             
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_ICEPT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_EVAP_ICEPT,                                         &
-                     'Wrihis_balance', 'evaporation_interception', '', '', 'TJ', UNC_LOC_WB)                                                             
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_EVAP_ICEPT)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_PRECIP_GROUND,                                      &
-                     'Wrihis_balance', 'precipitation_on_ground', '', '', 'TJ', UNC_LOC_WB)                                                          
-  
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_PRECIP_GROUND)), '', '', 'm3', UNC_LOC_GLOBAL)
+
       !
       ! HIS: source sinks
       !
+      call ncu_set_att(atts(1), 'geometry', 'source_sink_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE,                   &
                      'Wrihis_sourcesink', 'source_sink_prescribed_discharge', '', '',                     &
-                     'm3 s-1', UNC_LOC_SOSI, 'Write sources-sinks statistics to his file')
+                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1), description='Write sources-sinks statistics to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT,          &
                      'Wrihis_sourcesink', 'source_sink_prescribed_salinity_increment', '', '',                     &
-                     '1e-3', UNC_LOC_SOSI   )
+                     '1e-3', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT,       &
                      'Wrihis_sourcesink', 'source_sink_prescribed_temperature_increment', '', '',                     &
-                     'degC', UNC_LOC_SOSI   )
+                     'degC', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE,                      &
                      'Wrihis_sourcesink', 'source_sink_current_discharge', '', '',                     &
-                     'm3 s-1', UNC_LOC_SOSI   )
+                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME,                      &
                      'Wrihis_sourcesink', 'source_sink_cumulative_volume', '', '',                     &
-                     'm3', UNC_LOC_SOSI   )
+                     'm3', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE ,                     &
                      'Wrihis_sourcesink', 'source_sink_discharge_average' , '', '',                     &
-                     'm3 s-1', UNC_LOC_SOSI   )
+                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
 
+      !
+      ! HIS: run-up gauges
+      !
+      call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUHEIGHT,                   &
+                     'Wrihis_runupgauge', 'runup_height', 'runup height', '',                     &
+                     'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his file')
+  
       !
       ! HIS: hydraulic structures
       !
+      
+      !! General structure
+      call ncu_set_att(atts(1), 'geometry', 'general_structure_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_DISCHARGE,                        &
                      'Wrihis_structure_gen', 'general_structure_discharge', 'Total discharge through general structure', '',                     &
-                     'm3 s-1', UNC_LOC_GENSTRU, 'Write general structure parameters to his file')
+                     'm3 s-1', UNC_LOC_GENSTRU, nc_atts=atts(1:1), description='Write general structure parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL,                      &
                      'Wrihis_structure_gen', 'general_structure_crest_level', 'Crest level of general structure', '',                     &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL,            &
                      'Wrihis_structure_gen', 'general_structure_gate_lower_edge_level', 'Gate lower edge level of general structure', '',                     &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_WIDTH,               &
                      'Wrihis_structure_gen', 'general_structure_gate_opening_width', 'Gate opening width of general structure', '',                     &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_S1UP,                             &
                      'Wrihis_structure_gen', 'general_structure_s1up', 'Water level upstream of general structure', 'sea_surface_height',   &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_S1DN,                             &
                      'Wrihis_structure_gen', 'general_structure_s1dn', 'Water level downstream of general structure', 'sea_surface_height',   &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_HEAD,                             &
                      'Wrihis_structure_gen', 'general_structure_head', 'Head difference across general structure', '',                     &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA,                        &
                      'Wrihis_structure_gen', 'general_structure_flow_area', 'Flow area at general structure', '',                     &
-                     'm2', UNC_LOC_GENSTRU)
+                     'm2', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_VELOCITY,                         &
                      'Wrihis_structure_gen', 'general_structure_velocity', 'Velocity through general structure', '',                     &
-                     'm s-1', UNC_LOC_GENSTRU)
+                     'm s-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_CREST_WIDTH,                      &
                      'Wrihis_structure_gen', 'general_structure_crest_width', 'Crest width of general structure', '',                     &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_THROUGH_GATE_OPENING,   &
                      'Wrihis_structure_gen', 'general_structure_discharge_through_gate_opening', 'Discharge through gate opening of general structure', '',                     &
-                     'm3 s-1', UNC_LOC_GENSTRU)
+                     'm3 s-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_OVER_GATE,              &
                      'Wrihis_structure_gen', 'general_structure_discharge_over_gate', 'Discharge over gate of general structure', '',                     &
-                     'm3 s-1', UNC_LOC_GENSTRU)
+                     'm3 s-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_UNDER_GATE,             &
                      'Wrihis_structure_gen', 'general_structure_discharge_under_gate', 'Discharge under gate of general structure', '',                     &
-                     'm3 s-1', UNC_LOC_GENSTRU)
+                     'm3 s-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_HEIGHT,              &
                      'Wrihis_structure_gen', 'general_structure_gate_opening_height', 'Gate opening height of general structure', '',                     &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_GATE_UPPER_EDGE_LEVEL,            &
                      'Wrihis_structure_gen', 'general_structure_gate_upper_edge_level', 'Gate upper edge level of general structure', '',                     &
-                     'm', UNC_LOC_GENSTRU)
+                     'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_VELOCITY_THROUGH_GATE_OPENING,    &
                      'Wrihis_structure_gen', 'general_structure_velocity_through_gate_opening', 'Velocity through gate opening of general structure', '',                     &
-                     'm s-1', UNC_LOC_GENSTRU)
+                     'm s-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_VELOCITY_OVER_GATE,               &
                      'Wrihis_structure_gen', 'general_structure_velocity_over_gate', 'Velocity over gate of general structure', '',                     &
-                     'm s-1', UNC_LOC_GENSTRU)
+                     'm s-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_VELOCITY_UNDER_GATE,              &
                      'Wrihis_structure_gen', 'general_structure_velocity_under_gate', 'Flow area in gate opening of general structure', '',                     &
-                     'm s-1', UNC_LOC_GENSTRU)
+                     'm s-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_IN_GATE_OPENING,        &
                      'Wrihis_structure_gen', 'general_structure_flow_area_in_gate_opening', 'Flow area in gate opening of general structure', '',                     &
-                     'm2', UNC_LOC_GENSTRU)
+                     'm2', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_OVER_GATE,              &
                      'Wrihis_structure_gen', 'general_structure_flow_area_over_gate', 'Flow area over gate of general structure', '',                     &
-                     'm2', UNC_LOC_GENSTRU)
+                     'm2', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_UNDER_GATE,             &
                      'Wrihis_structure_gen', 'general_structure_flow_area_under_gate', 'Flow area under gate of general structure', '',                     &
-                     'm2', UNC_LOC_GENSTRU)
+                     'm2', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
+
+      call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2, 3, 4 /))
+      call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
+      call ncu_set_att(atts(4), 'valid_range', (/ 0, 4 /))
+      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_STATE,                            &
                      'Wrihis_structure_gen', 'general_structure_state', 'Flow state at general structure', '',                     &
-                     '-', UNC_LOC_GENSTRU)
-
-      allocate(out_quan_conf_his%statout(IDX_HIS_GENERAL_STRUCTURE_STATE)%additional_attributes(4))
-      out_quan_conf_his%statout(IDX_HIS_GENERAL_STRUCTURE_STATE)%num_additional_attributes = 4
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_GENERAL_STRUCTURE_STATE)%additional_attributes(1), 'flag_values', (/ 0, 1, 2, 3, 4 /))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_GENERAL_STRUCTURE_STATE)%additional_attributes(2), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_GENERAL_STRUCTURE_STATE)%additional_attributes(3), 'valid_range', (/ 0, 4 /))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_GENERAL_STRUCTURE_STATE)%additional_attributes(4), '_FillValue', int(dmiss))
-
+                     '', UNC_LOC_GENSTRU, nf90_int, nc_atts = atts(1:5))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST,                      &
                      'Wrihis_structure_gen', 'general_structure_s1_on_crest', 'Water level on crest of general structure',          &
-                     '', 'm', UNC_LOC_GENSTRU)
+                     '', 'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_FORCE_DIFFERENCE,                 &
                      'Wrihis_structure_gen', 'general_structure_force_difference', 'Force difference per unit at general structure',     &
-                     '', 'N m-1', UNC_LOC_GENSTRU)
+                     '', 'N m-1', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
+
+      !! Controllable dam (old .ext file)
       call addoutval(out_quan_conf_his, IDX_HIS_CDAM_DISCHARGE,                                     &
                      'Wrihis_structure_dam', 'cdam_discharge', 'controllable dam discharge',                         &
-                     '', 'm3 s-1', UNC_LOC_DAM, 'Write dam parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_DAM, description='Write dam parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_CDAM_CREST_LEVEL,                                   &
                      'Wrihis_structure_dam', 'cdam_crest_level', 'controllable dam crest level',                       &
                      '', 'm', UNC_LOC_DAM)
@@ -713,42 +797,48 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_CDAM_S1DN,                                          &
                      'Wrihis_structure_dam', 'cdam_s1dn', 'controllable dam water level down',                  &
                      'sea_surface_height', 'm', UNC_LOC_DAM)
+
+      !! Pump
+      call ncu_set_att(atts(1), 'geometry', 'pump_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_STRUCTURE_DISCHARGE,                           &
                      'Wrihis_structure_pump', 'pump_structure_discharge', 'Discharge through pump',                             &
-                     '', 'm3 s-1', UNC_LOC_PUMP, 'Write pump parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_PUMP, nc_atts = atts(1:1), description='Write pump parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_CAPACITY,                                      &
                      'Wrihis_structure_pump', 'pump_capacity', 'Capacity of pump',                                   &
-                     '', 'm3 s-1', UNC_LOC_PUMP)
+                     '', 'm3 s-1', UNC_LOC_PUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_DISCHARGE_DIR,                                 &
                      'Wrihis_structure_pump', 'pump_discharge_dir', 'Discharge of pump w.r.t. pump orientation',          &
-                     '', 'm3 s-1', UNC_LOC_PUMP)
+                     '', 'm3 s-1', UNC_LOC_PUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_S1UP,                                          &
                      'Wrihis_structure_pump', 'pump_s1up', 'Water level upstream of pump',                       &
-                     'sea_surface_height', 'm', UNC_LOC_PUMP)
+                     'sea_surface_height', 'm', UNC_LOC_PUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_S1DN,                                          &
                      'Wrihis_structure_pump', 'pump_s1dn', 'Water level downstream of pump',                     &
-                     'sea_surface_height', 'm', UNC_LOC_PUMP)
+                     'sea_surface_height', 'm', UNC_LOC_PUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_STRUCTURE_HEAD,                                &
                      'Wrihis_structure_pump', 'pump_structure_head', 'Head difference across pump structure',              &
-                     '', 'm', UNC_LOC_PUMP)
+                     '', 'm', UNC_LOC_PUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_ACTUAL_STAGE,                                  &
                      'Wrihis_structure_pump', 'pump_actual_stage', 'Actual stage of pump',                               &
-                     '', '-', UNC_LOC_PUMP)
+                     '', '', UNC_LOC_PUMP, nc_atts = atts(1:1), nc_type = nf90_int)
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_HEAD,                                          &
                      'Wrihis_structure_pump', 'pump_head', 'Head difference in pumping direction',               &
-                     '', 'm', UNC_LOC_PUMP)
+                     '', 'm', UNC_LOC_PUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_REDUCTION_FACTOR,                              &
                      'Wrihis_structure_pump', 'pump_reduction_factor', 'Reduction factor of pump',                           &
-                     '', '-', UNC_LOC_PUMP)
+                     '', '1', UNC_LOC_PUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_S1_DELIVERY_SIDE,                              &
                      'Wrihis_structure_pump', 'pump_s1_delivery_side', 'Water level at delivery side of pump',               &
                      'sea_surface_height', 'm', UNC_LOC_PUMP)
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_S1_SUCTION_SIDE,                               &
                      'Wrihis_structure_pump', 'pump_s1_suction_side', 'Water level at suction side of pump',                &
-                     'sea_surface_height', 'm', UNC_LOC_PUMP)
+                     'sea_surface_height', 'm', UNC_LOC_PUMP, nc_atts = atts(1:1))
+
+      !! Gate (old .ext file)
       call addoutval(out_quan_conf_his, IDX_HIS_GATE_DISCHARGE,                                     &
                      'Wrihis_structure_gate', 'gate_discharge', 'gate discharge',                                     &
-                     '', 'm3 s-1', UNC_LOC_GATE, 'Write gate parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_GATE, description='Write gate parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_GATE_LOWER_EDGE_LEVEL,                              &
                      'Wrihis_structure_gate', 'gate_lower_edge_level', 'gate lower edge level',                              &
                      '', 'm', UNC_LOC_GATE)
@@ -758,186 +848,202 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_GATE_S1DN,                                          &
                      'Wrihis_structure_gate', 'gate_s1dn', 'gate water level down',                              &
                      'sea_surface_height', 'm', UNC_LOC_GATE)
+
+      !! Gate, via general_structure
+      call ncu_set_att(atts(1), 'geometry', 'gategen_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_DISCHARGE,                                  &
                      'Wrihis_structure_gate', 'gategen_discharge', 'gate discharge (via general structure)',             &
-                     '', 'm3 s-1', UNC_LOC_GATE)
+                     '', 'm3 s-1', UNC_LOC_GATE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_CREST_LEVEL,                                &
                      'Wrihis_structure_gate', 'gategen_crest_level', 'gate crest level (via general structure)',           &
-                     '', 'm', UNC_LOC_GATE)
+                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_CREST_WIDTH,                                &
                      'Wrihis_structure_gate', 'gategen_crest_width', 'gate crest width (via general structure)',           &
-                     '', 'm', UNC_LOC_GATE)
+                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL,                      &
                      'Wrihis_structure_gate', 'gategen_gate_lower_edge_level', 'gate lower edge level (via general structure)',      &
-                     '', 'm', UNC_LOC_GATE)
+                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT,                        &
                      'Wrihis_structure_gate', 'gategen_flow_through_height', 'gate flow through height (via general structure)',   &
-                     '', 'm', UNC_LOC_GATE)
+                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_GATE_OPENING_WIDTH,                         &
                      'Wrihis_structure_gate', 'gategen_gate_opening_width', 'gate opening width (via general structure)',         &
-                     '', 'm', UNC_LOC_GATE)
+                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_S1UP,                                       &
                      'Wrihis_structure_gate', 'gategen_s1up', 'gate water level up (via general structure)',        &
-                     'sea_surface_height', 'm', UNC_LOC_GATE)
+                     'sea_surface_height', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_S1DN,                                       &
                      'Wrihis_structure_gate', 'gategen_s1dn', 'gate water level down (via general structure)',      &
-                     'sea_surface_height', 'm', UNC_LOC_GATE)
+                     'sea_surface_height', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+
+
+      !! Weir (via general_structure)
+      call ncu_set_att(atts(1), 'geometry', 'weirgen_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_DISCHARGE,                                  &
                      'Wrihis_structure_weir', 'weirgen_discharge', 'Discharge through weir',                             &
-                     '', 'm3 s-1', UNC_LOC_WEIRGEN, 'Write weir parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_WEIRGEN, nc_atts = atts(1:1), description='Write weir parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_CREST_LEVEL,                                &
                      'Wrihis_structure_weir', 'weirgen_crest_level', 'Crest level of weir',                                &
-                     '', 'm', UNC_LOC_WEIRGEN)
+                     '', 'm', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_CREST_WIDTH,                                &
                      'Wrihis_structure_weir', 'weirgen_crest_width', 'Crest width of weir',                                &
-                     '', 'm', UNC_LOC_WEIRGEN)
+                     '', 'm', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_S1UP,                                       &
                      'Wrihis_structure_weir', 'weirgen_s1up', 'Water level upstream of weir',                       &
-                     'sea_surface_height', 'm', UNC_LOC_WEIRGEN)
+                     'sea_surface_height', 'm', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_S1DN,                                       &
                      'Wrihis_structure_weir', 'weirgen_s1dn', 'Water level downstream of weir',                     &
-                     'sea_surface_height', 'm', UNC_LOC_WEIRGEN)
+                     'sea_surface_height', 'm', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_STRUCTURE_HEAD,                             &
                      'Wrihis_structure_weir', 'weirgen_structure_head', 'Head difference across weir',                        &
-                     '', 'm', UNC_LOC_WEIRGEN)
+                     '', 'm', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_VELOCITY,                                   &
                      'Wrihis_structure_weir', 'weirgen_velocity', 'Velocity through weir',                              &
-                     '', 'm s-1', UNC_LOC_WEIRGEN)
+                     '', 'm s-1', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_FLOW_AREA,                                  &
                      'Wrihis_structure_weir', 'weirgen_flow_area', 'Flow area at weir',                                  &
-                     '', 'm2', UNC_LOC_WEIRGEN)
+                     '', 'm2', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
+      
+      call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2 /))
+      call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged')
+      call ncu_set_att(atts(4), 'valid_range', (/ 0, 2 /))
+      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_STATE,                                      &
                      'Wrihis_structure_weir', 'weirgen_state', 'Flow state at weir',                                 &
-                     '', '-', UNC_LOC_WEIRGEN)
-      
-      allocate(out_quan_conf_his%statout(IDX_HIS_WEIRGEN_STATE)%additional_attributes(4))
-      out_quan_conf_his%statout(IDX_HIS_WEIRGEN_STATE)%num_additional_attributes = 4
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_WEIRGEN_STATE)%additional_attributes(1), 'flag_values', (/ 0, 1, 2 /))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_WEIRGEN_STATE)%additional_attributes(2), 'flag_meanings', 'no_flow weir_free weir_submerged')
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_WEIRGEN_STATE)%additional_attributes(3), 'valid_range', (/ 0, 2 /))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_WEIRGEN_STATE)%additional_attributes(4), '_FillValue', int(dmiss))
+                     '', '', UNC_LOC_WEIRGEN, nc_atts = atts(1:5), nc_type = nf90_int)
       
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_FORCE_DIFFERENCE,                           &
                      'Wrihis_structure_weir', 'weirgen_force_difference', 'Force difference per unit width at weir', '',                      &
-                     'N m-1', UNC_LOC_WEIRGEN)
+                     'N m-1', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_S1_ON_CREST,                                &
                      'Wrihis_structure_weir', 'weirgen_s1_on_crest', 'Water level on crest of weir', '',                      &
-                     'm', UNC_LOC_WEIRGEN)
+                     'm', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
+
+      !! Orifice
+      call ncu_set_att(atts(1), 'geometry', 'orifice_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_DISCHARGE,                                  &
                      'Wrihis_structure_orifice', 'orifice_discharge', 'Discharge through orifice', '',                      &
-                     'm3 s-1', UNC_LOC_ORIFICE, 'Write orifice parameters to his file')
+                     'm3 s-1', UNC_LOC_ORIFICE, nc_atts = atts(1:1), description='Write orifice parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_CREST_LEVEL,                                &
                      'Wrihis_structure_orifice', 'orifice_crest_level', 'Crest level of orifice', '',                      &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_CREST_WIDTH,                                &
                      'Wrihis_structure_orifice', 'orifice_crest_width', 'Crest width of orifice', '',                      &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_GATE_LOWER_EDGE_LEVEL,                      &
                      'Wrihis_structure_orifice', 'orifice_gate_lower_edge_level', 'Gate lower edge level of orifice', '',                      &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_S1UP,                                       &
                      'Wrihis_structure_orifice', 'orifice_s1up', 'Water level upstream of orifice', 'sea_surface_height',    &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_S1DN,                                       &
                      'Wrihis_structure_orifice', 'orifice_s1dn', 'Water level downstream of orifice', 'sea_surface_height',    &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_GATE_OPENING_HEIGHT,                        &
                      'Wrihis_structure_orifice', 'orifice_gate_opening_height', 'Gate opening height of orifice', '',                      &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_HEAD,                                       &
                      'Wrihis_structure_orifice', 'orifice_head', 'Head difference across orifice', '',                      &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_FLOW_AREA,                                  &
                      'Wrihis_structure_orifice', 'orifice_flow_area', 'Flow area at orifice', '',                      &
-                     'm2', UNC_LOC_ORIFICE)
+                     'm2', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
+      
+      call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2, 3, 4/))
+      call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
+      call ncu_set_att(atts(4), 'valid_range', (/ 0, 4 /))
+      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_STATE,                                      &
                      'Wrihis_structure_orifice', 'orifice_state', 'Flow state at orifice', '',                      &
-                     '-', UNC_LOC_ORIFICE)
-      
-      allocate(out_quan_conf_his%statout(IDX_HIS_ORIFICE_STATE)%additional_attributes(4))
-      out_quan_conf_his%statout(IDX_HIS_ORIFICE_STATE)%num_additional_attributes = 4
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_ORIFICE_STATE)%additional_attributes(1), 'flag_values', (/ 0, 1, 2, 3, 4/))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_ORIFICE_STATE)%additional_attributes(2), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_ORIFICE_STATE)%additional_attributes(3), 'valid_range', (/ 0, 4 /))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_ORIFICE_STATE)%additional_attributes(4), '_FillValue', int(dmiss))
+                     '', UNC_LOC_ORIFICE, nc_atts = atts(1:5), nc_type = nf90_int)
       
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_S1_ON_CREST,                                &
                      'Wrihis_structure_orifice', 'orifice_s1_on_crest', 'Water level on crest of orifice', '',                     &
-                     'm', UNC_LOC_ORIFICE)
+                     'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_VELOCITY,                                   &
                      'Wrihis_structure_orifice', 'orifice_velocity', 'Velocity through orifice', '',                     &
-                     'm s-1', UNC_LOC_ORIFICE)
+                     'm s-1', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_FORCE_DIFFERENCE,                           &
                      'Wrihis_structure_orifice', 'orifice_force_difference', 'Force difference per unit width at orifice', '',                     &
-                     'N m-1', UNC_LOC_ORIFICE)
+                     'N m-1', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
+
+      !! Bridge
+      call ncu_set_att(atts(1), 'geometry', 'bridge_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_DISCHARGE,                                   &
                      'Wrihis_structure_bridge', 'bridge_discharge', 'Discharge through bridge', '',                     &
-                     'm3 s-1', UNC_LOC_BRIDGE, 'Write bridge parameters to his file')
+                     'm3 s-1', UNC_LOC_BRIDGE, description='Write bridge parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_S1UP,                                        &
                      'Wrihis_structure_bridge', 'bridge_s1up', 'Water level upstream of bridge', 'sea_surface_height',   &
-                     'm', UNC_LOC_BRIDGE)
+                     'm', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_S1DN,                                        &
                      'Wrihis_structure_bridge', 'bridge_s1dn', 'Water level downstream of bridge', 'sea_surface_height',   &
-                     'm', UNC_LOC_BRIDGE)
+                     'm', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_HEAD,                                        &
                      'Wrihis_structure_bridge', 'bridge_head', 'Head difference across bridge', '',                     &
-                     'm', UNC_LOC_BRIDGE)
+                     'm', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_FLOW_AREA,                                   &
                      'Wrihis_structure_bridge', 'bridge_flow_area', 'Flow area at bridge', '',                     &
-                     'm2', UNC_LOC_BRIDGE)
+                     'm2', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_VELOCITY,                                    &
                      'Wrihis_structure_bridge', 'bridge_velocity', 'Velocity through bridge', '',                     &
-                     'm s-1', UNC_LOC_BRIDGE)
+                     'm s-1', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_BLUP,                                        &
                      'Wrihis_structure_bridge', 'bridge_blup', 'Bed level at upstream of bridge', 'altitude',             &
-                     'm', UNC_LOC_BRIDGE)
+                     'm', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_BLDN,                                        &
                      'Wrihis_structure_bridge', 'bridge_bldn', 'Bed level at downstream of bridge', 'altitude',             &
-                     'm', UNC_LOC_BRIDGE)
+                     'm', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_BL_ACTUAL,                                   &
                      'Wrihis_structure_bridge', 'bridge_bl_actual', 'Actual bed level of bridge (crest)', 'altitude',             &
-                     'm', UNC_LOC_BRIDGE)
+                     'm', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
+
+      !! Culvert
+      call ncu_set_att(atts(1), 'geometry', 'culvert_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_DISCHARGE,                                  &
                      'Wrihis_structure_culvert', 'culvert_discharge', 'Discharge through culvert', '',                     &
-                     'm3 s-1', UNC_LOC_CULVERT, 'Write culvert parameters to his file')
+                     'm3 s-1', UNC_LOC_CULVERT, nc_atts = atts(1:1), description='Write culvert parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_CREST_LEVEL,                                &
                      'Wrihis_structure_culvert', 'culvert_crest_level', 'Crest level of culvert', '',                     &
-                     'm', UNC_LOC_CULVERT)
+                     'm', UNC_LOC_CULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_GATE_LOWER_EDGE_LEVEL,                      &
                      'Wrihis_structure_culvert', 'culvert_gate_lower_edge_level', 'Gate lower edge level of culvert', '',                     &
-                     'm', UNC_LOC_CULVERT)
+                     'm', UNC_LOC_CULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_S1UP,                                       &
                      'Wrihis_structure_culvert', 'culvert_s1up', 'Water level upstream of culvert', 'sea_surface_height',   &
-                     'm', UNC_LOC_CULVERT)
+                     'm', UNC_LOC_CULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_S1DN,                                       &
                      'Wrihis_structure_culvert', 'culvert_s1dn', 'Water level downstream of culvert', 'sea_surface_height',   &
-                     'm', UNC_LOC_CULVERT)
+                     'm', UNC_LOC_CULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_GATE_OPENING_HEIGHT,                        &
                      'Wrihis_structure_culvert', 'culvert_gate_opening_height', 'Gate opening height of culvert', '',                     &
-                     'm', UNC_LOC_CULVERT)
+                     'm', UNC_LOC_CULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_HEAD,                                       &
                      'Wrihis_structure_culvert', 'culvert_head', 'Head difference across culvert', '',                     &
-                     'm', UNC_LOC_CULVERT)
+                     'm', UNC_LOC_CULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_FLOW_AREA,                                  &
                      'Wrihis_structure_culvert', 'culvert_flow_area', 'Flow area at culvert', '',                     &
-                     'm2', UNC_LOC_CULVERT)
+                     'm2', UNC_LOC_CULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_VELOCITY,                                   &
                      'Wrihis_structure_culvert', 'culvert_velocity', 'Velocity through culvert', '',                     &
-                     'm s-1', UNC_LOC_CULVERT)
+                     'm s-1', UNC_LOC_CULVERT, nc_atts = atts(1:1))
+      
+      call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2/))
+      call ncu_set_att(atts(3), 'flag_meanings', 'no_flow culvert_free culvert_submerged')
+      call ncu_set_att(atts(4), 'valid_range', (/ 0, 2 /))
+      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_STATE,                                      &
                      'Wrihis_structure_culvert', 'culvert_state', 'Flow state at culvert', '',                     &
-                     '-', UNC_LOC_CULVERT)
+                     '', UNC_LOC_CULVERT, nc_atts = atts(1:5), nc_type = nf90_int)
       
-      allocate(out_quan_conf_his%statout(IDX_HIS_CULVERT_STATE)%additional_attributes(4))
-      out_quan_conf_his%statout(IDX_HIS_CULVERT_STATE)%num_additional_attributes = 4
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_CULVERT_STATE)%additional_attributes(1), 'flag_values', (/ 0, 1, 2/))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_CULVERT_STATE)%additional_attributes(2), 'flag_meanings', 'no_flow culvert_free culvert_submerged')
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_CULVERT_STATE)%additional_attributes(3), 'valid_range', (/ 0, 2 /))
-      call ncu_add_att(out_quan_conf_his%statout(IDX_HIS_CULVERT_STATE)%additional_attributes(4), '_FillValue', int(dmiss))
-      
+      !! Dambreak
       call addoutval(out_quan_conf_his, IDX_HIS_DAMBREAK_S1UP,                                      &
                      'Wrihis_structure_damBreak', 'dambreak_s1up', 'Water level upstream of dambreak', 'sea_surface_height',   &
-                     'm', UNC_LOC_DAMBREAK, 'Write dam break parameters to his file')
+                     'm', UNC_LOC_DAMBREAK, description='Write dam break parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_DAMBREAK_S1DN,                                      &
                      'Wrihis_structure_damBreak', 'dambreak_s1dn', 'Water level downstream of dambreak', 'sea_surface_height',   &
                      'm', UNC_LOC_DAMBREAK)
@@ -968,30 +1074,36 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP,                          &
                      'Wrihis_structure_damBreak', 'dambreak_water_level_jump', 'Breach water level jump of dambreak', '',                     &
                      'm', UNC_LOC_DAMBREAK)
+
+      !! Universal weir
+      call ncu_set_att(atts(1), 'geometry', 'uniweir_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_DISCHARGE,                                  &
                      'Wrihis_structure_uniWeir', 'uniweir_discharge', 'Discharge through uniweir', '',                     &
-                     'm3 s-1', UNC_LOC_UNIWEIR, 'Write universal weir parameters to his file')
+                     'm3 s-1', UNC_LOC_UNIWEIR, nc_atts = atts(1:1), description='Write universal weir parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_CREST_LEVEL,                                &
                      'Wrihis_structure_uniWeir', 'uniweir_crest_level', 'Crest level of uniweir', '',                     &
-                     'm', UNC_LOC_UNIWEIR)
+                     'm', UNC_LOC_UNIWEIR, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_S1UP,                                       &
                      'Wrihis_structure_uniWeir', 'uniweir_s1up', 'Water level upstream of uniweir', 'sea_surface_height',   &
-                     'm', UNC_LOC_UNIWEIR)
+                     'm', UNC_LOC_UNIWEIR, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_S1DN,                                       &
                      'Wrihis_structure_uniWeir', 'uniweir_s1dn', 'Water level downstream of uniweir', 'sea_surface_height',   &
-                     'm', UNC_LOC_UNIWEIR)
+                     'm', UNC_LOC_UNIWEIR, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_HEAD,                                       &
                      'Wrihis_structure_uniWeir', 'uniweir_head', 'Head difference across uniweir', '',                     &
-                     'm', UNC_LOC_UNIWEIR)
+                     'm', UNC_LOC_UNIWEIR, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_FLOW_AREA,                                  &
                      'Wrihis_structure_uniWeir', 'uniweir_flow_area', 'Flow area at uniweir', '',                     &
-                     'm2', UNC_LOC_UNIWEIR)
+                     'm2', UNC_LOC_UNIWEIR, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_VELOCITY,                                   &
                      'Wrihis_structure_uniWeir', 'uniweir_velocity', 'Velocity through uniweir', '',                     &
-                     'm s-1', UNC_LOC_UNIWEIR)
+                     'm s-1', UNC_LOC_UNIWEIR, nc_atts = atts(1:1))
+
+      !! Compound structure
       call addoutval(out_quan_conf_his, IDX_HIS_CMPSTRU_DISCHARGE,                                  &
                      'Wrihis_structure_compound', 'cmpstru_discharge', 'Discharge through cmpstru', '',                     &
-                     'm3 s-1', UNC_LOC_CMPSTRU, 'Write compound structure parameters to his file')
+                     'm3 s-1', UNC_LOC_CMPSTRU, description='Write compound structure parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_CMPSTRU_S1UP,                                       &
                      'Wrihis_structure_compound', 'cmpstru_s1up', 'Water level upstream of cmpstru', 'sea_surface_height',   &
                      'm', UNC_LOC_CMPSTRU)
@@ -1007,247 +1119,277 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_CMPSTRU_VELOCITY,                                   &
                      'Wrihis_structure_compound', 'cmpstru_velocity', 'Velocity through cmpstru', '',                     &
                      'm s-1', UNC_LOC_CMPSTRU)
+
+      !! Long culvert
+      call ncu_set_att(atts(1), 'geometry', 'longculvert_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_DISCHARGE,                              &
                      'Wrihis_structure_longculvert', 'longculvert_discharge', 'Discharge through longculvert', '',                     &
-                     'm3 s-1', UNC_LOC_LONGCULVERT, 'Write long culvert parameters to his file')
+                     'm3 s-1', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1), description='Write long culvert parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_S1UP,                                   &
                      'Wrihis_structure_longculvert', 'longculvert_s1up', 'Water level upstream of longculvert', 'sea_surface_height',   &
-                     'm', UNC_LOC_LONGCULVERT)
+                     'm', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_S1DN,                                   &
                      'Wrihis_structure_longculvert', 'longculvert_s1dn', 'Water level downstream of longculvert', 'sea_surface_height',   &
-                     'm', UNC_LOC_LONGCULVERT)
+                     'm', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_HEAD,                                   &
                      'Wrihis_structure_longculvert', 'longculvert_head', 'Head difference across longculvert', '',                     &
-                     'm', UNC_LOC_LONGCULVERT)
+                     'm', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_FLOW_AREA,                              &
                      'Wrihis_structure_longculvert', 'longculvert_flow_area', 'Flow area at longculvert', '',                     &
-                     'm2', UNC_LOC_LONGCULVERT)
+                     'm2', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_VELOCITY,                               &
                      'Wrihis_structure_longculvert', 'longculvert_velocity', 'Velocity through longculvert', '',                     &
-                     'm s-1', UNC_LOC_LONGCULVERT)
+                     'm s-1', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING,                         &
                      'Wrihis_structure_longculvert', 'longculvert_valve_relative_opening', 'Valve relative opening in long culvert', '',                     &
-                     '1', UNC_LOC_LONGCULVERT)
+                     '1', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1))
 
       !
       ! HIS: Output on observation stations
       !
-      
+      call ncu_set_att(atts(1), 'geometry', 'station_geom')
+
       ! Basic flow quantities
       call addoutval(out_quan_conf_his, IDX_HIS_WATERLEVEL,                                         &
                      'Wrihis_waterlevel_s1', 'waterlevel', 'water level', 'sea_surface_height',   &
-                     'm', UNC_LOC_STATION, 'Write water level to his file')
+                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write water level to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_BEDLEVEL,                                           &
                      'Wrihis_bedlevel', 'bedlevel', 'bottom level', '',                     &
-                     'm', UNC_LOC_STATION, 'Write bed level to his file')
+                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write bed level to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_WATERDEPTH,                                         &
                      'Wrihis_waterdepth', 'waterdepth', 'water depth', '',                     &
-                     'm', UNC_LOC_STATION, 'Write water depth to his file')
+                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write water depth to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_X_VELOCITY,                                         &
                      'Wrihis_velocity_vector', 'x_velocity', 'x-component of flow element center velocity vector',               &
-                     'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION, 'Write velocity vectors to his file')
+                     'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity vectors to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_Y_VELOCITY,                                         &
                      'Wrihis_velocity_vector', 'y_velocity', 'y-component of flow element center velocity vector',               &
-                     'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION)
+                     'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_Z_VELOCITY,                                         &
                      'Wrihis_velocity_vector', 'z_velocity', 'vertical/upward component of flow element center velocity vector', &
-                     'upward_sea_water_velocity', 'm s-1', UNC_LOC_STATION)
+                     'upward_sea_water_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DEPTH_AVERAGED_X_VELOCITY,                          &
                      'Wrihis_velocity_vector', 'depth_averaged_x_velocity', 'flow element center depth-averaged velocity vector, x-component',  &
-                     'sea_water_depth-averaged_x_velocity', 'm s-1', UNC_LOC_STATION)
+                     'sea_water_depth-averaged_x_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY,                          &
                      'Wrihis_velocity_vector', 'depth_averaged_y_velocity', 'flow element center depth-averaged velocity vector, y-component',  &
-                     'sea_water_depth-averaged_y_velocity', 'm s-1', UNC_LOC_STATION)
+                     'sea_water_depth-averaged_y_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE,                                 &
                      'Wrihis_velocity', 'velocity_magnitude',                              &
                      'velocity magnitude',                                                                          &
-                     'sea_water_speed', 'm s-1', UNC_LOC_STATION, 'Write velocity magnitude to his file')
+                     'sea_water_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity magnitude to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN,                        &
                      'Wrihis_velocity', 'velocity_magnitude',                              &
                      'Eulerian velocity magnitude',                                                                 &
-                     'sea_water_eulerian_speed', 'm s-1', UNC_LOC_STATION)
+                     'sea_water_eulerian_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DISCHARGE_MAGNITUDE,                                &
                      'Wrihis_discharge', 'discharge_magnitude',                             &
                      'average discharge magnitude',                                                                 &
-                     'water_volume_transport_in_river_channel', 'm3 s-1', UNC_LOC_STATION,          &
-                     'Write discharge magnitude to his file')
+                     'water_volume_transport_in_river_channel', 'm3 s-1', UNC_LOC_STATION, nc_atts = atts(1:1),          &
+                     description='Write discharge magnitude to his file')
 
       ! Turbulence model
       call addoutval(out_quan_conf_his, IDX_HIS_TKE,                                                &
                      'Wrihis_turbulence', 'tke', 'turbulent kinetic energy', '',                     &
-                     'm2 s-2', UNC_LOC_STATION, 'Write k, eps and vicww to his file')
+                     'm2 s-2', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write k, eps and vicww to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_VICWW,                                              &
                      'Wrihis_turbulence', 'vicww' , 'turbulent vertical eddy viscosity', '',                     &
-                     'm2 s-1''', UNC_LOC_STATION)
+                     'm2 s-1''', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_EPS,                                                &
                      'Wrihis_turbulence', 'eps', 'turbulent energy dissipation', '',                     &
-                     'm2 s-3', UNC_LOC_STATION)
+                     'm2 s-3', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_TAU,                                                &
                      'Wrihis_turbulence', 'tau', 'turbulent time scale', '',                     &
-                     's-1', UNC_LOC_STATION)
+                     's-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_RICH,                                               &
                      'Richardsononoutput', 'rich', 'Richardson Nr',                                                                               &
-                     '', '-', UNC_LOC_STATION)
+                     '', '-', UNC_LOC_STATION, nc_atts = atts(1:1))
 
       ! Gravity + buoyancy
       call addoutval(out_quan_conf_his, IDX_HIS_SALINITY,                                           &
                      'Wrihis_salinity', 'salinity', '', 'sea_water_salinity',   &
-                     '1e-3', UNC_LOC_STATION, 'Write salinity to his file')
+                     '1e-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write salinity to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_TEMPERATURE,                                        &
                      'Wrihis_temperature', 'temperature', '', 'sea_water_temperature',&
-                     'degC', UNC_LOC_STATION, 'Write temperature to his file')
+                     'degC', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write temperature to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_POTENTIAL_DENSITY,                                  &
                      'Wrihis_density', 'potential_density', 'potential_density', '',                     &
-                     'kg m-3', UNC_LOC_STATION, 'Write density to his file')
+                     'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write density to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_DENSITY,                                            &
                      'Wrihis_density', 'density', 'density', '',                     &
-                     'kg m-3', UNC_LOC_STATION)
+                     'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_BRUNT_VAISALA_N2,                                   &
                      'Wrihis_density', 'Brunt_Vaisala_N2', 'Brunt_Vaisala_N2', '',                     &
-                     '1/s2', UNC_LOC_STATION)
+                     '1/s2', UNC_LOC_STATION, nc_atts = atts(1:1))
 
       ! Wave model
       call addoutval(out_quan_conf_his, IDX_HIS_HWAV,                                               &
                      'Wrihis_waves', 'hwav', 'Significant wave height',                                          &
-                     'sea_surface_wave_significant_wave_height', 'm', UNC_LOC_STATION,              &
-                     'Write wave data to his file')
+                     'sea_surface_wave_significant_wave_height', 'm', UNC_LOC_STATION, nc_atts = atts(1:1),              &
+                     description='Write wave data to his file')
       ! TODO: hwav sig vs. rms
       call addoutval(out_quan_conf_his, IDX_HIS_TWAV,                                               &
                      'Wrihis_waves', 'twav', 'Wave period',                                                      &
-                     'sea_surface_wave_period', 's', UNC_LOC_STATION)
+                     'sea_surface_wave_period', 's', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PHIWAV,                                             &
                      'Wrihis_waves', 'phiwav', 'Wave from direction',                                              &
-                     'sea_surface_wave_from_direction', 'deg from N', UNC_LOC_STATION)
+                     'sea_surface_wave_from_direction', 'deg from N', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_RLABDA,                                             &
                      'Wrihis_waves', 'rlabda', 'Wave length',                                                      &
-                     'sea_surface_wave_length', 'm', UNC_LOC_STATION)
+                     'sea_surface_wave_length', 'm', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_UORB,                                               &
                      'Wrihis_waves', 'uorb', 'Orbital velocity',                                                 &
-                     'sea_surface_wave_orbital_velocity', 'm s-1', UNC_LOC_STATION)
+                     'sea_surface_wave_orbital_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_USTOKES,                                            &
                      'Wrihis_waves', 'ustokes', 'Stokes drift, x-component',                                        &
-                     'sea_surface_wave_stokes_drift_x', 'm s-1', UNC_LOC_STATION)
+                     'sea_surface_wave_stokes_drift_x', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_VSTOKES,                                            &
                      'Wrihis_waves', 'vstokes', 'Stokes drift, y-component',                                        &
-                     'sea_surface_wave_stokes_drift_y', 'm s-1', UNC_LOC_STATION)
+                     'sea_surface_wave_stokes_drift_y', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_TAUSX,                                              &
                      'Wrihis_taucurrent', 'tausx',                                           &
                      'Mean bottom shear stress vector, x-component',                                                &
-                     'Mean bottom shear stress vector, x-component', 'Pa', UNC_LOC_STATION,         &
-                     'Write mean bed shear stress to his file')
+                     'Mean bottom shear stress vector, x-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1),         &
+                     description='Write mean bed shear stress to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_TAUSY,                                              &
                      'Wrihis_taucurrent', 'tausy',                                           &
                      'Mean bottom shear stress vector, y-component',                                                &
-                     'Mean bottom shear stress vector, y-component', 'Pa', UNC_LOC_STATION)
+                     'Mean bottom shear stress vector, y-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1))
 
       ! Meteo
       call addoutval(out_quan_conf_his, IDX_HIS_WINDX,                                              &
                      'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'eastward_wind',        &
-                     'm s-1', UNC_LOC_STATION, 'Write wind velocities to his file')
+                     'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write wind velocities to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_WINDX_SFERIC,                                       &
                      'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'x_wind',               &
-                     'm s-1', UNC_LOC_STATION)
+                     'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WINDY,                                              &
                      'Wrihis_wind', 'windy', 'velocity of air on flow element center, x-component', 'northward_wind',       &
-                     'm s-1', UNC_LOC_STATION)
+                     'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_WINDY_SFERIC,                                       &
                      'Wrihis_wind', 'windy', 'velocity of air on flow element center, x-component', 'y_wind',               &
-                     'm s-1', UNC_LOC_STATION)
+                     'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_RAIN,                                               &
                      'Wrihis_rain', 'rain', 'precipitation depth per time unit', 'lwe_precipitation_rate', &
-                     'mm day-1', UNC_LOC_STATION, 'Write precipitation to his file')
+                     'mm day-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write precipitation to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_INFILTRATION_CAP,                                   &
                      'Wrihis_infiltration', 'infiltration_cap', 'Infiltration capacity', '',                     &
-                     'mm hr-1', UNC_LOC_STATION, 'Write infiltration to his file')
+                     'mm hr-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write infiltration to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL,                   &
                      'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '',                     &
-                     'mm hr-1', UNC_LOC_STATION)
+                     'mm hr-1', UNC_LOC_STATION, nc_atts = atts(1:1))
 
       ! Heat flux model
       call addoutval(out_quan_conf_his, IDX_HIS_WIND,                                               &
                      'Wrihis_heat_fluxes', 'wind', 'windspeed', '',                     &
-                     'm s-1', UNC_LOC_STATION, 'Write heat fluxes to his file')
+                     'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write heat fluxes to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_TAIR,                                               &
                      'Wrihis_heat_fluxes', 'Tair', 'air temperature', '',                     &
-                     'degC', UNC_LOC_STATION)
+                     'degC', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_RHUM,                                               &
                      'Wrihis_heat_fluxes', 'relative humidity', '', '',                     &
-                     '', UNC_LOC_STATION)
+                     '', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_CLOU,                                               &
                      'Wrihis_heat_fluxes', 'clou'  , 'cloudiness', '',                     &
-                     ' ', UNC_LOC_STATION)
+                     ' ', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_QSUN,                                               &
                      'Wrihis_heat_fluxes', 'Qsun'  , 'solar influx', '',                     &
-                     'W m-2', UNC_LOC_STATION)
+                     'W m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_QEVA,                                               &
                      'Wrihis_heat_fluxes', 'Qeva'  , 'evaporative heat flux', '',                     &
-                     'W m-2', UNC_LOC_STATION)
+                     'W m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_QCON,                                               &
                      'Wrihis_heat_fluxes', 'Qcon'  , 'sensible heat flux', '',                     &
-                     'W m-2', UNC_LOC_STATION)
+                     'W m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_QLONG,                                              &
                      'Wrihis_heat_fluxes', 'Qlong' , 'long wave back radiation', '',                     &
-                     'W m-2', UNC_LOC_STATION)
+                     'W m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_QFREVA,                                             &
                      'Wrihis_heat_fluxes', 'Qfreva', 'free convection evaporative heat flux', '',                     &
-                     'W m-2', UNC_LOC_STATION)
+                     'W m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_QFRCON,                                             &
                      'Wrihis_heat_fluxes', 'Qfrcon', 'free convection sensible heat flux', '',                     &
-                     'W m-2', UNC_LOC_STATION)
+                     'W m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_QTOT,                                               &
                      'Wrihis_heat_fluxes', 'Qtot'  , 'total heat flux', '',                     &
-                     'W m-2', UNC_LOC_STATION)
+                     'W m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
 
       ! Sediment model
       call addoutval(out_quan_conf_his, IDX_HIS_SED,                                                &
                      'Wrihis_sediment', 'sed', 'Sediment concentration',                                           &
-                     '', 'kg m-3', UNC_LOC_STATION, 'Write sediment transport to his file')
+                     '', 'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write sediment transport to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_WS,                                                 &
                      'Wrihis_sediment', 'ws', 'Sediment settling velocity',                                       &
-                     '', 'm s-1', UNC_LOC_STATION)
+                     '', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_SEDDIF,                                             &
                      'Wrihis_sediment', 'seddif', 'Sediment vertical diffusion',                                      &
-                     '', 'm2 s-1', UNC_LOC_STATION)
+                     '', 'm2 s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
 
       !
       ! HIS: Variables on observation cross sections
       !
-      call addoutval(out_quan_conf_his, IDX_HIS_CONSTITUENTS,                                       &
-                     'Wrihis_constituents', 'constituents', '',                                                                 &
-                     '', '-', UNC_LOC_STATION, 'Write tracers to his file')
+      ! TODO: UNST-6902:
+      call ncu_set_att(atts(1), 'geometry', 'cross_section_geom')
+      !config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_type, nc_atts, description)
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE,                                       &
+                     'Wrihis_crs', 'cross_section_discharge', 'Discharge through observation cross section',    &
+                     'ocean_volume_transport_across_line', 'm3 s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write data on observation cross sections to his file')
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE_CUM,                                       &
+                     'Wrihis_crs', 'cross_section_cumulative_discharge', 'Cumulative volume transport through observation cross section',    &
+                     'integral_wrt_time_of_ocean_volume_transport_across_line', 'm3', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_AREA,                                       &
+                     'Wrihis_crs', 'cross_section_area', 'Wet area of observation cross section',    &
+                     '', 'm2', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_VELOCITY,                                       &
+                     'Wrihis_crs', 'cross_section_velocity', 'Space-averaged velocity through observation cross section',    &
+                     '', 'm s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+      ! Disable writing cross_section_velocity_avg (see UNST-1148), because in a parallel run, it is impossible to compute
+      ! summation of area (denominator) at each computational time step in a cheap way, i.e. without communication between
+      ! partitions. @see subroutines: sumvalueOnCrossSections, updateValuesOnCrossSections
 
+
+      ! The following output value is an abstract entry representing all constituents.
+      ! The constituents that are actually available depend on the model initialization
+      ! and will only be added later, during init_fm_statistical_output_his().
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_CONST_ABSTRACT,                                       &
+                     'Wrihis_constituents', 'cross_section_const_abstract', '',                                                                 &
+                     '', '-', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write all transported constituents to his file')
+            
       !
       ! HIS: Lateral discharges
       !
+      call ncu_set_att(atts(1), 'geometry', 'lateral_geom')
+
       call addoutval(out_quan_conf_his, IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS,         &
                      'Wrihis_lateral', 'lateral_prescribed_discharge_instantaneous',      &
                      'Prescribed discharge through lateral at current time step (instantaneous)',                   &
-                     '', 'm3 s-1', UNC_LOC_LATERAL, 'Write lateral data to his file')
+                     '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1), description='Write lateral data to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE,               &
                      'Wrihis_lateral', 'lateral_prescribed_discharge_average',            &
                      'Prescribed discharge through lateral, average over the last history time interval',           &
-                     '', 'm3 s-1', UNC_LOC_LATERAL)
+                     '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS,           &
                      'Wrihis_lateral', 'lateral_realized_discharge_instantaneous',        &
                      'Realized discharge through lateral at current time step (instantaneous)',                     &
-                     '', 'm3 s-1', UNC_LOC_LATERAL)
+                     '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE,                 &
                      'Wrihis_lateral', 'lateral_realized_discharge_average',              &
                      'Realized discharge through lateral, average over the last history time interval',             &
-                     '', 'm3 s-1', UNC_LOC_LATERAL)
+                     '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1))
 
       !
       ! MAP:
       !
       call addoutval(out_quan_conf_map, IDX_MAP_S0,                                                 &
                      'Wrimap_waterlevel_s0', 's0', 'Water level on previous timestep',                                                            &
-                     'sea_surface_height', 'm', UNC_LOC_S, 'Write water levels for previous time step to map file')
+                     'sea_surface_height', 'm', UNC_LOC_S, description='Write water levels for previous time step to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_S1,                                                 &
                      'Wrimap_waterlevel_s1', 's1', 'Water level',                                                                                 &
-                     'sea_surface_height', 'm', UNC_LOC_S, 'Write water levels to map file')
+                     'sea_surface_height', 'm', UNC_LOC_S, description='Write water levels to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_POTEVAP,                                            &
                      'Wrimap_evaporation', 'potevap', 'Potential evaporation rate at pressure points',                                               &
-                     'water_potential_evaporation_flux', 'm s-1', UNC_LOC_S, 'Write evaporation to map file')
+                     'water_potential_evaporation_flux', 'm s-1', UNC_LOC_S, description='Write evaporation to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_ACTEVAP,                                            &
                      'Wrimap_evaporation', 'actevap', 'Actual evaporation rate at pressure points',                                                  &
                      'lwe_water_evaporation_rate', 'm s-1', UNC_LOC_S)
@@ -1256,16 +1398,16 @@ private
                      '', 'm s-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_VOL1,                                               &
                      'Wrimap_volume1', 'vol1', 'volume of water in grid cell',                                                                &
-                     '', 'm3', UNC_LOC_S, 'Write volumes to map file')
+                     '', 'm3', UNC_LOC_S, description='Write volumes to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_WATERDEPTH,                                         &
                      'Wrimap_waterdepth', 'waterdepth', 'Water depth at pressure points',                                                              &
-                     'sea_floor_depth_below_sea_surface', 'm', UNC_LOC_S, 'Write water depths to map file')
+                     'sea_floor_depth_below_sea_surface', 'm', UNC_LOC_S, description='Write water depths to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_HU,                                                 &
                      'Wrimap_waterdepth_hu', 'hu', 'water depth at velocity points',                                                              &
-                     'sea_floor_depth_below_sea_surface', 'm', UNC_LOC_U, 'Write water depths on u-points to map file')
+                     'sea_floor_depth_below_sea_surface', 'm', UNC_LOC_U, description='Write water depths on u-points to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_NEGDPT,                                             &
                      'Wrimap_flow_analysis', 'negdpt', 'Number of times negative depth was calculated',                                               &
-                     '', '1', UNC_LOC_S, 'Write flow analysis data to map file')
+                     '', '1', UNC_LOC_S, description='Write flow analysis data to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_NEGDPT_CUM,                                         &
                      'Wrimap_flow_analysis', 'negdpt_cum', 'Cumulative number of times negative depth was calculated',                                    &
                      '', '1', UNC_LOC_S)
@@ -1286,28 +1428,21 @@ private
                      '', '1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_AU,                                                 &
                      'Wrimap_flowarea_au', 'au', 'normal flow area between two neighbouring grid cells',                                        &
-                     '', 'm2', UNC_LOC_U, 'Write flow areas au to map file')
+                     '', 'm2', UNC_LOC_U, description='Write flow areas au to map file')
+
+      call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call addoutval(out_quan_conf_map, IDX_MAP_U1,                                                 &
                      'Wrimap_velocity_component_u1', 'u1', 'Velocity at velocity point, n-component',                                                     &
-                     '', 'm s-1', UNC_LOC_U, 'Write velocity component to map file')
-      
-      allocate(out_quan_conf_map%statout(IDX_MAP_U1)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_U1)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_U1)%additional_attributes(1), 'comment', &
-                       'Positive direction is from first to second neighbouring face (flow element).')
-      
+                     '', 'm s-1', UNC_LOC_U, nc_atts = atts(1:1), description='Write velocity component to map file')
+
+      call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call addoutval(out_quan_conf_map, IDX_MAP_U0, 'Wrimap_velocity_component_u0', &
-                     'u0', 'Velocity at velocity pointat previous time step, n-component ', '', 'm s-1', UNC_LOC_U, &
-                     'Write velocity component for previous time step to map file')
-            
-      allocate(out_quan_conf_map%statout(IDX_MAP_U0)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_U0)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_U0)%additional_attributes(1), 'comment', &
-                       'Positive direction is from first to second neighbouring face (flow element).')
-      
+                     'u0', 'Velocity at velocity pointat previous time step, n-component ', '', 'm s-1', UNC_LOC_U, nc_atts = atts(1:1), &
+                     description='Write velocity component for previous time step to map file')
+
       call addoutval(out_quan_conf_map, IDX_MAP_UCXQ_EULERIAN,                                      &
                      'Wrimap_velocity_vector', 'ucxq', 'Flow element center eulerian velocity vector based on discharge, x-component',  &
-                     'ucxq_eulerian_velocity', 'm s-1', UNC_LOC_S, 'Write cell-center velocity vectors to map file')
+                     'ucxq_eulerian_velocity', 'm s-1', UNC_LOC_S, description='Write cell-center velocity vectors to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_UCYQ_EULERIAN,                                      &
                      'Wrimap_velocity_vector', 'ucyq', 'Flow element center eulerian velocity vector based on discharge, y-component',  &
                      'ucyq_eulerian_velocity', 'm s-1', UNC_LOC_S)
@@ -1320,7 +1455,7 @@ private
       
       call addoutval(out_quan_conf_map, IDX_MAP_UCX_EULERIAN,                                      &
                      'Wrimap_velocity_vector', 'ucx', 'Flow element center eulerian velocity vector, x-component',  &
-                     'ucx_eulerian_velocity', 'm s-1', UNC_LOC_S, 'Write cell-center velocity vectors to map file')
+                     'ucx_eulerian_velocity', 'm s-1', UNC_LOC_S)!, 'Write cell-center velocity vectors to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_UCY_EULERIAN,                                      &
                      'Wrimap_velocity_vector', 'ucy', 'Flow element center eulerian velocity vector, y-component',  &
                      'ucy_eulerian_velocity', 'm s-1', UNC_LOC_S)
@@ -1332,7 +1467,7 @@ private
                      'ucy_velocity', 'm s-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_UCMAG,                                              &
                      'Wrimap_velocity_magnitude', 'ucmag', 'Flow element center velocity magnitude',                                        &
-                     'sea_water_speed', 'm s-1', UNC_LOC_S, 'Write cell-center velocity vector magnitude to map file')
+                     'sea_water_speed', 'm s-1', UNC_LOC_S, description='Write cell-center velocity vector magnitude to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_UCMAG_EULER,                                        &
                      'Wrimap_velocity_magnitude', 'ucmag', 'Flow element center eulerian velocity magnitude',                               &
                      'sea_water_eulerian_speed', 'm s-1', UNC_LOC_S)
@@ -1344,49 +1479,42 @@ private
                      'sea_water_speed', 'm s-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_WW1,                                                &
                      'Wrimap_upward_velocity_component', 'ww1', 'Upward velocity on vertical interface, n-component',                            &
-                     'upward_sea_water_velocity', 'm s-1', UNC_LOC_W, 'Write upward velocity component on cell interfaces')          
+                     'upward_sea_water_velocity', 'm s-1', UNC_LOC_W, description='Write upward velocity component on cell interfaces')          
       call addoutval(out_quan_conf_map, IDX_MAP_RHO,                                                &
                      'Wrimap_density_rho', 'rho', 'Flow element center mass density',                                              &
-                     'sea_water_density', 'kg m-3', UNC_LOC_S3D, 'Write flow density to map file')         
+                     'sea_water_density', 'kg m-3', UNC_LOC_S3D, description='Write flow density to map file')         
       call addoutval(out_quan_conf_map, IDX_MAP_VIU,                                                &
                      'Wrimap_horizontal_viscosity_viu', 'viu', 'Horizontal eddy viscosity',                                                     &
-                     '', 'm2 s-1', UNC_Loc_U, 'Write horizontal viscosity to map file')         
+                     '', 'm2 s-1', UNC_Loc_U, description='Write horizontal viscosity to map file')         
       call addoutval(out_quan_conf_map, IDX_MAP_DIU,                                                &
                      'Wrimap_horizontal_diffusivity_diu', 'diu', 'Horizontal eddy diffusivity',                                                   &
-                     '', 'm2 s-1', UNC_Loc_U, 'Write horizontal diffusivity to map file')          
+                     '', 'm2 s-1', UNC_Loc_U, description='Write horizontal diffusivity to map file')          
+
+      call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call addoutval(out_quan_conf_map, IDX_MAP_Q1,                                                 &
                      'Wrimap_flow_flux_q1', 'q1', 'Discharge through flow link at current time',                                   &
-                     'discharge', 'm3 s-1', UNC_LOC_U, 'Write flow flux to map file')
-            
-      allocate(out_quan_conf_map%statout(IDX_MAP_Q1)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_Q1)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_Q1)%additional_attributes(1), 'comment', &
-                       'Positive direction is from first to second neighbouring face (flow element).')
-      
+                     'discharge', 'm3 s-1', UNC_LOC_U, nc_atts = atts(1:1), description='Write flow flux to map file')
+
+      call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call addoutval(out_quan_conf_map, IDX_MAP_Q1_MAIN,                                            &
                      'Wrimap_flow_flux_q1_main', 'q1_main', 'Main channel discharge through flow link at current time',                      &
-                     '', 'm3 s-1', UNC_LOC_U, 'Write flow flux in main channel to map file')
-            
-      allocate(out_quan_conf_map%statout(IDX_MAP_Q1_MAIN)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_Q1_MAIN)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_Q1_MAIN)%additional_attributes(1), 'comment', &
-                       'Positive direction is from first to second neighbouring face (flow element).')
-      
+                     '', 'm3 s-1', UNC_LOC_U, nc_atts = atts(1:1), description='Write flow flux in main channel to map file')
+
       call addoutval(out_quan_conf_map, IDX_MAP_FIXED_WEIR_ENERGY_LOSS,                             &
                      'Wrimap_fixed_weir_energy_loss', 'fixed weir energy loss', 'Fixed weir energy loss',                                                        &
-                     '', 'm', UNC_LOC_U, 'Write fixed weir energy loss to map file')
+                     '', 'm', UNC_LOC_U, description='Write fixed weir energy loss to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_SPIRCRV,                                            &
                      'Wrimap_spiral_flow', 'spircrv', 'Flow streamline curvature',                                                     &
-                     'streamline_curvature', '1/m', UNC_LOC_S, 'Write spiral flow to map file')
+                     'streamline_curvature', '1/m', UNC_LOC_S, description='Write spiral flow to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_SPIRINT,                                            &
                      'Wrimap_spiral_flow', 'spirint', 'Spiral flow intensity',                                                         &
                      'spiral_intensity', 'm/s', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_NUMLIMDT,                                           &
                      'Wrimap_numlimdt', 'Numlimdt', 'Number of times flow element was Courant limiting',                             &
-                     '', '1', UNC_LOC_S, 'Write the number times a cell was Courant limiting to map file. (Consider using Wrimap_flow_analysis instead.)')
+                     '', '1', UNC_LOC_S, description='Write the number times a cell was Courant limiting to map file. (Consider using Wrimap_flow_analysis instead.)')
       call addoutval(out_quan_conf_map, IDX_MAP_TAUSX,                                              &
                      'Wrimap_taucurrent', 'tausx', 'Total bed shear stress vector, x-component',                                    &
-                     '', 'N m-2', UNC_LOC_S, 'Write the shear stress to map file') 
+                     '', 'N m-2', UNC_LOC_S, description='Write the shear stress to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_TAUSY,                                              &
                      'Wrimap_taucurrent', 'tausy', 'Total bed shear stress vector, y-component',                                    &
                      '', 'N m-2', UNC_LOC_S) 
@@ -1401,31 +1529,31 @@ private
                      '', 'm', UNC_LOC_U) 
       call addoutval(out_quan_conf_map, IDX_MAP_Z0UROU,                                             &
                      'Wrimap_salinity', 'z0urou', 'Current-wave related roughness height',                                         &
-                     '', 'm', UNC_LOC_U, 'Write salinity to map file') 
+                     '', 'm', UNC_LOC_U, description='Write salinity to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_SA1,                                                &
                      'Wrimap_chezy', 'sa1', 'Salinity in flow element',                                                      &
-                     'sea_water_salinity', '1e-3', UNC_LOC_S, 'Write the chezy values in flow elements to map file') 
+                     'sea_water_salinity', '1e-3', UNC_LOC_S, description='Write the chezy values in flow elements to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_CZS,                                                &
                      'Wrimap_chezy_on_flow_links', 'czs', 'Chezy roughness in flow element center',                                        &
-                     '', 'm0.5s-1', UNC_LOC_S, 'Write the chezy values on flow links to map file') 
+                     '', 'm0.5s-1', UNC_LOC_S, description='Write the chezy values on flow links to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_CZU,                                                &
                      'Wrimap_input_roughness', 'czu', 'Chezy roughness on flow links',                                                 &
-                     '', 'm0.5s-1', UNC_LOC_U, 'Write the input roughness on flow links to map file') 
+                     '', 'm0.5s-1', UNC_LOC_U, description='Write the input roughness on flow links to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_CFU,                                                &
                      'Wrimap_input_roughness', 'cfu', 'Input roughness on flow links',                                                 &
                      '', '-', UNC_LOC_U) 
       call addoutval(out_quan_conf_map, IDX_MAP_CFUTYP,                                             &
                      'Wrimap_temperature', 'cfutyp', 'Input roughness type on flow links',                                            &
-                     '', '-', UNC_LOC_U) 
+                     '', '', UNC_LOC_U, nf90_int) 
       call addoutval(out_quan_conf_map, IDX_MAP_TEM1,                                               &
                      'Wrimap_constituents', 'tem1', 'Temperature in flow element',                                                   &
-                     'sea_water_temperature', 'degC', UNC_LOC_S, 'Write constituents to map file') 
+                     'sea_water_temperature', 'degC', UNC_LOC_S, description='Write constituents to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_CONST,                                              &
                      'Wrimap_sediment', 'const', '',                                                                              &
-                     '', '-', UNC_LOC_S, 'Write sediment fractions to map file') 
+                     '', '-', UNC_LOC_S, description='Write sediment fractions to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_MORS,                                               &
                      'Wrimap_turbulence', 'mors', '',                                                                              &
-                     '', '-', UNC_LOC_S, 'Write vicww, k and eps to map file') 
+                     '', '-', UNC_LOC_S, description='Write vicww, k and eps to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_TURKIN1,                                            &
                      'Wrimap_turbulence', 'turkin1', 'turbulent kinetic energy',                                                      &
                      'specific_turbulent_kinetic_energy_of_sea_water', 'm2 s-2', UNC_LOC_WU) 
@@ -1441,55 +1569,40 @@ private
       call addoutval(out_quan_conf_map, IDX_MAP_TUREPS1_4,                                          &
                      'Wrimap_turbulence', 'tureps1', 'turbulent time scale',                                                          &
                      '', 's-1', UNC_LOC_WU)
-      call addoutval(out_quan_conf_map, IDX_MAP_CFTRT_0,                                             &
-                     'Wrimap_trachytopes', 'cfrt', 'Chezy roughness from trachytopes',                                              &
-                     '', '', UNC_LOC_L)
-            
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT_0)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFTRT_0)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT_0)%additional_attributes(1), 'non_si_units', 'm0.5s-1')
 
+      call ncu_set_att(atts(1), 'non_si_units', 'm0.5 s-1')
+      call addoutval(out_quan_conf_map, IDX_MAP_CFTRT_0,                                             &
+                     'Wrimap_trachytopes', 'cftrt', 'Chezy roughness from trachytopes',                                              &
+                     '', '', UNC_LOC_L, nc_atts = atts(1:1))
+
+      call ncu_set_att(atts(1), 'non_si_units', 's m-0.333')
       call addoutval(out_quan_conf_map, IDX_MAP_CFTRT_1,                                             &
-                     'Wrimap_trachytopes', 'cfrt', 'Manning roughness from trachytopes',                                            &
-                     '', '', UNC_LOC_L, 'Write trachytope roughnesses to map file')
-            
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT_1)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFTRT_1)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT_1)%additional_attributes(1), 'non_si_units', 'sm-0.333')
+                     'Wrimap_trachytopes', 'cftrt', 'Manning roughness from trachytopes',                                            &
+                     '', '', UNC_LOC_L, nc_atts = atts(1:1), description='Write trachytope roughnesses to map file')
 
       call addoutval(out_quan_conf_map, IDX_MAP_CFTRT_2,                                             &
-                     'Wrimap_trachytopes', 'cfrt', 'White-Colebrook roughness from trachytopes',                                    &
-                     '', '', UNC_LOC_L)
+                     'Wrimap_trachytopes', 'cftrt', 'White-Colebrook roughness from trachytopes',                                    &
+                     '', 'm', UNC_LOC_L)
             
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT_2)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFTRT_2)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT_2)%additional_attributes(1), 'non_si_units', 'm')
-
+      call ncu_set_att(atts(1), 'non_si_units', '')
       call addoutval(out_quan_conf_map, IDX_MAP_CFTRT,                                               &
-                     'Wrimap_trachytopes', 'cfrt', 'Roughness from trachytopes',                                                    &
-                     '', '', UNC_LOC_L)
-      
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFTRT)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFTRT)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFTRT)%additional_attributes(1), 'non_si_units', ' ')
-      
+                     'Wrimap_trachytopes', 'cftrt', 'Roughness from trachytopes',                                                    &
+                     '', '', UNC_LOC_L, nc_atts = atts(1:1))
+
+      call ncu_set_att(atts(1), 'non_si_units', 'm0.5 s-1')
       call addoutval(out_quan_conf_map, IDX_MAP_CFCL,                                               &
                      'Wrimap_calibration', 'cfcl', 'Calibration factor for roughness',                                              &
-                     '', '-', UNC_LOC_L, 'Write roughness calibration factors to map file')
-      
-      allocate(out_quan_conf_map%statout(IDX_MAP_CFCL)%additional_attributes(1))
-      out_quan_conf_map%statout(IDX_MAP_CFCL)%num_additional_attributes = 1
-      call ncu_add_att(out_quan_conf_map%statout(IDX_MAP_CFCL)%additional_attributes(1), 'non_si_units', 'm0.5s-1')
+                     '', '1', UNC_LOC_L, nc_atts = atts(1:1), description='Write roughness calibration factors to map file')
 
       call addoutval(out_quan_conf_map, IDX_MAP_RAINFALL_RATE,                       &
                      'Wrimap_rain', 'rainfall_rate', 'Rainfall rate',                                                            &
-                     'rainfall_rate', 'm s-1', UNC_LOC_S, 'Write rainfall rates to map file')
+                     'rainfall_rate', 'm s-1', UNC_LOC_S, description='Write rainfall rates to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_INTERCEPTION_WATERDEPTH,             &
                      'Wrimap_interception', 'interception_waterdepth', 'Waterdepth in interception layer',                                         &
-                     '', 'm', UNC_LOC_S, 'Write interception to map file')
+                     '', 'm', UNC_LOC_S, description='Write interception to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_PATM,                                &
                      'Wrimap_wind', 'Patm', 'Atmospheric pressure near surface',                                        &
-                     'surface_air_pressure', 'N m-2', UNC_LOC_S, 'Write wind velocities to map file')
+                     'surface_air_pressure', 'N m-2', UNC_LOC_S, description='Write wind velocities to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_WINDX,                               &
                      'Wrimap_wind', 'windx', 'velocity of air on flow element center, x-component',                      &
                      'x_wind', 'm s-1', UNC_LOC_S)
@@ -1516,7 +1629,7 @@ private
                      'northward_wind', 'm s-1', UNC_LOC_U)
       call addoutval(out_quan_conf_map, IDX_MAP_WINDSTRESSX,                         &
                      'Wrimap_windstress', 'windstressx', 'wind stress on flow element center, x-component',                          &
-                     'surface_downward_x_stress', 'N m-2', UNC_LOC_S, 'Write wind stress to map file')
+                     'surface_downward_x_stress', 'N m-2', UNC_LOC_S, description='Write wind stress to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_WINDSTRESSY,                         &
                      'Wrimap_windstress', 'windstressy', 'wind stress on flow element center, y-component',                          &
                      'surface_downward_y_stress', 'N m-2', UNC_LOC_S)
@@ -1528,7 +1641,7 @@ private
                      'surface_downward_northward_stress', 'N m-2', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_TAIR ,                               &
                      'Wrimap_heat_fluxes', 'Tair' , 'surface_temperature'      ,                                                &
-                     'Air temperature near surface', 'degC', UNC_LOC_S, 'Write heat fluxes to map file')
+                     'Air temperature near surface', 'degC', UNC_LOC_S, description='Write heat fluxes to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_RHUM ,                               &
                      'Wrimap_heat_fluxes', 'Rhum' , 'surface_specific_humidity',                                                &
                      'Relative humidity near surface', '', UNC_LOC_S)
@@ -1559,15 +1672,15 @@ private
       call addoutval(out_quan_conf_map, IDX_MAP_TIDALPOTENTIAL,                      &
                      'Wrimap_tidal_potential', 'TidalPotential', 'TidalPotential',                                                           &
                      'Tidal Potential generated by celestial forces in flow element center', 'm2 s-2', UNC_LOC_S, &
-                     'Write tidal potential to map file') 
+                     description='Write tidal potential to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_SALPOTENTIAL,                        &
                      'Wrimap_sal_potential', 'SALPotential', 'SALPotential',                                                             &
                      'Self-attraction and loading Potential in flow element center', 'm2 s-2', UNC_LOC_S, &
-                     'Write self attraction and loading potential to map file') 
+                     description='Write self attraction and loading potential to map file') 
       call addoutval(out_quan_conf_map, IDX_MAP_INTERNAL_TIDES_DISSIPATION,          &
                      'Wrimap_internal_tides_dissipation', 'internal_tides_dissipation', 'internal_tides_dissipation',                                               &
                      'internal tides dissipation in flow element center', 'J s-1 m-2', UNC_LOC_S, &
-                     'Write internal tides dissipation to map file')
+                     description='Write internal tides dissipation to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_TNUDGE,                              &
                      'Wrimap_nudging', 'Tnudge', 'nudging_time',                                                             &
                      'Nudging relaxing time', 's', UNC_LOC_S)   
@@ -1585,7 +1698,7 @@ private
                      'Difference of nudging salinity with salinity', '1e-3', UNC_LOC_S3D)  
       call addoutval(out_quan_conf_map, IDX_MAP_HWAV,                                &
                      'Wrimap_waves', 'hwav', 'RMS wave height',                                                          &
-                     'sea_surface_wave_rms_height', 'm', UNC_LOC_S, 'Write wave information to map file')
+                     'sea_surface_wave_rms_height', 'm', UNC_LOC_S, description='Write wave information to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_HWAV_SIG,                            &
                      'Wrimap_waves', 'hwav', 'Significant wave height',                                                  &
                      'sea_surface_wave_significant_wave_height', 'm', UNC_LOC_S)
@@ -1657,7 +1770,7 @@ private
                      'sea_surface_wave_wavenumber', 'rad m-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_NWAV,                                &
                      'Wrimap_waves', 'nwav', 'Sea_surface_wave_ratio_group_phase_speed',                                 &
-                     'sea_surface_wave_cg_over_c', '-', UNC_LOC_S)
+                     'sea_surface_wave_cg_over_c', '1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_CTHETA,                              &
                      'Wrimap_waves', 'ctheta', 'Sea_surface_wave_refraction_celerity',                                     &
                      'sea_surface_wave_refraction_celerity', 'rad s-1', UNC_LOC_S)
@@ -1705,46 +1818,46 @@ private
                      '', 'N m-2', UNC_LOC_U)
       call addoutval(out_quan_conf_map, IDX_MAP_DTCELL,                              &
                      'Wrimap_DTcell', 'dtcell', 'Time step per cell based on CFL',                                          &
-                     '', 's', UNC_LOC_S, 'Write time step per cell based on CFL')
+                     '', 's', UNC_LOC_S, description='Write time step per cell based on CFL')
       call addoutval(out_quan_conf_map, IDX_MAP_TIME_WATER_ON_GROUND,                &
                      'Wrimap_time_water_on_ground', 'time_water_on_ground', 'Cumulative time water above ground level',                                 &
-                     '', 's', UNC_LOC_S, 'Write cumulative time when water is above ground level to map file, only for 1D nodes')
+                     '', 's', UNC_LOC_S, description='Write cumulative time when water is above ground level to map file, only for 1D nodes')
       call addoutval(out_quan_conf_map, IDX_MAP_FREEBOARD,                           &
                      'Wrimap_freeboard', 'freeboard', 'Freeboard',                                                                &
-                     '', 'm', UNC_LOC_S, 'Write freeboard to map file, only for 1D nodes')
+                     '', 'm', UNC_LOC_S, description='Write freeboard to map file, only for 1D nodes')
       call addoutval(out_quan_conf_map, IDX_MAP_WATERDEPTH_ON_GROUND,                &
                      'Wrimap_waterdepth_on_ground', 'waterdepth_on_ground', 'Waterdepth above ground level',                                            &
-                     '', 'm', UNC_LOC_S, 'Write waterdepth that is above ground level to map file, only for 1D nodes')
+                     '', 'm', UNC_LOC_S, description='Write waterdepth that is above ground level to map file, only for 1D nodes')
       call addoutval(out_quan_conf_map, IDX_MAP_VOLUME_ON_GROUND,                    &
                      'Wrimap_volume_on_ground', 'volume_on_ground', 'Volume above ground level',                                                &
-                     '', 'm3', UNC_LOC_S, 'Write volume that is above ground level to map file, only for 1D nodes')
+                     '', 'm3', UNC_LOC_S, description='Write volume that is above ground level to map file, only for 1D nodes')
       call addoutval(out_quan_conf_map, IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D,       &
                      'Wrimap_total_net_inflow_1d2d', 'current_total_net_inflow_1d2d', 'Current total net inflow via all connected 1d2d links at each 1D node',    &
-                     '', 'm3 s-1', UNC_LOC_S, 'Write current total 1d2d net inflow (discharge) and cumulative total 1d2d net inflow (volume) to map file, only for 1D nodes')
+                     '', 'm3 s-1', UNC_LOC_S, description='Write current total 1d2d net inflow (discharge) and cumulative total 1d2d net inflow (volume) to map file, only for 1D nodes')
       call addoutval(out_quan_conf_map, IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D,    &
                      'Wrimap_total_net_inflow_1d2d', 'cumulative_total_net_inflow_1d2d', 'Cumulative total net inflow via all connected 1d2d links at each 1D node', &
                      '', 'm3', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL,    &
                      'Wrimap_total_net_inflow_lateral', 'current_total_net_inflow_lateral', 'Current total net inflow via all laterals at each 1D node',                &
-                     '', 'm3 s-1', UNC_LOC_S, 'Write current total lateral net inflow (discharge) and cumulative total net lateral inflow (volume) to map file, only for 1D nodes')
+                     '', 'm3 s-1', UNC_LOC_S, description='Write current total lateral net inflow (discharge) and cumulative total net lateral inflow (volume) to map file, only for 1D nodes')
       call addoutval(out_quan_conf_map, IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL, &
                      'Wrimap_total_net_inflow_lateral', 'cumulative_total_net_inflow_lateral', 'Cumulative total net inflow via all laterals at each 1D node',             &
                      '', 'm3', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_WATER_LEVEL_GRADIENT,                &
                      'Wrimap_water_level_gradient', 'water_level_gradient', 'Water level gradient at each 1D flow link',                                &
-                     '', '1', UNC_LOC_U, 'Write water level gradient to map file, only on 1D links')
+                     '', '1', UNC_LOC_U, description='Write water level gradient to map file, only on 1D links')
       call addoutval(out_quan_conf_map, IDX_MAP_QIN,                                 &
                      'Wrimap_Qin', 'qin', 'Sum of all water influx',                                                  &
-                     '', 'm3 s-1', UNC_LOC_S, 'Write sum of all influxes to map file')
+                     '', 'm3 s-1', UNC_LOC_S, description='Write sum of all influxes to map file')
       call addoutval(out_quan_conf_clm, IDX_CLS_S1,                                  &
                      'WriClass_Waterlevel', 's1', 'Water level',                                                              &
-                     'sea_surface_height', 'm', UNC_LOC_S, 'Write waterlevel to class map file')
+                     'sea_surface_height', 'm', UNC_LOC_S, description='Write waterlevel to class map file')
       call addoutval(out_quan_conf_clm, IDX_CLS_WATERDEPTH,                          &
                      'WriClass_Waterdepth', 'waterdepth', 'Water depth at pressure points',                                           &
                      'sea_floor_depth_below_sea_surface', 'm', UNC_LOC_S)
       call addoutval(out_quan_conf_clm, IDX_CLS_UCMAG,                               &
                      'WriClass_Velocity', 'ucmag', 'Flow element center velocity magnitude',                                   &
-                     'sea_water_speed', 'm s-1', UNC_LOC_S, 'Write center velocity to class map file')
+                     'sea_water_speed', 'm s-1', UNC_LOC_S, description='Write center velocity to class map file')
       call addoutval(out_quan_conf_clm, IDX_CLS_UCMAG_EULER,                         &
                      'WriClass_Velocity', 'ucmag', 'Flow element center Eulerian velocity magnitude',                          &
                      'sea_water_eulerian_speed', 'm s-1', UNC_LOC_S)
@@ -1756,25 +1869,38 @@ private
                      'sea_water_eulerian_velocity_to_direction', 'degree', UNC_LOC_S)
    end subroutine default_fm_statistical_output
    
-         
+
+   !> Initializes the output variable set for history files, based on
+   !! the quantity configuration set and the active model settings.
+   !! Must be called as part of flow_modelinit.
    subroutine flow_init_statistical_output_his(output_config,output_set)
-   use m_flow
-   use m_flowexternalforcings
-   use m_structures
-   use m_observations
-   use m_sediment, only: stm_included
-   use m_statistical_callback
-   use m_transport, only: numconst, isalt, itemp, numconst_mdu
-   use m_longculverts, only: nlongculverts
-   USE m_monitoring_crosssections, only: ncrs
-   USE, INTRINSIC :: ISO_C_BINDING
+      use netcdf_utils, only: ncu_set_att
+      use coordinate_reference_system, only: nc_attribute
+      use string_module, only: replace_char
+      use m_flow
+      use m_flowexternalforcings
+      use m_structures
+      use m_observations
+      use m_sediment
+      use m_statistical_callback
+      use m_transport, only: NUMCONST_MDU, ITRA1, ITRAN, ISED1, ISEDN, const_names, const_units, NUMCONST, itemp, isalt
+      use m_longculverts, only: nlongculverts
+      USE m_monitoring_crosssections, only: ncrs
+      use m_monitoring_runupgauges, only: nrug
+      USE, INTRINSIC :: ISO_C_BINDING
    
-      type(t_output_variable_set),    intent(inout)   :: output_set    !> output set that items need to be added to
-      type(t_output_quantity_config_set), intent(in)  :: output_config !> output config for which an output set is needed.
+      type(t_output_quantity_config_set), intent(in   ) :: output_config !< output config for which an output set is needed.
+      type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
+
+      type(nc_attribute) :: atts(5)
       double precision, pointer, dimension(:) :: temp_pointer
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
-      
-      integer :: i, ntot
+
+      integer :: i, ntot, num, lsed
+      integer :: idx_const_
+      integer :: lenunitstr
+      character(len=20)  :: unitstr
+      character(len=255) :: conststr
       
       ntot = numobs + nummovobs
     
@@ -1782,222 +1908,231 @@ private
       ! Mass balance variables
       !
       if (jahisbal > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VOLTOT                     ),voltot(IDX_VOLTOT                      :IDX_VOLTOT                         )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_STOR                       ),voltot(IDX_HIS_STOR                    :IDX_HIS_STOR                       )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VOLERR                     ),voltot(IDX_HIS_VOLERR                  :IDX_HIS_VOLERR                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BNDIN                      ),voltot(IDX_HIS_BNDIN                   :IDX_HIS_BNDIN                      )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BNDOUT                     ),voltot(IDX_HIS_BNDOUT                  :IDX_HIS_BNDOUT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BNDTOT                     ),voltot(IDX_HIS_BNDTOT                  :IDX_HIS_BNDTOT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXCHIN                     ),voltot(IDX_HIS_EXCHIN                  :IDX_HIS_EXCHIN                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXCHOUT                    ),voltot(IDX_HIS_EXCHOUT                 :IDX_HIS_EXCHOUT                    )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXCHTOT                    ),voltot(IDX_HIS_EXCHTOT                 :IDX_HIS_EXCHTOT                    )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PRECIP_TOTAL               ),voltot(IDX_HIS_PRECIP_TOTAL            :IDX_HIS_PRECIP_TOTAL               )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EVAP                       ),voltot(IDX_HIS_EVAP                    :IDX_HIS_EVAP                       )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOUR                       ),voltot(IDX_HIS_SOUR                    :IDX_HIS_SOUR                       )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GRWIN                      ),voltot(IDX_HIS_GRWIN                   :IDX_HIS_GRWIN                      )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GRWOUT                     ),voltot(IDX_HIS_GRWOUT                  :IDX_HIS_GRWOUT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GRWTOT                     ),voltot(IDX_HIS_GRWTOT                  :IDX_HIS_GRWTOT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATIN                      ),voltot(IDX_HIS_LATIN                   :IDX_HIS_LATIN                      )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATOUT                     ),voltot(IDX_HIS_LATOUT                  :IDX_HIS_LATOUT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATTOT                     ),voltot(IDX_HIS_LATTOT                  :IDX_HIS_LATTOT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATIN1D                    ),voltot(IDX_HIS_LATIN1D                 :IDX_HIS_LATIN1D                    )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATOUT1D                   ),voltot(IDX_HIS_LATOUT1D                :IDX_HIS_LATOUT1D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATTOT1D                   ),voltot(IDX_HIS_LATTOT1D                :IDX_HIS_LATTOT1D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATIN2D                    ),voltot(IDX_HIS_LATIN2D                 :IDX_HIS_LATIN2D                    )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATOUT2D                   ),voltot(IDX_HIS_LATOUT2D                :IDX_HIS_LATOUT2D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATTOT2D                   ),voltot(IDX_HIS_LATTOT2D                :IDX_HIS_LATTOT2D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTIN                      ),voltot(IDX_HIS_EXTIN                   :IDX_HIS_EXTIN                      )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTOUT                     ),voltot(IDX_HIS_EXTOUT                  :IDX_HIS_EXTOUT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTTOT                     ),voltot(IDX_HIS_EXTTOT                  :IDX_HIS_EXTTOT                     )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTIN1D                    ),voltot(IDX_HIS_EXTIN1D                 :IDX_HIS_EXTIN1D                    )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTOUT1D                   ),voltot(IDX_HIS_EXTOUT1D                :IDX_HIS_EXTOUT1D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTTOT1D                   ),voltot(IDX_HIS_EXTTOT1D                :IDX_HIS_EXTTOT1D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTIN2D                    ),voltot(IDX_HIS_EXTIN2D                 :IDX_HIS_EXTIN2D                    )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTOUT2D                   ),voltot(IDX_HIS_EXTOUT2D                :IDX_HIS_EXTOUT2D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EXTTOT2D                   ),voltot(IDX_HIS_EXTTOT2D                :IDX_HIS_EXTTOT2D                   )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ICEPT                      ),voltot(IDX_HIS_ICEPT                   :IDX_HIS_ICEPT                      )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EVAP_ICEPT                 ),voltot(IDX_HIS_EVAP_ICEPT              :IDX_HIS_EVAP_ICEPT                 )                                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PRECIP_GROUND              ),voltot(IDX_HIS_PRECIP_GROUND           :IDX_HIS_PRECIP_GROUND              )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VOLTOT                     ),voltot(IDX_VOLTOT                      :IDX_VOLTOT                         )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_STOR                       ),voltot(IDX_HIS_STOR                    :IDX_HIS_STOR                       )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VOLERR                     ),voltot(IDX_HIS_VOLERR                  :IDX_HIS_VOLERR                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BNDIN                      ),voltot(IDX_HIS_BNDIN                   :IDX_HIS_BNDIN                      )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BNDOUT                     ),voltot(IDX_HIS_BNDOUT                  :IDX_HIS_BNDOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BNDTOT                     ),voltot(IDX_HIS_BNDTOT                  :IDX_HIS_BNDTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXCHIN                     ),voltot(IDX_HIS_EXCHIN                  :IDX_HIS_EXCHIN                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXCHOUT                    ),voltot(IDX_HIS_EXCHOUT                 :IDX_HIS_EXCHOUT                    )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXCHTOT                    ),voltot(IDX_HIS_EXCHTOT                 :IDX_HIS_EXCHTOT                    )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PRECIP_TOTAL               ),voltot(IDX_HIS_PRECIP_TOTAL            :IDX_HIS_PRECIP_TOTAL               )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EVAP                       ),voltot(IDX_HIS_EVAP                    :IDX_HIS_EVAP                       )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOUR                       ),voltot(IDX_HIS_SOUR                    :IDX_HIS_SOUR                       )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GRWIN                      ),voltot(IDX_HIS_GRWIN                   :IDX_HIS_GRWIN                      )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GRWOUT                     ),voltot(IDX_HIS_GRWOUT                  :IDX_HIS_GRWOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GRWTOT                     ),voltot(IDX_HIS_GRWTOT                  :IDX_HIS_GRWTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATIN                      ),voltot(IDX_HIS_LATIN                   :IDX_HIS_LATIN                      )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATOUT                     ),voltot(IDX_HIS_LATOUT                  :IDX_HIS_LATOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATTOT                     ),voltot(IDX_HIS_LATTOT                  :IDX_HIS_LATTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATIN1D                    ),voltot(IDX_HIS_LATIN1D                 :IDX_HIS_LATIN1D                    )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATOUT1D                   ),voltot(IDX_HIS_LATOUT1D                :IDX_HIS_LATOUT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATTOT1D                   ),voltot(IDX_HIS_LATTOT1D                :IDX_HIS_LATTOT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATIN2D                    ),voltot(IDX_HIS_LATIN2D                 :IDX_HIS_LATIN2D                    )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATOUT2D                   ),voltot(IDX_HIS_LATOUT2D                :IDX_HIS_LATOUT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATTOT2D                   ),voltot(IDX_HIS_LATTOT2D                :IDX_HIS_LATTOT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTIN                      ),voltot(IDX_HIS_EXTIN                   :IDX_HIS_EXTIN                      )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTOUT                     ),voltot(IDX_HIS_EXTOUT                  :IDX_HIS_EXTOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTTOT                     ),voltot(IDX_HIS_EXTTOT                  :IDX_HIS_EXTTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTIN1D                    ),voltot(IDX_HIS_EXTIN1D                 :IDX_HIS_EXTIN1D                    )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTOUT1D                   ),voltot(IDX_HIS_EXTOUT1D                :IDX_HIS_EXTOUT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTTOT1D                   ),voltot(IDX_HIS_EXTTOT1D                :IDX_HIS_EXTTOT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTIN2D                    ),voltot(IDX_HIS_EXTIN2D                 :IDX_HIS_EXTIN2D                    )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTOUT2D                   ),voltot(IDX_HIS_EXTOUT2D                :IDX_HIS_EXTOUT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTTOT2D                   ),voltot(IDX_HIS_EXTTOT2D                :IDX_HIS_EXTTOT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ICEPT                      ),voltot(IDX_HIS_ICEPT                   :IDX_HIS_ICEPT                      )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EVAP_ICEPT                 ),voltot(IDX_HIS_EVAP_ICEPT              :IDX_HIS_EVAP_ICEPT                 )                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PRECIP_GROUND              ),voltot(IDX_HIS_PRECIP_GROUND           :IDX_HIS_PRECIP_GROUND              )                                  )
       endif
 
       !
       ! Source-sink variables
       !
       if (jahissourcesink > 0 .and. numsrc > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE),               qstss(1:(numconst+1)*numsrc:(numconst+1)))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE),               qstss(1:(numconst+1)*numsrc:(numconst+1)))
          i = 1
          if (isalt > 0) then
             i = i + 1
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT),   qstss(i:(numconst+1)*numsrc:(numconst+i)))
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT),   qstss(i:(numconst+1)*numsrc:(numconst+i)))
          endif
          if (itemp > 0) then
             i = i + 1
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT),qstss(i:(numconst+1)*numsrc:(numconst+i)))
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT),qstss(i:(numconst+1)*numsrc:(numconst+i)))
          endif
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE),qsrc)
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME),vsrccum)
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE),qsrcavg)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE),qsrc)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME),vsrccum)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE),qsrcavg)
+      endif
+
+      !
+      ! Run-up gauge variables
+      !
+      if (nrug > 0) then
+         function_pointer => calculate_rug_data
+         temp_pointer => null()
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RUG_RUHEIGHT), temp_pointer, function_pointer)
       endif
 
       !
       ! Hydraulic structures variables
       !
       if (jahiscgen > 0 .and. ngenstru > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE            ),valgenstru(IVAL_DIS   ,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL          ),valgenstru(IVAL_CRESTL,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL),valgenstru(IVAL_EDGEL ,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_WIDTH   ),valgenstru(IVAL_OPENW ,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1UP                 ),valgenstru(IVAL_S1UP  ,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1DN                 ),valgenstru(IVAL_S1DN  ,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_HEAD                 ),valgenstru(IVAL_HEAD  ,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA            ),valgenstru(IVAL_AREA  ,1:ngenstru))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY             ),valgenstru(IVAL_VEL   ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE            ),valgenstru(IVAL_DIS   ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL          ),valgenstru(IVAL_CRESTL,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL),valgenstru(IVAL_EDGEL ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_WIDTH   ),valgenstru(IVAL_OPENW ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1UP                 ),valgenstru(IVAL_S1UP  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1DN                 ),valgenstru(IVAL_S1DN  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_HEAD                 ),valgenstru(IVAL_HEAD  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA            ),valgenstru(IVAL_AREA  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY             ),valgenstru(IVAL_VEL   ,1:ngenstru))
       endif
       if (network%sts%numGeneralStructures > 0) then ! write extra fields for new general structure
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_WIDTH                   ),valgenstru(IVAL_CRESTW   ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_THROUGH_GATE_OPENING),valgenstru(IVAL_DIS_OPEN ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_OVER_GATE           ),valgenstru(IVAL_DIS_OVER ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_UNDER_GATE          ),valgenstru(IVAL_DIS_UNDER,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_HEIGHT           ),valgenstru(IVAL_OPENH    ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_UPPER_EDGE_LEVEL         ),valgenstru(IVAL_UPPL     ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_THROUGH_GATE_OPENING ),valgenstru(IVAL_VEL_OPEN ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_OVER_GATE            ),valgenstru(IVAL_VEL_OVER ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_UNDER_GATE           ),valgenstru(IVAL_VEL_UNDER,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_IN_GATE_OPENING     ),valgenstru(IVAL_AREA_OPEN ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_OVER_GATE           ),valgenstru(IVAL_AREA_OVER ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_UNDER_GATE          ),valgenstru(IVAL_AREA_UNDER,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_STATE                         ),valgenstru(IVAL_STATE     ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST                   ),valgenstru(IVAL_S1ONCREST ,1:network%sts%numGeneralStructures))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FORCE_DIFFERENCE              ),valgenstru(IVAL_FORCEDIF  ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_WIDTH                   ),valgenstru(IVAL_CRESTW   ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_THROUGH_GATE_OPENING),valgenstru(IVAL_DIS_OPEN ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_OVER_GATE           ),valgenstru(IVAL_DIS_OVER ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_UNDER_GATE          ),valgenstru(IVAL_DIS_UNDER,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_HEIGHT           ),valgenstru(IVAL_OPENH    ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_UPPER_EDGE_LEVEL         ),valgenstru(IVAL_UPPL     ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_THROUGH_GATE_OPENING ),valgenstru(IVAL_VEL_OPEN ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_OVER_GATE            ),valgenstru(IVAL_VEL_OVER ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_UNDER_GATE           ),valgenstru(IVAL_VEL_UNDER,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_IN_GATE_OPENING     ),valgenstru(IVAL_AREA_OPEN ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_OVER_GATE           ),valgenstru(IVAL_AREA_OVER ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_UNDER_GATE          ),valgenstru(IVAL_AREA_UNDER,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_STATE                         ),valgenstru(IVAL_STATE     ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST                   ),valgenstru(IVAL_S1ONCREST ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FORCE_DIFFERENCE              ),valgenstru(IVAL_FORCEDIF  ,1:network%sts%numGeneralStructures))
       endif
       if (jahiscdam > 0 .and. ncdamsg > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CDAM_DISCHARGE           ), valcdam(2,:)                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CDAM_CREST_LEVEL         ), zcdam                      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CDAM_S1UP                ), valcdam(3,:)                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CDAM_S1DN                ), valcdam(4,:)                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_DISCHARGE           ), valcdam(2,:)                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_CREST_LEVEL         ), zcdam                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_S1UP                ), valcdam(3,:)                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_S1DN                ), valcdam(4,:)                  )
       endif
       if (jahispump > 0 .and. npumpsg > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_DISCHARGE),valgenstru(IVAL_DIS       ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_CAPACITY           ),valgenstru(IVAL_PP_CAP    ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valgenstru(IVAL_PP_DISDIR ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_S1UP               ),valgenstru(IVAL_S1UP      ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_S1DN               ),valgenstru(IVAL_S1DN      ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valgenstru(IVAL_PP_HEAD   ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valgenstru(IVAL_PP_STAG   ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_HEAD               ),valgenstru(IVAL_PP_HEAD   ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valgenstru(IVAL_PP_RED    ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_S1_DELIVERY_SIDE   ),valgenstru(IVAL_PP_S1DEL  ,1:npumpsg))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PUMP_S1_SUCTION_SIDE    ),valgenstru(IVAL_PP_S1SUC  ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_DISCHARGE),valpump(IVAL_DIS       ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_CAPACITY           ),valpump(IVAL_PP_CAP    ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valpump(IVAL_PP_DISDIR ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1UP               ),valpump(IVAL_S1UP      ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1DN               ),valpump(IVAL_S1DN      ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valpump(IVAL_PP_STAG   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_HEAD               ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valpump(IVAL_PP_RED    ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_DELIVERY_SIDE   ),valpump(IVAL_PP_S1DEL  ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_SUCTION_SIDE    ),valpump(IVAL_PP_S1SUC  ,1:npumpsg))
       endif                                                                                          
       if (jahisgate > 0 .and. ngatesg > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATE_DISCHARGE       ),valgate(2,:)                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATE_LOWER_EDGE_LEVEL),zgate                                          )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATE_S1UP            ),valgate(3,:)                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATE_S1DN            ),valgate(4,:)                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_DISCHARGE       ),valgate(2,:)                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_LOWER_EDGE_LEVEL),zgate                                          )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_S1UP            ),valgate(3,:)                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_S1DN            ),valgate(4,:)                                   )
       endif
       if (jahisgate > 0 .and. ngategen > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_DISCHARGE            ),valgategen(IVAL_DIS,:)                                 )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_CREST_LEVEL          ),valgategen(IVAL_GATE_SILLH,:)                           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_CREST_WIDTH          ),valgategen(IVAL_WIDTH,:)                           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL),valgategen(IVAL_GATE_EDGEL,:)                           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT  ),valgategen(IVAL_GATE_FLOWH,:)                           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_GATE_OPENING_WIDTH   ),valgategen(IVAL_GATE_OPENW,:)                                )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_S1UP                 ),valgategen(IVAL_S1UP,:)                                )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_GATEGEN_S1DN                 ),valgategen(IVAL_S1DN,:)    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_DISCHARGE            ),valgategen(IVAL_DIS,:)                                 )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_CREST_LEVEL          ),valgategen(IVAL_GATE_SILLH,:)                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_CREST_WIDTH          ),valgategen(IVAL_WIDTH,:)                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL),valgategen(IVAL_GATE_EDGEL,:)                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT  ),valgategen(IVAL_GATE_FLOWH,:)                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_GATE_OPENING_WIDTH   ),valgategen(IVAL_GATE_OPENW,:)                                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_S1UP                 ),valgategen(IVAL_S1UP,:)                                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_S1DN                 ),valgategen(IVAL_S1DN,:)    )
       endif
       if (jahisweir > 0 .and. nweirgen > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_DISCHARGE       ),valweirgen(IVAL_DIS       ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_CREST_LEVEL     ),valweirgen(IVAL_CRESTL    ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_CREST_WIDTH     ),valweirgen(IVAL_CRESTW    ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1UP            ),valweirgen(IVAL_S1UP      ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1DN            ),valweirgen(IVAL_S1DN      ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_STRUCTURE_HEAD  ),valweirgen(IVAL_HEAD      ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_VELOCITY        ),valweirgen(IVAL_VEL       ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_FLOW_AREA       ),valweirgen(IVAL_AREA      ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_STATE           ),valweirgen(IVAL_STATE     ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_FORCE_DIFFERENCE),valweirgen(IVAL_FORCEDIF  ,1:nweirgen))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1_ON_CREST     ),valweirgen(IVAL_S1ONCREST ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_DISCHARGE       ),valweirgen(IVAL_DIS       ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_CREST_LEVEL     ),valweirgen(IVAL_CRESTL    ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_CREST_WIDTH     ),valweirgen(IVAL_CRESTW    ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1UP            ),valweirgen(IVAL_S1UP      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1DN            ),valweirgen(IVAL_S1DN      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_STRUCTURE_HEAD  ),valweirgen(IVAL_HEAD      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_VELOCITY        ),valweirgen(IVAL_VEL       ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_FLOW_AREA       ),valweirgen(IVAL_AREA      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_STATE           ),valweirgen(IVAL_STATE     ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_FORCE_DIFFERENCE),valweirgen(IVAL_FORCEDIF  ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1_ON_CREST     ),valweirgen(IVAL_S1ONCREST ,1:nweirgen))
       endif
       if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_DISCHARGE            ),valorifgen(IVAL_DIS       ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_CREST_LEVEL          ),valorifgen(IVAL_CRESTL    ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_CREST_WIDTH          ),valorifgen(IVAL_CRESTW    ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_GATE_LOWER_EDGE_LEVEL),valorifgen(IVAL_S1UP      ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_S1UP                 ),valorifgen(IVAL_S1DN      ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_S1DN                 ),valorifgen(IVAL_HEAD      ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_GATE_OPENING_HEIGHT  ),valorifgen(IVAL_VEL       ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_HEAD                 ),valorifgen(IVAL_AREA      ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_FLOW_AREA            ),valorifgen(IVAL_STATE     ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_STATE                ),valorifgen(IVAL_FORCEDIF  ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_S1_ON_CREST          ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_VELOCITY             ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_ORIFICE_FORCE_DIFFERENCE     ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_DISCHARGE            ),valorifgen(IVAL_DIS       ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_CREST_LEVEL          ),valorifgen(IVAL_CRESTL    ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_CREST_WIDTH          ),valorifgen(IVAL_CRESTW    ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_GATE_LOWER_EDGE_LEVEL),valorifgen(IVAL_S1UP      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_S1UP                 ),valorifgen(IVAL_S1DN      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_S1DN                 ),valorifgen(IVAL_HEAD      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_GATE_OPENING_HEIGHT  ),valorifgen(IVAL_VEL       ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_HEAD                 ),valorifgen(IVAL_AREA      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_FLOW_AREA            ),valorifgen(IVAL_STATE     ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_STATE                ),valorifgen(IVAL_FORCEDIF  ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_S1_ON_CREST          ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_VELOCITY             ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_FORCE_DIFFERENCE     ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
       endif
       if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_DISCHARGE ),valbridge(IVAL_DIS,     1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_S1UP      ),valbridge(IVAL_S1UP,    1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_S1DN      ),valbridge(IVAL_S1DN,    1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_HEAD      ),valbridge(IVAL_HEAD,    1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_FLOW_AREA ),valbridge(IVAL_AREA,    1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_VELOCITY  ),valbridge(IVAL_VEL,     1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_BLUP      ),valbridge(IVAL_BLUP,    1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_BLDN      ),valbridge(IVAL_BLDN,    1:network%sts%numBridges)        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRIDGE_BL_ACTUAL ),valbridge(IVAL_BLACTUAL,1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_DISCHARGE ),valbridge(IVAL_DIS,     1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_S1UP      ),valbridge(IVAL_S1UP,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_S1DN      ),valbridge(IVAL_S1DN,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_HEAD      ),valbridge(IVAL_HEAD,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_FLOW_AREA ),valbridge(IVAL_AREA,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_VELOCITY  ),valbridge(IVAL_VEL,     1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_BLUP      ),valbridge(IVAL_BLUP,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_BLDN      ),valbridge(IVAL_BLDN,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_BL_ACTUAL ),valbridge(IVAL_BLACTUAL,1:network%sts%numBridges)        )
       endif
       if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_DISCHARGE            ),valculvert(IVAL_DIS        ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_CREST_LEVEL          ),valculvert(IVAL_CL_CRESTL  ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_GATE_LOWER_EDGE_LEVEL),valculvert(IVAL_CL_EDGEL   ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_S1UP                 ),valculvert(IVAL_S1UP       ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_S1DN                 ),valculvert(IVAL_S1DN       ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_GATE_OPENING_HEIGHT  ),valculvert(IVAL_CL_OPENH   ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_HEAD                 ),valculvert(IVAL_HEAD       ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_FLOW_AREA            ),valculvert(IVAL_AREA       ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_VELOCITY             ),valculvert(IVAL_VEL        ,1:network%sts%numCulverts)            )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CULVERT_STATE                ),valculvert(IVAL_CL_STATE   ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_DISCHARGE            ),valculvert(IVAL_DIS        ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_CREST_LEVEL          ),valculvert(IVAL_CL_CRESTL  ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_GATE_LOWER_EDGE_LEVEL),valculvert(IVAL_CL_EDGEL   ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_S1UP                 ),valculvert(IVAL_S1UP       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_S1DN                 ),valculvert(IVAL_S1DN       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_GATE_OPENING_HEIGHT  ),valculvert(IVAL_CL_OPENH   ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_HEAD                 ),valculvert(IVAL_HEAD       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_FLOW_AREA            ),valculvert(IVAL_AREA       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_VELOCITY             ),valculvert(IVAL_VEL        ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_STATE                ),valculvert(IVAL_CL_STATE   ,1:network%sts%numCulverts)            )
       endif
       if (jahisdambreak > 0 .and. ndambreak > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_S1UP                        ),valdambreak(IVAL_S1UP,1:ndambreak)      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_S1DN                        ),valdambreak(IVAL_S1DN,1:ndambreak)      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_DISCHARGE                   ),valdambreak(IVAL_DIS,1:ndambreak)       )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE        ),valdambreak(IVAL_DB_DISCUM,1:ndambreak) )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_VELOCITY                    ),valdambreak(IVAL_VEL,1:ndambreak)       )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_HEAD                        ),valdambreak(IVAL_HEAD,1:ndambreak)      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_FLOW_AREA                   ),valdambreak(IVAL_AREA,1:ndambreak)      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_CREST_LEVEL                 ),valdambreak(IVAL_DB_CRESTH,1:ndambreak) )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_CREST_WIDTH                 ),valdambreak(IVAL_DB_CRESTW,1:ndambreak) )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE),valdambreak(IVAL_DB_TIMEDIV,1:ndambreak))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP            ),valdambreak(IVAL_DB_JUMP,1:ndambreak)   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_S1UP                        ),valdambreak(IVAL_S1UP,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_S1DN                        ),valdambreak(IVAL_S1DN,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_DISCHARGE                   ),valdambreak(IVAL_DIS,1:ndambreak)       )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE        ),valdambreak(IVAL_DB_DISCUM,1:ndambreak) )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_VELOCITY                    ),valdambreak(IVAL_VEL,1:ndambreak)       )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_HEAD                        ),valdambreak(IVAL_HEAD,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_FLOW_AREA                   ),valdambreak(IVAL_AREA,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_CREST_LEVEL                 ),valdambreak(IVAL_DB_CRESTH,1:ndambreak) )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_CREST_WIDTH                 ),valdambreak(IVAL_DB_CRESTW,1:ndambreak) )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE),valdambreak(IVAL_DB_TIMEDIV,1:ndambreak))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP            ),valdambreak(IVAL_DB_JUMP,1:ndambreak)   )
       endif
       if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UNIWEIR_DISCHARGE  ),valuniweir(IVAL_DIS,1:network%sts%numuniweirs)      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UNIWEIR_CREST_LEVEL),valuniweir(IVAL_UW_CRESTL,1:network%sts%numuniweirs))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UNIWEIR_S1UP       ),valuniweir(IVAL_S1UP,1:network%sts%numuniweirs)    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UNIWEIR_S1DN       ),valuniweir(IVAL_S1DN,1:network%sts%numuniweirs)     )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UNIWEIR_HEAD       ),valuniweir(IVAL_HEAD,1:network%sts%numuniweirs)     )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UNIWEIR_FLOW_AREA  ),valuniweir(IVAL_AREA,1:network%sts%numuniweirs)     )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UNIWEIR_VELOCITY   ),valuniweir(IVAL_VEL,1:network%sts%numuniweirs)      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_DISCHARGE  ),valuniweir(IVAL_DIS,1:network%sts%numuniweirs)      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_CREST_LEVEL),valuniweir(IVAL_UW_CRESTL,1:network%sts%numuniweirs))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_S1UP       ),valuniweir(IVAL_S1UP,1:network%sts%numuniweirs)    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_S1DN       ),valuniweir(IVAL_S1DN,1:network%sts%numuniweirs)     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_HEAD       ),valuniweir(IVAL_HEAD,1:network%sts%numuniweirs)     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_FLOW_AREA  ),valuniweir(IVAL_AREA,1:network%sts%numuniweirs)     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_VELOCITY   ),valuniweir(IVAL_VEL,1:network%sts%numuniweirs)      )
       endif
       if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CMPSTRU_DISCHARGE),valcmpstru(IVAL_DIS,1:network%cmps%count) )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CMPSTRU_S1UP     ),valcmpstru(IVAL_S1UP,1:network%cmps%count))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CMPSTRU_S1DN     ),valcmpstru(IVAL_S1DN,1:network%cmps%count))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CMPSTRU_HEAD     ),valcmpstru(IVAL_HEAD,1:network%cmps%count))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CMPSTRU_FLOW_AREA),valcmpstru(IVAL_AREA,1:network%cmps%count))
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CMPSTRU_VELOCITY ),valcmpstru(IVAL_VEL,1:network%cmps%count) )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_DISCHARGE),valcmpstru(IVAL_DIS,1:network%cmps%count) )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_S1UP     ),valcmpstru(IVAL_S1UP,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_S1DN     ),valcmpstru(IVAL_S1DN,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_HEAD     ),valcmpstru(IVAL_HEAD,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_FLOW_AREA),valcmpstru(IVAL_AREA,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_VELOCITY ),valcmpstru(IVAL_VEL,1:network%cmps%count) )
       endif
       if (jahislongculv > 0 .and. nlongculverts > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_DISCHARGE             ),vallongculvert(IVAL_DIS,1:nlongculverts)     )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_S1UP                  ),vallongculvert(IVAL_S1UP,1:nlongculverts)    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_S1DN                  ),vallongculvert(IVAL_S1DN,1:nlongculverts)    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_HEAD                  ),vallongculvert(IVAL_HEAD,1:nlongculverts)    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_FLOW_AREA             ),vallongculvert(IVAL_AREA,1:nlongculverts)    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VELOCITY              ),vallongculvert(IVAL_VEL,1:nlongculverts)     )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING),vallongculvert(IVAL_LC_VALVE,1:nlongculverts))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_DISCHARGE             ),vallongculvert(IVAL_DIS,1:nlongculverts)     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_S1UP                  ),vallongculvert(IVAL_S1UP,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_S1DN                  ),vallongculvert(IVAL_S1DN,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_HEAD                  ),vallongculvert(IVAL_HEAD,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_FLOW_AREA             ),vallongculvert(IVAL_AREA,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VELOCITY              ),vallongculvert(IVAL_VEL,1:nlongculverts)     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING),vallongculvert(IVAL_LC_VALVE,1:nlongculverts))
       endif
 
       !
@@ -2006,30 +2141,30 @@ private
 
       ! Basic flow quantities
       if (ntot > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WATERLEVEL),valobs(IPNT_S1,:)                               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BEDLEVEL)  ,valobs(IPNT_BL,:)                             )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERLEVEL),valobs(IPNT_S1,:)                               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BEDLEVEL)  ,valobs(IPNT_BL,:)                             )
          if (jahiswatdep > 0) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WATERDEPTH),valobs(IPNT_HS,:)                               )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERDEPTH),valobs(IPNT_HS,:)                               )
          endif
       endif
       if( jahisvelvec > 0 ) then
          if (numobs+nummovobs > 0) then
             if ( kmx>0 ) then
                call c_f_pointer (c_loc(valobs(IPNT_UCX:IPNT_UCX+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
                
                call c_f_pointer (c_loc(valobs(IPNT_UCY:IPNT_UCY+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
                
                call c_f_pointer (c_loc(valobs(IPNT_UCZ:IPNT_UCZ+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),temp_pointer)
 
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY),valobs(IPNT_UCXQ,:)             )
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY),valobs(IPNT_UCYQ,:)             )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY),valobs(IPNT_UCXQ,:)             )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY),valobs(IPNT_UCYQ,:)             )
             else
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_X_VELOCITY),valobs(IPNT_UCX,:)                             )
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),valobs(IPNT_UCY,:)                             )
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),valobs(IPNT_UCZ,:)                            )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),valobs(IPNT_UCX,:)                             )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),valobs(IPNT_UCY,:)                             )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),valobs(IPNT_UCZ,:)                            )
             endif
          endif
       endif
@@ -2037,25 +2172,25 @@ private
          if (jaeulervel==0) then
             if(kmx>0) then
                call c_f_pointer (c_loc(valobs(IPNT_UMAG:IPNT_UMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),temp_pointer)
             else
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),valobs(IPNT_UMAG,:)                                        )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),valobs(IPNT_UMAG,:)                                        )
             endif
          else
             if(kmx>0) then
                call c_f_pointer (c_loc(valobs(IPNT_UMAG:IPNT_UMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),temp_pointer)
             else
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),valobs(IPNT_UMAG,:)                                        )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),valobs(IPNT_UMAG,:)                                        )
             endif
          endif
       endif
       if (jahisdischarge > 0) then
          if(kmx>0) then
             call c_f_pointer (c_loc(valobs(IPNT_QMAG:IPNT_QMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),temp_pointer)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),temp_pointer)
          else
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),valobs(IPNT_QMAG,:)                                       )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),valobs(IPNT_QMAG,:)                                       )
          endif
       endif
       
@@ -2063,151 +2198,249 @@ private
       if ( kmx > 0 ) then
          if (iturbulencemodel >= 3 .and. jahistur > 0) then
             call c_f_pointer (c_loc(valobs(IPNT_TKIN:IPNT_TKIN+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TKE      ),temp_pointer                            )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TKE      ),temp_pointer                            )
          endif
          if (iturbulencemodel == 3 .and. jahistur >0) then
             call c_f_pointer (c_loc(valobs(IDX_HIS_EPS:IDX_HIS_EPS+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_EPS      ),temp_pointer                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EPS      ),temp_pointer                     )
          endif
          if (iturbulencemodel > 1) then
             call c_f_pointer (c_loc(valobs(IPNT_VICWW:IPNT_VICWW+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VICWW    ),temp_pointer                         )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VICWW    ),temp_pointer                         )
          endif
          if (iturbulencemodel == 4 .and. jahistur > 0) then
             call c_f_pointer (c_loc(valobs(IPNT_TEPS:IPNT_TEPS+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAU     ),temp_pointer                      )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAU     ),temp_pointer                      )
          endif
       endif
       if (idensform > 0 .and. jaRichardsononoutput > 0 .and. kmx > 0) then
          call c_f_pointer (c_loc(valobs(IPNT_RICH:IPNT_RICH+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RICH),temp_pointer)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RICH),temp_pointer)
       endif
       
       ! Gravity + buoyancy
       if (jasal > 0 .and. jahissal > 0) then
          if (kmx>0) then
             call c_f_pointer (c_loc(valobs(IPNT_SA1:IPNT_SA1+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SALINITY   ),temp_pointer                                )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SALINITY   ),temp_pointer                                )
          else
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SALINITY   ),valobs(IPNT_SA1,:)                                )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SALINITY   ),valobs(IPNT_SA1,:)                                )
          endif
       endif
 
       if (jatem > 0 .and. jahistem > 0) then
          if (kmx > 0) then
             call c_f_pointer (c_loc(valobs(IPNT_TEM1:IPNT_TEM1+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TEMPERATURE),temp_pointer)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TEMPERATURE),temp_pointer)
          else
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TEMPERATURE),valobs(IPNT_TEM1,:))
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TEMPERATURE),valobs(IPNT_TEM1,:))
          endif
       end if
 
       if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
          if (kmx>0) then
             call c_f_pointer (c_loc(valobs(IPNT_RHOP:IPNT_RHOP+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
             
             call c_f_pointer (c_loc(valobs(IPNT_BRUV:IPNT_BRUV+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
             if (idensform > 10) then
                call c_f_pointer (c_loc(valobs(IPNT_RHO:IPNT_RHO+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_DENSITY),temp_pointer                                )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DENSITY),temp_pointer                                )
             endif
          else
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY),valobs(IPNT_RHOP,:)                              )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY),valobs(IPNT_RHOP,:)                              )
          endif
       endif
 
       ! Wave model
       if (jawave>0 .and. jahiswav > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_HWAV    ),valobs(IPNT_WAVEH,:)                                    )
-         !call add_stat_output_item(output_set, output_config%statout(IDX_HIS_HWAV_SIG),valobs(IPNT_HS,:)                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_HWAV    ),valobs(IPNT_WAVEH,:)                                    )
+         !call add_stat_output_items(output_set, output_config%statout(IDX_HIS_HWAV_SIG),valobs(IPNT_HS,:)                                    )
          ! TODO: hwav sig vs. rms
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TWAV    ),valobs(IPNT_WAVET,:)                                    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_PHIWAV  ),valobs(IPNT_WAVED,:)                                    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RLABDA  ),valobs(IPNT_WAVEL,:)                              )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_UORB    ),valobs(IPNT_WAVEU,:)                              )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TWAV    ),valobs(IPNT_WAVET,:)                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PHIWAV  ),valobs(IPNT_WAVED,:)                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RLABDA  ),valobs(IPNT_WAVEL,:)                              )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UORB    ),valobs(IPNT_WAVEU,:)                              )
          if ( kmx>0 .and. .not. flowwithoutwaves) then
             call c_f_pointer (c_loc(valobs(IPNT_UCXST:IPNT_UCXST+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
             
             call c_f_pointer (c_loc(valobs(IPNT_UCYST:IPNT_UCYST+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VSTOKES),temp_pointer)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VSTOKES),temp_pointer)
          else
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_USTOKES),valobs(IPNT_UCXST,:)                                 )
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_VSTOKES),valobs(IPNT_UCYST,:)                                 )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),valobs(IPNT_UCXST,:)                                 )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VSTOKES),valobs(IPNT_UCYST,:)                                 )
          endif
       endif
       if (jahistaucurrent>0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAUSX),valobs(IPNT_TAUX,:)                                                    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAUSY),valobs(IPNT_TAUY,:)                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAUSX),valobs(IPNT_TAUX,:)                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAUSY),valobs(IPNT_TAUY,:)                                                    )
       endif
 
       ! Meteo
       if (jawind > 0 .and. jahiswind > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDX         ),valobs(IPNT_wx,:)                )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDX_SFERIC  ),valobs(IPNT_wx,:)                )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDY         ),valobs(IPNT_wy,:)                )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WINDY_SFERIC  ),valobs(IPNT_wy,:)                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDX         ),valobs(IPNT_wx,:)                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDX_SFERIC  ),valobs(IPNT_wx,:)                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDY         ),valobs(IPNT_wy,:)                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDY_SFERIC  ),valobs(IPNT_wy,:)                )
       endif
 
       if (jarain > 0 .and. jahisrain > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RAIN            ),valobs(IPNT_rain,:)                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RAIN            ),valobs(IPNT_rain,:)                      )
       endif
 
       if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_INFILTRATION_CAP)                 ,valobs(IPNT_infiltcap,:)                                          )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL) ,valobs(IPNT_infiltact,:)            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_INFILTRATION_CAP)                 ,valobs(IPNT_infiltcap,:)                                          )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL) ,valobs(IPNT_infiltact,:)            )
       endif
 
       ! Heat flux model
       if (jatem > 1 .and. jahisheatflux > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WIND),valobs(IPNT_WIND,:)                               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_TAIR),valobs(IPNT_TAIR,:)                               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WIND),valobs(IPNT_WIND,:)                               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAIR),valobs(IPNT_TAIR,:)                               )
          if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou) ) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_RHUM),valobs(IPNT_RHUM,:)                                    )
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CLOU),valobs(IPNT_CLOU,:)                                    )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RHUM),valobs(IPNT_RHUM,:)                                    )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CLOU),valobs(IPNT_CLOU,:)                                    )
          endif
          if (jatem == 5 ) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_QSUN  ),valobs(IPNT_QSUN,:)                                     )
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_QEVA  ),valobs(IPNT_QEVA,:)                                     )
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_QCON  ),valobs(IPNT_QCON,:)                                     )
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_QLONG ),valobs(IPNT_QLON,:)                                     )
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_QFREVA),valobs(IPNT_QFRE,:)                                     )
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_QFRCON),valobs(IPNT_QFRC,:)                                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QSUN  ),valobs(IPNT_QSUN,:)                                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QEVA  ),valobs(IPNT_QEVA,:)                                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QCON  ),valobs(IPNT_QCON,:)                                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QLONG ),valobs(IPNT_QLON,:)                                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QFREVA),valobs(IPNT_QFRE,:)                                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QFRCON),valobs(IPNT_QFRC,:)                                     )
             endif
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_QTOT  ),valobs(IPNT_RHUM,:)                                     )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QTOT  ),valobs(IPNT_RHUM,:)                                     )
       endif
 
       ! Sediment model
       if (jased > 0 .and. .not. stm_included) then
          if (kmx >0) then
                call c_f_pointer (c_loc(valobs(IPNT_SED:IPNT_SED+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
          else
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SED),valobs(IPNT_SED,:)                                  )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),valobs(IPNT_SED,:)                                  )
          endif
       endif
       if (IVAL_WS1 > 0) then
          if (kmx > 0) then
             call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
          else
             call c_f_pointer (c_loc(valobs(IPNT_WS1:IVAL_WSN,1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*ntot])
-            call add_stat_output_item(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
          endif
       endif
       if (IVAL_SEDDIF1 > 0) then
          call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
       endif
 
       !
       ! Variables on observation cross sections
       !
-      if (ncrs > 0 .and. NUMCONST_MDU > 0) then
+      if (ncrs > 0) then
+         !
+         ! Basic flow quantities
+         !
          function_pointer => aggregate_constit_crs_obs
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_CONSTITUENTS), null(), function_pointer                                 )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),     null(), function_pointer)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUM), constit_crs_obs(:,2))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),          constit_crs_obs(:,3))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),      constit_crs_obs(:,4))
+
+         !
+         ! Transported consituents
+         !
+         IDX_HIS_OBSCRS_CONST_1 = out_quan_conf_his%count + 1
+         do num = 1,NUMCONST_MDU
+            conststr = const_names(num)
+            ! Forbidden chars in NetCDF names: space, /, and more.
+            call replace_char(conststr,32,95) ! ' ' -> '_'
+            call replace_char(conststr,47,95) ! '/' -> '_'
+
+            unitstr = ''
+            if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+               select case(stmpar%morpar%moroutput%transptype)
+               case (0)
+                  unitstr = 'kg s-1'
+               case (1, 2)
+                  unitstr = 'm3 s-1'
+               end select
+            else
+               if (const_units(num) /= ' ') then
+                  unitstr = trim(const_units(num)) // ' m3 s-1'
+               else
+                  unitstr = ''
+               endif
+            endif
+
+            ! Just-in-time add *config* item for this constituent transport
+            call addoutval(out_quan_conf_his, idx_const_,                                       &
+                  'Wrihis_constituents', 'cross_section_'//trim(conststr), &
+                  'Flux (based on upwind flow cell) for '//trim(conststr), &
+                  '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+            ! And add the output item(s) for the current transport
+            call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + (num-1)*2 + 1))
+
+            ! Same for cumulative transport:
+            lenunitstr = len_trim(unitstr)
+            if (lenunitstr > 4) then
+               unitstr = unitstr(1:lenunitstr-4) ! Trim off ' s-1'
+            end if
+
+            ! Just-in-time add *config* item for this constituent cumulative transport
+            call addoutval(out_quan_conf_his, idx_const_,                                       &
+                           'Wrihis_constituents', 'cross_section_cumulative_'//trim(conststr), &
+                           'Cumulative flux (based on upwind flow cell) for '//trim(conststr), &
+                           '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+            ! And add the output item(s) for the cumulative transport
+            call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + (num-1)*2 + 2))
+
+         enddo
+         IDX_HIS_OBSCRS_CONST_N = out_quan_conf_his%count ! Note: this concludes 2 * NUMCONST_MDU extra entries in config list
+
+
+         !
+         ! Sediment transport
+         !
+         if (jased == 4 .and. stmpar%lsedtot > 0) then
+            ! Just-in-time add *config* item for this bed load sediment transport
+            call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_BTRANSPORT,                                       &
+                  'Wrihis_constituents', 'cross_section_bedload_sediment_transport', &
+                  'Cumulative bed load sediment transport', &
+                  '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+            ! And add the output item(s) for the bed load sediment transport
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_SED_BTRANSPORT),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 1))
+
+            if( stmpar%lsedsus > 0 ) then
+               ! Just-in-time add *config* item for this suspended load sediment transport
+               call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_STRANSPORT,                                       &
+                     'Wrihis_constituents', 'cross_section_suspended_sediment_transport', &
+                     'Cumulative suspended load sediment transport', &
+                     '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+               ! And add the output item(s) for the suspended load sediment transport
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_SED_STRANSPORT),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 2))
+            endif
+
+            IDX_HIS_OBSCRS_SED_BTRANSPORT_1 = out_quan_conf_his%count + 1
+            do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
+               ! Just-in-time add *config* item for this fraction's bed load sediment transport
+               call addoutval(out_quan_conf_his, idx_const_,                                       &
+                     'Wrihis_constituents', 'cross_section_bedload_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), &
+                     'Cumulative bed load sediment transport for fraction '//trim(stmpar%sedpar%namsed(lsed)), &
+                     '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+               ! And add the output item(s) for this fraction's bed load sediment transport
+               call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 2 + lsed))
+            enddo
+            IDX_HIS_OBSCRS_SED_BTRANSPORT_N = out_quan_conf_his%count ! Note: this concludes stmpar%lsedtot extra entries in config list
+         endif
       endif
       
 
@@ -2215,10 +2448,10 @@ private
       ! Variables on lateral discharges
       !
       if (jahislateral > 0 .and. numlatsg > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
       endif
 
          
@@ -2248,102 +2481,102 @@ private
       
       integer :: i, ntot
       
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S0),s0                                                        )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_S1),s1                                                        )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_S0),s0                                                        )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_S1),s1                                                        )
       if(jadhyd == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_POTEVAP),PotEvap                                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_ACTEVAP),ActEvap                                            )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_POTEVAP),PotEvap                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_ACTEVAP),ActEvap                                            )
       endif
       if (jaevap == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PRESCREVAP),evap                                                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_PRESCREVAP),evap                                                )
       endif
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOL1),vol1                                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH),hs                                                )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HU),hu                                                        )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U1),u1                                                        )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_U0),u0                                                      )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT      ), negativeDepths               )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NEGDPT_CUM  ), negativeDepths_cum           )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER      ), noIterations                 )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NOITER_CUM  ), noIterations_cum             )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP    ), limitingTimestepEstimation          )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_LIMTSTEP_CUM), limitingTimestepEstimation_cum          )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_COURANT     ), flowCourantNumber            )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_AU),au                                                      )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_VOL1),vol1                                                      )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WATERDEPTH),hs                                                )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_HU),hu                                                        )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_U1),u1                                                        )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_U0),u0                                                      )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NEGDPT      ), negativeDepths               )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NEGDPT_CUM  ), negativeDepths_cum           )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NOITER      ), noIterations                 )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NOITER_CUM  ), noIterations_cum             )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_LIMTSTEP    ), limitingTimestepEstimation          )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_LIMTSTEP_CUM), limitingTimestepEstimation_cum          )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_COURANT     ), flowCourantNumber            )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_AU),au                                                      )
    function_pointer => calculate_ucxy
    if (jaeulervel == 1) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCX_EULERIAN),null(),function_pointer)
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCY_EULERIAN),ucy_data)
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCX_EULERIAN),null(),function_pointer)
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCY_EULERIAN),ucy_data)
    else
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCX),null(),function_pointer)
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCY),ucy_data)
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCX),null(),function_pointer)
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCY),ucy_data)
    endif
    if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ_EULERIAN),ucxq                                           )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ_EULERIAN),ucyq                                           )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCXQ_EULERIAN),ucxq                                           )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCYQ_EULERIAN),ucyq                                           )
    else
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCXQ),ucxq                                                    )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCYQ),ucyq                                                    )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCXQ),ucxq                                                    )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCYQ),ucyq                                                    )
    endif
    if (jaeulervel==1 .and. jawave>0 .and. .not. flowWithoutWaves) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG_EULER),ucmag                                               )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCMAG_EULER),ucmag                                               )
    else
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAG),ucmag                                                     )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCMAG),ucmag                                                     )
    endif
    if (kmx > 0) then
       function_pointer => calculate_ucmaga
       if (jaeulervel==1 .and. jawave>0) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),null(),function_pointer                                                )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCMAGA_GLM),null(),function_pointer                                                )
       else
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UCMAGA), null(), ffunction_pointer                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UCMAGA), null(), function_pointer                                                    )
       endif
    endif
    function_pointer => calculate_viu_data
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VIU), null(), function_pointer                                                       )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_VIU), null(), function_pointer                                                       )
    function_pointer => calculate_diu
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIU), null(), function_pointer                                                       )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_DIU), null(), function_pointer                                                       )
    if (kmx > 0) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WW1),WW1                                                       )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHO),rho                                                       )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WW1),WW1                                                       )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_RHO),rho                                                       )
    endif
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1),q1                                                        )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Q1_MAIN),q1_main                                                   )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FIXED_WEIR_ENERGY_LOSS),map_fixed_weir_energy_loss                                    )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_Q1),q1                                                        )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_Q1_MAIN),q1_main                                                   )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_FIXED_WEIR_ENERGY_LOSS),map_fixed_weir_energy_loss                                    )
    if (jasecflow > 0) then
       if (kmx == 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRCRV),spircrv                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SPIRCRV),spircrv                                                   )
       endif
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SPIRINT),spirint                                                   )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SPIRINT),spirint                                                   )
    endif
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUMLIMDT),numlimdt                                                  )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NUMLIMDT),numlimdt                                                  )
    function_pointer => calculate_tausxy
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSX), null(), function_pointer                                                     )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSY),tausy) ! This variable is updated by calculate_tausxy
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TAUSX), null(), function_pointer                                                     )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TAUSY),tausy) ! This variable is updated by calculate_tausxy
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TAUS),taus                                                      )
    if (stm_included) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAUSMAX),sedtra%taub                                                   )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TAUSMAX),sedtra%taub                                                   )
    endif
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UCUR),z0ucur                                                    )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_Z0UROU),z0urou                                                    )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_Z0UCUR),z0ucur                                                    )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_Z0UROU),z0urou                                                    )
    if (jasal > 0) then  ! Write the data: salinity
       if (kmx == 0) then
          call c_f_pointer (c_loc(constituents(ISALT, 1:ndx)), temp_pointer, [ndx])
       else
          call c_f_pointer (c_loc(constituents(ISALT, 1:ndkx)), temp_pointer, [ndkx])
       endif
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SA1),temp_pointer                                                       )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SA1),temp_pointer                                                       )
    endif
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZS),czs                                                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CZU),czu                                                       )
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFU),frcu                                                       )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFUTYP),ifrcutp                                                    )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CZS),czs                                                       )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CZU),czu                                                       )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CFU),frcu                                                       )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CFUTYP),ifrcutp                                                    )
    if (jatem > 0) then
       if (kmx == 0) then 
          call c_f_pointer (c_loc(constituents(ITEMP, 1:ndx)), temp_pointer, [ndx])
       else
          call c_f_pointer (c_loc(constituents(ITEMP, 1:ndkx)), temp_pointer, [ndkx])
       endif
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TEM1),temp_pointer                                                      )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TEM1),temp_pointer                                                      )
    endif
    if (ITRA1 > 0) then
       if (kmx == 0) then 
@@ -2351,189 +2584,189 @@ private
       else
          call c_f_pointer (c_loc(constituents(ITRA1:ITRAN, 1:ndkx)), temp_pointer, [ndkx*(ITRAN-ITRA1+1)])
       endif
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CONST),temp_pointer                                                     )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CONST),temp_pointer                                                     )
    endif
    if (kmx > 0) then
       if (iturbulencemodel >= 3) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TURKIN1),turkin1                                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VICWWU),vicwwu                                                    )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TUREPS1),tureps1                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TURKIN1),turkin1                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_VICWWU),vicwwu                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TUREPS1),tureps1                                                   )
       endif
       if (iturbulencemodel == 3) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TUREPS1_3),tureps1                                                 )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TUREPS1_3),tureps1                                                 )
       else if (iturbulencemodel == 4) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TUREPS1_4),tureps1                                                 )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TUREPS1_4),tureps1                                                 )
       endif
    endif
    if ( jatrt == 1) then
       if (ifrctypuni == 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFTRT_0),cftrt(:,2)                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CFTRT_0),cftrt(:,2)                                                    )
       else if (ifrctypuni == 1) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFTRT_1),cftrt(:,2)                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CFTRT_1),cftrt(:,2)                                      )
       elseif ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFTRT_2),cftrt(:,2)                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CFTRT_2),cftrt(:,2)                                      )
       else
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFTRT  ),cftrt(:,2)                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CFTRT  ),cftrt(:,2)                                      )
       endif
    endif
    if (jacali == 1) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CFCL),cfclval                                                      )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CFCL),cfclval                                                      )
    endif
    if (jarain /= 0) then
       function_pointer => calculate_scaled_rain
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RAINFALL_RATE), null(), function_pointer                         )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_RAINFALL_RATE), null(), function_pointer                         )
    endif
    if (interceptionmodel /= DFM_HYD_NOINTERCEPT) then
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERCEPTION_WATERDEPTH),InterceptHs                                   )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_INTERCEPTION_WATERDEPTH),InterceptHs                                   )
    endif
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_PATM),patm                                                      )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_PATM),patm                                                      )
    if (jawind > 0) then
       function_pointer => calculate_windxy
       if (jsferic == 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX ), null(), function_pointer                                              )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY ),wy                                               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU),wx                                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU),wy                                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX),wdsu_x                             )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY),wdsu_y                                     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDX ), null(), function_pointer                                              )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDY ),wy                                               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDXU),wx                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDYU),wy                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDSTRESSX),wdsu_x                             )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDSTRESSY),wdsu_y                                     )
       else
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDX_SFERIC ), null(), function_pointer                  )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDY_SFERIC ),wy                     )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDXU_SFERIC),wx                               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDYU_SFERIC),wy                               )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSX_SFERIC),wdsu_x                                       )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WINDSTRESSY_SFERIC),wdsu_y                                       )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDX_SFERIC ), null(), function_pointer                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDY_SFERIC ),wy                     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDXU_SFERIC),wx                               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDYU_SFERIC),wy                               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDSTRESSX_SFERIC),wdsu_x                                       )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WINDSTRESSY_SFERIC),wdsu_y                                       )
       endif
    endif
    if (jatem > 1) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TAIR),Tair                                                     )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_RHUM),Rhum                                                     )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CLOU),Clou                                                     )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TAIR),Tair                                                     )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_RHUM),Rhum                                                     )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CLOU),Clou                                                     )
       if (jatem == 5) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QSUN  ),Qsunmap                                           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QEVA  ),Qevamap                                           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QCON  ),Qconmap                                           )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QLONG ),Qlongmap                                          )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QFREVA),Qfrevamap                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QFRCON),Qfrconmap                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QSUN  ),Qsunmap                                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QEVA  ),Qevamap                                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QCON  ),Qconmap                                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QLONG ),Qlongmap                                          )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QFREVA),Qfrevamap                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QFRCON),Qfrconmap                                         )
       endif
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QTOT), Qtotmap                                                      )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QTOT), Qtotmap                                                      )
    endif
    if ( jatidep > 0 ) then
       function_pointer => calculate_tidpot
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIDALPOTENTIAL), null(), function_pointer                                 )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TIDALPOTENTIAL), null(), function_pointer                                 )
       if (jaselfal > 0) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SALPOTENTIAL),tidep(2,:)                                           )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SALPOTENTIAL),tidep(2,:)                                           )
       endif
    endif
    if ( jaFrcInternalTides2D > 0) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_INTERNAL_TIDES_DISSIPATION),DissInternalTidesPerArea                                )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_INTERNAL_TIDES_DISSIPATION),DissInternalTidesPerArea                                )
    endif
    if (janudge > 0) then
       function_pointer => calculate_nudge
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TNUDGE    ), null(), function_pointer                                              )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_TEM ),nudge_tem                                              )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_SAL ),nudge_sal                                              )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM),nudge_Dtemp                                  )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL),nudge_Dsal                              )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TNUDGE    ), null(), function_pointer                                              )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NUDGE_TEM ),nudge_tem                                              )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NUDGE_SAL ),nudge_sal                                              )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NUDGE_DTEM),nudge_Dtemp                                  )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NUDGE_DSAL),nudge_Dsal                              )
    endif
    if (flowWithoutWaves) then
       if (allocated (hwav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV),hwav                                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_HWAV),hwav                                                      )
          function_pointer => calculate_hwav_significant
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_HWAV_SIG), null(), function_pointer                                                        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_HWAV_SIG), null(), function_pointer                                                        )
       endif
       if(allocated(twav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                  )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                  )
       endif
       if (allocated(phiwav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DIR),phiwav                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_DIR),phiwav                                                    )
       endif
       if (jamapwav_sxwav > 0  .and. allocated(sxwav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXWAV),sxwav                                                     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SXWAV),sxwav                                                     )
       endif
       if (jamapwav_sywav > 0  .and. allocated(sywav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYWAV),sywav                                                     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SYWAV),sywav                                                     )
       endif
       if (jamapwav_sxbwav > 0 .and. allocated(sbxwav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SBXWAV),sbxwav                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SBXWAV),sbxwav                                                    )
       endif
       if (jamapwav_sybwav > 0 .and. allocated(sbywav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SBYWAV),sbywav                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SBYWAV),sbywav                                                    )
       endif
       if (jamapwav_mxwav > 0  .and. allocated(mxwav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_MX),mxwav                                                        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_MX),mxwav                                                        )
       endif
       if (jamapwav_mywav > 0  .and. allocated(mywav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_MY),mywav                                                        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_MY),mywav                                                        )
       endif
       if (jamapwav_dsurf > 0  .and. allocated(dsurf)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DISSURF),dsurf                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_DISSURF),dsurf                                                   )
       endif
       if (jamapwav_dwcap > 0  .and. allocated(dwcap)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DISWCAP),dwcap                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_DISWCAP),dwcap                                                   )
       endif
       if (jamapwav_uorb > 0   .and. allocated(uorbwav)) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UORB),uorbwav                                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UORB),uorbwav                                                      )
       endif
    else
       if (jawave == 4) then
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_E),E                                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_E),E                                                         )
          if (roller>0) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_R),R                                                         )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DR),DR                                                        )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_R),R                                                         )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_DR),DR                                                        )
          endif
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_D),D                                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DF),DF                                                        )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXX),Sxx                                                       )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SYY),Syy                                                       )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SXY),Sxy                                                       )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CWAV),cwav                                                      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CGWAV),cgwav                                                     )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SIGMWAV),sigmwav                                                   )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_KWAV),kwav                                                      )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_D),D                                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_DF),DF                                                        )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SXX),Sxx                                                       )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SYY),Syy                                                       )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SXY),Sxy                                                       )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CWAV),cwav                                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CGWAV),cgwav                                                     )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SIGMWAV),sigmwav                                                   )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_KWAV),kwav                                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
          call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndx)), temp_pointer, [ndx*ntheta])
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
          if (windmodel == 0) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
          elseif ((windmodel == 1) .and. (jawsource == 1 )) then
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
          endif
       endif
       if (jawave > 0) then
          function_pointer => calculate_ustxy
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UXST_CC  ), null(), function_pointer                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_UYST_CC  ), ust_y                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_USTOKES), ustokes                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VSTOKES), vstokes                                         )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_THETAMEAN), theta_mean                                                 )
-         call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                      )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UXST_CC  ), null(), function_pointer                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_UYST_CC  ), ust_y                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_USTOKES), ustokes                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_VSTOKES), vstokes                                         )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_THETAMEAN), theta_mean                                                 )
+         call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TWAV),twav                                                      )
          if (jawave == 3 .or. jawave==4) then
             function_pointer => calculate_FXY
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FX   ), null(), function_pointer                                            )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FY   ),FY_data                                            )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFU),WAVFU_data                                        )
-            call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WAVFV),WAVFV_data                                        )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_FX   ), null(), function_pointer                                            )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_FY   ),FY_data                                            )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WAVFU),WAVFU_data                                        )
+            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WAVFV),WAVFV_data                                        )
          endif
       endif ! jawave gt. 0
    endif !flowWithoutWaves - else case
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_DTCELL),dtcell                                                    )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_DTCELL),dtcell                                                    )
    if (ndxi-ndx2d>0 .and. network%loaded) then
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND),time_wetground                                      )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_FREEBOARD),freeboard                                                 )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND),hsOnGround                                      )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND),volonground                                          )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D),qCur1d2d                             )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D),vTot1d2d                          )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL),qCurLat                          )
-      call add_stat_output_item(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL),vTotLat                       )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_TIME_WATER_ON_GROUND),time_wetground                                      )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_FREEBOARD),freeboard                                                 )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WATERDEPTH_ON_GROUND),hsOnGround                                      )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_VOLUME_ON_GROUND),volonground                                          )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_1D2D),qCur1d2d                             )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_1D2D),vTot1d2d                          )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CURRENT_TOTAL_NET_INFLOW_LATERAL),qCurLat                          )
+      call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL),vTotLat                       )
    endif
    if (lnx1d > 0) then
-   call add_stat_output_item(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT),s1gradient                                      )
+   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_WATER_LEVEL_GRADIENT),s1gradient                                      )
    endif
-   !call add_stat_output_item(output_set, output_config%statout(IDX_MAP_QIN                                                       )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_MAP_QIN                                                       )
       
    call initialize_statistical_output(output_set)
          
@@ -2564,12 +2797,12 @@ private
    ! procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
    !   
    !
-   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_S1                                                        )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_WATERDEPTH                                                )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCMAG_EULER                                               )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCDIR                                                     )
-   !call add_stat_output_item(output_set, output_config%statout(IDX_CLS_UCDIR_EULER                                               )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_S1                                                        )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_WATERDEPTH                                                )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_UCMAG                                                     )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_UCMAG_EULER                                               )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_UCDIR                                                     )
+   !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_UCDIR_EULER                                               )
    !
    !end subroutine flow_init_statistical_output_classmap
    
