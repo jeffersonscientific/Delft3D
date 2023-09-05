@@ -18,8 +18,8 @@ extern "C" int wrapclip() {
 	subj[0].push_back(IntPoint(260*fact,200*fact));
 	subj[0].push_back(IntPoint(260*fact,150*fact));
 	subj[0].push_back(IntPoint(180*fact,150*fact));
-	 for ( size_t counter = 0; counter <= solution[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
-		 outputFILE <<  solution[0][counter].X/fact << ' ' <<   solution[0][counter].Y/fact <<"\n" ;
+	// for ( size_t counter = 0; counter <= solution[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
+	//	 outputFILE <<  solution[0][counter].X/fact << ' ' <<   solution[0][counter].Y/fact <<"\n" ;
 
 	//subj[1].push_back(IntPoint(215*fact,160*fact));
 	//subj[1].push_back(IntPoint(230*fact,190*fact));
@@ -42,20 +42,20 @@ extern "C" int wrapclip() {
 	// cout <<  solution[0][1] ;
 
 	// cout <<"\n"  ;
-	 ofstream outputFILE; 
-	 ofstream fileSUBJ; 
-	 ofstream fileCLIP; 
-     outputFILE.open ("solution.txt");
-     fileSUBJ.open ("SUBJ.txt");
-     fileCLIP.open ("CLIP.txt");
- 
-	 for ( size_t counter = 0; counter <= solution[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
-		 outputFILE <<  solution[0][counter].X/fact << ' ' <<   solution[0][counter].Y/fact <<"\n" ;
-	       
-	 for ( size_t counter = 0; counter <= subj[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
-		 fileSUBJ <<  subj[0][counter].X/fact << ' ' <<   subj[0][counter].Y/fact <<"\n" ;
-	 for ( size_t counter = 0; counter <= clip[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
-		 fileCLIP <<  clip[0][counter].X/fact << ' ' <<   clip[0][counter].Y/fact <<"\n" ;
+	// ofstream outputFILE; 
+	// ofstream fileSUBJ; 
+	// ofstream fileCLIP; 
+    // outputFILE.open ("solution.txt");
+    // fileSUBJ.open ("SUBJ.txt");
+    // fileCLIP.open ("CLIP.txt");
+ 	//
+	// for ( size_t counter = 0; counter <= solution[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
+	//	 outputFILE <<  solution[0][counter].X/fact << ' ' <<   solution[0][counter].Y/fact <<"\n" ;
+	//       
+	// for ( size_t counter = 0; counter <= subj[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
+	//	 fileSUBJ <<  subj[0][counter].X/fact << ' ' <<   subj[0][counter].Y/fact <<"\n" ;
+	// for ( size_t counter = 0; counter <= clip[0].size()-1; counter++)  // size_t intstead of int otherwise you have warning C4018: '<=' : signed/unsigned mismatch. (since it doesn't make sense for containers to contain a negative number of elements).
+	//	 fileCLIP <<  clip[0][counter].X/fact << ' ' <<   clip[0][counter].Y/fact <<"\n" ;
 
 	//finally draw the intersection polygons ... 
 	//DrawPolygons(img->Bitmap, sol, 0x40808080); 
