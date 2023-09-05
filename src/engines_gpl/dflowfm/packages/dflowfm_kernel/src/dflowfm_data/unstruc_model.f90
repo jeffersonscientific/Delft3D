@@ -1763,6 +1763,10 @@ subroutine readMDUFile(filename, istat)
     ti_his_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'HisInterval'   ,  ti_his_array, 3, success)
     if (ti_his_array(1) .gt. 0d0) ti_his_array(1) = max(ti_his_array(1) , dt_user)
+    if ((mod(ti_his_array(1),dt_user) .gt. 0) .or. (mod(ti_his_array(2),dt_user) .gt. 0) .or. (mod(ti_his_array(3),dt_user) .gt. 0)) then
+        write(msgbuf, '(a,f9.1,f9.1,f9.1,a,f9.1,a)') 'HisInterval = ', ti_his_array(1), ti_his_array(2), ti_his_array(3),' should be multiple of DtUser = ', dt_user, ' s'
+        call mess(LEVEL_ERROR, msgbuf)
+    end if
     call getOutputTimeArrays(ti_his_array, ti_hiss, ti_his, ti_hise, success)
 
     call prop_get_double(md_ptr, 'output', 'XLSInterval', ti_xls, success)
@@ -1774,6 +1778,10 @@ subroutine readMDUFile(filename, istat)
     ti_map_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'MapInterval'   ,  ti_map_array, 3, success)
     if (ti_map_array(1) .gt. 0d0) ti_map_array(1) = max(ti_map_array(1) , dt_user)
+    if ((mod(ti_map_array(1),dt_user) .gt. 0) .or. (mod(ti_map_array(2),dt_user) .gt. 0) .or. (mod(ti_map_array(3),dt_user) .gt. 0)) then
+        write(msgbuf, '(a,f9.1,f9.1,f9.1,a,f9.1,a)') 'MapInterval = ', ti_map_array(1), ti_map_array(2), ti_map_array(3),' should be multiple of DtUser = ', dt_user, ' s'
+        call mess(LEVEL_ERROR, msgbuf)
+    end if
     call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
 
     call prop_get_integer(md_ptr, 'output', 'MapFormat', md_mapformat, success)
@@ -2018,6 +2026,12 @@ subroutine readMDUFile(filename, istat)
 
     ti_rst_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'RstInterval'   ,  ti_rst_array, 3, success)
+    if (dt_user .gt. 0 .and. ti_rst_array(1) .gt. 0) then
+        if ((mod(ti_rst_array(1),dt_user) .ne. 0) .or. (mod(ti_rst_array(2),dt_user) .ne. 0) .or. (mod(ti_rst_array(3),dt_user) .ne. 0)) then
+            write(msgbuf, '(a,f9.1,f9.1,f9.1,a,f9.1,a)') 'RstInterval = ', ti_rst_array(1), ti_rst_array(2), ti_rst_array(3),' should be multiple of DtUser = ', dt_user, ' s'
+            call mess(LEVEL_ERROR, msgbuf)
+        end if
+    end if
     call getOutputTimeArrays(ti_rst_array, ti_rsts, ti_rst, ti_rste, success)
 
     call prop_get_double (md_ptr, 'output', 'MbaInterval', ti_mba, success)
