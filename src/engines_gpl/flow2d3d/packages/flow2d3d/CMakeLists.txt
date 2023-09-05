@@ -118,7 +118,10 @@ set(oss_dependencies_general flow2d3d_manager
                              deltares_common
                              deltares_common_c
                              kdtree_wrapper
-                             kdtree2) 
+                             kdtree2
+                             clipper
+                             lapack
+                             blas) 
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
