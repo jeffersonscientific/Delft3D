@@ -383,7 +383,7 @@ module m_ec_provider
                            "solarradiation", "longwaveradiation", "wavesignificantheight", &
                            "waveperiod", "friction_coefficient_time_dependent", "wavedirection", & 
                            "xwaveforce", "ywaveforce", "xwaveinducedvolumeflux","ywaveinducedvolumeflux", &
-                           "freesurfacedissipation","whitecappingdissipation","bottomorbitalvelocity","totalwaveenergydissipation","bottomdissipations" )
+                           "freesurfacedissipation","whitecappingdissipation","bottomorbitalvelocity","totalwaveenergydissipation","bottomdissipation" )
                         success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                      case ("hrms","tp", "tps", "rtp","dir","fx","fy","wsbu","wsbv","mx","my","dissurf","diswcap","ubot") 
                         success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2608,32 +2608,25 @@ module m_ec_provider
             ncvarnames(1) = 'hs'                             ! significant wave height
             ncstdnames(1) = 'sea_surface_wave_significant_height'
          case ('waveperiod')
-             ncvarnames(1) = 'tm01'                          ! wave period
-             ncstdnames(1) = 'sea_surface_wave_mean_period_from_variance_spectral_density_first_frequency_moment'
+             ncvarnames(1) = varname                          ! wave period
+             ncstdnames(1) = varname
          case ('wavedirection')
              ncvarnames(1) = 'theta0'
              ncstdnames(1) = 'sea_surface_wave_from_direction'
          case ('xwaveforce')
              ncvarnames(1) = 'xfor'
-             ncstdnames(1) = 'eastward_wave_force'
          case ('ywaveforce')
              ncvarnames(1) = 'yfor'
-             ncstdnames(1) = 'northward_wave_force'
          case ('xwaveinducedvolumeflux')
              ncvarnames(1) = 'xtrsp'
-             ncstdnames(1) = 'eastward_energy_transport'
          case ('ywaveinducedvolumeflux')
              ncvarnames(1) = 'ytrsp'
-             ncstdnames(1) = 'northward_energy_transport'
          case ('freesurfacedissipation')
              ncvarnames(1) = 'ssurf'
-             ncstdnames(1) = 'depth_induced_surf_breaking_energy_dissipation'
          case ('whitecappingdissipation')
              ncvarnames(1) = 'swcap'
-             ncstdnames(1) = 'whitecapping_energy_dissipation'
          case ('bottomorbitalvelocity')
-             ncvarnames(1) = 'ubot'                            !BS OWC, I don't have a NetCDF standard name for this one 
-             ncstdnames(1) = 'ubot'
+             ncvarnames(1) = 'ubot'
              case default                                        ! experiment: gather miscellaneous variables from an NC-file,
              if (index(quantityName,'waqsegmentfunction')==1) then
                  ncvarnames(1) = quantityName
