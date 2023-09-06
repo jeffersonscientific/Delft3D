@@ -52,7 +52,7 @@
  use m_structures, only: structure_parameters_rst
  use m_monitoring_runupgauges
  use Timers
- use fm_statistical_output, only: out_variable_set_his
+ use fm_statistical_output, only: out_variable_set_his, out_variable_set_map
  use m_statistical_output, only: reset_statistical_output, finalize_SO_average
  
 #ifdef _OPENMP
@@ -128,9 +128,9 @@
               ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
               call updateFlowAnalysisParameters()
            endif
-             
+           call finalize_SO_AVERAGE(out_variable_set_map%statout)
            call wrimap(tim)
-           
+           call reset_statistical_output(out_variable_set_map%statout)
            if (jamapFlowAnalysis > 0) then
               ! Reset the interval related flow analysis arrays
               negativeDepths = 0

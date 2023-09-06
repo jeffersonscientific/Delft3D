@@ -400,7 +400,7 @@ private
          end if
          call getLbotLtopmax(LL, Lb, Lt)
          do L = Lb,Lt
-            viu_data(L) = viu_data(L) + vicc
+            viu_data(L) = viu(L) + vicc
          end do
       end do
    else
@@ -410,7 +410,7 @@ private
          else
             vicc = vicouv
          end if
-         viu_data(LL) = viu_data(LL) + vicc
+         viu_data(LL) = viu(LL) + vicc
       end do
    endif
 
@@ -2455,6 +2455,7 @@ private
       endif
 
          
+   call initialize_statistical_output(output_set)
          
    end subroutine flow_init_statistical_output_his
 
