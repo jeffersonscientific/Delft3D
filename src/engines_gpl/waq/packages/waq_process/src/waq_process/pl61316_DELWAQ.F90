@@ -4388,12 +4388,9 @@ CHARACTER :: textfile
       ID0sDpETT                 = 133
  !
        do 9000 iseg = 1 , noseg
-         ! Only acrive segments ...
+         ! Only active segments ...
          IF (BTEST(IKNMRK(ISEG),0)) THEN
 
-         if ( iseg == 23984 ) then
-             write(*,*) 'Here!'
-         endif
          sMxDpW                 = pmsa( ipnt( 1) )
          sNH4WH                 = pmsa( ipnt( 2) )
          sNO3WH                 = pmsa( ipnt( 3) )
