@@ -122,7 +122,9 @@
 
    call klok(tstartall)
 
-!  call checkinnerloopindex12()
+   if (jamodelspecific == 1) then  ! op advies van Alja nu met switch ipv comment.....
+      call checkinnerloopindex12()
+   endif
 
 !  call checkunesco83()
 
