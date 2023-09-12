@@ -527,8 +527,9 @@ subroutine update_verticalprofiles()
         endif
 
         sourtu = max(vicwwu(L),vicwminb)*dijdij(k)
-        !
-      !  if (iturbulencemodel == 3) then
+
+      !  HK: keep this piece of code to understand were we come from
+      !  if (iturbulencemodel == 3) then   
       !     sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
       !     bk(k)  = bk(k)  + sinktu*2d0
       !     dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
@@ -549,7 +550,7 @@ subroutine update_verticalprofiles()
            sorsum = sortkebuoy+sortkeshear+sortkeeps
            call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
         else 
-           sorsum = sortkeshear+sortkebuoy  ! shure positive, so add first
+           sorsum = sortkeshear+sortkebuoy  ! sure positive, so add first
            call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
            call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
         endif

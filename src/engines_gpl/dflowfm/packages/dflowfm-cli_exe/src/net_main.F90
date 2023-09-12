@@ -122,7 +122,7 @@
 
    call klok(tstartall)
 
-   if (jamodelspecific == 1) then  ! op advies van Alja nu met switch ipv comment.....
+   if (jamodelspecific == 1) then  ! HK: This code is for performance testing
       call checkinnerloopindex12()
    endif
 
