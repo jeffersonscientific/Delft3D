@@ -83,5 +83,5 @@ set(waq_default_flags ${file_preprocessor_flag} ${extend_source132_flag} ${trace
 option(ENABLE_CODE_COVERAGE "Enable the code and profiling coverage" OFF)
 if(ENABLE_CODE_COVERAGE)
     message("Code coverage and profiling analysis is enabled")
-    set(waq_default_flags ${waq_default_flags} ${codecov_flag} ${profiling_flag})
+    set(waq_default_flags ${waq_default_flags} ${codecov_flag} ${profiling_flag} ${srcrootdir_code_cov})
 endif(ENABLE_CODE_COVERAGE)
