@@ -122,7 +122,7 @@
 
    call klok(tstartall)
 
-   if (jamodelspecific == 1) then  ! HK: This code is for performance testing
+   if (jamodelspecific == 1) then  !  HK: This code is for performance testing
       call checkinnerloopindex12()
       call checkunesco83()
    endif
