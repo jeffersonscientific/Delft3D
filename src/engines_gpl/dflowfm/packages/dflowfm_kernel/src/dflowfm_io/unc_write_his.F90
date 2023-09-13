@@ -647,6 +647,7 @@ subroutine unc_write_his(tim)            ! wrihis
             if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                if ( kmx.gt.0 ) then
                   idims(1) = id_laydim
+                  idims(2) = id_statdim
                   jawrizc = 1
                   call definencvar(ihisfile,id_varrhop,nf90_double, idims,3,'potential_density'       , 'potential_density'         , 'kg m-3' ,  trim(statcoordstring) // ' zcoordinate_c', station_geom_container_name, fillVal = dmiss)
                   if (idensform > 10) then 
