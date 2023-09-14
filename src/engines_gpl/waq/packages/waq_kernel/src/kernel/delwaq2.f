@@ -283,15 +283,6 @@
          case (  1 )     !      backward in space and time
             call dlwqn1 ( a , j , c , lun , lchar, action, dlwqd, gridps )
 
-         case (  2 )     !      modified 2nd order Runge Kutta
-            call dlwqn2 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case (  3 )     !      2nd order Lax Wendroff
-            call dlwqn3 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case (  4 )     !      Aternating direction implicit
-            call dlwqn4 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
          case (  5 )     !      Flux corrected transport
             call dlwqn5 ( a , j , c , lun , lchar, action, dlwqd, gridps )
 
@@ -300,15 +291,6 @@
 
          case (  7 )     !      Direct steady state, central differences in space
             call dlwqn7 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case (  8 )     !      Iteratively steady state, backward differences in space
-            call dlwqn8 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case (  9 )     !      Iteratively steady state, central differences in space
-            call dlwqn9 ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case ( 10 )     !      Fully implicit, direct method, upwind
-            call dlwqnb ( a , j , c , lun , lchar, action, dlwqd, gridps )
 
          case ( 11 )     !      Horizontal explicit upwind, vertical implicit central
             call dlwqnc ( a , j , c , lun , lchar, action, dlwqd, gridps )
@@ -334,12 +316,6 @@
          case ( 18 )     !      stationary GMRES, horizontal upwind, vertical central
             call dlwqni ( a , j , c , lun , lchar, action, dlwqd, gridps )
 
-         case ( 19 )     !      TRISULA-ADI 1 (vertically upwind)
-            call dlwqnj ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
-         case ( 20 )     !      TRISULA-ADI 2 (vertically central)
-            call dlwqnj ( a , j , c , lun , lchar, action, dlwqd, gridps )
-
          case ( 21 )     !      Self adjusting teta method (limiter Salezac)
             call dlwqnm ( a , j , c , lun , lchar, action, dlwqd, gridps )
 
@@ -364,7 +340,6 @@
      &     ACTION == ACTION_FULLCOMPUTATION        ) THEN
 
 !     print timer-results
-!     Note: removed printing of timers to monitoring file
 
 
 
@@ -379,8 +354,6 @@
       return
 
   990 WRITE ( * , * ) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED'
-      CALL SRSTOP(1)
-  991 WRITE ( * , * ) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED in online mode'
       CALL SRSTOP(1)
   992 WRITE ( * , * ) ' ERROR : INITIALISATION FAILED'
       CALL SRSTOP(1)
