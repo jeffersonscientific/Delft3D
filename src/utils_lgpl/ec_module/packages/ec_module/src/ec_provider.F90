@@ -376,6 +376,7 @@ module m_ec_provider
                            "airpressure","atmosphericpressure",                           &
                            "airtemperature", "humidity", "cloudiness",                    &
                            "wind_speed", "wind_from_direction",                           &
+                           "airdensity",                                                  & 
                            "humidity_airtemperature_cloudiness",                          &
                            "humidity_airtemperature_cloudiness_solarradiation",           &
                            "dewpoint_airtemperature_cloudiness",                          &
@@ -2530,6 +2531,10 @@ module m_ec_provider
          case ('airpressure','atmosphericpressure') 
             ncvarnames(1) = 'msl'                            ! mean sea-level pressure
             ncstdnames(1) = 'air_pressure'
+         case ('airdensity') 
+            ! UNST-6593: airdensity has variable name p140209 and no standard_name, will be changed in the future according to ECMWF. 
+            ncvarnames(1) = 'p140209'                        ! air density above sea
+            ncstdnames(1) = 'air_density'
          case ('airpressure_windx_windy') 
             ncvarnames(1) = 'msl'                            ! mean sea-level pressure
             ncstdnames(1) = 'air_pressure'
