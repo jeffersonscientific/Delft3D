@@ -209,6 +209,7 @@ void Dimr::deleteControlBlock(dimr_control_block cb) {
 // tStep is not used in runControlBlock
 //------------------------------------------------------------------------------
 void Dimr::runControlBlock(dimr_control_block* cb, double tStep, int phase) {
+    log->Write(ALL, my_rank, "\n\n\n WARNING: this is a test version for UNST-7294. Do not distribute/use for official projects.\n\n\n");
     if (cb->type == CT_PARALLEL) {
         log->Write(INFO, my_rank, "PARALLEL:");
         //
@@ -1109,46 +1110,67 @@ double* Dimr::send(
     int          nProc,
     double* transfer)
 {
-    double* reducedTransfer = new double[nProc];
-
-    for (int m = 0; m < nProc; m++)
+    if (compType == COMP_TYPE_FM)
     {
-        //transfer[m] = -999000.0;
-        if (my_rank == processes[m])
-        {
-            log->Write(ALL, my_rank, "Dimr::send (%s)", name);
-            if (sourceVarPtr != NULL && compType != COMP_TYPE_WANDA)
-            {
-                transfer[m] = *sourceVarPtr;
-            }
-        }
-    }
+        // Hack for UNST-7294
+        // In D-Flow FM, all observation points are distributed over all partitions with MPI_Allreduce via subroutine reduce_valobs
+        // That means:
+        // - MPI_Allreduce is not needed below
+        // - Construction below does not seem to work correctly with negative values (in parallel)
+        // Workaround: if COMP_TYPE_FM just use *sourceVarPtr
+        // TODO:
+        // - Test this workaround
+        // - Double-check other communication (from WANDA to D-Flow FM for example)
+        // - Discuss proper solution
 
-    //now you have all source values in the transfer array, we can reduce them
-    double maxValue = -999000.0;
-    // Do not call MPI_Allreduce when the number of partitions is 1.
-    if (numranks > 1)
+        if (sourceVarPtr != NULL)
+            transferValue = *sourceVarPtr;
+        else
+            transferValue = -999000.0;
+    } 
+    else
     {
-        // NOTE: here the transfer array has a defined value only at position==my_rank and if *sourceVarPtr != NULL.
-        // We perform a reduction operation to collect the maximum values at each position and afterwards take the maximum of all values.
-        // We could also use only one double instead of a transfer array and perform the reduction on a single scalar (so avoiding the loop below)
-        int ierr = MPI_Allreduce(transfer, reducedTransfer, nProc, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+        double* reducedTransfer = new double[nProc];
 
         for (int m = 0; m < nProc; m++)
         {
-            if (reducedTransfer[m] > maxValue)
-                maxValue = reducedTransfer[m];
+            //transfer[m] = -999000.0;
+            if (my_rank == processes[m])
+            {
+                log->Write(ALL, my_rank, "Dimr::send (%s)", name);
+                if (sourceVarPtr != NULL && compType != COMP_TYPE_WANDA)
+                {
+                    transfer[m] = *sourceVarPtr;
+                }
+            }
         }
-    }
-    else
-    {
-        maxValue = transfer[0];
-    }
 
-    delete[] reducedTransfer;
+        //now you have all source values in the transfer array, we can reduce them
+        double maxValue = -999000.0;
+        // Do not call MPI_Allreduce when the number of partitions is 1.
+        if (numranks > 1)
+        {
+            // NOTE: here the transfer array has a defined value only at position==my_rank and if *sourceVarPtr != NULL.
+            // We perform a reduction operation to collect the maximum values at each position and afterwards take the maximum of all values.
+            // We could also use only one double instead of a transfer array and perform the reduction on a single scalar (so avoiding the loop below)
+            int ierr = MPI_Allreduce(transfer, reducedTransfer, nProc, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 
-    //the reduced value now is set and return to all ranks
-    transferValue = maxValue;
+            for (int m = 0; m < nProc; m++)
+            {
+                if (reducedTransfer[m] > maxValue)
+                    maxValue = reducedTransfer[m];
+            }
+        }
+        else
+        {
+            maxValue = transfer[0];
+        }
+
+        delete[] reducedTransfer;
+
+        //the reduced value now is set and return to all ranks
+        transferValue = maxValue;
+    }
     return &(transferValue);
 }
 
