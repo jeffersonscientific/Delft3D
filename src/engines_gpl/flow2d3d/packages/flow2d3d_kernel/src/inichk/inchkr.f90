@@ -1440,7 +1440,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                   & lstsci    ,r(r1)     ,r(r1)     ,r(qxk)    ,r(qyk)      , & ! pass r1 twice since r0 not defined
                   & r(dicuv)  ,r(guv)    ,r(gvu)    ,r(areau)  ,r(areav)    , &
                   & i(kfu)    ,i(kfv)    ,i(kfs)    ,i(kcs)    ,0._fp       , & !time step 0._fp
-                  & icx       ,icy       ,lsed      ,gdp       )
+                  & icx       ,icy       ,lsed      ,r(s1)     ,d(dps)      , &
+                  & gdp       )
     !
     ! Compute volumes and areas
     !
@@ -1454,7 +1455,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     call updmassbal(1         ,r(qxk)    ,r(qyk)    ,i(kcs)    ,r(r1)     , &
                   & r(volum0) ,r(volum1) ,r(sbuu)   ,r(sbvv)   ,r(disch)  , &
                   & i(mnksrc) ,r(sink)   ,r(sour)   ,r(gsqs)   ,r(guu)    , &
-                  & r(gvv)    ,d(dps)    ,r(rintsm) ,-100,     ,0.0_fp    , &
+                  & r(gvv)    ,d(dps)    ,r(rintsm) ,-100      ,0.0_fp    , &
                   & lsal     ,ltem      ,r(s0)     ,r(s1)     ,agsqs     , &
                   & aguu     ,agvv      ,nsrc      , &
                   & r(r0)    ,dps0      ,gdp%gderosed%kfsed,i(kfs),lsecfl, &
