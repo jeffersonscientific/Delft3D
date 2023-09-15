@@ -38,15 +38,18 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    ##pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+   # pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     set(oss_dependencies ${oss_dependencies_general})
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+        # PkgConfig::NETCDF
+         netcdf4
+         netcdff
+         #PkgConfig::NETCDF_FTN
+         )
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
