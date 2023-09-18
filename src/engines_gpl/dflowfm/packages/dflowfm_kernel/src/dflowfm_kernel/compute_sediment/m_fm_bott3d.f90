@@ -107,7 +107,7 @@ public :: fm_bott3d
    integer                                     :: l, nm, ii, ll, Lx, Lf, lstart, j, k, k1, k2, knb, kb, kk, itrac
    integer                                     :: Lb, Lt, ka, kf1, kf2, kt, nto, iL, ac1, ac2
    double precision                            :: eroflx, sedflx, trndiv, flux, dtmor, hsk, ddp
-   double precision                            :: totdbodsd, totfixfrac, bamin, thet, dv
+   double precision                            :: bamin
 
    double precision, parameter                 :: dtol = 1d-16
 
@@ -241,122 +241,8 @@ public :: fm_bott3d
 
        call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
        
-
-      
-!======================================================================
-!======================================================================
-!======================================================================
-!BEGIN CUT 
-      
-      !
-      ! Re-distribute erosion near dry and shallow points to allow erosion
-      ! of dry banks
-      !
-      do nm = 1, ndxi
-         !
-         ! If this is a cell in which sediment processes are active then ...
-         !
-         if (kfsed(nm) /= 1 .or. (s1(nm)-bl(nm))<epshs .or. thetsd(nm)<=0 ) cycle                    ! check whether sufficient as condition
-         !
-         totdbodsd = 0d0
-         do l = 1, lsedtot
-            totdbodsd = totdbodsd + real(dbodsd(l, nm), hp)
-         enddo
-         !
-         ! If this is a cell where erosion is occuring (accretion is not
-         ! distributed to dry points) then...
-         !
-         if (totdbodsd < 0d0) then
-            !
-            ! Note: contrary to the previous implementation, this new
-            ! implementation erodes the sediment from nm and
-            ! re-distributes the eroded volume based on the composition
-            ! of the neighbouring cells, replenishing the sediment volume
-            ! at grid point nm with sediment of a different composition
-            ! than that what was eroded. This new implementation is mass
-            ! conserving per fraction. Furthermore, re-distribution takes
-            ! place only in case of net TOTAL erosion, i.e. not of
-            ! individual fractions.
-            !
-            bamin      = ba(nm)
-            totfixfrac = 0d0
-            !
-            do L=1,nd(nm)%lnx
-               k1 = ln(1,iabs(nd(nm)%ln(L))); k2 = ln(2,iabs(nd(nm)%ln(L)))
-               if (k2 == nm) then
-                  knb = k1
-               else
-                  knb = k2
-               end if
-               !
-               ! evaluate whether dry cell, and calculate totfixfac value for cell
-               !
-               if (kfsed(knb)==0 .and. bl(knb)>bl(nm)) then
-                  bamin = min(bamin, ba(knb))
-                  do ll = 1, lsedtot
-                     totfixfrac = totfixfrac + fixfac(knb, ll)*frac(knb, ll)
-                  end do
-               end if
-            end do
-            !
-            !
-            ! Re-distribute THET % of erosion in nm to surrounding cells
-            ! THETSD is a user-specified maximum value, range 0-1
-            !
-            if (totfixfrac > 1d-7) then
-               !
-               ! Compute local re-distribution factor THET
-               !
-               if (hmaxth > sedthr) then
-                  thet = (hs(nm) - sedthr)/(hmaxth - sedthr)*thetsd(nm)
-                  thet = min(thet, thetsd(nm))
-               else
-                  thet = thetsd(nm)
-               end if
-               !
-               ! Combine some constant factors in variable THET
-               ! Note: TOTDBODSD<0.0 and thus THET>0.0 !
-               !
-               thet = -bamin * totdbodsd * thet / totfixfrac
-               !
-               do ll = 1, lsedtot
-                  !
-                  ! update dbodsd values in this cell and surrounding cells
-                  ! adjust bedload transport rates to include this erosion
-                  ! process.
-                  !
-                  do L=1,nd(nm)%lnx
-                     k1 = ln(1,iabs(nd(nm)%ln(L))); k2 = ln(2,iabs(nd(nm)%ln(L)))
-                     Lf = iabs(nd(nm)%ln(L))
-                     ! cutcells
-                     if (wu_mor(Lf)==0d0) cycle
-                     !
-                     if (k2 == nm) then
-                        knb = k1
-                     else
-                        knb = k2
-                     end if
-                     if (kfsed(knb)==0 .and. bl(knb)>bl(nm)) then
-                        dv              = thet * fixfac(knb, ll)*frac(knb, ll)
-                        dbodsd(ll, knb) = dbodsd(ll, knb) - dv*bai_mor(knb)
-                        dbodsd(ll, nm)  = dbodsd(ll, nm)  + dv*bai_mor(nm)
-                        e_sbn(Lf,ll)    = e_sbn(Lf,ll)    + dv/(dtmor*wu_mor(Lf)) * sign(1d0,nd(nm)%ln(L)+0d0)
-                     end if
-                  end do ! L
-               enddo ! ll
-            endif    ! totfixfrac > 1.0e-7
-         endif       ! totdbodsd < 0.0
-      enddo          ! nm
-
-!======================================================================
-!======================================================================
-!======================================================================
-!END CUT 
-      
-
-      
-!
-      
+       call dry_bed_erosion(dtmor)
+            
       !check whether it is really needed to update ghosts here. Should be applied before `dbodsd` is used
       if ( jampi.gt.0 ) then
          call update_ghosts(ITYPE_Sall, lsedtot, Ndx, dbodsd, ierror)
@@ -1725,4 +1611,151 @@ public :: fm_bott3d
 
    end subroutine fm_change_in_sediment_thickness
     
+   !> Redistribute erosion of wet cell next to dry cell to the dry cell
+   !! to consider some sort of bank or beach erosion
+   subroutine dry_bed_erosion(dtmor)
+   
+   !!
+   !! Declarations
+   !!
+   
+   use sediment_basics_module
+   use m_flowgeom , only: nd, bai_mor, ndxi, bl, wu_mor, ba, ln
+   use m_flow, only: s1, hs
+   use m_flowparameters, only: epshs
+   use m_fm_erosed, only: lsedtot, kfsed, dbodsd, fixfac, frac, hmaxth, sedthr, thetsd, e_sbn
+   
+   implicit none
+
+   !!
+   !! I/O
+   !!
+   
+   double precision,                intent(in) :: dtmor
+   
+   !!
+   !! Local variables
+   !!
+      
+   !integer
+   integer                                     :: l, nm, k1, k2, knb, ll, lf
+
+   !double precision
+   double precision                            :: bamin
+   double precision                            :: dv
+   double precision                            :: thet
+   double precision                            :: totdbodsd
+   double precision                            :: totfixfrac
+      
+   !!
+   !! Allocate and initialize
+   !!
+         
+   !!
+   !! Execute
+   !!
+
+   !
+   ! Re-distribute erosion near dry and shallow points to allow erosion
+   ! of dry banks
+   !
+   do nm = 1, ndxi
+      !
+      ! If this is a cell in which sediment processes are active then ...
+      !
+      if (kfsed(nm) /= 1 .or. (s1(nm)-bl(nm))<epshs .or. thetsd(nm)<=0 ) cycle                    ! check whether sufficient as condition
+      !
+      totdbodsd = 0d0
+      do l = 1, lsedtot
+         totdbodsd = totdbodsd + real(dbodsd(l, nm), hp)
+      enddo
+      !
+      ! If this is a cell where erosion is occuring (accretion is not
+      ! distributed to dry points) then...
+      !
+      if (totdbodsd < 0d0) then
+         !
+         ! Note: contrary to the previous implementation, this new
+         ! implementation erodes the sediment from nm and
+         ! re-distributes the eroded volume based on the composition
+         ! of the neighbouring cells, replenishing the sediment volume
+         ! at grid point nm with sediment of a different composition
+         ! than that what was eroded. This new implementation is mass
+         ! conserving per fraction. Furthermore, re-distribution takes
+         ! place only in case of net TOTAL erosion, i.e. not of
+         ! individual fractions.
+         !
+         bamin      = ba(nm)
+         totfixfrac = 0d0
+         !
+         do L=1,nd(nm)%lnx
+            k1 = ln(1,iabs(nd(nm)%ln(L))); k2 = ln(2,iabs(nd(nm)%ln(L)))
+            if (k2 == nm) then
+               knb = k1
+            else
+               knb = k2
+            end if
+            !
+            ! evaluate whether dry cell, and calculate totfixfac value for cell
+            !
+            if (kfsed(knb)==0 .and. bl(knb)>bl(nm)) then
+               bamin = min(bamin, ba(knb))
+               do ll = 1, lsedtot
+                  totfixfrac = totfixfrac + fixfac(knb, ll)*frac(knb, ll)
+               end do
+            end if
+         end do
+         !
+         !
+         ! Re-distribute THET % of erosion in nm to surrounding cells
+         ! THETSD is a user-specified maximum value, range 0-1
+         !
+         if (totfixfrac > 1d-7) then
+            !
+            ! Compute local re-distribution factor THET
+            !
+            if (hmaxth > sedthr) then
+               thet = (hs(nm) - sedthr)/(hmaxth - sedthr)*thetsd(nm)
+               thet = min(thet, thetsd(nm))
+            else
+               thet = thetsd(nm)
+            end if
+            !
+            ! Combine some constant factors in variable THET
+            ! Note: TOTDBODSD<0.0 and thus THET>0.0 !
+            !
+            thet = -bamin * totdbodsd * thet / totfixfrac
+            !
+            do ll = 1, lsedtot
+               !
+               ! update dbodsd values in this cell and surrounding cells
+               ! adjust bedload transport rates to include this erosion
+               ! process.
+               !
+               do L=1,nd(nm)%lnx
+                  k1 = ln(1,iabs(nd(nm)%ln(L))); k2 = ln(2,iabs(nd(nm)%ln(L)))
+                  Lf = iabs(nd(nm)%ln(L))
+                  ! cutcells
+                  if (wu_mor(Lf)==0d0) cycle
+                  !
+                  if (k2 == nm) then
+                     knb = k1
+                  else
+                     knb = k2
+                  end if
+                  if (kfsed(knb)==0 .and. bl(knb)>bl(nm)) then
+                     dv              = thet * fixfac(knb, ll)*frac(knb, ll)
+                     dbodsd(ll, knb) = dbodsd(ll, knb) - dv*bai_mor(knb)
+                     dbodsd(ll, nm)  = dbodsd(ll, nm)  + dv*bai_mor(nm)
+                     e_sbn(Lf,ll)    = e_sbn(Lf,ll)    + dv/(dtmor*wu_mor(Lf)) * sign(1d0,nd(nm)%ln(L)+0d0)
+                  end if
+               end do ! L
+            enddo ! ll
+         endif    ! totfixfrac > 1.0e-7
+      endif       ! totdbodsd < 0.0
+   enddo          ! nm
+
+      
+   end subroutine dry_bed_erosion
+   
 end module m_fm_bott3d
