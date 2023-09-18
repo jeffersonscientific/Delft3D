@@ -81,7 +81,7 @@ public :: fm_bott3d
    use m_fm_update_crosssections
    use m_fm_morstatistics, only: morstats, morstatt0
    use precision_basics
-   use m_mormerge_mpi
+   !use m_mormerge_mpi
    use m_waves
    use m_tables, only: interpolate
    use m_debug
@@ -945,7 +945,7 @@ public :: fm_bott3d
    use morphology_data_module, only: bedbndtype
    use table_handles , only: handletype, gettabledata
    use m_flowtimes, only: julrefdat, time1
-   use m_partitioninfo, only: idomain, jampi, my_rank
+   use m_partitioninfo, only: idomain, jampi, my_rank, reduce_sum
    use m_flowexternalforcings, only: nopenbndsect
    
    implicit none
@@ -1514,6 +1514,7 @@ public :: fm_bott3d
    use m_flowparameters, only: eps10
    use m_fm_erosed, only: lsedtot, dbodsd
    use m_partitioninfo, only: jampi, my_rank, DFM_COMM_DFMWORLD
+   use m_mormerge_mpi, only: update_mergebuffer
    
    implicit none
 
