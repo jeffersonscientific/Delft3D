@@ -24054,11 +24054,6 @@ End If
 
 !   *****     DUPROL code ends here    *****
 
-      if ( abs(aWvFrc) > 1.0e30 ) then
-          write( 88, * ) iseg, aWvFrc, cChi, cGrav, aOrbVl
-      endif
-
-
          fl  ( ID0sMxDpW                ) = min( 1.0d030, D0sMxDpW       )
          fl  ( ID0sNH4WH                ) = min( 1.0d030, D0sNH4WH       )
          fl  ( ID0sNO3WH                ) = min( 1.0d030, D0sNO3WH       )
