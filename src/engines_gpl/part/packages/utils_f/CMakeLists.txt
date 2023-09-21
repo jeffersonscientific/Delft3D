@@ -3,7 +3,7 @@ set(src_path src)
 
 # Set version file variables
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(fortran_version_file ${part_root_path}/../waq/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
+set(fortran_version_file ${part_root_path}/../waq/packages/waq_utils_f/src/delwaq_version.F90)
 
 
 # Gather source files
@@ -43,4 +43,3 @@ set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/part)
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
 target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
 target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
-

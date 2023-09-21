@@ -75,8 +75,10 @@ subroutine update_verticalprofiles()
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
  integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
 
-double precision, external :: setrhofixedp
-
+ 
+ double precision :: sortkebuoy, sortkeshear, sortkeeps, sorsum
+ 
+ double precision, external :: setrhofixedp
 
  if (iturbulencemodel <= 0 .or. kmx == 0) return
 
@@ -421,6 +423,7 @@ double precision, external :: setrhofixedp
                          + difd*(turkin0(L-1) - turkin0(L ))*tetm1
         endif
 
+        sortkebuoy = 0d0 
 
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
@@ -497,25 +500,8 @@ double precision, external :: setrhofixedp
  !
             bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
             buoflu(k)  = max(vicwwu(L), vicwminb)*bruva(k)
+            sortkebuoy = -buoflu(k)
 
-            !c Production, dissipation, and buoyancy term in TKE equation;
-            !c dissipation and positive buoyancy are split by Newton linearization:
-            if (iturbulencemodel == 3) then
-               if (bruva(k) > 0d0) then
-                   dk(k) = dk(k) +     buoflu(k)
-                   bk(k) = bk(k) + 2d0*buoflu(k) / turkin0(L)
-                   ! EdG: make buoyance term in matrix safer
-                   !  bk(k) = bk(k) + 2d0*buoflu(k) / max(turkin0(L), 1d-20)
-               elseif (bruva(k)  < 0d0) then
-                   dk(k) = dk(k) -     buoflu(k)
-               endif
-            else if (iturbulencemodel == 4) then
-               if (bruva(k) > 0d0) then
-                  bk(k) = bk(k) + buoflu(k) / turkin0(L)
-               else if (bruva(k) < 0d0) then
-                  dk(k) = dk(k) - buoflu(k)
-               endif
-            endif
         endif
 
         !c TKEPRO is the energy transfer flux from Internal Wave energy to
@@ -540,20 +526,34 @@ double precision, external :: setrhofixedp
             rich(L) = sigrho*bruva(k)/max(1d-8,dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
         endif
 
-        sourtu    = max(vicwwu(L),vicwminb)*dijdij(k)
+        sourtu = max(vicwwu(L),vicwminb)*dijdij(k)
 
-        !
+      !  HK: keep this piece of code to understand were we come from
+      !  if (iturbulencemodel == 3) then   
+      !     sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
+      !     bk(k)  = bk(k)  + sinktu*2d0
+      !     dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
+      !  else if (iturbulencemodel == 4) then
+      !     sinktu =  1d0 / tureps0(L)                     ! + tkedis(L) / turkin0(L)
+      !     bk(k)  = bk(k)  + sinktu
+      !     dk(k)  = dk(k)  + sourtu
+      !  endif
+
+        sortkeshear = sourtu
         if (iturbulencemodel == 3) then
-           sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
-           bk(k)  = bk(k)  + sinktu*2d0
-           dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
+           sortkeeps = - tureps0(L)                  
         else if (iturbulencemodel == 4) then
-           sinktu =  1d0 / tureps0(L)                     ! + tkedis(L) / turkin0(L)
-           bk(k)  = bk(k)  + sinktu
-           dk(k)  = dk(k)  + sourtu
+           sortkeeps = - turkin0(L) / tureps0(L)                     
         endif
-
-        ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
+         
+        if (janettosplit == 1) then         ! splitting on netto 
+           sorsum = sortkebuoy+sortkeshear+sortkeeps
+           call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
+        else 
+           sorsum = sortkeshear+sortkebuoy  ! sure positive, so add first
+           call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
+           call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
+        endif
 
      enddo  ! Lb, Lt-1
      
@@ -801,12 +801,7 @@ double precision, external :: setrhofixedp
 
            bk(k) = bk(k) + sinktu*2d0
            dk(k) = dk(k) + sinktu*tureps0(L) + sourtu
-
-           !  bk(k) = bk(k) + sinktu
-           !  dk(k) = dk(k) + sourtu
-
-           ! dk(k) = dk(k) - sinktu*tureps0(L) + sourtu
-
+ 
         else if (iturbulencemodel == 4) then !                                               k-tau
 
            ! buoyancy term, we have in RHS :~ -Bruva*c3t
@@ -1067,3 +1062,18 @@ double precision, external :: setrhofixedp
  call linkstocenterstwodoubles(vicwws, vicwwu)
 
  end subroutine update_verticalprofiles
+
+ subroutine addsoursink(splitfac,sor,tur,b,d) 
+ ! add sor (or sink if <0) to diag and/or rhs to compute tur 
+ 
+ double precision, intent(in)     :: splitfac,sor,tur
+ double precision, intent(inout)  :: b,d
+
+ if (sor > 0) then 
+    d = d + sor 
+ else if (sor < 0) then 
+    b = b - sor*(splitfac + 1d0) / tur   ! splitfac : 0d0=Patankar, 1d0=Newton, 10d0=Guus
+    d = d - sor* splitfac 
+ endif  
+ 
+ end subroutine addsoursink
