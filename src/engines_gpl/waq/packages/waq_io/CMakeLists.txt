@@ -1,4 +1,4 @@
-# Set path for include files 
+# Set path for include files
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(waq_io_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 include_directories(${waq_io_include_path})
@@ -16,29 +16,20 @@ add_library(${library_name} ${ods_files}
                             ${waq_io_files})
 
 # Set dependencies
-set(oss_dependencies_general deltares_common
-                             part_data_f
-                             part_io_f
-                             part_kernel_f
-                             part_utils_f
-                             io_hyd
-                             io_netcdf
-                             waq_data
-                             waq_kernel
-                             waq_plugin_wasteload
-                             waq_validation
-                             waq_utils_c
-                             waq_utils_f) 
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     part_data_f
+                     part_io_f
+                     part_utils_f
+                     io_hyd
+                     io_netcdf
+                     waq_data
+                     waq_netcdf
+                     waq_validation
+                     waq_utils_c
+                     waq_utils_f)
 
-
-
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-
-
+target_link_libraries(${library_name} ${oss_dependencies})
 oss_include_libraries(${library_name} oss_dependencies)
 
 # Set additional compilation properties
@@ -47,4 +38,4 @@ target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ods_files}
                                                     ${waq_io_files})
-set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/waq)
+set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

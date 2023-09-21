@@ -8,26 +8,19 @@ get_fortran_source_files(${src_path} source_files)
 set(library_name part_kernel_f)
 add_library(${library_name} ${source_files})
 
-set(oss_dependencies_general deltares_common
-                             part_data_f
-                             part_utils_f
-                             part_io_f
-                             waq_utils_f
-                             gridgeom
-                             kdtree_wrapper
-                             kdtree2
-                             io_netcdf
-                             io_hyd)
+set(oss_dependencies deltares_common
+                     part_data_f
+                     part_utils_f
+                     part_io_f
+                     waq_utils_f
+                     gridgeom
+                     kdtree_wrapper
+                     kdtree2
+                     io_netcdf
+                     io_hyd)
 
 
-# Add dependencies
-
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-
+target_link_libraries(${library_name} ${oss_dependencies})
 oss_include_libraries(${library_name} oss_dependencies)
 
 

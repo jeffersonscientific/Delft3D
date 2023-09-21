@@ -1148,16 +1148,18 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'cstbnd'       , jacstbnd)
     call prop_get_integer(md_ptr, 'numerics', 'Maxitverticalforestertem' , Maxitverticalforestertem)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulencemodel' , Iturbulencemodel)
+    if (Iturbulencemodel == 4) splitfac = 0d0  ! kTau default
     call prop_get_integer(md_ptr, 'numerics', 'Turbulenceadvection' , javakeps)
-    call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
-    call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
+    call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'        , jadrhodz)
+    call prop_get_double (md_ptr, 'numerics', 'FacLaxturb'      , FacLaxturb)
     call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
-    call prop_get_double (md_ptr, 'numerics', 'EpsTKE' , epstke)
-    call prop_get_double (md_ptr, 'numerics', 'EpsEPS' , epseps)
+    call prop_get_double (md_ptr, 'numerics', 'EpsTKE'          , epstke)
+    call prop_get_double (md_ptr, 'numerics', 'EpsEPS'          , epseps)
+    call prop_get_integer(md_ptr, 'numerics', 'Nettosplit'      , janettosplit)
+    call prop_get        (md_ptr, 'numerics', 'Splitfac'        , splitfac)
  
     call prop_get_double (md_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax)
     call prop_get_integer(md_ptr, 'numerics', 'AntiCreep' , jacreep)
-
    
     call prop_get_integer(md_ptr, 'numerics', 'Orgbarockeywords' , jaorgbarockeywords)
     if (jaorgbarockeywords == 1) then
@@ -1838,6 +1840,7 @@ subroutine readMDUFile(filename, istat)
          //' and do not write temperature to his file.'
       call warn_flush()
     end if
+    call prop_get_integer(md_ptr, 'output', 'Wrihis_airdensity', jahis_airdensity, success) 
     call prop_get_integer(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success)
     if (.not. success) then
       call prop_get_integer(md_ptr, 'output', 'Wrihis_heatflux', jahisheatflux, success)
@@ -1943,6 +1946,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_interception', jamapicept, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_wind', jamapwind, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_windstress', jamapwindstress, success)
+    call prop_get_integer(md_ptr, 'output', 'Wrimap_airdensity', jamap_airdensity, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_heat_fluxes', jamapheatflux, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_tidal_potential', jamaptidep, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_sal_potential', jamapselfal, success)
@@ -2344,7 +2348,7 @@ subroutine readMDUFile(filename, istat)
    endif
 
    if (len_trim(md_restartfile)>0 .and. Tlfsmo>0d0) then
-      write (msgbuf, '(a,g15.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. This is no longer allowed. Tlfsmo is set to 0.0.'
+      write (msgbuf, '(a,g16.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. This is no longer allowed. Tlfsmo is set to 0.0.'
       call warn_flush()
       Tlfsmo = 0d0
    endif
@@ -2536,7 +2540,6 @@ subroutine final_check_of_mdu_keywords(md_tree, istat, prefix)
    character(len=strlen)                          :: chaptername             !< name of the chapter
    character(len=5)                               :: node_visit_str          !< temporary string containing the number of times a keyword was accessed
    character(len=100)                             :: nodestring              !< string containing the keyword value
-   logical                                        :: ismatch                 !< flag indicating whether the chapter/keyword matches a certain condition
    integer                                        :: threshold_abort_current !< backup variable for default abort threshold level (temporarily overruled)
    logical                                        :: success                 !< flag indicating successful completion of a call
    integer                                        :: num_obsolete            !< count the number of obsolete (removed) keywords
@@ -2687,7 +2690,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     character(len=128)             :: helptxt
     character(len=256)             :: tmpstr
     integer                        :: i, ibuf, help
-    real(kind=hp)                  :: ti_wav_array(3), ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3)
+    real(kind=hp)                  :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3)
 
     istat = 0 ! Success
 
@@ -3212,6 +3215,17 @@ endif
 
     if (writeall .or. (epseps > 1d-32 .and. kmx > 0) ) then
        call prop_set(prop_ptr, 'numerics', 'EpsEPS' , epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
+    endif
+
+    if (writeall .or. (Janettosplit == 1 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'Nettosplit' , Janettosplit, '(default 0=split each TKEsink separ., 1=split netto TKEsin)' )
+    endif
+
+    if (kmx > 0) then  
+    if (writeall .or. (Iturbulencemodel == 3 .and. splitfac .ne. 1d0 .or.    & 
+                       Iturbulencemodel == 4 .and. splitfac .ne. 0d0      )  ) then 
+       call prop_set(prop_ptr, 'numerics', 'Splitfac' , splitfac, '(0d0=Patankar, 1d0=Newton, 10d0=Guus) ' )
+    endif
     endif
   
     if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
@@ -3916,6 +3930,9 @@ endif
     if (writeall .or. jahisrain /= 1) then
        call prop_set(prop_ptr, 'output', 'Wrihis_rain', jahisrain, 'Write precipitation to his file (1: yes, 0: no)' )
     endif
+    if (writeall .or. jahis_airdensity /= 1) then
+       call prop_set(prop_ptr, 'output', 'Wrihis_airdensity', jahis_airdensity, 'Write air density to his file (1: yes, 0: no)' )
+    endif
     if (writeall .or. jahisinfilt /= 1) then
        call prop_set(prop_ptr, 'output', 'Wrihis_infiltration', jahisinfilt, 'Write infiltration to his file (1: yes, 0: no)' )
     endif
@@ -4083,6 +4100,9 @@ endif
     endif
     if(writeall .or. jamapwindstress /= 0) then
         call prop_set(prop_ptr, 'output', 'Wrimap_windstress', jamapwindstress, 'Write wind stress to map file (1: yes, 0: no)')
+    endif
+    if(writeall .or. jamap_airdensity /= 0) then
+        call prop_set(prop_ptr, 'output', 'Wrimap_airdensity', jamap_airdensity, 'Write air density rates to map file (1: yes, 0: no)')
     endif
     if(writeall .or. jatekcd /= 0) then
         call prop_set(prop_ptr, 'output', 'Writek_CdWind', jatekcd, 'Write wind friction coeffs to tek file (1: yes, 0: no)')

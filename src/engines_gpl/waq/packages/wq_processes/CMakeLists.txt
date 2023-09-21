@@ -7,7 +7,7 @@ set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the WAQ pa
 
 # Set version file variables
 set(waq_version_path ${waq_root_path}/version)
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
+set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/../../version/version_number.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -30,28 +30,14 @@ set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
+# Set dependencies
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     waq_process
+                     waq_utils_c
+                     waq_utils_f)
 
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-
-    set(oss_dependencies ${oss_dependencies_general})
-
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF
-         netcdf4
-         netcdff)
-endif(UNIX)
-if (WIN32)
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-endif(WIN32)
-
-
+set(oss_dependencies ${oss_dependencies})
 oss_include_libraries(${library_name} oss_dependencies)
 
 # Set additional compilation properties
@@ -61,4 +47,3 @@ target_include_directories(${library_name}  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/
 # Define how the files should be structured in Visual studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${source})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/waq)
-

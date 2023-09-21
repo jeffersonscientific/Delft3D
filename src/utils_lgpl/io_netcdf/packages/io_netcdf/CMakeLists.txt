@@ -5,14 +5,14 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(rc_dir ${CMAKE_CURRENT_SOURCE_DIR}/version)
 set(rc_version_file ${rc_dir}/io_netcdf_version_number.rc)
 
-
+if(UNIX)
      # the `pkg_check_modules` function is created with this call
      find_package(PkgConfig REQUIRED)
 
      # these calls create special `PkgConfig::<MODULE>` variables
      pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
      pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
+endif()
 
 
             

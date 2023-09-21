@@ -26,30 +26,24 @@ add_library(${library_name} ${kernel_files}
 
 
 # Set dependencies
-set(oss_dependencies_general deltares_common
-                             part_data_f
-                             part_io_f
-                             part_kernel_f
-                             part_utils_f
-                             waq_data
-                             waq_memory
-                             waq_plugin_wasteload
-                             waq_process
-                             waq_utils_c
-                             waq_utils_f
-                             io_netcdf
-                             io_hyd)
+set(oss_dependencies deltares_common
+                     deltares_common_c
+                     part_data_f
+                     part_io_f
+                     part_kernel_f
+                     part_utils_f
+                     waq_data
+                     waq_memory
+                     waq_plugin_wasteload
+                     waq_process
+                     waq_utils_c
+                     waq_utils_f
+                     waq_netcdf
+                     io_netcdf
+                     io_hyd)
 
-
-    set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
-                         netcdff)
-
-    oss_include_libraries(${library_name} oss_dependencies)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
-
-
+oss_include_libraries(${library_name} oss_dependencies)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
