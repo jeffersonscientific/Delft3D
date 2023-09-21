@@ -76,7 +76,7 @@ subroutine update_verticalprofiles()
  integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
 
  
- double precision :: sortkebuoy, sortkeshear, sortkeeps, sorsum
+ double precision :: sortkebuoy, sortkeeps, sorsum
  
  double precision, external :: setrhofixedp
 
@@ -529,17 +529,16 @@ subroutine update_verticalprofiles()
         sourtu = max(vicwwu(L),vicwminb)*dijdij(k)
 
       !  HK: keep this piece of code to understand were we come from
-      !  if (iturbulencemodel == 3) then   
-      !     sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
-      !     bk(k)  = bk(k)  + sinktu*2d0
-      !     dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
+      !   if (iturbulencemodel == 3) then   
+      !      sinktu = tureps0(L) / turkin0(L)               ! + tkedis(L) / turkin0(L)
+      !      bk(k)  = bk(k)  + sinktu*2d0
+      !      dk(k)  = dk(k)  + sinktu*turkin0(L) + sourtu   ! m2/s3
       !  else if (iturbulencemodel == 4) then
       !     sinktu =  1d0 / tureps0(L)                     ! + tkedis(L) / turkin0(L)
       !     bk(k)  = bk(k)  + sinktu
       !     dk(k)  = dk(k)  + sourtu
-      !  endif
-
-        sortkeshear = sourtu
+      !   endif
+        
         if (iturbulencemodel == 3) then
            sortkeeps = - tureps0(L)                  
         else if (iturbulencemodel == 4) then
@@ -547,12 +546,12 @@ subroutine update_verticalprofiles()
         endif
          
         if (janettosplit == 1) then         ! splitting on netto 
-           sorsum = sortkebuoy+sortkeshear+sortkeeps
+           sorsum = sortkebuoy+sortkeeps+sourtu
            call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
         else 
-           sorsum = sortkeshear+sortkebuoy  ! sure positive, so add first
-           call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
+           call addsoursink( splitfac, sortkebuoy , turkin0(L), bk(k), dk(k) )
            call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
+           call addsoursink( splitfac, sourtu     , turkin0(L), bk(k), dk(k) )
         endif
 
      enddo  ! Lb, Lt-1
