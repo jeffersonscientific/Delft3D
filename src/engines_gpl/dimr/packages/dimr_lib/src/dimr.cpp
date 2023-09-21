@@ -977,10 +977,9 @@ void Dimr::receive(const char* name,
 
                     if (targetVarPtr == NULL)
                     {
-                        double* transfer = new double[nProc];
+                        double transfer = -999000.0;
                         //here we get the address (e.g. weir levels)
-                        getAddress(name, compType, dllGetVar, &targetVarPtr, processes, nProc, transfer);
-                        delete[] transfer;
+                        getAddress(name, compType, dllGetVar, &targetVarPtr, processes, nProc, &transfer);
                     }
 
                     //  }
@@ -1037,11 +1036,10 @@ void Dimr::receive_ptr(const char * name,
 
 	if (targetVarPtr == NULL)
 	{
-		double * transfer = new double[nProc];
-		//here we get the address (e.g. weir levels)
-		getAddress(name, compType, dllGetVar, &targetVarPtr, processes, nProc, transfer);
-		delete[] transfer;
-	}
+        double transfer = -999000.0;
+        //here we get the address (e.g. weir levels)
+		getAddress(name, compType, dllGetVar, &targetVarPtr, processes, nProc, &transfer);
+		}
 
 	// Now targetVarPtr must be defined
 	if (targetVarPtr == NULL)
@@ -1077,7 +1075,7 @@ void Dimr::getAddress(
         }
         // Wanda does not use pointers to internal structures:
         // - Use the DIMR-transfer array
-        // - Note the added * in the dllGetVar call, when comparing with the dllGetVar call above
+        // - Note the added * in the dllGetVar call, when comparing with the dllGetVar call below
         *sourceVarPtr = transfer;
         (dllGetVar)(name, (void**)(*sourceVarPtr));
         log->Write(ALL, my_rank, "Dimr::getAddress:WANDA_GET: (%20.10f)", transfer);
