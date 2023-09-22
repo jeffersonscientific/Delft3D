@@ -205,7 +205,7 @@
       binfil = .false.
       newrec = .false.
 !
-!     Open the binary work file and privide a zero overall default
+!     Open the binary work file and provide a zero overall default
 !
       call open_waq_files ( lun(iu) , lchar(iu) , iu    , 1     , ioerr )
       if ( iu .eq. 14 ) then
@@ -493,7 +493,7 @@
             ierr2 = 1
             goto 510
          endif
-!          Checks if an inner loop collumn header exists for the data matrix
+!          Checks if an inner loop column header exists for the data matrix
          call dlwq5g ( lunut  , iar    , itmnr  , noitm  , idmnr  ,
      *                 nodim  , iorder , iimax  , car    , iposr  ,
      *                 npos   , ilun   , lch    , lstack , cchar  ,

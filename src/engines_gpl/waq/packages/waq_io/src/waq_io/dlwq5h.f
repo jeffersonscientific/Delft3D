@@ -99,8 +99,6 @@
       END DO
 !
 !       Additional messages for this sequence
-!
-!      I4 = 0
       IF ( I2 <= 0 .AND. I2 > -100000 ) THEN
 !       Try to find the reference
          DO I3 = 1 , I

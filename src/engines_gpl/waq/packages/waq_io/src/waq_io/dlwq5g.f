@@ -159,7 +159,7 @@
              STRNG = 'NOT used'
              DO I = 1 , COUNT_NAMES
                 CALL ZOEK(CHULP,1,NAMES_TO_CHECK(OFFSET_NAMES+I),20,IFOUND)
-                IF ( IFOUND .GE. 1 ) THEN
+                IF ( IFOUND >= 1 ) THEN
                    STRNG = 'used'
                    I_ARRAY(I+OFFSET_I_ARRAY) = NOCOL
                 ENDIF
@@ -180,7 +180,6 @@
       END DO
 !
 !       Is everything resolved ?
-!
       ICNT = 0
       IODS = 0
       DO I = 1, COUNT_NAMES
