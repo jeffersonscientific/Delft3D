@@ -63,7 +63,6 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS = 3
    integer, parameter              :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 4
 
-   integer                         :: link, i, first, last
    logical                         :: l_set_frcu_mor = .false.
    logical                         :: first_time_wind
 
@@ -562,9 +561,11 @@ subroutine get_wind_data(time_current)
    use m_meteo
    use m_flowgeom, only: ln, lnx
 
+   implicit none
+
    double precision, intent(in) :: time_current !< Current time when setting wind data
 
-   integer :: ec_item_id, first, last
+   integer :: ec_item_id, first, last, link, i, iresult
    logical :: first_time_wind
 
    if (japatm == 1) then
@@ -628,17 +629,15 @@ subroutine get_wind_data(time_current)
       call get_timespace_value_by_item_and_array(item_stressy, wdsu_y, time_current)
    end if
 
-   if (allocated(ec_pwxwy_x) .and. allocated( ec_pwxwy_y)) then
-      if (jawindstressgiven == 1) then 
-         call perform_additional_spatial_interpolation(wdsu_x, wdsu_y)
-      else
-         call perform_additional_spatial_interpolation(wx, wy)
-      end if
-      if (allocated(ec_pwxwy_c)) then
-         do link  = 1, lnx
-            wcharnock(link) = wcharnock(link) + 0.5d0*( ec_pwxwy_c(ln(1,link)) + ec_pwxwy_c(ln(2,link)) )
-         end do
-      end if
+   if (jawindstressgiven == 1) then 
+      call perform_additional_spatial_interpolation(wdsu_x, wdsu_y)
+   else
+      call perform_additional_spatial_interpolation(wx, wy)
+   end if
+   if (allocated(ec_pwxwy_c)) then
+      do link  = 1, lnx
+         wcharnock(link) = wcharnock(link) + 0.5d0*( ec_pwxwy_c(ln(1,link)) + ec_pwxwy_c(ln(2,link)) )
+      end do
    end if
 
    if (jawindspeedfac > 0) then
@@ -655,7 +654,7 @@ subroutine get_wind_data(time_current)
    end if
 
    if (jawave == 1 .or. jawave == 2 .and. .not. flowWithoutWaves) then
-       call tauwavefetch(time_in_seconds)
+       call tauwavefetch(time_current)
    end if
 
 contains
