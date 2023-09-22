@@ -1148,18 +1148,16 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'cstbnd'       , jacstbnd)
     call prop_get_integer(md_ptr, 'numerics', 'Maxitverticalforestertem' , Maxitverticalforestertem)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulencemodel' , Iturbulencemodel)
-    if (Iturbulencemodel == 4) splitfac = 0d0  ! kTau default
     call prop_get_integer(md_ptr, 'numerics', 'Turbulenceadvection' , javakeps)
-    call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'        , jadrhodz)
-    call prop_get_double (md_ptr, 'numerics', 'FacLaxturb'      , FacLaxturb)
+    call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
+    call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
     call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
-    call prop_get_double (md_ptr, 'numerics', 'EpsTKE'          , epstke)
-    call prop_get_double (md_ptr, 'numerics', 'EpsEPS'          , epseps)
-    call prop_get_integer(md_ptr, 'numerics', 'Nettosplit'      , janettosplit)
-    call prop_get        (md_ptr, 'numerics', 'Splitfac'        , splitfac)
+    call prop_get_double (md_ptr, 'numerics', 'EpsTKE' , epstke)
+    call prop_get_double (md_ptr, 'numerics', 'EpsEPS' , epseps)
  
     call prop_get_double (md_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax)
     call prop_get_integer(md_ptr, 'numerics', 'AntiCreep' , jacreep)
+
    
     call prop_get_integer(md_ptr, 'numerics', 'Orgbarockeywords' , jaorgbarockeywords)
     if (jaorgbarockeywords == 1) then
@@ -3215,17 +3213,6 @@ endif
 
     if (writeall .or. (epseps > 1d-32 .and. kmx > 0) ) then
        call prop_set(prop_ptr, 'numerics', 'EpsEPS' , epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
-    endif
-
-    if (writeall .or. (Janettosplit == 1 .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'Nettosplit' , Janettosplit, '(default 0=split each TKEsink separ., 1=split netto TKEsin)' )
-    endif
-
-    if (kmx > 0) then  
-    if (writeall .or. (Iturbulencemodel == 3 .and. splitfac .ne. 1d0 .or.    & 
-                       Iturbulencemodel == 4 .and. splitfac .ne. 0d0      )  ) then 
-       call prop_set(prop_ptr, 'numerics', 'Splitfac' , splitfac, '(0d0=Patankar, 1d0=Newton, 10d0=Guus) ' )
-    endif
     endif
   
     if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
