@@ -10,6 +10,7 @@ add_library(${library_name} ${source_files})
 
 # Add dependencies
 set(oss_dependencies deltares_common
+                     netcdff
                      io_netcdf
                      io_hyd)
 

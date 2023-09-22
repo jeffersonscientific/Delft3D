@@ -14,6 +14,7 @@ add_library(${library_name} ${source_files})
 # Set dependencies
 set(oss_dependencies deltares_common
                      waq_utils_f
+                     netcdff
                      io_netcdf)
 
 target_link_libraries(${library_name} ${oss_dependencies})
