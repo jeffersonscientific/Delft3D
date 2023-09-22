@@ -56,9 +56,6 @@ public :: fm_bott3d
    !! bathymetry changes
    subroutine fm_bott3d()
 
-   !2DO: remove locals and variables in `use` which are not necessary anymore
-   
-   !!!--declarations----------------------------------------------------------------
    use precision
    use bedcomposition_module
    use sediment_basics_module
@@ -70,7 +67,8 @@ public :: fm_bott3d
    use m_flowtimes, only: dts, tstart_user, time1, dnt, julrefdat, tfac, ti_sed, ti_seds, time_user
    use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot, numconst
    use unstruc_files, only: mdia, close_all_files
-   use m_fm_erosed
+   use morphology_data_module, only: bedbndtype
+   use m_fm_erosed, only: dzbdt, tratyp, tmor, bc_mor_array, lsedtot, cmpupdfrac, e_scrn, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbn, e_sbt, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, bedupd, blchg, cdryb, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
    use Messagehandling
    use message_module, only: writemessages, write_error
    use unstruc_netcdf, only: unc_closeall
@@ -81,7 +79,6 @@ public :: fm_bott3d
    use m_fm_update_crosssections
    use m_fm_morstatistics, only: morstats, morstatt0
    use precision_basics
-   !use m_mormerge_mpi
    use m_waves
    use m_tables, only: interpolate
    use m_debug
@@ -153,20 +150,7 @@ public :: fm_bott3d
    
    call fm_suspended_sand_correction()
       
-   !calculation of total face-normal suspended transport
-   do ll = 1, lsed
-      j = lstart + ll   ! constituent index
-      do L=1,lnx
-         e_ssn(L, ll) = 0d0
-         if (wu_mor(L)==0d0) cycle
-         call getLbotLtop(L,Lb,Lt)
-         if (Lt<Lb) cycle
-         do iL = Lb,Lt
-            e_ssn(L, ll)  = e_ssn(L, ll) + fluxhortot(j,iL)/max(wu_mor(L), 1d-3)             ! timestep transports per layer [kg/s/m]
-         enddo
-         e_ssn(L, ll)  = e_ssn(L, ll) + e_scrn(L, ll)  ! bottom layer correction
-      enddo
-   enddo
+   call fm_total_face_normal_suspended_transport()
    
    !
    ! Add equilibrium berm slope adjustment
@@ -1758,16 +1742,13 @@ public :: fm_bott3d
    !< Update concentrations in water column to conserve mass because of bottom update
    !! This needs to happen in work array sed, not constituents, because of copying back and forth later on
    subroutine fm_update_concentrations_after_bed_level_update()
-   
-   use m_flow
-   use m_flowgeom
-   use m_sediment, m_sediment_sed=>sed
-   use m_fm_erosed
-   use m_transport
-   !!
-   !! Declarations
-   !!
-
+      
+   use m_flow, only: kmx, hs
+   use m_flowgeom, only: ndx
+   use m_transport, only: constituents, itra1, itran, isalt
+   use m_sediment, m_sediment_sed=>sed 
+   use m_fm_erosed, only: blchg
+   use m_flowparameters, only: epshs, jasal
    
    implicit none
    
@@ -1856,5 +1837,49 @@ public :: fm_bott3d
    endif !kmx==0
 
    end subroutine fm_update_concentrations_after_bed_level_update
+
+   !> Compute total face normal suspended transport
+   subroutine fm_total_face_normal_suspended_transport()
+
+   use m_flowgeom, only: lnx, wu_mor
+   use m_fm_erosed, only: e_ssn, lsed, e_scrn
+   use m_transport, only: fluxhortot
+   
+   implicit none
+   
+   !!
+   !! Local variables
+   !!
+         
+   !integer
+   integer                                     :: ll, j, L, Lb, Lt, iL, lstart
+      
+   !double 
+   !double precision                            :: hsk
+   !double precision                            :: ddp
+   
+   !!
+   !! Allocate and initialize
+   !!
+   
+   !!
+   !! Execute
+   !!
+
+   do ll = 1, lsed
+      j = lstart + ll   ! constituent index
+      do L=1,lnx
+         e_ssn(L, ll) = 0d0
+         if (wu_mor(L)==0d0) cycle
+         call getLbotLtop(L,Lb,Lt)
+         if (Lt<Lb) cycle
+         do iL = Lb,Lt
+            e_ssn(L, ll)  = e_ssn(L, ll) + fluxhortot(j,iL)/max(wu_mor(L), 1d-3)             ! timestep transports per layer [kg/s/m]
+         enddo
+         e_ssn(L, ll)  = e_ssn(L, ll) + e_scrn(L, ll)  ! bottom layer correction
+      enddo
+   enddo
+   
+   end subroutine
    
 end module m_fm_bott3d
