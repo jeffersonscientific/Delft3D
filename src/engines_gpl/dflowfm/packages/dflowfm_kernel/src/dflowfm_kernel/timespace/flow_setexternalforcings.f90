@@ -31,6 +31,7 @@
 ! 
 ! 
 module m_external_forcings
+implicit none
 public :: set_external_forcings
 public :: get_and_apply_windstress
 
@@ -501,7 +502,7 @@ end subroutine set_external_forcings
 subroutine set_friction_coefficient(time_current)
    use m_meteo, only: item_frcu
    use m_flow,  only: frcu
-   
+
    double precision, intent(in) :: time_current !< Current time when setting friction coefficient
 
    call get_timespace_value_by_item_and_array(item_frcu, frcu, time_current)
@@ -513,11 +514,12 @@ subroutine get_timespace_value_by_item_and_array(item, array, time_current)
    use m_flowtimes, only: irefdate, tzone, tunit
    use m_meteo, only: ecInstancePtr, ec_gettimespacevalue
 
-    integer,          intent(in   ) :: item          !< Input item
-    double precision, intent(inout) :: array(:)      !< Array that stores the obatained values
-    double precision, intent(in   ) :: time_current  !< Current time when doing this action
- 
-    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_current, array)
+   integer,          intent(in   ) :: item          !< Input item
+   double precision, intent(inout) :: array(:)      !< Array that stores the obatained values
+   double precision, intent(in   ) :: time_current  !< Current time when doing this action
+
+   logical :: success
+   success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_current, array)
 
 end subroutine get_timespace_value_by_item_and_array
 
@@ -530,7 +532,8 @@ subroutine get_timespace_value_by_item(item, time_current)
    integer,          intent(in) :: item         !< Input item
    double precision, intent(in) :: time_current !< Current time when doing this action
 
-    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_current)
+   logical :: success
+   success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_current)
 
 end subroutine get_timespace_value_by_item
 
@@ -560,8 +563,6 @@ subroutine get_wind_data(time_current)
    use m_flow, only: windspeedfac
    use m_meteo
    use m_flowgeom, only: ln, lnx
-
-   implicit none
 
    double precision, intent(in) :: time_current !< Current time when setting wind data
 
