@@ -4395,6 +4395,7 @@ end subroutine getOutputTimeArrays
 !> check if time interval is multiple of DtUser
 subroutine check_time_interval(time_interval,user_time_step,time_interval_name)
     implicit none
+    
     real(kind=hp)    , intent(inout)  :: time_interval(3)     !< Array of time interval to be checked. It contains 3 elements: interval, start_time, stop_time
     double precision , intent(in)     :: user_time_step       !< User specified time step (s) for external forcing update
     character(*)     , intent(in)     :: time_interval_name   !< Name of the time interval parameter to check, to be used in the log message.
