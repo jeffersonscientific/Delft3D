@@ -224,7 +224,7 @@
 !
       CALL open_waq_files ( LUN(8) , LCHAR(8) , 8    , 2+ftype(8), IERRD  )
 
-      if ( intsrt .eq. 19 .or. intsrt .eq. 20 .or. nmax*mmax .gt. 0 ) then
+      if ( nmax*mmax .gt. 0 ) then
 
 !        read grid, make pointer table
 
@@ -232,14 +232,7 @@
          read  ( lun( 8) ) nmax2,mmax2,noseg2,kmax2,noq1d,noq2d,noq3d
          read  ( lun( 8) ) ( j(i1+k), k=1,mmax*nmax )
          i2 = ikbnd-1
-         if ( intsrt .eq. 19 .or. intsrt .eq. 20 ) then
-            do k =1 , mmax*nmax
-               if ( j(i1+k) .lt. 0 ) then
-                  i3 = -j(i1+k)
-                  j(i2+i3) = k
-               endif
-            enddo
-         endif
+
          call makpnt( nmax    , mmax    , kmax    , noseg   , nobnd   ,
      &                noq     , noq1    , noq2    , j(ilgra:), j(ixpnt:),
      &                cellpnt , flowpnt )
