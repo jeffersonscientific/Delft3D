@@ -623,8 +623,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
    if (allocated   (kbndt) ) deallocate(xbndt, ybndt, xy2bndt, zbndt, kbndt)
    ! allocate the following even if not needed (for debugging purposes)
-   tmp_nbndt = max(nbndt,1) !BS
-
+   tmp_nbndt = max(nbndt,1)
    allocate ( xbndt(tmp_nbndt), ybndt(tmp_nbndt), xy2bndt(2,tmp_nbndt), zbndt(tmp_nbndt), kbndt(4,tmp_nbndt), kdt(tmp_nbndt) , stat=ierr     )
    call aerr('xbndt(tmp_nbndt), ybndt(tmp_nbndt), xy2bndt(2,tmp_nbndt), zbndt(tmp_nbndt), kbndt(4,tmp_nbndt), kdt(tmp_nbndt)', ierr, tmp_nbndt*10 )
    
@@ -701,8 +700,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
    if (allocated   (kbndn) ) deallocate(  xbndn,ybndn,xy2bndn,zbndn,kbndn)
    ! allocate the following even if not needed (for debugging purposes)
-   tmp_nbndn = max(nbndn,1) !BS 
-
+   tmp_nbndn = max(nbndn,1)
    allocate ( xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2,tmp_nbndn), zbndn(tmp_nbndn), kbndn(4,tmp_nbndn), kdn(tmp_nbndn) , stat=ierr     )
    call aerr('xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2,tmp_nbndn), zbndn(tmp_nbndn), kbndn(4,tmp_nbndn), kdn(tmp_nbndn)', ierr, tmp_nbndn*10 )
    if (nbndn > 0) then                                 ! Normal velocity boundaries as z bnds

@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-    subroutine wave_length(  hrm, deph, tp, wavel, ldep, grav  )
+    subroutine wave_length(  hrm, deph, tp, wavel, water_is_too_shallow_or_waves_are_too_small, grav  )
     !!--description-----------------------------------------------------------------
     !
     !
@@ -36,8 +36,8 @@
     !
     !     Output:
     !     --------
-    !     wavel, ldep
-    !     LDEP  : logical variable, .true. when depth or wave height too small
+    !     wavel                                        : wave length
+    !     water_is_too_shallow_or_waves_are_too_small  : logical variable, .true. when depth or wave height too small
     !
     !     Compute wave lenght (for high enough waves and for deep enough water)
     !
@@ -48,45 +48,30 @@
     use precision
     
     implicit none
-    
     !
     ! Global variables
     !
-    logical, intent(out)           :: ldep
-    real                           :: deph
-    real                           :: grav
-    real                           :: hrm
-    real                           :: tp
-    real   , intent(out)           :: wavel
+    logical, intent(  out)  :: water_is_too_shallow_or_waves_are_too_small
+    real   , intent(in   )  :: deph
+    real   , intent(in   )  :: grav
+    real   , intent(in   )  :: hrm
+    real   , intent(in   )  :: tp
+    real   , intent(  out)  :: wavel
     !
     ! Local variables
     !
-    real(fp) ::   depth_flex_precision
-    real(fp) ::  period_flex_precision
-    real(fp) :: gravity_flex_precision
-    !real(fp) :: wavek
     real     :: wavek
     !
     !! executable statements -------------------------------------------------------
     !
     
-    depth_flex_precision   = real(deph,fp)
-    period_flex_precision  = real(tp  ,fp)
-    gravity_flex_precision = real(grav,fp)
+    water_is_too_shallow_or_waves_are_too_small   = .false.
     
-    ldep   = .false.
     if (deph>0.05 .and. hrm>=0.01 .and. tp>0.0) then
-        !BS compute in double precision, convert later
-        !call wavenr(depth_flex_precision, period_flex_precision, wavek, gravity_flex_precision)
-        !wavel = twopi_sp/real(wavek)
-        !
-        !BS compute in single precision
         call compute_wave_number_in_single_precision(deph, tp, wavek)
         wavel = twopi_sp/wavek
     else
-        !
-        ! Too shallow water or waves too small
-        !
-        ldep = .true.
+        water_is_too_shallow_or_waves_are_too_small = .true.
     endif
+    
     end subroutine wave_length
