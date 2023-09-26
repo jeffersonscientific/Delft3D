@@ -143,6 +143,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     character(10)              , dimension(:) , allocatable           :: cfield
     integer, parameter :: maxfld     = 20
     integer                                                           :: lenc
+    integer                                                           :: idummy
 
     allocate(itype  (maxfld))
     allocate(ifield (maxfld))
@@ -280,21 +281,49 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        call prop_get(mor_ptr, 'Underlayer', 'IConsolidate', iconsolidate)
        txtput1 = 'Consolidation'
        select case (iconsolidate)
-       case (0)
+       case (CONSOL_NONE)
           txtput2 = '                  NO'
-       case (1)
+       case (CONSOL_GIBSON)
           txtput2 = '   Full Gibson model'
-       case (2)
+       case (CONSOL_DECON)
           txtput2 = ' Dynamic Equilibrium' ! Dynamic Equilibrium CONsolidation (DECON)
                                            ! Quasi-Equilibrium Model for Consolidation in Low-SPM Environments
-       case (3)
+       case (CONSOL_TERZAGHI)
           txtput2 = '      Simple Loading'
-       case (4)
+       case (CONSOL_TERZ_PEAT)
           txtput2 = ' Simple Loading+Peat'
-       case (5)
+       case (CONSOL_NOCOMP)
           txtput2 = '       No Compaction'
        end select
        write (lundia, '(3a)') txtput1, ':', txtput2
+       !
+       idummy = -999
+       call prop_get(mor_ptr, 'Consolidate', 'iero', idummy)
+       call prop_get(mor_ptr, 'Consolidate', 'ierosion', idummy)
+       if (idummy /= -999) then
+           write(lundia, '(A)') 'IErosion flags should be specified in UnderLayer block instead of Consolidate block.'
+       end if
+       !
+       call prop_get(mor_ptr, 'Underlayer' , 'IErosion', morlyr%settings%ierosion)
+       txtput1 = 'Erosion formulation'
+       select case (morlyr%settings%ierosion)
+       case (EROS_CONST)
+          txtput2 = '      User specified'
+       case (EROS_WHITEHOUSE)
+          txtput2 = '   Whitehouse (2001)'
+       case (EROS_LE_HIR)
+          txtput2 = '       Le Hir (2011)'
+       case (EROS_ALONSO)
+          txtput2 = '       Alonso (2021)'
+       case (EROS_WINTERWERP)
+          txtput2 = '   Winterwerp (2013)'
+       case (EROS_MUSA)
+          txtput2 = '         MUSA (2023)'
+       end select
+       write (lundia, '(3a)') txtput1, ':', txtput2
+       if (morlyr%settings%ierosion > 0) then
+          call rderosion(lundia, mor_ptr, morlyr%settings%erosion)
+       endif
        !
        if (iconsolidate>0) then
           iporosity = 4
@@ -1056,51 +1085,6 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
             txtput1 = 'consolidation rate of sand fraction'
             write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%crsand
             
-            call prop_get(mor_ptr, 'Consolidate', 'd50sed', morlyr%settings%d50sed)
-            txtput1 = 'grain-size of sediment supply'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%d50sed
-            
-            call prop_get(mor_ptr, 'Consolidate', 'iero', morlyr%settings%ierosion)
-            call prop_get(mor_ptr, 'Consolidate', 'ierosion', morlyr%settings%ierosion)
-            txtput1 = 'switch on method to determined critical bed shear stress'
-            write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%ierosion
-            
-            call prop_get(mor_ptr, 'Consolidate', 'alpha', morlyr%settings%alpha)
-            txtput1 = 'used in tera calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%alpha
-            
-            call prop_get(mor_ptr, 'Consolidate', 'beta', morlyr%settings%beta)
-            txtput1 = 'used in tera calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%beta
-            
-            call prop_get(mor_ptr, 'Consolidate', 'alpha_mix', morlyr%settings%alpha_mix)
-            txtput1 = 'used in tera calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%alpha_mix
-            
-            call prop_get(mor_ptr, 'Consolidate', 'beta_mix', morlyr%settings%beta_mix)
-            txtput1 = 'used in tera calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%beta_mix
-    
-            call prop_get(mor_ptr, 'Consolidate', 'alpha_lehir', morlyr%settings%alpha_lehir)
-            txtput1 = 'used in tera calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%alpha_lehir
-            
-            call prop_get(mor_ptr, 'Consolidate', 'alpha_winterwerp', morlyr%settings%alpha_winterwerp)
-            txtput1 = 'used in Me calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%alpha_winterwerp
-            
-            call prop_get(mor_ptr, 'Consolidate', 'alpha_me', morlyr%settings%alpha_me)
-            txtput1 = 'used in Me calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%alpha_me
-            
-            call prop_get(mor_ptr, 'Consolidate', 'C0', morlyr%settings%C0)
-            txtput1 = 'used in tera calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%C0
-            
-            call prop_get(mor_ptr, 'Consolidate', 'A', morlyr%settings%A)
-            txtput1 = 'used in PI index calculation'
-            write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%A
-            
             call prop_get(mor_ptr, 'Consolidate', 'ptr', morlyr%settings%ptr)
             txtput1 = 'percentage of thickness reduction'
             write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ptr
@@ -1115,6 +1099,115 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     deallocate(parnames, stat = istat)
     !
 end subroutine rdmorlyr
+
+subroutine rderosion(lundia, mor_ptr, erosion_config)
+    use properties
+    use bedcomposition_module
+    integer                                                       :: lundia   !< Description and declaration in inout.igs
+    type(tree_data)                                 , pointer     :: mor_ptr
+    type(erosion_settings)                          , pointer     :: erosion_config
+    
+    character(40)            :: txtput1
+
+    select case(ierosion)
+    case (EROS_WHITEHOUSE)
+        ! no parameters
+        
+    case (EROS_LE_HIR)
+        call prop_get(mor_ptr, 'Erosion', 'C0', erosion_config%C0)
+        txtput1 = 'C0 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%C0
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_lehir', erosion_config%alpha_lehir)
+        txtput1 = 'alpha_lehir used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_lehir
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_me', erosion_config%alpha_me)
+        txtput1 = 'alpha_me used in Me calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_me
+
+    case (EROS_ALONSO)
+        call prop_get(mor_ptr, 'Erosion', 'C0', erosion_config%C0)
+        txtput1 = 'C0 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%C0
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_lehir', erosion_config%alpha_lehir)
+        txtput1 = 'alpha_lehir used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_lehir
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_me', erosion_config%alpha_me)
+        txtput1 = 'alpha_me used in Me calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_me
+
+    case (EROS_WINTERWERP)
+        call prop_get(mor_ptr, 'Erosion', 'A', erosion_config%A)
+        txtput1 = 'A used in PI index calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%A
+
+        call prop_get(mor_ptr, 'Erosion', 'C0', erosion_config%C0)
+        txtput1 = 'C0 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%C0
+
+        call prop_get(mor_ptr, 'Erosion', 'd50sed', erosion_config%d50sed)
+        txtput1 = 'grain-size of sediment supply'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%d50sed
+                        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_mix', erosion_config%alpha_mix)
+        txtput1 = 'alpha_mix used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_mix
+        
+        call prop_get(mor_ptr, 'Erosion', 'beta_mix', erosion_config%beta_mix)
+        txtput1 = 'beta_mix used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%beta_mix
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha', erosion_config%alpha)
+        txtput1 = 'alpha used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha
+        
+        call prop_get(mor_ptr, 'Erosion', 'beta', erosion_config%beta)
+        txtput1 = 'beta used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%beta
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha_winterwerp', erosion_config%alpha_winterwerp)
+        txtput1 = 'alpha_winterwerp used in Me calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_winterwerp
+
+    case (EROS_MUSA)
+        call prop_get(mor_ptr, 'Erosion', 'rho_min', erosion_config%rho_min)
+        txtput1 = 'rho_min used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%rho_min
+
+        call prop_get(mor_ptr, 'Erosion', 'taucr_min1', erosion_config%taucr_min1)
+        txtput1 = 'taucr_min1 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%taucr_min1
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha1', erosion_config%alpha1)
+        txtput1 = 'alpha1 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha1
+
+        call prop_get(mor_ptr, 'Erosion', 'rho_star', erosion_config%rho_star)
+        txtput1 = 'rho_star used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%rho_star
+
+        call prop_get(mor_ptr, 'Erosion', 'taucr_max', erosion_config%taucr_max)
+        txtput1 = 'taucr_max used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%taucr_max
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha2', erosion_config%alpha2)
+        txtput1 = 'alpha2 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha2
+
+        call prop_get(mor_ptr, 'Erosion', 'rho_max', erosion_config%rho_max)
+        txtput1 = 'rho_max used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%rho_max
+
+        call prop_get(mor_ptr, 'Erosion', 'taucr_min2', erosion_config%taucr_min2)
+        txtput1 = 'taucr_min2 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%taucr_min2
+
+    end select
+        
+end subroutine rderosion
 
 
 subroutine set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)

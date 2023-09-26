@@ -43,6 +43,8 @@ private
 ! public data types
 !
 public bedcomp_data
+public bedcomp_settings
+public erosion_settings
 
 !
 ! public routines
@@ -105,50 +107,72 @@ type morlyrnumericstype
 end type morlyrnumericstype
 
 ! iconsolidate
-integer, parameter :: CONSOL_NONE       = 0 !  0: no consolidation
-integer, parameter :: CONSOL_GIBSON     = 1 !  1: full Gibson model
-integer, parameter :: CONSOL_DECON      = 2 !  2: Dynamic Equilibrium CONsolidation (DECON)
-integer, parameter :: CONSOL_TERZAGHI   = 3 !  3: simple loading model (Terzaghi)
-integer, parameter :: CONSOL_TERZ_PEAT  = 4 !  4: simple loading including peat (Terzaghi)
-integer, parameter :: CONSOL_NOCOMP     = 5 !  5: No Compaction
+integer, parameter, public :: CONSOL_NONE       = 0 !  0: no consolidation
+integer, parameter, public :: CONSOL_GIBSON     = 1 !  1: full Gibson model
+integer, parameter, public :: CONSOL_DECON      = 2 !  2: Dynamic Equilibrium CONsolidation (DECON)
+integer, parameter, public :: CONSOL_TERZAGHI   = 3 !  3: simple loading model (Terzaghi)
+integer, parameter, public :: CONSOL_TERZ_PEAT  = 4 !  4: simple loading including peat (Terzaghi)
+integer, parameter, public :: CONSOL_NOCOMP     = 5 !  5: No Compaction
 
 ! idiffusion
-integer, parameter :: BDIFF_NONE        = 0 !  0: no diffusion
-integer, parameter :: BDIFF_ACTIVE      = 1 !  1: diffusion
+integer, parameter, public :: BDIFF_NONE        = 0 !  0: no diffusion
+integer, parameter, public :: BDIFF_ACTIVE      = 1 !  1: diffusion
 
 ! ierosion
-integer, parameter :: EROS_CONST        = 0 !  0: cohesive sediment erodibility doesn't depend on bed composition
-integer, parameter :: EROS_WHITEHOUSE   = 1 !  1: Whitehouse (2001)
-integer, parameter :: EROS_LE_HIR       = 2 !  2: Le Hir (2011)
-integer, parameter :: EROS_MODIFIED     = 3 !  3: Alonso et al (2021)
-integer, parameter :: EROS_WINTERWERP   = 4 !  4: Winterwerp (2013)
+integer, parameter, public :: EROS_CONST        = 0 !  0: cohesive sediment erodibility doesn't depend on bed composition
+integer, parameter, public :: EROS_WHITEHOUSE   = 1 !  1: Whitehouse (2001)
+integer, parameter, public :: EROS_LE_HIR       = 2 !  2: Le Hir (2011)
+integer, parameter, public :: EROS_ALONSO       = 3 !  3: Alonso et al (2021)
+integer, parameter, public :: EROS_WINTERWERP   = 4 !  4: Winterwerp (2013)
+integer, parameter, public :: EROS_MUSA         = 5 !  5: MUSA project - Weerdenburg
 
 ! ifracdef
-integer, parameter :: FRAC_MASS         = 1 !  1: mass fractions (sum of all fractions equals 1)
-integer, parameter :: FRAC_VOLUME       = 2 !  2: (solid) volume fractions (sum of all fractions equals 1)
+integer, parameter, public :: FRAC_MASS         = 1 !  1: mass fractions (sum of all fractions equals 1)
+integer, parameter, public :: FRAC_VOLUME       = 2 !  2: (solid) volume fractions (sum of all fractions equals 1)
 
 ! iporosity
-integer, parameter :: POROS_IN_DENSITY  = 0 !  0: porosity included in densities, set porosity to 0
-integer, parameter :: POROS_FRINGS      = 1 !  1: Frings (May 2009)
-integer, parameter :: POROS_WELTJE      = 2 !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
-integer, parameter :: POROS_SVFRAC0     = 3 !  3: svfrac0
-integer, parameter :: POROS_SVFRAC0SM   = 4 !  4: weight average of svfrac0m and svfrac0s
-integer, parameter :: POROS_CDRYB       = 5 !  5: similar to 0, but with porosity shared
+integer, parameter, public :: POROS_IN_DENSITY  = 0 !  0: porosity included in densities, set porosity to 0
+integer, parameter, public :: POROS_FRINGS      = 1 !  1: Frings (May 2009)
+integer, parameter, public :: POROS_WELTJE      = 2 !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
+integer, parameter, public :: POROS_SVFRAC0     = 3 !  3: svfrac0
+integer, parameter, public :: POROS_SVFRAC0SM   = 4 !  4: weight average of svfrac0m and svfrac0s
+integer, parameter, public :: POROS_CDRYB       = 5 !  5: similar to 0, but with porosity shared
 
 ! iunderlyr
-integer, parameter :: BED_MIXED         = 1 !  1: standard fully mixed concept
-integer, parameter :: BED_LAYERED       = 2 !  2: layered bed concept
+integer, parameter, public :: BED_MIXED         = 1 !  1: standard fully mixed concept
+integer, parameter, public :: BED_LAYERED       = 2 !  2: layered bed concept
 
 ! updbaselyr
-integer, parameter :: BASELYR_UPDATED   = 1 !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
-integer, parameter :: BASELYR_CONST_FRC = 2 !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
-integer, parameter :: BASELYR_COPY_FRC  = 3 !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
-integer, parameter :: BASELYR_CONST     = 4 !  4: base layer composition and thickness constant (no change whatsoever)
-integer, parameter :: BASELYR_CONST_THK = 5 !  5: base layer composition is updated, but thickness is kept constant
+integer, parameter, public :: BASELYR_UPDATED   = 1 !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
+integer, parameter, public :: BASELYR_CONST_FRC = 2 !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
+integer, parameter, public :: BASELYR_COPY_FRC  = 3 !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
+integer, parameter, public :: BASELYR_CONST     = 4 !  4: base layer composition and thickness constant (no change whatsoever)
+integer, parameter, public :: BASELYR_CONST_THK = 5 !  5: base layer composition is updated, but thickness is kept constant
 
 ! updtoplyr
-integer, parameter :: TOPLYR_POR_RESET  = 1 !  1: top layer porosity is recomputed based on new mixture
-integer, parameter :: TOPLYR_POR_UPDATE = 2 !  2: top layer porosity is updated based on newly added sediment
+integer, parameter, public :: TOPLYR_POR_RESET  = 1 !  1: top layer porosity is recomputed based on new mixture
+integer, parameter, public :: TOPLYR_POR_UPDATE = 2 !  2: top layer porosity is updated based on newly added sediment
+
+type erosion_settings
+    real(fp) :: A                                    !< activity of soil, which is used to calculate PI index    
+    real(fp) :: alpha                                !< a constant in determining critical bed shear stress for erosion
+    real(fp) :: alpha_me                             !< tuning parameter in simple Me equation 
+    real(fp) :: alpha_mix                            !< tuning parameter for cohesionless mixture
+    real(fp) :: alpha_lehir                          !< tuning parameter in Le Hir tcrero equation 
+    real(fp) :: alpha_winterwerp                     !< tuning parameter in Winterwerp Me equation 
+    real(fp) :: alpha1                               !< non-linearity coefficient for the interpolation between rho_min1 and rho_star [-]
+    real(fp) :: alpha2                               !< non-linearity coefficient for the interpolation between rho_star and rho_min2 [-]
+    real(fp) :: beta                                 !< a constant in determining critical bed shear stress for erosion
+    real(fp) :: beta_mix                             !< tuning parameter for cohesionless mixture
+    real(fp) :: C0                                   !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
+    real(fp) :: d50sed                               !< d50 grain size of sediment supply [m]
+    real(fp) :: rho_max                              !< layer density at and above which critical shear stress taucr_min2 should be applied [kg/m3]
+    real(fp) :: rho_min                              !< layer density at and below which critical shear stress taucr_min1 should be applied [kg/m3]
+    real(fp) :: rho_star                             !< layer density at which critical shear stress maximum taucr_max should be applied [kg/m3]
+    real(fp) :: taucr_max                            !< maximum critical shear stress [N/m2]
+    real(fp) :: taucr_min1                           !< critical shear stress at low density [N/m2]
+    real(fp) :: taucr_min2                           !< critical shear stress at high density [N/m2]
+end type erosion_settings
 
 type bedcomp_settings
     !
@@ -193,16 +217,6 @@ type bedcomp_settings
     real(fp) :: porini                               !< initial porosity 
     !critical bed shear stress
     real(fp) :: rhow_const                           !< a constant that defines water density
-    real(fp) :: d50sed                               !< d50 grain size of sediment supply
-    real(fp) :: alpha                                !< a constant in determining critical bed shear stress for erosion
-    real(fp) :: beta                                 !< a constant in determining critical bed shear stress for erosion
-    real(fp) :: alpha_mix                            !< tuning parameter for cohesionless mixture
-    real(fp) :: beta_mix                             !< tuning parameter for cohesionless mixture
-    real(fp) :: alpha_lehir                          !< tuning parameter in Le Hir tcrero equation 
-    real(fp) :: alpha_winterwerp                     !< tuning parameter in Winterwerp Me equation 
-    real(fp) :: alpha_me                             !< tuning parameter in simple Me equation 
-    real(fp) :: C0                                   !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
-    real(fp) :: A                                    !< activity of soil, which is used to calculate PI index    
     real(fp) :: ptr                                  !< percentage of thickness reduction
     !
     ! integers
@@ -262,6 +276,8 @@ type bedcomp_settings
     ! pointers
     !
     type (morlyrnumericstype) , pointer :: morlyrnum ! structure containing numerical settings
+    type (erosion_settings)   , pointer :: erosion   ! structure containing for crtical shear stress for erosion and erosion parameter
+    !
     integer  , dimension(:)   , pointer :: sedtyp    ! sediment type: 0=total/1=noncoh/2=coh
     real(fp) , dimension(:,:) , pointer :: kdiff     ! diffusion coefficients for mixing between layers, units : m2/s
     real(fp) , dimension(:)   , pointer :: phi       ! D50 diameter expressed on phi scale
@@ -2009,7 +2025,6 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     real(fp)                   , pointer :: kk            ! permeability coefficient [m/s]
     !
     real(fp)                   , pointer :: rhow_const
-    real(fp)                   , pointer :: d50sed
     !
     real(fp) , dimension(:,:,:), pointer :: msed
     real(fp) , dimension(:,:)  , pointer :: svfrac
@@ -2018,21 +2033,42 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     !
     ! Local variables
     !
-    real(fp), dimension(this%settings%nfrac):: mfrac
-    real(fp) :: rhos          !< sediment specific density [kg/m3]
-    integer  :: l             !< 
-    integer  :: nm            !< 
-    real(fp) :: nonmud        !< 
-    integer  :: k             !< 
-    real(fp) :: cv            !< consolidation coefficient
-    real(fp) :: cvfac         !< multiplication factor in computation of the consolidation coefficient
-    real(fp) :: cu            !< consolidation coefficient related to ky
-    real(fp) :: phi_mud       !< mud volume fraction (phi_mud + phi_sand = 1 - poros)
-    real(fp) :: phi_sand      !< sand volume fraction (phi_mud + phi_sand = 1 - poros)
-    real(fp) :: phi_term      !< term representing the influence of phi on tcrero and its inverse influence on eropar
-    real(fp) :: pi_index      !< plasticity index
-    real(fp) :: poros_ref     !< reference porosity
-    real(fp) :: totmass       !< total mass of sediment in transport layer
+    integer                                 :: l             !< fraction index - loop variable 
+    integer                                 :: nm            !< space index - loop variable
+    real(fp)                                :: cv            !< consolidation coefficient
+    real(fp)                                :: cvfac         !< multiplication factor in computation of the consolidation coefficient
+    real(fp)                                :: cu            !< consolidation coefficient related to ky
+    real(fp), dimension(this%settings%nfrac):: mfrac         !<
+    real(fp)                                :: phi_mud       !< mud volume fraction (phi_mud + phi_sand = 1 - poros)
+    real(fp)                                :: phi_sand      !< sand volume fraction (phi_mud + phi_sand = 1 - poros)
+    real(fp)                                :: phi_term      !< term representing the influence of phi on tcrero and its inverse influence on eropar
+    real(fp)                                :: pi_index      !< plasticity index
+    real(fp)                                :: poros_ref     !< reference porosity [-]
+    real(fp)                                :: rho           !< layer density = total mass divided by layer thickness [kg/m3]
+    real(fp)                                :: rhos          !< sediment specific density [kg/m3]
+    real(fp)                                :: thick         !< layer thickness [m]
+    real(fp)                                :: totmass       !< total mass of sediment in transport layer per unit area [kg/m2]
+    real(fp)                                :: xi            !< weight factor 0-1 [-]
+    !
+    real(fp)                      , pointer :: A                !< activity of soil, which is used to calculate PI index    
+    real(fp)                      , pointer :: alpha            !< a constant in determining critical bed shear stress for erosion
+    real(fp)                      , pointer :: alpha_me         !< tuning parameter in simple Me equation 
+    real(fp)                      , pointer :: alpha_mix        !< tuning parameter for cohesionless mixture
+    real(fp)                      , pointer :: alpha_lehir      !< tuning parameter in Le Hir tcrero equation 
+    real(fp)                      , pointer :: alpha_winterwerp !< tuning parameter in Winterwerp Me equation 
+    real(fp)                      , pointer :: alpha1           !< non-linearity coefficient for the interpolation between rho_min1 and rho_star [-]
+    real(fp)                      , pointer :: alpha2           !< non-linearity coefficient for the interpolation between rho_star and rho_min2 [-]
+    real(fp)                      , pointer :: beta             !< a constant in determining critical bed shear stress for erosion
+    real(fp)                      , pointer :: beta_mix         !< tuning parameter for cohesionless mixture
+    real(fp)                      , pointer :: C0               !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
+    real(fp)                      , pointer :: d50sed           !< d50 grain size of sediment supply [m]
+    real(fp)                      , pointer :: rho_max          !< layer density at and above which critical shear stress taucr_min2 should be applied [kg/m3]
+    real(fp)                      , pointer :: rho_min          !< layer density at and below which critical shear stress taucr_min1 should be applied [kg/m3]
+    real(fp)                      , pointer :: rho_star         !< layer density at which critical shear stress maximum taucr_max should be applied [kg/m3]
+    real(fp)                      , pointer :: taucr_max        !< maximum critical shear stress
+    real(fp)                      , pointer :: taucr_min1       !< critical shear stress at low density
+    real(fp)                      , pointer :: taucr_min2       !< critical shear stress at high density
+
     !
     !! executable statements -------------------------------------------------------
     !
@@ -2040,7 +2076,6 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     cmudlyr        => this%state%cmudlyr
     rhow           => this%state%rhow
     ag             => this%settings%ag
-    d50sed         => this%settings%d50sed
     ierosion       => this%settings%ierosion
     ksigma         => this%settings%ksigma
     ky             => this%settings%ky
@@ -2048,6 +2083,26 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     kk             => this%settings%kk
     rhofrac        => this%settings%rhofrac
     rhow_const     => this%settings%rhow_const
+    !
+    A                => this%settings%erosion%A
+    alpha            => this%settings%erosion%alpha
+    alpha_me         => this%settings%erosion%alpha_me
+    alpha_mix        => this%settings%erosion%alpha_mix
+    alpha_lehir      => this%settings%erosion%alpha_lehir
+    alpha_winterwerp => this%settings%erosion%alpha_winterwerp
+    alpha1           => this%settings%erosion%alpha1
+    alpha2           => this%settings%erosion%alpha2
+    beta             => this%settings%erosion%beta
+    beta_mix         => this%settings%erosion%beta_mix
+    C0               => this%settings%erosion%C0
+    d50sed           => this%settings%erosion%d50sed
+    rho_max          => this%settings%erosion%rho_max
+    rho_min          => this%settings%erosion%rho_min
+    rho_star         => this%settings%erosion%rho_star
+    taucr_max        => this%settings%erosion%taucr_max
+    taucr_min1       => this%settings%erosion%taucr_min1
+    taucr_min2       => this%settings%erosion%taucr_min2
+    !
     msed           => this%state%msed
     svfrac         => this%state%svfrac
     thlyr          => this%state%thlyr
@@ -2083,14 +2138,18 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
                 !
                 phi_mud  = 0.0_fp
                 phi_sand = 0.0_fp
+                totmass = 0.0_fp
+                thick = max(1e-10_fp, thlyr(1,nm))
                 do l = 1, this%settings%nfrac
-                    if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                        phi_mud   = phi_mud + (msed(l,1,nm)/rhofrac(l)/thlyr(1,nm))
+                    totmass = totmass + msed(l,1,nm)
+                    if (this%settings%sedtyp(l) == SEDTYP_COHESIVE) then
+                        phi_mud   = phi_mud + (msed(l,1,nm)/rhofrac(l)/thick)
                     else
-                        phi_sand  = phi_sand + (msed(l,1,nm)/rhofrac(l)/thlyr(1,nm))
+                        phi_sand  = phi_sand + (msed(l,1,nm)/rhofrac(l)/thick)
                     endif
                 enddo
-                
+                rho = totmass / thick
+                !
                 select case(ierosion)
                 case (EROS_WHITEHOUSE)
                     !
@@ -2100,32 +2159,28 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
                     ! prevous code in erosilt: tcrero = e1 * (phi_mud*rhosol) ** e2
                     ! e1 = 0.0012_fp, e2 = 1.2_fp
                     tcrero(nm) = 0.0012_fp * (phi_mud * phi_sand)**1.2_fp
-                    
+
                 case (EROS_LE_HIR)
                     !
                     ! Critical Bed Shear Stress for Erosion & Maximum Erosion Rate of cohesive sediment (tcrero and Me compilation by van Rijn, 2020 and Me from process-based by Winterwerp et al., 2013)
                     !
                     phi_term = (phi_mud)**(poros(nm)/poros_ref)
-                    if (phi_mud <= this%settings%C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
-                        phi_mud = this%settings%C0
+                    if (phi_mud <= C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
+                        phi_mud = C0
                         !
-                        tcrero(nm) = this%settings%alpha_lehir * phi_term
-                        eropar(nm) = this%settings%alpha_me / phi_term
+                        tcrero(nm) = alpha_lehir * phi_term
+                        eropar(nm) = alpha_me / phi_term
                     else
-                        tcrero(nm) = this%settings%alpha_lehir * phi_term
-                        eropar(nm) = this%settings%alpha_me / phi_term
+                        tcrero(nm) = alpha_lehir * phi_term
+                        eropar(nm) = alpha_me / phi_term
                     endif
-                    
-                case (EROS_MODIFIED)
+
+                case (EROS_ALONSO)
                     !
                     ! NEW Critical Bed Shear Stress for Erosion & Maximum Erosion Rate of cohesive sediment (tcrero and Me compilation by van Rijn, 2020 and Me from process-based by Winterwerp et al., 2013)
                     !
                     ! Reference porosity based on transport layer
                     !
-                    totmass = 0.0_fp
-                    do l = 1, this%settings%nfrac
-                        totmass = totmass + msed(l, 1, nm)
-                    enddo
                     if (totmass>0.0_fp) then
                         do l = 1, this%settings%nfrac
                             mfrac(l) = msed(l, 1, nm)/totmass
@@ -2136,40 +2191,57 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
                         poros_ref = 1.0_fp
                     endif
                     
-                    if (phi_mud <= this%settings%C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
-                        phi_mud = this%settings%C0
+                    if (phi_mud <= C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
+                        phi_mud = C0
                         !
                         tcrero(nm) = 0.0_fp
                         eropar(nm) = 0.0_fp
                     else
-                        phi_term = (phi_mud/this%settings%C0) * (poros_ref/poros(nm))
-                        tcrero(nm) = this%settings%alpha_lehir * phi_term
-                        eropar(nm) = this%settings%alpha_me / phi_term
+                        phi_term = (phi_mud/C0) * (poros_ref/poros(nm))
+                        tcrero(nm) = alpha_lehir * phi_term
+                        eropar(nm) = alpha_me / phi_term
                     endif
-                    
+
                 case (EROS_WINTERWERP)
                     !
                     ! Critical bed shear stress and maximum erosion rate of cohesive sediment (Winterwerp et al., 2013)
                     !
-                    pi_index = this%settings%A * max(0.0_fp, (phi_mud - this%settings%C0)) * 100.0_fp
+                    pi_index = A * max(0.0_fp, (phi_mud - C0)) * 100.0_fp
                     cv = cvfac / rhow(nm) 
-                    if (phi_mud <= this%settings%C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
-                        phi_mud = this%settings%C0
+                    if (phi_mud <= C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
+                        phi_mud = C0
                         !
-                        tcrero(nm) = this%settings%alpha_mix * pi_index**this%settings%beta_mix 
+                        tcrero(nm) = alpha_mix * pi_index**beta_mix 
                         !
                         phi_sand = 1.0_fp - phi_mud - poros(nm)
                         cu = ky * (phi_mud/(1.0_fp - phi_sand))**(2.0_fp/(3.0_fp - nf))
-                        eropar(nm) = cv * (phi_mud**2) * rhos / this%settings%alpha_winterwerp / d50sed / cu
+                        eropar(nm) = cv * (phi_mud**2) * rhos / alpha_winterwerp / d50sed / cu
                         !
                     else
                         !
-                        tcrero(nm) = this%settings%alpha * pi_index**this%settings%beta
+                        tcrero(nm) = alpha * pi_index**beta
                         !
                         cu = ky * (phi_mud/(1.0_fp - phi_sand))**(2.0_fp/(3.0_fp - nf))
-                        eropar(nm) = cv * (phi_mud**2) * rhos / this%settings%alpha_winterwerp / d50sed / cu
+                        eropar(nm) = cv * (phi_mud**2) * rhos / alpha_winterwerp / d50sed / cu
                         !
                     endif
+
+                case (EROS_MUSA)
+                    !
+                    ! rho refers here to dry bed densities of the sediment layer
+                    !
+                    if (rho < rho_min) then
+                        tcrero(nm) = taucr_min1
+                    elseif (rho < rho_star) then
+                        xi = ((rho - rho_min)/(rho_star - rho_min))**alpha1
+                        tcrero(nm) = taucr_min1 * (1-xi) + taucr_max * xi
+                    elseif (rho < rho_max) then
+                        xi = ((rho_max - rho)/(rho_max - rho_star))**alpha2
+                        tcrero(nm) = taucr_max * xi + taucr_min2 * (1-xi)
+                    else
+                        tcrero(nm) = taucr_min2
+                    endif
+
                 endselect
             enddo
         endif
@@ -2582,16 +2654,31 @@ function initmorlyr(this) result (istat)
     !critical bed shear stress
     settings%rhow_const   = 1000.0_fp              ! water density [kg/m3]
     settings%ky           = 1.0E3_fp               ! vertical permeability [Pa]
-    settings%d50sed       = 3.0E-5_fp              ! median sediment diameter [m]
-    settings%alpha        = 0.7_fp                 ! default value for cohesive sediment [-]
-    settings%beta         = 0.2_fp                 ! default value for cohesive sediment [-]
-    settings%alpha_mix    = 0.2205_fp              ! tuning parameter for cohesionless mixture [-]
-    settings%beta_mix     = 0.9125_fp              ! tuning parameter for cohesionless mixture [-]
-    settings%alpha_lehir  = 1.0_fp                 ! tuning parameter of le hir tcrero equation [-]
-    settings%alpha_winterwerp = 10.0_fp            ! tuning parameter of Winterwerp Me equation [-]
-    settings%alpha_me     = 1.0_fp                 ! tuning parameter of simple Me equation [-]
-    settings%C0           = 0.07_fp                ! default value for cohesive sediment [%]
-    settings%A            = 2.67_fp                ! default value for cohesive sediment [-]
+    
+    ! erosion settings
+    allocate (settings%erosion , stat = istat)
+    if (istat == 0) then
+       settings%erosion%A                = 2.67_fp            !< activity of soil, which is used to calculate PI index    
+       settings%erosion%alpha            = 0.7_fp             !< a constant in determining critical bed shear stress for erosion
+       settings%erosion%alpha_me         = 1.0_fp             !< tuning parameter in simple Me equation 
+       settings%erosion%alpha_mix        = 0.2205_fp          !< tuning parameter for cohesionless mixture
+       settings%erosion%alpha_lehir      = 1.0_fp             !< tuning parameter in Le Hir tcrero equation 
+       settings%erosion%alpha_winterwerp = 10.0_fp            !< tuning parameter in Winterwerp Me equation 
+       settings%erosion%alpha1           = 1.0_fp             !< non-linearity coefficient for the interpolation between rho_min1 and rho_star [-]
+       settings%erosion%alpha2           = 2.0_fp             !< non-linearity coefficient for the interpolation between rho_star and rho_min2 [-]
+       settings%erosion%beta             = 0.2_fp             !< a constant in determining critical bed shear stress for erosion
+       settings%erosion%beta_mix         = 0.9125_fp          !< tuning parameter for cohesionless mixture
+       settings%erosion%C0               = 0.07_fp            !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
+       settings%erosion%d50sed           = 3.0E-5_fp          !< d50 grain size of sediment supply [m]
+       settings%erosion%rho_max          = 1600.0_fp          !< layer density at and above which critical shear stress taucr_min2 should be applied [kg/m3]
+       settings%erosion%rho_min          = 200.0_fp           !< layer density at and below which critical shear stress taucr_min1 should be applied [kg/m3]
+       settings%erosion%rho_star         = 1200.0_fp          !< layer density at which critical shear stress maximum taucr_max should be applied [kg/m3]
+       settings%erosion%taucr_max        = 1.5_fp             !< maximum critical shear stress [N/m2]
+       settings%erosion%taucr_min1       = 0.2_fp             !< critical shear stress at low density [N/m2]
+       settings%erosion%taucr_min2       = 0.2_fp             !< critical shear stress at high density [N/m2]
+
+    endif
+    
     !! input parameters for Dynamic Equilibrium CONsolidation (DECON)
     settings%nconlyr      = 6                      ! 
     settings%dzprofile    = 0.0001                 ! resolution [m]
