@@ -75,7 +75,6 @@
    sedtyp              => stmpar%sedpar%sedtyp
    tratyp              => stmpar%sedpar%tratyp
    anymud              => stmpar%sedpar%anymud
-   used50fld           => stmpar%sedpar%used50fld
    sedtrcfac           => stmpar%sedpar%sedtrcfac
    bsskin              => stmpar%sedpar%bsskin
    thcmud              => stmpar%sedpar%thcmud

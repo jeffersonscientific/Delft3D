@@ -112,7 +112,6 @@
    integer          , dimension(:)      , pointer :: sedtyp
    integer          , dimension(:)      , pointer :: tratyp
    logical                              , pointer :: anymud
-   logical                              , pointer :: used50fld
    real(fp)         , dimension(:)      , pointer :: sedtrcfac
    logical                              , pointer :: bsskin
    real(fp)         , dimension(:)      , pointer :: thcmud
