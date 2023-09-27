@@ -4,13 +4,13 @@ set(library_name metisoptions)
 include_directories($ENV{METIS_DIR}/include)
 
 
-#if (WIN32)
+if (WIN32)
     get_module_include_path(${checkout_src_root}/${metis_module} 
                             ${library_name}
                             metis_include_path)
     include_directories(${metis_include_path})
     message(STATUS "Configuring '${library_name}' with the following metis_include_path: ${metis_include_path}")
-#endif(WIN32)
+endif(WIN32)
 
 
 
