@@ -67,8 +67,6 @@ subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
     integer                               :: pos      !< index of substring in another string
     logical                               :: kw_found !< flag indicating whether a keyword has been found
     real(fp)                              :: xymiss   !< missing value as read from file 
-    real(fp), dimension(:,:), allocatable :: xtmp     !< temporary array containing xcor of entire domain 
-    real(fp), dimension(:,:), allocatable :: ytmp     !< temporary array containing ycor of entire domain 
     character(256)                        :: rec      !< character var. containing one line
     character(10)                         :: dum      !< place holder for characters read from file that are not used/checked 
     character(2048)                       :: msg      !< character var. for longer error message
@@ -113,9 +111,9 @@ subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
     
     kw_found = .true.
     do while (kw_found)
-       kw_found = .false. 
        read(lunrgf,'(a)', end=7777, err=8888) rec 
        if (rec(1:1) == '*') cycle
+       kw_found = .false. 
        ! 
        pos = index(rec,'Coordinate System') 
        if (pos >= 1) then 
@@ -164,9 +162,9 @@ subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
     ! unformatted read; the number of digits of xcor may vary 
     !  ETA=    N ...values...
     do n = 1, nc 
-        read(lunrgf, *, end=7777, err=8888) dum, dum, (xtmp(n,m), m=1,mc) 
+        read(lunrgf, *, end=7777, err=8888) dum, dum, (xcor(n,m), m=1,mc) 
         do m = 1, mc 
-            if (isnan(xtmp(n,m))) then
+            if (isnan(xcor(n,m))) then
                 error = .true.
                 call prterr(lundia, 'G004', 'Grid file contains x-coordinate equal to NaN')
                 close (lunrgf)
@@ -177,9 +175,9 @@ subroutine rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
 
     ! unformatted read; the number of digits of ycor may vary 
     do n = 1, nc 
-        read(lunrgf, *, end=7777, err=8888) dum, dum, (ytmp(n,m), m=1,mc) 
+        read(lunrgf, *, end=7777, err=8888) dum, dum, (ycor(n,m), m=1,mc) 
         do m = 1, mc 
-            if (isnan(ytmp(n,m))) then
+            if (isnan(ycor(n,m))) then
                 error = .true.
                 call prterr(lundia, 'G004', 'Grid file contains y-coordinate equal to NaN')
                 close (lunrgf)
