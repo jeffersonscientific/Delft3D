@@ -18,3 +18,4 @@ install_*/**
 # ignore files created by updating process definition files
 src/engines_gpl/waq/resources/csvFiles/*
 !src/engines_gpl/waq/resources/csvFiles/*.csv
+.idea/*
