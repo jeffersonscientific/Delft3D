@@ -736,6 +736,7 @@ double precision, external :: setrhofixedp
                  k1 = ln(1,L) ; k2 = ln(2,L) 
                  if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
                     faclax = facLaxturb*zf
+                    faclax = faclax* min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
                     dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
                  endif
               endif
@@ -744,7 +745,8 @@ double precision, external :: setrhofixedp
            do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*tureps0(L) +  0.5d0*facLaxturb*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                 faclax = faclaxturb* min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                 dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
               endif
            enddo
         endif  
