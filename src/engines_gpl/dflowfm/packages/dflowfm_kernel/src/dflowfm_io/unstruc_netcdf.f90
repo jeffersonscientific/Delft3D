@@ -17420,16 +17420,32 @@ function write_array_with_dmiss_for_dry_faces_into_netcdf_file(ncid, id_tsp, id_
    integer, optional,             intent(in)       :: jabndnd                !< Flag specifying whether boundary nodes are to be written.
    
    integer                                         :: ierr                   !< Result status
+   integer                                         :: face
    double precision, allocatable                   :: temp_array(:)
 
+   
+   if ( .not. allocated(hu) ) then
+       call mess(LEVEL_INFO, 'Dry faces are not "removed" in a map file due to the current implementation. Please contact DFM developers.')
+       ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, array, jabndnd=jabndnd)
+       return
+   end if
+      
+   if ( size(array) /= size(hu) ) then
+       call mess(LEVEL_INFO, 'Dry faces are not "removed" in a map file due to the current implementation. Please contact DFM developers.')
+       ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, array, jabndnd=jabndnd)
+       return
+   end if
+   
    allocate(temp_array(size(array)), stat=ierr)
    if (ierr /= 0) call aerr( 'temp_array', ierr, size(array))
 
-   where (hu > 0d0) ! taken from setkfs.f90
-       temp_array = array
-   elsewhere
-       temp_array = dmiss
-   end where
+   do face = 1, size(hu)
+      if ( hu(face) == 0 ) then 
+         temp_array(face) = dmiss
+      else
+         temp_array(face) = array(face)
+      end if
+   end do
    ierr = unc_put_var_map(ncid, id_tsp, id_var, data_location, temp_array, jabndnd=jabndnd)
     
    deallocate(temp_array)
