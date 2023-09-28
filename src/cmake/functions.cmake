@@ -4,14 +4,12 @@
 # Argument
 # library_name : The name of the library to create.
 # source_group_name : The name of the root folder to group the source files in.
-function(create_library library_name source_group_name)
-    file(GLOB source    src/*.f90
-                        src/*.f
-                        src/*.F90)
+# source_directory: directory where the source files exist.
+function(create_library library_name source_group_name source_directory)
+    get_fortran_source_files(${source_directory} source)
     add_library(${library_name} ${source})
-
-    # Create the folder structure in vfproj
-    source_group(${source_group_name} FILES ${source})
+    # Create the folder structure in visual studio ide
+    source_group(TREE ${source_group_name} FILES ${source})
 endfunction()
 
 
