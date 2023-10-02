@@ -559,16 +559,16 @@ subroutine set_wave_parameters()
           end if
          
          ! In MPI case, partition ghost cells are filled properly already, open boundaires are not
-         call fill_open_boundary_cells_with_innner_values(nbndu, kbndu)
+         call fill_open_boundary_cells_with_inner_values(nbndu, kbndu)
          !
          ! waterlevels
-         call fill_open_boundary_cells_with_innner_values(nbndz, kbndz)
+         call fill_open_boundary_cells_with_inner_values(nbndz, kbndz)
          !
          !  normal-velocity boundaries
-         call fill_open_boundary_cells_with_innner_values(nbndn, kbndn)
+         call fill_open_boundary_cells_with_inner_values(nbndn, kbndn)
          !
          !  tangential-velocity boundaries
-         call fill_open_boundary_cells_with_innner_values(nbndt, kbndt)
+         call fill_open_boundary_cells_with_inner_values(nbndt, kbndt)
       end if
 
       if (jawave>0) then
@@ -593,32 +593,67 @@ subroutine get_values_and_consider_jawave6(item)
 end subroutine get_values_and_consider_jawave6
             
 
-!> fill_open_boundary_cells_with_innner_values
-subroutine fill_open_boundary_cells_with_innner_values(number_of_points, references)
+!> fill_open_boundary_cells_with_inner_values
+subroutine fill_open_boundary_cells_with_inner_values(number_of_points, references)
 
     integer, intent(in) :: number_of_points
     integer, intent(in) :: references(:,:)
     
     integer             :: point, kb, ki 
 
-    do point = 1, number_of_points
-        kb   = references(1,point)
-        ki   = references(2,point)
-        hwavcom(kb) = hwavcom(ki)
-        twav(kb)    = twav(ki)
-        phiwav(kb)  = phiwav(ki)
-        uorbwav(kb) = uorbwav(ki)
-        sbxwav(kb)  = sbxwav(ki)
-        sbywav(kb)  = sbywav(ki)
-        sxwav(kb)   = sxwav(ki)
-        sywav(kb)   = sywav(ki)
-        dsurf(kb)   = dsurf(ki)
-        dwcap(kb)   = dwcap(ki)
-        mxwav(kb)   = mxwav(ki)
-        mywav(kb)   = mywav(ki)
-    end do
+    if(jawave == 7) then
+        if(waveforcing /= 3) then
+            do point = 1, number_of_points
+                kb   = references(1,point)
+                ki   = references(2,point)
+                hwavcom(kb) = hwavcom(ki)
+                twav(kb)    = twav(ki)
+                phiwav(kb)  = phiwav(ki)
+                uorbwav(kb) = uorbwav(ki)
+                sxwav(kb)   = sxwav(ki)
+                sywav(kb)   = sywav(ki)
+                mxwav(kb)   = mxwav(ki)
+                mywav(kb)   = mywav(ki)
+            end do
+        else
+            do point = 1, number_of_points
+                kb   = references(1,point)
+                ki   = references(2,point)
+                hwavcom(kb) = hwavcom(ki)
+                twav(kb)    = twav(ki)
+                phiwav(kb)  = phiwav(ki)
+                uorbwav(kb) = uorbwav(ki)
+                sxwav(kb)   = sxwav(ki)
+                sywav(kb)   = sywav(ki)
+                mxwav(kb)   = mxwav(ki)
+                mywav(kb)   = mywav(ki)
+                sbxwav(kb)  = sbxwav(ki)
+                sbywav(kb)  = sbywav(ki)
+                dsurf(kb)   = dsurf(ki)
+                dwcap(kb)   = dwcap(ki)
+            end do
+        end if
+    else
+        do point = 1, number_of_points
+            kb   = references(1,point)
+            ki   = references(2,point)
+            hwavcom(kb) = hwavcom(ki)
+            twav(kb)    = twav(ki)
+            phiwav(kb)  = phiwav(ki)
+            uorbwav(kb) = uorbwav(ki)
+            sxwav(kb)   = sxwav(ki)
+            sywav(kb)   = sywav(ki)
+            mxwav(kb)   = mxwav(ki)
+            mywav(kb)   = mywav(ki)
+            sbxwav(kb)  = sbxwav(ki)
+            sbywav(kb)  = sbywav(ki)
+            dsurf(kb)   = dsurf(ki)
+            dwcap(kb)   = dwcap(ki)
+        end do
+    end if
+
          
-end subroutine fill_open_boundary_cells_with_innner_values
+end subroutine fill_open_boundary_cells_with_inner_values
 
 !> retrive_rainfall
 subroutine retrive_rainfall()
