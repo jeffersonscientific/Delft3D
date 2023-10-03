@@ -93,6 +93,7 @@ subroutine initflwpar(gdp)
     nullify(gdp%gdflwpar%mom_m_waveforce)
     nullify(gdp%gdflwpar%mom_m_convec)
     nullify(gdp%gdflwpar%mom_m_xadvec)
+    nullify(gdp%gdflwpar%mom_m_struct)
     !
     nullify(gdp%gdflwpar%mom_n_velchange)
     nullify(gdp%gdflwpar%mom_n_densforce)
@@ -106,6 +107,7 @@ subroutine initflwpar(gdp)
     nullify(gdp%gdflwpar%mom_n_waveforce)
     nullify(gdp%gdflwpar%mom_n_convec)
     nullify(gdp%gdflwpar%mom_n_xadvec)
+    nullify(gdp%gdflwpar%mom_n_struct)
     !
     nullify(gdp%gdflwpar%fcrbnd) 
     !

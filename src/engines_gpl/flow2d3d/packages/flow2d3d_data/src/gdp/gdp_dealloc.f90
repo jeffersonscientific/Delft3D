@@ -45,6 +45,7 @@ subroutine gdp_dealloc(gdp)
     use globaldata
     use dfparall
     use dredge_data_module, only: clrdredge
+    use turbine_module, only: deallocate_turbines
     !
     implicit none
     !
@@ -220,6 +221,8 @@ subroutine gdp_dealloc(gdp)
     deallocate (gdp%gdusrpar, STAT = istat)
     deallocate (gdp%gdzmodel, STAT = istat)
     deallocate (gdp%gdnonhyd, STAT = istat)
+    call deallocate_turbines(gdp%turbines)	
+    deallocate (gdp%turbines, STAT = istat)
     !
     call clrbedformpar(istat, gdp)
     deallocate (gdp%gdbedformpar, STAT = istat)
