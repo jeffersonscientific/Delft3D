@@ -1071,7 +1071,7 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
     pardef  = nodef
     if (iform == -4) then
        name       = 'Van der A et al. (2013): SANTOSS extended Van Rijn (2007)'
-       nparopt    = 13
+       nparopt    = 14
        parkeyw(1) = 'IopSus'
        pardef(1)  = 0.0_fp
        parkeyw(2) = 'Pangle'
@@ -1090,15 +1090,17 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(8)  = 3.0_fp
        parkeyw(9) = 'Wform'
        pardef(9)  = 1.0_fp
+       parkeyw(10) = 'iTauCr'
+       pardef(10)  = 1.0_fp
        ! NOTE UP TO HERE IDENTICAL TO VAN RIJN (2007) FORMULA -2: Numbers/parameters must match!
-       parkeyw(10)='SW_effects'
-       pardef(10) = 1.0_fp
-       parkeyw(11)='AS_effects'
+       parkeyw(11)='SW_effects'
        pardef(11) = 1.0_fp
-       parkeyw(12)='PL_effects'
+       parkeyw(12)='AS_effects'
        pardef(12) = 1.0_fp
-       parkeyw(13)='SL_effects'
-       pardef(13) =  1.0_fp
+       parkeyw(13)='PL_effects'
+       pardef(13) = 1.0_fp
+       parkeyw(14)='SL_effects'
+       pardef(14) =  1.0_fp
        if (present(noutpar)) then
           noutpar = 24
           outpar_name( 1)     = 'uwc'
@@ -1183,7 +1185,7 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        endif
     elseif (iform == -2) then
        name       = 'Van Rijn (2007): TRANSPOR2004'
-       nparopt    = 9
+       nparopt    = 10
        parkeyw(1) = 'IopSus'
        pardef(1)  = 0.0_fp
        parkeyw(2) = 'Pangle'
@@ -1202,6 +1204,8 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(8)  = 3.0_fp
        parkeyw(9) = 'Wform'
        pardef(9)  = 1.0_fp
+       parkeyw(10) = 'iTauCr'
+       pardef(10)  = 1.0_fp
        ! NOTE PARAMETERS ADDED HERE MUST BE COPIED TO SANTOSS FORMULA -4: Numbers/parameters must match!
        if (present(noutpar)) then
           noutpar = 17
@@ -1242,7 +1246,7 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        endif
     elseif (iform == -1) then
        name       = 'Van Rijn (1993)'
-       nparopt    = 8
+       nparopt    = 9
        parkeyw(1) = 'IopSus'
        pardef(1)  = 0.0_fp
        parkeyw(2) = 'AksFac'
@@ -1259,6 +1263,8 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        pardef(7)  = 0.0_fp ! false
        parkeyw(8) = 'BetaM'
        pardef(8)  = 3.0_fp
+       parkeyw(9) = 'iTauCr'
+       pardef(9)  = 1.0_fp
        if (present(noutpar)) then
           noutpar = 16
           outpar_name( 1)     = 'tauc'

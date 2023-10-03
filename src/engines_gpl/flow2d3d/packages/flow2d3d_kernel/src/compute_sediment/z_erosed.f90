@@ -985,6 +985,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        dll_reals(RP_VELMN) = real(velm      ,hp)
        dll_reals(RP_USTAR) = real(ustarc         ,hp)
        dll_reals(RP_POROS) = real(poros(nm)      ,hp)
+       dll_reals(RP_TAUCR) = real(tcrero_bed(nm) ,hp)
        !
        if (max_integers < MAX_IP) then
           write(errmsg,'(a)') 'Insufficient space to pass integer values to transport routine.'
