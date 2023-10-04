@@ -603,11 +603,12 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                    & kspu      ,guu       ,gvu       ,qxk       ,bbk       , &
                    & ddk       ,ubrlsu    ,dps       ,hkru      ,s0        , &
                    & hu        ,umean     ,thick     ,dteu      ,taubpu    , &
-                   & gdp       )
+                   & mom_output,u1        ,gdp       )
     endif
     call usrbrl(icx       ,icy       ,nmmax     ,kmax      ,kfu       , &
               & kspu      ,gvu       ,u0        ,v         ,bbk       , &
-              & ubrlsu    ,diapl     ,rnpl      ,gdp       )
+              & ubrlsu    ,diapl     ,rnpl      ,mom_output,u1        , &
+              & gdp      )
     call timer_stop(timer_uzd_eloss, gdp)
     !
     ndm = -icy

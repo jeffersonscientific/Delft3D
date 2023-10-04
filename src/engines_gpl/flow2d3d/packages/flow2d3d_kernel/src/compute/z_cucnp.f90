@@ -478,7 +478,8 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     call timer_start(timer_cucnp_eloss, gdp)
     call usrbrl(icx       ,icy       ,nmmax     ,kmax      ,kfu       , &
               & kspu      ,gvu       ,u0        ,v1        ,bbk       , &
-              & ubrlsu    ,diapl     ,rnpl      ,gdp       )
+              & ubrlsu    ,diapl     ,rnpl      ,.false.   ,u0        , &
+              & gdp       ) ! use u0 dummy for u1
     call timer_stop(timer_cucnp_eloss, gdp)
     !
     call timer_start(timer_cucnp_stress, gdp)

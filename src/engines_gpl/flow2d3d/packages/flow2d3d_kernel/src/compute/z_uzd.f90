@@ -593,7 +593,8 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
        call timer_start(timer_uzd_eloss, gdp)
        call usrbrl(icx       ,icy       ,nmmax     ,kmax      ,kfu       , &
                  & kspu      ,gvu       ,u0        ,v0        ,bbk       , &
-                  & ubrlsu    ,diapl     ,rnpl      ,gdp       )
+                 & ubrlsu    ,diapl     ,rnpl      ,.false.   ,u0        , &
+                 & gdp) ! use u0 dummy for u1
        call timer_stop(timer_uzd_eloss, gdp)
        !
        call timer_start(timer_uzd_stress, gdp)

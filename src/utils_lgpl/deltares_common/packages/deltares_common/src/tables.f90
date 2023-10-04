@@ -234,7 +234,8 @@ subroutine org_readtable(this, filnam, refjulday, errorstring)
              !
              ! time column should be treated in a different manner
              !
-             if (table%hastime .and. trim(table%timefunction) == 'non-equidistant') then
+!             if (table%hastime .and. trim(table%timefunction) == 'non-equidistant') then
+             if (table%location(1:3) /= 'SNL' .and. trim(table%timefunction) == 'non-equidistant') then
                 ipar = -1
              endif
           endif
@@ -393,7 +394,8 @@ subroutine org_readtable(this, filnam, refjulday, errorstring)
           do itable = 1, ntables
              table => tables(itable)
              !
-             if (table%hastime) then
+!             if (table%hastime) then
+             if (table%hastime .or. table%location(1:3) /= 'SNL') then
              if (table%refdate == -999 .and. table%timeunitstr /= 'date') then
                 errorstring = 'Missing reference-date record in table ''' // &
                             & trim(table%name) // ''''
@@ -1392,7 +1394,8 @@ subroutine org_gettabledata_scalar(this       ,itable     ,ipar       , &
     table => this%tables(itable)
     errorstring = ' '
     !
-    if (table%hastime) then
+!    if (table%hastime) then
+    if (table%hastime .or. table%location(1:3) /= 'SNL') then
        !
        ! Standard time function
        !
