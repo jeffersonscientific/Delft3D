@@ -472,11 +472,16 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                 if (cb->subBlocks[i].subBlocks[j].type != CT_START) {
                     dimr_coupler* thisCoupler = cb->subBlocks[i].subBlocks[j].unit.coupler;
                     for (int k = 0; k < thisCoupler->numItems; k++) {
-                        if (thisCoupler->sourceComponent->type == COMP_TYPE_RTC ||
+                        if (thisCoupler->itemTypes[k] == ITEM_TYPE_PTR ||
+                            thisCoupler->sourceComponent->type == COMP_TYPE_RTC ||
                             thisCoupler->sourceComponent->type == COMP_TYPE_WANDA ||
                             thisCoupler->sourceComponent->type == COMP_TYPE_FLOW1D2D) {
                             // RTCTools/Wanda: impossible to autodetect which partition will deliver this source var
-                            // Assumption: there is only one RTC-partition
+                            //                 Assumption: there is only one RTC/Wanda-partition
+                            // ITEM_TYPE_PTR : Arrays to point to are not yet allocated
+                            //                 Assumption: they will be when the data actually will be communicated
+                            //                 Warning: do not change this into "Component->type == COMP_TYPE_COSUMO",
+                            //                          because it will also fail for the related DflowFM item
                             thisCoupler->items[k].sourceProcess = thisCoupler->sourceComponent->processes[0];
                         }
                         else {
@@ -528,16 +533,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             }
                             free(sources);
                             free(gsources);
-                        }
-
-                        // Target variable
-
-                        if (thisCoupler->targetComponent->type == COMP_TYPE_RTC ||
-                            thisCoupler->targetComponent->type == COMP_TYPE_WANDA ||
-                            thisCoupler->targetComponent->type == COMP_TYPE_FLOW1D2D) {
-                            // nothing
-                        }
-                        else {
+                            //
+                            //
                             // Target variable
                             // autodetect which (possibly multiple!) partition(s) will accept this target var
                             int* targets = (int*)malloc(thisCoupler->targetComponent->numProcesses * sizeof(int));
@@ -590,6 +587,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                     }
 
                     // create netcdf logfiles
+                    // This must be moved to DELTARES_COMMON_C
                     if (thisCoupler->logger != NULL && my_rank == 0)
                     {
                         // create netcdf file in workingdir
@@ -729,7 +727,6 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                         varName.append(name_strlen - varName.length(), ' ');
                         nc_put_var_text(ncid, station_var, varName.c_str());
                     }
-                    // Het hele spul MOET NAAR DELTARES_COMMON_C !!!
                 }
             }
         }
