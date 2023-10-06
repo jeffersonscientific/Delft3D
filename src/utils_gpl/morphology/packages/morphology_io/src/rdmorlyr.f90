@@ -956,7 +956,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
             txtput1 = 'DECON consolidation update time step (s)'
             write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%dtdecon
             
-            call prop_get_integer(mor_ptr, 'Underlayer', 'NConLyr', nconlyr)
+            call prop_get_integer(mor_ptr, 'Consolidate', 'NConLyr', nconlyr)
             txtput1 = 'Number of consolidating layers'
             write (lundia, '(2a,i3)') txtput1, ':', nconlyr
             if (nconlyr<1 .or. nconlyr>mxnulyr) then
