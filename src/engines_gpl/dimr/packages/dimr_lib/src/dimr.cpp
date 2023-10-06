@@ -533,8 +533,16 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             }
                             free(sources);
                             free(gsources);
-                            //
-                            //
+                        }
+
+                        // Target variable
+                        if (thisCoupler->itemTypes[k] == ITEM_TYPE_PTR ||
+                            thisCoupler->targetComponent->type == COMP_TYPE_RTC ||
+                            thisCoupler->targetComponent->type == COMP_TYPE_WANDA ||
+                            thisCoupler->targetComponent->type == COMP_TYPE_FLOW1D2D) {
+                            // nothing
+                        }
+                        else {
                             // Target variable
                             // autodetect which (possibly multiple!) partition(s) will accept this target var
                             int* targets = (int*)malloc(thisCoupler->targetComponent->numProcesses * sizeof(int));
