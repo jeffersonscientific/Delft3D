@@ -127,9 +127,7 @@ if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
 
-if (WIN32)
-    set_target_properties(${library_name} PROPERTIES LINK_FLAGS ${openmp_flag})
-endif(WIN32)
+set_target_properties(${library_name} PROPERTIES LINK_FLAGS ${openmp_flag})
 
 if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")    

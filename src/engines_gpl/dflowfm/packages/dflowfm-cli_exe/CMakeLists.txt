@@ -150,10 +150,8 @@ if(UNIX)
 endif(UNIX)
 
 
-if(WIN32)
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
-    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)   
-endif(WIN32)
+set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)   
 
 
 # Define additional compilation flags

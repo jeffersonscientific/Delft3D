@@ -266,8 +266,8 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointe
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 # Define preprocessor definitions 
+set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
 if (WIN32)
-    set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
         target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
