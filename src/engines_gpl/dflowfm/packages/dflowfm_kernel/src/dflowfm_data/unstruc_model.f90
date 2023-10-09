@@ -100,14 +100,10 @@ implicit none
     integer, parameter :: MD_AUTOSTARTSTOP = 2   !< Autostart this model and then exit (batchmode)
 
     type(tree_data), pointer, public :: md_ptr   !< Unstruc Model Data in tree_data
-
     character(len=64), target  :: md_ident         = ' ' !< Identifier of the model, used as suggested basename for some files. (runid)
-
     character(len=64)  :: md_mdu           = ' ' !< similar, used in parsing parsing commandline
     character(len=64)  :: md_ident_sequential = ' ' !< Sequential model identifier, used for parallel outputdir
-
     character(len=64)  :: md_specific      = ' ' !< Optional 'model specific ID', read from MDU, to enable certain custom runtime function calls (instead of via MDU name/md_ident).
-
     character(len=4)   :: md_tunit         = ' ' !< Unit of tstart_user and tstop_user (only for read and write, while running these are always in seconds).
 
     integer            :: md_paths_relto_parent = 0 !< Option whether or not (1/0) to resolve filenames (e.g. inside the *.ext file) w.r.t. their direct parent, instead of the toplevel MDU working dir. (UNST-1144)
@@ -133,32 +129,24 @@ implicit none
     character(len=255) :: md_pipefile      = ' ' !< File containing pipe-based 'culverts' (e.g., *.pliz)
     character(len=255) :: md_shipdeffile   = ' ' !< File containing shipdefinition    (e.g., *.shd)
     character(len=255) :: md_inifieldfile  = ' ' !< File of initial fields            (e.g., *.ini)
-
     character(len=255) :: md_restartfile   = ' ' !< File containing map-files to restart a computation          (e.g., *_map.nc), input only, NOT used for storing the names of output restart files.
-
     character(len=255) :: md_extfile       = ' ' !< External forcing specification file (e.g., *.ext)
     character(len=255) :: md_extfile_new   = ' ' !< External forcing specification file new style (bct format), (e.g., *.ext)
     character(len=255) :: md_extfile_dir   = ' ' !< Directory containing the old-style external forcing specification file (e.g., *.ext) (relative to MDU/current working dir)
-
-
     character(len=255) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)
     character(len=255) :: md_structurefile_dir = ' ' !< Directory containing the structure file (e.g., *.ini) (relative to MDU/current working dir).
-
     character(len=255) :: md_wavefile      = ' ' !< File containing wave input (e.g., *_wave.nc)
     character(len=255) :: md_surfbeatfile      = ' ' !< File containing surfbeat input (e.g., params.txt)
-
     character(len=255) :: md_sedfile       = ' ' !< File containing sediment characteristics (e.g., *.sed)
     character(len=255) :: md_morfile       = ' ' !< File containing morphology settings (e.g., *.mor)
     character(len=255) :: md_dredgefile    = ' ' !< File containing dredging settings (e.g., *.dad)
     character(len=255) :: md_bedformfile   = ' ' !< File containing bedform settings (e.g., *.bfm)
     character(len=255) :: md_morphopol     = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
     character(len=255) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
-
     character(len=1024):: md_obsfile       = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
     character(len=255) :: md_crsfile       = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
     character(len=255) :: md_rugfile       = ' ' !< File containing runup gauges (e.g., *_rug.pli)
     character(len=255) :: md_foufile       = ' ' !< File containing fourier modes to be analyzed
-
     character(len=255) :: md_hisfile       = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
     character(len=255) :: md_mapfile       = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
     character(len=255) :: md_classmapfile  = ' ' !< Output classmap file for full flow fields in classes (formerly: incremental file) (e.g., *_clm.nc)
@@ -171,7 +159,6 @@ implicit none
     character(len=255) :: md_waqoutputdir  = ' ' !< Output directory for all WAQ communication files (waqgeom, vol, flo, etc.)
     character(len=255) :: md_waqhoraggr    = ' ' !< DELWAQ output horizontal aggregation file (*.dwq)
     character(len=255) :: md_waqvertaggr   = ' ' !< DELWAQ output vertical aggregation file (*.vag)
-
     character(len=255) :: md_partitionfile = ' ' !< File with domain partitioning polygons (e.g. *_part.pol)
     character(len=255) :: md_outputdir     = ' ' !< Output directory for map-, his-, rst-, dat- and timings-files
 
@@ -213,7 +200,6 @@ implicit none
 
 ! incremental output
     character(len=256) :: md_classmap_file = ' ' !< File for output of classes output
-
     character(len=200) :: md_snapshotdir   = ' ' !< Directory where hardcopy snapshots should be saved.
                                                  !! Created if non-existent.
 
@@ -251,13 +237,12 @@ implicit none
     integer            :: md_cutcells        = 0
     integer            :: npolf              = 0      !< nr of polygonplotfiles saved with n key in editpol
     integer            :: md_usecaching      = 1      !< Use the caching file if it exists (1) or not (0)
-
     integer            :: md_convertlongculverts = 0      !< convert culverts (and exit program) yes (1) or no (0)
+
     character(len=128) :: md_culvertprefix   = ' '    !< prefix for generating long culvert files
     
 !   map file output format
     integer,            parameter             :: NUMFORMATS      = 4
-
     integer,            parameter             :: IFORMAT_NETCDF  = 1
     integer,            parameter             :: IFORMAT_TECPLOT = 2
     integer,            parameter             :: IFORMAT_NETCDF_AND_TECPLOT = 3
@@ -271,10 +256,9 @@ implicit none
 
     integer                                   :: md_mapformat !< map file output format (one of IFORMAT_*)
     integer                                   :: md_unc_conv  !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
-
     integer                                   :: md_ncformat  !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-
     integer                                   :: md_fou_step  !< determines if fourier analysis is updated at the end of the user time step or comp. time step
+
 contains
 
 
@@ -1144,7 +1128,6 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
     call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
     call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
- 
     call prop_get_double (md_ptr, 'numerics', 'Eddyviscositybedfacmax' , Eddyviscositybedfacmax)
     call prop_get_integer(md_ptr, 'numerics', 'AntiCreep' , jacreep)
 
@@ -3162,11 +3145,11 @@ endif
     endif
 
     if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'FacLaxturb' , FacLaxturb, '(Default: 0=TurKin0 from links, 1.0=from nodes. 0.5=fityfifty)')
+       call prop_set(prop_ptr, 'numerics', 'FacLaxturb' , FacLaxturb, '(Default: 0=Start TurKin0 from links, 1.0=from nodes. 0.5=fityfifty)')
     endif
 
     if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp, '(Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)')
+       call prop_set(prop_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp, '(Vertical distr of FacLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)')
     endif
 
     if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
@@ -3238,7 +3221,7 @@ endif
     end if
 
     call prop_set(prop_ptr, 'numerics', 'Epshu' , epshu, 'Threshold water depth for wet and dry cells')
-    call prop_set(prop_ptr, 'numerics', 'Dzuminturb' , Dzuminturb, 'Minimum layer thickness in Trubulence model')
+    call prop_set(prop_ptr, 'numerics', 'Dzuminturb' , Dzuminturb, 'Minimum layer thickness in Turbulence model')
 
     if (writeall .or. (sbkdfm_umin > 0d0)) then
         call prop_set(prop_ptr, 'numerics', 'SobekDFM_umin', sbkdfm_umin, 'Minimal velocity treshold for weir losses in Sobek-DFM coupling.')
@@ -3418,7 +3401,6 @@ endif
 
     endif
     call prop_set(prop_ptr, 'physics', 'NFEntrainmentMomentum', NFEntrainmentMomentum, '1: Switch on momentum transfer in NearField related entrainment')
-
 
 ! secondary flow
 ! output to mdu file

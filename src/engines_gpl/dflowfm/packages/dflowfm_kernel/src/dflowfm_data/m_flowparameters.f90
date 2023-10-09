@@ -861,7 +861,6 @@ subroutine default_flowparameters()
                          ! parameters controlling flooding/drying/solving
     epshu      = 1d-4    ! minimum waterdepth for setting hu>0
     epshs      = .2d0*epshu ! minimum waterdepth for setting cfu
-
     epsz0      = 1d-5    ! minimum value for z0
     chkhuexpl  = 0.1d0   ! only for step_explicit:  check computed flux beneath this waterdepth
     chkadvd    = 0.1d0   ! check advection  for 'drying' below this (upwind) waterdepth

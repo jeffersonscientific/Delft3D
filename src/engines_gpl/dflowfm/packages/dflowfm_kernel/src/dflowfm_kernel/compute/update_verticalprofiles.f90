@@ -301,20 +301,12 @@ double precision, external :: setrhofixedp
    if (Lt < Lb) cycle
    Lb0  = Lb - 1                                          ! bed interface index
 
-   if (hu(LL) > 0d0) then   ! epshu?
+   if (hu(LL) > 0d0) then                                 
      kxL     = Lt-Lb+1                                    ! nr of layers
 
      do L    = Lb, Lt                                     ! layer thickness at layer center (org: Lb + 1)
         k    = L  - Lb + 1
-        !k1   = ln(1,L)  ; k2  = ln(2,L)
-        !dzu(k) = acl(LL)*(zws(k1)-zws(k1-1)) + (1d0-acl(LL))*(zws(k2)-zws(k2-1))
-        !dzu(k) = max(eps4, hu(L) - hu(L-1) )
         dzu(k) = max(dzuminturb, hu(L) - hu(L-1) )
-
-        ! if (dzu(k) < 1d-10) then
-        !   call qnerror('dzu(k) < 1d-10',' ',' ')
-        ! endif
-
      enddo
 
      do L    = Lb , Lt-1                                  ! layer thickness at layer interface
@@ -329,7 +321,6 @@ double precision, external :: setrhofixedp
      else
         advi(Lb) = advi(Lb)  + cfuhi3D
      endif
-
  
      tkebot   = sqcmukepi * ustb(LL)**2                    ! this has stokes incorporated when jawave>0
      tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+ship contribution
