@@ -34,6 +34,15 @@ module m_external_forcings
 
 public :: set_external_forcings
 
+procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values
+  
+  abstract interface
+     subroutine fill_open_boundary_cells_with_inner_values_any(number_of_points, references)
+        integer, intent(in) :: number_of_points
+        integer, intent(in) :: references(:,:)
+     end subroutine
+  end interface
+
 contains
     
 !> set field oriented boundary conditions
@@ -472,6 +481,9 @@ end subroutine get_timespace_value_by_item_and_consider_success_value
 
 !> set_wave_parameters
 subroutine set_wave_parameters()
+   
+   ! local variables
+   logical :: all_wave_variables !< true: jawave==3 or jawave==7 + waveforcing==1,2; false: jawave==7 + waveforcing==3
 
    if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
       !
@@ -529,6 +541,9 @@ subroutine set_wave_parameters()
          message = dumpECMessageStack(LEVEL_WARN,callback_msg)
          success = .true.
       end if
+      
+      all_wave_variables = .not.(jawave == 7 .and. waveforcing /=3)
+      call select_wave_variables_subgroup(all_wave_variables)
       
       ! SWAN data used via module m_waves
       !    Data from FLOW 2 SWAN: s1 (water level), bl (bottom level), ucx (vel. x), ucy (vel. y), FlowElem_xcc, FlowElem_ycc, wx, wy
@@ -592,48 +607,72 @@ subroutine get_values_and_consider_jawave6(item)
 end subroutine get_values_and_consider_jawave6
             
 
-!> fill_open_boundary_cells_with_inner_values
-subroutine fill_open_boundary_cells_with_inner_values(number_of_points, references)
+!> select_wave_variables_subgroup
+!! select routine depending on whether all or a subgroup of wave variables are allocated
+subroutine select_wave_variables_subgroup(how_many_wave_parameters)
+    
+    logical, intent(in) :: how_many_wave_parameters
+    
+    logical, parameter :: FEWER_PARAMETERS = .false.
+    logical, parameter :: ALL_PARAMETERS   = .true.
+    
+    select case(how_many_wave_parameters)
+    case(FEWER_PARAMETERS)
+        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
+    case(ALL_PARAMETERS)
+        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
+    end select
+    
+end subroutine select_wave_variables_subgroup
+
+!> fill_open_boundary_cells_with_inner_values_all
+subroutine fill_open_boundary_cells_with_inner_values_all(number_of_points, references)
+    integer, intent(in) :: number_of_points
+    integer, intent(in) :: references(:,:)
+
+    integer             :: point, kb, ki
+
+    do point = 1, number_of_points
+        kb   = references(1,point)
+        ki   = references(2,point)
+        hwavcom(kb) = hwavcom(ki)
+        twav(kb)    = twav(ki)
+        phiwav(kb)  = phiwav(ki)
+        uorbwav(kb) = uorbwav(ki)
+        sxwav(kb)   = sxwav(ki)
+        sywav(kb)   = sywav(ki)
+        mxwav(kb)   = mxwav(ki)
+        mywav(kb)   = mywav(ki)
+        sbxwav(kb)  = sbxwav(ki)
+        sbywav(kb)  = sbywav(ki)
+        dsurf(kb)   = dsurf(ki)
+        dwcap(kb)   = dwcap(ki)
+    end do
+
+end subroutine fill_open_boundary_cells_with_inner_values_all
+
+!> fill_open_boundary_cells_with_inner_values_fewer
+subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_points, references)
 
     integer, intent(in) :: number_of_points
     integer, intent(in) :: references(:,:)
     
     integer             :: point, kb, ki 
 
-    if(jawave == 7 .and. waveforcing /= 3) then
-        do point = 1, number_of_points
-            kb   = references(1,point)
-            ki   = references(2,point)
-            hwavcom(kb) = hwavcom(ki)
-            twav(kb)    = twav(ki)
-            phiwav(kb)  = phiwav(ki)
-            uorbwav(kb) = uorbwav(ki)
-            sxwav(kb)   = sxwav(ki)
-            sywav(kb)   = sywav(ki)
-            mxwav(kb)   = mxwav(ki)
-            mywav(kb)   = mywav(ki)
-        end do
-    else
-        do point = 1, number_of_points
-            kb   = references(1,point)
-            ki   = references(2,point)
-            hwavcom(kb) = hwavcom(ki)
-            twav(kb)    = twav(ki)
-            phiwav(kb)  = phiwav(ki)
-            uorbwav(kb) = uorbwav(ki)
-            sxwav(kb)   = sxwav(ki)
-            sywav(kb)   = sywav(ki)
-            mxwav(kb)   = mxwav(ki)
-            mywav(kb)   = mywav(ki)
-            sbxwav(kb)  = sbxwav(ki)
-            sbywav(kb)  = sbywav(ki)
-            dsurf(kb)   = dsurf(ki)
-            dwcap(kb)   = dwcap(ki)
-        end do
-    end if
-
-         
-end subroutine fill_open_boundary_cells_with_inner_values
+    do point = 1, number_of_points
+        kb   = references(1,point)
+        ki   = references(2,point)
+        hwavcom(kb) = hwavcom(ki)
+        twav(kb)    = twav(ki)
+        phiwav(kb)  = phiwav(ki)
+        uorbwav(kb) = uorbwav(ki)
+        sxwav(kb)   = sxwav(ki)
+        sywav(kb)   = sywav(ki)
+        mxwav(kb)   = mxwav(ki)
+        mywav(kb)   = mywav(ki)
+    end do
+ 
+end subroutine fill_open_boundary_cells_with_inner_values_fewer
 
 !> retrive_rainfall
 subroutine retrive_rainfall()
