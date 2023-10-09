@@ -74,7 +74,7 @@ if (WIN32)
 endif(WIN32)
 
 # Set additional compilation properties
-set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
@@ -92,6 +92,7 @@ if(UNIX)
     # Set linker options
     message(STATUS "Setting target_link_options in linux")
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
+    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
 if (WIN32)
