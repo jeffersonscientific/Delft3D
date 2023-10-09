@@ -144,6 +144,9 @@ endif(WIN32)
 set_source_files_properties(${source}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
+if (UNIX)
+    target_link_options(${library_name} PRIVATE ${openmp_flag})
+endif(UNIX)
 
 if (WIN32)
 
