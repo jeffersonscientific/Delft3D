@@ -34,11 +34,13 @@
 !! Call this once initially, or after changing the max number of OpenMP threads setting.
 !! When running in MPI-mode, OpenMP is switched off, unless (i.e., 1 OpenMP thread max).
 integer function init_openmp(maxnumthreads, mpion) result(iresult)
+   use dfm_error
+   implicit none
+
 #ifdef _OPENMP
    include "omp_lib.h"
 #endif
-   use dfm_error
-   implicit none
+
    integer, intent(in   ) :: maxnumthreads !< Desired maximum number of OpenMP threads.
    integer, intent(in   ) :: mpion         !< Is MPI-mode currently on (1: yes, 0: no).
 
