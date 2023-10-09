@@ -127,7 +127,7 @@ if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
 
-set_target_properties(${library_name} PROPERTIES LINK_FLAGS ${openmp_flag})
+target_compile_options(${library_name} PRIVATE "${openmp_flag}")
 
 if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")    
@@ -146,6 +146,7 @@ set_source_files_properties(${source}
 
 if (UNIX)
     target_link_options(${library_name} PRIVATE ${openmp_flag})
+    set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
 if (WIN32)
