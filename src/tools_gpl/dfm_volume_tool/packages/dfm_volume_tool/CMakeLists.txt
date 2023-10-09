@@ -89,7 +89,9 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/dfm_volume_t
 target_link_libraries(${executable_name} netcdf)
 
 if(UNIX)
-    target_link_options(${library_name} PRIVATE ${openmp_flag})
+    # Set linker options
+    message(STATUS "Setting target_link_options in linux")
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
 if (WIN32)
