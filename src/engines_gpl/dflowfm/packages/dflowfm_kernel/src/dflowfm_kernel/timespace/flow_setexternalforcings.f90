@@ -542,6 +542,11 @@ subroutine set_wave_parameters()
          success = .true.
       end if
       
+      ! convert wave direction from nautial to cartesian convention
+      if(jawave == 7) then
+          phiwav = modulo(270d0 - phiwav,360d0)
+      end if
+      
       all_wave_variables = .not.(jawave == 7 .and. waveforcing /=3)
       call select_wave_variables_subgroup(all_wave_variables)
       
