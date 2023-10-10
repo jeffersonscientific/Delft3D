@@ -322,7 +322,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        end select
        write (lundia, '(3a)') txtput1, ':', txtput2
        if (morlyr%settings%ierosion > 0) then
-          call rderosion(lundia, mor_ptr, morlyr%settings%erosion)
+          call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
        endif
        !
        if (iconsolidate>0) then
@@ -1100,12 +1100,18 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     !
 end subroutine rdmorlyr
 
-subroutine rderosion(lundia, mor_ptr, erosion_config)
+subroutine rderosion(lundia, mor_ptr, ierosion, erosion_config)
     use properties
     use bedcomposition_module
-    integer                                                       :: lundia   !< Description and declaration in inout.igs
-    type(tree_data)                                 , pointer     :: mor_ptr
-    type(erosion_settings)                          , pointer     :: erosion_config
+    !
+    implicit none
+!
+! Arguments
+!
+    integer                                                       :: lundia         !< unit number of diagnostic file
+    integer                                         , intent(in)  :: ierosion       !< bed erodibility setting
+    type(tree_data)                                 , pointer     :: mor_ptr        !< pointer to configuration file in memory
+    type(erosion_settings)                          , pointer     :: erosion_config !< bed erodibility parameters
     
     character(40)            :: txtput1
 
@@ -1213,8 +1219,11 @@ end subroutine rderosion
 subroutine set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
     use bedcomposition_module, only : bedcomp_data, setbedfracprop
     use morphology_data_module, only : sedpar_type
+    !
     implicit none
-
+!
+! Arguments
+!
     integer                                 , pointer, intent(in)      :: iporosity
     type(bedcomp_data)                      , pointer, intent(inout)   :: morlyr
     type(sedpar_type)                       , pointer, intent(inout)   :: sedpar
