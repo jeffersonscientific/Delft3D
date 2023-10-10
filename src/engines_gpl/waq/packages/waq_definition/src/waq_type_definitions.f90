@@ -39,4 +39,4 @@ module m_waq_type_definitions
       integer, parameter :: sp = REAL32
       integer, parameter :: dp = REAL64
       integer, parameter :: qp = REAL128
-end module waq_precision
+end module m_waq_type_definitions
