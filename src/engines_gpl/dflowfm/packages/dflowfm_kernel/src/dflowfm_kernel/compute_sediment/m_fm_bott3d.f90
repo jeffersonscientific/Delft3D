@@ -661,7 +661,6 @@ public :: fm_bott3d
 
             if (pnod%numberofconnections == 1) cycle
 
-
             ! loop over branches and determine redistribution of incoming sediment
             k3 = pnod%gridnumber
             do j=1,nd(k3)%lnx
@@ -740,10 +739,9 @@ public :: fm_bott3d
                      e_sbcn(L,ised) = e_sbcn(L,ised)/facCheck
                   endif
                enddo    ! Branches
-            endif
+            endif !`facCheck`
          endif
       enddo      ! Nodes
-
    enddo    ! Fractions
 
    !!
@@ -844,7 +842,6 @@ public :: fm_bott3d
 
    !
    ! Bed boundary conditions: transport condition
-   ! JRE+BJ To check: bedload condition now based in taucur only distribution, waves necessary? Probably not considering use cases...
    !
    do jb = 1, nto                                ! no of open bnd sections
       icond = morbnd(jb)%icond
