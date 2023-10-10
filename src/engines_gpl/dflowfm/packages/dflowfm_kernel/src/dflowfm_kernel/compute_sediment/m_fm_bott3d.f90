@@ -1131,7 +1131,6 @@ public :: fm_bott3d
                LL = nd(nm)%ln(ii)
                Lf = iabs(LL)
                flux = e_sbn(Lf,l)*wu_mor(Lf)
-
                if ( LL>0 ) then     ! inward
                   sumflux = sumflux + flux
                else                 ! outward
@@ -1280,7 +1279,6 @@ public :: fm_bott3d
             end if
          end do
          !
-         !
          ! Re-distribute THET % of erosion in nm to surrounding cells
          ! THETSD is a user-specified maximum value, range 0-1
          !
@@ -1390,7 +1388,6 @@ public :: fm_bott3d
          do ll = 1, lsedtot
             do nm = 1, ndxi
                ii = ii + 1
-               !stmpar%morpar%mergebuf(ii) = real(mergebodsed(ll, nm) * kcsmor(nm),hp)
                stmpar%morpar%mergebuf(ii) = real(mergebodsed(ll, nm),hp)
             enddo
          enddo
@@ -1492,12 +1489,10 @@ public :: fm_bott3d
       !
       do ib = 1, morbnd(jb)%npnt
          alfa_dist   = morbnd(jb)%alfa_dist(ib)
-         alfa_mag    = morbnd(jb)%alfa_mag(ib)**2   !!!!
-         !             idir_scalar = morbnd(jb)%idir(ib)
+         alfa_mag    = morbnd(jb)%alfa_mag(ib)**2 
          nm          = morbnd(jb)%nm(ib)
          nxmx        = morbnd(jb)%nxmx(ib)
          lm          = morbnd(jb)%lm(ib)
-         !
          !
          ! Bed change in open boundary point
          ! Any boundary condition is changed into a "free bed level
@@ -1870,9 +1865,6 @@ public :: fm_bott3d
    !structure
    type (bedbndtype)     , dimension(:) , pointer :: morbnd
    
-   !pointer
-   !logical                              , pointer :: cmpupd
-   
    !!
    !! Point
    !!
@@ -1895,12 +1887,6 @@ public :: fm_bott3d
       !
       call fm_update_bl()
       !
-      !
-      ! AvD: Sander suggestie: call update_geom(2)
-      !if (jampi>0) then
-      !   call update_ghosts(ITYPE_SALL, 1, Ndx, bl, ierror)
-      !endif
-      !
       ! Free morpho boundaries get Neumann update
       !
       do jb = 1, nopenbndsect
@@ -1916,9 +1902,9 @@ public :: fm_bott3d
       call fm_update_concentrations_after_bed_level_update()
       !
       call fm_correct_water_level()
-      
       !
       ! Remember erosion velocity for dilatancy
+	  !
       call fm_erosion_velocity(dtmor)
       !
       ! Dredging and Dumping
