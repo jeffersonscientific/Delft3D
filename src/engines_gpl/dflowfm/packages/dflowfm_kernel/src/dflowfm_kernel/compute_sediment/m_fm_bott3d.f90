@@ -151,6 +151,7 @@ public :: fm_bott3d
       call fm_adjust_bedload(e_sbcn, e_sbct, aval)
    endif
    !
+   !See: UNST-7367
    call apply_nodal_point_relation()
    !
    ! Bed-slope and sediment availability effects for
@@ -194,6 +195,7 @@ public :: fm_bott3d
       
       call fm_dry_bed_erosion(dtmor)
             
+	  !See: UNST-7368 		
       if ( jampi > 0 ) then
          call update_ghosts(ITYPE_Sall, lsedtot, Ndx, dbodsd, ierror)
       end if
@@ -222,6 +224,7 @@ public :: fm_bott3d
          !
          ! Update layers and obtain the depth change
          !
+		 !See: UNST-7369
          if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             write(errmsg,'(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
@@ -843,6 +846,7 @@ public :: fm_bott3d
    !
    ! Bed boundary conditions: transport condition
    !
+   !See: UNST-7370
    do jb = 1, nto                                ! no of open bnd sections
       icond = morbnd(jb)%icond
       if (icond == 4 .or. icond == 5) then
@@ -1059,6 +1063,7 @@ public :: fm_bott3d
                      do iL = Lb,Lt
                         flux = flux + fluxhortot(j,iL)
                      enddo
+					 !See: UNST-7371
                      if ( LL>0 ) then  ! inward
                         sumflux = sumflux + flux
                      else                 ! outward
