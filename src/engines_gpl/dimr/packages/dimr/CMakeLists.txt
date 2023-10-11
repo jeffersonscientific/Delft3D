@@ -53,7 +53,7 @@ if(UNIX)
     
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(${executable_name} Threads::Threads ${CMAKE_DL_LIBS})
+    target_link_libraries(${executable_name} Threads::Threads)
 
 
 endif(UNIX)
