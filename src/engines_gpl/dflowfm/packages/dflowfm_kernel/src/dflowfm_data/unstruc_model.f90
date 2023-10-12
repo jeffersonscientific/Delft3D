@@ -1765,7 +1765,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_string(md_ptr, 'output', 'HisFile', md_hisfile, success)
     ti_his_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'HisInterval'   ,  ti_his_array, 3, success)
-    call check_time_interval(ti_his_array,dt_user,'HisInterval')
+    call check_time_interval(ti_his_array,dt_user,'HisInterval',tstart_user)
     call getOutputTimeArrays(ti_his_array, ti_hiss, ti_his, ti_hise, success)
 
     call prop_get_double(md_ptr, 'output', 'XLSInterval', ti_xls, success)
@@ -1776,7 +1776,7 @@ subroutine readMDUFile(filename, istat)
 
     ti_map_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'MapInterval'   ,  ti_map_array, 3, success)
-    call check_time_interval(ti_map_array,dt_user,'MapInterval')
+    call check_time_interval(ti_map_array,dt_user,'MapInterval',tstart_user)
     call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
 
     call prop_get_integer(md_ptr, 'output', 'MapFormat', md_mapformat, success)
@@ -2023,7 +2023,7 @@ subroutine readMDUFile(filename, istat)
 
     ti_rst_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'RstInterval'   ,  ti_rst_array, 3, success)
-    call check_time_interval(ti_rst_array,dt_user,'RstInterval')
+    call check_time_interval(ti_rst_array,dt_user,'RstInterval',tstart_user)
     call getOutputTimeArrays(ti_rst_array, ti_rsts, ti_rst, ti_rste, success)
 
     call prop_get_double (md_ptr, 'output', 'MbaInterval', ti_mba, success)
@@ -2229,7 +2229,7 @@ subroutine readMDUFile(filename, istat)
     ! Map classes output (formerly: incremental file)
     ti_classmap_array = 0d0
     call prop_get_doubles(md_ptr, 'output', 'ClassMapInterval', ti_classmap_array, 3, success)
-    call check_time_interval(ti_classmap_array,dt_user,'ClassMapInterval')
+    call check_time_interval(ti_classmap_array,dt_user,'ClassMapInterval',tstart_user)
     call getOutputTimeArrays(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, success)
 
     if (ti_classmap > 0d0) then
@@ -4404,15 +4404,16 @@ end subroutine getOutputTimeArrays
 !> Check time interval:
 !! If time interval is smaller than DtUser, time interval will be set equal to DtUser.
 !! If time interval is not multiple of DtUser, error will be raised.
-subroutine check_time_interval(time_interval, user_time_step, time_interval_name)
+subroutine check_time_interval(time_interval, user_time_step, time_interval_name, tstart_user)
 
     real(kind=hp),    intent(inout) :: time_interval(3)     !< Array of time interval to be checked. It contains 3 elements: interval, start_time, stop_time
     double precision, intent(in   ) :: user_time_step       !< User specified time step (s) for external forcing update
     character(*),     intent(in   ) :: time_interval_name   !< Name of the time interval parameter to check, to be used in the log message.
+    double precision, intent(in   ) :: tstart_user          !< Start time of the simulation
 
     if (time_interval(1) > 0d0) then
         time_interval(1) = max(time_interval(1), user_time_step)
-        if (is_not_multiple(time_interval(1), user_time_step) .or. is_not_multiple(time_interval(2), user_time_step) .or. is_not_multiple(time_interval(3), user_time_step)) then
+        if (is_not_multiple(time_interval(1), user_time_step) .or. is_not_multiple(time_interval(2)-tstart_user, user_time_step) .or. is_not_multiple(time_interval(3)-tstart_user, user_time_step)) then
             write(msgbuf, *) time_interval_name,' = ', time_interval,' should be multiple of DtUser = ', user_time_step, ' s'
             call mess(LEVEL_ERROR, msgbuf)
         end if
