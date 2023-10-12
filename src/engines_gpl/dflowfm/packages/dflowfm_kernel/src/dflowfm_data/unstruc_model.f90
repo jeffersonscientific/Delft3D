@@ -1244,7 +1244,6 @@ subroutine readMDUFile(filename, istat)
     endif
     
     call prop_get_integer(md_ptr, 'numerics', 'PerotType', iperot)
-    call prop_get_integer(md_ptr, 'numerics', 'Wind_eachstep', update_wind_stress_each_time_step)
 
     call prop_get(md_ptr, 'numerics', 'Oceaneddysizefrac'   , Oceaneddysizefrac)
     call prop_get(md_ptr, 'numerics', 'Oceaneddysize'       , Oceaneddysize)
@@ -1507,6 +1506,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'wind' , 'PavIni'                   , PavIni )
     call prop_get_double (md_ptr, 'wind' , 'PavBnd'                   , PavBnd )
     call prop_get_integer(md_ptr, 'wind' , 'Stresstowind'             , jastresstowind )
+    call prop_get_integer(md_ptr, 'wind' , 'Wind_eachstep'            , update_wind_stress_each_time_step)
+
 
     call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr'              , jawave)
     call prop_get_integer(md_ptr, 'waves', 'Waveforcing'              , waveforcing)
@@ -3348,9 +3349,6 @@ endif
     if (writeall .or. epsmaxlevm .ne. 1d-8) then
        call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
     endif
-    if (writeall .or. update_wind_stress_each_time_step > 0) then
-       call prop_set(prop_ptr, 'numerics', 'Wind_eachstep' , update_wind_stress_each_time_step,  '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
-    endif
 
     if (Oceaneddyamp > 0d0) then 
        call prop_set(prop_ptr, 'numerics', 'Oceaneddysizefrac'   , Oceaneddysizefrac)
@@ -3582,7 +3580,10 @@ endif
     call prop_set(prop_ptr, 'wind', 'PavBnd',               PavBnd, 'Average air pressure on open boundaries (N/m2) (only applied if > 0)')
     call prop_set(prop_ptr, 'wind', 'Pavini',               PavIni, 'Average air pressure for initial water level correction (N/m2) (only applied if > 0)')
     if (writeall .or. jastresstowind == 1) then
-    call prop_set(prop_ptr, 'wind', 'Stresstowind', jastresstowind, 'Convert EC windstress to wind yes/no (),  1/0, default 0')
+       call prop_set(prop_ptr, 'wind', 'Stresstowind', jastresstowind, 'Convert EC windstress to wind yes/no (),  1/0, default 0')
+    endif
+    if (writeall .or. update_wind_stress_each_time_step > 0) then
+       call prop_set(prop_ptr, 'wind', 'Wind_eachstep',     update_wind_stress_each_time_step, '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
     endif
 
    
