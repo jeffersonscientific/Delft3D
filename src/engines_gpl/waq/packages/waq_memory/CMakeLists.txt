@@ -6,6 +6,7 @@ create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 set(oss_dependencies deltares_common
                      waq_utils_f
                      waq_data
+                     waq_definition
                      )
 
 oss_include_libraries(${library_name} oss_dependencies)
