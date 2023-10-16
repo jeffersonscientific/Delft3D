@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_properties
+use m_waq_type_definitions
+
 
 implicit none
 
@@ -31,12 +33,12 @@ contains
 subroutine add_biofilm( diameter, density, biofilm_thk, biofilm_density )
     implicit none
 
-    real, intent(inout) :: diameter, density
-    real, intent(in)    :: biofilm_thk, biofilm_density
+    real(kind=sp), intent(inout) ::diameter, density
+    real(kind=sp), intent(in) ::biofilm_thk, biofilm_density
 
-    real                :: mass
+    real(kind=sp)                 ::mass
 
-    real, parameter     :: pi = 3.1415926
+    real(kind=sp), parameter     :: pi = 3.1415926
 
     mass     = 1.0/6.0 * pi * diameter ** 3 * density + &
                1.0/6.0 * pi * ((diameter + 2.0 * biofilm_thk)**3 - diameter ** 3) * biofilm_density
@@ -48,11 +50,11 @@ end subroutine add_biofilm
 subroutine combine_particles( diameter1, diameter2, density1, density2, combined_diameter, combined_density, new_shape_factor )
     implicit none
 
-    real, intent(in)  :: diameter1, diameter2, density1, density2
-    real, intent(out) :: combined_diameter, combined_density, new_shape_factor
+    real(kind=sp), intent(in) ::diameter1, diameter2, density1, density2
+    real(kind=sp), intent(out) ::combined_diameter, combined_density, new_shape_factor
 
-    real, parameter :: pi = 3.1415926
-    real :: mass, volume
+    real(kind=sp),  parameter :: pi = 3.1415926
+    real(kind=sp)  ::mass, volume
 
     mass   = density1 * 1.0/6.0 * pi * diameter1 ** 3+ &
              density2 * 1.0/6.0 * pi * diameter2 ** 3
@@ -67,15 +69,15 @@ end subroutine combine_particles
 subroutine calculate_sedim( diameter, density, shape_factor , settling, crit_stress )
     implicit none
 
-    real, intent(in)  :: diameter, density, shape_factor
-    real, intent(out) :: settling, crit_stress
+    real(kind=sp), intent(in) ::diameter, density, shape_factor
+    real(kind=sp), intent(out) ::settling, crit_stress
 
-    real :: dstar, crit_coeff
+    real(kind=sp)  ::dstar, crit_coeff
     
-    real, parameter :: perday              = 86400.0 ! Convert from s to day
-    real, parameter :: denswater           = 1000.0
-    real, parameter :: gravacc             =   9.81 ! m/s^2
-    real, parameter :: kinematic_viscosity = 1.0e-3 ! m^2/s
+    real(kind=sp),  parameter :: perday              = 86400.0 ! Convert from s to day
+    real(kind=sp),  parameter :: denswater           = 1000.0
+    real(kind=sp),  parameter :: gravacc             =   9.81 ! m/s^2
+    real(kind=sp),  parameter :: kinematic_viscosity = 1.0e-3 ! m^2/s
 
 
     if ( density > denswater ) then

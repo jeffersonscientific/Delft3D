@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_ironox
+use m_waq_type_definitions
+
 
 implicit none
 
@@ -38,54 +40,54 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint( 18) ! I  Array of pointers in pmsa to get and store the data
-      integer increm( 18) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt( 18)   !    Local work array for the pointering
-      integer iseg        !    Local loop counter for computational element loop
+      real(kind=sp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=sp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_32)  ::ipoint( 18) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_32)  ::increm( 18) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_32)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_32)  ::noflux      ! I  Number of fluxes, increment in the fl array
+      integer(kind=int_32)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_32)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_32)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_32)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_32)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_32)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_32)  ::ipnt( 18)   !    Local work array for the pointering
+      integer(kind=int_32)  ::iseg        !    Local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     Type    Name         I/O Description                                        Unit
 !
-      real(4) feiid       ! I  total dissolved reducing iron                      (gFe/m3)
-      real(4) oxy         ! I  Dissolved Oxygen                                   (g/m3)
-      real(4) no3         ! I  Nitrate (NO3)                                      (gN/m3)
-      real(4) frfe2dis    ! I  fraction dissolved free iron(II)                   (-)
-      real(4) frfe2ohd    ! I  fraction of dissolved FeOH+                        (-)
-      real(4) frfe2oh2d   ! I  fraction of dissolved Fe(OH)2                      (-)
-      real(4) rci1oxox20  ! I  rate of Fe2+ oxid. with oxygen at 20 oC            (m3/gO2/d)
-      real(4) rci2oxox20  ! I  rate of FeOH+ oxid. with oxygen at 20 oC           (m3/gO2/d)
-      real(4) rci3oxox20  ! I  rate of Fe(OH)2 oxid. with oxygen T=20             (m3/gO2/d)
-      real(4) rci1oxni20  ! I  rate of Fe2+ oxidation with nitrate T=20           (m3/gN/d)
-      real(4) rci2oxni20  ! I  rate of FeOH+ oxidation with nitrate T=20          (m3/gN/d)
-      real(4) rci3oxni20  ! I  rate of Fe(OH)2 oxid. with nitrate T=20            (m3/gN/d)
-      real(4) tciox       ! I  temperature coefficient for iron oxidation         (-)
-      real(4) temp        ! I  ambient water temperature                          (oC)
-      real(4) delt        ! I  timestep for processes                             (d)
-      real(4) poros       ! I  volumetric porosity                                (-)
-      real(4) fioo        ! O  rate of iron oxidation with oxygen                 (gFe/m3/d)
-      real(4) fion        ! O  rate of iron oxidation with nitrate                (gFe/m3/d)
-      real(4) dioo        ! F  rate of iron oxidation with oxygen                 (gFe/m3/d)
-      real(4) dion        ! F  rate of iron oxidation with nitrate                (gFe/m3/d)
-      integer idioo       !    Pointer to the rate of iron oxidation with oxygen
-      integer idion       !    Pointer to the rate of iron oxidation with nitrate
-      real(4) tfiox       ! L  temperature function iron oxidation
-      real(4) kioo1       ! L  rate of Fe2+ oxid. with oxygen
-      real(4) kioo2       ! L  rate of FeOH+ oxid. with oxygen
-      real(4) kioo3       ! L  rate of Fe(OH)2 oxid. with oxygen
-      real(4) kion1       ! L  rate of Fe2+ oxidation with nitrate
-      real(4) kion2       ! L  rate of FeOH+ oxidation with nitrate
-      real(4) kion3       ! L  rate of Fe(OH)2 oxid. with nitrate
+      real(kind=sp)  ::feiid       ! I  total dissolved reducing iron                      (gFe/m3)
+      real(kind=sp)  ::oxy         ! I  Dissolved Oxygen                                   (g/m3)
+      real(kind=sp)  ::no3         ! I  Nitrate (NO3)                                      (gN/m3)
+      real(kind=sp)  ::frfe2dis    ! I  fraction dissolved free iron(II)                   (-)
+      real(kind=sp)  ::frfe2ohd    ! I  fraction of dissolved FeOH+                        (-)
+      real(kind=sp)  ::frfe2oh2d   ! I  fraction of dissolved Fe(OH)2                      (-)
+      real(kind=sp)  ::rci1oxox20  ! I  rate of Fe2+ oxid. with oxygen at 20 oC            (m3/gO2/d)
+      real(kind=sp)  ::rci2oxox20  ! I  rate of FeOH+ oxid. with oxygen at 20 oC           (m3/gO2/d)
+      real(kind=sp)  ::rci3oxox20  ! I  rate of Fe(OH)2 oxid. with oxygen T=20             (m3/gO2/d)
+      real(kind=sp)  ::rci1oxni20  ! I  rate of Fe2+ oxidation with nitrate T=20           (m3/gN/d)
+      real(kind=sp)  ::rci2oxni20  ! I  rate of FeOH+ oxidation with nitrate T=20          (m3/gN/d)
+      real(kind=sp)  ::rci3oxni20  ! I  rate of Fe(OH)2 oxid. with nitrate T=20            (m3/gN/d)
+      real(kind=sp)  ::tciox       ! I  temperature coefficient for iron oxidation         (-)
+      real(kind=sp)  ::temp        ! I  ambient water temperature                          (oC)
+      real(kind=sp)  ::delt        ! I  timestep for processes                             (d)
+      real(kind=sp)  ::poros       ! I  volumetric porosity                                (-)
+      real(kind=sp)  ::fioo        ! O  rate of iron oxidation with oxygen                 (gFe/m3/d)
+      real(kind=sp)  ::fion        ! O  rate of iron oxidation with nitrate                (gFe/m3/d)
+      real(kind=sp)  ::dioo        ! F  rate of iron oxidation with oxygen                 (gFe/m3/d)
+      real(kind=sp)  ::dion        ! F  rate of iron oxidation with nitrate                (gFe/m3/d)
+      integer(kind=int_32)  ::idioo       !    Pointer to the rate of iron oxidation with oxygen
+      integer(kind=int_32)  ::idion       !    Pointer to the rate of iron oxidation with nitrate
+      real(kind=sp)  ::tfiox       ! L  temperature function iron oxidation
+      real(kind=sp)  ::kioo1       ! L  rate of Fe2+ oxid. with oxygen
+      real(kind=sp)  ::kioo2       ! L  rate of FeOH+ oxid. with oxygen
+      real(kind=sp)  ::kioo3       ! L  rate of Fe(OH)2 oxid. with oxygen
+      real(kind=sp)  ::kion1       ! L  rate of Fe2+ oxidation with nitrate
+      real(kind=sp)  ::kion2       ! L  rate of FeOH+ oxidation with nitrate
+      real(kind=sp)  ::kion3       ! L  rate of Fe(OH)2 oxid. with nitrate
 
       ! initialise pointering in pmsa
 

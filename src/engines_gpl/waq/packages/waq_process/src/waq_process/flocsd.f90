@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_flocsd
+use m_waq_type_definitions
+
 
 implicit none
 
@@ -40,58 +42,58 @@ contains
 !
 !     type    name         i/o description
 !
-      integer, parameter :: nopmsa = 17
+      integer(kind=int_32),  parameter :: nopmsa = 17
 
-      real(4) pmsa(*)        !i/o process manager system array, window of routine to process library
-      real(4) fl(*)          ! o  array of fluxes made by this process in mass/volume/time
-      integer ipoint(nopmsa) ! i  array of pointers in pmsa to get and store the data
-      integer increm(nopmsa) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg          ! i  number of computational elements in the whole model schematisation
-      integer noflux         ! i  number of fluxes, increment in the fl array
-      integer iexpnt(4,*)    ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)      ! i  active-inactive, surface-water-bottom, see manual for use
-      integer noq1           ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2           ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3           ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4           ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer ipnt(nopmsa)   ! local work array for the pointering
-      integer iseg           ! local loop counter for computational element loop
+      real(kind=sp)  ::pmsa(*)        !i/o process manager system array, window of routine to process library
+      real(kind=sp)  ::fl(*)          ! o  array of fluxes made by this process in mass/volume/time
+      integer(kind=int_32)  ::ipoint(nopmsa) ! i  array of pointers in pmsa to get and store the data
+      integer(kind=int_32)  ::increm(nopmsa) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_32)  ::noseg          ! i  number of computational elements in the whole model schematisation
+      integer(kind=int_32)  ::noflux         ! i  number of fluxes, increment in the fl array
+      integer(kind=int_32)  ::iexpnt(4,*)    ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
+      integer(kind=int_32)  ::iknmrk(*)      ! i  active-inactive, surface-water-bottom, see manual for use
+      integer(kind=int_32)  ::noq1           ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_32)  ::noq2           ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_32)  ::noq3           ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_32)  ::noq4           ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_32)  ::ipnt(nopmsa)   ! local work array for the pointering
+      integer(kind=int_32)  ::iseg           ! local loop counter for computational element loop
 !
 !*******************************************************************************
 !
 !     type    name         i/o description                                        unit
 !
-      integer :: idflocim1
-      integer :: idflocim2
+      integer(kind=int_32)  ::idflocim1
+      integer(kind=int_32)  ::idflocim2
 
-      integer :: ip8, in8, ip9, in9, ipwmac, inwmac, ipwmic, inwmic, iq, noq, ivan
+      integer(kind=int_32)  ::ip8, in8, ip9, in9, ipwmac, inwmac, ipwmic, inwmic, iq, noq, ivan
 
-      real(4) cmacro      ! i  inorganic matter (im1; macro flocs)                (gdm/m3)
-      real(4) cmicro      ! i  inorganic matter (im2; micro flocs)                (gdm/m3)
-      real(4) tpm         ! i  total particulate matter (including algae)         (gdw/m3)
-      real(4) tau         ! i  bottom shear stress                                (Pa)
-      real(4) tke         ! i  turbulent kinetic energy                           (J)
-      integer swfloform   ! i  1=Manning/Dyer, 2=Chassagne/Safar, 3=NA            (-)
-      real(4) rcfloc      ! i  flocculation rate                                  (1/d)
-      real(4) rcbreakup   ! i  floc break-up rate                                 (1/d)
-      real(4) delt        ! i  timestep for processes                             (d)
-      real(4) total_depth ! i  total depth for segment (bottom to surface)        (m)
-      real(4) local_depth ! i  local depth for segment (segment to surface)       (m)
-      real(4) rho_water   ! i  density of water                                   (kg/m3)
-      real(4) viscosity   ! i  kinetic viscosity                                  (m/s2)
-      real(4) spmratioem  ! o  flocculation ratio macro:micro empirical model     (-)
-      real(4) dflocim1    ! f  flocculation or break-up flux im1                  (g/m3/d)
-      real(4) dflocim2    ! f  flocculation or break-up flux im2                  (g/m3/d)
-      integer ikmrk1      !    first segment attribute
+      real(kind=sp)  ::cmacro      ! i  inorganic matter (im1; macro flocs)                (gdm/m3)
+      real(kind=sp)  ::cmicro      ! i  inorganic matter (im2; micro flocs)                (gdm/m3)
+      real(kind=sp)  ::tpm         ! i  total particulate matter (including algae)         (gdw/m3)
+      real(kind=sp)  ::tau         ! i  bottom shear stress                                (Pa)
+      real(kind=sp)  ::tke         ! i  turbulent kinetic energy                           (J)
+      integer(kind=int_32)  ::swfloform   ! i  1=Manning/Dyer, 2=Chassagne/Safar, 3=NA            (-)
+      real(kind=sp)  ::rcfloc      ! i  flocculation rate                                  (1/d)
+      real(kind=sp)  ::rcbreakup   ! i  floc break-up rate                                 (1/d)
+      real(kind=sp)  ::delt        ! i  timestep for processes                             (d)
+      real(kind=sp)  ::total_depth ! i  total depth for segment (bottom to surface)        (m)
+      real(kind=sp)  ::local_depth ! i  local depth for segment (segment to surface)       (m)
+      real(kind=sp)  ::rho_water   ! i  density of water                                   (kg/m3)
+      real(kind=sp)  ::viscosity   ! i  kinetic viscosity                                  (m/s2)
+      real(kind=sp)  ::spmratioem  ! o  flocculation ratio macro:micro empirical model     (-)
+      real(kind=sp)  ::dflocim1    ! f  flocculation or break-up flux im1                  (g/m3/d)
+      real(kind=sp)  ::dflocim2    ! f  flocculation or break-up flux im2                  (g/m3/d)
+      integer(kind=int_32)  ::ikmrk1      !    first segment attribute
       logical active      !    active segment
       logical bottom      !    sediment bed segment
-      real(4) macro       !    concentration macro flocs                            (g/m3)
-      real(4) micro       !    concentration micro flocs                            (g/m3)
-      real(4) tim         !    total concentration flocs                            (g/m3)
-      real(4) macroeq     !    concentration macro flocs in equilibrium             (g/m3)
-      real(4) dfloc       !    flocculation or break-up flux                      (g/m3/d)
-      real(4) ws_macro    !    fall velocity of macro flocs                       (m/d)
-      real(4) ws_micro    !    fall velocity of micro flocs                       (m/d)
+      real(kind=sp)  ::macro       !    concentration macro flocs                            (g/m3)
+      real(kind=sp)  ::micro       !    concentration micro flocs                            (g/m3)
+      real(kind=sp)  ::tim         !    total concentration flocs                            (g/m3)
+      real(kind=sp)  ::macroeq     !    concentration macro flocs in equilibrium             (g/m3)
+      real(kind=sp)  ::dfloc       !    flocculation or break-up flux                      (g/m3/d)
+      real(kind=sp)  ::ws_macro    !    fall velocity of macro flocs                       (m/d)
+      real(kind=sp)  ::ws_micro    !    fall velocity of micro flocs                       (m/d)
 !
 !*******************************************************************************
 !
