@@ -26,6 +26,8 @@ module m_waq_type_definitions
 !  module declarations
       use, intrinsic :: iso_fortran_env
       implicit none
+      private
+      public :: int_8, int_16, int_32, int_64, sp, dp, qp
       
       ! f77: integer*1, f90: integer(kind=1)
       integer, parameter :: int_8 = INT8
