@@ -60,6 +60,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use time_class
    use m_longculverts
    use m_nearfield,            only : nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
+   use dfm_error, only: DFM_EXTFORCERROR
 
    implicit none
 
@@ -87,12 +88,12 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
    success = .true.
 
-   if (update_wind_stress_each_time_step == 0) then ! Update wind (and air pressure) in set_external_forcing (each user timestep)
-      call calculate_wind_stresses(time_in_seconds)
-   end if
-
    if (ja_airdensity > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
+   end if
+
+   if (update_wind_stress_each_time_step == 0) then ! Update wind in set_external_forcing (each user timestep)
+      call calculate_wind_stresses(time_in_seconds)
    end if
 
    if (jatem > 1) then
@@ -160,7 +161,8 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    call timstop(handle_ext)
 
    if (.not. success) then
-      call print_error_message(time_in_seconds, iresult)
+      iresult = DFM_EXTFORCERROR
+      call print_error_message(time_in_seconds)
       return
    end if
 
@@ -593,18 +595,15 @@ end subroutine set_external_forcings
 
 
 !> print_error_message
-subroutine print_error_message(time_in_seconds, iresult)
-   use dfm_error, only: DFM_EXTFORCERROR
+subroutine print_error_message(time_in_seconds)
    use m_ec_message, only: dumpECMessageStack
    use MessageHandling, only: LEVEL_WARN, mess
    use unstruc_messages, only: callback_msg
 
-   double precision, intent(in   ) :: time_in_seconds !< Current time when doing this action
-   integer,          intent(  out) :: iresult      !< Integer error status: DFM_NOERR==0 if succesful.
+   double precision, intent(in) :: time_in_seconds !< Current time when doing this action
 
-   character(len=255)              :: tmpstr
+   character(len=255)           :: tmpstr
 
-   iresult = DFM_EXTFORCERROR
    write(tmpstr,'(f22.11)') time_in_seconds
    call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time=' // trim(tmpstr))
    tmpstr = dumpECMessageStack(LEVEL_WARN,callback_msg)
@@ -619,6 +618,7 @@ subroutine prepare_wind_model_data(time_in_seconds)
    use m_flowgeom, only: ln, lnx, ndx
    use precision_basics
    use m_flowparameters, only: eps10
+   use dfm_error, only: DFM_EXTFORCERROR
 
    double precision, intent(in) :: time_in_seconds !< Current time when setting wind data
 
@@ -652,28 +652,29 @@ subroutine prepare_wind_model_data(time_in_seconds)
       ec_item_id = get_ec_item_id(i)
       ! Retrieve wind's x- and y-component for ext-file quantity 'windxy'.
       if (ec_item_id == item_windxy_x .and. item_windxy_y /= ec_undef_int) then
-         call get_timespace_value_by_item_and_time(item_windxy_x, time_in_seconds)
+         call get_timespace_value_by_item(item_windxy_x)
       ! Retrieve wind's p-, x- and y-component for ext-file quantity 'airpressure_windx_windy'.
       else if (ec_item_id == item_apwxwy_p .and. item_apwxwy_x /= ec_undef_int .and. item_apwxwy_y /= ec_undef_int) then
          if (item_apwxwy_c /= ec_undef_int) then
-            call get_timespace_value_by_name_and_time('airpressure_windx_windy_charnock', time_in_seconds)
+            call get_timespace_value_by_name('airpressure_windx_windy_charnock')
          else
-            call get_timespace_value_by_name_and_time('airpressure_windx_windy', time_in_seconds)
+            call get_timespace_value_by_name('airpressure_windx_windy')
          end if
       ! Retrieve wind's x-component for ext-file quantity 'windx'.
       else if (ec_item_id == item_windx) then
-         call get_timespace_value_by_item_and_time(item_windx, time_in_seconds)
+         call get_timespace_value_by_item(item_windx)
       ! Retrieve wind's y-component for ext-file quantity 'windy'.
       else if (ec_item_id == item_windy) then
-         call get_timespace_value_by_item_and_time(item_windy, time_in_seconds)
+         call get_timespace_value_by_item(item_windy)
        ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
       else if (ec_item_id == item_atmosphericpressure) then
-         call get_timespace_value_by_item_and_time(item_atmosphericpressure, time_in_seconds)
+         call get_timespace_value_by_item(item_atmosphericpressure)
       else
          cycle  ! avoid updating id_first_wind and id_last_wind
       end if
       if (.not. success) then
-         call print_error_message(time_in_seconds, iresult)
+         iresult = DFM_EXTFORCERROR
+         call print_error_message(time_in_seconds)
          return
       end if
       if (first_time_wind) then
@@ -683,8 +684,8 @@ subroutine prepare_wind_model_data(time_in_seconds)
    end do
 
    if (jawindstressgiven > 0) then 
-      call get_timespace_value_by_item_and_array_and_time(item_stressx, wdsu_x, time_in_seconds)
-      call get_timespace_value_by_item_and_array_and_time(item_stressy, wdsu_y, time_in_seconds)
+      call get_timespace_value_by_item_and_array(item_stressx, wdsu_x)
+      call get_timespace_value_by_item_and_array(item_stressy, wdsu_y)
    end if
 
    if (allocated(ec_pwxwy_x) .and. allocated( ec_pwxwy_y)) then
@@ -738,27 +739,25 @@ integer function get_ec_number_of_items()
 
 end function get_ec_number_of_items
 
-!> get_timespace_value_by_name_and_time
-subroutine get_timespace_value_by_name_and_time(name, time_in_seconds)
+!> get_timespace_value_by_name
+subroutine get_timespace_value_by_name(name)
 
-   character(*),     intent(in) :: name            !< Input name
-   double precision, intent(in) :: time_in_seconds !< Current time when doing this action
+   character(*), intent(in) :: name !< Input name
 
    success = ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
 
-end subroutine get_timespace_value_by_name_and_time
+end subroutine get_timespace_value_by_name
 
-!> get_timespace_value_by_item_and_array_and_time
-subroutine get_timespace_value_by_item_and_array_and_time(item, array, time_in_seconds)
+!> get_timespace_value_by_item_and_array
+subroutine get_timespace_value_by_item_and_array(item, array)
    use m_flowtimes, only: irefdate, tzone, tunit
 
    integer,          intent(in   ) :: item             !< Input item
    double precision, intent(inout) :: array(:)         !< Array that stores the obatained values
-   double precision, intent(in   ) :: time_in_seconds  !< Current time when doing this action
 
    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
-end subroutine get_timespace_value_by_item_and_array_and_time
+end subroutine get_timespace_value_by_item_and_array
 
 !> perform_additional_spatial_interpolation, the size of array_x and array_y is lnx.
 subroutine perform_additional_spatial_interpolation(array_x, array_y)
@@ -773,16 +772,14 @@ subroutine perform_additional_spatial_interpolation(array_x, array_y)
 
 end subroutine perform_additional_spatial_interpolation
 
-!> get_timespace_value_by_item_and_time
-subroutine get_timespace_value_by_item_and_time(item, time_in_seconds)
+!> get_timespace_value_by_item
+subroutine get_timespace_value_by_item(item)
    use m_flowtimes, only: irefdate, tzone, tunit
-
-   integer,          intent(in) :: item            !< Input item
-   double precision, intent(in) :: time_in_seconds !< Current time when doing this action
+   integer, intent(in) :: item !< Input item
 
    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
-end subroutine get_timespace_value_by_item_and_time
+end subroutine get_timespace_value_by_item
 
 !> initialize_array_with_zero
 subroutine initialize_array_with_zero(array)

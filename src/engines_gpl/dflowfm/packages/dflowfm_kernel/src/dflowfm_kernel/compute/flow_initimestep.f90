@@ -120,7 +120,7 @@
     call setumod(jazws0)                             ! set cell center velocities, should be here as prior to 2012 orso
  call timstop(handle_extra(43)) ! End setumod
 
- if (update_wind_stress_each_time_step > 0) then ! Update wind (and air pressure) in each computational timestep
+ if (update_wind_stress_each_time_step > 0) then ! Update wind in each computational timestep
     call calculate_wind_stresses(time0)
  end if
 
