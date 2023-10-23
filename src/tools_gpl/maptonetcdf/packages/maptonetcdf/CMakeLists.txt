@@ -33,7 +33,9 @@ set(oss_dependencies_general deltares_common
                              io_netcdf
                              io_netcdf_data
                              waq_kernel
-                             waq_utils_f)
+                             waq_utils_f
+                             waq_definition
+                             )
 
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})

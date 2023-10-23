@@ -15,7 +15,9 @@ set(oss_dependencies deltares_common
                      netcdff
                      io_netcdf
                      io_hyd
-                     waq_utils_f)
+                     waq_utils_f
+                     waq_definition
+                     )
 
 target_link_libraries(${library_name} ${oss_dependencies})
 oss_include_libraries(${library_name} oss_dependencies)

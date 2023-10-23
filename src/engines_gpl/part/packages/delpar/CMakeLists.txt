@@ -36,6 +36,7 @@ set(oss_dependencies deltares_common
                      part_utils_f
                      part_kernel_f
                      part_io_f
+                     waq_definition
                      waq_utils_f
                      io_netcdf
                      io_netcdf_data

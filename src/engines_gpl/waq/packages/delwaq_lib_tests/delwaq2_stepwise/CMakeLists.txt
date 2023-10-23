@@ -9,7 +9,7 @@ set(executable_name delwaq2_stepwise)
 add_executable(${executable_name} ${source_files}) 
 
 # Extra dependencies
-set(oss_dependencies delwaq_lib)
+set(oss_dependencies delwaq_lib waq_definition)
 oss_include_libraries(${executable_name} oss_dependencies)
 
 # Link libraries

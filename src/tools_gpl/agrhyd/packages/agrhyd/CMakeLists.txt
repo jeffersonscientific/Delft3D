@@ -38,7 +38,9 @@ set(oss_dependencies deltares_common
                      netcdf4
                      netcdff
                      waq_hyd_data
-                     waq_utils_f)
+                     waq_utils_f
+                     waq_definition
+                     )
 
 oss_include_libraries(${executable_name} oss_dependencies)
 target_link_libraries(${executable_name} ${oss_dependencies})

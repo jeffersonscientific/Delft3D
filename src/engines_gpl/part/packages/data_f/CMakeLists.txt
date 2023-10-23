@@ -4,7 +4,8 @@ set(library_name part_data_f)
 create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
 
 # Add dependencies
-set(oss_dependencies deltares_common
+set(oss_dependencies waq_definition
+                     deltares_common
                      netcdff
                      io_netcdf_data
                      waq_hyd_data)

@@ -6,6 +6,7 @@ set(oss_dependencies deltares_common
                      part_data_f
                      part_utils_f
                      part_io_f
+                     waq_definition
                      waq_utils_f
                      gridgeom
                      kdtree_wrapper

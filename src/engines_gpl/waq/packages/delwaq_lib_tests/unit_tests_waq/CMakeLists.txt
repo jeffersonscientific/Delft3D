@@ -12,6 +12,7 @@ add_executable(${executable_name} ${source_files})
 set(oss_dependencies delwaq_lib
                      ftnunit
                      waq_kernel
+                     waq_definition
                      )
 oss_include_libraries(${executable_name} oss_dependencies)
 
