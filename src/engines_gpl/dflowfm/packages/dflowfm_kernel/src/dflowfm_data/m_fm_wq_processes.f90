@@ -33,7 +33,7 @@
 module m_fm_wq_processes
    use m_rd_sub
    use m_dhnoseg
-   use precision
+   use precision, only: fp, prec, fhp, pntrsize, hp, long
    use processes_input
    use processes_pointers
    use dlwq_hyd_data
