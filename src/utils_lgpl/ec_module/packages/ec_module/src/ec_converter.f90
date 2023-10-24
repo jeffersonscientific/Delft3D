@@ -1840,8 +1840,8 @@ module m_ec_converter
                               do k = 1,maxlay_tgt
                                  from = (i-1)*maxlay_tgt*vectormax+(k-1)*vectormax+1
                                  thru = (i-1)*maxlay_tgt*vectormax+k*vectormax
-                                 if (connection%converterPtr%operandType == operand_replace .or. &
-                                     connection%converterPtr%operandType == operand_replace_element .or. &
+                                 if ((connection%converterPtr%operandType == operand_replace) .or. &
+                                     (connection%converterPtr%operandType == operand_replace_element) .or. &
                                      (connection%converterPtr%operandType == operand_replace_if_value)) then
                                      connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
 
@@ -1976,7 +1976,7 @@ module m_ec_converter
                      end do
 
                      if (nmiss == 0) then     ! if sufficient data for bi-linear interpolation
-                        if (connection%converterPtr%operandType==operand_replace .or. &
+                        if ((connection%converterPtr%operandType==operand_replace) .or. &
                             (connection%converterPtr%operandType == operand_replace_if_value)) then
                            targetValues(i) = 0.0_hp
                         end if
@@ -2758,7 +2758,7 @@ module m_ec_converter
                      call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
                      if (n_layers==0) then
                         do j=1,n_points
-                           if (connection%converterPtr%operandType==operand_replace .or. &
+                           if ((connection%converterPtr%operandType==operand_replace) .or. &
                                (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
                               targetValues(j) = 0.0_hp
                            end if
@@ -2817,7 +2817,7 @@ module m_ec_converter
                            np = indexWeight%indices(1,j)
                            mp = indexWeight%indices(2,j)
                            if (mp > 0 .and. np > 0) then
-                              if (connection%converterPtr%operandType==operand_replace .or. &
+                              if ((connection%converterPtr%operandType==operand_replace) .or. &
                                   (connection%converterPtr%operandType == operand_replace_if_value)) then
                                  targetValues(kbot:ktop) = 0.0_hp
                               end if
