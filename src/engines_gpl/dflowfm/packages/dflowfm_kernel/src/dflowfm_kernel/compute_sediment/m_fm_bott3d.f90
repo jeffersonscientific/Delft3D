@@ -115,7 +115,7 @@ public :: fm_bott3d
    !!
    !! Execute
    !!
-
+   call timstrt('Bott3d_call   ', handle_extra(89))
    if (.not. allocated(bl_ave0)) then
       allocate(bl_ave0(1:ndx),stat=ierror)
       bl_ave0(:) = 0d0
@@ -126,7 +126,7 @@ public :: fm_bott3d
    timhr = time1 / H2SEC
    blchg(:) = 0d0
    e_ssn(:,:) = 0d0
-   
+
    call fm_suspended_sand_correction()
       
    call fm_total_face_normal_suspended_transport()
@@ -140,9 +140,11 @@ public :: fm_bott3d
          call write_error(errmsg, unit=mdia)
       end if
    endif
+   call timstop(handle_extra(89))
    !
    ! BEGIN: Moved parts from `fm_erosed`
    !
+   call timstrt('Erosed_call   ', handle_extra(88))
    if (bed > 0.0_fp) then
       call fm_adjust_bedload(e_sbcn, e_sbct, DO_AVALANCHE)
    endif
@@ -174,10 +176,14 @@ public :: fm_bott3d
    !
    call sum_current_wave_transport_links()
    !
+   call timstop(handle_extra(88))
+   !
    ! END: Moved parts from `fm_erosed`
    !
    !
    ! if bed composition computations have started
+   !
+   call timstrt('Bott3d_call   ', handle_extra(89))
    !
    if (time1 >= tstart_user + tcmp * tfac) then   ! tmor/tcmp in tunit since start of computations, time1 in seconds since reference date
        
@@ -218,7 +224,7 @@ public :: fm_bott3d
          !
          ! Update layers and obtain the depth change
          !
-		 !See: UNST-7369
+		   !See: UNST-7369
          if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             write(errmsg,'(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
@@ -261,11 +267,13 @@ public :: fm_bott3d
    
    call fm_update_bed_level(dtmor)
 
-   !!
-   !! Deallocate
-   !!
+   !
+   ! Deallocate
+   !
    
    deallocate(bl_ave0)
+   !
+   call timstop(handle_extra(89))
    
    end subroutine fm_bott3d
 
