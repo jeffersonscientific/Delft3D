@@ -54,7 +54,7 @@
    use m_flowexternalforcings, only: nopenbndsect
    use m_flowparameters, only: epshs, eps10, jasal, flowWithoutWaves, jawaveswartdelwaq, jawave
    use m_sediment, m_sediment_sed=>sed 
-   use m_flowtimes, only: dts, tstart_user, time1, dnt, julrefdat, tfac, ti_sed, ti_seds, time_user, handle_extra
+   use m_flowtimes, only: dts, tstart_user, time1, dnt, julrefdat, tfac, ti_sed, ti_seds, time_user
    use m_transport, only: fluxhortot, ised1, constituents, sinksetot, sinkftot, itra1, itran, numconst, isalt
    use unstruc_files, only: mdia, close_all_files
    use m_fm_erosed
@@ -73,7 +73,6 @@
    use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
    use m_tables, only: interpolate
    use m_debug
-   use timers
    !
    implicit none
    !
@@ -156,7 +155,6 @@
    !!
    !!! executable statements -------------------------------------------------------
    !!
-   call timstrt('Bott3d_call   ', handle_extra(89))
    bcmfile             => stmpar%morpar%bcmfile
    morbnd              => stmpar%morpar%morbnd
    cmpupd              => stmpar%morpar%cmpupd
@@ -180,9 +178,7 @@
    timhr = time1 / 3600.0d0
    nto    = nopenbndsect
    blchg = 0d0
-   call timstop(handle_extra(89))
    !
-   call timstrt('Erosed_call   ', handle_extra(88))
    istat   = 0
    if (istat == 0) allocate(qb_out(network%nds%Count), stat = istat)
    if (istat == 0) allocate(width_out(network%nds%Count), stat = istat)
@@ -192,7 +188,6 @@
    !
    qb_out = 0d0; width_out = 0d0; sb_in = 0d0; sb_dir = -1
    BranInIDLn = 0
-   call timstop(handle_extra(88))
    !
    !   Calculate suspended sediment transport correction vector (for SAND)
    !   Note: uses GLM velocities, consistent with DIFU
@@ -206,7 +201,6 @@
    !   vector arrays are blank
    !
    !
-   call timstrt('Bott3d_call   ', handle_extra(89))
    e_scrn = 0d0
    e_scrt = 0d0
    e_ssn  = 0d0
@@ -416,13 +410,11 @@
          call write_error(errmsg, unit=mdia)
       end if
    endif
-   call timstop(handle_extra(89))
    !
    !   Moved parts from fm_erosed() here   --------|
    !                                              \ /
    !                                               v
    !
-   call timstrt('Erosed_call   ', handle_extra(88))
    if (bed > 0.0_fp) then
       aval=.true.
       call fm_adjust_bedload(e_sbcn, e_sbct, aval)
@@ -625,10 +617,9 @@
          enddo
       endif
    enddo
-   call timstop(handle_extra(88))
    !
    !    EROSED CODE MOVED UNTIL THIS POINT ------------------------------------
-   call timstrt('Bott3d_call   ', handle_extra(89))
+
    !
    ! if bed composition computations have started
    !
@@ -1427,5 +1418,5 @@
       write(errmsg,'(a)') 'fm_bott3d::error deallocating memory.'
       call mess(LEVEL_FATAL, errmsg)
    endif
-   call timstop(handle_extra(89))
+
    end subroutine fm_bott3d

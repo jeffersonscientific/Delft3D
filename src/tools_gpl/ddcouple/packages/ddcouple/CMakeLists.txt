@@ -6,7 +6,7 @@ set(waq_root_path ${ddcouple_root_path}/../../engines_gpl/waq) # Trace back to t
 # Set version file variables
 set(waq_version_path ${waq_root_path}/version)
 
-set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/waq_utils/delwaq_version.F90)
+set(fortran_version_file_delwaq ${waq_root_path}/packages/waq_utils_f/src/delwaq_version.F90)
 set(rc_version_file ${waq_version_path}/version_number_ddcouple.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -28,7 +28,10 @@ add_executable(${executable_name} ${source_files}
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
 set(oss_dependencies deltares_common
                      deltares_common_c
+                     io_netcdf
+                     io_netcdf_data
                      io_hyd
+                     waq_hyd_data
                      waq_utils_f)
 
 oss_include_libraries(${executable_name} oss_dependencies)
@@ -61,4 +64,3 @@ install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/ddcouple/scripts/run_ddcouple.sh  DESTINATION bin)
 endif(UNIX)
-
