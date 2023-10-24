@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_5
+      use m_waq_type_definitions
       use m_zercum
       use m_setset
       use m_proint
@@ -96,8 +97,8 @@
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
       use m_dlwqdata_save_restore
 
@@ -107,9 +108,9 @@
 !     type     kind  function         name                      description
 
       type(waq_data_buffer), intent(inout) :: buffer              !< System total array space
-      integer   (4), intent(inout)   :: lun    (*)              !< array with unit numbers
+      integer(kind=int_32), intent(inout)    ::lun    (*)              !< array with unit numbers
       character (*), intent(in   )   :: lchar  (*)              !< array with file names
-      integer      , intent(in   )   :: action                  !< mode of operation
+      integer(kind=int_32), intent(in   )    ::action                  !< mode of operation
       type(delwaq_data), target      :: dlwqd                   !< data area stepwise processing
       type(GridPointerColl)          :: GridPs                  !< collection of all grid definitions
 
@@ -121,12 +122,12 @@
       logical   idflag     !  true if dump       took place, set in dlwqo2, not used
       logical   lrewin     !  true if rewind     took place, set in dlwq41, used for closure error corr.
       logical   ldumm2     !  dummy logical, parameter in dlwqt0
-      real      rdummy(1)  !  dummy real   , parameter in dlwqt0
-      integer   nstep      !  number of time steps (does not work if idt is time varying !)
-      integer   ierr       !  error variable
-      integer   ibnd       !  loop counter boundaries (loop should be in a called subroutine !)
-      integer   isys       !  loop counter substances (loop should be in a called subroutine !)
-      integer   sindex     !  if non-zero, then the surface array is filled
+      real(kind=sp) ::rdummy(1)  !  dummy real(kind=sp), parameter  ::in dlwqt0
+      integer(kind=int_32) ::nstep      !  number of time steps (does not work if idt is time varying !)
+      integer(kind=int_32) ::ierr       !  error variable
+      integer(kind=int_32) ::ibnd       !  loop counter boundaries (loop should be in a called subroutine !)
+      integer(kind=int_32) ::isys       !  loop counter substances (loop should be in a called subroutine !)
+      integer(kind=int_32) ::sindex     !  if non-zero, then the surface array is filled
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq65
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -44,17 +46,17 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     AMASS   REAL      NOSEG     IN/OUT  closure error correction
-!     VOLUME  REAL      NOSEG     INPUT   volume
-!     IDT     INTEGER     1       INPUT   Time between AMASS and VOLUME
-!     NOSEG   INTEGER     1       INPUT   number of segments
+!     AMASS   REAL(kind=sp) ::NOSEG     IN/OUT  closure error correction
+!     VOLUME  REAL(kind=sp) ::NOSEG     INPUT   volume
+!     IDT     INTEGER(kind=int_32) ::1       INPUT   Time between AMASS and VOLUME
+!     NOSEG   INTEGER(kind=int_32) ::1       INPUT   number of segments
 !
       use timers
 
-      real       AMASS (  *) , VOLUME(*)
-      integer    idt, noseg
-      integer    i
-      integer(4) ithandl /0/
+      real(kind=sp) ::AMASS (  *) , VOLUME(*)
+      integer(kind=int_32) ::idt, noseg
+      integer(kind=int_32) ::i
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq65", ithandl )
 !
 !         loop oversehe number of segments

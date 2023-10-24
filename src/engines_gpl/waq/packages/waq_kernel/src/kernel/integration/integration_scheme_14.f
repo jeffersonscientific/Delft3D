@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_14
+      use m_waq_type_definitions
       use m_zercum
       use m_setset
       use m_proint
@@ -80,10 +81,10 @@
 !
 !     NAME    KIND     LENGTH   FUNC.  DESCRIPTION
 !     ---------------------------------------------------------
-!     A       REAL       *      LOCAL  real      workspace array
-!     J       INTEGER    *      LOCAL  integer   workspace array
+!     A       REAL(kind=sp) ::*      LOCAL  real(kind=sp) ::workspace array
+!     J       INTEGER(kind=int_32) ::*      LOCAL  integer(kind=int_32) ::workspace array
 !     C       CHARACTER  *      LOCAL  character workspace array
-!     LUN     INTEGER    *      INPUT  array with unit numbers
+!     LUN     INTEGER(kind=int_32) ::*      INPUT  array with unit numbers
 !     LCHAR   CHAR*(*)   *      INPUT  filenames
 !
       use m_dlwqf8
@@ -112,8 +113,8 @@
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
       use m_dlwqdata_save_restore
 
@@ -123,9 +124,9 @@
 !     Declaration of arguments
 !
       type(waq_data_buffer), target  :: buffer      !< System total array space
-      INTEGER, DIMENSION(*)          :: LUN
+      INTEGER(kind=int_32), DIMENSION(*)           ::LUN
       CHARACTER*(*), DIMENSION(*)    :: LCHAR
-      INTEGER                        :: ACTION
+      INTEGER(kind=int_32) ::ACTION
       TYPE(DELWAQ_DATA), TARGET      :: DLWQD
       type(GridPointerColl)          :: GridPs               ! collection of all grid definitions
 
@@ -135,22 +136,22 @@
 !
       LOGICAL         IMFLAG , IDFLAG , IHFLAG
       LOGICAL         LREWIN , LDUMM2
-      REAL            RDUMMY(1)
+      REAL(kind=sp) ::RDUMMY(1)
 
-      INTEGER         NSTEP
-      INTEGER         IBND
-      INTEGER         ISYS
-      INTEGER         IERROR
+      INTEGER(kind=int_32) ::NSTEP
+      INTEGER(kind=int_32) ::IBND
+      INTEGER(kind=int_32) ::ISYS
+      INTEGER(kind=int_32) ::IERROR
 
-      INTEGER         LAREA
-      INTEGER         LDISP
-      INTEGER         LDIFF
-      INTEGER         LFLOW
-      INTEGER         LNOQ
-      INTEGER         LQDMP
-      INTEGER         LVELO
-      INTEGER         LXPNT
-      INTEGER         sindex
+      INTEGER(kind=int_32) ::LAREA
+      INTEGER(kind=int_32) ::LDISP
+      INTEGER(kind=int_32) ::LDIFF
+      INTEGER(kind=int_32) ::LFLOW
+      INTEGER(kind=int_32) ::LNOQ
+      INTEGER(kind=int_32) ::LQDMP
+      INTEGER(kind=int_32) ::LVELO
+      INTEGER(kind=int_32) ::LXPNT
+      INTEGER(kind=int_32) ::sindex
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

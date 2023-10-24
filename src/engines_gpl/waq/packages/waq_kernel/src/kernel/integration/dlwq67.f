@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq67
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -43,16 +45,16 @@
 !
 !     NAME    KIND       LENGTH       FUNCT.  DESCRIPTION
 !     ----    -----      ------       ------- -----------
-!     AMAT    REAL (JTRACK*2+1)*NOSEG IN/OUT  matrix to invert
-!     NOSEG   INTEGER       1         INPUT   number of segments
-!     JTRACK  INTEGER       1         INPUT   number of codiagonals
+!     AMAT    REAL(kind=sp) ::(JTRACK*2+1)*NOSEG IN/OUT  matrix to invert
+!     NOSEG   INTEGER(kind=int_32) ::1         INPUT   number of segments
+!     JTRACK  INTEGER(kind=int_32) ::1         INPUT   number of codiagonals
 !
       use timers
 
-      real    AMAT(*)
-      integer noseg, jtrack
-      integer ISEG, ISTEP, ISET
-      integer(4) ithandl /0/
+      real(kind=sp) ::AMAT(*)
+      integer(kind=int_32) ::noseg, jtrack
+      integer(kind=int_32) ::ISEG, ISTEP, ISET
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq67", ithandl )
 !
 !         set the diagonal

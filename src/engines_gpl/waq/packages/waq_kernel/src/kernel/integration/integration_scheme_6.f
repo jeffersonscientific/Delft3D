@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_6
+      use m_waq_type_definitions
       use m_hsurf
       use m_dlwqtr
       use m_dlwqo2
@@ -75,10 +76,10 @@
 !
 !     NAME    KIND     LENGTH   FUNC.  DESCRIPTION
 !     ---------------------------------------------------------
-!     A       REAL       *      LOCAL  real      workspace array
-!     J       INTEGER    *      LOCAL  integer   workspace array
+!     A       REAL(kind=sp) ::*      LOCAL  real(kind=sp) ::workspace array
+!     J       INTEGER(kind=int_32) ::*      LOCAL  integer(kind=int_32) ::workspace array
 !     C       CHARACTER  *      LOCAL  character workspace array
-!     LUN     INTEGER    *      INPUT  array with unit numbers
+!     LUN     INTEGER(kind=int_32) ::*      INPUT  array with unit numbers
 !     LCHAR   CHARACTER  *      INPUT  filenames
 !
 !     Declaration of arguments
@@ -105,8 +106,8 @@
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
 
       implicit none
@@ -115,9 +116,9 @@
 !     Declaration of arguments
 !
       type(waq_data_buffer), target :: buffer      !< System total array space
-      INTEGER, DIMENSION(*)       :: LUN
+      INTEGER(kind=int_32), DIMENSION(*)        ::LUN
       CHARACTER*(*), DIMENSION(*) :: LCHAR
-      INTEGER                     :: ACTION
+      INTEGER(kind=int_32) ::ACTION
       TYPE(DELWAQ_DATA)           :: DLWQD
       type(GridPointerColl)       :: GridPs               ! collection off all grid definitions
 
@@ -128,20 +129,20 @@
       LOGICAL         IMFLAG , IDFLAG , IHFLAG
       LOGICAL         LDUMMY , LSTREC , LREWIN
 
-      INTEGER         ITIME
-      INTEGER         ITIMEL
-      INTEGER         IAFLAG
-      INTEGER         IBFLAG
-      INTEGER         ISYS
-      INTEGER         ICSYS
-      INTEGER         NSYS
-      INTEGER         INWTYP
-      INTEGER         I
-      INTEGER          :: NOSSS
-      INTEGER          :: NOQTT
-      INTEGER         sindex
+      INTEGER(kind=int_32) ::ITIME
+      INTEGER(kind=int_32) ::ITIMEL
+      INTEGER(kind=int_32) ::IAFLAG
+      INTEGER(kind=int_32) ::IBFLAG
+      INTEGER(kind=int_32) ::ISYS
+      INTEGER(kind=int_32) ::ICSYS
+      INTEGER(kind=int_32) ::NSYS
+      INTEGER(kind=int_32) ::INWTYP
+      INTEGER(kind=int_32) ::I
+      INTEGER(kind=int_32) ::NOSSS
+      INTEGER(kind=int_32) ::NOQTT
+      INTEGER(kind=int_32) ::sindex
 
-      integer         ithandl
+      integer(kind=int_32) ::ithandl
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
       !

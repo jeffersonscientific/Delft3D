@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwq_output_theta
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -47,37 +49,37 @@
 
 !     Kind           Function         Name                  Description
 
-      integer      , intent(in   ) :: nrvart              ! number of output parameters
+      integer(kind=int_32), intent(in   )  ::nrvart              ! number of output parameters
       character(20), intent(in   ) :: ounam(nrvart)       ! output parameter names
-      integer      , intent(in   ) :: ipoint(nrvart)      ! output parameter pointers
-      integer      , intent(in   ) :: nocons              ! number of constants
-      integer      , intent(in   ) :: nopa                ! number of parameters
-      integer      , intent(in   ) :: nofun               ! number of functions
-      integer      , intent(in   ) :: nosfun              ! number of segment functions
-      integer      , intent(in   ) :: notot               ! number of substances
-      integer      , intent(in   ) :: noseg               ! number of default values
-      integer      , intent(in   ) :: noloc               ! number of default values
-      real         , intent(  out) :: proloc(noloc,noseg) ! process local array
-      integer      , intent(in   ) :: nodef               ! number of default values
-      real         , intent(in   ) :: theta(noseg)        ! theta array
+      integer(kind=int_32), intent(in   )  ::ipoint(nrvart)      ! output parameter pointers
+      integer(kind=int_32), intent(in   )  ::nocons              ! number of constants
+      integer(kind=int_32), intent(in   )  ::nopa                ! number of parameters
+      integer(kind=int_32), intent(in   )  ::nofun               ! number of functions
+      integer(kind=int_32), intent(in   )  ::nosfun              ! number of segment functions
+      integer(kind=int_32), intent(in   )  ::notot               ! number of substances
+      integer(kind=int_32), intent(in   )  ::noseg               ! number of default values
+      integer(kind=int_32), intent(in   )  ::noloc               ! number of default values
+      real(kind=sp), intent(  out)  ::proloc(noloc,noseg) ! process local array
+      integer(kind=int_32), intent(in   )  ::nodef               ! number of default values
+      real(kind=sp), intent(in   )  ::theta(noseg)        ! theta array
 
       ! local declarations
 
       character(20)           :: parnam                   ! output parameter name
       logical, save           :: first = .true.           ! initialisation flag
-      integer                 :: parindx                  ! index in output parameter name array
-      integer, save           :: ip_theta                 ! index of theta in process local array
-      integer, parameter      :: nopred = 6               ! number of predefined outputs
-      integer                 :: iocons                   ! offset to the constants
-      integer                 :: iopa                     ! offset to the parameters
-      integer                 :: iofunc                   ! offset to the functions
-      integer                 :: iosfun                   ! offset to the segment functions
-      integer                 :: ioconc                   ! offset to the concentrations
-      integer                 :: ioloc                    ! offset to the process local array
-      integer                 :: iodef                    ! offset to the process default array
-      integer                 :: iseg                     ! segment loop counter
+      integer(kind=int_32) ::parindx                  ! index in output parameter name array
+      integer(kind=int_32), save            ::ip_theta                 ! index of theta in process local array
+      integer(kind=int_32), parameter       ::nopred = 6               ! number of predefined outputs
+      integer(kind=int_32) ::iocons                   ! offset to the constants
+      integer(kind=int_32) ::iopa                     ! offset to the parameters
+      integer(kind=int_32) ::iofunc                   ! offset to the functions
+      integer(kind=int_32) ::iosfun                   ! offset to the segment functions
+      integer(kind=int_32) ::ioconc                   ! offset to the concentrations
+      integer(kind=int_32) ::ioloc                    ! offset to the process local array
+      integer(kind=int_32) ::iodef                    ! offset to the process default array
+      integer(kind=int_32) ::iseg                     ! segment loop counter
 
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq_output_theta", ithandl )
 
 !        initialise

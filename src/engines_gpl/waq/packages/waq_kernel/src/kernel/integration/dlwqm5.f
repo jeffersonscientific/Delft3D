@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqm5
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -62,52 +64,52 @@
 
 !     Kind        Function         Name                    Description
 
-      integer(4), intent(in   ) :: idt                !< time step in scu's
-      integer(4), intent(in   ) :: isys               !< current active substance
-      integer(4), intent(in   ) :: nosys              !< number of active substances
-      integer(4), intent(in   ) :: notot              !< total number of substances
-      integer(4), intent(in   ) :: noseg              !< number of segments
-      real   (4), intent(inout) :: conc(notot,noseg)  !< concentrations
-      real   (8), intent(inout) :: concvt(noseg)      !< first solution estimation by means of local theta method
-      real   (4), intent(in   ) :: volnew(noseg)      !< segment volumes at the new time
-      integer(4), intent(in   ) :: nobnd              !< number of boundary segments
-      real   (4), intent(in   ) :: bound(nosys,nobnd) !< boundary concentrations
-      integer(4), intent(in   ) :: noq                !< number of exchanges
-      integer(4), intent(in   ) :: noq1               !< number of exchanges in the first direction
-      integer(4), intent(in   ) :: noq2               !< number of exchanges in the second direction
-      integer(4), intent(in   ) :: noq3               !< number of exchanges in the third direction
-      integer(4), intent(in   ) :: ipoint(4,noq)      !< exchange pointers
-      integer(4), intent(in   ) :: iknmrk(noseg)      !< feature array
-      real   (4), intent(in   ) :: area(noq)          !< surface areas
-      real   (4), intent(in   ) :: aleng(2,noq)       !< from- and to lengths (dim: 2*noq)
-      real   (4), intent(in   ) :: theta(noq)         !< local theta coefficients
-      real   (4), intent(in   ) :: flowtot(noq)       !< flows plus additional velos.
-      real   (4), intent(in   ) :: disptot(noq)       !< dispersion plus additional dipers.
-      integer(4), intent(in   ) :: iopt               !< options for special treatment of boundaries etc.
-      real   (4), intent(inout) :: amass2(notot,5)    !< areawide mass balance arrays
-      integer(4), intent(in   ) :: ndmpq              !< number of dumped discharges
-      integer(4), intent(in   ) :: iqdmp(noq)         !< pointer dumped exchages
-      real   (4), intent(inout) :: dmpq(nosys,ndmpq,2)!< mass balance array per monitoring area
-      real   (4)                   flux( noq )        !< flux corrections
-      real   (4)                   lim ( noq )        !< limiter
-      real   (4)                   maxi(noseg)        !< workspace
-      real   (4)                   mini(noseg)        !< workspace
-      real   (4)                   l1  (noseg)        !< workspace
-      real   (4)                   l2  (noseg)        !< workspace
-      real   (4)                   m1  (noseg)        !< workspace
-      real   (4)                   m2  (noseg)        !< workspace
-      real   (4)                   n1  (noseg)        !< workspace
-      real   (4)                   n2  (noseg)        !< workspace
+      integer(kind=int_32), intent(in   )  ::idt                !< time step in scu's
+      integer(kind=int_32), intent(in   )  ::isys               !< current active substance
+      integer(kind=int_32), intent(in   )  ::nosys              !< number of active substances
+      integer(kind=int_32), intent(in   )  ::notot              !< total number of substances
+      integer(kind=int_32), intent(in   )  ::noseg              !< number of segments
+      real(kind=sp), intent(inout)  ::conc(notot,noseg)  !< concentrations
+      real(kind=dp), intent(inout)  ::concvt(noseg)      !< first solution estimation by means of local theta method
+      real(kind=sp), intent(in   )  ::volnew(noseg)      !< segment volumes at the new time
+      integer(kind=int_32), intent(in   )  ::nobnd              !< number of boundary segments
+      real(kind=sp), intent(in   )  ::bound(nosys,nobnd) !< boundary concentrations
+      integer(kind=int_32), intent(in   )  ::noq                !< number of exchanges
+      integer(kind=int_32), intent(in   )  ::noq1               !< number of exchanges in the first direction
+      integer(kind=int_32), intent(in   )  ::noq2               !< number of exchanges in the second direction
+      integer(kind=int_32), intent(in   )  ::noq3               !< number of exchanges in the third direction
+      integer(kind=int_32), intent(in   )  ::ipoint(4,noq)      !< exchange pointers
+      integer(kind=int_32), intent(in   )  ::iknmrk(noseg)      !< feature array
+      real(kind=sp), intent(in   )  ::area(noq)          !< surface areas
+      real(kind=sp), intent(in   )  ::aleng(2,noq)       !< from- and to lengths (dim: 2*noq)
+      real(kind=sp), intent(in   )  ::theta(noq)         !< local theta coefficients
+      real(kind=sp), intent(in   )  ::flowtot(noq)       !< flows plus additional velos.
+      real(kind=sp), intent(in   )  ::disptot(noq)       !< dispersion plus additional dipers.
+      integer(kind=int_32), intent(in   )  ::iopt               !< options for special treatment of boundaries etc.
+      real(kind=sp), intent(inout)  ::amass2(notot,5)    !< areawide mass balance arrays
+      integer(kind=int_32), intent(in   )  ::ndmpq              !< number of dumped discharges
+      integer(kind=int_32), intent(in   )  ::iqdmp(noq)         !< pointer dumped exchages
+      real(kind=sp), intent(inout)  ::dmpq(nosys,ndmpq,2)!< mass balance array per monitoring area
+      real(kind=sp) ::flux( noq )        !< flux corrections
+      real(kind=sp) ::lim ( noq )        !< limiter
+      real(kind=sp) ::maxi(noseg)        !< workspace
+      real(kind=sp) ::mini(noseg)        !< workspace
+      real(kind=sp) ::l1  (noseg)        !< workspace
+      real(kind=sp) ::l2  (noseg)        !< workspace
+      real(kind=sp) ::m1  (noseg)        !< workspace
+      real(kind=sp) ::m2  (noseg)        !< workspace
+      real(kind=sp) ::n1  (noseg)        !< workspace
+      real(kind=sp) ::n2  (noseg)        !< workspace
 
 !    Local variables
 
-      real                   :: length
-      real                   :: cio, cjo, cin, cjn ! old and local-theta from- and to concentrations
-      integer                :: ifrom, ito         ! from- and to segement indices
-      integer                :: iseg               ! current segment
-      integer                :: iq                 ! current edge
+      real(kind=sp) ::length
+      real(kind=sp) ::cio, cjo, cin, cjn ! old and local-theta from- and to concentrations
+      integer(kind=int_32) ::ifrom, ito         ! from- and to segement indices
+      integer(kind=int_32) ::iseg               ! current segment
+      integer(kind=int_32) ::iq                 ! current edge
 
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqm5", ithandl )
 
 ! initialisation

@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_23
+      use m_waq_type_definitions
       use m_zercum
       use m_setset
       use m_proint
@@ -77,10 +78,10 @@
 !
 !     NAME    KIND     LENGTH   FUNC.  DESCRIPTION
 !     ---------------------------------------------------------
-!     A       REAL       *      LOCAL  real      workspace array
-!     J       INTEGER    *      LOCAL  integer   workspace array
+!     A       REAL(kind=sp) ::*      LOCAL  real(kind=sp) ::workspace array
+!     J       INTEGER(kind=int_32) ::*      LOCAL  integer(kind=int_32) ::workspace array
 !     C       CHARACTER  *      LOCAL  character workspace array
-!     LUN     INTEGER    *      INPUT  array with unit numbers
+!     LUN     INTEGER(kind=int_32) ::*      INPUT  array with unit numbers
 !     LCHAR   CHARACTER  *      INPUT  filenames
 !
 !     Declaration of arguments
@@ -107,8 +108,8 @@
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
       use m_dlwqdata_save_restore
 
@@ -120,9 +121,9 @@
 !     Declaration of arguments
 !
       type(waq_data_buffer), target :: buffer      !< System total array space
-      INTEGER, DIMENSION(*)       :: LUN
+      INTEGER(kind=int_32), DIMENSION(*)        ::LUN
       CHARACTER*(*), DIMENSION(*) :: LCHAR
-      INTEGER                     :: ACTION
+      INTEGER(kind=int_32) ::ACTION
       TYPE(DELWAQ_DATA), TARGET   :: DLWQD
       type(GridPointerColl)       :: GridPs               ! collection of all grid definitions
 
@@ -133,24 +134,24 @@
       LOGICAL         IMFLAG , IDFLAG , IHFLAG
       LOGICAL         OPFLAG , LREWIN
 
-      INTEGER         ISYS
-      INTEGER         ICSYS
-      INTEGER         NSYS
-      INTEGER         INTOP2
-      INTEGER         ISTEP
-      INTEGER         ITH
-      INTEGER         I
-      INTEGER         ISCALE
-      INTEGER         ITER
-      INTEGER         IOPTPC
+      INTEGER(kind=int_32) ::ISYS
+      INTEGER(kind=int_32) ::ICSYS
+      INTEGER(kind=int_32) ::NSYS
+      INTEGER(kind=int_32) ::INTOP2
+      INTEGER(kind=int_32) ::ISTEP
+      INTEGER(kind=int_32) ::ITH
+      INTEGER(kind=int_32) ::I
+      INTEGER(kind=int_32) ::ISCALE
+      INTEGER(kind=int_32) ::ITER
+      INTEGER(kind=int_32) ::IOPTPC
 
-      INTEGER         IBND
+      INTEGER(kind=int_32) ::IBND
 
-      INTEGER         NSTEP
-      INTEGER         IDTOLD
-      REAL            SECPREV
+      INTEGER(kind=int_32) ::NSTEP
+      INTEGER(kind=int_32) ::IDTOLD
+      REAL(kind=sp) ::SECPREV
 
-      integer, save :: ithand1 = 0 ! Leave local
+      integer(kind=int_32), save  ::ithand1 = 0 ! Leave local
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

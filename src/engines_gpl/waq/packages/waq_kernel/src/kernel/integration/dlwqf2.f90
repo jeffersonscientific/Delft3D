@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_dlwqf2
+use m_waq_type_definitions
+
 
 implicit none
 
@@ -47,20 +49,20 @@ contains
 
 !     Kind        Function         Name                  Description
 
-      integer(4), intent(IN   ) :: noseg               ! Number of computational volumes
-      integer(4), intent(IN   ) :: nobnd               ! Number of open boundaries
-      integer(4), intent(IN   ) :: idt                 ! Time step size in scu's
-      real   (4), intent(IN   ) :: volnew(noseg      ) ! Volumes end of time step
-      real   (8), intent(  OUT) :: trace (noseg+nobnd) ! Diagonal vector
+      integer(kind=int_32), intent(IN   ) ::noseg               ! Number of computational volumes
+      integer(kind=int_32), intent(IN   ) ::nobnd               ! Number of open boundaries
+      integer(kind=int_32), intent(IN   ) ::idt                 ! Time step size in scu's
+      real(kind=sp)     , intent(IN   ) :: volnew(noseg      ) ! Volumes end of time step
+      real(kind=dp)    , intent(  OUT) :: trace (noseg+nobnd) ! Diagonal vector
 
 !     Local declarations
 
-      real   (8) dt                                    ! Time step in double
-      integer(4) iseg                                  ! Loop variable
+      real(kind=dp)    :: dt                                    ! Time step in double
+      integer(kind=int_32)  ::iseg                                  ! Loop variable
 
 !     The WAQ-timer
 
-      integer(4) ithandl /0/
+      integer(kind=int_32)  ::ithandl=0
       if ( timon ) call timstrt ( "dlwqf2", ithandl )
 
 !         set the diagonal

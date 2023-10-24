@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_dlwqb3
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -44,41 +46,41 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     AREA    REAL       NOQ      INPUT   exchange surface area
-!     FLOW    REAL       NOQ      INPUT   flows accross exchange surfs
-!     VELO    REAL   NOVELO*NOQ   INPUT   additional velocity array
-!     IPOINT  INTEGER   4*NOQ     INPUT   exchange pointers
-!     NOTOT   INTEGER     1       INPUT   number  of total substances
-!     NOQ     INTEGER     1       INPUT   total number of exchanges
-!     NOVELO  INTEGER     1       INPUT   number  of additional velos.
-!     IVPNT   INTEGER   NOSYS     INPUT   pointer systems to velocities
-!     VOLUME  REAL      NOSEG     IN/OUT  volumes to update
-!     IOPT    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
+!     AREA    REAL(kind=sp) ::NOQ      INPUT   exchange surface area
+!     FLOW    REAL(kind=sp) ::NOQ      INPUT   flows accross exchange surfs
+!     VELO    REAL(kind=sp) ::NOVELO*NOQ   INPUT   additional velocity array
+!     IPOINT  INTEGER(kind=int_32) ::4*NOQ     INPUT   exchange pointers
+!     NOTOT   INTEGER(kind=int_32) ::1       INPUT   number  of total substances
+!     NOQ     INTEGER(kind=int_32) ::1       INPUT   total number of exchanges
+!     NOVELO  INTEGER(kind=int_32) ::1       INPUT   number  of additional velos.
+!     IVPNT   INTEGER(kind=int_32) ::NOSYS     INPUT   pointer systems to velocities
+!     VOLUME  REAL(kind=sp) ::NOSEG     IN/OUT  volumes to update
+!     IOPT    INTEGER(kind=int_32) ::1       INPUT   = 0 or 2 DISP at zero flow
 !                                         = 1 or 3 no DISP at zero flow
-!     AMASS2  REAL     NOTOT*5    IN/OUT  mass balance array
-!     IDT     INTEGER     1       INPUT   integration time step size
-!     LUN     INTEGER     1       INPUT   unitnumber of monitoring file
-!     IAFLAG  INTEGER     1       INPUT   if 1 then accumulate mass
-!     NOSYS   INTEGER     1       INPUT   number  of active substances
-!     DMPQ    REAL  NOSYS*NDMPQ*? IN/OUT  mass balance dumped exchange
+!     AMASS2  REAL(kind=sp) ::NOTOT*5    IN/OUT  mass balance array
+!     IDT     INTEGER(kind=int_32) ::1       INPUT   integration time step size
+!     LUN     INTEGER(kind=int_32) ::1       INPUT   unitnumber of monitoring file
+!     IAFLAG  INTEGER(kind=int_32) ::1       INPUT   if 1 then accumulate mass
+!     NOSYS   INTEGER(kind=int_32) ::1       INPUT   number  of active substances
+!     DMPQ    REAL(kind=sp) ::NOSYS*NDMPQ*? IN/OUT  mass balance dumped exchange
 !                                         if INTOPT > 7
-!     NDMPQ   INTEGER     1       INPUT   number of dumped exchanges
-!     IQDMP   INTEGER     *       INPUT   pointer dumped exchanges
+!     NDMPQ   INTEGER(kind=int_32) ::1       INPUT   number of dumped exchanges
+!     IQDMP   INTEGER(kind=int_32) ::*       INPUT   pointer dumped exchanges
 !
       use timers
 
-      INTEGER    NDMPQ, NOTOT, NOQ, NOVELO, NOSYS
-      INTEGER    IOPT, IDT, IAFLAG
-      INTEGER    IQDMP   (*)
-      real       AREA (*) , FLOW  (*) , VELO  (*) , VOLUME(*),
+      INTEGER(kind=int_32) ::NDMPQ, NOTOT, NOQ, NOVELO, NOSYS
+      INTEGER(kind=int_32) ::IOPT, IDT, IAFLAG
+      INTEGER(kind=int_32) ::IQDMP   (*)
+      real(kind=sp) ::AREA (*) , FLOW  (*) , VELO  (*) , VOLUME(*),
      *           AMASS2(*) , DMPQ(*)
-      integer    IVPNT(*) , IPOINT(4,*)
+      integer(kind=int_32) ::IVPNT(*) , IPOINT(4,*)
       LOGICAL    MASBAL
 
-      integer    i, j, i4, i5, i6, iq, ipq
-      real       b, q
+      integer(kind=int_32) ::i, j, i4, i5, i6, iq, ipq
+      real(kind=sp) ::b, q
 
-      integer(4) ithandl /0/
+      integer(kind=int_32) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqb3", ithandl )
 !
 !         loop accross the number of exchanges

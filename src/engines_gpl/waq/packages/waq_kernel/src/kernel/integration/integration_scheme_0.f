@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_0
+      use m_waq_type_definitions
       use m_zercum
       use m_setset
       use m_proint
@@ -59,8 +60,8 @@
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
       use m_dlwqdata_save_restore
 
@@ -70,23 +71,23 @@
 
 !     kind           function         name                Descriptipon
       type(waq_data_buffer), target :: buffer           !< System total array space
-      integer  ( 4), intent(in   ) :: lun  (*)          !< array with unit numbers
+      integer(kind=int_32), intent(in   )  ::lun  (*)          !< array with unit numbers
       character*(*), intent(in   ) :: lchar(*)          !< array with file names
-      integer  ( 4), intent(in   ) :: action            !< type of action to perform
+      integer(kind=int_32), intent(in   )  ::action            !< type of action to perform
       type(delwaq_data)   , target :: dlwqd             !< delwaq data structure
       type(GridPointerColl)        :: gridps            !< collection of all grid definitions
 
 !     Local declarations
       LOGICAL         IMFLAG , IDFLAG , IHFLAG
       LOGICAL         LREWIN
-      REAL            RDUMMY(1)
-      INTEGER         NSTEP
-      INTEGER         IBND
-      INTEGER         ISYS
-      INTEGER         IERROR
+      REAL(kind=sp) ::RDUMMY(1)
+      INTEGER(kind=int_32) ::NSTEP
+      INTEGER(kind=int_32) ::IBND
+      INTEGER(kind=int_32) ::ISYS
+      INTEGER(kind=int_32) ::IERROR
 
-      INTEGER         IDTOLD
-      INTEGER         sindex
+      INTEGER(kind=int_32) ::IDTOLD
+      INTEGER(kind=int_32) ::sindex
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 

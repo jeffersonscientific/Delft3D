@@ -21,6 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_integration_scheme_15
+      use m_waq_type_definitions
       use m_zlayer
       use m_zercum
       use m_sgmres
@@ -125,8 +126,8 @@
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
-      use m_sysa          ! Pointers in real array workspace
-      use m_sysj          ! Pointers in integer array workspace
+      use m_sysa          ! Pointers in real(kind=sp) ::array workspace
+      use m_sysj          ! Pointers in integer(kind=int_32) ::array workspace
       use m_sysc          ! Pointers in character array workspace
       use m_dlwqdata_save_restore
 
@@ -138,9 +139,9 @@
 !     Kind                           Name         Description
 
       type(waq_data_buffer), target :: buffer      !< System total array space
-      integer                     :: lun   (*)  !< file unit numbers
+      integer(kind=int_32) ::lun   (*)  !< file unit numbers
       character(*)                :: lchar (*)  !< file names
-      integer                     :: action     !< handle to stepwise call
+      integer(kind=int_32) ::action     !< handle to stepwise call
       type(delwaq_data), target   :: dlwqd      !< data structure stepwize call
       type(gridpointercoll)       :: gridps     !< collection off all grid definitions
 
@@ -149,29 +150,29 @@
 
 !     Local declarations
 
-      real            rdummy(1)
+      real(kind=sp) ::rdummy(1)
       logical         imflag , idflag , ihflag
       logical         update , lrewin
       logical         timon_old
-      integer         laatst
-      INTEGER         sindex
+      integer(kind=int_32) ::laatst
+      INTEGER(kind=int_32) ::sindex
 
-      integer, save :: ithand1 = 0 ! Leave local
+      integer(kind=int_32), save  ::ithand1 = 0 ! Leave local
 
-      integer         isys
-      integer         nstep
+      integer(kind=int_32) ::isys
+      integer(kind=int_32) ::nstep
 
-      integer         iseg
-      integer         ibnd
+      integer(kind=int_32) ::iseg
+      integer(kind=int_32) ::ibnd
 
-      integer         noth
-      integer         ith
+      integer(kind=int_32) ::noth
+      integer(kind=int_32) ::ith
 
 !       Variables specific to this method: leave them SAVEd
 
-      integer, save          :: ioptpc
-      integer, save          :: iter
-      integer, save          :: iscale
+      integer(kind=int_32), save           ::ioptpc
+      integer(kind=int_32), save           ::iter
+      integer(kind=int_32), save           ::iscale
 
       associate ( a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf )
 
@@ -196,7 +197,7 @@
 !     solution method (GMRES).
 !     With such an iterative method, systems with multiple rhs cannot be solved
 !     (simultaneously). So we loop over the substances and solve each system
-!     individually. So RHS can be reduced to an REAL array of size NOSEG+NOBND.
+!     individually. So RHS can be reduced to an REAL(kind=sp) ::array of size NOSEG+NOBND.
 !
 !     possible improvements:
 !

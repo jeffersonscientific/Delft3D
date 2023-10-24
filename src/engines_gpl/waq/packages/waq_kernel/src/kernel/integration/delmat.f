@@ -21,6 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
       module m_delmat
+      use m_waq_type_definitions
+
 
       implicit none
 
@@ -71,15 +73,15 @@
       use m_srstop
       use timers
 
-      REAL :: A(*), B(*)
-      integer(4) ithandl /0/
+      REAL(kind=sp) ::A(*), B(*)
+      integer(kind=int_32) ::ithandl = 0
 
-      integer NUC, NLC, N, NMUC, NMLC, NDM1, ND, N1
-      integer L1, L2, L3, L4, L5
-      integer K1, K2, K3, K4, K5, K6
-      integer M, IOPT
+      integer(kind=int_32) ::NUC, NLC, N, NMUC, NMLC, NDM1, ND, N1
+      integer(kind=int_32) ::L1, L2, L3, L4, L5
+      integer(kind=int_32) ::K1, K2, K3, K4, K5, K6
+      integer(kind=int_32) ::M, IOPT
 
-      real F, P
+      real(kind=sp) ::F, P
 
       if ( timon ) call timstrt ( "delmat", ithandl )
       NMUC = N - NUC
