@@ -6141,7 +6141,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
 
    ! Water level
    if (jamaps1 == 1) then
-      ierr = write_array_with_dmiss_for_dry_cells_into_netcdf_file(mapids%ncid, mapids%id_tsp, mapids%id_s1, UNC_LOC_S, s1, jabndnd=jabndnd_) 
+      ierr = ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_s1, UNC_LOC_S, s1, jabndnd=jabndnd_)
    end if
 
    if (jamaps0 == 1) then
@@ -6194,7 +6194,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, md_nc_map_precision, jab
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u1, iLocU, u1, 0d0, jabndnd=jabndnd_)
    end if
    if (jamaphu > 0) then
-      ierr = write_array_with_dmiss_for_dry_faces_into_netcdf_file(mapids%ncid, mapids%id_tsp, mapids%id_hu, UNC_LOC_U, hu, jabndnd=jabndnd_)
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hu, UNC_LOC_U, hu, jabndnd=jabndnd_)
    end if
    if (jamapu0 == 1) then
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u0, iLocU, u0, 0d0, jabndnd=jabndnd_)
