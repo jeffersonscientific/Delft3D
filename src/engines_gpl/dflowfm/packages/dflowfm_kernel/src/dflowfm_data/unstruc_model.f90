@@ -4436,7 +4436,7 @@ subroutine check_time_interval(time_interval_start, time_interval, time_interval
         endif
     endif
 
-    if (is_error==.true.) then
+    if (is_error) then
         call mess(LEVEL_ERROR, 'See info messages above')
     endif
     
