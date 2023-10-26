@@ -924,6 +924,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double ( md_ptr, 'geometry', 'Slotw2D'     , slotw2D)
     call prop_get_double ( md_ptr, 'geometry', 'Slotw1D'     , slotw1D)
     call prop_get_integer( md_ptr, 'geometry', 'Dpuopt'      , jadpuopt)
+    call prop_get_integer( md_ptr, 'geometry', 'ExtrBl'      , jaextrapbl)
     ! use slotw1d also in getcspars routines
     sl = slotw1D
 
@@ -1122,6 +1123,21 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'numerics', 'FixedweirRelaxationcoef' , waquaweirthetaw)
 
     call prop_get_integer(md_ptr, 'numerics', 'Izbndpos'          , Izbndpos)
+    !ideally, we move all this sort of reworking to another subroutine
+    if (jaextrapbl == 1) then
+        if (ibedlevtyp /= 1) then
+            jaextrapbl=0
+            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: BedlevType /= 1 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level is not at cell centres. Extrapolation has been disabled.')
+        endif
+        if (Izbndpos /= 0) then 
+            jaextrapbl=0
+            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Izbndpos /= 0 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level at the boundary is not set at ghost. Extrapolation has been disabled.')
+        endif
+        if (Jaconveyance2D /= -1) then 
+            jaextrapbl=0
+            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Conveyance2D /= -1 and jaextrapbl == 1. It is not possible to extrapolate bed level if conveyance is not calculated as HU. Extrapolation has been disabled.')
+        endif
+    endif !jaextrapbl
     call prop_get_double (md_ptr, 'numerics', 'Tlfsmo'            , Tlfsmo)
     call prop_get_integer(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow )
     call prop_get_integer(md_ptr, 'numerics', 'Diffusiononbnd'    , jadiffusiononbnd )
@@ -1235,7 +1251,6 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'numerics', 'Baorgfracmin'    , Baorgfracmin)
 
     call prop_get_integer(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
-    call prop_get_integer(md_ptr, 'numerics', 'Wridia_viscosity_diffusivity_limit', ja_vis_diff_limit)
     call prop_get_integer(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
     call prop_get_integer(md_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1)
     if (sdu_update_s1<0 .or. sdu_update_s1>1) then
@@ -1385,6 +1400,11 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'veg'    , 'Cdleaf'         , Cdleaf)
 
     call prop_get_integer(md_ptr, 'sediment', 'Sedimentmodelnr'    ,  jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D3D
+    !ideally this is moved to a subroutine that groups reworking
+    if (jadpuopt == 2 .and. jased /= 4) then
+        jadpuopt=1
+        call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update. Dpuopt has been set to 1 (min value).')
+    endif
     call prop_get_string (md_ptr, 'sediment', 'SedFile',              md_sedfile,    success)
     call prop_get_string (md_ptr, 'sediment', 'MorFile',              md_morfile,    success)
     call prop_get_string (md_ptr, 'sediment', 'DredgeFile',           md_dredgefile, success)
@@ -1507,10 +1527,14 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'wind' , 'PavBnd'                   , PavBnd )
     call prop_get_integer(md_ptr, 'wind' , 'Stresstowind'             , jastresstowind )
     call prop_get_integer(md_ptr, 'wind' , 'Wind_eachstep'            , update_wind_stress_each_time_step )
+    call prop_get_integer(md_ptr, 'wind' , 'varyingAirdensity'        , ja_varying_airdensity)
 
 
     call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr'              , jawave)
     call prop_get_integer(md_ptr, 'waves', 'Waveforcing'              , waveforcing)
+    if (jawave /= 7 .and. waveforcing /= 0) then
+        call mess(LEVEL_ERROR, 'Waveforcing = 1, 2 or 3 is only supported for Wavemodelnr = 7.')
+    end if
     call prop_get_double (md_ptr, 'waves', 'Tifetchcomp'              , Tifetch)
     call prop_get_string (md_ptr, 'waves', 'SurfbeatInput'            , md_surfbeatfile)
     if (jawave==4) then
@@ -2980,6 +3004,8 @@ endif
     
     call prop_set(prop_ptr, 'geometry', 'Dpuopt', jadpuopt, 'Bed level interpolation at velocity point in case of tile approach bed level: 1 = max (default); 2 = mean' )    
 
+    call prop_set(prop_ptr, 'geometry', 'ExtrBl', jaextrapbl, 'Extrapolation of bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate.' )    
+    
     ! 1D Volume tables
     if (writeall .or. useVolumeTables) then
        call prop_set (prop_ptr, 'volumeTables', 'useVolumeTables',  merge(1, 0, useVolumeTables), 'Use 1D volume tables (0: no, 1: yes).')
@@ -3009,7 +3035,7 @@ endif
     call prop_set(prop_ptr, 'numerics', 'Newcorio',      newcorio,  '0=prior to 27-11-2019, 1=no normal forcing on open bnds, plus 12 variants )')
 
     if (writeall .or. jacorioconstant .ne. 0) then  
-        call prop_set(prop_ptr, 'numerics', 'Corioconstant', '0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coord.')
+        call prop_set(prop_ptr, 'numerics', 'Corioconstant', jacorioconstant, '0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coord.')
     endif
     if (writeall .or. Corioadamsbashfordfac .ne. 0.5d0) then
        call prop_set(prop_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac,    '0=No, 0.5d0=AdamsBashford, only for Newcorio=1)')
@@ -3085,7 +3111,6 @@ endif
 
     call prop_set(prop_ptr, 'numerics', 'Icgsolver',       Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)')
     call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
-    call prop_set(prop_ptr, 'numerics', 'Wridia_viscosity_diffusivity_limit', ja_vis_diff_limit, 'Write info in dia file when viscosity/diffusivity is limited (0: no, 1: yes)')
     if (writeall .or. Maxdge .ne. 6) then
        call prop_set(prop_ptr, 'numerics', 'Maxdegree',  Maxdge,      'Maximum degree in Gauss elimination')
     end if
@@ -3585,7 +3610,9 @@ endif
     if (writeall .or. update_wind_stress_each_time_step > 0) then
        call prop_set(prop_ptr, 'wind', 'Wind_eachstep',     update_wind_stress_each_time_step, '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
     endif
-
+    if (writeall .or. ja_varying_airdensity == 1) then
+       call prop_set(prop_ptr, 'wind', 'varyingAirdensity', ja_varying_airdensity, 'Compute air density yes/no (),  1/0, default 0')
+    endif
    
     if (writeall .or. jagrw > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT) then
        call prop_set(prop_ptr, 'grw', 'groundwater'        , jagrw,             '0=No (horizontal) groundwater flow, 1=With groundwater flow')
@@ -3642,8 +3669,8 @@ endif
           call prop_set(prop_ptr, 'waves', '3Dwavestreaming'     , jawavestreaming ,'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
           call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta     ,'Boundary layer formulation. 1: Sana                                                                                  ')
        endif
-       if(jawave == 7) then
-           call prop_set(prop_ptr, 'waves', 'Waveforcing'        , waveforcing     ,'Wave forcing. 1: based on gradients radiation stresse, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
+       if (jawave == 7) then
+           call prop_set(prop_ptr, 'waves', 'Waveforcing'        , waveforcing     ,'Wave forcing (in combination with Wavemodelnr = 7 only). 1: based on radiation stress gradients, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
        endif
        
     endif
