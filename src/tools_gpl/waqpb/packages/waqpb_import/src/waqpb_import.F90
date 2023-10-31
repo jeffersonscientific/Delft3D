@@ -39,7 +39,7 @@
       character*10 initialConfgId
       character*50 initialConfgName
       character*80 pdffil, procesnaam
-      character*255 ArgumentString
+      character*255 argument
       real         value
       integer      jndex , naanta, iaanta, iproc , i     , ihulp , &
                    noffse, ihulp2, ihulp3, ihulp4, nprocl, &
@@ -65,15 +65,15 @@
       newfrm = .true.
       duprol = .false.
       pdffil = 'proces.asc'
-      do i=1,9999
-            call getarg (i,ArgumentString)
-            if (ArgumentString.eq.'') exit
-            if (index(ArgumentString,'-pdf').gt.0) then
-            pdffil = trim(ArgumentString(5:))
+      do i=1, command_argument_count()
+            call get_command_argument (i,argument)
+            if (len_trim(argument) == 0) exit
+            if (argument(:4) == '-pdf') then
+                pdffil = trim(argument(5:))
             endif
-            if (index(ArgumentString,'-duprol').gt.0) duprol = .true.
-            if (index(ArgumentString,'-newtab').gt.0) newtab = .true.
-            if (index(ArgumentString,'-oldfrm').gt.0) newfrm = .false.
+            if (trim(argument) == '-duprol') duprol = .true.
+            if (trim(argument) =='-newtab') newtab = .true.
+            if (trim(argument) =='-oldfrm') newfrm = .false.
       enddo
 
       open ( newunit=io_mes, file = 'waqpb_import.log' )
