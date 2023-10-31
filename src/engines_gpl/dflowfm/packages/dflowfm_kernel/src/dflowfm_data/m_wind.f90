@@ -116,7 +116,7 @@ integer                           :: jalongwave = 0      !< >0 longwaveradiation
 integer                           :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
 integer                           :: jaQext              !< use Qin externally provided yes or no
 integer                           :: jaqin               !< use qin , sum of all in fluxes
-
+integer                           :: update_wind_stress_each_time_step = 0 !< if 1, update wind (and air pressure) in each computational time step, else in externalforcings (default)
 double precision                  :: windxav, windyav  !< average wind for plotting
 
 double precision                  :: windsp

@@ -1112,8 +1112,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'jposhchk'       , jposhchk)
     call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme'  , ifixedweirscheme, success)
     ifixedweirscheme_input = ifixedweirscheme
-    call prop_get_integer(md_ptr, 'numerics', 'FixedweirScheme1d2d'  , ifixedweirscheme1D2D, success)
-    call prop_get_double(md_ptr, 'numerics', 'Fixedweir1d2d_dx'     , lat_fix_weir_dx )
+    call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme1d2d'  , ifixedweirscheme1D2D, success)
+    call prop_get_double(md_ptr, 'numerics', 'FixedWeir1d2d_dx'     , lat_fix_weir_dx )
     call prop_get_double( md_ptr, 'numerics', 'FixedWeirContraction' , Fixedweircontraction, success)
 
     call prop_get_integer(md_ptr, 'numerics', 'Fixedweirfrictscheme'  , ifxedweirfrictscheme)
@@ -1526,8 +1526,10 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'wind' , 'PavIni'                   , PavIni )
     call prop_get_double (md_ptr, 'wind' , 'PavBnd'                   , PavBnd )
     call prop_get_integer(md_ptr, 'wind' , 'Stresstowind'             , jastresstowind )
+    call prop_get_integer(md_ptr, 'wind' , 'Wind_eachstep'            , update_wind_stress_each_time_step )
     call prop_get_integer(md_ptr, 'wind' , 'varyingAirdensity'        , ja_varying_airdensity)
-   
+
+
     call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr'              , jawave)
     call prop_get_integer(md_ptr, 'waves', 'Waveforcing'              , waveforcing)
     if (jawave /= 7 .and. waveforcing /= 0) then
@@ -3001,7 +3003,7 @@ endif
     endif
     
     call prop_set(prop_ptr, 'geometry', 'Dpuopt', jadpuopt, 'Bed level interpolation at velocity point in case of tile approach bed level: 1 = max (default); 2 = mean' )    
-    
+
     call prop_set(prop_ptr, 'geometry', 'ExtrBl', jaextrapbl, 'Extrapolation of bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate.' )    
     
     ! 1D Volume tables
@@ -3367,10 +3369,10 @@ endif
     endif
 
     if (writeall .or. epsmaxlev .ne. 1d-8) then
-    call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
     endif
     if (writeall .or. epsmaxlevm .ne. 1d-8) then
-    call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
     endif
 
     if (Oceaneddyamp > 0d0) then 
@@ -3604,6 +3606,9 @@ endif
     call prop_set(prop_ptr, 'wind', 'Pavini',               PavIni, 'Average air pressure for initial water level correction (N/m2) (only applied if > 0)')
     if (writeall .or. jastresstowind == 1) then
        call prop_set(prop_ptr, 'wind', 'Stresstowind', jastresstowind, 'Convert EC windstress to wind yes/no (),  1/0, default 0')
+    endif
+    if (writeall .or. update_wind_stress_each_time_step > 0) then
+       call prop_set(prop_ptr, 'wind', 'Wind_eachstep',     update_wind_stress_each_time_step, '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
     endif
     if (writeall .or. ja_varying_airdensity == 1) then
        call prop_set(prop_ptr, 'wind', 'varyingAirdensity', ja_varying_airdensity, 'Compute air density yes/no (),  1/0, default 0')
@@ -4486,7 +4491,4 @@ logical function is_not_multiple(time_interval, user_time_step)
 
 end function is_not_multiple
 
-   end module unstruc_model
-
-
-
+end module unstruc_model
