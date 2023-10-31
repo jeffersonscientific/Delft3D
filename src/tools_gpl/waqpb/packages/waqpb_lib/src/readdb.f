@@ -30,9 +30,9 @@
       subroutine readdb ( lu_inp, lu_mes )
       use m_zoek
       use m_validate_units
+      use m_waqpb_data
 
       integer    lu_inp, lu_mes
-      include 'data.inc'
 
 c     Local declarations
 
@@ -344,8 +344,8 @@ c     Table old_items
       end
 
       subroutine writdb ( lu )
+      use m_waqpb_data
       integer lu
-      include 'data.inc'
 
       integer iproc, iconf, i
       character*10 c10
