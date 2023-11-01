@@ -20,14 +20,20 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_partmp
+
+      implicit none
+
+      contains
+
 
       subroutine partmp ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
       use m_srstop
       use m_monsys
-      use m_errsys
-      use m_dhkmrk
+      use m_write_error_message
+      use m_evaluate_waq_attribute
 
 !>\file
 !>       Partitioning of micropollutants
@@ -110,7 +116,7 @@
      J         DISS  , DISHS , LKSOL , LKMES , LKMEHS, FSULF ,
      J         FDIS2 , CDISM , QUAL  , KDALL , VOLUME, IAP   ,
      J         FAC6C
-      INTEGER  LUNREP
+      INTEGER  LUNREP, IKMRK2
       INTEGER  IFLUX , ISEG  , ISWOX , IGROUP
       LOGICAL  SEDIME
 !
@@ -391,7 +397,7 @@
          QUALOPT = .FALSE.
       ENDIF
       DELT = PMSA(IP22)
-      IF (DELT  .LT. 1E-20 )  CALL ERRSYS ('DELT in PARTMP zero', 1 )
+      IF (DELT  .LT. 1E-20 )  CALL write_error_message ('DELT in PARTMP zero')
 !
 !----------------------------------------------------------------------C
 !     SEGMENT LOOP
@@ -401,7 +407,7 @@
       DO 9000 ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
-      CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
       IF ((IKMRK2.EQ.0.OR.IKMRK2.EQ.3).OR..NOT.SEDIME) THEN
 
       MP    = PMSA(IP1 )
@@ -492,7 +498,7 @@
         ENDIF
 !
         IF (.NOT.SEDIME .AND. POR.LT.1E-20 )
-     J        CALL ERRSYS ('POR in PARTMP zero', 1 )
+     J        CALL write_error_message ('POR in PARTMP zero')
 !
 !***********************************************************************
 !**** Processes connected to the HEAVY METAL PARTITIONING
@@ -754,7 +760,7 @@
         IF (DISS .LE. 1E-20) THEN
         WRITE(*,*) 'SwPoreChWK = ',ISWOX,' 1- oxic, 0 - sulfidic, or'
         WRITE(*,*) 'DisSWK or DisSSx  = ',DISS ,'should not equal zero'
-        CALL ERRSYS ('Fatal error in PARTMP', 1 )
+        CALL write_error_message ('Fatal error in PARTMP')
         ENDIF
         MOLWT   = PMSA(IP26)
         LKSOL   = PMSA(IP27)
@@ -903,3 +909,5 @@
 !
       RETURN
       END
+
+      end module m_partmp

@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_protistdiatsedi
+
+implicit none
+
+contains
+
 
 
   ! 6 char name for process mathc with second line of PDF
@@ -30,7 +36,7 @@ subroutine PROSED     ( pmsa   , fl     , ipoint , increm, noseg , &
 !*******************************************************************************
 !
 
-use m_dhkmrk
+use m_evaluate_waq_attribute
     use protist_constants
     IMPLICIT NONE
 !
@@ -124,9 +130,9 @@ use m_dhkmrk
     ! segment loop
     do iseg = 1 , noseg
 
-        call dhkmrk(1,iknmrk(iseg),ikmrk1)
+        call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
         if (ikmrk1.eq.1) then
-            call dhkmrk(2,iknmrk(iseg),ikmrk2)
+            call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
             if ((ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
                 ! species independent items
                 Tau         = PMSA(ipnt(   5 ))  !    total bottom shear stress                              (N/m2)
@@ -241,8 +247,8 @@ use m_dhkmrk
 
         if ( i_origin .gt. 0 .and. i_dest .gt. 0 ) then
             ! find first index of the origin and destination segment
-            call dhkmrk(1,iknmrk(i_origin ),ikmrkv)
-            call dhkmrk(1,iknmrk(i_dest),ikmrkn)
+            call evaluate_waq_attribute(1,iknmrk(i_origin ),ikmrkv)
+            call evaluate_waq_attribute(1,iknmrk(i_dest),ikmrkn)
             if (ikmrkv.eq.1 .and. ikmrkn.eq.1) then
                 ! water-water exchange
                 ! convert value from m/d to m/s
@@ -267,3 +273,5 @@ use m_dhkmrk
     deallocate (ipnt)
     return
 end ! end subroutine
+
+end module m_protistdiatsedi

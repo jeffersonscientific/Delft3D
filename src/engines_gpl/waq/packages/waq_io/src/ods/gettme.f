@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_gettme
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GETTME ( FNAME  , ITYPE  , TIMDEF , MAXDEF , IPRDEP ,
      *                    LOCDEP , MAXLST , TIMLST , ITMTYP , NRLST  ,
@@ -56,9 +62,9 @@
 !     OPTION  CHAR*256   1        IN/OUT  For future use
 !
 !
-      use m_julian
+      use time_module
       use m_dhucas
-      use m_dhopnf
+      use m_open_waq_files
       use m_dhfext
 
       CHARACTER*256    FNAME (3) , OPTION
@@ -72,10 +78,16 @@
       integer               :: extlen  ! length of file extension
       logical               :: mapfil  ! true if map file extension
       integer               :: lun
+      integer               :: NODUMP
+      integer               :: k, I, NOTOT, NTT
+      integer               :: ierror, nrlst, iprcod, iprtyp
+      integer               :: itype, maxdef, itmdep, locdep, maxlst, lang
+      integer               :: iyear, imonth, iday, ihour, iminut, isecnd
+      integer               :: isfact, idummy, idate, itime, iprdep
 !
 !         Open the DELWAQ .HIS file
 !
-      CALL DHOPNF ( lun , FNAME(1) , 24 , 2 , IERROR )
+      CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
       IF ( IERROR .NE. 0 ) RETURN
 
       ! map or his
@@ -111,7 +123,7 @@
       endif
       IDATE  = IYEAR*10000+IMONTH*100+IDAY
       ITIME  = IHOUR*10000+IMINUT*100+ISECND
-      OTIME  = JULIAN ( IDATE , ITIME )
+      OTIME  = julian_with_leapyears ( IDATE , ITIME )
       SECOND = 1/864.00D+02
 !
 !         Read the values at all times
@@ -157,3 +169,5 @@
       RETURN
 !
       END
+
+      end module m_gettme

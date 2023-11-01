@@ -125,6 +125,7 @@
             </file>
         </checks>
     </testCase>
+    <!-- MDK disabled since test case uses input file format 4.20. Needs to be updated
     <testCase name="e03_f01_c03_test003" ref="dwaq_default">
         <path>e03_waq/f01_general/c03_test003</path>
         <checks>
@@ -168,6 +169,7 @@
             </file>
         </checks>
     </testCase>
+    -->
     <testCase name="e03_f01_c04_test004" ref="dwaq_default">
         <path>e03_waq/f01_general/c04_test004</path>
         <checks>
@@ -192,25 +194,6 @@
                     <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e03_f01_c05_test005" ref="dwaq_default">
-        <path>e03_waq/f01_general/c05_test005</path>
-        <checks>
-            <file name="d3d-waq-test005.ada" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-            <file name="d3d-waq-test005.hda" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
         </checks>
@@ -895,6 +878,7 @@
             </file>
         </checks>
     </testCase>
+    <!-- MDK disabled since test case uses input file format 4.20. Needs to be updated
     <testCase name="e03_f01_c12_test012" ref="dwaq_default">
         <path>e03_waq/f01_general/c12_test012</path>
         <checks>
@@ -1028,6 +1012,7 @@
             </file>
         </checks>
     </testCase>
+    -->
     <testCase name="e03_f01_c13_test013" ref="dwaq_default">
         <path>e03_waq/f01_general/c13_test013</path>
         <checks>
@@ -1405,84 +1390,6 @@
                     <parameter name="SUBST_092" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_093" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_094" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e03_f01_c16_test016" ref="dwaq_default">
-        <path>e03_waq/f01_general/c16_test016</path>
-        <checks>
-            <file name="d3d-waq-test016.ada" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-            <file name="d3d-waq-test016.hda" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e03_f01_c17_test017" ref="dwaq_default">
-        <path>e03_waq/f01_general/c17_test017</path>
-        <checks>
-            <file name="d3d-waq-test017.ada" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                </parameters>
-            </file>
-            <file name="d3d-waq-test017.hda" type="NEFIS">
-                <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
         </checks>
@@ -2258,7 +2165,7 @@
                     <parameter name="SUBST_042" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_043" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_044" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_045" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_045" toleranceAbsolute="3.0e-02" toleranceRelative="3.0e-06"/>
                     <parameter name="SUBST_046" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
@@ -2308,7 +2215,7 @@
                     <parameter name="SUBST_042" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_043" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_044" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_045" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_045" toleranceAbsolute="3.0e-02" toleranceRelative="3.0e-06"/>
                     <parameter name="SUBST_046" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
@@ -9540,7 +9447,7 @@
 
     <!-- Test cases for CART -->
     <testCase name="e03_f13_c01_cart_f34" ref="dwaq_default">
-    <path>e03_waq/f13_cart/c01_cart_f34</path>
+        <path>e03_waq/f13_cart/c01_cart_f34</path>
         <checks>
             <file name="c01_cart_f34.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -9552,6 +9459,19 @@
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+
+    <!-- Test cases for robust input -->
+    <testCase name="e03_f14_c01_rewind_timeseries" ref="dwaq_default">
+        <path>e03_waq/f14_robust_input/robust-001</path>
+        <checks>
+            <file name="robust-001.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
         </checks>

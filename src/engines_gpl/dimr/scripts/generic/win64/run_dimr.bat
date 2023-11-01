@@ -87,6 +87,7 @@ set D3DT=%D3D_HOME:~0,-22%
     rem last directory will be the architecture directory
 for %%f in ("%D3DT%") do set ARCH=%%~nxf
 
+set cosumobmidir=%D3D_HOME%\%ARCH%\cosumo_bmi\bin
 set delwaqexedir=%D3D_HOME%\%ARCH%\dwaq\bin
 set dflowfmexedir=%D3D_HOME%\%ARCH%\dflowfm\bin
 set proc_def_dir=%D3D_HOME%\%ARCH%\dflowfm\default
@@ -101,6 +102,7 @@ set swanexedir=%D3D_HOME%\%ARCH%\swan\bin
 set swanbatdir=%D3D_HOME%\%ARCH%\swan\scripts
 set sharedir=%D3D_HOME%\%ARCH%\share\bin
 set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
+set wandaexedir=%D3D_HOME%\%ARCH%\wanda\bin
 
 
     rem
@@ -108,7 +110,7 @@ set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
     rem
 
     rem Run
-set PATH=%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%sharedir%
+set PATH=%cosumobmidir%;%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%wandaexedir%;%sharedir%
 echo executing: "%dimrexedir%\dimr.exe" %debugarg% %dimrConfigFile%
 "%dimrexedir%\dimr.exe" %debugarg% %dimrConfigFile%
 

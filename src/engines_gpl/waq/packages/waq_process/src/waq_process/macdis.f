@@ -20,13 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_macdis
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE MACDIS     ( PMSA   , FL     , IPOINT , INCREM, NOSEG ,
      +                        NOFLUX , IEXPNT , IKNMRK , NOQ1  , NOQ2  ,
      +                        NOQ3   , NOQ4   )
       use m_srstop
       use m_monsys
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 !
 !*******************************************************************************
@@ -96,7 +102,7 @@ c     LOGICAL First
       DO 9000 ISEG = 1 , NOSEG
 
 !        Check on active segments
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
          IF (IKMRK1.EQ.1) THEN
 
             Surf        = PMSA( IPNT(  1) )
@@ -212,7 +218,7 @@ c     LOGICAL First
             ! if we start at the top
             !
             If ( Hmax < 0.0 ) Then
-                CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+                CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
                 If ( IKMRK2 .EQ. 0 .OR. IKMRK2 .EQ. 1 ) Then
                     PMSA(IPOINT(14)+(IBotSeg-1)*INCREM(14   )) = ISEG
                 Endif
@@ -246,3 +252,5 @@ c     LOGICAL First
 !
       RETURN
       END
+
+      end module m_macdis

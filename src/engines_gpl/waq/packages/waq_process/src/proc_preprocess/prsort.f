@@ -20,6 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_prsort
+      use m_valpoi
+
+
+      implicit none
+
+      contains
+
 
       subroutine prsort( lurep , ProcesDef, notot , nopa     , nosfun,
      +                   syname, nocons   , nofun , constants, paname,
@@ -28,7 +36,7 @@
       ! sort processes according to input - output relation, simpel linear sort at the moment
 
       use m_zoek
-      use dlwq_data
+      use dlwq_hyd_data
       use ProcesSet
       use timers       !   performance timers
 
@@ -163,3 +171,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_prsort

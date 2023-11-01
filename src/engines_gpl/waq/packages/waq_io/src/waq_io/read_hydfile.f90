@@ -20,9 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_read_hydfile
+
+implicit none
+
+contains
+
 
 subroutine read_hydfile( lunout, hydfile, lchar, noseg, nexch, ierr )
-use m_dhpath
+use m_get_filepath_and_pathlen
 
 
 !   Deltares Software Centre
@@ -71,7 +77,7 @@ use m_dhpath
     idxlga  = -1
     idxgeom = -1
 
-    call dhpath( hydfile, path, pathlen )
+    call get_filepath_and_pathlen( hydfile, path, pathlen )
 
     open( newunit = lunin, file = hydfile, status = 'old', iostat = ierr )
     if ( ierr /= 0 ) then
@@ -184,3 +190,5 @@ use m_dhpath
         return
     endif
 end subroutine read_hydfile
+
+end module m_read_hydfile

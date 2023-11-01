@@ -1,3 +1,9 @@
+      module m_wr_proceswrk
+
+      implicit none
+
+      contains
+
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -44,7 +50,12 @@
 
 !     Created   : Aug   2012 by Jan van Beek
 
-      use m_dhopnf
+      use m_wrstoc
+      use m_wripro
+      use m_setvat
+      use m_proc_totals
+      use m_intoou
+      use m_open_waq_files
       use timers         !< performance timers
       use processet      !< use processet definitions
       use output         !< use output definitions
@@ -195,7 +206,7 @@
       ! write stochi file, set stochi array, balance output settings
 
       if ( btest(intopt,3) .and. .not. btest(intopt,4) ) then
-         call dhopnf ( lun(36) , lchar(36), 36    , 1     , ierr2 )
+         call open_waq_files ( lun(36) , lchar(36), 36    , 1     , ierr2 )
       endif
       allocate(stochi(notot*no_flu))
       call wrstoc ( procesdef, lun(36), notot  , syname, stochi,
@@ -207,7 +218,7 @@
 
       ! write process intermediate file
 
-      call dhopnf ( lun(24) , lchar(24), 24    , 1     , ierr2 )
+      call open_waq_files ( lun(24) , lchar(24), 24    , 1     , ierr2 )
       call wripro ( nproc , nsvar  , iflux , nipmsa, prvvar,
      +              prvtyp, noloc  , nodef , defaul, pronam,
      +              nflux , lun(24), versio, stochi, notot ,
@@ -225,3 +236,5 @@
       if (timon) call timstop( ithndl )
       return
       end
+
+      end module m_wr_proceswrk

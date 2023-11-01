@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_nitrif
+
+      implicit none
+
+      contains
+
 
       subroutine nitrif ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
-      use m_errsys
+      use m_write_error_message
 
 !>\file
 !>       Nitrification of ammonium + decay of CBOD
@@ -241,8 +247,8 @@
 !
 !           Calculate oxygen function
 !
-            IF ( (OOX - COX) .LT. 1E-20 )  CALL ERRSYS
-     &            ('OOX - COX in NITRIF zero', 1 )
+            IF ( (OOX - COX) .LT. 1E-20 )  CALL write_error_message
+     &            ('OOX - COX in NITRIF zero')
             IF ( OXY .GT. (OOX*POROS) ) THEN
                   O2FUNC = 1.0
             ELSEIF (OXY .LT. (COX*POROS) ) THEN
@@ -298,3 +304,5 @@
       RETURN
 !
       END
+
+      end module m_nitrif

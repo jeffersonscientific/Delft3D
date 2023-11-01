@@ -20,6 +20,12 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_totdep
+
+      implicit none
+
+      contains
+
 
       subroutine totdep ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
@@ -44,7 +50,8 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      use m_dhkmrk
+      use m_advtra
+      use m_evaluate_waq_attribute
       USE BottomSet     !  Module with definition of the waterbottom segments
 
       IMPLICIT NONE
@@ -121,7 +128,7 @@
 
          IF ( IFROM.GT.0 .AND. ITO.GT.0 ) THEN
 
-               CALL DHKMRK(2,IKNMRK(IFROM),IKMRK)
+               CALL evaluate_waq_attribute(2,IKNMRK(IFROM),IKMRK)
                IF ((IKMRK.EQ.0).OR.(IKMRK.EQ.1)) THEN
 
                   PMSA ( IP3 + (IFROM-1) * IN3 ) =
@@ -168,7 +175,7 @@
 !        toekennen aan de bovenliggende segmenten
 
          IF ( IFROM.GT.0 .AND. ITO.GT.0 ) then
-            CALL DHKMRK(1,IKNMRK(ITO),IKMRK)
+            CALL evaluate_waq_attribute(1,IKNMRK(ITO),IKMRK)
             IF ( IKMRK == 1 ) THEN
 
                PMSA ( IP3 + (IFROM-1) * IN3 ) =
@@ -234,3 +241,5 @@
 
       RETURN
       END
+
+      end module m_totdep

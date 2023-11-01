@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_temper
+
+      implicit none
+
+      contains
+
 
       subroutine temper ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 !>\file
 !>       Exchange of excess temperature at the surface (Sweers)
@@ -147,7 +153,7 @@
 !
 !           Heat exchange only for top layer segments
 !
-            CALL DHKMRK(2,IKNMRK(ISEG),IKMRK2)
+            CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
             IF (IKMRK2.EQ.0 .OR. IKMRK2.EQ.1) THEN
 !
                DEPTH  = PMSA(IP3)
@@ -257,3 +263,5 @@
       RETURN
 !
       END
+
+      end module m_temper

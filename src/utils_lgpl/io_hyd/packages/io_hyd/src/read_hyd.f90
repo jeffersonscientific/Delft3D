@@ -35,10 +35,10 @@
 
       use m_zoek
       use m_monsys
-      use m_julian
-      use m_dhpath
+      use time_module
+      use m_get_filepath_and_pathlen
       use hydmod
-      use m_dherrs
+      use m_write_error_message
       use rd_token       ! tokenized reading
 
       implicit none
@@ -188,7 +188,7 @@
       ierr = 0
 
       hyd%description = ' '
-      call dhpath ( hyd%file_hyd%name, filpath, pathlen)
+      call get_filepath_and_pathlen ( hyd%file_hyd%name, filpath, pathlen)
 
       hyd%wasteload_coll%cursize = 0
       hyd%wasteload_coll%maxsize = 0
@@ -306,7 +306,7 @@
             ! convert to julian
             read (hyd%hyd_ref(1:8),'(i8)') idate
             read (hyd%hyd_ref(9:14),'(i6)') itime
-            hyd%time_ref = julian ( idate , itime )
+            hyd%time_ref = julian_with_leapyears ( idate , itime )
 
          elseif ( ikey .eq. 9 ) then
             ! hydrodynamic start
@@ -698,5 +698,5 @@
       endif
 
       return
- 900  call dherrs('error reading hyd file ('//trim(key(ikey))//')', 0)
+ 900  call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
       end subroutine read_hyd

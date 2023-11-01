@@ -38,11 +38,14 @@
  use unstruc_model, only: md_restartfile
  use unstruc_channel_flow
  use m_1d_structures, only: initialize_structures_actual_params, set_u0isu1_structures
+ use m_nearfield, only : nearfield_mode, NEARFIELD_DISABLED, setNFEntrainmentMomentum
  use dfm_error
  use MessageHandling
  use m_partitioninfo
  use m_sediment, only: stm_included
-
+ use m_sethu
+ use m_external_forcings, only: calculate_wind_stresses
+ use m_wind, only: update_wind_stress_each_time_step
  implicit none
 
  integer              :: jazws0
@@ -51,6 +54,7 @@
  double precision, parameter :: mmphr_to_mps = 1d-3/3600d0
 
  iresult = DFM_GENERICERROR
+
 
  call timstrt('Initialise timestep', handle_inistep)
 
@@ -107,7 +111,7 @@
  adve = 0d0
 
  call timstrt('Sethuau     ', handle_extra(39)) ! Start huau
- call sethu(jazws0)
+ call calculate_hu_au_and_advection_for_dams_weirs(jazws0)
 
  call setau()                                        ! set au and cfuhi for conveyance after limited h upwind at u points
  call timstop(handle_extra(39)) ! End huau
@@ -115,6 +119,14 @@
  call timstrt('Setumod     ', handle_extra(43)) ! Start setumod
     call setumod(jazws0)                             ! set cell center velocities, should be here as prior to 2012 orso
  call timstop(handle_extra(43)) ! End setumod
+
+ if (update_wind_stress_each_time_step > 0) then ! Update wind in each computational timestep
+    call calculate_wind_stresses(time0, iresult)
+    if (iresult /= DFM_NOERR) then
+       return
+    end if
+ end if
+
 
  call timstrt('Set conveyance       ', handle_extra(44)) ! Start cfuhi
  call setcfuhi()                                     ! set current related frictioncoefficient
@@ -159,6 +171,12 @@ endif
 
  if (nshiptxy > 0) then
      call setship()                                        ! in initimestep
+ endif
+
+ if (nearfield_mode /= NEARFIELD_DISABLED .and. NFEntrainmentMomentum > 0) then
+     !
+     ! Update momentum exchange, based on current flow field
+     call setNFEntrainmentMomentum()
  endif
 
  call timstrt('Compute advection term', handle_extra(41)) ! Start advec

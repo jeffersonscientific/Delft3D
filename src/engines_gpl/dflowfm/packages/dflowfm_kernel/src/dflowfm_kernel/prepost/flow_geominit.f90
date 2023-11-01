@@ -221,7 +221,7 @@
          call remove_unused_nodes_and_links()
      endif
  endif
-
+ 
  ! if (makeorthocenters .gt. 0 .and. jglobe == 0) then
  if (makeorthocenters .gt. 0) then
     call make_orthocenters(0.5d-2,makeorthocenters)

@@ -319,7 +319,6 @@ end subroutine api_loadmodel
    if (jampi == 1) then
       call updateValuesOnCrossSections_mpi(time1)
       call updateValuesOnRunupGauges_mpi()
-      call reduce_particles()
    endif
    call timstop(inner_timerhandle)
     
@@ -407,6 +406,8 @@ use unstruc_netcdf
 use MessageHandling, only: FinalizeMessageHandling
 use m_ec_module
 use m_meteo, only: ecInstancePtr
+use m_nearfield
+    call dealloc_nfarrays()
 
     if (.not.ecFreeInstance(ecInstancePtr)) then
        continue     

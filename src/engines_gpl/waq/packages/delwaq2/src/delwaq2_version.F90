@@ -24,18 +24,18 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
 module delwaq2_version_module
-    use static_version_info
+    use waq_static_version_info
 
     implicit none
 
     character(*),  private, parameter :: component_name      = 'DELWAQ2'
 
-    character(*),  public, parameter :: delwaq2_version_full = version_prefix // ', ' // component_name // version_suffix
-    character(*),  public, parameter :: delwaq2_version_id   = version_prefix_id // ', ' // component_name // ' ' // version_suffix_full
+    character(*),  public, parameter :: delwaq2_version_full = company // ', ' // component_name // major_minor_buildnr
+    character(*),  public, parameter :: delwaq2_version_id   = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
 
 contains
 

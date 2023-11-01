@@ -20,13 +20,19 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_ulfix
+
+      implicit none
+
+      contains
+
 
       subroutine ulfix  ( pmsa   , fl     , ipoint , increm , noseg  ,
      &                    noflux , iexpnt , iknmrk , noq1   , noq2   ,
      &                    noq3   , noq4   )
       use m_dhnoseg
       use m_dhnolay
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 !>\file
 !>       Fixation of BLOOM algae at the water bed (e.g. for Ulvae)
@@ -161,7 +167,7 @@
                   ip = ipoint(nipfix+ialg)+ (iseg-1)*increm(nipfix+ialg)
                   bloomalg = max(pmsa(ip),0.0)
                   msusp = msusp + bloomalg*volume  ! total mass suspended type in g
-                  call dhkmrk(2,iknmrk(iseg),ikmrk2)
+                  call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
                   if ((ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
 
                      ip = ipoint(nipfix+jalg)+ (iseg-1)*increm(nipfix+jalg)
@@ -254,3 +260,5 @@
 
       return
       end
+
+      end module m_ulfix

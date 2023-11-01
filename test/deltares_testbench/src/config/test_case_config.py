@@ -18,6 +18,7 @@ class TestCaseConfig:
     def __init__(self):
         self.__name: str = ""
         self.__path: str = ""
+        self.__dependency: str = ""
         self.__locations: List[Location] = []
         self.__shell: Optional[ProgramConfig] = None
         self.__shell_arguments = []
@@ -30,7 +31,7 @@ class TestCaseConfig:
         self.__overrule_ref_max_run_time: bool = False
         self.__absolute_test_case_path: str = ""
         self.__absolute_test_case_reference_path: str = ""
-        self.__run_file = None
+        self.__run_file = ""
         self.__ignore = False
 
     @property
@@ -50,6 +51,15 @@ class TestCaseConfig:
     @path.setter
     def path(self, value: str):
         self.__path = value
+
+    @property
+    def dependency(self) -> str:
+        """relative paths for test case"""
+        return self.__dependency
+
+    @dependency.setter
+    def dependency(self, value: str):
+        self.__dependency = value
 
     @property
     def locations(self) -> List[Location]:
@@ -154,7 +164,7 @@ class TestCaseConfig:
         return self.__checks
 
     @property
-    def run_file_name(self) -> Optional[str]:
+    def run_file_name(self) -> str:
         """Name (including path) of runfile"""
         return self.__run_file
 

@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_resbuf
+
+implicit none
+
+contains
+
   
   subroutine RESBUF     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-  use m_dhkmrk
+  use m_evaluate_waq_attribute
 
 !
 !*******************************************************************************
@@ -161,7 +167,7 @@
       iflux = 0
       do iseg = 1 , noseg
         if (btest(iknmrk(iseg),0)) then
-          call dhkmrk(2,iknmrk(iseg),ikmrk2)
+          call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
           if ((ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
 
             im1s2      = pmsa( ipnt(1 ) )
@@ -358,3 +364,5 @@
 
       end subroutine RESBUF
 
+
+end module m_resbuf

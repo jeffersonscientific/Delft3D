@@ -20,12 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_grzmac
+
+      implicit none
+
+      contains
+
 
       SUBROUTINE GRZMAC     ( PMSA   , FL     , IPOINT , INCREM, NOSEG ,
      +                        NOFLUX , IEXPNT , IKNMRK , NOQ1  , NOQ2  ,
      +                        NOQ3   , NOQ4   )
       use m_monsys
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 !
 !*******************************************************************************
@@ -94,7 +100,7 @@
 !
       DO 9000 ISEG = 1 , NOSEG
 
-         CALL DHKMRK(1,IKNMRK(ISEG),IKMRK1)
+         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
          IF (IKMRK1.EQ.1) THEN
 
 !
@@ -209,3 +215,5 @@
 !
       RETURN
       END
+
+      end module m_grzmac

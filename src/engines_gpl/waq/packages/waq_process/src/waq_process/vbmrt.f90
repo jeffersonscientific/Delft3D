@@ -20,11 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_vbmrt
+
+implicit none
+
+contains
+
 
       subroutine VBMRT      ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-      use m_dhkmrk
+      use m_evaluate_waq_attribute
 
 !
 !*******************************************************************************
@@ -205,8 +211,8 @@
       do  iseg = 1 , noseg
 
 !        lowest water and 2d segments only
-         call dhkmrk(1,iknmrk(iseg),ikmrk1)
-         call dhkmrk(2,iknmrk(iseg),ikmrk2)
+         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+         call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
          if (ikmrk1.lt.3 .and. (ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
 !
          VB1        = pmsa( ipnt(  1) )
@@ -497,3 +503,5 @@
 !
       return
       end
+
+end module m_vbmrt

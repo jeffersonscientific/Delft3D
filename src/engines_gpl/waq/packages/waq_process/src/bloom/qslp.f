@@ -20,16 +20,18 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+      module m_qslp
+
+      implicit none
+
+      contains
+
 
 !-----------------------------------------------------------------------
 ! QSLP Quick Simplex algorithm to solve a Linear Program.
 ! The technique used here is a variant of the primal - dual algorithm.
 ! The call to this routine is similar to the one to DOSP.
-!
-! Version 1.1
-! Update 1.1: added check for negative "<" constraints.
-!
-! Program written by Hans Los.
+
 !-----------------------------------------------------------------------
       subroutine qslp(a,ia,nr,nc,b,lsc,c,iopt,irs,lib,d,mt,x,p,ier)
 
@@ -365,3 +367,5 @@
   340 continue
       return
       end
+
+      end module m_qslp
