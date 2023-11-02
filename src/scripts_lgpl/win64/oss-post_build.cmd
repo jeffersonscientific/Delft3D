@@ -108,7 +108,7 @@ echo petsc_dir           : !petsc_dir!
 
 
 rem Change to directory tree where this batch file resides (necessary when oss-install.cmd is called from outside of oss/trunk/src)
-cd %~dp0\..\..
+cd %~dp0..\..
 
 call :!project!
 

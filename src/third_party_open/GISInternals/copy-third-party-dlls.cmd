@@ -14,7 +14,7 @@ rem To be used by Visual Studio's post build events for dflowfm-interacter, dflo
 
 
 set TargetDir=%1
-set SourceDir=%~dp0\release-1911-x64\bin
+set SourceDir=%~dp0release-1911-x64\bin
 
 
 "xcopy.exe" /D /Y /R "%SourceDir%\xerces-c_3_2.dll" "%TargetDir%"\ > nul
