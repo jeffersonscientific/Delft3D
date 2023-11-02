@@ -10,7 +10,7 @@ setlocal enabledelayedexpansion
     rem Get the location of this script and ESMF_RegridWeightGen.exe
 set workdir=%CD%
 set scriptdir=%~dp0
-set exedir=%scriptdir%\..\bin
+set exedir=%scriptdir%..\bin
 set regridexec="%exedir%\ESMF_RegridWeightGen.exe"
 
 echo Executing batchscript "ESMF_RegridWeightGen_in_Delft3D-WAVE.bat" for Delft3D-WAVE >>esmf_bat.log
