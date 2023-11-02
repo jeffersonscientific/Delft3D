@@ -19,7 +19,3 @@ endif()
 if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
-
-if(NOT TARGET proj)
-    add_subdirectory(${checkout_src_root}/${proj_module} proj)
-endif()
