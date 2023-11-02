@@ -280,6 +280,11 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     real(fp):: z00
     real(fp):: zw
     real(fp):: zwc
+    real(fp):: rhslax
+    real(fp):: ztopr
+    real(fp):: ztopl
+    real(fp):: zbotr
+    real(fp):: zbotl
     integer :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
 !
     data epsd/1.0e-20/
@@ -394,7 +399,60 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
        do k = 1, kmax - 1
           do nm = 1, nmmax
              if (kfs(nm) == 1) then
-                ddk(nm, k) = rtur0(nm, k, l) / timest
+                !ddk(nm, k) = rtur0(nm, k, l) / timest
+                !
+                ! LAX-method for more horizontal coupling to avoid checkerboarding solutions
+                ! 19 oktober 2023, more advanced implementation averaging, to avoid artificial creep coupling
+                !
+                nmd = nm - icx
+                nmu = nm + icx
+                ndm = nm - icy
+                num = nm + icy
+                !
+                maskval = 0
+                rhslax  = 0.0_fp
+                !
+                if (kfs(nmd) = 1) then
+                   ztopl = s1(nmd) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nmd) + real(dps(nmd),fp))
+                   ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   zbotl = s1(nmd) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nmd) + real(dps(nmd),fp))
+                   zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                      rhslax  = rhslax + rtur0(nmd,k,l)
+                      maskval = maskval + 1
+                   endif
+                endif
+                if (kfs(ndm) = 1) then
+                   ztopl = s1(ndm) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(ndm) + real(dps(ndm),fp))
+                   ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   zbotl = s1(ndm) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(ndm) + real(dps(ndm),fp))
+                   zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                      rhslax  = rhslax + rtur0(ndm,k,l)
+                      maskval = maskval + 1
+                   endif
+                endif
+                if (kfs(nmu) = 1) then
+                   ztopl = s1(nmu) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nmu) + real(dps(nmu),fp))
+                   ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   zbotl = s1(nmu) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nmu) + real(dps(nmu),fp))
+                   zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                      rhslax  = rhslax + rtur0(nmu,k,l)
+                      maskval = maskval + 1
+                   endif
+                endif
+                if (kfs(num) = 1) then
+                   ztopl = s1(num) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(num) + real(dps(num),fp))
+                   ztopr = s1(nm ) + (1.0_fp+sig(k)+0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   zbotl = s1(ndm) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(num) + real(dps(num),fp))
+                   zbotr = s1(nm ) + (1.0_fp+sig(k)-0.5_fp*thick(k))*max(0.01_fp, s1(nm ) + real(dps(nm ),fp))
+                   if (ztopl.ge.zbotr.or.ztopr.gt.zbotl)then
+                      rhslax  = rhslax + rtur0(num,k,l)
+                      maskval = maskval + 1
+                   endif
+                endif
+                ddk(nm,k) = rhslax / (timest*real(maskval,fp))
              endif
           enddo
        enddo
