@@ -22,83 +22,78 @@
 !!  rights reserved.
 module m_delwaq1_init
 
-use m_create_working_files_1, only: create_working_files_1
-use m_waq_type_definitions
+   use m_create_working_files_1, only: create_working_files_1
+   use m_waq_type_definitions
 
-
-
-implicit none
+   implicit none
 
 contains
 
+   !>\file
+   !>                    delwaq1_init: initializes timer and values
+   !     SUBROUTINES CALLED :
+   !                         *UNISET, reads input filename
 
+   subroutine delwaq1_init(argc, argv)
+      use m_delwaq1_data
+      use m_dhgarg
 
-    !>\file
-    !>                    delwaq1_init: initializes timer and values
-    !     SUBROUTINES CALLED :
-    !                         *UNISET, reads input filename
+      implicit none
 
-    subroutine delwaq1_init(argc, argv)
-        use m_delwaq1_data
-        use m_dhgarg
+      integer(kind=int_wp), intent(in) ::  argc
+      character(len=*), dimension(argc), intent(in) :: argv
 
-        implicit none
+      !     Special system init
 
-        integer(kind=int_wp), intent(in) ::  argc
-        character(len=*), dimension(argc), intent(in) :: argv
+      call timini()                          ! initializes timer
 
-        !     Special system init
+      call dhstore_command(argv)
 
-        call timini ( )                          ! initializes timer
+      narg = dhstored_number_args()            ! but timer is switched 'off' by default
+      if (narg == 0) narg = iargc() + 1
+      do ierr = 1, narg
+         call dhgarg(ierr, arg)
+         if (arg == "timer" .or. arg == "TIMER") then
+            timon = .true.                     ! optionally switch it 'on'
+            exit
+         end if
+      end do
+      if (timon) call timstrt("delwaq1", ithndl)
 
-        call dhstore_command( argv )
+      !        initialise values
 
-        narg = dhstored_number_args()            ! but timer is switched 'off' by default
-        if ( narg == 0 ) narg = iargc() + 1
-        do ierr = 1, narg
-            call dhgarg ( ierr, arg )
-            if ( arg == "timer" .or. arg == "TIMER" ) then
-              timon = .true.                     ! optionally switch it 'on'
-              exit
-            endif
-        enddo
-        if (timon) call timstrt( "delwaq1", ithndl )
+      ierr = 0
+      iwar = 0
+      lunrep = lun(29)
+      nolun = nlun
+      filtype = 0
+      noitem = noitm
+      noutp = nooutp
+      noinfo = 0
+      nharms = 0
+      niharm = 0
+      nlines = 0
+      npoins = 0
+      newrsp = 0
+      newisp = 0
+      ivflag = 0
+      itflag = 0
+      ncbufm = 0
+      novar = 0
+      noarr = iasize + ijsize + icsize
+      nufil = 0
+      do i = 1, noitem
+         nrftot(i) = 0
+         nrharm(i) = 0
+      end do
+      StatProcesDef%maxsize = 0
+      StatProcesDef%cursize = 0
+      AllItems%maxsize = 0
+      AllItems%cursize = 0
+      GridPs%cursize = 0
+      GridPs%maxsize = 0
 
-        !        initialise values
+      call create_working_files_1(lun, lchar, nolun, runid)
 
-        ierr   = 0
-        iwar   = 0
-        lunrep = lun(29)
-        nolun  = nlun
-        filtype = 0
-        noitem = noitm
-        noutp  = nooutp
-        noinfo = 0
-        nharms = 0
-        niharm = 0
-        nlines = 0
-        npoins = 0
-        newrsp = 0
-        newisp = 0
-        ivflag = 0
-        itflag = 0
-        ncbufm = 0
-        novar  = 0
-        noarr  = iasize + ijsize + icsize
-        nufil  = 0
-        do i=1, noitem
-          nrftot(i) = 0
-          nrharm(i) = 0
-        end do
-        StatProcesDef%maxsize = 0
-        StatProcesDef%cursize = 0
-        AllItems%maxsize = 0
-        AllItems%cursize = 0
-        GridPs%cursize=0
-        GridPs%maxsize=0
-
-        call create_working_files_1( lun, lchar, nolun, runid)
-
-
-    end subroutine delwaq1_init
+   end subroutine delwaq1_init
 end module m_delwaq1_init
