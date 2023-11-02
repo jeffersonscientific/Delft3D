@@ -98,5 +98,5 @@ post_build_target (${executable_name}
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/scripts/run_delwaq.sh  DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/scripts/run_delwaq.sh  DESTINATION bin)
 endif(UNIX)
