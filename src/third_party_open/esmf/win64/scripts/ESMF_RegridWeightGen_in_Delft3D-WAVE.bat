@@ -32,6 +32,7 @@ if [%4] EQU [] (
         set addflags=-m bilinear --src_type ESMF --dst_type ESMF 
     )
 )
+echo "working 1"
 
 set defaultflags=--ignore_unmapped
 set arguments=%defaultflags% %addflags% -s %srcfile% -d %destfile% -w %wfile%
@@ -41,10 +42,15 @@ set PATH=%exedir%;%PATH%
     rem Remove output file
 if exist %wfile% del %wfile%
 if exist PET0.RegridWeightGen.Log del PET0.RegridWeightGen.Log
+
+echo "working 2"
+
     rem Check whether needed files exist
 if not exist %srcfile% goto error1
 if not exist %destfile% goto error2
 if not exist %regridexec% goto errorexec
+
+echo "working 3"
 
    rem RUN
 echo Calling ESMF_RegridWeightGen with arguments: %arguments% >>esmf_bat.log
