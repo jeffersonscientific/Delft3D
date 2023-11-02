@@ -1,13 +1,12 @@
 # Set version file variables
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../..) # Trace back to the WAQ path
-set(waq_version_path ${waq_root_path}/version)
-
+set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq) # Trace back to the WAQ path
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-set(fortran_static_version_file ${CMAKE_CURRENT_SOURCE_DIR}/waq_utils/static_version_info.f90)
+set(waq_version_path ${waq_root_path}/resources/version)
+
+set(fortran_static_version_file ${waq_root_path}/waq_utils/static_version_info.f90)
 
 set(library_name waq_utils_f)
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 # Set dependencies
 set(oss_dependencies deltares_common)

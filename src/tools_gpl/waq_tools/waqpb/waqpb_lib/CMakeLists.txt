@@ -3,7 +3,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include) # Note that the CMAK
 
 # Define library
 set(library_name waqpb_lib)
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 set(oss_dependencies deltares_common
                      nefis

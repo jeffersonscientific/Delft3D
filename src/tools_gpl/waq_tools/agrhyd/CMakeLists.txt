@@ -1,24 +1,17 @@
-# Define include directory
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(agrhyd_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the AGRHYD path
-set(waq_root_path ${agrhyd_root_path}/../../engines_gpl/waq) # Trace back to the WAQ path
-
 # Set version file variables
-set(waq_version_path ${waq_root_path}/version)
-
-set(rc_version_file ${waq_version_path}/version_number_agrhyd.rc)
+set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq) # Trace back to the WAQ path
+set(rc_version_file ${waq_root_path}/resources/version/version_number_agrhyd.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-
 # Set source directory
-set(src_path src)
+set(src_path .)
 
 # Gather source files
-get_fortran_source_files(${src_path} source_files)
+get_fortran_source_files(${src_path} source)
 
 # Define executable
 set(executable_name agrhyd)
-add_executable(${executable_name} ${source_files}
+add_executable(${executable_name} ${source}
                                   ${rc_version_file})
 
 
@@ -48,7 +41,7 @@ if (WIN32)
 endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/agrhyd)
 
 # Set post-build step

@@ -157,7 +157,7 @@ rem =============================================================
     set fullPath=%~1
     set prefix=%~2
     set dest=%~3
-    
+
     rem Extract the filename and the path
     for %%F in ("%fullPath%") do (
         set "filePath=%%~dpF"
@@ -503,7 +503,7 @@ rem =============================================================
 
     rem copy intel dlls
     call :copyCompilerRedist noPetsc
-    
+
 
 goto :endproc
 
@@ -1095,7 +1095,7 @@ rem ===================================
 
     rem copy binaries and dll
     call :copyFile "!build_dir!\waq_plugin_wasteload\!configuration!\waq_plugin_wasteload.*"                               !dest_bin!
-    
+
     rem profiling information
     call :copyFileWithPrefix "!build_dir!\waq_plugin_wasteload\PGOPTI.*" waq_plugin_wasteload      !dest_bin!
 goto :endproc
@@ -1133,9 +1133,9 @@ rem ==========================
         rem copy waq process files
         call :copyWaqProcessFiles !dest_default! !dest_csvFiles!
         call :copyWaqProcessFiles !dest_default_backup! !dest_csvFiles_backup!
-        
+
         rem profiling information
-        call :copyFileWithPrefix "!build_dir!\delwaq_lib\PGOPTI.*" delwaq_lib      !dest_bin!    
+        call :copyFileWithPrefix "!build_dir!\delwaq_lib\PGOPTI.*" delwaq_lib      !dest_bin!
     )
 goto :endproc
 
@@ -1161,9 +1161,9 @@ rem ==========================
     if "%configuration%" == "Release" (
         call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\run_delwaq.bat"               !dest_scripts!
     )
-    
+
     rem profiling information
-    call :copyFileWithPrefix "!build_dir!\delwaq1\PGOPTI.*" delwaq1      !dest_bin!    
+    call :copyFileWithPrefix "!build_dir!\delwaq1\PGOPTI.*" delwaq1      !dest_bin!
 
 goto :endproc
 
@@ -1189,9 +1189,9 @@ rem ==========================
     if "%configuration%" == "Release" (
         call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\run_delwaq.bat"                 !dest_scripts!
     )
-    
+
     rem profiling information
-    call :copyFileWithPrefix "!build_dir!\delwaq2\PGOPTI.*" delwaq2      !dest_bin!    
+    call :copyFileWithPrefix "!build_dir!\delwaq2\PGOPTI.*" delwaq2      !dest_bin!
 goto :endproc
 
 
@@ -1212,11 +1212,11 @@ rem ==========================
     call :copyFile "!build_dir!\waqpb_export\!configuration!\waqpb_export.*"                        !dest_bin!
 
     rem copy run scripts
-    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\scripts\run_waqpb_export.bat"               !dest_scripts!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\export_procdef_csvfiles.bat"        !dest_scripts!
+    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\resources\scripts\run_waqpb_export.bat"               !dest_scripts!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\export_procdef_csvfiles.bat"        !dest_scripts!
 
     rem profiling information
-    call :copyFileWithPrefix "!build_dir!\waqpb_export\PGOPTI.*" waqpb_export      !dest_bin!    
+    call :copyFileWithPrefix "!build_dir!\waqpb_export\PGOPTI.*" waqpb_export      !dest_bin!
 goto :endproc
 
 
@@ -1237,11 +1237,11 @@ rem ==========================
     call :copyFile "!build_dir!\waqpb_import\!configuration!\waqpb_import.*"              !dest_bin!
 
     rem copy run scripts
-    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\scripts\run_waqpb_import.bat"        !dest_scripts!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\import_procesasc_changes.bat"            !dest_scripts!
+    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\resources\scripts\run_waqpb_import.bat"        !dest_scripts!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\import_procesasc_changes.bat"            !dest_scripts!
 
     rem profiling information
-    call :copyFileWithPrefix "!build_dir!\waqpb_import\PGOPTI.*" waqpb_import      !dest_bin!  
+    call :copyFileWithPrefix "!build_dir!\waqpb_import\PGOPTI.*" waqpb_import      !dest_bin!
 goto :endproc
 
 
@@ -1307,9 +1307,9 @@ rem ==========================
 
         call :copyFile "!checkout_src_root!\engines_gpl\part\scripts\run_dpart.bat"             !dest_scripts!
     )
-    
+
     rem profiling information
-    call :copyFileWithPrefix "!build_dir!\delpar\PGOPTI.*" delpar      !dest_bin! 
+    call :copyFileWithPrefix "!build_dir!\delpar\PGOPTI.*" delpar      !dest_bin!
 
 goto :endproc
 

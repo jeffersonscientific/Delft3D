@@ -1,32 +1,28 @@
-# Define include directories
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the WAQ path
+# Set directory which contains all source files
+set(src_path .)
 
 # Set version file variables
-set(waq_version_path ${waq_root_path}/version)
-set(waq_data_path ${waq_root_path}/include)
+set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../) # Trace back to the WAQ path
 
-set(rc_version_file ${waq_version_path}/version_number_delwaq1.rc)
+# Set version file variables
+set(waq_version_path ${waq_root_path}/resources/version)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(rc_version_file ${waq_version_path}/version_number_delwaq1.rc)
+
+# Gather source files
+get_fortran_source_files(${src_path} source)
 
 # Set icon file
 set(icon_file ${waq_version_path}/waq_icon.rc)
 
-# Set directory which contains all source files
-set(src_path src)
-
-# Gather source files
-get_fortran_source_files(${src_path} source_files)
-
 # Define executable
 set(executable_name delwaq1)
-add_executable(${executable_name} ${source_files}
+add_executable(${executable_name} ${source}
                                   ${icon_file}
                                   ${rc_version_file})
 
 # Add dependencies
 set(oss_dependencies delwaq_lib)
-
 
 target_link_libraries(${executable_name} ${oss_dependencies})
 

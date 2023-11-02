@@ -1,7 +1,7 @@
 # Define library
 set(library_name part_io_f)
 
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 # Add dependencies
 set(oss_dependencies deltares_common
                      nefis

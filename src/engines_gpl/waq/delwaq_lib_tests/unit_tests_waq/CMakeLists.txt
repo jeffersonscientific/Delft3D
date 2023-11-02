@@ -1,12 +1,12 @@
 # Include all directories
-set(src_path src) 
+set(src_path .)
 
 # Gather the source files
-get_fortran_source_files(${src_path} source_files)
+get_fortran_source_files(${src_path} source)
 
 # Executable target
 set(executable_name unit_tests_waq)
-add_executable(${executable_name} ${source_files}) 
+add_executable(${executable_name} ${source})
 
 # Extra dependencies
 set(oss_dependencies delwaq_lib
@@ -31,7 +31,4 @@ endif(UNIX)
 set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/waq/delwaq_lib_tests)
 
 # Define how the files should be visualized in visual studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-
-
-
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})

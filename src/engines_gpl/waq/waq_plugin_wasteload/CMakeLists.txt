@@ -1,15 +1,11 @@
 # Set version file variables
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../..) # Trace back to the WAQ path
-set(waq_version_path ${waq_root_path}/version)
 
-set(rc_version_file ${waq_version_path}/version_number_waq_plugin_wasteload.rc)
+set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/..) # Trace back to the WAQ path
+set(rc_version_file ${waq_root_path}/resources/version/version_number_waq_plugin_wasteload.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-
-
 # Set directory which contains all source files
-set(src_path src)
+set(src_path .)
 
 # Gather source files
 get_fortran_source_files(${src_path} source_files)

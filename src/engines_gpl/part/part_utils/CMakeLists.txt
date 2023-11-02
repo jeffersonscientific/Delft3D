@@ -2,7 +2,7 @@
 set(library_name part_utils_f)
 
 # Set version file variables
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 # Add dependencies
 set(oss_dependencies deltares_common

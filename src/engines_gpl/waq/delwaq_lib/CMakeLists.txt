@@ -1,19 +1,16 @@
-# Define include directories
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the WAQ path
-include_directories(${waq_root_path}/include)
+# Set directory which contains all source files
+set(src_path .)
 
 # Set version file variables
-set(waq_version_path ${waq_root_path}/version)
+set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../) # Trace back to the WAQ path
 
-set(rc_version_file ${waq_version_path}/version_number.rc)
+# Set version file variables
+set(rc_version_file ${waq_root_path}/resources/version/version_number.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-
-# Set directory which contains all source files
-set(src_path src)
 
 # Gather source files
 get_fortran_source_files(${src_path} source_files)
+
 file(GLOB preprocessor_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/waq_bmi.F90)
 
 # Define library

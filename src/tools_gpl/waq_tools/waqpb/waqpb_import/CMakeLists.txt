@@ -1,26 +1,20 @@
 # Define include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(waqpb_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../) # Trace back to the AGRHYD path
-set(waq_root_path ${waqpb_root_path}/../../../engines_gpl/waq) # Trace back to the WAQ path
-
 # Set version file variables
-set(waq_version_path ${waq_root_path}/version)
-
-set(rc_version_file ${waq_version_path}/version_number_waqpb_import.rc)
+set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq) # Trace back to the WAQ path
+set(rc_version_file ${waq_root_path}/resources/version/version_number_waqpb_import.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-
 # Set source directory
-set(src_path src)
+set(src_path .)
 
 # Gather source files
-get_fortran_source_files(${src_path} source_files)
+get_fortran_source_files(${src_path} source)
 
 # Define executable
 set(executable_name waqpb_import)
-add_executable(${executable_name} ${source_files}
+add_executable(${executable_name} ${source}
                                   ${rc_version_file})
 
 # Set dependencies
@@ -28,7 +22,7 @@ target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 set(oss_dependencies    deltares_common
                         waq_utils_f
                         waqpb_lib)
-oss_include_libraries(${executable_name} oss_dependencies)
+
 target_link_libraries(${executable_name} ${oss_dependencies})
 
 # Set additional compilation properties
@@ -39,7 +33,7 @@ if(UNIX)
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/waqpb)
 
 # Set post-build step
@@ -54,5 +48,5 @@ post_build_target (${executable_name}
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/waqpb/scripts/run_waqpb_import.sh  DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/waqpb/resources/scripts/run_waqpb_import.sh  DESTINATION bin)
 endif(UNIX)

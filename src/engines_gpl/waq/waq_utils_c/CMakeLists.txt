@@ -1,8 +1,8 @@
 # Set the directory which contains the source code
-set(src_path src)
+set(src_path .)
 
 # Gather source files
-set(source  ${src_path}/fortran_to_c_interfacing.cpp)
+set(source ${src_path}/fortran_to_c_interfacing.cpp)
 
 add_library(waq_utils_c ${source})
 

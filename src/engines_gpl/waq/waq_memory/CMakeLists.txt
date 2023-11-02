@@ -1,6 +1,6 @@
 # Define library
 set(library_name waq_memory)
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 # Set dependencies
 set(oss_dependencies deltares_common

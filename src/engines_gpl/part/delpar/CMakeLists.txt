@@ -1,26 +1,20 @@
-# Define include directories
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(part_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the PART path
-set(waq_root_path ${part_root_path}/../waq) # Trace back to the WAQ path
-
 # Set version file variables
-set(waq_version_path ${waq_root_path}/version)
-
-set(rc_version_file ${waq_version_path}/version_number_delpar.rc)
+set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq) # Trace back to the WAQ path
+set(waq_version_path ${waq_root_path}/resources/version)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-# Set icon file
+set(rc_version_file ${waq_version_path}/version_number_delpar.rc)
 set(icon_file ${waq_version_path}/part_icon.rc)
 
 # Set directory which contains all source files
-set(src_path src)
+set(src_path .)
 
 # Gather source files
-get_fortran_source_files(${src_path} source_files)
+get_fortran_source_files(${src_path} source)
 
 # Define executable
 set(executable_name delpar)
-add_executable(${executable_name} ${source_files}
+add_executable(${executable_name} ${source}
     ${icon_file}
     ${rc_version_file})
 
@@ -55,7 +49,7 @@ if(WIN32)
 endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 source_group(Resources FILES ${icon_file}
     ${rc_version_file})
 target_compile_options(${executable_name} PRIVATE ${openmp_flag})

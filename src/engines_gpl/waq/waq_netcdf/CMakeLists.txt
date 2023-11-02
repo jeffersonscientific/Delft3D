@@ -1,7 +1,6 @@
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 # Define library
 set(library_name waq_netcdf)
-create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 # Set dependencies
 set(oss_dependencies waq_utils_f
