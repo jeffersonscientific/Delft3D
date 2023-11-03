@@ -78,7 +78,6 @@ class TestSetRunner(ABC):
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
-        #self.__settings.configs = self.__settings.configs[:1]
         results = (
             self.run_tests_in_parallel()
             if self.__settings.parallel
@@ -622,12 +621,11 @@ class TestSetRunner(ABC):
         location = next(loc for loc in config.locations if loc.type == PathType.INPUT)
         destination_dir = self.__settings.local_paths.cases_path
 
-        local_dir, relative_remote_path = config.dependency
         localPath = Paths().rebuildToLocalPath(
             Paths().mergeFullPath(
                 destination_dir,
                 location.to_path,
-                local_dir,
+                config.dependency.local_dir,
             )
         )
 
@@ -635,6 +633,6 @@ class TestSetRunner(ABC):
             return
 
         remote_path = Paths().mergeFullPath(
-            location.root, location.from_path, relative_remote_path
+            location.root, location.from_path, config.dependency.cases_path
         )
         self.__download_file(location, remote_path, localPath, "dependency", logger)
