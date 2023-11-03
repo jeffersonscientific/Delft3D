@@ -96,7 +96,7 @@
       character     cchar*1 , strng*8
       dimension     i_array(*) , ilun( lstack )
       logical       dtflg1 , dtflg3 , first, must_read_more
-      integer(kind=int_64) :: ihulp8 
+      integer(kind=INT64)  :: ihulp8
       integer(kind=int_wp) ::  ithndl = 0
       integer(kind=int_wp) ::  i, count_items_comp_rule, count_subs_assign, count_subs_comp_rule, index_first, offset_names
       integer(kind=int_wp) ::  offset_common, notim
@@ -104,20 +104,20 @@
       integer(kind=int_wp) ::  i_array, nocol, ifound, itfact, icnt, iods, k, iwar
       integer(kind=int_wp) ::  offset_i_array, count_items_assign, count_names, npos, lstack
       real(kind=real_wp) ::  rhulp
-      
-       
+
+
       if (timon) call timstrt( "dlwq5g", ithndl )
 !
 !     Array offsets
 !
-      offset_i_array = count_items_assign + count_items_comp_rule + 
+      offset_i_array = count_items_assign + count_items_comp_rule +
      +                 count_subs_assign  + count_subs_comp_rule
       if ( index_first .eq. 1 ) then ! items first
          offset_names  = count_items_assign + count_items_comp_rule + count_subs_assign
          offset_common = count_items_assign + count_items_comp_rule
          count_names   = count_subs_comp_rule
       else if ( index_first .eq. 2 ) then !substances first
-         offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign 
+         offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign
          offset_common = count_subs_comp_rule + count_subs_assign
          count_names   = count_items_comp_rule
       endif
@@ -131,12 +131,12 @@
           call rdtok1 ( lunut, ilun, lch, lstack, cchar,
      *              start_in_line, npos, chulp, ihulp, rhulp,
      *              itype  , error_idx)
-         
+
           if ( error_idx  .ne. 0 ) then ! error occurred when reading
               if (timon) call timstop( ithndl )
               return !exit subroutine
           end if
-         
+
 !         no error
           if ( itype .eq. 1 ) then ! a string has arrived
              ! get time (ihulp) from string (chulp)
@@ -184,7 +184,7 @@
 !     is everything resolved ?
       icnt = 0
       iods = 0
-      
+
       do i = 1, count_names
          k = i - icnt
          if ( (names_to_check(offset_names + k) /= '&$&$SYSTEM_NAME&$&$!')

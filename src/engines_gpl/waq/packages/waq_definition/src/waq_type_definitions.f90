@@ -22,25 +22,17 @@
 !!  rights reserved.
 
 module m_waq_type_definitions
-!
-!  module declarations
-      use, intrinsic :: iso_fortran_env
-      implicit none
-      private
-      public :: int_8, int_16, int_32, int_64, int_wp, sp, dp, qp, real_wp
-      
-      ! f77: integer*1, f90: integer(kind=1)
-      integer, parameter :: int_8 = INT8
-      ! f77: integer*2, f90: integer(kind=2)
-      integer, parameter :: int_16 = INT16
-      ! f77: integer*4, f90: integer(kind=4) this is the default value if not mentioned.
-      integer, parameter :: int_32 = INT32
-      ! f77: integer*8, f90: integer(kind=8)
-      integer, parameter :: int_64 = INT64
-      integer, parameter :: int_wp = INT32
-      
-      integer, parameter :: sp = REAL32
-      integer, parameter :: real_wp = REAL32
-      integer, parameter :: dp = REAL64
-      integer, parameter :: qp = REAL128
+
+   use, intrinsic :: iso_fortran_env
+   implicit none
+   private
+   public ::  INT16, INT64, int_wp, sp, dp, qp, real_wp
+
+   integer, parameter :: int_wp = INT32
+
+   integer, parameter :: sp = REAL32
+   integer, parameter :: real_wp = REAL32
+   integer, parameter :: dp = REAL64
+   integer, parameter :: qp = REAL128
+
 end module m_waq_type_definitions

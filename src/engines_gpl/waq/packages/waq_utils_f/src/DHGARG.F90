@@ -20,86 +20,72 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dhgarg
-      use m_waq_type_definitions
+module m_dhgarg
+   use m_waq_type_definitions
 
+   implicit none
 
-      implicit none
+   contains
 
-      contains
+   SUBROUTINE DHGARG(IARG, LINE)
 
+      ! Returns the IARG'th argument from the command line
 
-      SUBROUTINE DHGARG ( IARG  , LINE  )
-!
-!     Returns the IARG'th argument from the command line
-!
       USE DHCOMMAND
 
-      IMPLICIT NONE
-!
-!     Arguments
-!
+      !  Arguments
       INTEGER(kind=int_wp) ::NARG
       INTEGER(kind=int_wp) ::IARG
-      CHARACTER*(*) LINE
-!
-!     Local
-!
-      INTEGER(kind=int_16) ::N, STATUS
-      CHARACTER*256 BUFFER
-      INTEGER(kind=int_wp) ::COUNT
-      INTEGER(kind=int_wp) ::STORED
-      LOGICAL       OPENED, EXISTS
-      INTEGER(kind=int_wp) ::IERR
-      INTEGER(kind=int_wp) ::LUN
-      INTEGER(kind=int_wp) ::I
+      CHARACTER*(*)        :: LINE
 
-!
-!     Any stored arguments?
-!
+      ! Local
+      INTEGER(kind=INT16)  :: N, STATUS
+      CHARACTER*256        :: BUFFER
+      INTEGER(kind=int_wp) :: COUNT
+      INTEGER(kind=int_wp) :: STORED
+      LOGICAL              :: OPENED, EXISTS
+      INTEGER(kind=int_wp) :: IERR
+      INTEGER(kind=int_wp) :: LUN
+      INTEGER(kind=int_wp) :: I
+
+      !  Any stored arguments?
       STORED = DHSTORED_NUMBER_ARGS()
-      IF ( STORED > 0 ) THEN
-          LINE = DHSTORED_ARG(IARG)
+      IF (STORED > 0) THEN
+         LINE = DHSTORED_ARG(IARG)
       ELSE
-!
-!         Call system routine
-!
-          NARG = IARGC() + 1
-          N = IARG
-          CALL GETARG( N     , BUFFER)
-!
-!         Store result
-!
-          LINE = BUFFER
+         !  Call system routine
+         NARG = IARGC() + 1
+         N = IARG
+         CALL GETARG(N, BUFFER)
+         ! Store result
+         LINE = BUFFER
 
-          !
-          ! Read from file?
-          !
-          INQUIRE( FILE = 'delwaq.options', EXIST = EXISTS )
-          IF ( EXISTS ) THEN
-              IF ( NARG .GT. 0 ) THEN
-                  COUNT = IARG - NARG
-              ELSE
-                  COUNT = IARG - 1
-              ENDIF
+         ! Read from file?
+         INQUIRE (FILE='delwaq.options', EXIST=EXISTS)
+         IF (EXISTS) THEN
+            IF (NARG .GT. 0) THEN
+               COUNT = IARG - NARG
+            ELSE
+               COUNT = IARG - 1
+            END IF
 
-              OPEN( NEWUNIT = LUN, FILE = 'delwaq.options' )
-              DO
-                  READ( LUN, '(A)', IOSTAT = IERR ) LINE
-                  IF ( IERR .NE. 0 ) THEN
-                      EXIT
-                  ENDIF
-                  IF ( LINE .NE. ' ' ) THEN
-                      IF ( COUNT .EQ. 0 ) THEN
-                          EXIT
-                      ENDIF
-                      COUNT = COUNT - 1
-                  ENDIF
-              ENDDO
-              CLOSE( LUN )
-          ENDIF
-      ENDIF
-!
+            OPEN (NEWUNIT=LUN, FILE='delwaq.options')
+            DO
+               READ (LUN, '(A)', IOSTAT=IERR) LINE
+               IF (IERR .NE. 0) THEN
+                  EXIT
+               END IF
+               IF (LINE .NE. ' ') THEN
+                  IF (COUNT .EQ. 0) THEN
+                     EXIT
+                  END IF
+                  COUNT = COUNT - 1
+               END IF
+            END DO
+            CLOSE (LUN)
+         END IF
+      END IF
+
       RETURN
-      END
-      end module m_dhgarg
+   END SUBROUTINE DHGARG
+end module m_dhgarg

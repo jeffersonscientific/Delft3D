@@ -115,7 +115,7 @@
 
       logical                               :: lfound       ! Keyword found (or not)
       logical                               :: lsegfuncheck ! Do check if segmentfunctions are correct
-      integer(kind=int_64) ::  filesize      ! Reported size of the file
+      integer(kind=INT64) ::  filesize      ! Reported size of the file
 
       logical       dtflg1 , dtflg2, dtflg3
       integer(kind=int_wp) :: chkflg , itfact
@@ -703,16 +703,16 @@
       character(len=*), intent(in)     :: filename
       integer(kind=int_wp), intent(in) ::  nodata
       integer(kind=int_wp), intent(in) ::  type
-      integer(kind=int_64), intent(out) ::  filesize
+      integer(kind=INT64), intent(out) ::  filesize
       integer(kind=int_wp), intent(out) ::  ierr
- 
+
       integer(kind=int_wp) ::  norcd, i
       integer(kind=int_wp) ::  lun
       integer(kind=int_wp) ::  time
       real(kind=real_wp), dimension(:), allocatable  ::  data
       character(14)                   :: strng
 
-      integer(kind=int_64) ::  recordsize
+      integer(kind=INT64) ::  recordsize
 
       ierr = 0
 

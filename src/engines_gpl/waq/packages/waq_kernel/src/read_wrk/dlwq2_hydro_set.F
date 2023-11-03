@@ -71,7 +71,7 @@
          integer(kind=int_wp) ::ioffset         ! offset at rewind of this file
          integer(kind=int_wp) ::itime1          ! time array1
          integer(kind=int_wp) ::itime2          ! time array2
-         integer(kind=int_64) :: position = -1   ! position in the file
+         integer(kind=INT64) :: position = -1   ! position in the file
          logical                          :: stream_access   ! Stream or sequential access?
          real(kind=real_wp) , pointer                    :: array1(:)       ! interpolation arrays
          real(kind=real_wp) , pointer                    :: array2(:)       ! interpolation arrays
