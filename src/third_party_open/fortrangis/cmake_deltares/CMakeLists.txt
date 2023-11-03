@@ -55,11 +55,11 @@ target_link_libraries(${fortrangis_library_name} INTERFACE shp)
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
+    pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(GDAL REQUIRED IMPORTED_TARGET gdal)
 
-    target_link_libraries(${fortrangis_library_name} INTERFACE proj PkgConfig::GDAL)
+    target_link_libraries(${fortrangis_library_name} INTERFACE PkgConfig::PROJ PkgConfig::GDAL)
 endif(UNIX)
 if (WIN32)
     # GDAL comes pre-compiled on Windows
