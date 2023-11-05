@@ -848,7 +848,7 @@ function addtimespacerelation_boundaries(qid, filename, filetype, method, operan
       endif
      
       if(qid == 'dischargebnd') then
-          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingfile, targetindex=targetindex, pli_ids=q_ids)
+          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingfile, targetindex=targetindex)
       else
           success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingfile, targetindex=targetindex)
       endif

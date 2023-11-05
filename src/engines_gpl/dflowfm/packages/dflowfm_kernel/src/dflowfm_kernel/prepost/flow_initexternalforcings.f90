@@ -2277,6 +2277,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                        lat_ids(numlatsg) = filename(1:L)
                    endif
                endif
+            endif
          enddo
          if (allocated(kclat)) deallocate(kclat)
       endif
