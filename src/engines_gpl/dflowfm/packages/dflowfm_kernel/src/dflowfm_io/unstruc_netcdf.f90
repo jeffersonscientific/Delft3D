@@ -17251,7 +17251,11 @@ subroutine definencvar(ncid, idq, itype, idims, n, name, desc, unit, namecoord, 
    endif
 
    if (present(fillVal)) then
-      ierr = nf90_put_att(ncid, idq, '_FillValue', fillVal)
+       if ( itype == nf90_double ) then
+          ierr = nf90_put_att(ncid, idq, '_FillValue', fillVal)
+       else if ( itype == nf90_float ) then
+          ierr = nf90_put_att(ncid, idq, '_FillValue', SNGL(fillVal))
+       end if
    endif
 
 
