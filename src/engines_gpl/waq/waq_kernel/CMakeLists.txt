@@ -5,7 +5,7 @@ include_directories(${waq_kernel_include_path})
 
 # Define library
 set(library_name waq_kernel)
-create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 # Set dependencies
 set(oss_dependencies deltares_common

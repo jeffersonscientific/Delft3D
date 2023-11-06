@@ -6,7 +6,7 @@ include_directories(${waq_io_include_path})
 # Define the library
 set(library_name waq_io)
 
-create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src)
+create_library_recursive(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} .)
 
 # Set dependencies
 set(oss_dependencies part_data_f
