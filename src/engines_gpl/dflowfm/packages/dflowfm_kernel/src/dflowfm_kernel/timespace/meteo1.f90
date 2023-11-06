@@ -47,6 +47,8 @@ module timespace_parameters
   integer, parameter :: triangulation                  =  7  ! 1 veld per tijdstap                    triang
   integer, parameter :: triangulationmagdir            =  8  ! 2 velden u,v per tijdstap 3 dim array  triang, vectormax = 2
                                                              ! op basis van windreeksen op stations mag/dir
+  integer, parameter :: bmi_api                        =  9  ! 1 veld per tijdstap                    data via BMI
+  
   integer, parameter :: node_id                        = -1  ! for a reference to a node ID
   integer, parameter :: link_id                        = -1  ! for a reference to a link ID
   integer, parameter :: poly_tim                       =  9  ! for line oriented bnd conditions, refs to uniform, fourier or harmonic
@@ -343,7 +345,7 @@ contains
      endif 
    
      if (BMI_flag .and. qid .ne. 'frictioncoefficient') then
-         filetype = 'BMI model engine'
+         filetype = bmi_api
          ja = 1
      else 
          keywrd = 'FILETYPE'
@@ -552,6 +554,7 @@ contains
 
       character (len=maxnamelen)   :: rec
       integer                      :: k
+      integer                      :: iostat !< IO status flag for read statement
    
       ns = 0
 
@@ -588,7 +591,10 @@ contains
 
       do k = 1,ns
          read(minp,'(a)',end = 999) rec
-         read(rec ,*    ,err = 777) xs(k), ys(k), id(k)
+         read(rec ,*    , iostat = iostat, err = 777) xs(k), ys(k), id(k)
+         if (iostat /= 0) then
+            read(rec ,*    , err = 777) xs(k), ys(k)
+         endif
       enddo
    
       if (present(has_more_records)) then

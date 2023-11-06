@@ -202,14 +202,12 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    id_first_wind =  huge(id_first_wind)
    id_last_wind  = -huge(id_last_wind)
 
-    allocate ( xbndz(nbndz), xbndz_left(nbndz), xbndz_right(nbndz), ybndz(nbndz), ybndz_left(nbndz), ybndz_right(nbndz), idbndz_left(nbndz), idbndz_right(nbndz), bndz_wR(nbndz), bndz_wL(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), zbndz_left_t0(nbndz), zbndz_right_t0(nbndz), zbndz_left_t1(nbndz), zbndz_right_t1(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
-    call aerr('xbndz(nbndz), xbndz_left(nbndz), xbndz_right(nbndz), ybndz(nbndz), ybndz_left(nbndz), ybndz_right(nbndz), idbndz_left(nbndz), idbndz_right(nbndz), bndz_wR(nbndz), bndz_wL(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), zbndz_left_t0(nbndz), zbndz_right_t0(nbndz), zbndz_left_t1(nbndz), zbndz_right_t1(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*(19+n4) )
    call realloc(lnxbnd, lnx-lnxi, keepExisting = .false., fill = 0)
 
    n4 = 6
    if (nbndz > 0) then                                 ! now you know the elementsets for the waterlevel bnds
-      allocate ( xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
-      call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*10 )
+      allocate ( xbndz(nbndz), xbndz_left(nbndz), xbndz_right(nbndz), ybndz(nbndz), ybndz_left(nbndz), ybndz_right(nbndz), idbndz_left(nbndz), idbndz_right(nbndz), bndz_wR(nbndz), bndz_wL(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), zbndz_left_t0(nbndz), zbndz_right_t0(nbndz), zbndz_left_t1(nbndz), zbndz_right_t1(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
+      call aerr('xbndz(nbndz), xbndz_left(nbndz), xbndz_right(nbndz), ybndz(nbndz), ybndz_left(nbndz), ybndz_right(nbndz), idbndz_left(nbndz), idbndz_right(nbndz), bndz_wR(nbndz), bndz_wL(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), zbndz_left_t0(nbndz), zbndz_right_t0(nbndz), zbndz_left_t1(nbndz), zbndz_right_t1(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*(19+n4) )
       if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
          if (allocated(zkbndz) ) deallocate (zkbndz, kbanz)
          allocate ( zkbndz(2,nbndz) ,stat= ierr    )
