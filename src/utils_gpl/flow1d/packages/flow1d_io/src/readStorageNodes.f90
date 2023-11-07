@@ -153,7 +153,7 @@ module m_readStorageNodes
             end if
                
             ! read fileType
-            call prop_get_string(node_ptr, '', 'fileType', fileType, success)
+            call prop_get(node_ptr, '', 'fileType', fileType, success)
             if ((.not. success) .or. (.not. strcmpi(fileType,'storagenodes'))) then
                write(msgbuf, '(5a)') 'Wrong block in file ''', trim(storgNodesFile), ''': [', trim(blockname), ']. Field ''fileType'' is missing or not correct. Support fileType = storagenodes. Ignoring this file'
                call warn_flush()
@@ -161,16 +161,13 @@ module m_readStorageNodes
             endif
             
             ! read useStreetStorage
-            call prop_get_logical(node_ptr, '', 'useStreetStorage', useStreetStorage, success)
+            call prop_get(node_ptr, '', 'useStreetStorage', useStreetStorage, success)
             if (.not. success) then
                useStreetStorage = .true.
                write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(storgNodesFile), ''': [', trim(blockname), ']. Field ''useStreetStorage'' is missing. Use default value useStreetStorage = true.'
                call warn_flush()
             endif
             jageneral = 1
-            cycle
-         else if (strcmpi(blockname, 'Global')) then
-            ! [Global] block was already separately read.
             cycle
          else if (strcmpi(blockname,'StorageNode')) then   ! Read [StorageNode] block
 
@@ -179,7 +176,7 @@ module m_readStorageNodes
             success = .true.
             jaxy    = 0
             ! read id
-            call prop_get_string(node_ptr, '', 'id', storgNodeId, success1)
+            call prop_get(node_ptr, '', 'id', storgNodeId, success1)
             if (.not. success1) then
                write (msgbuf, '(a,i0,a)') 'Error Reading storage node #', network%storS%Count + 1, ', id is missing.'
                call err_flush()
@@ -187,16 +184,16 @@ module m_readStorageNodes
             end if
             
             ! read name
-            call prop_get_string(node_ptr, '', 'name', storgNodeName, success1)
+            call prop_get(node_ptr, '', 'name', storgNodeName, success1)
             success = success .and. check_input(success1, storgNodeId, 'name')
 
             ! read optional node type
             node_type = ''
-            call prop_get_string(node_ptr, '', 'nodeType', node_type, success1)
+            call prop_get(node_ptr, '', 'nodeType', node_type, success1)
 
             ! read location
-            call prop_get_string(node_ptr, '', 'nodeId', nodeId, success1)
-            call prop_get_string(node_ptr, '', 'branchId', branchId, success2)
+            call prop_get(node_ptr, '', 'nodeId', nodeId, success1)
+            call prop_get(node_ptr, '', 'branchId', branchId, success2)
             if (success1 .and. success2) then
                ! The input can contain only a nodeId or a branchId, chainage specification.
                write(msgbuf, '(3a)') 'Inconsistent block in: [', trim(storgNodeId),  &
@@ -218,7 +215,7 @@ module m_readStorageNodes
                   cycle
                endif
                
-               call prop_get_double(node_ptr, '', 'chainage', chainage, success1)
+               call prop_get(node_ptr, '', 'chainage', chainage, success1)
                success = check_input(success1, trim(storgNodeId), 'chainage')
                if (.not. success) then 
                   cycle
@@ -226,9 +223,9 @@ module m_readStorageNodes
 
             else
                ! read x-, y-coordinates
-               call prop_get_double(node_ptr, '', 'x', x, success1)
+               call prop_get(node_ptr, '', 'x', x, success1)
                success = success .and. success1
-               call prop_get_double(node_ptr, '', 'y', y, success1)
+               call prop_get(node_ptr, '', 'y', y, success1)
                success = success .and. success1
                if (.not. success) then
                   write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(storgNodesFile), ''': [', trim(blockname), ']. Either "nodeId", "branchId, chainage" or "x, y" must be specified.'
@@ -240,14 +237,14 @@ module m_readStorageNodes
             end if
             
             ! read useTable
-            call prop_get_logical(node_ptr, '', 'useTable', useTable1, success1)
+            call prop_get(node_ptr, '', 'useTable', useTable1, success1)
             success = success .and. check_input(success1, storgNodeId, 'useTable')
             
             if (.not. useTable1) then
                numLevels = 1
             else
                ! read numLevels
-               call prop_get_integer(node_ptr, '', 'numLevels', numLevels, success1)
+               call prop_get(node_ptr, '', 'numLevels', numLevels, success1)
                success = success .and. check_input(success1, storgNodeId, 'numLevels')
             end if
             
@@ -271,19 +268,19 @@ module m_readStorageNodes
                sInterpolate = 'block'
                call interpolateStringToInteger(sInterpolate, interpol)
                ! read bedLevel
-               call prop_get_double(node_ptr, '', 'bedLevel', storageLevels(1), success1)
+               call prop_get(node_ptr, '', 'bedLevel', storageLevels(1), success1)
                success = success .and. check_input(success1, storgNodeId, 'bedLevel', storageLevels(1))
                
                ! read area
-               call prop_get_double(node_ptr, '', 'area', storageAreas(1), success1)
+               call prop_get(node_ptr, '', 'area', storageAreas(1), success1)
                success = success .and. check_input(success1, storgNodeId, 'area')   
                
                ! read streetLevel
-               call prop_get_double(node_ptr, '', 'streetLevel', streetLevel(1), success1)
+               call prop_get(node_ptr, '', 'streetLevel', streetLevel(1), success1)
                success = success .and. check_input(success1, storgNodeId, 'streetLevel')
                
                ! read storageType
-               call prop_get_string(node_ptr, '', 'storageType', sStorageType, success1)
+               call prop_get(node_ptr, '', 'storageType', sStorageType, success1)
                if (.not. success1) then 
                   sStorageType = 'reservoir'
                end if
@@ -297,7 +294,7 @@ module m_readStorageNodes
                ! read streetStorageArea
                if (useStreetStorage) then
                   if (strcmpi(sStorageType, 'reservoir')) then
-                     call prop_get_double(node_ptr, '', 'streetStorageArea', streetStorageArea(1), success1)
+                     call prop_get(node_ptr, '', 'streetStorageArea', streetStorageArea(1), success1)
                      success = success .and. check_input(success1, storgNodeId, 'streetStorageArea')
                   else if (strcmpi(sStorageType, 'closed')) then
                      streetStorageArea(1) = slot_area
@@ -305,15 +302,15 @@ module m_readStorageNodes
                end if
             else
                ! read levels
-               call prop_get_doubles(node_ptr, '', 'levels', storageLevels, numLevels, success1)
+               call prop_get(node_ptr, '', 'levels', storageLevels, numLevels, success1)
                success = success .and. check_input(success1, storgNodeId, 'levels')
                
                ! read storageArea
-               call prop_get_doubles(node_ptr, '', 'storageArea', storageAreas, numLevels, success1)
+               call prop_get(node_ptr, '', 'storageArea', storageAreas, numLevels, success1)
                success = success .and. check_input(success1, storgNodeId, 'storageArea')
                
                ! read interpolate
-               call prop_get_string(node_ptr, '', 'interpolate', sInterpolate, success1)
+               call prop_get(node_ptr, '', 'interpolate', sInterpolate, success1)
                if (.not. success1) then
                   sInterpolate = 'linear'
                   write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(storgNodesFile), ''': [', trim(blockname), ']. Field ''interpolate'' is missing. Use default value interpolate = linear.'
@@ -334,66 +331,66 @@ module m_readStorageNodes
             if (storageAreas(1) <= 0d0) then
                call setMessage(LEVEL_ERROR, 'Area at Bed Level for storage node ' // trim(storgNodeId) // ' <= 0.0. Please enter a positive value')
             endif
-         end if
-                     
-         if (success) then ! If reading variables are successful, then store the obtained info. to the corresponding places
-            network%storS%Count = network%storS%Count + 1
-            if (network%storS%Count > network%storS%Size) then
-               call realloc(network%storS)
-            endif
+
+            if (success) then ! If reading variables are successful, then store the obtained info. to the corresponding places
+               network%storS%Count = network%storS%Count + 1
+               if (network%storS%Count > network%storS%Size) then
+                  call realloc(network%storS)
+               endif
       
-            pSto => network%storS%stor(network%storS%Count)
-            nullify(pSto%storage_area)
-            nullify(pSto%street_area)
+               pSto => network%storS%stor(network%storS%Count)
+               nullify(pSto%storage_area)
+               nullify(pSto%street_area)
 
-            pSto%id           = storgNodeId
-            pSto%name         = storgNodeName
-            pSto%node_index   = -1
-            pSto%branch_index = -1
-            if (nodeIdx > 0) then
-               pSto%node_id    = nodeId
-               pSto%node_index = nodeIdx
-            else if (branchIdx > 0) then
-               psto%branch_index = branchIdx
-               pSto%chainage = chainage
-            else
-               network%storS%Count_xy = network%storS%Count_xy + 1
-               pSto%x         = x
-               pSto%y         = y
-               pSto%node_index = -1 ! node_index will be computed later when calling subroutine set_node_numbers_for_storage_nodes 
+               pSto%id           = storgNodeId
+               pSto%name         = storgNodeName
+               pSto%node_index   = -1
+               pSto%branch_index = -1
+               if (nodeIdx > 0) then
+                  pSto%node_id    = nodeId
+                  pSto%node_index = nodeIdx
+               else if (branchIdx > 0) then
+                  psto%branch_index = branchIdx
+                  pSto%chainage = chainage
+               else
+                  network%storS%Count_xy = network%storS%Count_xy + 1
+                  pSto%x         = x
+                  pSto%y         = y
+                  pSto%node_index = -1 ! node_index will be computed later when calling subroutine set_node_numbers_for_storage_nodes 
+               end if
+               pSto%use_street_storage = useStreetStorage
+               pSto%use_table          = useTable1
+            
+            
+               ! setTable
+               call setTable(pSto%storage_area, interpol, storageLevels, storageAreas, numLevels)
+               if (.not. useTable1) then
+                  pSto%storage_type = storageType
+                  if (storageType == nt_Closed) then
+                     network%storS%Count_closed = network%storS%Count_closed + 1
+                  end if
+                  if (useStreetStorage) then
+                     call setTable(pSto%street_area, interpol, streetLevel, streetStorageArea, numLevels)
+                  end if
+               else
+                  pSto%storage_type = nt_Reservoir
+               end if               
+            endif
+
+            if (strcmpi(node_type, 'compartment')) then
+               ! Set manhole loss coefficients
+
+               ! Each storage node starts with default values coming from the [Global] values:
+               pSto%angle_loss     => angle_loss_global
+               pSto%entrance_loss  =  entrance_loss_global
+               pSto%exit_loss      =  exit_loss_global
+               pSto%expansion_loss =  expansion_loss_global
+               pSto%bend_loss      =  bend_loss_global
+
+               ! Override the coefficients that are set for this particular storage node.
+               call read_all_loss_values(node_ptr, '', 'StorageNode id = '//trim(pSto%id), pSto%angle_loss, &
+                  pSto%entrance_loss, pSto%exit_loss, pSto%expansion_loss, pSto%bend_loss, success)
             end if
-            pSto%use_street_storage = useStreetStorage
-            pSto%use_table          = useTable1
-            
-            
-            ! setTable
-            call setTable(pSto%storage_area, interpol, storageLevels, storageAreas, numLevels)
-            if (.not. useTable1) then
-               pSto%storage_type = storageType
-               if (storageType == nt_Closed) then
-                  network%storS%Count_closed = network%storS%Count_closed + 1
-               end if
-               if (useStreetStorage) then
-                  call setTable(pSto%street_area, interpol, streetLevel, streetStorageArea, numLevels)
-               end if
-            else
-               pSto%storage_type = nt_Reservoir
-            end if               
-         endif
-
-         if (strcmpi(node_type, 'compartment')) then
-            ! Set manhole loss coefficients
-
-            ! Each storage node starts with default values coming from the [Global] values:
-            pSto%angle_loss     => angle_loss_global
-            pSto%entrance_loss  =  entrance_loss_global
-            pSto%exit_loss      =  exit_loss_global
-            pSto%expansion_loss =  expansion_loss_global
-            pSto%bend_loss      =  bend_loss_global
-
-            ! Override the coefficients that are set for this particular storage node.
-            call read_all_loss_values(node_ptr, '', 'StorageNode id = '//trim(pSto%id), pSto%angle_loss, &
-               pSto%entrance_loss, pSto%exit_loss, pSto%expansion_loss, pSto%bend_loss, success)
          end if
          
       end do
@@ -417,10 +414,11 @@ module m_readStorageNodes
       !> Helper subroutine to read all loss coefficients (angle loss table +
       !! scalar coefficients), either from [Global] data, or for a specific StorageNode.
       subroutine read_all_loss_values(tree_ptr, chapter_name, section_string, angle_loss, entrance_loss, exit_loss, expansion_loss, bend_loss, success)
-         type(tree_data),               pointer       :: tree_ptr       !< The input tree to read from.
-         character(len=*),              intent(in)    :: chapter_name   !< Which chapter to read from (use 'Global' for global reading, or '' when tree_ptr already contains a single specific storage node).
-         character(len=*),              intent(in)    :: section_string !< Character string used only in error messages, describing in which input section faulty input was read.
-         type(t_table),                 pointer       :: angle_loss     !< Table with angle-loss coefficient values, will be pointed to newly allocated memory of correct length.
+         type(tree_data), pointer     , intent(in   ) :: tree_ptr       !< The input tree to read from.
+         character(len=*),              intent(in   ) :: chapter_name   !< Which chapter to read from (use 'Global' for global reading, or '' when tree_ptr already contains a single specific storage node).
+         character(len=*),              intent(in   ) :: section_string !< Character string used only in error messages, describing in which input section faulty input was read.
+         type(t_table), pointer       , intent(inout) :: angle_loss     !< Table with angle-loss coefficient values, will be pointed to newly allocated memory of correct length,
+                                                                        !< *if* new table data has been read, otherwise the original pointer is left unchanged.
                                                                         !< Any table data originally pointed to will intentionally be left intact, as that may be the [Global] table.
          double precision             , intent(inout) :: entrance_loss  !< Value for the entrance loss coefficient
          double precision             , intent(inout) :: exit_loss      !< Value for the exit loss coefficient
@@ -446,19 +444,19 @@ module m_readStorageNodes
 
             call prop_get(tree_ptr, chapter_name, 'angles', new_angle_loss%x, num_angles, success)
             if (.not. success) then
-               write(msgbuf, '(a,a,a,a,a,i0,a)') 'Incorrect input for angles in ''', trim(storgNodesFile), ''', ', trim(section_string), '. Expecting ', num_angles, ' values.'
+               write(msgbuf, '(5a,i0,a)') 'Incorrect input for angles in ''', trim(storgNodesFile), ''', ', trim(section_string), '. Expecting ', num_angles, ' values.'
                call err_flush()
                goto 888
             endif
             if (.not. is_monotonically_increasing(new_angle_loss%x, num_angles)) then
-               write(msgbuf, '(a)') 'Incorrect input for [Global] angles in '''//trim(storgNodesFile)//'. Angles should be monotonically increasing.'
+               write(msgbuf, '(5a)') 'Incorrect input for angles in ''', trim(storgNodesFile), ''', ', trim(section_string), '. Angles should be monotonically increasing.'
                call err_flush()
                goto 888
             endif
 
             call prop_get(tree_ptr, chapter_name, 'angleLossCoefficient', new_angle_loss%y, num_angles, success)
             if (.not. success) then
-               write(msgbuf, '(a,a,a,a,a,i0,a)') 'Incorrect input for angleLossCoefficient in ''', trim(storgNodesFile), ''', ', trim(section_string), '. Expecting ', num_angles, ' values.'
+               write(msgbuf, '(5a,i0,a)') 'Incorrect input for angleLossCoefficient in ''', trim(storgNodesFile), ''', ', trim(section_string), '. Expecting ', num_angles, ' values.'
                call err_flush()
                goto 888
             endif
