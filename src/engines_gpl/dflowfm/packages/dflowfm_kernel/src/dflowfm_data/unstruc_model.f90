@@ -1,4 +1,4 @@
-!----lAGPL --------------------------------------------------------------------
+!----AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2023.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
@@ -25,8 +25,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-! 
+!
 ! 
 
 !> Manages the unstruc model definition for the active problem.
@@ -274,7 +273,6 @@ implicit none
     integer                                   :: md_mapformat         !< map file output format (one of IFORMAT_*)
     integer                                   :: md_unc_conv          !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
     integer                                   :: md_ncformat          !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-    integer                                   :: md_nc_map_precision  !< NetCDF data precision in map files (0: double, 1: float)
     integer                                   :: md_fou_step          !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
     integer, private                          :: ifixedweirscheme_input  !< input value of ifixedweirscheme in mdu file
@@ -739,6 +737,7 @@ subroutine readMDUFile(filename, istat)
     use m_waves, only: hwavuni, twavuni, phiwavuni
     use m_sedtrails_data, only: sedtrails_analysis
     use unstruc_display,  only: jaGUI 
+    use m_map_his_precision
 
     character(*), intent(in)  :: filename !< Name of file to be read (the MDU file must be in current working directory).
     integer,      intent(out) :: istat    !< Return status (0=success)
@@ -1112,8 +1111,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'jposhchk'       , jposhchk)
     call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme'  , ifixedweirscheme, success)
     ifixedweirscheme_input = ifixedweirscheme
-    call prop_get_integer(md_ptr, 'numerics', 'FixedweirScheme1d2d'  , ifixedweirscheme1D2D, success)
-    call prop_get_double(md_ptr, 'numerics', 'Fixedweir1d2d_dx'     , lat_fix_weir_dx )
+    call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme1d2d'  , ifixedweirscheme1D2D, success)
+    call prop_get_double(md_ptr, 'numerics', 'FixedWeir1d2d_dx'     , lat_fix_weir_dx )
     call prop_get_double( md_ptr, 'numerics', 'FixedWeirContraction' , Fixedweircontraction, success)
 
     call prop_get_integer(md_ptr, 'numerics', 'Fixedweirfrictscheme'  , ifxedweirfrictscheme)
@@ -1526,8 +1525,10 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'wind' , 'PavIni'                   , PavIni )
     call prop_get_double (md_ptr, 'wind' , 'PavBnd'                   , PavBnd )
     call prop_get_integer(md_ptr, 'wind' , 'Stresstowind'             , jastresstowind )
-    call prop_get_integer(md_ptr, 'wind' , 'varyingAirdensity'        , ja_varying_airdensity)
-   
+    call prop_get_integer(md_ptr, 'wind' , 'Wind_eachstep'            , update_wind_stress_each_time_step )
+    call prop_get_integer(md_ptr, 'wind' , 'computedAirdensity'       , ja_varying_airdensity)
+
+
     call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr'              , jawave)
     call prop_get_integer(md_ptr, 'waves', 'Waveforcing'              , waveforcing)
     if (jawave /= 7 .and. waveforcing /= 0) then
@@ -1824,6 +1825,8 @@ subroutine readMDUFile(filename, istat)
     call unc_set_ncformat(md_ncformat)
     md_nc_map_precision = 0
     call prop_get_integer(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+    md_nc_his_precision = 0
+    call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
     call prop_get_integer(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
@@ -2704,6 +2707,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     use m_xbeach_data, only: swave
     use unstruc_channel_flow
     use m_sedtrails_data
+    use m_map_his_precision
 
     integer, intent(in)  :: mout  !< File pointer where to write to.
     logical, intent(in)  :: writeall !< Write all fields, including default values
@@ -3001,7 +3005,7 @@ endif
     endif
     
     call prop_set(prop_ptr, 'geometry', 'Dpuopt', jadpuopt, 'Bed level interpolation at velocity point in case of tile approach bed level: 1 = max (default); 2 = mean' )    
-    
+
     call prop_set(prop_ptr, 'geometry', 'ExtrBl', jaextrapbl, 'Extrapolation of bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate.' )    
     
     ! 1D Volume tables
@@ -3367,10 +3371,10 @@ endif
     endif
 
     if (writeall .or. epsmaxlev .ne. 1d-8) then
-    call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
     endif
     if (writeall .or. epsmaxlevm .ne. 1d-8) then
-    call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
     endif
 
     if (Oceaneddyamp > 0d0) then 
@@ -3605,8 +3609,11 @@ endif
     if (writeall .or. jastresstowind == 1) then
        call prop_set(prop_ptr, 'wind', 'Stresstowind', jastresstowind, 'Convert EC windstress to wind yes/no (),  1/0, default 0')
     endif
+    if (writeall .or. update_wind_stress_each_time_step > 0) then
+       call prop_set(prop_ptr, 'wind', 'Wind_eachstep',     update_wind_stress_each_time_step, '1=wind (and air pressure) each computational timestep, 0=wind (and air pressure) each usertimestep')
+    endif
     if (writeall .or. ja_varying_airdensity == 1) then
-       call prop_set(prop_ptr, 'wind', 'varyingAirdensity', ja_varying_airdensity, 'Compute air density yes/no (),  1/0, default 0')
+       call prop_set(prop_ptr, 'wind', 'computedAirdensity', ja_varying_airdensity, 'Compute air density yes/no (),  1/0, default 0')
     endif
    
     if (writeall .or. jagrw > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT) then
@@ -3875,8 +3882,9 @@ endif
 
     call prop_set(prop_ptr, 'output', 'NcFormat',  md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 
-    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: float)')
-    
+    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: single)')
+    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision',  md_nc_his_precision, 'Precision for NetCDF data in his files (0: double, 1: single)')
+
     if (writeall .or. unc_nounlimited /= 0) then
        call prop_set(prop_ptr, 'output', 'NcNoUnlimited',  unc_nounlimited, 'Write full-length time-dimension instead of unlimited dimension (1: yes, 0: no). (Might require NcFormat=4.)')
     end if
@@ -4486,7 +4494,4 @@ logical function is_not_multiple(time_interval, user_time_step)
 
 end function is_not_multiple
 
-   end module unstruc_model
-
-
-
+end module unstruc_model
