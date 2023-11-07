@@ -673,7 +673,7 @@ subroutine split_key( key_name, connection, newidx )
     type(connection_data)                                           :: new_connection
     character(len=len(key_name))                                    :: copy_key, component, item_name, subst_param
     integer                                                         :: i, k
-    integer                                                         :: iseg, isys
+    integer                                                         :: iseg, isys, monidx, conidx
     integer                                                         :: ierr
     logical                                                         :: error
 
@@ -819,10 +819,48 @@ selection: &
 
             case( 'OBSRV' )
                 new_connection%category = category_monitorpoint
-                ! TODO - observation points - index would be index in the list, name is also allowed
+                ! Observation points - index would be index in the list, name is also allowed
+                ! Index would be index in the list, name is also allowed
+                !
+                read( item_name, *, iostat = ierr ) monidx
+                if ( ierr == 0 ) then
+                    if ( monidx < 1 .or. monidx > size(monitor_name) ) then
+                        newidx = 0
+                        exit selection
+                    endif
+                else
+                    call zoekns( item_name, size(monitor_name), monitor_name, len(monitor_name), monidx )
+
+                    if ( monidx < 1 ) then
+                        newidx = 0
+                        exit selection
+                    endif
+                endif
+
+                iseg = monitor_cell(monidx)
+                
+                call zoekns( subst_param, notot, substance_name, 20, isys )
+                if ( isys <= 0 ) then
+                    newidx = 0
+                    exit selection
+                endif
+                
+                new_connection%buffer_idx = iconc-1 + isys + (iseg-1)*notot  ! a(iconc:)
+
             case( 'CONST' )
                 new_connection%category = category_procparam
-                ! TODO - constant (timeseries) or parameter (segment function)
+                ! Constant (timeseries) or parameter (segment function)
+                ! Index would be index in the list, name is also allowed
+                !
+
+                    call zoekns( item_name, size(procparam_const), procparam_const, len(procparam_const), conidx )   ! procparam_const is the name of constants.
+
+                    if ( conidx < 1 ) then
+                        newidx = 0
+                        exit selection
+                    endif
+                new_connection%buffer_idx = icons-1+conidx
+
             case( 'HYDRO' )
                 new_connection%category = category_hydrodynamics
                 ! TODO - get arrays like volume etc.
