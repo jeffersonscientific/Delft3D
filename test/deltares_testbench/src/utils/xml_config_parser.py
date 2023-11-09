@@ -11,6 +11,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from lxml import etree
 
 from src.config.credentials import Credentials
+from src.config.dependency import Dependency
 from src.config.file_check import FileCheck
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
@@ -271,11 +272,6 @@ class XmlConfigParser(object):
         ):
             p.log_output_to_file = True
         if (
-            "storeOutput" in element
-            and str(element["storeOutput"][0]).lower() == "true"
-        ):
-            p.store_output = True
-        if (
             "addSearchPaths" in element
             and str(element["addSearchPaths"][0]).lower() == "true"
         ):
@@ -442,6 +438,10 @@ class XmlConfigParser(object):
                 test_case.program_configs = []
 
         test_case.name = str(element["name"][0])
+        if "version" in element:
+            test_case.version = str(element["version"][0])
+        else:
+            test_case.version = ""
 
         if "ignore" in element:
             if str(element["ignore"][0]).lower() == "true":
@@ -464,6 +464,14 @@ class XmlConfigParser(object):
                 test_case.path = newpath
             else:
                 test_case.path = str(element["path"][0]["txt"])
+
+        if "dependency" in element:
+            tag = element["dependency"][0]
+            local_dir = str(tag["local_dir"][0])
+            cases_path = str(tag["txt"])
+
+            test_case.dependency = Dependency(local_dir, cases_path)
+
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
             for el in element["maxRunTime"]:

@@ -88,7 +88,11 @@ if [%8] EQU [] (
     set "mpi_redist_dir=!mpi_redist_dir:/=\!"
 )
 
-
+IF defined IFORT_COMPILER23 (
+    set petsc_dir="!checkout_src_root!\third_party_open\petsc\petsc-3.19.4\lib\x64\Release-oneAPI\*.dll"
+) else (
+    set petsc_dir="!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release-oneAPI\*.dll"
+)
 
 echo install_dir         : !install_dir!
 echo build_dir           : !build_dir!
@@ -99,6 +103,7 @@ echo compiler_redist_dir : !compiler_redist_dir!
 echo mkl_redist_dir      : !mkl_redist_dir!
 echo mpi_redist_dir      : !mpi_redist_dir!
 echo oss_mpi             : !oss_mpi!
+echo petsc_dir           : !petsc_dir!
 
 
 
@@ -138,6 +143,38 @@ rem =============================================================
     )
 goto :endproc
 
+
+rem =============================================================
+rem === copyFileWithPrefix takes three arguments:             ===
+rem === the name of the file to
+rem === copy to the destiny directory and its prefix          ===
+rem ===                                                       ===
+rem === NOTE: errors will be reported and the script will     ===
+rem === with an error code after executing the rest of its    ===
+rem === statements                                            ===
+rem =============================================================
+:copyFileWithPrefix
+    set fullPath=%~1
+    set prefix=%~2
+    set dest=%~3
+
+    rem Extract the filename and the path
+    for %%F in ("%fullPath%") do (
+        set "filePath=%%~dpF"
+    )
+
+    rem
+    rem "echo f |" is (only) needed when dest does not exist
+    rem and does not harm in other cases
+    rem Iterate through the matching files and copy them individually
+    rem
+    for %%G in ("%fullPath%") do (
+        set "fileName=%%~nG"
+        set "fileExtension=%%~xG"
+        set "newName=%prefix%_%%~nG%%~xG"
+        echo f | xcopy "%%G" "%dest%\!newName!" /F /Y
+    )
+goto :endproc
 
 
 rem ===================================================================
@@ -227,9 +264,8 @@ rem ===============
         rem Note the awkward usage of !-characters
         call :copyFile !!localstring! !dest_bin!!
         if "!argument!" == "withPetsc" (
-            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"               !dest_bin!
-            rem is needed for dimr nuget package? please check
-            call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"               !dest_share!
+            call :copyFile "!petsc_dir!"               !dest_bin!
+            call :copyFile "!petsc_dir!"               !dest_share!
         )
     )
 goto :endproc
@@ -260,14 +296,13 @@ rem ===============
         call :copyFile !!localstring! !dest_share!
         set localstring="!mkl_redist_dir!mkl_intel_thread*.dll"
         call :copyFile !!localstring! !dest_bin!
-        rem is needed for dimr nuget package?  please check
         call :copyFile !!localstring! !dest_share!
+        set localstring="!mkl_redist_dir!mkl_sequential*.dll"
+        call :copyFile !!localstring! !dest_bin!
         if "!argument!" == "withPetsc" (
             rem if 'mkl_redist_dir' contains 'oneAPI', use the version of petsc built with oneAPI Fortran
-            if not "x!mkl_redist_dir:oneAPI=!"=="x!mkl_redist_dir!" (
-                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release-oneAPI\*.dll"             !dest_bin!
-            ) else (
-                call :copyFile "!checkout_src_root!\third_party_open\petsc\petsc-3.10.2\lib\x64\Release\*.dll"             !dest_bin!
+
+            call :copyFile "!petsc_dir!"             !dest_bin!
             )
         )
     )
@@ -375,7 +410,7 @@ rem =============================================================
         echo "Release postbuild"
 
         set dest_bin="!install_dir!\x64\Release\dwaq\bin"
-        set dest_default="!install_dir!\x64\Release\dwaq\default"
+        set dest_default="!install_dir!\x64\Release\dwaq\resources"
         set dest_scripts="!install_dir!\x64\Release\dwaq\scripts"
         set dest_plugins="!install_dir!\x64\Release\plugins\bin"
         set dest_share="!install_dir!\x64\Release\share\bin"
@@ -394,11 +429,11 @@ rem =============================================================
     set destination_csv=%~2
     set destination_sub="!destination!\subFiles"
 
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\default\bloom.spe"                                             !destination!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\default\proc_def.dat"                                          !destination!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\default\proc_def.def"                                          !destination!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\default\csvFiles\*"                                            !destination_csv!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\default\subFiles\*"                                            !destination_sub!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\process_lib\bloom.spe"                                   !destination!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\process_lib\proc_def.dat"                                !destination!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\process_lib\proc_def.def"                                !destination!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\process_lib\csvFiles\*"                                  !destination_csv!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\process_lib\subFiles\*"                                  !destination_sub!
 
 goto :endproc
 
@@ -469,7 +504,9 @@ rem =============================================================
     rem copy intel dlls
     call :copyCompilerRedist noPetsc
 
+
 goto :endproc
+
 
 
 
@@ -938,29 +975,29 @@ rem === POST_BUILD_COSUMO_BMI
 rem ==========================
 :cosumo_bmi
     echo "postbuild cosumo_bmi . . ."
-    
+
     if "%configuration%" == "Debug" (
-    
+
         echo "Debug postbuild"
         set dest_bin="%install_dir%\x64\Debug"
 
         call :makeDir !dest_bin!
         call :copyFile "!build_dir!\cosumo_bmi\!configuration!\cosumo_bmi.*"                               !dest_bin!
     )
-    
-    if "%configuration%" == "Release" ( 
-    
+
+    if "%configuration%" == "Release" (
+
         echo "Release postbuild"
 
         set dest_bin="!install_dir!\x64\Release\dflowfm\bin"
         set dest_scripts="!install_dir!\x64\Release\dflowfm\scripts"
         set dest_share="!install_dir!\x64\Release\share\bin"
 
-        call :makeDir !dest_bin! 
-        call :makeDir !dest_scripts! 
+        call :makeDir !dest_bin!
+        call :makeDir !dest_scripts!
         call :copyFile "!build_dir!\cosumo_bmi\!configuration!\cosumo_bmi.*"                               !dest_bin!
     )
-    
+
 goto :endproc
 
 
@@ -1057,8 +1094,10 @@ rem ===================================
     call :copyDwaqDependentRuntimeLibraries                                                                             !dest_share!
 
     rem copy binaries and dll
-    call :copyFile "!build_dir!\waq_plugin_wasteload\!configuration!\waq_plugin_wasteload.*"                            !dest_bin!
+    call :copyFile "!build_dir!\waq_plugin_wasteload\!configuration!\waq_plugin_wasteload.*"                               !dest_bin!
 
+    rem profiling information
+    call :copyFileWithPrefix "!build_dir!\waq_plugin_wasteload\PGOPTI.*" waq_plugin_wasteload      !dest_bin!
 goto :endproc
 
 
@@ -1081,8 +1120,8 @@ rem ==========================
 
     if "%configuration%" == "Release" (
 
-        set dest_csvFiles="!install_dir!\x64\Release\dwaq\default\csvFiles"
-        set dest_subFiles="!install_dir!\x64\Release\dwaq\default\subFiles"
+        set dest_csvFiles="!install_dir!\x64\Release\dwaq\resources\csvFiles"
+        set dest_subFiles="!install_dir!\x64\Release\dwaq\resources\subFiles"
         set dest_default_backup="!install_dir!\x64\Release\dwaq\installation_default"
         set dest_csvFiles_backup="!install_dir!\x64\Release\dwaq\installation_default\csvFiles"
 
@@ -1094,6 +1133,9 @@ rem ==========================
         rem copy waq process files
         call :copyWaqProcessFiles !dest_default! !dest_csvFiles!
         call :copyWaqProcessFiles !dest_default_backup! !dest_csvFiles_backup!
+
+        rem profiling information
+        call :copyFileWithPrefix "!build_dir!\delwaq_lib\PGOPTI.*" delwaq_lib      !dest_bin!
     )
 goto :endproc
 
@@ -1117,8 +1159,11 @@ rem ==========================
     call :copyFile "!build_dir!\waq_plugin_wasteload\!configuration!\waq_plugin_wasteload.*"      !dest_bin!
 
     if "%configuration%" == "Release" (
-        call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\run_delwaq.bat"               !dest_scripts!
+        call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\run_delwaq.bat"     !dest_scripts!
     )
+
+    rem profiling information
+    call :copyFileWithPrefix "!build_dir!\delwaq1\PGOPTI.*" delwaq1      !dest_bin!
 
 goto :endproc
 
@@ -1142,8 +1187,11 @@ rem ==========================
     call :copyFile "!build_dir!\waq_plugin_wasteload\!configuration!\waq_plugin_wasteload.*"        !dest_bin!
 
     if "%configuration%" == "Release" (
-        call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\run_delwaq.bat"                 !dest_scripts!
+        call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\run_delwaq.bat"       !dest_scripts!
     )
+
+    rem profiling information
+    call :copyFileWithPrefix "!build_dir!\delwaq2\PGOPTI.*" delwaq2      !dest_bin!
 goto :endproc
 
 
@@ -1164,9 +1212,11 @@ rem ==========================
     call :copyFile "!build_dir!\waqpb_export\!configuration!\waqpb_export.*"                        !dest_bin!
 
     rem copy run scripts
-    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\scripts\run_waqpb_export.bat"               !dest_scripts!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\export_procdef_csvfiles.bat"        !dest_scripts!
+    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\resources\scripts\run_waqpb_export.bat"               !dest_scripts!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\export_procdef_csvfiles.bat"        !dest_scripts!
 
+    rem profiling information
+    call :copyFileWithPrefix "!build_dir!\waqpb_export\PGOPTI.*" waqpb_export      !dest_bin!
 goto :endproc
 
 
@@ -1187,9 +1237,11 @@ rem ==========================
     call :copyFile "!build_dir!\waqpb_import\!configuration!\waqpb_import.*"              !dest_bin!
 
     rem copy run scripts
-    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\scripts\run_waqpb_import.bat"        !dest_scripts!
-    call :copyFile "!checkout_src_root!\engines_gpl\waq\scripts\import_procesasc_changes.bat"            !dest_scripts!
+    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\resources\scripts\run_waqpb_import.bat"        !dest_scripts!
+    call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\import_procesasc_changes.bat"            !dest_scripts!
 
+    rem profiling information
+    call :copyFileWithPrefix "!build_dir!\waqpb_import\PGOPTI.*" waqpb_import      !dest_bin!
 goto :endproc
 
 
@@ -1253,8 +1305,11 @@ rem ==========================
         call :copyDwaqDependentRuntimeLibraries                                                 !dest_share!
         call :copyFile "!build_dir!\delpar\!configuration!\delpar.exe"                          !dest_bin!
 
-        call :copyFile "!checkout_src_root!\engines_gpl\part\scripts\run_dpart.bat"             !dest_scripts!
+        call :copyFile "!checkout_src_root!\engines_gpl\part\resources\scripts\run_dpart.bat"    !dest_scripts!
     )
+
+    rem profiling information
+    call :copyFileWithPrefix "!build_dir!\delpar\PGOPTI.*" delpar      !dest_bin!
 
 goto :endproc
 
@@ -1276,7 +1331,7 @@ rem ==========================
     call :copyFile "!build_dir!\waqmerge\!configuration!\waqmerge.exe"                          !dest_bin!
 
     if "%configuration%" == "Release" (
-        call :copyFile "!checkout_src_root!\tools_gpl\waqmerge\scripts\run_waqmerge.bat"        !dest_scripts!
+        call :copyFile "!checkout_src_root!\tools_gpl\waq_tools\waqmerge\resources\scripts\run_waqmerge.bat"        !dest_scripts!
     )
 goto :endproc
 
@@ -1298,7 +1353,7 @@ rem ==========================
     call :copyFile "!build_dir!\ddcouple\!configuration!\ddcouple.exe"                            !dest_bin!
 
     if "%configuration%" == "Release" (
-        call :copyFile "!checkout_src_root!\tools_gpl\ddcouple\scripts\run_ddcouple.bat"          !dest_scripts!
+        call :copyFile "!checkout_src_root!\tools_gpl\waq_tools\ddcouple\resources\scripts\run_ddcouple.bat"          !dest_scripts!
     )
 goto :endproc
 
@@ -1320,8 +1375,8 @@ rem ==========================
     call :copyFile "!build_dir!\agrhyd\!configuration!\agrhyd.exe"                                !dest_bin!
 
     if "%configuration%" == "Release" (
-        call :copyFile "!checkout_src_root!\tools_gpl\agrhyd\default\agrhyd.ini"                  !dest_default!
-        call :copyFile "!checkout_src_root!\tools_gpl\agrhyd\scripts\run_agrhyd.bat"              !dest_scripts!
+        call :copyFile "!checkout_src_root!\tools_gpl\waq_tools\agrhyd\resources\default\agrhyd.ini"                  !dest_default!
+        call :copyFile "!checkout_src_root!\tools_gpl\waq_tools\agrhyd\resources\scripts\run_agrhyd.bat"              !dest_scripts!
     )
 
 goto :endproc
@@ -1344,7 +1399,7 @@ rem ==========================
     call :copyFile "!build_dir!\maptonetcdf\!configuration!\maptonetcdf.exe"                      !dest_bin!
 
     if "%configuration%" == "Release" (
-        call :copyFile "!checkout_src_root!\tools_gpl\maptonetcdf\scripts\run_maptonetcdf.bat"    !dest_scripts!
+        call :copyFile "!checkout_src_root!\tools_gpl\waq_tools\maptonetcdf\resources\scripts\run_maptonetcdf.bat"    !dest_scripts!
     )
 
 goto :endproc
@@ -1822,39 +1877,39 @@ rem ==========================
     echo "postbuild nesthd1. . ."
 
     if "%configuration%" == "Debug" (
-    
+
         echo "Debug postbuild"
         set dest_bin="!install_dir!\x64\Debug"
         set dest_share="!install_dir!\x64\Debug"
-        
+
         call :makeDir !dest_bin!
         call :makeDir !dest_share!
         call :copyNestHD1DependentRuntimeLibraries    !dest_bin!
-        
-        rem copy binaries and dll 
+
+        rem copy binaries and dll
         call :copyFile "!build_dir!\nesthd1\!configuration!\nesthd1.*"    !dest_bin!
     )
-    
-    if "%configuration%" == "Release" ( 
-    
+
+    if "%configuration%" == "Release" (
+
         echo "Release postbuild"
 
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
         set dest_share="!install_dir!\x64\Release\share\bin"
-        
+
         call :makeDir !dest_bin!
         call :makeDir !dest_share!
-        
+
         call :copyNestHD1DependentRuntimeLibraries    !dest_bin!
-        
+
         rem Temporarily rename dest_bin to share_bin to copy libraries there as well
         set dest_bin=!dest_share!
         call :copyNestHD1DependentRuntimeLibraries    !dest_bin!
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
 
-        call :copyFile "!build_dir!\nesthd1\!configuration!\nesthd1.*"    !dest_bin! 
+        call :copyFile "!build_dir!\nesthd1\!configuration!\nesthd1.*"    !dest_bin!
     )
-    
+
 goto :endproc
 
 
@@ -1867,38 +1922,38 @@ rem ==========================
     echo "postbuild nesthd2. . ."
 
     if "%configuration%" == "Debug" (
-    
+
         echo "Debug postbuild"
         set dest_bin="!install_dir!\x64\Debug"
         set dest_share="!install_dir!\x64\Debug"
-        
-        call :makeDir !dest_bin!   
+
+        call :makeDir !dest_bin!
         call :copyNestHD2DependentRuntimeLibraries    !dest_bin!
-        
-        rem copy binaries and dll 
+
+        rem copy binaries and dll
         call :copyFile "!build_dir!\nesthd2\!configuration!\nesthd2.*"    !dest_bin!
     )
-    
-    if "%configuration%" == "Release" ( 
-    
+
+    if "%configuration%" == "Release" (
+
         echo "Release postbuild"
 
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
         set dest_share="!install_dir!\x64\Release\share\bin"
-        
+
         call :makeDir !dest_bin!
         call :makeDir !dest_share!
         call :copyNestHD2DependentRuntimeLibraries    !dest_bin!
-        
+
         rem Temporarily rename dest_bin to share_bin to copy libraries there as well
         set dest_bin=!dest_share!
         call :copyNestHD2DependentRuntimeLibraries    !dest_bin!
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
-        
-        rem copy binaries and dll 
-        call :copyFile "!build_dir!\nesthd2\!configuration!\nesthd2.*"    !dest_bin! 
+
+        rem copy binaries and dll
+        call :copyFile "!build_dir!\nesthd2\!configuration!\nesthd2.*"    !dest_bin!
     )
-    
+
 goto :endproc
 
 
@@ -1911,38 +1966,38 @@ rem ==========================
     echo "postbuild datsel. . ."
 
     if "%configuration%" == "Debug" (
-    
+
         echo "Debug postbuild"
         set dest_bin="!install_dir!\x64\Debug"
         set dest_share="!install_dir!\x64\Debug"
-        
-        call :makeDir !dest_bin!   
+
+        call :makeDir !dest_bin!
         call :copyDatselDependentRuntimeLibraries    !dest_bin!
-        
-        rem copy binaries and dll 
+
+        rem copy binaries and dll
         call :copyFile "!build_dir!\datsel\!configuration!\datsel.*"    !dest_bin!
     )
-    
-    if "%configuration%" == "Release" ( 
-    
+
+    if "%configuration%" == "Release" (
+
         echo "Release postbuild"
 
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
         set dest_share="!install_dir!\x64\Release\share\bin"
-        
+
         call :makeDir !dest_bin!
         call :makeDir !dest_share!
         call :copyDatselDependentRuntimeLibraries    !dest_bin!
-        
+
         rem Temporarily rename dest_bin to share_bin to copy libraries there as well
         set dest_bin=!dest_share!
         call :copyDatselDependentRuntimeLibraries    !dest_bin!
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
-        
-        rem copy binaries and dll 
-        call :copyFile "!build_dir!\datsel\!configuration!\datsel.*"    !dest_bin! 
+
+        rem copy binaries and dll
+        call :copyFile "!build_dir!\datsel\!configuration!\datsel.*"    !dest_bin!
     )
-    
+
 goto :endproc
 
 
@@ -1955,38 +2010,38 @@ rem ==========================
     echo "postbuild kubint. . ."
 
     if "%configuration%" == "Debug" (
-    
+
         echo "Debug postbuild"
         set dest_bin="!install_dir!\x64\Debug"
         set dest_share="!install_dir!\x64\Debug"
-        
-        call :makeDir !dest_bin!   
+
+        call :makeDir !dest_bin!
         call :copyKubintDependentRuntimeLibraries    !dest_bin!
-        
-        rem copy binaries and dll 
+
+        rem copy binaries and dll
         call :copyFile "!build_dir!\kubint\!configuration!\kubint.*"    !dest_bin!
     )
-    
-    if "%configuration%" == "Release" ( 
-    
+
+    if "%configuration%" == "Release" (
+
         echo "Release postbuild"
 
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
         set dest_share="!install_dir!\x64\Release\share\bin"
-        
+
         call :makeDir !dest_bin!
         call :makeDir !dest_share!
         call :copyKubintDependentRuntimeLibraries    !dest_bin!
-        
+
         rem Temporarily rename dest_bin to share_bin to copy libraries there as well
         set dest_bin=!dest_share!
         call :copyKubintDependentRuntimeLibraries    !dest_bin!
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
-        
-        rem copy binaries and dll 
-        call :copyFile "!build_dir!\kubint\!configuration!\kubint.*"    !dest_bin! 
+
+        rem copy binaries and dll
+        call :copyFile "!build_dir!\kubint\!configuration!\kubint.*"    !dest_bin!
     )
-    
+
 goto :endproc
 
 
@@ -1999,38 +2054,38 @@ rem ==========================
     echo "postbuild lint. . ."
 
     if "%configuration%" == "Debug" (
-    
+
         echo "Debug postbuild"
         set dest_bin="!install_dir!\x64\Debug"
         set dest_share="!install_dir!\x64\Debug"
-        
-        call :makeDir !dest_bin!   
+
+        call :makeDir !dest_bin!
         call :copyLintDependentRuntimeLibraries    !dest_bin!
-        
-        rem copy binaries and dll 
+
+        rem copy binaries and dll
         call :copyFile "!build_dir!\lint\!configuration!\lint.*"    !dest_bin!
     )
-    
-    if "%configuration%" == "Release" ( 
-    
+
+    if "%configuration%" == "Release" (
+
         echo "Release postbuild"
 
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
         set dest_share="!install_dir!\x64\Release\share\bin"
-        
+
         call :makeDir !dest_bin!
         call :makeDir !dest_share!
         call :copyLintDependentRuntimeLibraries    !dest_bin!
-        
+
         rem Temporarily rename dest_bin to share_bin to copy libraries there as well
         set dest_bin=!dest_share!
         call :copyLintDependentRuntimeLibraries    !dest_bin!
         set dest_bin="!install_dir!\x64\Release\dflow2d3d\bin"
-        
-        rem copy binaries and dll 
-        call :copyFile "!build_dir!\lint\!configuration!\lint.*"    !dest_bin! 
+
+        rem copy binaries and dll
+        call :copyFile "!build_dir!\lint\!configuration!\lint.*"    !dest_bin!
     )
-    
+
 goto :endproc
 
 
