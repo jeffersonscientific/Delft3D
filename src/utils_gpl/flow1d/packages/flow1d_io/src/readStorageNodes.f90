@@ -107,7 +107,6 @@ module m_readStorageNodes
       double precision        :: entrance_loss_global     !< [Global] value for the entrance loss coefficient
       double precision        :: exit_loss_global         !< [Global] value for the exit loss coefficient
       double precision        :: expansion_loss_global    !< [Global] value for the loss coefficient for expansion or contraction
-      double precision        :: bend_loss_global         !< [Global] value for the bend loss coefficient for the upstream pipe(s)
 
       call tree_create(trim(storgNodesFile), md_ptr, maxlenpar)
       call prop_file('ini',trim(storgNodesFile),md_ptr, istat)
@@ -127,7 +126,7 @@ module m_readStorageNodes
 
       ! check optional [Global] values for junction loss parameters
       call read_all_loss_values(md_ptr, 'Global', 'section [Global]', angle_loss_global, &
-         entrance_loss_global, exit_loss_global, expansion_loss_global, bend_loss_global, success)
+         entrance_loss_global, exit_loss_global, expansion_loss_global, success)
 
       if (.not. success) then
          goto 999
@@ -385,11 +384,10 @@ module m_readStorageNodes
                pSto%entrance_loss  =  entrance_loss_global
                pSto%exit_loss      =  exit_loss_global
                pSto%expansion_loss =  expansion_loss_global
-               pSto%bend_loss      =  bend_loss_global
 
                ! Override the coefficients that are set for this particular storage node.
                call read_all_loss_values(node_ptr, '', 'StorageNode id = '//trim(pSto%id), pSto%angle_loss, &
-                  pSto%entrance_loss, pSto%exit_loss, pSto%expansion_loss, pSto%bend_loss, success)
+                  pSto%entrance_loss, pSto%exit_loss, pSto%expansion_loss, success)
             end if
          end if
          
@@ -413,7 +411,7 @@ module m_readStorageNodes
    contains
       !> Helper subroutine to read all loss coefficients (angle loss table +
       !! scalar coefficients), either from [Global] data, or for a specific StorageNode.
-      subroutine read_all_loss_values(tree_ptr, chapter_name, section_string, angle_loss, entrance_loss, exit_loss, expansion_loss, bend_loss, success)
+      subroutine read_all_loss_values(tree_ptr, chapter_name, section_string, angle_loss, entrance_loss, exit_loss, expansion_loss, success)
          type(tree_data), pointer     , intent(in   ) :: tree_ptr       !< The input tree to read from.
          character(len=*),              intent(in   ) :: chapter_name   !< Which chapter to read from (use 'Global' for global reading, or '' when tree_ptr already contains a single specific storage node).
          character(len=*),              intent(in   ) :: section_string !< Character string used only in error messages, describing in which input section faulty input was read.
@@ -423,7 +421,6 @@ module m_readStorageNodes
          double precision             , intent(inout) :: entrance_loss  !< Value for the entrance loss coefficient
          double precision             , intent(inout) :: exit_loss      !< Value for the exit loss coefficient
          double precision             , intent(inout) :: expansion_loss !< Value for the loss coefficient for expansion or contraction
-         double precision             , intent(inout) :: bend_loss      !< Value for the bend loss coefficient for the upstream pipe(s)
          logical,                       intent(  out) :: success        !< Success status (.false. if something went wrong, check log messages)
 
          integer :: num_angles
@@ -435,7 +432,6 @@ module m_readStorageNodes
          entrance_loss  = 0d0
          exit_loss      = 0d0
          expansion_loss = 0d0
-         bend_loss      = 0d0
 
          call prop_get(tree_ptr, chapter_name, 'angleCount', num_angles)
          if (num_angles > 0) then
@@ -470,7 +466,6 @@ module m_readStorageNodes
          call prop_get(tree_ptr, chapter_name, 'entranceLossCoefficient',  entrance_loss)
          call prop_get(tree_ptr, chapter_name, 'exitLossCoefficient',      exit_loss)
          call prop_get(tree_ptr, chapter_name, 'expansionLossCoefficient', expansion_loss)
-         call prop_get(tree_ptr, chapter_name, 'bendLossCoefficient',      bend_loss)
 
          ! Return with success
          return
