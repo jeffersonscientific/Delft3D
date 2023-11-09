@@ -27,24 +27,12 @@ module m_dlwq5b
     contains
 
 
-    subroutine dlwq5b ( lunut  , iposr  , npos   , cchar  , car    ,&
+    subroutine dlwq5b (lunut  , iposr  , npos   , cchar  , car    ,&
                           iar    , icmax  , iimax  , aname  , atype  ,&
                           ntitm  , nttype , noitm  , noits  , chkflg ,&
                           callr  , ilun   , lch    , lstack ,&
                           itype  , rar    , nconst , itmnr  , chulp  ,&
-                                            ioutpt , ierr   , iwar   )
-!
-!
-!     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     Created            : May '97  By L. Postma
-!
-!     Modified           :
-!
-!     Function           : Item Name Retrieval
-!
-!     Subroutines Called : Rdtok1 - Reading Tokenized Input
-!
+                                            ioutpt , ierr   , iwar)
 !     Logical Units      : Lunut   = Unit Formatted Output File
 !
 !     Parameters    :
@@ -96,11 +84,11 @@ module m_dlwq5b
     integer    :: iposr, npos, noitm, noits, ioffi
     real       :: rar(:), rhulp
 
-    if (timon) call timstrt( "dlwq5b", ithndl )
+    if (timon) call timstrt("dlwq5b", ithndl)
 
-!
-!          some initialisations
-!
+    !
+    ! some initialisations
+
     usefor = .false.
     setnam = .false.
     comput = .false.
@@ -112,19 +100,18 @@ module m_dlwq5b
     ioffc  = 0
     ioffi  = 0
     nconst = 0
-!
-!          Get a token string (and return if something else was found)
-!
+    !
+    !          Get a token string (and return if something else was found)
 10  itype = -3
-    if ( signon .or. ( usefor .and. setnam ) ) itype = 0
-    call rdtok1 ( lunut  , ilun   , lch    , lstack , cchar  ,&
+    if (signon .or. (usefor .and. setnam)) itype = 0
+    call rdtok1 (lunut  , ilun   , lch    , lstack , cchar  ,&
                     iposr  , npos   , chulp  , ihulp  , rhulp  ,&
-                                               itype  , ierr   )
-    if ( ierr .ne. 0 ) goto 9999
-!
-!          a keyword was met
-!
-    if (iabs(itype) .eq. 1 .and. &
+                                               itype  , ierr)
+    if (ierr .ne. 0) goto 9999
+
+    !
+    ! if a keyword was met
+    if (iabs(itype) == 1 .and. &
         (any(['BLOCK'        ,&
               'LINEAR'       ,&
               'ITEM'         ,&
@@ -148,391 +135,410 @@ module m_dlwq5b
               'CONSTANTS'    ,&
               'PARAMETERS'   ,&
               'FUNCTIONS'    ,&
-              'SEG_FUNCTIONS' ] == trim(chulp))   ) ) then
+              'SEG_FUNCTIONS' ] == trim(chulp)))) then
         if (usefor) then
             write (lunut, 1035) chulp
             goto 40
         else
             goto 9999
-        endif
-    endif
+        end if
+    end if
 
-!          Computations
-    if ( iabs(itype) .eq. 1 .and.&
-           (any(['*', '/', '+', '-', 'MIN', 'MAX'] == trim(chulp)) ) ) then
-        if ( .not. comput ) then
-            write ( lunut , 1070 )
+    ! if computation
+    if (iabs(itype) == 1 .and.&
+           (any(['*', '/', '+', '-', 'MIN', 'MAX'] == trim(chulp)))) then
+        if (.not. comput) then
+            write (lunut , 1070)
             goto 40
-        endif
-        if ( signon ) then
-            write ( lunut , 1080 )
+        end if
+        if (signon) then
+            write (lunut , 1080)
             goto 40
-        endif
+        end if
         noitm = noitm + 1
         noits = noits + 1
-        call movint ( iar   , itmnr+noitm , itmnr+noitm*2 )
+        call movint (iar   , itmnr+noitm , itmnr+noitm*2)
         iar(itmnr+noitm+noitm) = 0
         select case(chulp)
-        case ('*')
-            iar(itmnr+noitm) = -1000000
-        case ('/')
-            iar(itmnr+noitm) = -10000000
-        case ('+')
-            iar(itmnr+noitm) = -100000000
-        case ('-')
-            iar(itmnr+noitm) = -1000000000
-        case ('MIN')
-            iar(itmnr+noitm) = -1100000000
-        case ('MAX')
-            iar(itmnr+noitm) = -1200000000
+            case ('*')
+                iar(itmnr+noitm) = -1000000
+            case ('/')
+                iar(itmnr+noitm) = -10000000
+            case ('+')
+                iar(itmnr+noitm) = -100000000
+            case ('-')
+                iar(itmnr+noitm) = -1000000000
+            case ('MIN')
+                iar(itmnr+noitm) = -1100000000
+            case ('MAX')
+                iar(itmnr+noitm) = -1200000000
         end select
         signon = .true.
         goto 10
-    endif
-!
-!          An item used in computations
-    if ( iabs(itype) .eq. 1 .and. signon ) then
-        do 15 i = 1 , itmnr-1
-            if ( iar(i) .eq. -1300000000 ) exit
-            call zoek ( chulp, 1,car(i+ioff),20,ifound)
-            if ( ifound .eq. 1 ) then
+    end if
+
+    ! if an item used in computations
+    if (iabs(itype) == 1 .and. signon) then
+        do 15 i=1, itmnr-1
+            if (iar(i) == -1300000000) goto 15
+            call zoek (chulp, 1,car(i+ioff),20,ifound)
+            if (ifound == 1) then
                 noits = noits - 1
                 i2 = iar(itmnr+noitm)
-                if ( i2 .eq. -1000000 )    write(lunut,1120)i,chulp
-                if ( i2 .eq. -10000000 )   write(lunut,1110)i,chulp
-                if ( i2 .eq. -100000000 )  write(lunut,1100)i,chulp
-                if ( i2 .eq. -1000000000 ) write(lunut,1090)i,chulp
-                if ( i2 .eq. -1100000000 ) write(lunut,1092)i,chulp
-                if ( i2 .eq. -1200000000 ) write(lunut,1094)i,chulp
+                select case(i2)
+                    case (-1000000)
+                        write(lunut,1120)i,chulp
+                    case (-10000000)
+                        write(lunut,1110)i,chulp
+                    case (-100000000)
+                        write(lunut,1100)i,chulp
+                    case (-1000000000)
+                        write(lunut,1090)i,chulp
+                    case (-1100000000)
+                        write(lunut,1092)i,chulp
+                    case (-1200000000)
+                        write(lunut,1094)i,chulp
+                end select
                 iar(itmnr+noitm) = i2 + i
                 car(itmnr+noitm+ioff) = '&$&$SYSTEM_NAME&$&$!'
                 signon = .false.
                 goto 10
-            endif
-   15   end do
-        i2 = iar(itmnr+noitm)
-        if ( i2 .eq. -1000000 )    write(lunut,1130)chulp
-        if ( i2 .eq. -10000000 )   write(lunut,1140)chulp
-        if ( i2 .eq. -100000000 )  write(lunut,1150)chulp
-        if ( i2 .eq. -1000000000 ) write(lunut,1160)chulp
-        if ( i2 .eq. -1100000000 ) write(lunut,1162)chulp
-        if ( i2 .eq. -1200000000 ) write(lunut,1164)chulp
-        iar ( itmnr+noitm+noitm) = noits
-        car ( itmnr+noitm+ioff ) = chulp
+            end if
+        15 end do
+        i2 = iar(itmnr + noitm)
+        select case(i2)
+            case (-1000000)
+                write(lunut,1130)chulp
+            case (-10000000)
+                write(lunut,1140)chulp
+            case (-100000000)
+                write(lunut,1150)chulp
+            case (-1000000000)
+                write(lunut,1160)chulp
+            case (-1100000000)
+                write(lunut,1162)chulp
+            case (-1200000000)
+                write(lunut,1164)chulp
+        end select
+
+        iar (itmnr+noitm + noitm) = noits
+        car (itmnr+noitm + ioff) = chulp
         signon = .false.
         goto 10
-        end if
-!
-!          A number is used in computations
-      if ( iabs(itype) .eq. 2 .or. iabs(itype) .eq. 3 ) then
-         if ( setnam .or. signon ) then
+    end if
+
+    ! if a number is used in computations
+    if (iabs(itype) == 2 .or. iabs(itype) == 3) then
+        if (setnam .or. signon) then
             nconst = nconst + 1
             rar(nconst) = rhulp
             noits = noits - 1
             i2 = iar(itmnr+noitm)
             car(itmnr+noitm+ioff) = '&$&$SYSTEM_NAME&$&$!'
-            if ( signon ) then
-               if ( i2 .eq. -1000000 )    write(lunut,1170)rhulp
-               if ( i2 .eq. -10000000 )   write(lunut,1180)rhulp
-               if ( i2 .eq. -100000000 )  write(lunut,1190)rhulp
-               if ( i2 .eq. -1000000000 ) write(lunut,1200)rhulp
-               if ( i2 .eq. -1100000000 ) write(lunut,1210)rhulp
-               if ( i2 .eq. -1200000000 ) write(lunut,1220)rhulp
+            if (signon) then
+                select case (i2)
+                    case (-1000000)
+                        write(lunut,1170)rhulp
+                    case (-10000000)
+                        write(lunut,1180)rhulp
+                    case (-100000000)
+                        write(lunut,1190)rhulp
+                    case (-1000000000)
+                        write(lunut,1200)rhulp
+                    case (-1100000000)
+                        write(lunut,1210)rhulp
+                    case (-1200000000)
+                        write(lunut,1220)rhulp
+                end select
                iar(itmnr+noitm) = i2 - nconst
                signon = .false.
-            endif
-            if ( setnam ) then
-               namset = iar( itmnr )
-               if ( namset .gt. 0 .and. ioutpt .ge. 3 ) then
-                  write ( lunut , 1001 ) callr, itmnr, callr, namset ,&
+            end if
+            if (setnam) then
+                namset = iar(itmnr)
+                if (namset > 0 .and. ioutpt >= 3) then
+                    write (lunut , 1001) callr, itmnr, callr, namset ,&
                                          aname(namset) , rhulp
-               elseif ( namset .eq. 0 .and. ioutpt .ge. 3  ) then
-                  write ( lunut , 1001 ) callr, itmnr, callr, namset ,&
+                else if (namset == 0 .and. ioutpt >= 3) then
+                    write (lunut , 1001) callr, itmnr, callr, namset ,&
                                          'FLOW'        , rhulp
-               elseif (namset .eq. -1300000000 .and. ioutpt .ge. 3) then
-                  write ( lunut , 1001 ) callr, itmnr, callr, namset ,&
+                else if (namset == -1300000000 .and. ioutpt >= 3) then
+                    write (lunut , 1001) callr, itmnr, callr, namset ,&
                                          'Ignored'     , rhulp
-               elseif ( ioutpt .ge. 3 ) then
-                  write ( lunut , 1011 ) callr, itmnr, callr,-namset ,&
+                else if (ioutpt >= 3) then
+                    write (lunut , 1011) callr, itmnr, callr,-namset ,&
                                          atype(-namset) , rhulp
-               endif
+                end if
                iar(itmnr+noitm) =  -nconst
                iar(itmnr+noitm+noitm) = 0
                usefor = .false.
                setnam = .false.
                comput = .true.
-            endif
+            end if
             goto 10
-         endif
-      endif
-!
-!          A local redirection of the name of an item or substance
-!
-      if ( iabs(itype) .eq. 1 .and. chulp .eq. 'USEFOR') then
-         if ( usefor ) then
-            write ( lunut , 1035 ) chulp
+        end if
+    end if
+
+    !if a local redirection of the name of an item or substance
+    if (iabs(itype) == 1 .and. chulp == 'USEFOR') then
+        if (usefor) then
+            write (lunut , 1035) chulp
             goto 40
-         else
+        else
             usefor = .true.
             setnam = .false.
             goto 10
-         endif
-      endif
-!
-!          Getting the items of this block
-!                        NOITM  is the order number in the series
-!                        NAMSET is the ID number of NOITMth name
-!                        ANAME/ATYPE(NAMSET) is the corresponding
-!                        reserved name or type
-!                        CHULP is the name that should be used.
-!                        IARR(ITMNR) stores NAMSET
-!
-      if ( itype .eq. 1 ) then
-         if ( usefor .and. setnam ) then
-            namset = iar( itmnr )
-            if ( namset .gt. 0 .and. ioutpt .ge. 3 ) then
-               write ( lunut , 1000 ) callr , itmnr , callr , namset ,&
+        end if
+    end if
+    !
+    ! Getting the items of this block
+    !               NOITM  is the order number in the series
+    !               NAMSET is the ID number of NOITMth name
+    !               ANAME/ATYPE(NAMSET) is the corresponding
+    !               reserved name or type
+    !               CHULP is the name that should be used.
+    !               IARR(ITMNR) stores NAMSET
+    !
+    if (itype == 1) then
+        if (usefor .and. setnam) then
+            namset = iar(itmnr)
+            if (ioutpt>=3) then
+                if (namset>0) then
+                    write (lunut , 1000) callr , itmnr , callr , namset ,&
                                       aname(namset) , chulp
-            elseif ( namset .eq. 0 .and. ioutpt .ge. 3  ) then
-               write ( lunut , 1000 ) callr , itmnr , callr , namset ,&
+                else if (namset==0) then
+                    write (lunut , 1000) callr , itmnr , callr , namset ,&
                                       'FLOW'        , chulp
-            elseif ( namset .eq. -1300000000 .and. ioutpt .ge. 3  ) then
-               write ( lunut , 1000 ) callr , itmnr , callr , namset ,&
+                else if (namset == -1300000000) then
+                    write (lunut , 1000) callr , itmnr , callr , namset ,&
                                       'Ignored'     , chulp
-            elseif ( ioutpt .ge. 3 ) then
-               write ( lunut , 1010 ) callr , itmnr , callr ,-namset ,&
+                else
+                    write (lunut , 1010) callr , itmnr , callr ,-namset ,&
                                       atype(-namset) , chulp
-            endif
-            iar ( itmnr + noitm + noitm) = noits
-            car ( itmnr + noitm + ioff ) = chulp
+                end if
+            end if
+            iar (itmnr + noitm + noitm) = noits
+            car (itmnr + noitm + ioff) = chulp
             usefor = .false.
             setnam = .false.
-!                     it is now possible to compute
+            ! it is now possible to compute
             comput = .true.
             goto 10
-         endif
-!
-!              fill in a string value if an empty string is provided
-!
-         if ( chkflg      .eq. -1 .and.&
-              chulp(1:20) .eq. '                    ' ) then
+        end if
+        ! fill in a string value if an empty string is provided
+        if (chkflg      == -1 .and. chulp(1:20) == repeat(' ', 20)) then
             chulp = 'Item-'
-            write ( chulp(6:12) , '(I7)' ) noitm+1
-         endif
-!
-!              FLOW is only valid as CONCENTR. and item number is 0
-!
-         call zoek(chulp,1,(/'FLOW                '/),20,ifound)
-         if ( ifound .eq. 1 .and. callr .eq. 'CONCENTR. ' ) then
+            write (chulp(6:12) , '(I7)') noitm+1
+        end if
+        ! FLOW is only valid as CONCENTR. and item number is 0
+        call zoek(chulp,1,(/'FLOW                '/),20,ifound)
+        if (ifound == 1 .and. callr == 'CONCENTR. ') then
             noitm = noitm + 1
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint ( iar   , itmnr       , itmnr+noitm*2 )
-            call movint ( iar   , itmnr+noitm , itmnr+noitm*2 )
-            call movchr ( car   , itmnr+ioff  , icm   )
-            iar ( itmnr ) =  0
-            iar ( itmnr + noitm ) = itmnr
-            iar ( itmnr + noitm + noitm ) = noits
-            car ( itmnr + ioff  ) = chulp
-            car ( itmnr + noitm + ioff ) = chulp
-            if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor )&
-            write ( lunut , 1020 ) callr , itmnr , callr , 0 , 'FLOW'
+            call movint(iar, itmnr      , itmnr+noitm*2)
+            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movchr(car, itmnr+ioff , icm)
+            iar (itmnr) =  0
+            iar (itmnr + noitm) = itmnr
+            iar (itmnr + noitm + noitm) = noits
+            car (itmnr + ioff) = chulp
+            car (itmnr + noitm + ioff) = chulp
+            if (usefor) setnam = .true.
+            if (ioutpt >= 3 .and. .not. usefor)&
+            write (lunut , 1020) callr , itmnr , callr , 0 , 'FLOW'
             goto 10
-         endif
-!
-!              CHULP equals an item-NAME
-!
-         call zoek(chulp,ntitm,aname,20,i2)
-         if ( i2 .ge. 1 ) then
+        end if
+
+        ! CHULP equals an item-NAME
+        call zoek(chulp,ntitm,aname,20,i2)
+        if (i2 >= 1) then
             noitm = noitm + 1
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint ( iar   , itmnr       , itmnr+noitm*2 )
-            call movint ( iar   , itmnr+noitm , itmnr+noitm*2 )
-            call movchr ( car   , itmnr+ioff  , icm   )
-            iar ( itmnr ) =  i2
-            iar ( itmnr + noitm ) = itmnr
-            iar ( itmnr + noitm + noitm ) = noits
-            car ( itmnr + ioff  ) = chulp
-            car ( itmnr + noitm + ioff ) = chulp
-            if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor )&
-            write ( lunut , 1020 ) callr, itmnr, callr, i2, aname(i2)
+            call movint(iar, itmnr      , itmnr+noitm*2)
+            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movchr(car, itmnr+ioff , icm)
+            iar(itmnr) =  i2
+            iar(itmnr + noitm) = itmnr
+            iar(itmnr + noitm + noitm) = noits
+            car(itmnr + ioff) = chulp
+            car(itmnr + noitm + ioff) = chulp
+            if (usefor) setnam = .true.
+            if (ioutpt >= 3 .and. .not. usefor) then
+                write (lunut , 1020) callr, itmnr, callr, i2, aname(i2)
+            end if
             goto 10
-         endif
-!
-!              CHULP equals an item-TYPE. IAR now is negative.
-!
-         call zoek(chulp,nttype,atype,20,i2)
-         if ( i2 .ge. 1 ) then
+        end if
+
+        ! CHULP equals an item-TYPE. IAR now is negative.
+        call zoek(chulp,nttype,atype,20,i2)
+        if (i2 >= 1) then
             noitm = noitm + 1
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint ( iar   , itmnr       , itmnr+noitm*2 )
-            call movint ( iar   , itmnr+noitm , itmnr+noitm*2 )
-            call movchr ( car   , itmnr+ioff  , icm   )
-            iar ( itmnr ) = -i2
-            iar ( itmnr + noitm ) = itmnr
-            iar ( itmnr + noitm + noitm ) = noits
-            car ( itmnr + ioff  ) = chulp
-            car ( itmnr + noitm + ioff ) = chulp
-            if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor )&
-            write ( lunut , 1030 ) callr, itmnr, callr, i2, atype(i2)
+            call movint(iar, itmnr      , itmnr+noitm*2)
+            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movchr(car, itmnr+ioff , icm)
+            iar(itmnr) = -i2
+            iar(itmnr + noitm) = itmnr
+            iar(itmnr + noitm + noitm) = noits
+            car(itmnr + ioff) = chulp
+            car(itmnr + noitm + ioff) = chulp
+            if (usefor) setnam = .true.
+            if (ioutpt >= 3 .and. .not. usefor) then
+                write (lunut , 1030) callr, itmnr, callr, i2, atype(i2)
+            end if
             goto 10
-         endif
-!
-!              If only existing names or types are allowed then
-!                     this is the place for an error massage
-!              JVB stick to just a warning keep on reading IAR = 0?, or used for flow??
-!
-         if ( chkflg .eq. 1 ) then
+        end if
+
+        ! If only existing names or types are allowed then
+        !        this is the place for an error massage
+        ! JVB stick to just a warning keep on reading IAR = 0?, or used for flow??
+
+        if (chkflg == 1) then
             noitm = noitm + 1
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint ( iar   , itmnr       , itmnr+noitm*2 )
-            call movint ( iar   , itmnr+noitm , itmnr+noitm*2 )
-            call movchr ( car   , itmnr+ioff  , icm   )
-            iar ( itmnr ) = -1300000000
-            iar ( itmnr + noitm ) = 1300000000
-            iar ( itmnr + noitm + noitm ) = noits
-            car ( itmnr + ioff  ) = chulp
-            car ( itmnr + noitm + ioff ) = chulp
-            if ( usefor ) setnam = .true.
-            write ( lunut , 1040 ) callr, itmnr, chulp
+            call movint(iar, itmnr      , itmnr+noitm*2)
+            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movchr(car, itmnr+ioff , icm)
+            iar (itmnr) = -1300000000
+            iar (itmnr + noitm) = 1300000000
+            iar (itmnr + noitm + noitm) = noits
+            car (itmnr + ioff) = chulp
+            car (itmnr + noitm + ioff) = chulp
+            if (usefor) setnam = .true.
+            write(lunut , 1040) callr, itmnr, chulp
             iwar = iwar + 1
             goto 10
-         else
-!
-!              Now a new name is added to the list of names
-!                     the rest is moved upward since it is all 1 array
-!
+        else
+
+            ! Now a new name is added to the list of names
+            !        the rest is moved upward since it is all 1 array
             ntitm = ntitm + 1
             ioff  = ioff  + 1
             icm   = icmax + ntitm
-            call movchr ( aname , ntitm  , icm  )
+            call movchr (aname, ntitm, icm)
             aname(ntitm) = chulp
-!              plus normal procedure
+            ! plus normal procedure
             noitm = noitm + 1
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint ( iar   , itmnr       , itmnr+noitm*2 )
-            call movint ( iar   , itmnr+noitm , itmnr+noitm*2 )
-            call movchr ( car   , itmnr+ioff  , icm   )
-            iar ( itmnr ) = ntitm
-            iar ( itmnr + noitm ) = itmnr
-            iar ( itmnr + noitm + noitm ) = noits
-            car ( itmnr + ioff  ) = chulp
-            car ( itmnr + noitm + ioff ) = chulp
-            if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor )&
-                         write ( lunut , 1020 ) callr, itmnr, callr,&
-                                                ntitm, aname(ntitm)
+            call movint(iar, itmnr      , itmnr+noitm*2)
+            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movchr(car, itmnr+ioff , icm)
+            iar(itmnr) = ntitm
+            iar(itmnr + noitm) = itmnr
+            iar(itmnr + noitm + noitm) = noits
+            car(itmnr + ioff) = chulp
+            car(itmnr + noitm + ioff) = chulp
+            if (usefor) setnam = .true.
+            if (ioutpt >= 3 .and. .not. usefor) then
+                write (lunut , 1020) callr, itmnr, callr, ntitm, aname(ntitm)
+            end if
             goto 10
-         endif
-      endif
-!
-!              No item name was given, but an item number
-!
-      if ( itype .eq. 2 ) then
-         if ( ihulp .le.  ntitm .and. ihulp .ge. -nttype ) then
+        end if
+    end if
+
+    ! If no item name was given, but an item number
+    if (itype == 2) then
+        if (ihulp <=  ntitm .and. ihulp >= -nttype) then
             noitm = noitm + 1
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint ( iar   , itmnr       , itmnr+noitm*2 )
-            call movint ( iar   , itmnr+noitm , itmnr+noitm*2 )
-            call movchr ( car   , itmnr+ioff  , icm   )
-            iar ( itmnr ) = ihulp
-            iar ( itmnr + noitm ) = itmnr
-            iar ( itmnr + noitm + noitm ) = noits
-            if ( callr .eq. 'segment' ) then
-               if ( ihulp .le. 0 ) then
-                  write ( lunut , 1060 ) ihulp
-                  goto 40
-               endif
-               if ( ioutpt .ge. 3 .and. .not. usefor )&
-                    write ( lunut , 1015 ) callr, itmnr, callr,  ihulp
-               write ( chulp , '(''Segment '',I8)' ) ihulp
-            elseif ( ihulp .eq. 0 .and. callr .ne. 'CONCENTR. ' ) then
-               write ( lunut , 1060 ) ihulp
-               goto 40
-            elseif ( ihulp .gt. 0 ) then
-               if ( ioutpt .ge. 3 .and. .not. usefor )&
-                    write ( lunut , 1020 ) callr, itmnr, callr,  ihulp,&
-                                                         aname(  ihulp )
-               chulp = aname( ihulp)
-            elseif ( ihulp .eq. 0 .and. callr .eq. 'CONCENTR. ' ) then
-               if ( ioutpt .ge. 3 .and. .not. usefor )&
-               write ( lunut , 1020 ) callr, itmnr, callr, ihulp,&
+            call movint (iar   , itmnr       , itmnr+noitm*2)
+            call movint (iar   , itmnr+noitm , itmnr+noitm*2)
+            call movchr (car   , itmnr+ioff  , icm)
+            iar (itmnr) = ihulp
+            iar (itmnr + noitm) = itmnr
+            iar (itmnr + noitm + noitm) = noits
+            if (callr == 'segment') then
+                if (ihulp <= 0) then
+                    write (lunut , 1060) ihulp
+                    goto 40
+                end if
+                if (ioutpt >= 3 .and. .not. usefor)&
+                    write (lunut , 1015) callr, itmnr, callr,  ihulp
+                write (chulp , '(''Segment '',I8)') ihulp
+            else if (ihulp == 0 .and. callr .ne. 'CONCENTR. ') then
+                write (lunut , 1060) ihulp
+                goto 40
+            else if (ihulp > 0) then
+                if (ioutpt >= 3 .and. .not. usefor)&
+                    write (lunut , 1020) callr, itmnr, callr,  ihulp,&
+                                                         aname(ihulp)
+                chulp = aname(ihulp)
+            else if (ihulp == 0 .and. callr == 'CONCENTR. ') then
+                if (ioutpt >= 3 .and. .not. usefor)&
+                write (lunut , 1020) callr, itmnr, callr, ihulp,&
                                                           'FLOW'
-               chulp = 'FLOW'
+                chulp = 'FLOW'
             else
-               if ( ioutpt .ge. 3 .and. .not. usefor )&
-               write ( lunut , 1030 ) callr, itmnr, callr, -ihulp,&
-                                                         atype( -ihulp )
-               chulp = atype(-ihulp)
-            endif
-            car ( itmnr + ioff  ) = chulp
-            car ( itmnr + noitm + ioff ) = chulp
-            if ( usefor ) setnam = .true.
+                if (ioutpt >= 3 .and. .not. usefor)&
+                write (lunut , 1030) callr, itmnr, callr, -ihulp,&
+                                                         atype(-ihulp)
+                chulp = atype(-ihulp)
+            end if
+            car (itmnr + ioff) = chulp
+            car (itmnr + noitm + ioff) = chulp
+            if (usefor) setnam = .true.
             goto 10
-         else
-            write ( lunut , 1060 ) ihulp
+        else
+            write (lunut , 1060) ihulp
             goto 40
-         endif
-      endif
+        end if
+    end if
 !
    40 ierr = 1
- 9999 if (timon) call timstop( ithndl )
+ 9999 if (timon) call timstop(ithndl)
       return
 !
- 1000 format (  ' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
-                A20,' and local substitution: ',A20 )
- 1001 format (  ' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
-                A20,' and local substitution: ',E15.6 )
- 1010 format (  ' Input ',A,' nr:',I5,' is ',A,' type:',I5,&
-                ' with type: ',A20,' and local substitution: ',A20 )
- 1011 format (  ' Input ',A,' nr:',I5,' is ',A,' type:',I5,&
-                ' with type: ',A20,' and local substitution: ',E15.6 )
- 1015 format (  ' Input ',A,' nr:',I5,' is ',A,' nr:',I5 )
- 1020 format (  ' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
-                A20 )
- 1030 format (  ' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with type: ',&
-                A20 )
- 1035 format (  ' ERROR: no reserved keyword expected: ', A20 )
- 1040 format (  ' WARNING: Input ',A,' nr:',I5,' with name: ',A20,&
-                ' is not a valid ID, data ignored' )
- 1050 format ( /' ERROR: string is no valid item ID: ',A )
- 1060 format (  ' ERROR: number: ',I5,' is not a valid item number !' )
- 1070 format (  ' ERROR: multiplication is only allowed in USEFOR',&
-                ' context !')
- 1080 format (  ' ERROR: arithmetics should be separated by items !')
- 1090 format (  ' Subtracted by item nr: ',I6,' Name: ',A20 )
- 1092 format (  ' Minimum value is item nr: ',I6,' Name: ',A20 )
- 1094 format (  ' Maximum value is item nr: ',I6,' Name: ',A20 )
- 1100 format (  ' Summed with item nr: ',I6,' Name: ',A20 )
- 1110 format (  ' Divided by item nr: ',I6,' Name: ',A20 )
- 1120 format (  ' Multiplied by item nr: ',I6,' Name: ',A20 )
- 1130 format (  ' Multiplied by local substitution: ',A20 )
- 1140 format (  ' Divided by local substitution: ',A20 )
- 1150 format (  ' Summed with local substitution: ',A20 )
- 1160 format (  ' Subtracted by local substitution: ',A20 )
- 1162 format (  ' Minimum value is local substitution: ',A20 )
- 1164 format (  ' Maximum value is local substitution: ',A20 )
- 1169 format (  ' Substituted by: ',E15.6 )
- 1170 format (  ' Multiplied by: ',E15.6 )
- 1180 format (  ' Divided by: ',E15.6 )
- 1190 format (  ' Summed with: ',E15.6 )
- 1200 format (  ' Subtracted by: ',E15.6 )
- 1210 format (  ' Minimum value is: ',E15.6 )
- 1220 format (  ' Maximum value is: ',E15.6 )
+ 1000 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
+               A20,' and local substitution: ',A20)
+ 1001 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
+               A20,' and local substitution: ',E15.6)
+ 1010 format(' Input ',A,' nr:',I5,' is ',A,' type:',I5,&
+               ' with type: ',A20,' and local substitution: ',A20)
+ 1011 format(' Input ',A,' nr:',I5,' is ',A,' type:',I5,&
+               ' with type: ',A20,' and local substitution: ',E15.6)
+ 1015 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5)
+ 1020 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
+               A20)
+ 1030 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with type: ',&
+               A20)
+ 1035 format(' ERROR: no reserved keyword expected: ', A20)
+ 1040 format(' WARNING: Input ',A,' nr:',I5,' with name: ',A20,&
+               ' is not a valid ID, data ignored')
+ 1050 format(' ERROR: string is no valid item ID: ',A)
+ 1060 format(' ERROR: number: ',I5,' is not a valid item number !')
+ 1070 format(' ERROR: multiplication is only allowed in USEFOR',&
+               ' context !')
+ 1080 format(' ERROR: arithmetics should be separated by items !')
+ 1090 format(' Subtracted by item nr: ',I6,' Name: ',A20)
+ 1092 format(' Minimum value is item nr: ',I6,' Name: ',A20)
+ 1094 format(' Maximum value is item nr: ',I6,' Name: ',A20)
+ 1100 format(' Summed with item nr: ',I6,' Name: ',A20)
+ 1110 format(' Divided by item nr: ',I6,' Name: ',A20)
+ 1120 format(' Multiplied by item nr: ',I6,' Name: ',A20)
+ 1130 format(' Multiplied by local substitution: ',A20)
+ 1140 format(' Divided by local substitution: ',A20)
+ 1150 format(' Summed with local substitution: ',A20)
+ 1160 format(' Subtracted by local substitution: ',A20)
+ 1162 format(' Minimum value is local substitution: ',A20)
+ 1164 format(' Maximum value is local substitution: ',A20)
+ 1169 format(' Substituted by: ',E15.6)
+ 1170 format(' Multiplied by: ',E15.6)
+ 1180 format(' Divided by: ',E15.6)
+ 1190 format(' Summed with: ',E15.6)
+ 1200 format(' Subtracted by: ',E15.6)
+ 1210 format(' Minimum value is: ',E15.6)
+ 1220 format(' Maximum value is: ',E15.6)
 !
     end subroutine dlwq5b
 
