@@ -50,7 +50,7 @@ module delwaq2_global_data
 
     character(len=20),  dimension(:),   allocatable :: substance_name
     real,               dimension(:,:), allocatable :: substance_conc
-    character(len=20),  dimension(:),   allocatable :: procparam_const                     ! icons
+    character(len=20),  dimension(:),   allocatable :: procparam_const                     
     character(len=20),  dimension(:),   allocatable :: procparam_param
     real,               dimension(:),   allocatable :: procparam_const_value
     real,               dimension(:,:), allocatable :: procparam_param_value
