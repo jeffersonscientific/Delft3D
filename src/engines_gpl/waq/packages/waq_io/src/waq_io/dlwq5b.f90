@@ -123,7 +123,11 @@ module m_dlwq5b
     call rdtok1(lunut, ilun, lch  , lstack, cchar,&
                 iposr, npos, chulp, ihulp , rhulp,&
                 itype, error_ind)
-    if (error_ind .ne. 0) goto 9999
+    if (error_ind .ne. 0) then
+        ! stop timer and return
+        if (timon) call timstop(ithndl)
+        return
+    end if
 
     
     ! if a keyword was met
@@ -132,7 +136,9 @@ module m_dlwq5b
             write (lunut, 1035) chulp
             goto 40 !error and return
         else
-            goto 9999 ! return
+            ! stop timer and return
+            if (timon) call timstop(ithndl)
+            return
         end if
     end if
 
@@ -148,21 +154,21 @@ module m_dlwq5b
         end if
         noitm = noitm + 1
         noits = noits + 1
-        call movint(iar   , itmnr+noitm , itmnr+noitm*2)
-        iar(itmnr+noitm+noitm) = 0
+        call movint(iar   , itmnr + noitm , itmnr + noitm * 2)
+        iar(itmnr + noitm + noitm) = 0
         select case(chulp)
             case ('*')
-                iar(itmnr+noitm) = -1000000
+                iar(itmnr + noitm) = -1000000
             case ('/')
-                iar(itmnr+noitm) = -10000000
+                iar(itmnr + noitm) = -10000000
             case ('+')
-                iar(itmnr+noitm) = -100000000
+                iar(itmnr + noitm) = -100000000
             case ('-')
-                iar(itmnr+noitm) = -1000000000
+                iar(itmnr + noitm) = -1000000000
             case ('MIN')
-                iar(itmnr+noitm) = -1100000000
+                iar(itmnr + noitm) = -1100000000
             case ('MAX')
-                iar(itmnr+noitm) = -1200000000
+                iar(itmnr + noitm) = -1200000000
         end select
         signon = .true.
         goto 10
@@ -175,7 +181,7 @@ module m_dlwq5b
             ifound = index_in_array(chulp, car(i+ioff:i+ioff))
             if (ifound == 1) then
                 noits = noits - 1
-                i2 = iar(itmnr+noitm)
+                i2 = iar(itmnr + noitm)
                 select case(i2)
                     case (-1000000)
                         write(lunut,1120)i,chulp
@@ -190,8 +196,8 @@ module m_dlwq5b
                     case (-1200000000)
                         write(lunut,1094)i,chulp
                 end select
-                iar(itmnr+noitm) = i2 + i
-                car(itmnr+noitm+ioff) = '&$&$SYSTEM_NAME&$&$!'
+                iar(itmnr + noitm) = i2 + i
+                car(itmnr + noitm + ioff) = '&$&$SYSTEM_NAME&$&$!'
                 signon = .false.
                 goto 10
             end if
@@ -212,8 +218,8 @@ module m_dlwq5b
                 write(lunut,1164)chulp
         end select
 
-        iar (itmnr+noitm + noitm) = noits
-        car (itmnr+noitm + ioff) = chulp
+        iar (itmnr + noitm + noitm) = noits
+        car (itmnr + noitm + ioff) = chulp
         signon = .false.
         goto 10
     end if
@@ -224,8 +230,8 @@ module m_dlwq5b
             nconst = nconst + 1
             rar(nconst) = rhulp
             noits = noits - 1
-            i2 = iar(itmnr+noitm)
-            car(itmnr+noitm+ioff) = '&$&$SYSTEM_NAME&$&$!'
+            i2 = iar(itmnr + noitm)
+            car(itmnr + noitm+ioff) = '&$&$SYSTEM_NAME&$&$!'
             if (signon) then
                 select case (i2)
                     case (-1000000)
@@ -241,7 +247,7 @@ module m_dlwq5b
                     case (-1200000000)
                         write(lunut,1220)rhulp
                 end select
-               iar(itmnr+noitm) = i2 - nconst
+               iar(itmnr + noitm) = i2 - nconst
                signon = .false.
             end if
             if (setnam) then
@@ -259,8 +265,8 @@ module m_dlwq5b
                     write (lunut , 1011) callr, itmnr, callr,-namset ,&
                                          atype(-namset) , rhulp
                 end if
-               iar(itmnr+noitm) =  -nconst
-               iar(itmnr+noitm+noitm) = 0
+               iar(itmnr + noitm) =  -nconst
+               iar(itmnr + noitm+noitm) = 0
                usefor = .false.
                setnam = .false.
                comput = .true.
@@ -273,7 +279,7 @@ module m_dlwq5b
     if (abs(itype) == 1 .and. chulp == 'USEFOR') then
         if (usefor) then
             write (lunut , 1035) chulp
-            goto 40
+            goto 40 !error and return
         else
             usefor = .true.
             setnam = .false.
@@ -307,8 +313,8 @@ module m_dlwq5b
                                       atype(-namset) , chulp
                 end if
             end if
-            iar (itmnr + noitm + noitm) = noits
-            car (itmnr + noitm + ioff) = chulp
+            iar(itmnr + noitm + noitm) = noits
+            car(itmnr + noitm + ioff) = chulp
             usefor = .false.
             setnam = .false.
             ! it is now possible to compute
@@ -327,8 +333,8 @@ module m_dlwq5b
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint(iar, itmnr      , itmnr+noitm*2)
-            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movint(iar, itmnr      , itmnr + noitm*2)
+            call movint(iar, itmnr + noitm, itmnr + noitm*2)
             call movchr(car, itmnr+ioff , icm)
             iar (itmnr) =  0
             iar (itmnr + noitm) = itmnr
@@ -348,8 +354,8 @@ module m_dlwq5b
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint(iar, itmnr      , itmnr+noitm*2)
-            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movint(iar, itmnr      , itmnr + noitm*2)
+            call movint(iar, itmnr + noitm, itmnr + noitm*2)
             call movchr(car, itmnr+ioff , icm)
             iar(itmnr) =  i2
             iar(itmnr + noitm) = itmnr
@@ -370,8 +376,8 @@ module m_dlwq5b
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint(iar, itmnr      , itmnr+noitm*2)
-            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movint(iar, itmnr      , itmnr + noitm*2)
+            call movint(iar, itmnr + noitm, itmnr + noitm*2)
             call movchr(car, itmnr+ioff , icm)
             iar(itmnr) = -i2
             iar(itmnr + noitm) = itmnr
@@ -394,8 +400,8 @@ module m_dlwq5b
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint(iar, itmnr      , itmnr+noitm*2)
-            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movint(iar, itmnr      , itmnr + noitm*2)
+            call movint(iar, itmnr + noitm, itmnr + noitm*2)
             call movchr(car, itmnr+ioff , icm)
             iar (itmnr) = -1300000000
             iar (itmnr + noitm) = 1300000000
@@ -420,8 +426,8 @@ module m_dlwq5b
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint(iar, itmnr      , itmnr+noitm*2)
-            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movint(iar, itmnr      , itmnr + noitm*2)
+            call movint(iar, itmnr + noitm, itmnr + noitm*2)
             call movchr(car, itmnr+ioff , icm)
             iar(itmnr) = ntitm
             iar(itmnr + noitm) = itmnr
@@ -443,8 +449,8 @@ module m_dlwq5b
             noits = noits + 1
             itmnr = itmnr + 1
             icm = itmnr + noitm + ioff
-            call movint(iar, itmnr      , itmnr+noitm*2)
-            call movint(iar, itmnr+noitm, itmnr+noitm*2)
+            call movint(iar, itmnr      , itmnr + noitm*2)
+            call movint(iar, itmnr + noitm, itmnr + noitm*2)
             call movchr(car, itmnr+ioff , icm)
             iar (itmnr) = ihulp
             iar (itmnr + noitm) = itmnr
@@ -452,14 +458,14 @@ module m_dlwq5b
             if (callr == 'segment') then
                 if (ihulp <= 0) then
                     write (lunut , 1060) ihulp
-                    goto 40
+                    goto 40 !error and return
                 end if
                 if (ioutpt >= 3 .and. .not. usefor)&
                     write (lunut , 1015) callr, itmnr, callr,  ihulp
                 write (chulp , '(''Segment '',I8)') ihulp
             else if (ihulp == 0 .and. callr .ne. 'CONCENTR. ') then
                 write (lunut , 1060) ihulp
-                goto 40
+                goto 40 !error and return
             else if (ihulp > 0) then
                 if (ioutpt >= 3 .and. .not. usefor)&
                     write (lunut , 1020) callr, itmnr, callr,  ihulp,&
@@ -482,12 +488,12 @@ module m_dlwq5b
             goto 10
         else
             write (lunut , 1060) ihulp
-            goto 40
+            goto 40 !error and return
         end if
     end if
 !
    40 error_ind = 1
- 9999 if (timon) call timstop(ithndl)
+      if (timon) call timstop(ithndl)
       return
 !
  1000 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
