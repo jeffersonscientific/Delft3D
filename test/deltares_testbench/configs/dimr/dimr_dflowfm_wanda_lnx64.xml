@@ -53,7 +53,7 @@
                 <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
             </environments>
         </program>
-        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" ignoreStandardError="true" ignoreReturnValue="true">
+        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="reference_engines" type="reference">
                 <from>lnx64</from> 
             </location>
@@ -62,6 +62,7 @@
             </location>
             <path>bin/run_dimr.sh</path>
             <environments>
+                <environment name="LD_LIBRARY_PATH" type="path">[programGlobals(TestBenchRoot)]/thirdparty/wanda/lnx64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
             </environments>
         </program>
@@ -74,7 +75,7 @@
             <programs>
                 <program ref="dimr">
                     <arguments>
-                        <argument>-m dimr_config_lnx64.xml</argument>
+                        <argument>dimr_config.xml</argument>
                     </arguments>
                 </program>
             </programs>
@@ -90,7 +91,7 @@
             <programs>
                 <program ref="dimr">
                     <arguments>
-                        <argument>-c 2 -m dimr_config_lnx64.xml</argument>
+                        <argument>-c 2 -m dimr_config.xml</argument>
                     </arguments>
                 </program>
             </programs>

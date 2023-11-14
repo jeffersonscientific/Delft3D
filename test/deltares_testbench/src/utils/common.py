@@ -323,7 +323,10 @@ def log_table(
 def __create_table_row(row: List, max_lengths: List[int]) -> str:
     row_str = ""
     for column_index, row_value in enumerate(row):
-        value_to_print = DictTable.format_value(row_value)
+        if isinstance(row_value, float):
+            value_to_print = f"{row_value:.3e}"
+        else:
+            value_to_print = row_value
         row_str += f"|{value_to_print:{max_lengths[column_index]}}"
 
     return f"{row_str}|"

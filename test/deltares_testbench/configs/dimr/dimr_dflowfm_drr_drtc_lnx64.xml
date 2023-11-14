@@ -93,9 +93,6 @@
         </testCase>
     </defaultTestCases>
     <!-- ======================================================================== -->
-    <!-- NOTE: temporarily disabled for Linux, see https://issuetracker.deltares.nl/browse/UNST-7256 -->
-    <!-- <xi:include href="../include/dimr_dflowfm_drr_drtc.xml"/> -->
-    <testCases>
-    </testCases>
+    <xi:include href="../include/dimr_dflowfm_drr_drtc.xml"/>
     <!-- ======================================================================== -->
 </deltaresTestbench_v3>

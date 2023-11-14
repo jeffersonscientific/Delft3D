@@ -30,7 +30,7 @@
 ! 
 ! 
 
-   subroutine fm_adjust_bedload(sbn, sbt, avalan, slopecor)
+   subroutine fm_adjust_bedload(sbn, sbt, avalan)
    use m_physcoef, only: ag
    use m_sferic, only: pi
    use m_flowgeom, only: lnxi, lnx, ln, kcs, ba, bl, Dx, wu_mor
@@ -47,11 +47,10 @@
    !!
    !! Global variables
    !!
-   logical                               ,          intent(in)           :: avalan    !<  do only once for avalanching fluxes
-   logical                               ,          intent(in)           :: slopecor  !<  do only on bedload, cf UNST-7286
-   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbn       !<  sbcuu, sbwuu, or sswuu
-   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbt       !<  sbcvv, sbwvv, or sswvv
-   real(fp)  , dimension(:)  ,          allocatable                      :: sbncor    !<  corrected values
+   logical                               ,          intent(in)           :: avalan  !<  do only once for avalanching fluxes
+   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbn     !<  sbcuu, sbwuu, or sswuu
+   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbt     !<  sbcvv, sbwvv, or sswvv
+   real(fp)  , dimension(:)  ,          allocatable                      :: sbncor  !<  corrected values
    real(fp)  , dimension(:)  ,          allocatable                      :: sbtcor
    !!
    !! Local variables
@@ -112,7 +111,7 @@
                sbncor(Lf) = sbedn
                sbtcor(Lf) = sbedt
 
-               if (sbedm>eps .and. slopecor) then
+               if (sbedm>eps) then
                   dzds =  e_dzdn(Lf)*sbedn/sbedm + e_dzdt(Lf)*sbedt/sbedm ! in direction of transport (not n)
                   dzdp = -e_dzdn(Lf)*sbedt/sbedm + e_dzdt(Lf)*sbedn/sbedm ! perpendicular to transport direction (not t)
                   !

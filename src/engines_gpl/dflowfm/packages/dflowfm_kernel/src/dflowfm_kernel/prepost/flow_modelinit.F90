@@ -48,7 +48,7 @@
  use unstruc_files, only: mdia
  use unstruc_netcdf
  use MessageHandling
- use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl 
+ use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind
  use dfm_error
  use m_fm_wq_processes, only: jawaqproc
  use m_vegetation
@@ -71,7 +71,6 @@
  use unstruc_display, only : ntek, jaGUI
  use m_debug
  use m_flow_flowinit
- use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
  
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -439,11 +438,6 @@
   if (jasedtrails>0) then
     call default_sedtrails_stats()
     call alloc_sedtrails_stats()
-  endif
- 
- ! Extrapolate bed level
- if (jaextrapbl == 1) then
-     call extrapolate_bedlevel_at_boundaries()
  endif
  
  call timstrt('MDU file pointer    ', handle_extra(34)) ! writeMDUFilepointer
