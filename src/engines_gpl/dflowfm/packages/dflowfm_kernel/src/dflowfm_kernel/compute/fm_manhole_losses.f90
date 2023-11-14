@@ -104,7 +104,7 @@
       do iL = 1, nd(nod)%lnx
          L = abs(nd(nod)%ln(iL))
          sum_1 = sum_1 + q1(L)
-         sum_2 = sum_2 + q1(L)*interpolate(pstor%angle_loss,(absdLinkangle(L)-reference_angle)/90*pi) ! angle table is in degrees, dlinkangle is in radians
+         sum_2 = sum_2 + q1(L)*interpolate(pstor%angle_loss,(absdLinkangle(L)-reference_angle)/pi*90) ! angle table is in degrees, dlinkangle is in radians
       enddo
       Kavg = sum_2/sum_1
 
