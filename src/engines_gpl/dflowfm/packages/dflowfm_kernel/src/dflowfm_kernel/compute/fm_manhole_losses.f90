@@ -56,7 +56,7 @@
          
          call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
          
-         absdLinkangle = abs(atan2(dy,dx))
+         absdLinkangle = mod(atan2(dy,dx)+PI,PI)
          
          return
    end function absdLinkangle
