@@ -67,7 +67,7 @@ subroutine update_verticalprofiles()
 
  double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf 
 
- double precision :: wk,wke,vk,um,tauinv,tauinf,xlveg,rnv, diav,ap1,alf,c2esqcmukep,teps,tkin
+ double precision :: wk,wke,vk,um,tauinv,tauinf,xlveg,rnv, diav,ap1,alf,c2esqcmukep,teps,tkin, vicw, vicwalfa
 
  double precision :: cfuhi3D, vicwmax, tkewin, zint, z1, vicwww, alfaT, tke, eps, tttctot, c3t, c3e
 
@@ -287,6 +287,8 @@ subroutine update_verticalprofiles()
   tetm1     = 1d0-tetavkeps
   dtiL      = 1d0 / dtprev                                ! turbulence transport in current velocity field => do not use new timestep but previous step
 
+  call setdrodzws()
+
   !$xOMP PARALLEL DO                                                                  &
   !$xOMP PRIVATE(LL,Lb,Lt,Lb0,kxL,L,k,dzu,dzw,hdzb,z00,tkebot,tkesur)                 &
   !$xOMP PRIVATE(ak,bk,ck,dk,ek,vicu,vicd,dzdz1,dzdz2,difu,difd,Lu,ku)                &
@@ -332,6 +334,7 @@ subroutine update_verticalprofiles()
          vicwwu(Lb0) = vonkar*ustb(LL)*z00
      endif
 
+     turkin0(Lb0:Lt) = turkin1(Lb0:Lt)
      tureps0(Lb0:Lt) = tureps1(Lb0:Lt)
 
      ak(0:kxL) = 0.d0                                                 ! Matrix initialisation TKE
@@ -417,38 +420,20 @@ subroutine update_verticalprofiles()
                          + difd*(turkin0(L-1) - turkin0(L ))*tetm1
         endif
 
-        if (dnt >= 484d0 .and. LL == 265 .and. L == Lt-7) then 
-           continue 
-        endif
+        !if (dnt >= 484d0 .and. LL == 265 .and. L == Lt-7) then 
+        !   continue 
+        !endif
  
 
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
             k1         = ln(1,L)  ; k2  = ln(2,L)
             k1u        = ln(1,Lu) ; k2u = ln(2,Lu)
-
-            drhodz = 0d0 ; drhodz1 = 0d0 ; drhodz2 = 0d0
-
-            dzc1       = 0.5d0*(zws(k1u) - zws(k1-1) )  ! vertical distance between cell centers on left side
-            if (dzc1 >  0) then
-               if (idensform < 10) then                     
-                  drhodz1 = ( rho(k1u) - rho(k1) ) / dzc1
-               else
-                  prsappr = ag*rhomean*( zws(ktop(ln(1,LL))) - zws(k1) )   
-                  drhodz1 = ( setrhofixedp(k1u,prsappr) - setrhofixedp(k1,prsappr) ) / dzc1
-               endif
-            endif
-
-            dzc2       = 0.5d0*(zws(k2u) - zws(k2-1) )  ! vertical distance between cell centers on right side
-            if (dzc2 > 0) then
-               if (idensform < 10) then      
-                  drhodz2 = ( rho(k2u) - rho(k2) ) / dzc2
-               else
-                  prsappr = ag*rhomean*( zws(ktop(ln(2,LL))) - zws(k2) )  
-                  drhodz2 = ( setrhofixedp(k2u,prsappr) - setrhofixedp(k2,prsappr) ) / dzc2
-               endif
-            endif
-
+            
+            drhodz  = 0d0
+            drhodz1 = drodzws(k1)
+            drhodz2 = drodzws(k2)
+            
             if (jadrhodz == 1) then               ! averagingif non zero   
 
                if (drhodz1 == 0) then
@@ -495,7 +480,7 @@ subroutine update_verticalprofiles()
                
             endif
  !
-            bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
+            bruva (k)  = coefn2*drhodz    ! N.B., bruva = N**2 / sigrho
             buoflu(k)  = max(vicwwu(L), vicwminb)*bruva(k)
 
             !c Production, dissipation, and buoyancy term in TKE equation;
@@ -540,7 +525,14 @@ subroutine update_verticalprofiles()
             rich(L) = sigrho*bruva(k)/max(1d-8,dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
         endif
 
-        sourtu    = max(vicwwu(L),vicwminb)*dijdij(k)
+        !vicwalfa = 0.3333d0
+        !if (vicwalfa == 0d0) then 
+        !   vicw = vicwwu(L)
+        !else 
+        !   vicw = (1d0-vicwalfa)*vicwwu(L) + vicwalfa*( vicwwu(Lu) + vicwwu(L-1) )   
+        !endif
+        !sourtu = max(vicw, 1d-6)*dijdij(k)
+        sourtu = max(vicwwu(L), vicwminb)*dijdij(k)
 
         !
         if (iturbulencemodel == 3) then
@@ -715,8 +707,8 @@ subroutine update_verticalprofiles()
         turkin1(L) = turkin1(Lt)
      enddo
 
-     if (mout == 0) call newfil(mout, md_ident//'turkin0.pli') ! 483
-     if (dnt >= 463d0 .and. LL == 265 ) then 
+     if (mout == 0) call newfil(mout, trim(md_ident)//'turkin0.pli') ! 483
+     if (dnt >= 463d0 .and. dnt <= 500d0 .and. LL == 265 ) then 
         write (mout,'(i4.0)') int(dnt)  
         write (mout,'(a)') '   11    2  '  
         do j = Lt, Lt-10, -1
@@ -802,6 +794,9 @@ subroutine update_verticalprofiles()
 
            tkedisL =  0d0 ! tkedis(L)
            sinktu  =  c2e*(tureps0(L) + tkedisL) / turkin1(L)    ! yoeri has here : /turkin0(L)
+
+           !sinktu  =  c2e*(tureps0(L) + tkedisL) / turkin0(L)  ! 
+
 
            !c Addition of production and of dissipation to matrix ;                               epsilon
            !c observe implicit treatment by Newton linearization.
@@ -1064,6 +1059,10 @@ subroutine update_verticalprofiles()
   turkin0 = turkin1
   tureps0 = tureps1
 
+ !if ( jampi.eq.1 ) then
+ !   call update_ghosts(ITYPE_U3DW, 1, Ndkx, turkin1, ierror)
+ !   call update_ghosts(ITYPE_U3DW, 1, Ndkx, tureps1, ierror)
+ !end if
   call linkstocenterstwodoubles(vicwws, vicwwu)
 
 
@@ -1108,6 +1107,8 @@ subroutine update_verticalprofiles()
 
   tetm1     = 1d0-tetavkeps
   dtiL      = 1d0 / dtprev                                ! turbulence transport in current velocity field => do not use new timestep but previous step
+
+  call setdrodzws()
 
   do LL = 1,lnx                                           ! all this at velocity points
     ustb(LL) = 0d0
@@ -1180,14 +1181,7 @@ subroutine update_verticalprofiles()
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
 
-            drhodz = 0d0
-            if (idensform < 10) then                     
-               drhodz  = ( rho(Lu) - rho(L) ) / dzw(k)
-            else 
-               prsappr = ag*rhomean*( zws(Lt) - zws(L) )   
-               drhodz  = ( setrhofixedp(Lu,prsappr) - setrhofixedp(L,prsappr) ) / dzw(k)
-            endif
- 
+            drhodz     = drodzws(k) 
             bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
             buoflu(k)  = max(vicwws(L), vicwminb)*bruva(k)
 
@@ -1673,5 +1667,65 @@ subroutine update_verticalprofiles()
 
   
 
+ subroutine setdrodzws()
+ use m_flowgeom
+ use m_flow
+ implicit none
+ integer          :: kk, k, kb, kt,LL, L, k1, k2
+ double precision :: dzc, prsappr
+ double precision, external :: setrhofixedp
+
+ do kk = 1,ndx
+    kb = kbot(kk) 
+    kt = ktop(kk)
+    if (zws(kt) - zws(kb) < epshu) then 
+       drodzws(kb:kb+kmxn(kk)-1) = 0d0
+    else
+       do k = kb, kt-1
+          dzc = 0.5d0*( zws(k+1) - zws(k-1) )  ! vertical distance between cell centers 
+          if (dzc >  0) then
+             if (idensform < 10) then                     
+                drodzws(k) = ( rho(k+1) - rho(k) ) / dzc
+             else
+                prsappr = ag*rhomean*( zws(kt) - zws(k) )   
+                drodzws(k) = ( setrhofixedp(k+1,prsappr) - setrhofixedp(k,prsappr) ) / dzc
+             endif
+          endif
+       enddo
+    endif
+ enddo
+
+ if (drhodzfilterfachor > 0d0) then 
+
+    workx = 0d0 ; worky = 0d0
+    do LL = 1,lnx
+       do L = Lbot(LL) , Ltop(LL) 
+          k1 = ln(1,L) ; k2 = ln(2,L)
+          if (drodzws(k1) .ne. 0d0 .and. drodzws(k2) .ne. 0d0) then 
+              workx(k1) = workx(k1) + vol1(k2)*drodzws(k2)     
+              worky(k1) = worky(k1) + vol1(k2)   
+
+              workx(k2) = workx(k2) + vol1(k1)*drodzws(k1)     
+              worky(k2) = worky(k2) + vol1(k1)   
+          endif 
+       enddo
+    enddo
+
+    do kk = 1,ndx
+       kb = kbot(kk) 
+       kt = ktop(kk)  
+       do k = kb, kt
+          if (worky(k) > 0d0) then 
+             drodzws(k) = (1d0 - drhodzfilterfachor)*drodzws(k) + drhodzfilterfachor*workx(k) / worky(k)
+          endif
+       enddo
+    enddo
+
+ endif
+
+ end subroutine setdrodzws
+
  
-  
+
+
+

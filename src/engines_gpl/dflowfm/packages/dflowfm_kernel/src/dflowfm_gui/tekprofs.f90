@@ -52,15 +52,15 @@
   integer          :: ini = 0, kt, mout = 0, jaref
   double precision :: vmin, vmax, ugem, viceld
   integer          :: n, kb, kbn, kbn1, km, km1, k, kk, ku, kd, kku, kkd, Lb0, Lb, Lt, Lm1, L, LL, La
-  double precision :: zmin, zmax
+  double precision :: zmin, zmax, znow
   double precision :: h0, b0, z00, zinc, cz, cf, ustbref, ustwref, zint, z1, dz2, zz, ff
   double precision :: tkebot, tkesur, tkewin
   double precision :: epsbot, epssur, epswin, dzkap, sqcf, ulx, sg, drhodz, rhomea, rhop0, prsappr
-  double precision, external :: densfm, setrhofixedp 
+  double precision, external :: densfm, setrhofixedp, znod 
 
   double precision :: VMAX2,VMIN2,DV2,VAL2
   integer          :: NCOLS2,NV2,NIS2,NIE2,JAAUTO2, is, Ls, LLs, Lbs, Lts
-  integer          :: iconst, jabruv, kxL
+  integer          :: iconst, jabruv, kxL, kplotorg
 
   integer          :: ndraw
   COMMON /DRAWTHIS/ ndraw(50)
@@ -256,8 +256,6 @@
   ! in dat geval DAG (nr van de dag) toevoegen
 
 
-
-
   if (ndraw(35) == 1) then ! turbulence profiles etc
 
   ucm(1:km) = sqrt( ucx(kb:kt)*ucx(kb:kt) + ucy(kb:kt)*ucy(kb:kt) )
@@ -351,30 +349,23 @@
 
   endif
 
-  if ( iconst_cur.gt.0 .and. iconst_cur.le.NUMCONST ) then
+  kplotorg  = kplot
+  do k = kt,kb,-1
+     kplot = kt-k+1 
+     znow  = znod(kk)
+     if (znow == dmiss) then 
+        if (idensform > 0) then
+            znow = rho(k)
+        endif
+     endif 
+     dijdij(k-kb+1) = znow
+  enddo
+  kplot = kplotorg
+  call getvminmax(6,vmin,vmax,dijdij(1:km), km)
+  call TEKFN(6,11, 1, dijdij(1:km), hcref , km, vmin, vmax, zmin, zmax, 221, 'znod' , 1, 2 , 0d0,kplot)
 
-      vmin =  1d2
-      vmax = -1d2
-      vmin = min(vmin, minval(constituents(iconst_cur,kb:kt)) )
-      vmax = max(vmax, maxval(constituents(iconst_cur,kb:kt)), vmin+1d-5 )
-
-      call TEKFN(6,11, 1, constituents(iconst_cur,kb:kt)  , hcref  , km, vmin, vmax, zmin, zmax, 221, trim(const_names(iconst_cur)) , 1, 2 , 0d0,kplot)
-
-      !vmin = 1d2
-      !vmax = -1d2
-      !do iconst=ISED1,ISEDN
-      !   vmin = min(vmin, minval(constituents(iconst,kb:kt)) )
-      !   vmax = max(vmax, maxval(constituents(iconst,kb:kt)), vmin+1d-5 )
-      !end do
-      !
-      !do iconst=ISED1,ISEDN
-      !   call TEKFN(6,11, 1, constituents(iconst,kb:kt)  , hcref  , km, vmin, vmax, zmin, zmax, 221, 'all seds', 1, 2 , 0d0,kplot)
-      !end do
-
-
-  else if (frcuni > 0 .and. ndraw(35) == 1 .and. LL > 0) then
-      ! if (jaref > 0) call TEKFN(5, 9, 0, teps1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'teps1'      , 0, 1 , 0d0,0)   ! interfaces
-      dijdij(1:km-1) = (vicwwu(Lb:Lt-1)+vicoww)*( u1(Lb+1:Lt)-u1(Lb:Lt-1) )*  2d0 /  ( hu(Lb+1:Lt)+hu(Lb:Lt-1) )
+  if (frcuni > 0 .and. ndraw(35) == -999 .and. LL > 0) then
+      dijdij(1:km-1) = (vicwwu(Lb:Lt-1)+vicoww)*( u1(Lb+1:Lt)-u1(Lb:Lt-1) )*  2d0 /  ( hu(Lb+1:Lt)-hu(Lb-1:Lt-2) )
       dijdij(0)    = ustb(L)*ustb(L)
       if ( csu(L)*u1(Lb) < 0 ) dijdij(0)  = - dijdij(0)
       dijdij(km)   = ustw(L)*ustw(L)
@@ -384,7 +375,7 @@
 
       call getvminmax(6,vmin,vmax,dijdij(0:km), km+1)
       call TEKFN(6,11, 1, dijdij(0:km), hwref  , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'Reyn'      , 0, 2 , 0d0,kplot+1)
-   endif
+  endif
 
   jabruv = 1
   if (jabruv > 0) then
@@ -406,7 +397,7 @@
      if (vmax < abs(vmin)) vmax = -vmin
      if (abs(vmin-vmax) < 1d-20) then
         vmax = vmax + 1d-5 ; vmin = vmin - 1d-5
-  endif
+     endif
      call TEKFN(7,13, 1, dijdij(0:km), hwref  , Lm1, vmin, vmax, zmin, zmax, KLPROF, 'Bruva'      , 0, 2 , 0d0,kplot+1)
   else   if (jatem > 0) then
      if (jafahrenheit > 0) then

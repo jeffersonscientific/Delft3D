@@ -61,10 +61,9 @@
 !     screendump : nhcdev .ge. 13: 1 dump ,-1 niks , 0 neutraal
       IF (NOPEN .EQ. 1) THEN
 
-         open (newunit=mout, file = trim(md_ident)//'.x1y1x2')
-         write(mout,*) x1,y1, x2
-         close(mout)
-
+         !open (newunit=mout, file = trim(md_ident)//'.x1y1x2')
+         !write(mout,*) x1,y1, x2
+         !close(mout)
 
          IF (NHCDEV .EQ. 1) THEN
             EXT = '.hgl'

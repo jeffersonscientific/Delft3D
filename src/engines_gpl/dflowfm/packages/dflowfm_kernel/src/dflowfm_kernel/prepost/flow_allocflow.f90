@@ -665,7 +665,7 @@ if (icorio == 7 .or. icorio == 8 .or. icorio == 27 .or. icorio == 28) then
    allocate ( hus(ndkx) , stat=ierr )
    call aerr('hus(ndkx)', ierr, ndkx) ; hus = 0
 endif
- if (kmx > 0) then
+if (kmx > 0) then
    if (allocated (ucz) ) deallocate(ucz)
    allocate ( ucz (ndkx) , stat = ierr)
    call aerr('ucz (ndkx)', ierr, ndkx) ; ucz  = 0
@@ -674,6 +674,10 @@ endif
  if (allocated(rho) ) deallocate(rho)
  allocate ( rho (ndkx) , stat= ierr )
  call aerr('rho (ndkx)', ierr, ndkx ) ; rho  = rhomean
+
+ if (allocated (drodzws) ) deallocate (drodzws)
+ allocate  ( drodzws(ndkx) , stat = ierr)
+ call aerr ('drodzws(ndkx)', ierr, ndkx) ; drodzws = 0d0
 
  if (stm_included) then 
  if (allocated(rhowat) ) deallocate(rhowat)

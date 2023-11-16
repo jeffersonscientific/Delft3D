@@ -119,8 +119,7 @@ implicit none
     integer :: nredp
     integer :: nreds
 
-    integer :: jascaleprofs=1
-
+    integer :: jascaleprofs=0
 
     character(len=255) :: coltabfile  = ' '
     character(len=255) :: coltabfile2 = ' '

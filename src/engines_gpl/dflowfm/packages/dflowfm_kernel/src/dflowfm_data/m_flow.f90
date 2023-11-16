@@ -80,6 +80,7 @@
  integer                           :: jadrhodz = 1
  double precision                  :: facLaxturb = 0    !< Turkineps0 from : 0.0=links ; 1.0=nodes 
  integer                           :: jafaclaxturbtyp   !< (Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)
+double precision                   :: drhodzfilterfachor !<(Horizontal Filtering of Vertical density gradient in Turbulence model, 0d0=None, 1d0=Fully, or in between) 
  double precision                  :: sigmagrowthfactor !<layer thickness growth factor from bed up
  double precision                  :: dztopuniabovez  = -999d0     !< bottom level of lowest uniform layer == blmin if not specified
  double precision                  :: Floorlevtoplay  = -999d0     !< floor  level of top zlayer, == sini if not specified
@@ -220,6 +221,7 @@
 
  double precision, allocatable         :: dsadx   (:)   !< cell center sa gradient, (ppt/m)
  double precision, allocatable         :: dsady   (:)   !< cell center sa gradient, (ppt/m)
+double precision, allocatable         :: drodzws (:)   !< vertical density gradient in w interface at cell center (kg/m4)
 
 ! node related, dim = ndxi
  double precision, allocatable, target :: freeboard(:)  !< [m] For output purposes: freeboard at cell center, only for 1D

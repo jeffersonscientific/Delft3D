@@ -384,7 +384,7 @@
       OPTION(36)= 'cflmx*vol1(k)/squ(k)               (   )'
 
       if (soiltempthick == 0d0) then
-         OPTION(37)= 'salmase                            (   )'
+         OPTION(37)= 'delta rho vertical               (kg/m3)'
       else
          OPTION(37)= 'soiltemp                           ( C )'
       endif
@@ -409,6 +409,8 @@
 
       if (jagrw > 0 .or. jadhyd > 0) then
          OPTION(47)= 'Hydrology & groundwater parameters      '
+      else 
+         OPTION(47)= 'turepsws                                '
       endif
 
       if (nonlin >= 2) then
@@ -490,8 +492,8 @@
             ndraw(28) = 1
             nwhat     = 46 ! Grw & Hydrology submenu
             goto 1234
-         else
-            ndraw(28) = 0
+     !    else
+     !       ndraw(28) = 0
          end if
 
       else if (ndraw(28).eq.numoptwav) then
@@ -569,8 +571,8 @@
       OPTION(38)= 'Timestep if jaautotimestep == 2  ( s   )'
       OPTION(39)= 'bottom slope (bl2-bl1)/dx        (     )'
       OPTION(40)= 'IFRCUTP friction type            (     )'
-      OPTION(41)= 'turkin0                          (m2/s2)'
-      OPTION(42)= 'tureps0                          (1/s  )'
+      OPTION(41)= 'turkin1                          (m2/s2)'
+      OPTION(42)= 'tureps1                          (1/s  )'
       OPTION(43)= 'vicwwu                           (m2/s )'
       OPTION(44)= 'ustb                             (     )'
       if (jawind > 0) then

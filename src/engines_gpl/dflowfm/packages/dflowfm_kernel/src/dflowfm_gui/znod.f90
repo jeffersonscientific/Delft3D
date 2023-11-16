@@ -207,7 +207,7 @@ else if (nodval == 27) then
     if (Soiltempthick > 0 .and. jatem > 0) then
        znod = tbed(kk)
     else
-       znod = same(k)
+       znod = rho(k) - rho(k-1)
     endif
 
  else if (nodval == 38) then
@@ -242,8 +242,10 @@ else if (nodval == 27) then
  else if (nodval == 46) then
     if ( allocated(FrcInternalTides2D) ) then
        znod = FrcInternalTides2D(kk)
-    else
-    znod = turkinepsws(1,k)
+    else if (iturbulencemodel == 3 .or. iturbulencemodel == 4) then 
+       znod = turkinepsws(1,k)
+    else if (iturbulencemodel == 5 .or. iturbulencemodel == 6) then 
+       znod = turkinws(k)
     endif
  else if (nodval == 47 .and. (jagrw > 0 .or. jadhyd > 0)) then
     select case (grwhydopt)
@@ -277,6 +279,12 @@ else if (nodval == 27) then
       end if
     end select
 
+ else if (nodval == 47) then
+    if (iturbulencemodel == 3 .or. iturbulencemodel == 4) then 
+       znod = turkinepsws(2,k)
+    else if (iturbulencemodel == 5 .or. iturbulencemodel == 6) then 
+       znod = turepsws(k)
+    endif
  else if (nodval == 48) then
    if (nonlin >= 2) then
       znod = a1m(kk)
