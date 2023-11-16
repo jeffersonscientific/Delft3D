@@ -6668,7 +6668,8 @@ module m_meteo
    integer, target :: item_hac_airtemperature                                !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hac_cloudiness                                    !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_humidity                                          !< 'humidity' (or 'dewpoint') quantity
+   integer, target :: item_humidity                                          !< 'humidity' quantity
+   integer, target :: item_dewpoint                                          !< 'dewpoint' quantity
    integer, target :: item_airtemperature                                    !< 'airtemperature' quantity
    integer, target :: item_cloudiness                                        !< 'cloudiness' quantity
    integer, target :: item_solarradiation                                    !< 'solarradiation' quantity
@@ -6780,6 +6781,7 @@ module m_meteo
       item_humidity                              = ec_undef_int
       item_airtemperature                        = ec_undef_int
       item_cloudiness                            = ec_undef_int
+      item_dewpoint                              = ec_undef_int
       item_solarradiation                        = ec_undef_int
       item_longwaveradiation                     = ec_undef_int
       item_hac_humidity                          = ec_undef_int
@@ -7172,9 +7174,9 @@ module m_meteo
          case ('humidity')      
             itemPtr1 => item_humidity
             dataPtr1 => rhum                 ! Relative humidity                
-         case ('dewpoint')                   
-            itemPtr1 => item_humidity
-            dataPtr1 => rhum                 ! Relative humidity array used to store dewpoints              
+         case ('dewpoint')
+            itemPtr1 => item_dewpoint
+            dataPtr1 => tdewpoint
          case ('airtemperature')
             itemPtr1 => item_airtemperature
             dataPtr1 => tair
@@ -8356,7 +8358,15 @@ module m_meteo
          case ('humidity')
             sourceItemName = 'relative_humidity'
          case ('dewpoint')
-            sourceItemName = 'dew_point_temperature'
+            if (ec_filetype == provFile_netcdf) then
+               sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'dew_point_temperature')
+               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+            else
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
+               return
+            end if
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_dewpoint)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_airdensity, connectionId)            
          case ('airtemperature')
             if (ec_filetype == provFile_uniform) then
                sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
@@ -8628,15 +8638,12 @@ module m_meteo
          if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dewpoint, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'dewpoint') then
-         if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_humidity, irefdate, tzone, tunit, timesteps)) return ! Relative humidity array used to store dewpoints
-         if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_airtemperature, irefdate, tzone, tunit, timesteps)) return ! update tair for conversion of dewpoint to humidity
+         if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_dewpoint, irefdate, tzone, tunit, timesteps)) return
       end if
       
       if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dewpoint/=ec_undef_int)    &
           .or.       & 
-          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dewpoint/=ec_undef_int)    &
-          .or.       &
-          (trim(group_name) == 'dewpoint' .and. item_humidity/=ec_undef_int)) then
+          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dewpoint/=ec_undef_int)) then
           ! Conversion of dewpoint to relative humidity
           ptd => rhum
           prh => rhum

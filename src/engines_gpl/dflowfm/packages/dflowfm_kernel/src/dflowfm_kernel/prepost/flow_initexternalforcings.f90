@@ -1604,18 +1604,18 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   jarhum = 1  ; btempforcingtypH = .true.
                endif
 
-            else if (qid == 'dewpoint') then ! Relative humidity array used to store dewpoints
+            else if (qid == 'dewpoint') then
 
-               if (.not. allocated(rhum) ) then
-                  allocate ( rhum(ndx) , stat=ierr)
-                  call aerr('rhum(ndx)', ierr, ndx)
-                  rhum = 0d0
+               if (.not. allocated(tdewpoint) ) then
+                  allocate ( tdewpoint(ndx) , stat=ierr)
+                  call aerr('tdewpoint(ndx)', ierr, ndx)
+                  tdewpoint = 0d0
                endif
 
                itempforcingtyp = 5
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jarhum = 1  ;
+                  ja_dewpoint = 1
                endif
 
             else if (qid == 'cloudiness') then

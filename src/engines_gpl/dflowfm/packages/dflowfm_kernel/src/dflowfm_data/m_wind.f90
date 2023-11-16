@@ -87,6 +87,7 @@ double precision, allocatable, target :: vextcum(:)      !< [m3] Cumulative real
 double precision, allocatable, target :: tair(:)         !< air temperature       (degC)
 double precision, allocatable, target :: rhum(:)         !< air relative humidity (%)
 double precision, allocatable, target :: clou(:)         !< air cloudiness        (%)
+double precision, allocatable, target :: tdewpoint(:)    !< dewpoint temperature  (degC)
 double precision, allocatable, target :: airdensity(:)   !< air density           (kg/m3)
 double precision, allocatable, target :: qrad(:)         !< solar radiation       (W/m2)
 double precision, allocatable, target :: longwave(:)     !< long wave radiation   (W/m2)
@@ -107,9 +108,10 @@ integer                           :: jastresstowind      !< if jawindstressgiven
 integer                           :: ja_varying_airdensity !< compute airdensity yes/no 1/0
 integer                           :: jarain              !< use rain yes or no
 integer                           :: jaevap              !< use evap yes or no
-integer                           :: jatair              !< use air temperature   yes or no
+integer                           :: jatair              !< use air temperature yes or no
 integer                           :: jarhum              !< use relative humidity yes or no
-integer                           :: jaclou              !< use cloudiness        yes or no
+integer                           :: jaclou              !< use cloudiness yes or no
+integer                           :: ja_dewpoint         !< use dewpoint temperature yes or no
 integer                           :: ja_airdensity       !< use variabele air density yes or no
 integer                           :: jasol = 0           !< use 1 = use solrad, 2 = use cloudiness
 integer                           :: jalongwave = 0      !< >0 longwaveradiation from file; otherwise internal formulation
