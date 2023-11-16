@@ -96,7 +96,6 @@ module m_Storage
       double precision        :: entrance_loss           !< entrance loss coefficient
       double precision        :: exit_loss               !< exit loss coefficient
       double precision        :: expansion_loss          !< loss coefficient for expansion or contraction
-      double precision        :: bend_loss               !< bend loss coefficient for the upstream pipe(s)
    end type
    
    type, public :: t_storage_set
