@@ -901,15 +901,24 @@ subroutine update_from_incoming_data( connection )
     integer                                         :: idx
 
     !
-    ! For now: only waste loads - set by D-RTC
+    ! Handle waste loads
     !
     if ( allocated(wasteloads) ) then
         do idx = 1,size(connection)
             if ( connection(idx)%category == category_wasteload .and. connection(idx)%incoming ) then
-                wasteloads(connection(idx)%buffer_idx)%set_factor = merge(1.0, 0.0, connection(idx)%p_value /= 0.0 )
+                wasteloads(connection(idx)%buffer_idx)%set_factor = connection(idx)%p_value
             endif
         enddo
     endif
+
+    !
+    ! Handle constants (process parameters)
+    !
+    do idx = 1,size(connection)
+        if ( connection(idx)%category == category_procparam .and. connection(idx)%incoming ) then
+             dlwqd%buffer%rbuf(connection(idx)%buffer_idx) = connection(idx)%p_value
+         endif
+    enddo
 end subroutine update_from_incoming_data
 
 end module bmi
