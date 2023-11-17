@@ -689,10 +689,9 @@ subroutine split_key( key_name, connection, newidx )
     new_connection%exchange_name = key_name
     new_connection%incoming      = key_name(1:10) == 'TO_DELWAQ|' ! Otherwise automatically outgoing!
 
-
-
     !
-    ! We require four parts, separated by a vertical bar ("|")
+    ! We require four parts, separated by a vertical bar ("|"). Though for constants,
+    ! we have only three parts.
     ! By requiring the position to be larger than 1 and removing spaces on the left
     ! we ensure that there is something between the bars.
     !
@@ -703,7 +702,9 @@ subroutine split_key( key_name, connection, newidx )
         if ( k > 1 ) then
             copy_key = adjustl( copy_key(k+1:) )
         else
-            error = .true.
+            if ( index( key_name, '|CONST|' ) == 0 ) then
+                error = .true.
+            endif
             exit
         endif
     enddo
@@ -731,10 +732,18 @@ subroutine split_key( key_name, connection, newidx )
     copy_key  = copy_key(k+1:)
 
     !
-    ! The item name or index
+    ! The item name or index (this may be the last part of the connection string)
     !
     k         = index( copy_key, '|' )
-    item_name = copy_key(1:k-1)
+    if ( k == 0 ) then
+        if ( index( key_name, '|CONST|' ) /= 0 ) then
+            item_name = copy_key
+        else
+            item_name =  ' '
+        endif
+    else
+        item_name = copy_key(1:k-1)
+    endif
     copy_key  = copy_key(k+1:)
 
     !
@@ -838,13 +847,13 @@ selection: &
                 endif
 
                 iseg = monitor_cell(monidx)
-                
+
                 call zoekns( subst_param, notot, substance_name, 20, isys )
                 if ( isys <= 0 ) then
                     newidx = 0
                     exit selection
                 endif
-                
+
                 new_connection%buffer_idx = iconc-1 + isys + (iseg-1)*notot  ! a(iconc:)
 
             case( 'CONST' )
