@@ -66,6 +66,7 @@ public :: fm_bott3d
    use precision_basics
    use bedcomposition_module
    use sediment_basics_module
+   use m_flow, only: kmx
    use m_flowgeom , only: ndxi, ndx
    use m_flowparameters, only: eps10, jawave 
    use m_flowexternalforcings, only: nopenbndsect
@@ -73,7 +74,7 @@ public :: fm_bott3d
    use m_transport, only: ised1
    use m_turbulence, only: rhowat
    use unstruc_files, only: mdia
-   use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
+   use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy, iconsolidate, rhosol
    use m_sediment, only: kcsmor
    use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
    use m_fm_morstatistics, only: morstats, morstatt0
@@ -100,6 +101,7 @@ public :: fm_bott3d
    logical                                     :: error
    
    integer                                     :: ierror, nm, ll
+   integer                                     :: kb, kt
    
    double precision                            :: dtmor
    double precision                            :: timhr
