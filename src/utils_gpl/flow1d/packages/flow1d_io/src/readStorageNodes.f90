@@ -125,6 +125,11 @@ module m_readStorageNodes
       end if
 
       ! check optional [Global] values for junction loss parameters
+      allocate(angle_loss_global)
+      angle_loss_global%length = 0
+      entrance_loss_global  = 0d0        
+      exit_loss_global      = 0d0     
+      expansion_loss_global = 0d0           
       call read_all_loss_values(md_ptr, 'Global', 'section [Global]', angle_loss_global, &
          entrance_loss_global, exit_loss_global, expansion_loss_global, success)
 
@@ -187,7 +192,7 @@ module m_readStorageNodes
             success = success .and. check_input(success1, storgNodeId, 'name')
 
             ! read optional node type
-            node_type = ''
+            node_type = 'compartment'
             call prop_get(node_ptr, '', 'nodeType', node_type, success1)
 
             ! read location
