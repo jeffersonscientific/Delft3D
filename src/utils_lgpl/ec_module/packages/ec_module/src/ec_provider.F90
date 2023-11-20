@@ -383,8 +383,8 @@ module m_ec_provider
                            "dewpoint_airtemperature_cloudiness_solarradiation",           &
                            "solarradiation", "longwaveradiation", "wavesignificantheight", &
                            "waveperiod", "friction_coefficient_time_dependent", "wavedirection", & 
-                           "xwaveforce", "ywaveforce", "xwaveinducedvolumeflux","ywaveinducedvolumeflux", &
-                           "freesurfacedissipation","whitecappingdissipation","bottomorbitalvelocity","totalwaveenergydissipation","bottomdissipation" )
+                           "xwaveforce", "ywaveforce", &
+                           "freesurfacedissipation","whitecappingdissipation","totalwaveenergydissipation")
                         success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                      case ("hrms","tp", "tps", "rtp","dir","fx","fy","wsbu","wsbv","mx","my","dissurf","diswcap","ubot") 
                         success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2626,18 +2626,16 @@ module m_ec_provider
              ncstdnames(1) = 'sea_surface_wave_from_direction'
          case ('xwaveforce')
              ncvarnames(1) = 'xfor'
+             ncstdnames(1) = 'xfor'
          case ('ywaveforce')
              ncvarnames(1) = 'yfor'
-         case ('xwaveinducedvolumeflux')
-             ncvarnames(1) = 'xtrsp'
-         case ('ywaveinducedvolumeflux')
-             ncvarnames(1) = 'ytrsp'
+             ncstdnames(1) = 'yfor'
          case ('freesurfacedissipation')
              ncvarnames(1) = 'ssurf'
+             ncstdnames(1) = 'ssurf'
          case ('whitecappingdissipation')
              ncvarnames(1) = 'swcap'
-         case ('bottomorbitalvelocity')
-             ncvarnames(1) = 'ubot'
+             ncstdnames(1) = 'swcap'
              case default                                        ! experiment: gather miscellaneous variables from an NC-file,
              if (index(quantityName,'waqsegmentfunction')==1) then
                  ncvarnames(1) = quantityName

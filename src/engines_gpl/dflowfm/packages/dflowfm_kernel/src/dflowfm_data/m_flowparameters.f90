@@ -126,7 +126,7 @@
 
  integer                           :: jawave            !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=XBeach wave driver, 5=Const, 6=SWAN-NetCDF, 7=Offline Wave Coupling
 
- integer                           :: waveforcing       !< Wave forcing type, 0=no, 1=based on gradients radiation stresse, 2=based on dissipation, NOT implemented yet, 3=based on dissipation at free surface and water column, NOT implemented yet
+ integer                           :: waveforcing       !< Wave forcing type, 0=no, 1=based on radiation stress gradients, 2=based on dissipation, NOT implemented yet, 3=based on dissipation at free surface and water column, NOT implemented yet
  
  logical                           :: flowWithoutWaves = .false.  !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
 
@@ -282,6 +282,7 @@
  integer                           :: limtypw           !< 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC, 21=central voor wave action transport
 
  integer                           :: ifixedweirscheme       !< 0 = no, 1 = compact stencil, 2 = whole tile lifted, full subgrid weir + factor
+ integer                           :: ifixedweirscheme1D2D   !< 0 = use regular fixedweirscheme also on 1D2D links, 1 = iterative 1d2d lateral coupling on 1D2D links
  integer                           :: ifxedweirfrictscheme   !< 0 = friction based on hu, 1 = friction based on subgrid weirfriction scheme
  integer                           :: jasetadjacentbobs = 0  !< also lift adjacent bobs and bl of kadecel
  double precision                  :: fixedweircontraction   !< flow width = flow width*fixedweircontraction
@@ -454,8 +455,8 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jalogtransportsolverlimiting    !< log transport solver limiting message bloat (default 0, preferable 0)
  
  integer                           :: jadpuopt                  !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean. 
+ integer                           :: jaextrapbl                !< option for extrapolating bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate. Necessary for analytical solutions. 
 
- integer                           :: ja_vis_diff_limit         !< write info in dia file when viscosity/diffusivity is limited (0: no, 1: yes)
  ! written to his file yes or no
  integer                           :: jahisbal                  !< Write mass balance/volume totals to his file, 0: no, 1: yes
  integer                           :: jahissourcesink           !< Write discharge/volume at sources/sinks, 0: no, 1: yest
@@ -825,6 +826,7 @@ subroutine default_flowparameters()
     limtypw    = 4
 
     ifixedweirscheme      = 6      !< 0 = no special treatment, setbobs only, 1 = compact stencil, 2 = whole tile lifted, full subgrid weir + factor
+    ifixedweirscheme1D2D  = 0      !< 0 = use regular fixedweirscheme also on 1D2D links, 1 = iterative 1d2d lateral coupling on 1D2D links
     fixedweircontraction  = 1d0    !< flow width = flow width*fixedweircontraction
     fixedweirtopwidth     = 3d0    !< e.g. 4.00 (m)
     fixedweirtopfrictcoef = -999d0 !< if .ne. dmiss, use this friction coefficient on top width
@@ -940,8 +942,6 @@ subroutine default_flowparameters()
     jalogsolverconvergence = 0
     jalogtransportsolverlimiting = 0
     
-    ja_vis_diff_limit = 0
-
     jahisbal = 1
     jahissourcesink = 1
     jahistur = 1
@@ -1063,6 +1063,7 @@ subroutine default_flowparameters()
     implicitdiffusion2D         = 0
     
     jadpuopt = 1
+    jaextrapbl = 0
 
     call reset_flowparameters()
 end subroutine default_flowparameters
