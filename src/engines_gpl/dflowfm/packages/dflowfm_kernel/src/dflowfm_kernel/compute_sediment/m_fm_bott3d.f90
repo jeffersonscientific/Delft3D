@@ -71,6 +71,7 @@ public :: fm_bott3d
    use m_flowexternalforcings, only: nopenbndsect
    use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
    use m_transport, only: ised1
+   use m_turbulence, only: rhowat
    use unstruc_files, only: mdia
    use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
    use m_sediment, only: kcsmor
@@ -104,6 +105,7 @@ public :: fm_bott3d
    double precision                            :: timhr
    
    double precision, dimension(:), allocatable :: bl_ave0
+   double precision, dimension(:), allocatable :: rhowat2d
    
    character(len=256)                             :: msg
 
@@ -193,12 +195,22 @@ public :: fm_bott3d
       call fm_bed_boundary_conditions(timhr)
       
       call fm_change_in_sediment_thickness(dtmor)
-	  
-      call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
+      
+      allocate(rhowat2d(ndxi))
+      do nm = 1, ndxi
+         if (kmx>0) then ! 3D case
+            call getkbotktop(nm, kb, kt)
+         else ! 2D case
+            kb = nm
+         endif
+         rhowat2d(nm) = rhowat(kb)
+      enddo
+      call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac, iconsolidate, rhosol, rhowat2d)
+      deallocate(rhowat2d)
       
       call fm_dry_bed_erosion(dtmor)
             
-	  !See: UNST-7368 		
+      ! See: UNST-7368
       if ( jampi > 0 ) then
          call update_ghosts(ITYPE_Sall, lsedtot, Ndx, dbodsd, ierror)
       end if
@@ -227,8 +239,8 @@ public :: fm_bott3d
          !
          ! Update layers and obtain the depth change
          !
-		   !See: UNST-7369
-         if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
+         ! See: UNST-7369
+         if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages, morft, dtmor) /= 0) then
             call writemessages(mtd%messages, mdia)
             write(errmsg,'(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
             call write_error(errmsg, unit=mdia)
@@ -264,7 +276,7 @@ public :: fm_bott3d
       !
       ! if morphological computations haven't started yet
       !
-	  blchg(1:ndx)=0d0
+      blchg(1:ndx)=0d0
 
    endif       ! time1<tmor
    
@@ -378,7 +390,7 @@ public :: fm_bott3d
                      cumflux = 0.0_fp
                      !
                      ! Determine reference height aks in vel. pt.
-					 !
+                     !
                      if (Lx>lnxi) then ! boundary link, take inner point value
                         aksu = aks(k2,l)
                      else
@@ -1049,7 +1061,7 @@ public :: fm_bott3d
                      do iL = Lb,Lt
                         flux = flux + fluxhortot(j,iL)
                      enddo
-					 !See: UNST-7371
+                     ! See: UNST-7371
                      call fm_sumflux(LL,sumflux,flux)
                   end do
                else
@@ -1849,7 +1861,7 @@ public :: fm_bott3d
       call fm_correct_water_level()
       !
       ! Remember erosion velocity for dilatancy
-	  !
+      !
       call fm_erosion_velocity(dtmor)
       !
       ! Dredging and Dumping
