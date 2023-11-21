@@ -67,7 +67,7 @@
       use m_flowgeom, only: nd, dxi
       use m_flow, only: u1, au, q1
       use m_storage, only: t_storage_set, t_storage
-      use m_tables, only: interpolate
+      use m_tables, only: hasTableData, interpolate
       use precision, only: comparereal
       use m_sferic, only : pi
       
@@ -87,7 +87,7 @@
          pstor => storS%stor(i)
          nod = pstor%node_index
             
-         if (pstor%angle_loss%length > 0) then
+         if (hasTableData(pstor%angle_loss)) then
             q_temp = 0 
             do iL = 1, nd(nod)%lnx
                L = nd(nod)%ln(iL)
