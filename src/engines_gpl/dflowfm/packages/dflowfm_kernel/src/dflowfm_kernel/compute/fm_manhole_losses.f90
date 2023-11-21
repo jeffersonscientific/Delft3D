@@ -35,7 +35,7 @@
       contains
       
    !>    gives link angle between 0 and Pi
-         double precision function dLinkangle(L)
+         double precision function absdLinkangle(L)
             use m_sferic, only: jsferic
             use geometry_module, only: getdxdy 
             use network_data, only: kn, xk, yk
@@ -56,10 +56,10 @@
             
             call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
             
-            dLinkangle = atan2(dy,dx)
+            absdLinkangle = abs(atan2(dy,dx))
             
             return
-      end function dLinkangle
+      end function absdLinkangle
       
       !> calculate Manhole losses entrance, expansion and bend losses for all manholes and apply losses to advi(L)
       subroutine calculate_manhole_losses(storS, advi)
@@ -67,7 +67,7 @@
       use m_flowgeom, only: nd, dxi
       use m_flow, only: u1, au, q1
       use m_storage, only: t_storage_set, t_storage
-      use m_tables, only: interpolate
+      use m_tables, only: hasTableData, interpolate
       use precision, only: comparereal
       use m_sferic, only : pi
       
@@ -87,7 +87,7 @@
          pstor => storS%stor(i)
          nod = pstor%node_index
             
-         if (pstor%angle_loss%length > 0) then
+         if (hasTableData(pstor%angle_loss)) then
             q_temp = 0 
             do iL = 1, nd(nod)%lnx
                L = nd(nod)%ln(iL)
@@ -97,7 +97,7 @@
                reference_angle = 0d0
                if (q_outflow > 0 .and. q_outflow > q_temp) then !we want the link with the biggest discharge as reference_angle
                   q_temp = q_outflow
-                  reference_angle = dLinkangle(L)
+                  reference_angle = absdLinkangle(L)
                endif
             enddo
    
@@ -111,7 +111,7 @@
                q_outflow = q_outflow*q1(L)
                if (q_outflow < 0) then
                   sum_1 = sum_1 + q1(L)
-                  angle = abs(dLinkangle(L)-reference_angle)*180/pi
+                  angle = abs(absdLinkangle(L)-reference_angle)*180/pi
                   if (angle> 180d0) then
                      angle = 360d0-angle
                   endif
