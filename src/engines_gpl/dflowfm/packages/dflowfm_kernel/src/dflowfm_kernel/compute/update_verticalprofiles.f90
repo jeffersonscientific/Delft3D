@@ -78,9 +78,6 @@ subroutine update_verticalprofiles()
 
  double precision, external :: setrhofixedp
 
- integer, save :: mout=0
- integer       :: j 
-
  if (iturbulencemodel <= 0 .or. kmx == 0) return
 
  if (iadvec == 0) then
@@ -350,7 +347,7 @@ subroutine update_verticalprofiles()
                  k1 = ln(1,L) ; k2 = ln(2,L) 
                  if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
                     faclax = facLaxturb*zf
-                    faclax = faclax*dzu(L-Lb+1) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                    faclax = faclax*min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
                     dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
                  endif
               endif
@@ -359,7 +356,7 @@ subroutine update_verticalprofiles()
            do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
-                 faclax = faclaxturb*dzu(L-Lb+1) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                 faclax = faclaxturb*min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
                  dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
               endif
            enddo
@@ -706,15 +703,7 @@ subroutine update_verticalprofiles()
      do L = Lt+1 , Lb + kmxL(LL) - 1                           ! copy to surface for z-layers
         turkin1(L) = turkin1(Lt)
      enddo
-
-     if (mout == 0) call newfil(mout, trim(md_ident)//'turkin0.pli') ! 483
-     if (dnt >= 463d0 .and. dnt <= 500d0 .and. LL == 265 ) then 
-        write (mout,'(i4.0)') int(dnt)  
-        write (mout,'(a)') '   11    2  '  
-        do j = Lt, Lt-10, -1
-           write(mout,'(2F16.8)')  dnt + 10000d0*turkin1(j), hu(j) 
-        enddo
-     endif    
+ 
     !_____________________________________________________________________________________!
 
 
@@ -1181,7 +1170,7 @@ subroutine update_verticalprofiles()
         !c Source and sink terms                                                                           k turkin
         if (idensform  > 0 ) then
 
-            drhodz     = drodzws(k) 
+            drhodz     = drodzws(L) 
             bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
             buoflu(k)  = max(vicwws(L), vicwminb)*bruva(k)
 
@@ -1577,8 +1566,8 @@ subroutine update_verticalprofiles()
              turkin1(L)  = tke*(1d0-alfaT) + alfaT*turkin1(L)
              tureps1(L)  = eps*(1d0-alfaT) + alfaT*tureps1(L)
           enddo
-          epsbot =  tureps1(Lb) + dzu(1)*abs(ustb(LL))**3/(vonkar*hdzb*hdzb)
-          epssur =  tureps1(Lt-1) - 4d0*abs(ustw(LL))**3/ (vonkar*dzu(Lt-Lb+1))
+          epsbot =  tureps1(Lb) + dzu(1)*abs(ustbs(LL))**3/(vonkar*hdzb*hdzb)
+          epssur =  tureps1(Lt-1) -  4d0*abs(ustws(LL))**3/(vonkar*dzu(Lt-Lb+1))
           if (jawave>0) then
              epssur = epssur - dzu(Lt-Lb+1)*fwavpendep*pkwmag/hrmsLL
           endif   
@@ -1603,7 +1592,7 @@ subroutine update_verticalprofiles()
     if (iturbulencemodel == 5) then                           ! k-eps
        vicwws (Lb0:Lt) = min(vicwmax, cmukep*turkinws(Lb0:Lt)*turkinws(Lb0:Lt) / turepsws(Lb0:Lt) )
     else if (iturbulencemodel == 6) then                      ! k-tau
-       vicwws (Lb0:Lt) = min(vicwmax, cmukep*turkinws(Lb0:Lt)*turkinws(Lb0:Lt) )
+       vicwws (Lb0:Lt) = min(vicwmax, cmukep*turkinws(Lb0:Lt)*turepsws(Lb0:Lt) )
     endif
 
     vicwws(Lt)  = min( vicwws(Lt)  , vicwws(Lt-1)*Eddyviscositysurfacmax )
@@ -1671,7 +1660,7 @@ subroutine update_verticalprofiles()
  use m_flowgeom
  use m_flow
  implicit none
- integer          :: kk, k, kb, kt,LL, L, k1, k2
+ integer          :: kk, k, kb, kt,LL, L, k1, k2, i
  double precision :: dzc, prsappr
  double precision, external :: setrhofixedp
 
@@ -1695,7 +1684,7 @@ subroutine update_verticalprofiles()
     endif
  enddo
 
- if (drhodzfilterfachor > 0d0) then 
+ do i = 1, numdrhodzfilterhor 
 
     workx = 0d0 ; worky = 0d0
     do LL = 1,lnx
@@ -1716,12 +1705,12 @@ subroutine update_verticalprofiles()
        kt = ktop(kk)  
        do k = kb, kt
           if (worky(k) > 0d0) then 
-             drodzws(k) = (1d0 - drhodzfilterfachor)*drodzws(k) + drhodzfilterfachor*workx(k) / worky(k)
+             drodzws(k) = (1d0 - drhodzfilterhorfac)*drodzws(k) + drhodzfilterhorfac*workx(k) / worky(k)
           endif
        enddo
     enddo
 
- endif
+ enddo
 
  end subroutine setdrodzws
 

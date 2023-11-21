@@ -79,8 +79,9 @@
  integer                           :: ieps              !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
  integer                           :: jadrhodz = 1
  double precision                  :: facLaxturb = 0    !< Turkineps0 from : 0.0=links ; 1.0=nodes 
- integer                           :: jafaclaxturbtyp   !< (Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)
-double precision                   :: drhodzfilterfachor !<(Horizontal Filtering of Vertical density gradient in Turbulence model, 0d0=None, 1d0=Fully, or in between) 
+ integer                           :: jafaclaxturbtyp=1 !< (Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)
+ integer                           :: numdrhodzfilterhor=0 !<(Horizontal Filtering of Vertical density gradient in Turbulence model, nr of iterations,0=No) 
+ double precision                  :: drhodzfilterhorfac=0.25d0 !<(Horizontal Filtering of Vertical density gradient in Turbulence model, 1d0=OnlyWeightNeighbours, 0d0=NoweightNeighbours) 
  double precision                  :: sigmagrowthfactor !<layer thickness growth factor from bed up
  double precision                  :: dztopuniabovez  = -999d0     !< bottom level of lowest uniform layer == blmin if not specified
  double precision                  :: Floorlevtoplay  = -999d0     !< floor  level of top zlayer, == sini if not specified

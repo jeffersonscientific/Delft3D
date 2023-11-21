@@ -117,9 +117,9 @@
 
  call resetflow()
 
- call reset_waq()
+ !call reset_waq()
 
- call reset_nearfieldData()
+ !call reset_nearfieldData()
 
  call timstop(handle_extra(1)) ! End basic steps
 

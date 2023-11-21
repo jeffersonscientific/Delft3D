@@ -85,7 +85,7 @@
    integer :: ja, L, n12, ikey, mnx
    integer :: ndraw
    integer :: MODE,NUM,NWHAT,KEY,nwhat2
-   integer :: JDEMO
+   integer :: JDEMO, nplorg
    integer :: irerun          ! orthogonalisenet: rerun
 
    COMMON /DRAWTHIS/  ndraw(50)
@@ -168,7 +168,9 @@
       ELSE IF (NWHAT .EQ. 19) THEN
       ELSE IF (NWHAT .EQ. 20) THEN
          jareinitialize = 1
+         call savepol() ; nplorg = npl ;  npl = 0
          ierr = flow_modelinit()
+         npl = nplorg; nph = nplorg ; call restorepol()  ! keep showrai.pli
       ELSE IF (NWHAT .EQ. 21) THEN  ! Refresh net adm. (setnodadm + findcells)
          call findcells(100)        ! include folded cells
          call find1dcells()

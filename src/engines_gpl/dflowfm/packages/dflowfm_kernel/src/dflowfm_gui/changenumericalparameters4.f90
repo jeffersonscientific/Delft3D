@@ -39,7 +39,7 @@
    implicit none
 
    integer :: numpar, numfld, numparactual, numfldactual
-   PARAMETER  (NUMPAR = 22, NUMFLD = 2*NUMPAR)
+   PARAMETER  (NUMPAR = 26, NUMFLD = 2*NUMPAR)
    INTEGER  IX(NUMFLD),IY(NUMFLD),IS(NUMFLD),IT(NUMFLD), L
    CHARACTER WRDKEY*40, OPTION(NUMPAR)*40, HELPM(NUMPAR)*60
    integer :: nlevel
@@ -75,6 +75,11 @@
    OPTION(20) = 'Bedwidth                         (m)   ' ; it(2*20) = 6
    OPTION(21) = 'Bedwaveamplitude                 (m)   ' ; it(2*21) = 6
    OPTION(22) = 'Bedwavelength                    (m)   ' ; it(2*22) = 6
+   OPTION(23) = 'Numdrhodzfilterhor               ( )   ' ; it(2*23) = 2
+   OPTION(24) = 'Drhodzfilterhorfac               ( )   ' ; it(2*24) = 6
+   OPTION(25) = 'EpsEPS                           ( )   ' ; it(2*25) = 6
+   OPTION(26) = 'EpsTKE                           ( )   ' ; it(2*26) = 6
+
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -101,8 +106,10 @@
    HELPM (20) = '                                                        ( ) '
    HELPM (21) = '                                                        ( ) '
    HELPM (22) = '                                                        ( ) '
-
-
+   HELPM (23) = '                                                        ( ) '
+   HELPM (24) = '                                                        ( ) '
+   HELPM (25) = '                                                        ( ) '
+   HELPM (26) = '                                                        ( ) '
 
    CALL SAVEKEYS()
    NUMPARACTUAL = NUMPAR
@@ -197,6 +204,10 @@
    CALL IFORMputdouble  (2*20 , Bedwidth         ,'(F7.3)' )
    CALL IFORMputdouble  (2*21 , Bedwaveamplitude ,'(F7.3)' )
    CALL IFORMputdouble  (2*22 , Bedwavelength    ,'(F7.3)' )
+   CALL IFORMputinteger (2*23 , Numdrhodzfilterhor )
+   CALL IFORMputdouble  (2*24 , drhodzfilterhorfac,'(F7.3)' )
+   CALL IFORMputdouble  (2*25 , epseps            ,'(E8.3)' )
+   CALL IFORMputdouble  (2*26 , epstke            ,'(E8.3)' )
 
    !  Display the form with numeric fields left justified
    !  and set the initial field to number 2
@@ -258,6 +269,10 @@
           CALL IFORMgetdouble  (2*20 , Bedwidth          )
           CALL IFORMgetdouble  (2*21 , Bedwaveamplitude  )
           CALL IFORMgetdouble  (2*22 , Bedwavelength     )
+          CALL IFORMgetinteger (2*23 , Numdrhodzfilterhor )
+          CALL IFORMgetdouble  (2*24 , drhodzfilterhorfac )
+          CALL IFORMgetdouble  (2*25 , epseps             )
+          CALL IFORMgetdouble  (2*26 , epstke             )
  
           do L = 1,Lnx1D
              if (prof1D(1,L) >= 0) then  ! only direct profiles

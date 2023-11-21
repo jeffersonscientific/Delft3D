@@ -384,12 +384,11 @@
       !CALL TEKHEATS( time1)
 
      do k = kb,kt-1
-        kk     = k-kb+1
-        prsappr = ag*rhomean*( zws(kt) - zws(k) )  
-        drhodz  = ( setrhofixedp(k+1,prsappr) - setrhofixedp(k,prsappr) ) / ( 0.5d0*(zws(k+1) - zws(k-1)) )
+        kk      = k-kb+1
+        drhodz  = drodzws(k)
         rhomea  = 0.5d0*( rho(k+1) + rho(k) )
         dijdij(kk) = -ag*drhodz/rhomea
-     enddo
+      enddo
      dijdij(0) = 0d0 ;       dijdij(km) = dijdij(km-1) 
      vmin = minval(dijdij(1:km-1))
      vmax = maxval(dijdij(1:km-1))
