@@ -73,8 +73,11 @@ subroutine update_verticalprofiles()
 
  double precision :: rhoLL, pkwmag, hrmsLL, wdep, hbot, dzwav, dis1, dis2, surdisLL, dzz, zw, tkewav,epswv, prsappr
 
+ double precision :: dzws1, dzws2
+
  integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
- integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
+ integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv
+ integer          :: jacenterproduction = 1 
 
  double precision, external :: setrhofixedp
 
@@ -512,8 +515,21 @@ subroutine update_verticalprofiles()
         ! Addition of production and of dissipation to matrix ;
         ! observe implicit treatment by Newton linearization.
 
-        if (jawave>0 .and. jawaveStokes>=3 .and. .not. flowWithoutWaves) then  ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
+        if (jawave>0 .and. jawaveStokes>=3 .and. .not. flowWithoutWaves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
            dijdij(k) = ( ( u1(Lu)-ustokes(Lu) - u1(L)+ustokes(L) ) ** 2 + ( v(Lu)-vstokes(Lu) - v(L)+vstokes(L) ) ** 2 ) / dzw(k)**2
+      !  else if (jacenterproduction == 1 .and. hu(Lt) - hu(Lb0) > 2d0*cendep) then ! only in deep water
+      !     dzws1     = max( dzuminturb, 0.5d0*( zws(k1u)-zws(k1-1) ) )
+      !     dzws2     = max( dzuminturb, 0.5d0*( zws(k2u)-zws(k2-1) ) )
+      !     dijdijcen =        acL(LL)  * ( ((ucx(k1u)-ucx(k1))/dzws1)**2 + ((ucy(k1u)-ucy(k1))/dzws1)**2 )  &  
+      !                 + (1d0-acL(LL)) * ( ((ucx(k2u)-ucx(k2))/dzws2)**2 + ((ucy(k2u)-ucy(k2))/dzws2)**2 )
+      !     dzsurf = hu(Lt) - hu(L)       ! distance from surface 
+      !     if ( dzsurf  < cendep ) then  ! in top part of column
+      !        dijdij(k) = dijdijcen      ! center only
+      !     else 
+      !        dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
+      !        rel       = 1d0 - (dzsurf - cendep) / cendep ! cendep to cendep*2 == 1 to 0
+      !        dijdij(k) = rel*dijdijcen + (1d-rel)*dijdij(k)
+      !     endif
         else
            dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
         endif
