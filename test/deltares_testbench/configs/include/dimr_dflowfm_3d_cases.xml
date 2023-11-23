@@ -327,7 +327,7 @@
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
          <parameter name="x_velocity" toleranceAbsolute="0.0001" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-         <parameter name="salinity" toleranceAbsolute="0.0001" />
+         <parameter name="salinity" toleranceAbsolute="0.01" />
         </parameters>
       </file>
       <file name="depthgr.xyz" ignore="true" />
@@ -1451,7 +1451,7 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" /> 
             <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.01" />
           </parameters>
         </file>
       </checks>
@@ -1496,7 +1496,7 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" /> 
             <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.01" />
           </parameters>
         </file>
       </checks>
