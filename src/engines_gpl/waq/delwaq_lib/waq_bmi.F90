@@ -673,8 +673,8 @@ contains
          type(connection_data)                                           :: new_connection
          character(len=len(key_name))                                    :: copy_key, component, item_name, subst_param
          integer(kind=int_wp)                                            :: i, k
-         integer(kind=int_wp)                                            :: iseg, isys, monidx, conidx
-         integer(kind=int_wp)                                            ::  ierr
+         integer(kind=int_wp)                                            :: iseg, isys, monidx, conidx, newidx
+         integer(kind=int_wp)                                            :: ierr
          logical                                                         :: error
 
          !
