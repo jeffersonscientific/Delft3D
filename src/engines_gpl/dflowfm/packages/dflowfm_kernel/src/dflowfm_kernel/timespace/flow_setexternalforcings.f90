@@ -98,7 +98,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    if (ja_airdensity > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
    end if
-   if (ja_varying_airdensity==1) then 
+   if (ja_computed_airdensity==1) then 
       call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm)
       call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair)
       call get_timespace_value_by_item_array_consider_success_value(item_humidity, rhum)
@@ -164,7 +164,9 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    end if
 
    if (numsrc > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds)
+      ! qstss must be an argument when calling ec_gettimespacevalue.
+      ! It might be reallocated after initialization (when coupled to Cosumo).
+      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, qstss)
    end if
 
    if (jasubsupl > 0) then
