@@ -1461,7 +1461,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
                endif 
             endif
          else
-            call mess(LEVEL_ERROR, 'TcrEro can only be set for fractions governed by the Parteniades-Krone transport formula.')
+            call mess(LEVEL_WARN, 'TcrEro values ignored for fractions not governed by the Parteniades-Krone transport formula.')
          endif
       enddo
       return
@@ -1485,7 +1485,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
                endif 
             endif
          else
-            call mess(LEVEL_ERROR, 'TcrSed can only be set for fractions governed by the Parteniades-Krone transport formula.')
+            call mess(LEVEL_WARN, 'TcrSed values ignored for fractions not governed by the Parteniades-Krone transport formula.')
          endif
       enddo
       return
