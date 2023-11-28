@@ -669,11 +669,12 @@ module bmi
         subroutine split_key(key_name, connection, newidx)
             character(len=*), intent(in)                                    :: key_name     !< Connection key to find
             type(connection_data), dimension(:), allocatable, intent(inout) :: connection   !< Array storing the connection information
-
+            integer(kind=int_wp), intent(out)                               :: newidx
+            
             type(connection_data)                                           :: new_connection
             character(len=len(key_name))                                    :: copy_key, component, item_name, subst_param
             integer(kind=int_wp)                                            :: i, k
-            integer(kind=int_wp)                                            :: iseg, isys, monidx, conidx, newidx
+            integer(kind=int_wp)                                            :: iseg, isys, monidx, conidx
             integer(kind=int_wp)                                            :: ierr
             logical                                                         :: error
 
