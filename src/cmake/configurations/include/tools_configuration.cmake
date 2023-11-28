@@ -80,17 +80,17 @@ if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
-# netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif(WIN32)
-
 # proj
 if(WIN32)
     if(NOT TARGET proj)
         include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+    endif()
+endif(WIN32)
+
+# netcdf
+if(WIN32)
+    if(NOT TARGET netcdff)
+        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
     endif()
 endif(WIN32)
 

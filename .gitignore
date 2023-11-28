@@ -4,7 +4,6 @@ build_*/**
 install_*/**
 
 # editor files
-.vs
 .vscode/**
 .idea/*
 .vs/**
