@@ -158,7 +158,6 @@ Module fm_manhole_losses
 
       !apply losses to advi
       if ( k_exp /= 0 .or. k_avg /= 0d0 .or.  &
-           pstor%entrance_loss == 0d0 .or. pstor%exit_loss == 0d0 ) then
          do iL = 1, nd(nod)%lnx
             L = nd(nod)%ln(iL)
             q_outflow = -sign(1,L)
@@ -167,9 +166,9 @@ Module fm_manhole_losses
 
 
             if (q_outflow > 0) then
-               advi(L) = (advi(L) + 0.5*(k_avg+k_exp + pstor%entrance_loss)*u1(L))*dxi(L)
+               advi(L) = advi(L) + 0.5*(k_avg+k_exp + pstor%entrance_loss)*u1(L)*dxi(L)
             else
-               advi(L) = (advi(L) + 0.5*(-k_exp+ pstor%exit_loss)*u1(L)  )*dxi(L)
+               advi(L) = advi(L) + 0.5*(-k_exp+ pstor%exit_loss)*u1(L)  *dxi(L)
             endif
          enddo
       endif
