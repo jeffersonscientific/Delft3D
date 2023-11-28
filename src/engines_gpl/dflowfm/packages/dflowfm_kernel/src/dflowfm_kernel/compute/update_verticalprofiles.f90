@@ -485,6 +485,11 @@ subroutine update_verticalprofiles()
               rel       = 1d0 - (dzsurf - centersheardepth) / centersheardepth  ! cendep to 2*cendep == 1 to 0
               dijdij(k) = rel*dijdijcen + (1d0-rel)*dijdij(k)   
            endif
+        else if (centersheardepth < 0d0) then ! everywhere
+           dzws1     = max( dzuminturb, 0.5d0*( zws(k1u)-zws(k1-1) ) )
+           dzws2     = max( dzuminturb, 0.5d0*( zws(k2u)-zws(k2-1) ) )
+           dijdij(k) =   (    acL(LL)) * ( ((ucx(k1u)-ucx(k1))/dzws1)**2 + ((ucy(k1u)-ucy(k1))/dzws1)**2 )  &  
+                     +   (1d0-acL(LL)) * ( ((ucx(k2u)-ucx(k2))/dzws2)**2 + ((ucy(k2u)-ucy(k2))/dzws2)**2 )
         else
            dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
         endif

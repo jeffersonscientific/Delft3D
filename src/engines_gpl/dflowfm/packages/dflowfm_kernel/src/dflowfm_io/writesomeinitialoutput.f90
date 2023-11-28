@@ -78,8 +78,8 @@ subroutine writesomeinitialoutput()
        call oldfil(msam, 'ba_'//trim(md_ident(1:L))//'.xyz')
        call reasam(msam, 0)
        call newfil(mwrong, 'bawrong_'//trim(md_ident)//'.xyz')
-   endif
-   call newfil(mbalat, 'ba_'//trim(md_ident)//'.xyz')
+    endif
+    call newfil(mbalat, 'ba_'//trim(md_ident)//'.xyz')
  endif
 
  DO K = 1,NDXI
@@ -133,7 +133,7 @@ subroutine writesomeinitialoutput()
  if (jampi == 1) then
  k = 1
  call reduce_double_sum(k, voltotown, volto )
- write(msgbuf,'(a,E25.10)') 'total model volume     (m3) :' , volto                     ; call msg_flush()
+ write(msgbuf,'(a,E25.10)') 'total model volume     (m3) :' , volto                      ; call msg_flush()
  endif
 
  msgbuf = ' ' ; call msg_flush()
