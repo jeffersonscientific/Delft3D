@@ -32,7 +32,23 @@ Module fm_manhole_losses
    private
    
    contains
+
+   pure subroutine calc_q_outflow(nod,iL,L,q_outflow)
+
+   use m_flowgeom, only: nd
+   use m_flow, only: q1
    
+   integer,          intent(in ) :: iL, nod
+   integer,          intent(out) :: L
+   double precision, intent(out) :: q_outflow
+
+   L = nd(nod)%ln(iL)
+   q_outflow = -sign(1,L)
+   L = abs(L)
+   q_outflow = q_outflow*q1(L)
+
+   end subroutine calc_q_outflow
+
 !>    gives link angle between 0 and Pi
       double precision function dLinkangle(L)
          use m_sferic, only: jsferic
@@ -91,10 +107,7 @@ Module fm_manhole_losses
       if (hasTableData(pstor%angle_loss)) then
          q_temp = 0 
          do iL = 1, nd(nod)%lnx
-            L = nd(nod)%ln(iL)
-            q_outflow = -sign(1,L)
-            L = abs(L)
-            q_outflow = q_outflow*q1(L)
+            call calc_q_outflow(nod,iL,L,q_outflow)
             reference_angle = 0d0
             if (q_outflow > 0 .and. q_outflow > q_temp) then !we want the link with the biggest discharge as reference_angle
                q_temp = q_outflow
@@ -106,10 +119,7 @@ Module fm_manhole_losses
          sum_1 = 0
          sum_2 = 0
          do iL = 1, nd(nod)%lnx
-            L = nd(nod)%ln(iL)
-            q_outflow = -sign(1,L)
-            L = abs(L)
-            q_outflow = q_outflow*q1(L)
+            call calc_q_outflow(nod,iL,L,q_outflow)
             if (q_outflow < 0) then
                sum_1 = sum_1 + q1(L)
                angle = abs(dlinkangle(L)-reference_angle)*180/pi
@@ -129,10 +139,7 @@ Module fm_manhole_losses
          total_outflow_area = 0d0
          total_inflow_area = 0d0
          do iL = 1, nd(nod)%lnx
-            L = nd(nod)%ln(iL)
-            q_outflow = -sign(1,L)
-            L = abs(L)
-            q_outflow = q_outflow*q1(L)
+            call calc_q_outflow(nod,iL,L,q_outflow)
             if (q_outflow > 0d0) then
                total_outflow_area = total_outflow_area + au(L)
             else
@@ -160,12 +167,7 @@ Module fm_manhole_losses
       if ( k_exp /= 0 .or. k_avg /= 0d0 .or.  &
            pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0 ) then
          do iL = 1, nd(nod)%lnx
-            L = nd(nod)%ln(iL)
-            q_outflow = -sign(1,L)
-            L = abs(L)
-            q_outflow = q_outflow*q1(L)
-
-
+            call calc_q_outflow(nod,iL,L,q_outflow)
             if (q_outflow > 0) then
                advi(L) = advi(L) + 0.5*(k_avg+k_exp + pstor%entrance_loss)*u1(L)*dxi(L)
             else
