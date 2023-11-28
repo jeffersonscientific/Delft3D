@@ -12,7 +12,7 @@ set(BUILD_SHARED_LIBS OFF)
 set(SAVED_BUILD_TESTING ${BUILD_TESTING})
 set(BUILD_TESTING OFF)
 
-set(CMAKE_FOLDER "proj") # Adds proj related projects under the 'proj' directory in VS solution file.
+set(CMAKE_FOLDER "proj") # Adds proj related projects under the 'proj' directory in VS sln file.
 add_subdirectory(${proj_path} proj)
 unset(CMAKE_FOLDER)
 
