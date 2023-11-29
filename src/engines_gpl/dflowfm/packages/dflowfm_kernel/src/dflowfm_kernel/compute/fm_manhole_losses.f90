@@ -111,7 +111,7 @@ Module fm_manhole_losses
             reference_angle = 0d0
             if (q_outflow > 0 .and. q_outflow > q_temp) then !we want the link with the biggest discharge as reference_angle
                q_temp = q_outflow
-               reference_angle = dlinkangle(L)
+               reference_angle = dlinkangle(nd(nod)%ln(iL))
             endif
          enddo
 
@@ -122,7 +122,7 @@ Module fm_manhole_losses
             call calc_q_outflow(nod,iL,L,q_outflow)
             if (q_outflow < 0) then
                sum_1 = sum_1 + q1(L)
-               angle = abs(dlinkangle(L)-reference_angle)*180/pi
+               angle = abs(dlinkangle(nd(nod)%ln(iL))-reference_angle)*180/pi
                if (angle> 180d0) then
                   angle = 360d0-angle
                endif
