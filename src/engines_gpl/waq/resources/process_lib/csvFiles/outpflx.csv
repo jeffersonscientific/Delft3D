@@ -3027,3 +3027,5 @@ outfpr,outffl,outfnm,outfdo
 "RadioSub2 ","dRadioR2  ",   1,"x"
 "RadioSub3 ","dRadioR3  ",   1,"x"
 "AgeCART   ","dAgeProd  ",   1,"x"
+"IM_Flocdyn","dFlocIM1  ",   1,"x"
+"IM_Flocdyn","dFlocIM2  ",   2,"x"

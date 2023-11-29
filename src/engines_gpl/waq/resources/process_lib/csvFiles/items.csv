@@ -13891,3 +13891,4 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "AgeThresh ","x"," ",    0.00000    ,"(g/m3)              ","Threshold for age calculation                     ","volume    ","volume    "," ","                              "
 "SWTauMax  ","x"," ",    0.00000    ,"(-)                 ","switch to use TauMax instead of TauMean (default) ","volume    ","volume    "," ","                              "
 "MaxNelson ","x"," ",   0.550000    ,"(-)                 ","max ratio wave height wrt total depth             ","volume    ","volume    "," ","                              "
+"SwFloForm ","x"," ",    1.00000    ,"(-)                 ","1=Manning/Dyer, 2= Chassagne/Safar                ","volume    ","volume    "," ","                              "

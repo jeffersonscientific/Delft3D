@@ -66,7 +66,7 @@ contains
       integer(kind=int_wp)  ::idflocim1
       integer(kind=int_wp)  ::idflocim2
 
-      integer(kind=int_wp)  ::ip8, in8, ip9, in9, ipwmac, inwmac, ipwmic, inwmic, iq, noq, ivan
+      integer(kind=int_wp)  ::ip14, in14, ip15, in15, ipwmac, inwmac, ipwmic, inwmic, iq, noq, ivan
 
       real(kind=real_wp)  ::cmacro      ! i  inorganic matter (im1; macro flocs)                (gdm/m3)
       real(kind=real_wp)  ::cmicro      ! i  inorganic matter (im2; micro flocs)                (gdm/m3)
@@ -84,9 +84,7 @@ contains
       real(kind=real_wp)  ::spmratioem  ! o  flocculation ratio macro:micro empirical model     (-)
       real(kind=real_wp)  ::dflocim1    ! f  flocculation or break-up flux im1                  (g/m3/d)
       real(kind=real_wp)  ::dflocim2    ! f  flocculation or break-up flux im2                  (g/m3/d)
-      integer(kind=int_wp)  ::ikmrk1      !    first segment attribute
-      logical active      !    active segment
-      logical bottom      !    sediment bed segment
+      logical active                    !    active segment
       real(kind=real_wp)  ::macro       !    concentration macro flocs                            (g/m3)
       real(kind=real_wp)  ::micro       !    concentration micro flocs                            (g/m3)
       real(kind=real_wp)  ::tim         !    total concentration flocs                            (g/m3)
@@ -106,24 +104,20 @@ contains
          cmacro      = pmsa( ipnt(  1) )    ! IM1
          cmicro      = pmsa( ipnt(  2) )    ! IM2
          tpm         = pmsa( ipnt(  3) )
-         tke         = pmsa( ipnt(  4) )
+         tau         = pmsa( ipnt(  4) )
          swfloform   = pmsa( ipnt(  5) )
          rcfloc      = pmsa( ipnt(  6) )
          rcbreakup   = pmsa( ipnt(  7) )
-         ws_macro    = pmsa( ipnt(  8) )
-         ws_micro    = pmsa( ipnt(  9) )
-         rho_water   = pmsa( ipnt( 10) )
-         viscosity   = pmsa( ipnt( 11) )
-         delt        = pmsa( ipnt( 12) )
-         total_depth = pmsa( ipnt( 13) )
-         local_depth = pmsa( ipnt( 14) )
+         rho_water   = pmsa( ipnt(  8) )
+         viscosity   = pmsa( ipnt(  9) )
+         delt        = pmsa( ipnt( 10) )
+         total_depth = pmsa( ipnt( 11) )
+         local_depth = pmsa( ipnt( 12) )
 
          ! only for active water segments
 
          active = btest(iknmrk(iseg),0)
-         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
-         bottom = ikmrk1.eq.3
-         if ( active .and. .not. bottom ) then
+         if ( active ) then
             tke = tau / param_soulsby ! Very coarse estimate!
             call flocculate_dwq( swfloform, cmacro, cmicro, tpm, tke, tau, total_depth, local_depth, viscosity, rho_water, &
                                  spmratioem, ws_macro, ws_micro )
@@ -152,9 +146,9 @@ contains
 
          fl  ( idflocim1   ) =  dfloc
          fl  ( idflocim2   ) = -dfloc
-         pmsa( ipnt( 15)   ) =  spmratioem
-         pmsa( ipnt(  8)   ) =  ws_macro
-         pmsa( ipnt(  9)   ) =  ws_micro
+         pmsa( ipnt( 13)   ) =  spmratioem
+         pmsa( ipnt( 14)   ) =  ws_macro
+         pmsa( ipnt( 15)   ) =  ws_micro
 
          idflocim1   = idflocim1   + noflux
          idflocim2   = idflocim2   + noflux
@@ -191,11 +185,11 @@ contains
 !
 !        sedimentation velocity from segment to exchange-area
 !
-         if ( ivan .gt. 0 ) then
-            ip8 = ipoint(8) + (ivan-1) * in8
-            ip9 = ipoint(9) + (ivan-1) * in9
-            pmsa(ipwmac) = pmsa( ip8 )           ! Correct entries? I am in doubt because of the workarray aspect
-            pmsa(ipwmic) = pmsa( ip9 )
+         if ( ivan > 0 ) then
+            ip14 = ipoint(14) + (ivan-1) * in14
+            ip15 = ipoint(15) + (ivan-1) * in15
+            pmsa(ipwmac) = pmsa( ip14 )
+            pmsa(ipwmic) = pmsa( ip15 )
          endif
 
          ipwmac = ipwmac + inwmac
