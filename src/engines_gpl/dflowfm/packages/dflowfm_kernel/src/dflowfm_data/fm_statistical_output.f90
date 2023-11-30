@@ -1953,7 +1953,7 @@ private
          if (.not. allocated(obscrs_data)) then
             allocate(obscrs_data(ncrs, 5 + 2*NUMCONST_MDU + numseddata)) ! First 5 are for IPNT_Q1C:IPNT_HUA
          endif
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),     null(), function_pointer)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),     obscrs_data(:,1), function_pointer)
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUM), obscrs_data(:,2))
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),          obscrs_data(:,3))
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),      obscrs_data(:,4))

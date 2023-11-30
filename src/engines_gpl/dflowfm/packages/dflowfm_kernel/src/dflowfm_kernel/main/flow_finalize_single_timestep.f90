@@ -148,7 +148,10 @@ integer, intent(out) :: iresult
  call update_source_data(out_variable_set_map)
  call update_source_data(out_variable_set_clm)
 
- call update_statistical_output(out_variable_set_his%statout,dts)
+ if (out_variable_set_his%count > 0) then
+    call update_statistical_output(out_variable_set_his%statout,dts)
+ endif
+ 
 !call update_statistical_output(out_variable_set_map%statout,dts)
 !call update_statistical_output(out_variable_set_clm%statout,dts)
  

@@ -73,11 +73,16 @@
 
    if (ti_his > 0) then
       if (comparereal(tim, time_his, eps10)>= 0) then
-         call finalize_SO_AVERAGE(out_variable_set_his%statout)
+         if (out_variable_set_his%count > 0) then
+            call finalize_SO_AVERAGE(out_variable_set_his%statout)
+         endif
+         
          if ( jampi.eq.0 .or. ( jampi.eq.1 .and. my_rank.eq.0 ) ) then
             call unc_write_his(tim)   ! wrihis
          endif
-         call reset_statistical_output(out_variable_set_his%statout)
+         if (out_variable_set_his%count > 0) then
+            call reset_statistical_output(out_variable_set_his%statout)
+         endif
          if (nrug>0) then
             ! needs to be done at exactly ti_his, but over all domains, so cannot go in wrihis
             call clearRunupGauges()
