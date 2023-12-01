@@ -1648,6 +1648,8 @@ subroutine update_verticalprofiles()
                 prsappr = ag*rhomean*( zws(kt) - zws(k) )   
                 drodzws(k) = ( setrhofixedp(k+1,prsappr) - setrhofixedp(k,prsappr) ) / dzc
              endif
+          else
+             drodzws(k) = 0d0
           endif
        enddo
     endif
