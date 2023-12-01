@@ -17860,12 +17860,13 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "IM_Flocdyn","IM1       ",   1,"N","x",1
 "IM_Flocdyn","IM2       ",   2,"N","x",1
 "IM_Flocdyn","TPM       ",   3,"N","x",1
-"IM_Flocdyn","Tau       ",   4,"Y","x",1
+"IM_Flocdyn","Tau       ",   4,"N","x",1
 "IM_Flocdyn","SwFloForm ",   5,"Y","x",1
 "IM_Flocdyn","RcFloc    ",   6,"Y","x",1
 "IM_Flocdyn","RcBreakup ",   7,"Y","x",1
-"IM_Flocdyn","RhoWater  ",   8,"Y","x",1
+"IM_Flocdyn","RhoWater  ",   8,"N","x",1
 "IM_Flocdyn","KinViscos ",   9,"Y","x",1
 "IM_Flocdyn","DELT      ",  10,"N","x",1
 "IM_Flocdyn","TotalDepth",  11,"N","x",1
 "IM_Flocdyn","LocalDepth",  12,"N","x",1
+"IM_Flocdyn","Depth     ",  13,"N","x",1
