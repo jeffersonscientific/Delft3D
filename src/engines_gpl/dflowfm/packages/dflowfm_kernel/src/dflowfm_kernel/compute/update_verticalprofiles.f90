@@ -423,10 +423,30 @@ subroutine update_verticalprofiles()
         if (idensform  > 0 ) then
             k1         = ln(1,L)  ; k2  = ln(2,L)
             k1u        = ln(1,Lu) ; k2u = ln(2,Lu)
+
+!            drhodz = 0d0 ; drhodz1 = 0d0 ; drhodz2 = 0d0
+!            dzc1       = 0.5d0*(zws(k1u) - zws(k1-1) )  ! vertical distance between cell centers on left side
+!            if (dzc1 >  0) then
+!               if (idensform < 10) then                     
+!                  drhodz1 = ( rho(k1u) - rho(k1) ) / dzc1
+!               else
+!                  prsappr = ag*rhomean*( zws(ktop(ln(1,LL))) - zws(k1) )   
+!                  drhodz1 = ( setrhofixedp(k1u,prsappr) - setrhofixedp(k1,prsappr) ) / dzc1
+!               endif
+!            endif
+!
+!            dzc2       = 0.5d0*(zws(k2u) - zws(k2-1) )  ! vertical distance between cell centers on right side
+!            if (dzc2 > 0) then
+!               if (idensform < 10) then      
+!                  drhodz2 = ( rho(k2u) - rho(k2) ) / dzc2
+!               else
+!                  prsappr = ag*rhomean*( zws(ktop(ln(2,LL))) - zws(k2) )  
+!                  drhodz2 = ( setrhofixedp(k2u,prsappr) - setrhofixedp(k2,prsappr) ) / dzc2
+!               endif
+!            endif
             
             drhodz1    = drodzws(k1)
             drhodz2    = drodzws(k2)
-            
             if (drhodz1 == 0) then
                 drhodz  = drhodz2
             else if (drhodz2 == 0) then
@@ -1039,7 +1059,8 @@ subroutine update_verticalprofiles()
       endif
 
       if ( jampi.eq.1 ) then
-         call update_ghosts(ITYPE_Sall3D, 2, Ndkx, turkinepsws, ierror)
+         call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turkinws, ierror)
+         call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turepsws, ierror)
       end if
 
       tqcu = 0d0 ; eqcu = 0d0 ; sqcu = 0d0
@@ -1630,7 +1651,7 @@ subroutine update_verticalprofiles()
  use m_flow
  implicit none
  integer          :: kk, k, kb, kt,LL, L, k1, k2, i
- double precision :: dzc, prsappr
+ double precision :: dzc, dzcu, prsappr
  double precision, external :: setrhofixedp
 
  do kk = 1,ndx
@@ -1640,8 +1661,10 @@ subroutine update_verticalprofiles()
        drodzws(kb:kb+kmxn(kk)-1) = 0d0
     else
        do k = kb, kt-1
-          dzc = 0.5d0*( zws(k+1) - zws(k-1) )  ! vertical distance between cell centers 
-          if (dzc >  0) then
+          dzc  = zws(k)   - zws(k-1)   ! layer thickness 
+          dzcu = zws(k+1) - zws(k)     ! above  
+          if (dzc > 1d-4 .and. dzcu > 1d-4) then   ! own lay 
+             dzc = 0.5d0*(dzc + dzcu) 
              if (idensform < 10) then                     
                 drodzws(k) = ( rho(k+1) - rho(k) ) / dzc
              else
