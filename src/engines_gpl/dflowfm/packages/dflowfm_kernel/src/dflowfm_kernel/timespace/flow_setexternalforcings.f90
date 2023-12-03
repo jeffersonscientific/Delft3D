@@ -559,10 +559,10 @@ subroutine retrieve_icecover()
 
    if (ja_icecover == ICECOVER_EXT) then
       if (item_sea_ice_area_fraction /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sea_ice_area_fraction, irefdate, tzone, tunit, tim)
+         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_area_fraction)
       endif
       if (item_sea_ice_thickness /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sea_ice_thickness, irefdate, tzone, tunit, tim)
+         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_thickness)
       endif
    endif
 
