@@ -87,13 +87,14 @@ Module fm_manhole_losses
    use m_tables, only: hasTableData, interpolate
    use precision, only: comparereal
    use m_sferic, only : pi
-   
+   use m_physcoef, only : ag
    type(t_storage_set),           intent(in   ) :: storS     !<  set of storage nodes that contain manhole parameters
    double precision, allocatable, intent(inout) :: advi  (:) !<  advection implicit part (1/s), energy losses are applied here.
 
    ! Manhole Losses
    integer                  :: iL, nstor, nod, L, i
    double precision         :: reference_angle, sum_1, sum_2, k_avg, total_outflow_area, total_inflow_area, k_exp, q_temp, q_outflow, angle
+   double precision         :: energy_total, v2_out, v2_in
    type(t_storage), pointer :: pstor
       
    nstor = storS%count
@@ -166,6 +167,27 @@ Module fm_manhole_losses
       !apply losses to advi
       if ( k_exp /= 0 .or. k_avg /= 0d0 .or.  &
            pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0 ) then
+         ! compute the total energy loss
+         energy_total = 0d0
+         v2_out = 0d0
+         v2_in = 0d0
+         do iL = 1, nd(nod)%lnx
+            call calc_q_outflow(nod,iL,L,q_outflow)
+            if (q_outflow > 0) then
+               energy_total = energy_total + 0.5*(k_avg+k_exp + pstor%entrance_loss)*u1(L)**2/ag
+               v2_out = max(v2_out, u1(L)**2)
+            else
+               energy_total = energy_total + 0.5*(-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
+               v2_in = max(v2_in, u1(L)**2)
+            endif
+         enddo
+         if (energy_total < 0.05*v2_out/(2d0*ag)) then
+            k_avg = k_avg + (0.05*v2_out/(2d0*ag) - energy_total)*2*ag/v2_out
+         else if (energy_total > (v2_in+0.5*v2_out)/(2d0*ag) ) then
+            k_avg = k_avg + ((v2_in+0.5*v2_out)/(2d0*ag) - energy_total)*2*ag/v2_out
+         endif
+            
+         !Apply losses to ADVI
          do iL = 1, nd(nod)%lnx
             call calc_q_outflow(nod,iL,L,q_outflow)
             if (q_outflow > 0) then
