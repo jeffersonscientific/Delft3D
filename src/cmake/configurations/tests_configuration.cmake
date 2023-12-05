@@ -177,6 +177,7 @@ add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltar
 add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
 add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
 add_subdirectory(${delwaq_tests_module} tests_delwaq)
+add_subdirectory(${checkout_src_root}/${test_io_netcdf} test_io_netcdf)
 
 if(UNIX)
     # install
