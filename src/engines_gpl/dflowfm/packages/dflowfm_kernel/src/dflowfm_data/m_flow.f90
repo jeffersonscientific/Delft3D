@@ -315,7 +315,6 @@
  double precision, allocatable     :: volu1D  (:) !< [m3] volume of 1D link (only relevant for Pure1D)
  double precision, allocatable     :: u1Du  (:)   !< [m/s] upwind 1D link velocity (only relevant for Pure1D)
  double precision, allocatable     :: q1D   (:,:) !< [m3/s] discharge at begin and end of 1D link (only relevant for Pure1D)
- double precision, allocatable     :: ds1u  (:,:) !< [m] difference between node water level and link water level (only relevant for Pure1D)
  integer         , allocatable     :: isnbnod (:,:) !< sign of left/right node follows your dir in jaPure1D assumptions, -1 or 1 for Ja1D nodes
  integer         , allocatable     :: isnblin (:,:) !< sign of left/right link follows your dir in jaPure1D assumptions, -1 or 1 for Ja1D nodes
  double precision, allocatable     :: advi  (:)   !< advection implicit part (1/s)

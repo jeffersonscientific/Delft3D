@@ -395,7 +395,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
 
  integer                           :: jaustarint              !< 1=integral bed layer velocity,  0=velocity at half bed layer
 
- integer                           :: jaPure1D                !< along 1D channels: 0 = 2D mom Perot, 1 = 1D mom Perot using vol1_f, 2 = 1D mom Perot using vol1, 3 = 1D mom on links (Sobek 3), 4 = 1D mom on links (energy at nodes)
+ integer                           :: jaPure1D                !< along 1D channels: 0 = 2D mom Perot, 1 = 1D mom Perot using vol1_f, 2 = 1D mom Perot using vol1, 3,4,5,6,7 = 1D mom on links (2 + Iadvec1D of SOBEK)
 
  integer                           :: jaJunction1D            !< at 1D junctions: 0 = 2D mom Perot, 1 = same as along the 1D channels
 
@@ -527,6 +527,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jamapselfal               !< self attraction and loading potential to map file, 0: no, 1: yes
  integer                           :: jamapIntTidesDiss         !< internal tides dissipation to map file, 0: no, 1: yes
  integer                           :: jamapNudge                !< output nudging to map file, 0: no, 1: yes
+ integer                           :: jamapPure1D_debug         !< additional Pure1D debugging output to map file, 0: no, 1: yes
  integer                           :: jamapwav                  !< output waves to map file, 0: no, 1: yes
  integer                           :: jamapwav_hwav             !< output waves to map file for variable hwav, 0: no, 1: yes
  integer                           :: jamapwav_twav             !< output waves to map file for variable twav, 0: no, 1: yes
@@ -1010,6 +1011,7 @@ subroutine default_flowparameters()
     jamapselfal = 1
     jamapIntTidesDiss = 1
     jamapNudge = 1
+    jamapPure1D_debug = 1
     jamapwav = 1
     jamapdtcell = 0
     jamapTimeWetOnGround = 0

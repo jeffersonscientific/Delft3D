@@ -111,12 +111,12 @@
  double precision,        external :: nod2linx, nod2liny
  double precision,        external :: dlimiter, dslim
  
- double precision :: qu_up
- double precision :: u_up
- double precision :: qu_do
- double precision :: u_do
  double precision :: am
- double precision :: cl
+ double precision :: cl_mom
+ double precision :: cl_ene
+ double precision :: qv
+ double precision :: u_ene
+ double precision :: u_mom
 
  japiaczek33 = 0
 
@@ -353,7 +353,7 @@
      
 
  !$OMP PARALLEL DO                                                                   &
- !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,hh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2, qu_up, u_up, u_do, qu_do, am, cl)
+ !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,hh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2, u_ene, u_mom, am, cl_mom, cl_ene, qv)
 
  do L  = 1,lnx
 
@@ -447,33 +447,71 @@
        endif
 
    else if (iadvL == 103) then
-       if (jaPure1D == 4) then ! Energy style
+       if (jaPure1D >= 3) then ! Sobek style
 
-           u_up = q1D(1,L) / au1D(1,L)
-           qu_up = q1D(1,L) * (u_up - u1(L))
-           u_do = q1D(2,L) / au1D(2,L)
-           qu_do = q1D(2,L) * (u_do - u1(L))
-           advel = (qu_up + qu_do) / volu1D(L)
-
-       elseif (jaPure1D == 3) then ! Sobek style
-
-           if (q1D(1,L) > 0) then ! flow entering link at node 1
-               u_up = alpha_mom_1D(k1) * q1D(1,L) / au1D(1,L)
-               am = 1d0 ! weight of momentum versus energy conservation (only momentum implemented, so 1)
-               cl = min(1d0, 2d0 * dts * abs(q1D(1,L)) / max(1e-5,volu1D(L))) ! Courant factor (2 * dts /max(u_eps, volu1D(L)) * q1D(1,L), assuming 1 so large velocity)
-               qu_up = am * cl * q1D(1,L) * (u_up - u1(L))
+           advel = 0d0
+           ! weight of momentum versus energy conservation
+           select case (jaPure1D)
+           case (3) ! momentum conserving
+               am = 1d0
+           case (4) ! weighted
+               am = min(au1d(1,L), au1d(2,L)) / max(1d-4, au1d(1,L), au1d(2,L))
+           case (5) ! weighted in contractions, otherwise momentum conserving
+               if ((u1(L) > 0d0 .and. au1D(1,L) > au1D(2,L)) .or. &
+                 & (u1(L) < 0d0 .and. au1D(1,L) < au1D(2,L))) then
+                   am = min(au1d(1,L), au1d(2,L)) / max(1d-4, au1d(1,L), au1d(2,L))
+               else
+                   am = 1d0
+               endif  
+           case (6) ! weighted in expansions, otherwise momentum conserving
+               if ((u1(L) > 0d0 .and. au1D(1,L) < au1D(2,L)) .or. &
+                 & (u1(L) < 0d0 .and. au1D(1,L) > au1D(2,L))) then
+                   am = min(au1d(1,L), au1d(2,L)) / max(1d-4, au1d(1,L), au1d(2,L))
+               else
+                   am = 1d0
+               endif  
+           case (7) ! energy conserving
+               am = 0d0
+           end select
+           
+           if (q1D(1,L) > 0) then
+               ! flow entering link at node 1
+               qv = q1D(1,L)/max(1d-5,volu1D(L))
+               if (am > 0d0) then
+                  u_mom =  alpha_mom_1D(k1) * q1D(1,L) / au1D(1,L)
+                  cl_mom = dts * qv ! Courant factor momentum
+                  advel = advel + am * min(cl_mom, 1d0) * (u_mom - u1(L)) * qv
+                  advi(L) = advi(L) + am * max(0d0, cl_mom - 1d0) * qv ! * u1(L) at new time level
+               endif
+               if (am < 1d0) then
+                  u_ene =  alpha_ene_1D(k1) * q1D(1,L) / au1D(1,L)
+                  cl_ene = dts * 0.5d0 * (u1(L) + u_ene) / dx(L) ! Courant factor energy
+                  advel = advel + (1d0 - am) * min(cl_ene, 1d0) * (u_ene - u1(L)) * qv
+                  advi(L) = advi(L) + (1d0 - am) * max(0d0, cl_ene - 1d0) * qv ! * u1(L) at new time level
+               endif
            else
-               qu_up = 0d0
+               ! flow leaving link at node 1
+               ! outflow u = local u, so no contribution
            endif
+           
            if (q1D(2,L) < 0) then ! flow entering link at node 2
-               u_do = alpha_mom_1D(k2) * q1D(2,L) / au1D(2,L)
-               am = 1d0 ! weight of momentum versus energy conservation (only momentum implemented, so 1)
-               cl = min(1d0, 2d0 * dts * abs(q1D(2,L)) / max(1e-5,volu1D(L))) ! Courant factor (2 * dts /max(u_eps, volu1D(L)) * q1D(1,L), assuming 1 so large velocity)
-               qu_do = am * cl * q1D(2,L) * (u_do - u1(L))
+               qv = q1D(2,L)/max(1d-5,volu1D(L))
+               if (am > 0d0) then
+                  u_mom =  alpha_mom_1D(k2) * q1D(2,L) / au1D(2,L)
+                  cl_mom = dts * qv ! Courant factor momentum
+                  advel = advel + am * min(cl_mom, 1d0) * (u_mom - u1(L)) * qv
+                  advi(L) = advi(L) + am * max(0d0, cl_mom - 1d0) * qv ! * u1(L) at new time level
+               endif
+               if (am < 1d0) then
+                  u_ene =  alpha_ene_1D(k1) * q1D(2,L) / au1D(1,L)
+                  cl_ene = dts * 0.5d0 * (u1(L) + u_ene) / dx(L) ! Courant factor energy
+                  advel = advel + (1d0 - am) * min(cl_ene, 1d0) * (u_ene - u1(L)) * qv
+                  advi(L) = advi(L) + (1d0 - am) * max(0d0, cl_ene - 1d0) * qv ! * u1(L) at new time level
+               endif
            else
-               qu_do = 0d0
+               ! flow leaving link at node 2
+               ! outflow u = local u, so no contribution
            endif
-           advel = (qu_up + qu_do) / volu1D(L)
 
        else                                              ! explicit first order mom conservative
                                                          ! based upon cell center excess advection velocity

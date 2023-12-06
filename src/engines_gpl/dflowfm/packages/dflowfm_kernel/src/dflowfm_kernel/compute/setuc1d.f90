@@ -36,6 +36,7 @@
    use m_netw
    use m_flow
    use m_flowgeom
+   use m_flowtimes, only: time1
    implicit none
 
    integer, parameter     :: JACSTOT = 0 !< 0 for computing the total area
@@ -150,12 +151,9 @@
       au1D = 0d0
       sar1D = 0d0
       volu1D = 0d0
-      if (jaPure1D == 3) then
-         alpha_mom_1D = 0d0
-         alpha_ene_1D = 0d0
-      elseif (jaPure1D == 4) then
-         ds1u = 0d0
-      endif
+      alpha_mom_1D = 0d0
+      alpha_ene_1D = 0d0
+      ! write(123,*) time1, '------'
       do n  = ndx2D+1,ndxi
          nx = nd(n)%lnx
          
@@ -175,6 +173,7 @@
          ! compute total net discharge into the node
          q_net_in = 0d0
          tsar = 0d0
+         fxar = 0d0
          do LL = 1, nx                          ! loop over all links connected to the node
              L   = nd(n)%ln(LL)                 ! positive if link points to node, negative if links points from node
              La  = iabs(L)
@@ -187,8 +186,10 @@
              endif
              
              h = max(0d0, s1(n)-bob(k,La)) ! cross sectional area
+             ! write(123,*) n, ':', s1(n), k, la, bob(k,la), h
              call getprof_1D(La, h, sxar, swi, JACSTOT, CALCCONV, perim)
              call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
+             ! write(123,*) n, ':', fxar
              sar = swi * hdx
              wu1D(k,La) = swi
              au1D(k,La) = fxar
@@ -235,115 +236,25 @@
                  au1D(1,La) = fxar
              endif
              
-             if (jaPure1D == 3) then
-                if ((L*q) > 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
-                    u = u1(La)
-                    if ((q*u) > 0) then ! flow direction at link equal to flow direction at node
-                        qu_in  = qu_in  + abs(q * u)
-                        qu2_in = qu2_in + abs(q * u**2)
-                    else ! flow direction at link opposite to flow direction at node, so use 0 velocity inflow
-                        ! no contribution if u = 0
-                    endif
-                else ! outflowing: negative flow to this node, or positive flow from this node
-                    u = q / fxar
-                    qu_out  = qu_out  + abs(q * u)
-                    qu2_out = qu2_out + abs(q * u**2)
-                endif
+             if ((L*q) > 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
+                 u = u1(La)
+                 if ((q*u) > 0) then ! flow direction at link equal to flow direction at node
+                     qu_in  = qu_in  + abs(q * u)
+                     qu2_in = qu2_in + abs(q * u**2)
+                 else ! flow direction at link opposite to flow direction at node, so use 0 velocity inflow
+                     ! no contribution if u = 0
+                 endif
+             else ! outflowing: negative flow to this node, or positive flow from this node
+                 u = q / fxar
+                 qu_out  = qu_out  + abs(q * u)
+                 qu2_out = qu2_out + abs(q * u**2)
              endif
              
              volu1D(La) = volu1D(La) + 0.5d0 * fxar * dx(La)
          enddo
          
-         if (jaPure1D == 3) then
-            alpha_mom_1D(n) = min(1d0, qu_in / max(1e-20,qu_out))
-            alpha_ene_1D(n) = min(1d0, qu2_in/ max(1e-20,qu2_out))
-            
-         elseif (jaPure1D == 4) then
-         
-            !if (n == 578) then
-            !    write(123,*) 'node: ',n
-            !endif
-            
-            sum_asar = 0d0
-            sum_bsar = 0d0
-            sumq = 0d0
-            do LL = 1, nx                          ! loop over all links connected to the node
-                L   = nd(n)%ln(LL)                 ! positive if link points to node, negative if links points from node
-                La  = iabs(L)
-                
-                if (L > 0) then ! link points to node
-                    k = 2
-                    sumq = sumq + q1D(k,La)
-                else ! link points from node
-                    k = 1
-                    sumq = sumq - q1D(k,La)
-                endif
-                
-                sar  = sar1D(k,La)
-                fxar = au1D(k,La)
-                q = q1D(k,La)
-                swi = wu1D(k,La)
-                
-                u = q / fxar
-                kin_ene = u*u / (2d0*ag)
-                dudz = - swi*q / (fxar*fxar)
-                dedz = 1 + (u / ag) * dudz
-                
-                if (LL == 1) then
-                    kin_ene1 = kin_ene
-                    dedz1 = dedz
-                endif
-                
-                a(LL) = (kin_ene1 - kin_ene) / dedz
-                b(LL) = dedz1 / dedz
-                sum_asar = sum_asar + a(LL) * sar
-                sum_bsar = sum_bsar + b(LL) * sar
-                
-                !if (n == 578) then
-                !    write(123,'(A,I18,A,I18,A,I18)')          'link: ',LL   ,' L   : ',La   ,' k   : ',k
-                !    write(123,'(A,E18.12,A,E18.12)')          's1  : ',s1(n),' bob : ',bob(k,La)
-                !    write(123,'(A,E18.12,A,E18.12)')          'q   : ',q    ,' sumq: ',sumq
-                !    write(123,'(A,E18.12,A,E18.12)')          'xar : ',xar  ,' u   : ',u
-                !    write(123,'(A,E18.12,A,E18.12,A,E18.12)') 'swi : ',swi  ,' sar : ',sar  ,' Ekin: ',kin_ene
-                !    write(123,'(A,E18.12,A,E18.12)')          'dudz: ',dudz ,' dedz: ',dedz
-                !    write(123,'(A,E18.12,A,E18.12)')          'a   : ',a(LL),' b   : ',b(LL)
-                !    write(123,'(A,E18.12,A,E18.12)')          'asar: ',a(LL) * sar,' bsar: ',b(LL) * sar
-                !    write(123,'(A,E18.12,A,E18.12)')          'asum: ',sum_asar,' bsum: ',sum_bsar
-                !endif
-            enddo
-            
-            dz1 = - sum_asar / sum_bsar
-            !if (n == 578) then
-            !    write(123,'(A,E18.12,A,E18.12,A,E18.12)') 'asum: ',sum_asar,' bsum: ',sum_bsar,' dz1 : ',dz1
-            !endif
-            do LL = 1, nx                          ! loop over all links connected to the node
-                L   = nd(n)%ln(LL)                 ! positive if link points to node, negative if links points from node
-                La  = iabs(L)
-                
-                if (L > 0) then ! link points to node: reduce by the storage on the remainder of the link
-                    k = 2
-                else ! link points from node: increase by the storage on the first part of the link
-                    k = 1
-                endif
-                
-                ds1u(k,La) = a(LL) + b(LL)*dz1
-                
-                h = max(0d0, s1(n)+ds1u(k,La)-bob(k,La)) ! cross sectional area
-                call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
-                au1D(k,La) = fxar
-                
-                !if (n == 578) then
-                !    write(123,'(A,E18.12,A,E18.12)') 'ds1 : ',ds1u(k,La),' fxar : ',fxar
-                !endif
-                ! u = q / fxar
-                ! E = ds1u + u*u/(2*ag) should be approximately equal on all links
-            enddo
-            
-            !if (n == 578) then
-            !    write(123,'(A)') '------------'
-            !    write(123,'(A)') ' '
-            !endif
-         endif
+         alpha_mom_1D(n) = qu_in / max(1e-20,qu_out)
+         alpha_ene_1D(n) = qu2_in/ max(1e-20,qu2_out)
       enddo
       deallocate(a, b)
    endif
