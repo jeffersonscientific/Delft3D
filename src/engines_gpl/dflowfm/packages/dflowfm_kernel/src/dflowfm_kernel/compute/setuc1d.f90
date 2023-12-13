@@ -26,13 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-
-! 
-! 
-
-! =================================================================================================
-! =================================================================================================
-   subroutine setuc1D ()
+   subroutine setuc1d ()
    use m_netw
    use m_flow
    use m_flowgeom
@@ -54,34 +48,21 @@
    double precision :: qu2_out   !< [m5/s3] sum of Q*u**2 over outflowing links of node n (u = Q/A)
    double precision :: uc        !< [m/s] representative velocity magnitude at node n
    
-   integer          :: L1        !< index of first link
-   double precision :: h         !< [m] local water depth
-   double precision :: hdx       !< [m] half link length
-   double precision :: u         !< [m/s] velocity
-   double precision :: q         !< [m3/s] discharge
-   double precision :: perim     !< [m] dummy variable for wetted perimeter
-   double precision :: fxar      !< [m2] cross-sectional flow area
-   double precision :: sxar      !< [m2] cross-sectional total (flow + storage) area
-   double precision :: sar       !< [m2] surface area of half link
-   double precision :: tsar      !< [m2] total surface area of node -- equal to a1(n)
-   double precision :: fwi       !< [m] surface width of flow area
-   double precision :: swi       !< [m] surface width of total (flow + storage) area
-   double precision :: dzwdt     !< [m/s] water level change rate
-   double precision :: am        !< [-] weight of momentum conservation versus energy conservation
+   integer          :: L1                !< index of first link
+   integer          :: k                 !< node index: 1 for link start node, and 2 for link end node
+   double precision :: h                 !< [m] local water depth
+   double precision :: half_link_length  !< [m] half link length
+   double precision :: u                 !< [m/s] velocity
+   double precision :: q                 !< [m3/s] discharge
+   double precision :: perim             !< [m] dummy variable for wetted perimeter
+   double precision :: flow_cs_area      !< [m2] cross-sectional flow area
+   double precision :: total_cs_area     !< [m2] cross-sectional total (flow + storage) area
+   double precision :: link_surface_area !< [m2] surface area of half link
+   double precision :: surface_area      !< [m2] total surface area of node -- equal to a1(n)
+   double precision :: flow_width        !< [m] surface width of flow area
+   double precision :: total_width       !< [m] surface width of total (flow + storage) area
+   double precision :: dzw_dt            !< [m/s] water level change rate
    
-   double precision, allocatable, dimension (:) :: a ! [m] difference between node water level and link water level, absolute
-   double precision, allocatable, dimension (:) :: b ! [-] difference between node water level and link water level, relative to difference of first link
-   double precision :: sum_asar   !< [m3] sum of cumulative area times a
-   double precision :: sum_bsar   !< [m2] sum of cumulative area times b
-   integer          :: k          !< index 1 for link start and 2 for link end
-   double precision :: kin_ene    !< [m] kinetic energy height
-   double precision :: kin_ene1   !< [m] kinetic energy height of first link
-   double precision :: dudz       !< [1/s] change in the flow velocity due to water level change
-   double precision :: dedz       !< [-] change in energy height due to water level change
-   double precision :: dedz1      !< [-] change in energy height due to water level change of first link
-   double precision :: dz1        !< [m] difference between node water level and link water level of first link
-   double precision :: sumq       !< [m3/s] sum of discharges
-
    if (kmx /= 0 .or. lnx1D == 0) return
    
    uc1D  = 0d0
@@ -146,14 +127,12 @@
       
    elseif (jaPure1D >= 3) then
       
-      allocate(a(100), b(100)) ! hardcoded limit to nodes with at most 100 links!
       q1D  = 0d0
       au1D = 0d0
       sar1D = 0d0
       volu1D = 0d0
       alpha_mom_1D = 0d0
       alpha_ene_1D = 0d0
-      ! write(123,*) time1, '------'
       do n  = ndx2D+1,ndxi
          nx = nd(n)%lnx
          
@@ -166,19 +145,14 @@
          if (ja1D == 0) cycle
          if (jaJunction1D == 0 .and. nx > 2) cycle
          
-         !if (n == 578) then
-         !    write(123,'(A)')          '--- [1] ---'
-         !endif
-         
          ! compute total net discharge into the node
          q_net_in = 0d0
-         tsar = 0d0
-         fxar = 0d0
+         surface_area = 0d0
          do LL = 1, nx                          ! loop over all links connected to the node
              L   = nd(n)%ln(LL)                 ! positive if link points to node, negative if links points from node
              La  = iabs(L)
              
-             hdx = 0.5 * dx(La)
+             half_link_length = 0.5 * dx(La)
              if (L > 0) then ! link points to node
                  k = 2
              else ! link points from node
@@ -186,57 +160,41 @@
              endif
              
              h = max(0d0, s1(n)-bob(k,La)) ! cross sectional area
-             ! write(123,*) n, ':', s1(n), k, la, bob(k,la), h
-             call getprof_1D(La, h, sxar, swi, JACSTOT, CALCCONV, perim)
-             call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
-             ! write(123,*) n, ':', fxar
-             sar = swi * hdx
-             wu1D(k,La) = swi
-             au1D(k,La) = fxar
-             sar1D(k,La) = sar
+             call getprof_1D(La, h, total_cs_area, total_width, JACSTOT, CALCCONV, perim)
+             call getprof_1D(La, h, flow_cs_area, flow_width, JACSFLW, CALCCONV, perim)
+             link_surface_area = total_width * half_link_length
+             wu1D(k,La) = total_width
+             au1D(k,La) = flow_cs_area
+             sar1D(k,La) = link_surface_area
              
-             tsar = tsar + sar
-             volu1D(La) = volu1D(La) + fxar * hdx
-             
-             !if (n == 578) then
-             !    write(123,'(A,I18,A,I18,A,I18)')          'link: ',LL   ,' L   : ',La   ,' k   : ',k
-             !    write(123,'(A,E18.12,A,E18.12)')          'q   : ',qa(La)
-             !endif
+             surface_area = surface_area + link_surface_area
+             volu1D(La) = volu1D(La) + flow_cs_area * half_link_length
              
              q_net_in = q_net_in + dble(sign(1,L)) * qa(La)
          enddo
-         
-         !if (n == 578) then
-         !    write(123,'(A,E18.12)')          'qnet: ',q_net_in
-         !    write(123,'(A)')          '--- [2] ---'
-         !endif
          
          qu_in   = 0d0
          qu_out  = 0d0
          qu2_in  = 0d0
          qu2_out = 0d0
-         dzwdt   = q_net_in / tsar
+         dzw_dt   = q_net_in / surface_area
          do LL = 1, nx                          ! loop over all links connected to the node
              L   = nd(n)%ln(LL)                 ! positive if link points to node, negative if links points from node
              La  = iabs(L)
              
              if (L > 0) then ! link points to node: reduce by the storage on the remainder of the link
-                 sar = sar1D(2,La)
-                 q = qa(La) - sar * dzwdt
+                 link_surface_area = sar1D(2,La)
+                 flow_cs_area = au1D(2,La)
+                 q = qa(La) - link_surface_area * dzw_dt
                  q1D(2,La) = q
-                 h = max(0d0, s1(n)-bob(2,La)) ! cross sectional area
-                 call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
-                 au1D(2,La) = fxar
              else ! link points from node: increase by the storage on the first part of the link
-                 sar = sar1D(1,La)
-                 q = qa(La) + sar * dzwdt
+                 link_surface_area = sar1D(1,La)
+                 flow_cs_area = au1D(1,La)
+                 q = qa(La) + link_surface_area * dzw_dt
                  q1D(1,La) = q
-                 h = max(0d0, s1(n)-bob(1,La)) ! cross sectional area
-                 call getprof_1D(La, h, fxar, fwi, JACSFLW, CALCCONV, perim)
-                 au1D(1,La) = fxar
              endif
              
-             if ((L*q) > 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
+             if ((L*q) >= 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
                  u = u1(La)
                  if ((q*u) > 0) then ! flow direction at link equal to flow direction at node
                      qu_in  = qu_in  + abs(q * u)
@@ -244,99 +202,16 @@
                  else ! flow direction at link opposite to flow direction at node, so use 0 velocity inflow
                      ! no contribution if u = 0
                  endif
-             else ! outflowing: negative flow to this node, or positive flow from this node
-                 u = q / fxar
+             elseif (flow_cs_area > 0d0) then ! outflowing: negative flow to this node, or positive flow from this node
+                 u = q / flow_cs_area
                  qu_out  = qu_out  + abs(q * u)
                  qu2_out = qu2_out + abs(q * u**2)
              endif
-             
-             volu1D(La) = volu1D(La) + 0.5d0 * fxar * dx(La)
          enddo
-         
+
          alpha_mom_1D(n) = qu_in / max(1e-20,qu_out)
          alpha_ene_1D(n) = qu2_in/ max(1e-20,qu2_out)
       enddo
-      deallocate(a, b)
    endif
 
-   end subroutine setuc1D
-
-   subroutine setisnbnodisnblin()
-   use m_flow
-   use m_flowgeom
-   use m_netw
-   implicit none
-   integer :: L, LL, LLL, LLLa, La, L1, L2, L1a, L2a, n, nx, ip, i12, k2, ja1D
-
-   if (allocated (isnbnod) ) deallocate(isnbnod)
-   if (allocated (isnblin) ) deallocate(isnblin)
-   allocate(isnbnod(2,lnx), isnblin(2,lnx))
-
-   if (kmx == 0 .and. lnx1D > 0) then ! setuc
-      kc      = 0
-      isnbnod = 0
-      isnblin = 0
-      do n  = ndx2D+1,ndx
-         nx = nd(n)%lnx
-         if (nx == 2) then
-            ja1D  = 1
-            do LL = 1,nx
-               LLL  = nd(n)%ln(LL)
-               LLLa = iabs(LLL)
-               if (iabs(kcu(LLLa)) /= 1) then 
-                  ja1D = 0
-                  exit
-               endif
-            enddo
-            kc(n) = ja1D
-            if (ja1D == 1) then 
-               L1   = nd(n)%ln(1)        ! uc1D on a node follows sign of u1 of its first link
-               L1a  = iabs(L1)
-               L2   = nd(n)%ln(2)        ! this is the second link
-               L2a  = iabs(L2)
-
-               if (L1 > 0) then          ! first link is incoming for node n
-                  isnbnod(2,L1a) =  1    ! node is on side 2 of first link
-                  if (L2 < 0) then       ! second link is outgoing 
-                     isnbnod(1,L2a) =  1 ! so follows sign of node on left side
-                  else 
-                     isnbnod(2,L2a) = -1 ! so follows sign of node on right side
-                  endif
-               else                      ! first link is outgoing for node n
-                  isnbnod(1,L1a) =  1    ! node has sign of first link 
-                  if (L2 < 0) then       ! second link is outgoing 
-                     isnbnod(1,L2a) = -1 ! so follows sign of node on left side
-                  else 
-                     isnbnod(2,L2a) =  1 ! so follows sign of node on left side
-                  endif
-               endif
-
-            endif
-         endif
-      enddo
-
-   endif 
-
-   do L = 1,lnx
-      if (isnbnod(1,L ) .ne. 0) then
-          n =  ln(1,L) 
-          if (nd(n)%ln(1)*nd(n)%ln(2) < 0) then
-              isnblin(1,L) =  1
-          else 
-              isnblin(1,L) = -1
-          endif
-      endif
-      if (isnbnod(2,L ) .ne. 0) then
-          n =  ln(2,L) 
-          if (nd(n)%ln(1)*nd(n)%ln(2) < 0) then
-              isnblin(2,L) =  1
-          else 
-              isnblin(2,L) = -1
-          endif
-      endif
-   
-   enddo
-
-   deallocate(isnbnod) ! no time now to make efficient version
-
-   end subroutine setisnbnodisnblin
+   end subroutine setuc1d

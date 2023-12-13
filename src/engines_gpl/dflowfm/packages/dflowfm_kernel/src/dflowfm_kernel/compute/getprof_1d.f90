@@ -85,7 +85,6 @@ if (kcu(L) == -1 .and. allocated(bndWidth1D)) then
 end if
 
 if (jacustombnd1d == 1) then ! This link is a 1D bnd *and* has a custom width.
-   ! write(123,*) 'getprof_1d - case 1'
    width = bndwidth1D(ibndsect)
    area = hpr*width
    perim = width+2*hpr
@@ -125,7 +124,6 @@ if (jacustombnd1d == 1) then ! This link is a 1D bnd *and* has a custom width.
    return
 
 else if (abs(kcu(ll))==1 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
-   ! write(123,*) 'getprof_1d - case 2'
    cz = 0d0
 
    if (japerim == 0) then ! calculate total area and volume
@@ -171,7 +169,6 @@ else if (abs(kcu(ll))==1 .and. network%loaded) then !flow1d used only for 1d cha
    return
 endif
 
-   ! write(123,*) 'getprof_1d - case 3'
 
 ! No flow1d cross input, OR a 1d2d link. Proceed with conventional prof1D approach.
 if (prof1D(1,LL) >= 0 ) then            ! direct profile based upon link value
@@ -207,7 +204,6 @@ endif
 if (jagrounlay > 0) then
    hpr = hpr + grounlay(LL)
 endif
-   ! write(123,*) 'getprof_1d - case 3, itp = ',itp
 
 ! base nrs == open, negative = closed
 if (abs(itp) == 1) then   ! pipe
@@ -215,9 +211,7 @@ if (abs(itp) == 1) then   ! pipe
 else if (abs(itp) == 2) then   ! rectan, peri=wu + 2*hpr
     call rectan  (hpr, profw, profh, area, width, japerim, perim, itp < 0)
 else if (abs(itp) == 3) then  ! rectan, peri=wu
-    ! write(123,*) 'getprof_1d - ',hpr,profw,profh,japerim
     call rectan2D(hpr, profw, profh, area, width, japerim, perim)
-    ! write(123,*) 'getprof_1d - ',area,width,perim
 else if (abs(itp) == 100 .or. abs(itp) == 101) then  !                          itp >= 100, yzprof
    call yzprofile(hpr,ka,itp, area, width, japerim, frcn, ifrctyp, perim, cf )
 endif
