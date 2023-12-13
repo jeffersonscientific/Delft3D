@@ -86,7 +86,7 @@
          ac1 = acl(L); ac2=1d0-ac1
          !
          ! civilized behaviour in shallow surf zone
-         huL = max(hs(k1),hs(k2))
+         huL = max(hs(k1),hs(k2),epshs)
          hwavL = 0.5d0*(hwav(k1)+hwav(k2))
          gammal = hwavL/huL
          if (gammal>1.d0) then
@@ -115,7 +115,7 @@
          k1 = ln(1,L) ! buiten
          k2 = ln(2,L) ! binnen
          !
-         huL = hs(k2)
+         huL = max(hs(k2),epshs)
          hwavL = hwav(k2)
          gammal = hwavL/huL
          if (gammal>1.d0) then
