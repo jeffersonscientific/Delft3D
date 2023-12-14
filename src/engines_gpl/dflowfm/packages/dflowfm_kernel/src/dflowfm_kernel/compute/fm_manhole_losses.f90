@@ -151,7 +151,7 @@ Module fm_manhole_losses
          k_bend(count) = 0d0
       endif
 
-      if (pstor%expansion_loss /= 0) then 
+      if (pstor%expansion_loss /= 0d0) then 
          !calculate average output area
          total_m2p_area = 0d0
          total_p2m_area = 0d0
@@ -167,7 +167,7 @@ Module fm_manhole_losses
          select case (comparereal(total_p2m_area, total_m2p_area)) 
          case (0)
             ! then no expansion or contraction losses
-            k_exp = 0
+            k_exp = 0d0
          case(-1)
             ! expansion loss -> manhole to pipe flow side gets negative contribution
             k_exp = -pstor%expansion_loss ! Negative Kexp to be consistent with formulation in "Delft3D Urban Modification"
@@ -181,7 +181,7 @@ Module fm_manhole_losses
       endif
 
       !apply losses to advi
-      if ( k_exp /= 0 .or. hasTableData(pstor%angle_loss) .or.  &
+      if ( k_exp /= 0d0 .or. hasTableData(pstor%angle_loss) .or.  &
            pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0 ) then
          ! compute the total energy loss
          energy_loss_total = 0d0
@@ -191,18 +191,18 @@ Module fm_manhole_losses
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0) then
-               energy_loss_total = energy_loss_total + 0.5*(k_exp + pstor%entrance_loss)*u1(L)**2/ag
+               energy_loss_total = energy_loss_total + 0.5d0*(k_exp + pstor%entrance_loss)*u1(L)**2/ag
                v2_m2p = max(v2_m2p, u1(L)**2)
             else
                count = count+1
-               energy_loss_total = energy_loss_total + 0.5*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
+               energy_loss_total = energy_loss_total + 0.5d0*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
                v2_p2m = max(v2_p2m, u1(L)**2)
             endif
          enddo
-         if (energy_loss_total < 0.05*v2_m2p/(2d0*ag)) then
-            k_correction = (0.05*v2_m2p/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
-         else if (energy_loss_total > (v2_p2m+0.5*v2_m2p)/(2d0*ag) ) then
-            k_correction = ((v2_p2m+0.5*v2_m2p)/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
+         if (energy_loss_total < 0.05d0*v2_m2p/(2d0*ag)) then
+            k_correction = (0.05d0*v2_m2p/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
+         else if (energy_loss_total > (v2_p2m+0.5d0*v2_m2p)/(2d0*ag) ) then
+            k_correction = ((v2_p2m+0.5d0*v2_m2p)/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
          else
             k_correction = 0d0
          endif
@@ -211,9 +211,9 @@ Module fm_manhole_losses
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0) then
-               advi(L) = advi(L) + 0.5*(k_exp + pstor%exit_loss)*u1(L)*dxi(L)
+               advi(L) = advi(L) + 0.5d0*(k_exp + pstor%exit_loss)*u1(L)*dxi(L)
             else
-               advi(L) = advi(L) + 0.5*(k_correction + k_bend(count)-k_exp+ pstor%entrance_loss)*u1(L)  *dxi(L)
+               advi(L) = advi(L) + 0.5d0*(k_correction + k_bend(count)-k_exp+ pstor%entrance_loss)*u1(L)  *dxi(L)
             endif
          enddo
       endif
