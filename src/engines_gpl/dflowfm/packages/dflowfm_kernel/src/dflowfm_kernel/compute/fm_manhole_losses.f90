@@ -35,19 +35,21 @@ Module fm_manhole_losses
 
    contains
 
-   pure subroutine calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+   !> Calculate signed "outflow" for a given manhole flow node and a link index of one of its connected pipes.
+   pure subroutine calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
 
    use m_flowgeom, only: nd
    use m_flow, only: q1
-   
-   integer,          intent(in ) :: iL, nod
-   integer,          intent(out) :: L
-   double precision, intent(out) :: q_manhole_to_pipe
+      integer,          intent(in   ) :: nod !< Flow node number
+      integer,          intent(in   ) :: iL  !< This flow node's link index (in nd(nod)%lin(:))
+      integer,          intent(  out) :: L   !< The flow link number on position iL
+      double precision, intent(  out) :: q_manhole_to_pipe !< The signed "outflow" on flow link L w.r.t. flow node nod.
 
-   L = nd(nod)%ln(iL)
-   q_manhole_to_pipe = -sign(1,L)
-   L = abs(L)
-   q_manhole_to_pipe = q_manhole_to_pipe*q1(L)
+      integer :: L_signed
+   
+      L_signed = nd(nod)%ln(iL)
+      L = abs(L_signed)
+      q_manhole_to_pipe = -sign(1, L_signed)*q1(L)
 
    end subroutine calc_q_manhole_to_pipe
 
