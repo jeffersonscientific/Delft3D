@@ -110,7 +110,7 @@ Module fm_manhole_losses
       nod = pstor%node_index
 
       ! Use nd(nod)%lnx, in that case the reallocs stop after time step 1
-      if (.not. allocated(k_bend) ) then
+      if (.not. allocated(k_bend)) then
          allocate(k_bend(nd(nod)%lnx))
       else if (nd(nod)%lnx > size(k_bend)) then
          call realloc(k_bend, nd(nod)%lnx, keepexisting = .false.)
@@ -119,7 +119,7 @@ Module fm_manhole_losses
       if (hasTableData(pstor%angle_loss)) then
          q_temp = 0 
          do iL = 1, nd(nod)%lnx
-            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
             reference_angle = 0d0
             if (q_manhole_to_pipe > 0 .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
                q_temp = q_manhole_to_pipe
@@ -132,7 +132,7 @@ Module fm_manhole_losses
          count = 0
 
          do iL = 1, nd(nod)%lnx
-            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
             if (q_manhole_to_pipe < 0) then
                angle = abs(dlinkangle(nd(nod)%ln(iL))-reference_angle)*180/pi
                if (angle> 180d0) then
@@ -168,10 +168,10 @@ Module fm_manhole_losses
          case (0)
             ! then no expansion or contraction losses
             k_exp = 0d0
-         case(-1)
+         case (-1)
             ! expansion loss -> manhole to pipe flow side gets negative contribution
             k_exp = -pstor%expansion_loss ! Negative Kexp to be consistent with formulation in "Delft3D Urban Modification"
-         case(1)
+         case (1)
             ! contraction loss -> manhole to pipe flow side gets positive contribution
             k_exp = pstor%expansion_loss ! Negative Kexp to be consistent with formulation in "Delft3D Urban Modification"
          end select
@@ -181,21 +181,21 @@ Module fm_manhole_losses
       endif
 
       !apply losses to advi
-      if ( k_exp /= 0d0 .or. hasTableData(pstor%angle_loss) .or.  &
-           pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0 ) then
+      if (k_exp /= 0d0 .or. hasTableData(pstor%angle_loss) .or.  &
+          pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0) then
          ! compute the total energy loss
          energy_loss_total = 0d0
          v2_m2p = 0d0
          v2_p2m = 0d0
          count = 0
          do iL = 1, nd(nod)%lnx
-            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0) then
                energy_loss_total = energy_loss_total + 0.5d0*(k_exp + pstor%entrance_loss)*u1(L)**2/ag
                v2_m2p = max(v2_m2p, u1(L)**2)
             else
                count = count+1
-               energy_loss_total = energy_loss_total + 0.5d0*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2 /ag
+               energy_loss_total = energy_loss_total + 0.5d0*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2/ag
                v2_p2m = max(v2_p2m, u1(L)**2)
             endif
          enddo
@@ -209,11 +209,11 @@ Module fm_manhole_losses
             
          !Apply losses to ADVI
          do iL = 1, nd(nod)%lnx
-            call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
+            call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0) then
                advi(L) = advi(L) + 0.5d0*(k_exp + pstor%exit_loss)*u1(L)*dxi(L)
             else
-               advi(L) = advi(L) + 0.5d0*(k_correction + k_bend(count)-k_exp+ pstor%entrance_loss)*u1(L)  *dxi(L)
+               advi(L) = advi(L) + 0.5d0*(k_correction + k_bend(count)-k_exp+ pstor%entrance_loss)*u1(L)*dxi(L)
             endif
          enddo
       endif
