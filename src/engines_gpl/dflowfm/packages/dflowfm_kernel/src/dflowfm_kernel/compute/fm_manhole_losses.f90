@@ -87,7 +87,7 @@ Module fm_manhole_losses
    allocate(k_bend(count,nstor), reference_angle(nstor))
    
    !$OMP PARALLEL DO                       &
-   !$OMP PRIVATE(i,iL,sum_1,sum_2,L,ref_angle_local,angle,count,q_temp,pstor,nod,q_manhole_to_pipe,total_m2p_area,total_p2m_area,v2_m2p,v2_p2m,energy_loss_total)
+   !$OMP PRIVATE(i,iL,L,ref_angle_local,angle,count,q_temp,pstor,nod,q_manhole_to_pipe,total_m2p_area,total_p2m_area,v2_m2p,v2_p2m,energy_loss_total)
    do i = 1,nstor                                                                                                                
       pstor => storS%stor(i)
       nod = pstor%node_index
@@ -171,7 +171,7 @@ Module fm_manhole_losses
                v2_m2p = max(v2_m2p, u1(L)**2)
             else
                count = count+1
-               energy_loss_total = energy_loss_total + 0.5d0*(k_bend(count)-k_exp+ pstor%exit_loss)*u1(L)**2/ag
+               energy_loss_total = energy_loss_total + 0.5d0*(k_bend(count,i)-k_exp+ pstor%exit_loss)*u1(L)**2/ag
                v2_p2m = max(v2_p2m, u1(L)**2)
             endif
          enddo
@@ -189,7 +189,7 @@ Module fm_manhole_losses
             if (q_manhole_to_pipe > 0) then
                advi(L) = advi(L) + 0.5d0*(k_exp + pstor%exit_loss)*u1(L)*dxi(L)
             else
-               advi(L) = advi(L) + 0.5d0*(k_correction + k_bend(count)-k_exp+ pstor%entrance_loss)*u1(L)*dxi(L)
+               advi(L) = advi(L) + 0.5d0*(k_correction + k_bend(count,i)-k_exp+ pstor%entrance_loss)*u1(L)*dxi(L)
             endif
          enddo
       endif
