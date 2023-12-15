@@ -57,7 +57,7 @@ Module fm_manhole_losses
    subroutine calculate_manhole_losses(storS, advi)
 
    use m_alloc
-   use m_flowgeom, only: nd, dxi
+   use m_flowgeom, only: nd, dxi, ln2lne
    use m_flow, only: u1, au
    use m_storage, only: t_storage_set, t_storage
    use m_tables, only: hasTableData, interpolate
@@ -99,7 +99,7 @@ Module fm_manhole_losses
             reference_angle = 0d0
             if (q_manhole_to_pipe > 0d0 .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
                q_temp = q_manhole_to_pipe
-               ref_angle_local = dlinkangle(nd(nod)%ln(iL))
+               ref_angle_local = dlinkangle(ln2lne(nd(nod)%ln(iL)))
             endif
          enddo
          if (ref_angle_local /= reference_angle(i)) then ! only recalculate k_bend if refangle has changed
@@ -109,7 +109,7 @@ Module fm_manhole_losses
             do iL = 1, nd(nod)%lnx
                call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
                if (q_manhole_to_pipe < 0) then
-                  angle = abs(dlinkangle(nd(nod)%ln(iL))-reference_angle(i))*180/pi
+                  angle = abs(dlinkangle(ln2lne(nd(nod)%ln(iL)))-reference_angle(i))*180/pi
                   if (angle> 180d0) then
                      angle = 360d0-angle
                   endif
