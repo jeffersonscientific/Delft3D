@@ -1,6 +1,6 @@
 #! /bin/bash  
 # Specify Slurm SBATCH directives 
-#SBATCH --nodes=1               # Number of nodes.
+#SBATCH --nodes=1              # Number of nodes.
 #SBATCH --ntasks-per-node=1     # The number of tasks to be invoked on each node.
                                 # For sequential runs, the number of tasks should be '1'.
                                 # Note: SLURM_NTASKS is equal to "--nodes" multiplied by "--ntasks-per-node".
@@ -34,15 +34,17 @@ if [[ ! -n $SLURM_JOB_ID ]]; then
     exit 1
 fi
 
-# Set MPI/OpenMP options. Uncomment to override default settings.
+# Load the intelmpi module.
+module load intelmpi/2021.10.0
+
+# Set MPI options. 
 # Reference on intel MPI environment variables: 
 # https://www.intel.com/content/www/us/en/docs/mpi-library/developer-reference-linux/2021-8/environment-variable-reference.html
-
+# https://www.intel.com/content/www/us/en/developer/articles/technical/mpi-library-2019-over-libfabric.html 
 # export I_MPI_DEBUG=5
-# export I_MPI_FABRICS=ofi
-# export FI_PROVIDER=tcp
-# export I_MPI_OFI_PROVIDER=tcp
-# export OMP_NUM_THREADS=1
+export I_MPI_FABRICS=ofi
+export I_MPI_OFI_PROVIDER=tcp
+export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi2.so
 
 # Get the path to the script submitted using `sbatch`. `sbatch` copies the script to
 # a temporary directory before executing it, so we need `scontrol` to look up the original command.
