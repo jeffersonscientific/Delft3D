@@ -63,7 +63,7 @@ module load intelmpi/2021.10.0
 # Reference on intel MPI environment variables: 
 # https://www.intel.com/content/www/us/en/docs/mpi-library/developer-reference-linux/2021-8/environment-variable-reference.html
 # https://www.intel.com/content/www/us/en/developer/articles/technical/mpi-library-2019-over-libfabric.html 
-#export I_MPI_DEBUG=5
+export I_MPI_DEBUG=5
 export I_MPI_FABRICS=ofi
 export I_MPI_OFI_PROVIDER=tcp
 export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi2.so
