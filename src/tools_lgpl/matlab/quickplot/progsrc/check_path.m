@@ -1,5 +1,13 @@
-function Thresholds=compthresholds(Ops,lm,LocStartClass)
-%COMPTHRESHOLDS Determine automatic threshold levels.
+function pathname = check_path(pathname)
+%CHECK_PATH Checks if a path exists; tries to correct for non-ASCII errors.
+%   CORR_PATH = CHECK_PATH(ORG_PATH) checks whether the specified path ORG_PATH
+%   exists. When the path contains non-ASCII characters, the initial path may
+%   be invalid, and the routine will search for an existing path that matches
+%   the specified path except for the non-ASCII characters. The routine throws
+%   an error if the path cannot be found, otherwise it returns the name of the
+%   corrected path.
+%
+%   See also: EXIST.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
@@ -31,52 +39,45 @@ function Thresholds=compthresholds(Ops,lm,LocStartClass)
 %   $HeadURL$
 %   $Id$
 
-Thresholds=Ops.thresholds;
-if isempty(Thresholds)
-    Thresholds=10;
+pathparts = strsplit(pathname,filesep,'CollapseDelimiters',false);
+if length(pathparts)>3 && isempty(pathparts{1}) && isempty(pathparts{2})
+    % starts with two filesep, e.g. \\MACHINE\ROOT\FOLDERS\FILE
+    base = [filesep filesep pathparts{3}];
+    pathname = one_check(base,pathparts(4:end));
+else
+    % doesn't start with filesep, e.g. DRIVE:\FOLDERS\FILE
+    base = [pathparts{1}];
+    pathname = one_check(base,pathparts(2:end));
 end
-%
-if abs(lm(1))>eps(0)*1e6
-    lm(1)=lm(1)-eps(lm(1));
-end
-if abs(lm(end))>eps(0)*1e6
-    lm(end)=lm(end)+eps(lm(end));
-end
-%
-if isstruct(Thresholds)
-    step = Thresholds.step;
-    Thresholds = step*(floor(lm(1)/step):ceil(lm(2)/step));
-    if length(Thresholds)>1 && Thresholds(1) < lm(1)
-        Thresholds(1) = [];
-    end
-    if length(Thresholds)>1 && Thresholds(end) > lm(2)
-        Thresholds(end) = [];
-    end
-elseif isequal(size(Thresholds),[1 1]) && ...
-        isequal(Thresholds,round(Thresholds)) && ...
-        Thresholds>0
-    if ~isempty(Ops.colourlimits)
-        lm=Ops.colourlimits;
-    end
-    if Ops.symmetriccolourlimits
-        lm=[-1 1]*max(abs(lm));
-    end
-    switch Ops.thresholddistribution
-        case 'logarithmic'
-            if all(lm>0)
-                Thresholds=lm(1)*10.^((log10(lm(2))-log10(lm(1)))*(LocStartClass:Thresholds)/(Thresholds+1));
-            elseif all(lm<0)
-                Thresholds=lm(2)*10.^((log10(abs(lm(1)))-log10(abs(lm(2))))*(Thresholds:-1:LocStartClass)/(Thresholds+1));
-            else
-                ui_message('warning','The colour limits have different sign: switching to linear distribution of thresholds')
-                Thresholds=lm(1)+(lm(2)-lm(1))*(LocStartClass:Thresholds)/(Thresholds+1);
+
+function pathname = one_check(base,pathparts)
+if isempty(pathparts) % end of pathname reached
+    pathname = base;
+elseif isempty(pathparts{1}) % double filesep encountered
+    pathname = one_check(base,pathparts(2:end));
+else % at least one more part in the pathname
+    newbase = [base filesep pathparts{1}];
+    pathname = [];
+    if any(pathparts{1}>127)
+        % next filepart contains special characters
+        d = dir(base);
+        names = {d.name};
+        pattern = pathparts{1};
+        pattern(pattern>127) = '?';
+        options = find(wildstrmatch(pattern,names));
+        for i = 1:length(options)
+            try
+                pathname = one_check([base filesep names{options(i)}],pathparts(2:end));
+                break
+            catch
             end
-        case 'anti-logarithmic'
-            ui_message('warning','anti-logarithmic not yet implemented: switching to linear distribution of thresholds')
-            Thresholds=lm(1)+(lm(2)-lm(1))*(LocStartClass:Thresholds)/(Thresholds+1);
-        otherwise
-            Thresholds=lm(1)+(lm(2)-lm(1))*(LocStartClass:Thresholds)/(Thresholds+1);
+        end
+    elseif exist(newbase) %#ok<EXIST> % file or directory are both OK
+        pathname = one_check(newbase,pathparts(2:end));
     end
-elseif isequal(size(Thresholds),[1 1])
-    Thresholds=[-inf Thresholds];
+    if isempty(pathname)
+        spaces = repmat(' ',1,length(base)+1);
+        error('Invalid file path:\n%s\n%s^',fullfile(base,pathparts{:}),spaces)
+    end
 end
+
