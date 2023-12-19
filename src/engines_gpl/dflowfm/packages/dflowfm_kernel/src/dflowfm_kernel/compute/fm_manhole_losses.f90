@@ -81,8 +81,10 @@ Module fm_manhole_losses
       count = 0
       do i = 1,nstor
          pstor => storS%stor(i)
-         nod = pstor%node_index
-         count = max(count,nd(nod)%lnx)
+         nod = pstor%grid_point
+         if (nod > 0) then
+            count = max(count,nd(nod)%lnx)
+         endif
       enddo
       allocate(k_bend(count,nstor), reference_angle(nstor))
    endif
@@ -90,7 +92,10 @@ Module fm_manhole_losses
    !$OMP PRIVATE(i,iL,L,ref_angle_local,angle,count,q_temp,pstor,nod,q_manhole_to_pipe,total_m2p_area,total_p2m_area,v2_m2p,v2_p2m,energy_loss_total)
    do i = 1,nstor                                                                                                                
       pstor => storS%stor(i)
-      nod = pstor%node_index
+      nod = pstor%grid_point
+      if (nod < 0) then
+         cycle
+      endif
 
       if (hasTableData(pstor%angle_loss)) then
          q_temp = 0
