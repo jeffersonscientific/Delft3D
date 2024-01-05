@@ -3348,6 +3348,12 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_squ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
        ierr = nf90_put_att(irstfile, id_squ,  'long_name'    , 'cell center outcoming flux')
        ierr = nf90_put_att(irstfile, id_squ,  'units'        , 'm3 s-1')
+
+       ! Definition and attributes of cell center outcoming flux
+       ierr = nf90_def_var(irstfile, 'sqi', nf90_double,   (/ id_flowelemdim, id_timedim /)  , id_sqi)
+       ierr = nf90_put_att(irstfile, id_sqi,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+       ierr = nf90_put_att(irstfile, id_sqi,  'long_name'    , 'cell center incoming flux')
+       ierr = nf90_put_att(irstfile, id_sqi,  'units'        , 'm3 s-1')
     endif
 
     ! Definition and attributes of flow data on centres: salinity
@@ -3968,6 +3974,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     ierr = nf90_inq_varid(irstfile, 'czs'     , id_czs)
     ierr = nf90_inq_varid(irstfile, 'qa'      , id_qa)
     ierr = nf90_inq_varid(irstfile, 'squ'     , id_squ)
+    ierr = nf90_inq_varid(irstfile, 'sqi'     , id_sqi)
 
     if ( kmx>0 ) then
        ierr = nf90_inq_varid(irstfile, 'ucz', id_ucz)
@@ -4260,6 +4267,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_var(irstfile, id_q1   , q1 ,  (/ 1, itim /), (/ lnx , 1 /))
        ierr = nf90_put_var(irstfile, id_qa   , qa ,  (/ 1, itim /), (/ lnx , 1 /))
        ierr = nf90_put_var(irstfile, id_squ  , squ,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_sqi  , sqi,  (/ 1, itim /), (/ ndxi, 1 /))
     endif
 
     if (jasal > 0) then  ! Write the data: salinity
@@ -13070,8 +13078,10 @@ subroutine unc_read_map_or_rst(filename, ierr)
           endif
        endif
     else
-       ! Read squ, optional: only from rst file, so no error check
+       ! Read squ and sqi, optional: only from rst file, so no error check
        ierr = get_var_and_shift(imapfile, 'squ', squ,  tmpvar1, UNC_LOC_W,   kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
+                                um%inode_own, um%inode_merge)
+       ierr = get_var_and_shift(imapfile, 'sqi', sqi,  tmpvar1, UNC_LOC_W,   kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
                                 um%inode_own, um%inode_merge)
     endif
     call readyy('Reading map data', 0.80d0)
