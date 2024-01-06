@@ -127,7 +127,7 @@
     ! endif
 
     if ( time1 > ti_rst ) then 
-        write(*,*) 'Here'
+        numnodneg=numnodneg+0 ! debug statement 
     endif 
 !    synchronise all water-levels
     if ( jampi == 1 ) then
