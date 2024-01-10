@@ -35,21 +35,19 @@
    use unstruc_model, only: md_dryptsfile, md_encfile
    use gridoperations, only: update_cell_circumcenters
    use unstruc_caching
-   use network_data
+   use network_data, only: nump, nump1d2d, lne, lnn, xzw, yzw, netcell
    use m_flowgeom, only: xz, yz, ba
-   use m_partitioninfo, only: idomain, iglobal_s
    implicit none
    logical cache_success
    cache_success = .false.
 
    if ( cacheRetrieved() ) then
-       call copy_cached_deleted_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell, cache_success)
+       call copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell, cache_success)
    endif
    
    if ( .not. cache_success ) then
        call delete_drypoints_from_netgeom(md_dryptsfile, 0, 0)
        call delete_drypoints_from_netgeom(md_encfile, 0, -1)
-    !   call delete_drypoints_from_netgeom(md_cutcelllist, 0, 0)
 
        ! for issue UNST-3381, compute circumcenter after deleting dry areas
        ! TODO: UNST-3436 must be done as a better solution
@@ -57,7 +55,7 @@
           call update_cell_circumcenters()
        end if
    
-       call cache_deleted_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell)
+       call cache_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell)
    endif 
 
    return

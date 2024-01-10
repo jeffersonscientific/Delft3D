@@ -76,13 +76,9 @@ module unstruc_caching
     integer, private                                     :: cached_nump1d2d_dry
     integer, dimension(:,:), allocatable, private        :: cached_lne_dry
     integer, dimension(:), allocatable, private          :: cached_lnn_dry
-    integer, dimension(:), allocatable, private          :: cached_idomain_dry
-    integer, dimension(:), allocatable, private          :: cached_iglobal_s_dry
     double precision, dimension(:), allocatable, private :: cached_xzw_dry
     double precision, dimension(:), allocatable, private :: cached_yzw_dry
-    double precision, dimension(:), allocatable, private :: cached_xk_dry
-    double precision, dimension(:), allocatable, private :: cached_yk_dry
-    double precision, dimension(:), allocatable, private :: cached_ba_dry
+    double precision, dimension(:), allocatable, private :: cached_bottom_area_dry
     double precision, dimension(:), allocatable, private :: cached_xz_dry
     double precision, dimension(:), allocatable, private :: cached_yz_dry
     type (tface), dimension(:), allocatable, private     :: cached_netcell_dry
@@ -112,7 +108,7 @@ subroutine default_caching()
    if (allocated(cached_lnn_dry))       deallocate(cached_lnn_dry)
    if (allocated(cached_xzw_dry))       deallocate(cached_xzw_dry)
    if (allocated(cached_yzw_dry))       deallocate(cached_yzw_dry)
-   if (allocated(cached_ba_dry))        deallocate(cached_ba_dry)
+   if (allocated(cached_bottom_area_dry))        deallocate(cached_bottom_area_dry)
    if (allocated(cached_xz_dry))        deallocate(cached_xz_dry)
    if (allocated(cached_yz_dry))        deallocate(cached_yz_dry)
    if (allocated(cached_netcell_dry))   deallocate(cached_netcell_dry)
@@ -283,14 +279,14 @@ subroutine loadCachingFile( basename, netfile, usecaching )
         close( lun )
         return
     endif
-    allocate( cached_ba_dry(number_nodes) )
+    allocate( cached_bottom_area_dry(number_nodes) )
     allocate( cached_lne_dry(2,number_links) )
     allocate( cached_lnn_dry(number_links) )
     allocate( cached_xzw_dry(number_nodes) )
     allocate( cached_yzw_dry(number_nodes) )
     allocate( cached_xz_dry(number_nodes) )
     allocate( cached_yz_dry(number_nodes) )
-    read( lun, iostat = ierr ) cached_ba_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry ; okay = ierr == 0
+    read( lun, iostat = ierr ) cached_bottom_area_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry ; okay = ierr == 0
     if ( .not. okay ) then
         close( lun )
         return
@@ -480,8 +476,8 @@ subroutine storeCachingFile( basename, usecaching )
     !
     ! Store the data for the dry points and areas
     !
-    write( lun ) section(key_dry_points_and_areas), cached_nump_dry, cached_nump1d2d_dry,  size(cached_ba_dry), size(cached_lnn_dry), size(cached_netcell_dry,1)
-    write( lun ) cached_ba_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry
+    write( lun ) section(key_dry_points_and_areas), cached_nump_dry, cached_nump1d2d_dry,  size(cached_bottom_area_dry), size(cached_lnn_dry), size(cached_netcell_dry,1)
+    write( lun ) cached_bottom_area_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry
     call store_netcell(lun, cached_netcell_dry)
     
     !
@@ -681,7 +677,7 @@ subroutine cacheFixedWeirs( npl, xpl, ypl, number_links, iLink, iPol, dSL )
 end subroutine cacheFixedWeirs
 
 !> Copy grid information, where dry points and areas have been deleted, from cache file: 
-subroutine copy_cached_deleted_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell, success)
+subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell, success)
     integer,                        intent(  out) :: nump     !< Nr. of 2d netcells.
     integer,                        intent(  out) :: nump1d2d !< nr. of 1D and 2D netcells (2D netcells come first)
     integer, dimension(:,:),        intent(  out) :: lne      !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
@@ -705,7 +701,7 @@ subroutine copy_cached_deleted_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba
         if (.not. allocated(cached_netcell_dry)) then
             return
         endif
-        if ( size(ba) == size(cached_ba_dry) ) then
+        if ( size(ba) == size(cached_bottom_area_dry) ) then
             success      = .true.
             nump = cached_nump_dry
             nump1d2d = cached_nump1d2d_dry
@@ -713,16 +709,16 @@ subroutine copy_cached_deleted_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba
             lnn = cached_lnn_dry(1:number_links)
             xzw = cached_xzw_dry(1:number_nodes)
             yzw = cached_yzw_dry(1:number_nodes)
-            ba  = cached_ba_dry(1:number_nodes)
+            ba  = cached_bottom_area_dry(1:number_nodes)
             xz  = cached_xz_dry(1:number_nodes)
             yz  = cached_yz_dry(1:number_nodes)
             netcell = cached_netcell_dry(1:number_netcells)
         endif
     endif
-end subroutine copy_cached_deleted_dry_points_and_areas
+end subroutine copy_cached_netgeom_without_dry_points_and_areas
 
 !> Cache grid information, where dry points and areas have been deleted: 
-subroutine cache_deleted_dry_points_and_areas( nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell )
+subroutine cache_netgeom_without_dry_points_and_areas( nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell )
     integer,                        intent(in   ) :: nump     !< Nr. of 2d netcells.
     integer,                        intent(in   ) :: nump1d2d !< nr. of 1D and 2D netcells (2D netcells come first)
     integer, dimension(:,:),        intent(in   ) :: lne      !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
@@ -746,11 +742,11 @@ subroutine cache_deleted_dry_points_and_areas( nump, nump1d2d, lne, lnn, ba, xz,
     cached_lnn_dry = lnn(1:number_links)
     cached_xzw_dry = xzw(1:number_nodes)
     cached_yzw_dry = yzw(1:number_nodes)
-    cached_ba_dry = ba(1:number_nodes)
+    cached_bottom_area_dry = ba(1:number_nodes)
     cached_xz_dry = xz(1:number_nodes)
     cached_yz_dry = yz(1:number_nodes)
     cached_netcell_dry = netcell(1:number_netcells)
 
-end subroutine cache_deleted_dry_points_and_areas
+end subroutine cache_netgeom_without_dry_points_and_areas
 
 end module unstruc_caching
