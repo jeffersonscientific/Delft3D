@@ -802,8 +802,8 @@ subroutine load_restart_file(file_exist, error)
          call fill_onlyWetLinks()
          call setucxucyucxuucyunew() !reconstruct cell-center velocities
          u1(:) = u1_tmp(:)
-         call calculate_hu_au_and_advection_for_dams_weirs(0)
-         call setau()
+         !call calculate_hu_au_and_advection_for_dams_weirs(0)
+         !call setau()
        end if
    end if
 
