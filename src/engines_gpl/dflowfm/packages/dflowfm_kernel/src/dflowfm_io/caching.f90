@@ -677,22 +677,22 @@ subroutine cacheFixedWeirs( npl, xpl, ypl, number_links, iLink, iPol, dSL )
 end subroutine cacheFixedWeirs
 
 !> Copy grid information, where dry points and areas have been deleted, from cache file: 
-subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell, success)
-    integer,                        intent(  out) :: nump     !< Nr. of 2d netcells.
-    integer,                        intent(  out) :: nump1d2d !< nr. of 1D and 2D netcells (2D netcells come first)
-    integer, dimension(:,:),        intent(  out) :: lne      !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
-    integer, dimension(:),          intent(inout) :: lnn      !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
-    double precision, dimension(:), intent(inout) :: ba       !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
-    double precision, dimension(:), intent(  out) :: xz       !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
-    double precision, dimension(:), intent(  out) :: yz       !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
-    double precision, dimension(:), intent(  out) :: xzw      !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
-    double precision, dimension(:), intent(  out) :: yzw      !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
-    type (tface), dimension(:),     intent(inout) :: netcell  !< (nump1d2d) 1D&2D net cells (nodes and links)
-    logical,                        intent(  out) :: success  !< The cached information was compatible if true
+subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, bottom_area, xz, yz, xzw, yzw, netcell, success)
+    integer,                        intent(  out) :: nump         !< Nr. of 2d netcells.
+    integer,                        intent(  out) :: nump1d2d     !< nr. of 1D and 2D netcells (2D netcells come first)
+    integer, dimension(:,:),        intent(  out) :: lne          !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
+    integer, dimension(:),          intent(inout) :: lnn          !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
+    double precision, dimension(:), intent(inout) :: bottom_area  !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(  out) :: xz           !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(  out) :: yz           !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(  out) :: xzw          !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
+    double precision, dimension(:), intent(  out) :: yzw          !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
+    type (tface), dimension(:),     intent(inout) :: netcell      !< (nump1d2d) 1D&2D net cells (nodes and links)
+    logical,                        intent(  out) :: success      !< The cached information was compatible if true
     
     integer number_nodes, number_links, number_netcells
     
-    number_nodes = size(ba)
+    number_nodes = size(bottom_area)
     number_links = size(lnn)
     number_netcells = size(netcell)
 
@@ -701,7 +701,7 @@ subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne,
         if (.not. allocated(cached_netcell_dry)) then
             return
         endif
-        if ( size(ba) == size(cached_bottom_area_dry) ) then
+        if ( size(bottom_area) == size(cached_bottom_area_dry) ) then
             success      = .true.
             nump = cached_nump_dry
             nump1d2d = cached_nump1d2d_dry
@@ -709,7 +709,7 @@ subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne,
             lnn = cached_lnn_dry(1:number_links)
             xzw = cached_xzw_dry(1:number_nodes)
             yzw = cached_yzw_dry(1:number_nodes)
-            ba  = cached_bottom_area_dry(1:number_nodes)
+            bottom_area  = cached_bottom_area_dry(1:number_nodes)
             xz  = cached_xz_dry(1:number_nodes)
             yz  = cached_yz_dry(1:number_nodes)
             netcell = cached_netcell_dry(1:number_netcells)
@@ -718,31 +718,31 @@ subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne,
 end subroutine copy_cached_netgeom_without_dry_points_and_areas
 
 !> Cache grid information, where dry points and areas have been deleted: 
-subroutine cache_netgeom_without_dry_points_and_areas( nump, nump1d2d, lne, lnn, ba, xz, yz, xzw, yzw, netcell )
-    integer,                        intent(in   ) :: nump     !< Nr. of 2d netcells.
-    integer,                        intent(in   ) :: nump1d2d !< nr. of 1D and 2D netcells (2D netcells come first)
-    integer, dimension(:,:),        intent(in   ) :: lne      !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
-    integer, dimension(:),          intent(in   ) :: lnn      !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
-    double precision, dimension(:), intent(in   ) :: ba       !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
-    double precision, dimension(:), intent(in   ) :: xz       !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
-    double precision, dimension(:), intent(in   ) :: yz       !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
-    double precision, dimension(:), intent(in   ) :: xzw      !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
-    double precision, dimension(:), intent(in   ) :: yzw      !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
-    type (tface), dimension(:),     intent(in   ) :: netcell  !< (nump1d2d) 1D&2D net cells (nodes and links)
+subroutine cache_netgeom_without_dry_points_and_areas( nump, nump1d2d, lne, lnn, bottom_area, xz, yz, xzw, yzw, netcell )
+    integer,                        intent(in   ) :: nump         !< Nr. of 2d netcells.
+    integer,                        intent(in   ) :: nump1d2d     !< nr. of 1D and 2D netcells (2D netcells come first)
+    integer, dimension(:,:),        intent(in   ) :: lne          !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
+    integer, dimension(:),          intent(in   ) :: lnn          !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
+    double precision, dimension(:), intent(in   ) :: bottom_area  !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(in   ) :: xz           !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(in   ) :: yz           !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(in   ) :: xzw          !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
+    double precision, dimension(:), intent(in   ) :: yzw          !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
+    type (tface), dimension(:),     intent(in   ) :: netcell      !< (nump1d2d) 1D&2D net cells (nodes and links)
     integer number_nodes
     integer number_links
     integer number_netcells
     
     cached_nump_dry = nump
     cached_nump1d2d_dry = nump1d2d
-    number_nodes = size(ba)
+    number_nodes = size(bottom_area)
     number_links = size(lnn)
     number_netcells = size(netcell)
     cached_lne_dry = lne(1:2,1:number_links)
     cached_lnn_dry = lnn(1:number_links)
     cached_xzw_dry = xzw(1:number_nodes)
     cached_yzw_dry = yzw(1:number_nodes)
-    cached_bottom_area_dry = ba(1:number_nodes)
+    cached_bottom_area_dry = bottom_area(1:number_nodes)
     cached_xz_dry = xz(1:number_nodes)
     cached_yz_dry = yz(1:number_nodes)
     cached_netcell_dry = netcell(1:number_netcells)
