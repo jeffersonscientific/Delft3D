@@ -267,7 +267,7 @@ contains
 
    call setkbotktop(1)
 
-   call update_s0_and_hs(jawelrestart)
+   call update_s0_and_hs()
 
    if ( jaselfal > OFF ) then
   !  with hs available: recompute SAL potential
@@ -1063,20 +1063,13 @@ subroutine set_data_for_ship_modelling()
 end subroutine set_data_for_ship_modelling
 
 !> update_s0_and_hs
-subroutine update_s0_and_hs(jawelrestart)
+subroutine update_s0_and_hs()
    use m_flow,           only : s1, s0, hs
    use m_flowgeom,       only : bl
 
    implicit none
 
-   logical, intent(in) :: jawelrestart
-
-   if (.not. jawelrestart) then
-      s0(:) = s1(:)
-   else ! If one restarts a simulation, then use s0 to compute hs
-      s0(:) = max(s0(:),bl(:))
-   end if
-
+   s0(:) = s1(:)
    hs(:) = s0(:) - bl(:)
  
 end subroutine update_s0_and_hs
