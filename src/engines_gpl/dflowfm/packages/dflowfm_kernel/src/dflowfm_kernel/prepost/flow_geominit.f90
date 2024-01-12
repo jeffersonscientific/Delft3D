@@ -308,6 +308,8 @@
  if (stm_included) then
      call realloc(bl_ave, ndx, keepExisting = .false., fill = dmiss, stat = ierr)
      call aerr('bl_ave(ndx)', ierr, ndx)
+     call realloc(bl_ave0, ndx, keepExisting = .false., fill = dmiss, stat = ierr)
+     call aerr('bl_ave0(ndx)', ierr, ndx)
  end if
 
  if ( allocated (kfs) ) deallocate(kfs)
