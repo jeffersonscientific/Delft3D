@@ -753,7 +753,7 @@ end subroutine make_volume_tables
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
 subroutine load_restart_file(file_exist, error)
    use m_flowparameters,   only : jased, iperot
-   use m_flow,             only : u1, u0, s0, hs
+   use m_flow,             only : u1, u0, s0, hs, s1
    use m_flowgeom,         only : bl
    use m_sediment,         only : stm_included
    use unstruc_model,      only : md_restartfile
@@ -794,15 +794,15 @@ subroutine load_restart_file(file_exist, error)
             file_exist = .true.
          end if
          
-         u1_tmp  = u1
-         u1(:)   = u0(:)
-         hs(:)   = s0(:) - bl(:)
+         !u1_tmp  = u1
+         !u1(:)   = u0(:)
+         hs(:)   = s1(:) - bl(:)
          if (iperot == NOT_DEFINED ) then
             call reconst2nd ()
          end if
          call fill_onlyWetLinks()
          call setucxucyucxuucyunew() !reconstruct cell-center velocities
-         u1(:) = u1_tmp(:)
+         !u1(:) = u1_tmp(:)
        end if
    end if
 
