@@ -131,7 +131,7 @@ contains
         endif
         skip_pt = .FALSE.
         if (niter==0) mirror = .TRUE.
-        partdomain =  laypart(ipart) == 0 ! this is for the particles that come out of advection outside model domain
+        partdomain =  mpart(ipart) == 0 ! this is for the particles that come out of advection outside model domain
         ! if after the advectio the particle is outside the gridthen also set the previous mpart to 0 to avoid resetting back into the domain
         if (partdomain) then
            skip_pt = .TRUE.
