@@ -39,7 +39,7 @@ contains
       use m_waq_precision
       use partmem, only: nopart, modtyp, drand, oil, nfract, wpart, iptime, abuoy, t0buoy, ldiffh, nosubs, mpart
       use m_part_mesh
-      use m_particles
+      use m_particles, laypart => kpart
       use m_part_times
       use m_part_recons
       use m_part_transport
@@ -131,7 +131,7 @@ contains
         endif
         skip_pt = .FALSE.
         if (niter==0) mirror = .TRUE.
-        partdomain =  mpart(ipart) == 0 ! this is for the particles that come out of advection outside model domain
+        partdomain =  laypart(ipart) == 0 ! this is for the particles that come out of advection outside model domain
         ! if after the advectio the particle is outside the gridthen also set the previous mpart to 0 to avoid resetting back into the domain
         if (partdomain) then
            skip_pt = .TRUE.

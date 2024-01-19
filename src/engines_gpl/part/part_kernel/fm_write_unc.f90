@@ -218,7 +218,7 @@ end subroutine unc_init_map
 
 subroutine unc_write_map()
 
-   use partmem, only: nosubs, hyd
+   use partmem, only: nosubs, hyd, noslay
    use m_part_times
    use m_part_geom
    use m_part_transport
@@ -361,7 +361,7 @@ end subroutine unc_write_part_header
 
 !> write particles to netcdf file
 subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_party, id_trk_partz)
-   use partmem, only: nopart, hyd, mpart
+   use partmem, only: nopart, hyd, mpart, noslay
    use m_part_mesh
    use m_particles, laypart => kpart
    use netcdf
@@ -428,7 +428,7 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
    if ( kmx > 0 ) then
       do i = 1,NopartTot
          k     = mpart(i)
-         lay   = min(hyd%nolay, laypart(i))
+         lay   = laypart(i)
 
          zz(i) = 0.0
          if ( k > 0 .and. lay > 0 ) then
@@ -439,7 +439,7 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
                zz(i) = zz(i) + h1(kl)
             enddo
 
-            kl    = k + (lay-1) * hyd%nosegl
+            kl    = k + (lay-1) * noslay
             zz(i) = zz(i) + (1.0 - hpart(i)) * h1(kl)
          endif
       enddo
@@ -521,7 +521,7 @@ end subroutine setTUDUnitString
 
 !> compute concentrations of particles (parts per unit volume) in flownodes
 subroutine comp_concentration(h, nconst, iconst, c)
-   use partmem, only: mpart, wpart, oil, nfract, nopart, hyd
+   use partmem, only: mpart, wpart, oil, nfract, nopart, hyd, noslay
    use m_particles, laypart => kpart
    use m_part_mesh
    use m_part_geom, only : Ndx, ba, bl
@@ -532,10 +532,10 @@ subroutine comp_concentration(h, nconst, iconst, c)
    implicit none
 
    !! TODO: Make these assumed-shape arrays!
-   double precision, dimension(Ndx/kmx,kmx),        intent(in)  :: h      !< water depth
+   double precision, dimension(Ndx/kmx,noslay),        intent(in)  :: h      !< water depth
    integer,                                         intent(in)  :: nconst !< number of constituents
    integer,                                         intent(in)  :: iconst !< particle tracer constituent number
-   double precision, dimension(Nconst,Ndx/kmx,kmx), intent(out) :: c      !< constituents
+   double precision, dimension(Nconst,Ndx/kmx,noslay), intent(out) :: c      !< constituents
 
    integer :: i, k, kl, ifract, lay
 
@@ -551,13 +551,13 @@ subroutine comp_concentration(h, nconst, iconst, c)
       if ( k.eq.0 ) cycle
 
       k   = abs(cell2nod(k))
-      lay = min(laypart(i), kmx)
+      lay = min(laypart(i), noslay)
 
       c(iconst,k,lay) = c(iconst,k,lay) + wpart(iconst, i)
    end do
 
    !  compute concentration (parts per unit volume) , but for the oil module should it be per m2 (ie divided by the depth of the segment), for sticky and surface oil
-   do lay = 1,kmx
+   do lay = 1,noslay
       do k=1,hyd%nosegl
          if ( h(k,lay) .gt. epshs ) then
             kl = k + (lay-1) * hyd%nosegl
