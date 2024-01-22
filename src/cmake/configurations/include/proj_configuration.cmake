@@ -15,7 +15,7 @@ set(SAVED_BUILD_TESTING ${BUILD_TESTING})
 set(BUILD_TESTING OFF)
 
 set(CMAKE_FOLDER "proj") # Adds proj related projects under the 'proj' directory in VS sln file.
-add_subdirectory(${proj_path} EXCLUDE_FROM_ALL proj)
+add_subdirectory(${proj_module} EXCLUDE_FROM_ALL proj)
 unset(CMAKE_FOLDER)
 
 # Restore BUILD_TESTING and BUILD_SHARED_LIBS

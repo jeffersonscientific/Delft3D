@@ -91,8 +91,7 @@ if (WIN32)
 
     # Set the GDAL path
     set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
-    # Set the PROJ path
-    set(proj_path ${checkout_src_root}/third_party_open/proj)
+
     # Set the SQLITE3 path
     set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
     
