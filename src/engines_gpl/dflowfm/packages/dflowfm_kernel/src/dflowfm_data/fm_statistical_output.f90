@@ -15,7 +15,7 @@ private
    type(t_output_variable_set), public :: out_variable_set_map
    type(t_output_variable_set), public :: out_variable_set_clm
    
-   double precision, dimension(:,:), allocatable, target :: constit_crs_obs  !< constituent data on observation cross sections to be written
+   double precision, dimension(:,:), allocatable, target :: obscrs_data  !< constituent data on observation cross sections to be written
    double precision, dimension(:), allocatable, target :: ucmaga           !< uc vector norm data to be written
    double precision, dimension(:), allocatable, target :: viu_data, diu    !< viu and diu data to be written
    double precision, dimension(:), allocatable, target :: tausx, tausy     !< tausx and tausy data to be written
@@ -171,7 +171,7 @@ private
    !! * obscrs_data(1:ncrs, 1:5): basic flow quantities
    !! * obscrs_data(1:ncrs, 5+(1:2*NUMCONST_MDU)): constituent transport quantities
    !! * obscrs_data(1:ncrs, 5+2*NUMCONST_MDU+(1:2 + stmpar%lsedtot)): sediment transport quantities
-   subroutine aggregate_obscrs_data(data_pointer)
+   !subroutine aggregate_obscrs_data(data_pointer)
    
    !> Calculates flow velocity vector on zeta points.
    !! Will allocate and fill both the ucx_data and ucy_data arrays,
@@ -589,80 +589,80 @@ private
 
    end subroutine calculate_diu
    
-   !> Aggregate constituent observation crossection data from crs()% value arrays into statistical_output data array.
-   subroutine aggregate_constit_crs_obs(source_input)
-   use m_monitoring_crosssections
-   use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
-   use m_sediment, only: sedtot2sedsus, stmpar, jased
-   double precision, pointer, dimension(:), intent(inout) :: source_input  !< pointer to constit_crs_obs_data
-
-   integer :: i, IP, num, l, lsed
-   double precision :: rhol
-
-   if (ncrs == 0) then
-      return
-   end if
-   
-   ! Fill basic flow quantities
-   do i=1,ncrs
-      ! Discharge
-      obscrs_data(i, 1) = crs(i)%sumvalcur(IPNT_Q1C)
-      ! Cumulative discharge
-      obscrs_data(i, 2) = crs(i)%sumvalcum(IPNT_Q1C)
-      ! Cross sectional areas A*u
-      obscrs_data(i, 3) = crs(i)%sumvalcur(IPNT_AUC)
-         ! Average velocity Q/Au
-      obscrs_data(i, 4) = crs(i)%sumvalcur(IPNT_U1A)
-      ! Entry 5 intentionally left blank (IPNT_S1A)
-   end do
-
-   ! Fill all constituent transport through observation crosssection
-   do num = 1,NUMCONST_MDU
-      IP = IPNT_HUA + num
-      if (num >= ISED1 .and. num <= ISEDN) then
-         l = sedtot2sedsus(num-ISED1+1)
-         select case(stmpar%morpar%moroutput%transptype)
-         case (0)
-            rhol = 1d0
-         case (1)
-            rhol = stmpar%sedpar%cdryb(l)
-         case (2)
-            rhol = stmpar%sedpar%rhosol(l)
-         end select
-      else
-         rhol = 1d0 ! dummy
-      endif
-      do i=1,ncrs
-         obscrs_data(i, 5 + (num-1)*2 + 1) = crs(i)%sumvalcur(IP)/rhol
-         obscrs_data(i, 5 + (num-1)*2 + 2) = crs(i)%sumvalcum(IP)/rhol
-      end do
-   enddo
-
-   if (jased == 4 .and. stmpar%lsedtot > 0) then
-      IP = IPNT_HUA + NUMCONST_MDU + 1
-      ! Bed load
-      do i=1,ncrs
-         constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 1) = crs(i)%sumvalcum(IP)
-      end do
-
-      ! Suspended load
-      if( stmpar%lsedsus > 0 ) then
-         IP = IP + 1
-         do i=1,ncrs
-            constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 2) = crs(i)%sumvalcum(IP)
-         end do
-      endif
-
-      ! Bed load per fraction
-      do lsed = 1,stmpar%lsedtot
-         IP = IP + 1
-         do i=1,ncrs
-            constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 2 + lsed) = crs(i)%sumvalcum(IP)
-         end do
-      enddo
-   end if
-
-   end subroutine aggregate_constit_crs_obs
+   !!> Aggregate constituent observation crossection data from crs()% value arrays into statistical_output data array.
+   !subroutine aggregate_constit_crs_obs(source_input)
+   !use m_monitoring_crosssections
+   !use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
+   !use m_sediment, only: sedtot2sedsus, stmpar, jased
+   !double precision, pointer, dimension(:), intent(inout) :: source_input  !< pointer to constit_crs_obs_data
+   !
+   !integer :: i, IP, num, l, lsed
+   !double precision :: rhol
+   !
+   !if (ncrs == 0) then
+   !   return
+   !end if
+   !
+   !! Fill basic flow quantities
+   !do i=1,ncrs
+   !   ! Discharge
+   !   obscrs_data(i, 1) = crs(i)%sumvalcur(IPNT_Q1C)
+   !   ! Cumulative discharge
+   !   obscrs_data(i, 2) = crs(i)%sumvalcum(IPNT_Q1C)
+   !   ! Cross sectional areas A*u
+   !   obscrs_data(i, 3) = crs(i)%sumvalcur(IPNT_AUC)
+   !      ! Average velocity Q/Au
+   !   obscrs_data(i, 4) = crs(i)%sumvalcur(IPNT_U1A)
+   !   ! Entry 5 intentionally left blank (IPNT_S1A)
+   !end do
+   !
+   !! Fill all constituent transport through observation crosssection
+   !do num = 1,NUMCONST_MDU
+   !   IP = IPNT_HUA + num
+   !   if (num >= ISED1 .and. num <= ISEDN) then
+   !      l = sedtot2sedsus(num-ISED1+1)
+   !      select case(stmpar%morpar%moroutput%transptype)
+   !      case (0)
+   !         rhol = 1d0
+   !      case (1)
+   !         rhol = stmpar%sedpar%cdryb(l)
+   !      case (2)
+   !         rhol = stmpar%sedpar%rhosol(l)
+   !      end select
+   !   else
+   !      rhol = 1d0 ! dummy
+   !   endif
+   !   do i=1,ncrs
+   !      obscrs_data(i, 5 + (num-1)*2 + 1) = crs(i)%sumvalcur(IP)/rhol
+   !      obscrs_data(i, 5 + (num-1)*2 + 2) = crs(i)%sumvalcum(IP)/rhol
+   !   end do
+   !enddo
+   !
+   !if (jased == 4 .and. stmpar%lsedtot > 0) then
+   !   IP = IPNT_HUA + NUMCONST_MDU + 1
+   !   ! Bed load
+   !   do i=1,ncrs
+   !      constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 1) = crs(i)%sumvalcum(IP)
+   !   end do
+   !
+   !   ! Suspended load
+   !   if( stmpar%lsedsus > 0 ) then
+   !      IP = IP + 1
+   !      do i=1,ncrs
+   !         constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 2) = crs(i)%sumvalcum(IP)
+   !      end do
+   !   endif
+   !
+   !   ! Bed load per fraction
+   !   do lsed = 1,stmpar%lsedtot
+   !      IP = IP + 1
+   !      do i=1,ncrs
+   !         constit_crs_obs(i, 5 + 2*NUMCONST_MDU + 2 + lsed) = crs(i)%sumvalcum(IP)
+   !      end do
+   !   enddo
+   !end if
+   !
+   !end subroutine aggregate_constit_crs_obs
    
    
    !> Calculates run-up gauge data for his output.
@@ -689,8 +689,6 @@ private
    
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
-      use netcdf_utils, only: ncu_set_att
-      use m_ug_nc_attribute
       use netcdf, only: nf90_int
       use m_flow
       use m_ug_nc_attribute, only: ug_nc_attribute
@@ -2027,9 +2025,15 @@ private
       type(t_output_quantity_config_set), intent(inout) :: output_config !< output config for which an output set is needed.
       type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
 
+      type(ug_nc_attribute) :: atts(5)
       double precision, pointer, dimension(:) :: temp_pointer
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
 
+      integer :: i, ntot, num, lsed
+      integer :: idx_const_
+      integer :: lenunitstr
+      character(len=20)  :: unitstr
+      character(len=255) :: conststr
       integer :: i, ntot, num_const_items
       integer, allocatable, dimension(:) :: idx_const
 
@@ -2471,28 +2475,100 @@ private
       ! Variables on observation cross sections
       !
       if (ncrs > 0) then
-         !
+         ! Basic flow quantities
          ! Prepare data array
          ! Add configuration items for constituents and sediment output (During reading of MDU file this data was not available)
          !
          call init_obscrs_data_and_config(num_const_items, output_config, idx_const)
-
-         !
-         ! Basic flow quantities
-         !
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),     obscrs_data(:,1), aggregate_obscrs_data)
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUM), obscrs_data(:,2))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),          obscrs_data(:,3))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),      obscrs_data(:,4))
-
          !
          ! Transported consituents
          !
-         do i = 1, num_const_items
-            if (idx_const(i) > 0) then
-               call add_stat_output_items(output_set, output_config%statout(idx_const(i)),      obscrs_data(:,5 + i))
+         IDX_HIS_OBSCRS_CONST_1 = out_quan_conf_his%count + 1
+         do num = 1,NUMCONST_MDU
+            conststr = const_names(num)
+            ! Forbidden chars in NetCDF names: space, /, and more.
+            call replace_char(conststr,32,95) ! ' ' -> '_'
+            call replace_char(conststr,47,95) ! '/' -> '_'
+
+            unitstr = ''
+            if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+               select case(stmpar%morpar%moroutput%transptype)
+               case (0)
+                  unitstr = 'kg s-1'
+               case (1, 2)
+                  unitstr = 'm3 s-1'
+               end select
+            else
+               if (const_units(num) /= ' ') then
+                  unitstr = trim(const_units(num)) // ' m3 s-1'
+               else
+                  unitstr = ''
+               endif
             endif
+
+            ! Just-in-time add *config* item for this constituent transport
+            call addoutval(out_quan_conf_his, idx_const_,                                       &
+                  'Wrihis_constituents', 'cross_section_'//trim(conststr), &
+                  'Flux (based on upwind flow cell) for '//trim(conststr), &
+                  '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+            ! And add the output item(s) for the current transport
+            call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + (num-1)*2 + 1))
+
+            ! Same for cumulative transport:
+            lenunitstr = len_trim(unitstr)
+            if (lenunitstr > 4) then
+               unitstr = unitstr(1:lenunitstr-4) ! Trim off ' s-1'
+            end if
+
+            ! Just-in-time add *config* item for this constituent cumulative transport
+            call addoutval(out_quan_conf_his, idx_const_,                                       &
+                           'Wrihis_constituents', 'cross_section_cumulative_'//trim(conststr), &
+                           'Cumulative flux (based on upwind flow cell) for '//trim(conststr), &
+                           '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+            ! And add the output item(s) for the cumulative transport
+            call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + (num-1)*2 + 2))
+
          enddo
+         IDX_HIS_OBSCRS_CONST_N = out_quan_conf_his%count ! Note: this concludes 2 * NUMCONST_MDU extra entries in config list
+         !
+         ! Sediment transport
+         ! Transported consituents
+         !
+         if (jased == 4 .and. stmpar%lsedtot > 0) then
+            ! Just-in-time add *config* item for this bed load sediment transport
+            call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_BTRANSPORT,                                       &
+                  'Wrihis_constituents', 'cross_section_bedload_sediment_transport', &
+                  'Cumulative bed load sediment transport', &
+                  '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+            ! And add the output item(s) for the bed load sediment transport
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_SED_BTRANSPORT),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 1))
+
+            if( stmpar%lsedsus > 0 ) then
+               ! Just-in-time add *config* item for this suspended load sediment transport
+               call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_STRANSPORT,                                       &
+                     'Wrihis_constituents', 'cross_section_suspended_sediment_transport', &
+                     'Cumulative suspended load sediment transport', &
+                     '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+               ! And add the output item(s) for the suspended load sediment transport
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_SED_STRANSPORT),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 2))
+
+            IDX_HIS_OBSCRS_SED_BTRANSPORT_1 = out_quan_conf_his%count + 1
+            do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
+               ! Just-in-time add *config* item for this fraction's bed load sediment transport
+               call addoutval(out_quan_conf_his, idx_const_,                                       &
+                     'Wrihis_constituents', 'cross_section_bedload_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), &
+                     'Cumulative bed load sediment transport for fraction '//trim(stmpar%sedpar%namsed(lsed)), &
+                     '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+               ! And add the output item(s) for this fraction's bed load sediment transport
+               call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 2 + lsed))
+         enddo
+            IDX_HIS_OBSCRS_SED_BTRANSPORT_N = out_quan_conf_his%count ! Note: this concludes stmpar%lsedtot extra entries in config list
+         endif
       endif
       !
       ! Variables on lateral discharges
@@ -2779,12 +2855,12 @@ private
          call add_stat_output_items(output_set, output_config%statout(IDX_MAP_NWAV),nwav                                                      )
          call c_f_pointer (c_loc(ctheta(1:ntheta, 1:ndx)), temp_pointer, [ndx*ntheta])
          call add_stat_output_items(output_set, output_config%statout(IDX_MAP_CTHETA),temp_pointer                                                    )
-         if (windmodel == 0) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
-         elseif ((windmodel == 1) .and. (jawsource == 1 )) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
-            call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
-         endif
+        ! if (windmodel == 0) then
+         !   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_L1),L1                                                        )
+         !elseif ((windmodel == 1) .and. (jawsource == 1 )) then
+         !   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SWE),SwE                                                       )
+         !   call add_stat_output_items(output_set, output_config%statout(IDX_MAP_SWT),SwT                                                       )
+         !endif
       endif
       if (jawave > 0) then
          function_pointer => calculate_ustxy
