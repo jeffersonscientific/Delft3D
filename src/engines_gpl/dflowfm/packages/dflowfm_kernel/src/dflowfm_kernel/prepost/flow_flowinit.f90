@@ -760,7 +760,6 @@ subroutine load_restart_file(file_exist, error)
    use iso_varying_string, only : len_trim, index
    use m_setucxcuy_leastsquare, only: reconst2nd
    use dfm_error
-   use m_sethu
 
    implicit none
 
@@ -804,7 +803,6 @@ subroutine load_restart_file(file_exist, error)
          call fill_onlyWetLinks()
          call setucxucyucxuucyunew() !reconstruct cell-center velocities
          !u1(:) = u1_tmp(:)
-         call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0) 
          call fill_valobs() 
        end if
    end if
