@@ -2985,6 +2985,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_flowelemxbnd, id_flowelemybnd, id_bl, id_s0bnd, id_s1bnd, id_blbnd, &
         id_unorma, id_vicwwu, id_tureps1, id_turkin1, id_qw, id_qa, id_squ, id_sqi, &
         id_squbnd, id_sqibnd, &
+        id_weirdte, &
         id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
         id_culvert_openh, id_longculvert_valveopen, &
         id_genstru_crestl, id_genstru_edgel, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
@@ -3360,6 +3361,14 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_sqi,  'units'        , 'm3 s-1')
     endif
 
+    !fixed weirs data
+    if (ncdamsg > 0 .or. ifixedweirscheme > 0) then
+       ierr = nf90_def_var(irstfile, 'weirdte', nf90_double,   (/ id_flowlinkdim, id_timedim /)  , id_weirdte)
+       ierr = nf90_put_att(irstfile, id_weirdte,  'coordinates'  , 'FlowLink_xu FlowLink_yu')
+       ierr = nf90_put_att(irstfile, id_weirdte,  'long_name'    , 'energy-head loss')
+       ierr = nf90_put_att(irstfile, id_weirdte,  'units'        , 'm')
+    endif
+    
     ! Definition and attributes of flow data on centres: salinity
     if (jasal > 0) then
        if (kmx > 0) then
@@ -3989,7 +3998,11 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     ierr = nf90_inq_varid(irstfile, 'qa'      , id_qa)
     ierr = nf90_inq_varid(irstfile, 'squ'     , id_squ)
     ierr = nf90_inq_varid(irstfile, 'sqi'     , id_sqi)
-
+    
+    if (ncdamsg > 0 .or. ifixedweirscheme > 0) then
+        ierr = nf90_inq_varid(irstfile, 'weirdte' , id_weirdte)
+    endif 
+    
     if ( kmx>0 ) then
        ierr = nf90_inq_varid(irstfile, 'ucz', id_ucz)
        ierr = nf90_inq_varid(irstfile, 'ww1', id_ww1)
@@ -4284,6 +4297,10 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_var(irstfile, id_sqi  , sqi,  (/ 1, itim /), (/ ndxi, 1 /))
     endif
 
+    if (ncdamsg > 0 .or. ifixedweirscheme > 0) then
+       ierr = nf90_put_var(irstfile, id_weirdte   , map_fixed_weir_energy_loss ,  (/ 1, itim /), (/ lnx , 1 /)) 
+    endif
+    
     if (jasal > 0) then  ! Write the data: salinity
        if (kmx > 0) then
           !do kk=1,Ndxi
