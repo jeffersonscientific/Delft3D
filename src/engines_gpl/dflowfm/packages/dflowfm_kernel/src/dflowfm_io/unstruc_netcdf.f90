@@ -12615,7 +12615,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
     use netcdf_utils, only: ncu_get_att
     use m_structures_saved_parameters
     use m_initsedtra, only: initsedtra
-
+    use m_fixedweirs, only: weirdte, nfxwL
+    
     character(len=*),  intent(in)       :: filename   !< Name of NetCDF file.
     integer,           intent(out)      :: ierr       !< Return status (NetCDF operations)
 
