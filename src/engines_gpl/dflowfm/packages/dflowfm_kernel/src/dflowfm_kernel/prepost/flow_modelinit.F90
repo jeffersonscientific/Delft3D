@@ -74,6 +74,7 @@
  use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
  use m_dad, only: dad_included
  use m_restart_debug
+ use m_fixedweirs, only: weirdte
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -84,6 +85,9 @@
  integer              :: istat, L, ierr
  integer, external    :: init_openmp
  integer, external    :: set_model_boundingbox
+ 
+ double precision, allocatable :: weirdte_save(:)
+ 
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following 3 lines, See also statements below
@@ -426,8 +430,10 @@
  !  call init_debugarr(lnx,stmpar%lsedtot)
  !endif
 
+ weirdte_save=weirdte
  call flow_initimestep(1, iresult)                   ! 1 also sets zws0
-
+ weirdte=weirdte_save
+ 
  jaFlowNetChanged = 0
 
 

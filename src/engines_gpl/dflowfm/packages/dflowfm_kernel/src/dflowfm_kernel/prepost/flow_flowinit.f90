@@ -72,6 +72,7 @@ contains
    use m_1d2d_fixedweirs, only : n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
    use fm_manhole_losses, only: init_manhole_losses
    use unstruc_channel_flow, only: network
+   use m_fixedweirs, only: weirdte
    
    implicit none
 
@@ -82,6 +83,8 @@ contains
    
    integer, external :: flow_initexternalforcings
 
+   double precision, allocatable :: weirdte_save(:)
+   
    error = DFM_NOERR
 
    if (ndx == 0) then
@@ -277,7 +280,9 @@ contains
    call include_ground_water()
    call include_infiltration_model()
 
+   weirdte_save=weirdte
    call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0)
+   weirdte=weirdte_save
    call temporary_fix_for_sepr_3D()
 
    call volsur()
