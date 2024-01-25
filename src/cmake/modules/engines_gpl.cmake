@@ -5,6 +5,7 @@ set(engines_gpl_path engines_gpl)
 set(dflowfm_kernel_module ${engines_gpl_path}/dflowfm/packages/dflowfm_kernel)
 set(dflowfm_cli_exe_module ${engines_gpl_path}/dflowfm/packages/dflowfm-cli_exe)
 set(dflowfm_lib_module ${engines_gpl_path}/dflowfm/packages/dflowfm_lib)
+set(dflowfm_bmi_lib_module ${engines_gpl_path}/dflowfm/packages/dflowfm_bmi_lib)
 
 # Waq
 set(waq_module_path "${engines_gpl_path}/waq/packages")
@@ -70,6 +71,7 @@ set(maptonetcdf_module "tools_gpl/maptonetcdf/packages/maptonetcdf")
 
 # Tests
 set(dflowfm_kernel_test_module test/engines_gpl/dflowfm/packages/dflowfm_kernel)
+set(dflowfm_bmi_driver_test_module test/engines_gpl/dflowfm/packages/dflowfm_bmi2)
 
 # Install
 set(install_dflowfm_module cmake/install_fm)

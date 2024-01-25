@@ -2260,6 +2260,49 @@ goto :endproc
 
 
 
+rem ======================================
+rem === POST_BUILD_DFLOWFM_BMI_DRIVER_TEST
+rem ======================================
+:dflowfm_bmi_driver_test
+    echo "postbuild dflowfm_bmi_driver_test . . ."
+
+    if "%configuration%" == "Debug" (
+
+    echo "Debug postbuild"
+    set dest_bin="!install_dir!\x64\Debug"
+    set dest_default="!install_dir!\x64\Debug"
+    set dest_scripts="!install_dir!\x64\Debug"
+    set dest_plugins="!install_dir!\x64\Debug"
+    set dest_share="!install_dir!\x64\Debug"
+
+    call :makeDir !dest_bin!
+    call :copyDflowfmDependentRuntimeLibraries
+
+    call :copyFile "!build_dir!\dflowfm_bmi_driver_test\!configuration!\dflowfm_bmi_driver_test.*"                          !dest_bin!
+
+    )
+
+    if "%configuration%" == "Release" (
+
+    echo "Release postbuild"
+
+    set dest_bin="!install_dir!\x64\Release\tests\bin"
+    set dest_default="!install_dir!\x64\Release\tests\default"
+    set dest_scripts="!install_dir!\x64\Release\tests\scripts"
+    set dest_plugins="!install_dir!\x64\Release\plugins\bin"
+    set dest_share="!install_dir!\x64\Release\share\bin"
+
+    call :makeAllDirs
+    call :copyDflowfmDependentRuntimeLibraries
+
+    call :copyFile "!build_dir!\dflowfm_bmi_driver_test\!configuration!\dflowfm_bmi_driver_test.*"                            !dest_bin!
+
+    )
+
+goto :endproc
+
+
+
 rem ===============================
 rem === POST_BUILD_WAQ_UTILS_F_TEST
 rem ===============================

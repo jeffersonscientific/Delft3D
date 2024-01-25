@@ -68,6 +68,7 @@ add_subdirectory(${checkout_src_root}/${dflowfm_cli_exe_module} dflowfm_cli_exe)
 # dflowfm_lib: only when without interacter
 if(NOT WITH_INTERACTER)
     add_subdirectory(${checkout_src_root}/${dflowfm_lib_module} dflowfm_lib)
+    add_subdirectory(${checkout_src_root}/${dflowfm_bmi_lib_module} dflowfm_bmi_lib)
 endif()
 
 # Tools_gpl
@@ -200,7 +201,11 @@ if(NOT WITH_INTERACTER)
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
-    
+
+    if(NOT TARGET dflowfm_bmi_driver_test)
+        add_subdirectory(${checkout_src_root}/${dflowfm_bmi_driver_test_module} dflowfm_bmi_driver_test)
+    endif()
+
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
     endif()
