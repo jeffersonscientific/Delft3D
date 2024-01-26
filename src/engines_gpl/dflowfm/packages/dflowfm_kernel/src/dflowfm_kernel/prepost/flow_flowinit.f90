@@ -290,7 +290,7 @@ contains
    call include_ground_water()
    call include_infiltration_model()
 
-   if (nfxw > 0) then 
+   if (nfxw > 0) then  
       allocate ( weirdte_save(nfxw), STAT=ierror)
       weirdte_save=weirdte
    endif
