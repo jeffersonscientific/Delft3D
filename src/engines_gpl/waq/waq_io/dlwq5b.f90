@@ -30,7 +30,6 @@ module m_dlwq5b
     private
     public :: dlwq5b
 
-    
 
     interface shift_subarray
         module procedure shift_int_subarray, shift_char_subarray
