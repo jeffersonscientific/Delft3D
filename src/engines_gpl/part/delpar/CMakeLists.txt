@@ -1,6 +1,5 @@
 set(executable_name delpar)
 
-
 set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq)
 set(waq_version_path ${waq_root_path}/resources/version)
 set(rc_version_file ${waq_version_path}/version_number_delpar.rc)
