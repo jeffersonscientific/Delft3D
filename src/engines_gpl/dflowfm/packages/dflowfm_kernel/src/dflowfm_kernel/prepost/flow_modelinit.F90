@@ -394,7 +394,7 @@
  endif
  call timstop(handle_extra(26)) ! end dredging init
  
- call timstrt('Update MOR width    ', handle_extra(25)) ! update MOR width and mean bed level
+ call timstrt('Update MOR width    ', handle_extra(25)) ! update MOR width and mean bed level 
  if (stm_included) then
     call fm_update_mor_width_area()
     if (dad_included > 0 .or. ndxi>ndx2d) then
