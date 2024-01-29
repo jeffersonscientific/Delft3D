@@ -2391,7 +2391,7 @@ subroutine readMDUFile(filename, istat)
    endif
 
    if (len_trim(md_restartfile)>0 .and. Tlfsmo>0d0) then
-      write (msgbuf, '(a,g16.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. Be aware that you may need to adjust Tlfsmo to get the same results'
+      write (msgbuf, '(a,g16.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. Be aware that you need to adjust TStartTlfsmo to obtain the same results between the original and restart simulations.'
       call warn_flush()
    endif
 
@@ -3750,7 +3750,7 @@ endif
     end select
     call prop_set(prop_ptr, 'time', 'TStart',             tstart_user/tfac,       'Start time w.r.t. RefDate (in TUnit)')
     call prop_set(prop_ptr, 'time', 'TStop',              tstop_user/tfac,        'Stop  time w.r.t. RefDate (in TUnit)')
-    call prop_set(prop_ptr, 'time', 'TStartTlfsmo',       tstart_tlfsmo_user/tfac,       'Start time of Tlfsmo w.r.t. RefDate (in TUnit)')
+    call prop_set(prop_ptr, 'time', 'TStartTlfsmo',       tstart_tlfsmo_user/tfac,       'Start time of smoothing of boundary conditions (Tlfsmo) w.r.t. RefDate (in TUnit)')
 
     if (len_trim(Startdatetime) > 0) then
     call prop_set(prop_ptr, 'time', 'Startdatetime', trim(Startdatetime),  'Computation Startdatetime (yyyymmddhhmmss), when specified, overrides Tstart')
