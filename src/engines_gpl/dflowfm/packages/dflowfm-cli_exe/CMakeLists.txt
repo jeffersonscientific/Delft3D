@@ -155,7 +155,7 @@ endif(UNIX)
 
 if(WIN32)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
-    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)
+    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_INSTALL_PREFIX}/bin)
 endif(WIN32)
 
 
@@ -236,14 +236,7 @@ if (WIN32)
 		)
 	endif()
 endif(WIN32)
-
-# post-build
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-set(build_project dflowfm-cli)
-
-
-
+message(STATUS ${CMAKE_INSTALL_PREFIX})
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 
 if (UNIX)
