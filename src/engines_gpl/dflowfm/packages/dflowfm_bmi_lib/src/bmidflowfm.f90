@@ -199,12 +199,6 @@ subroutine read_init_config(this, config_file, bmi_status)
       bmi_status = BMI_FAILURE
       return
     end if
-    !Update the model with all values found in the namelist
-    this%model%model_start_time = model_start_time
-    this%model%model_end_time = model_end_time
-    this%model%current_model_time = 0.0
-    this%model%num_time_steps = num_time_steps
-    this%model%time_step_size = time_step_size
     this%model%DFLOWFM_dir = DFLOWFM_dir
     this%model%DFLOWFM_mdu = DFLOWFM_mdu
     bmi_status = BMI_SUCCESS
@@ -300,31 +294,9 @@ function dflowfm_initialize(this, config_file) result (bmi_status)
   logical :: mpi_initd
   integer :: inerr  ! number of the initialisation error
 
-
-
   if (len(config_file) > 0) then
      call read_init_config(this, config_file, bmi_status)
-     this%model%current_model_time = 0.0
-     if ( this%model%num_time_steps == 0 .and. this%model%model_end_time == 0) then
-        this%model%num_time_steps = 24
-     end if
      
-     call assert ( this%model%model_end_time /= 0 .or. this%model%num_time_steps /= 0, &
-                   "Both model_end_time and num_time_steps are 0" )
-
-     if ( this%model%model_end_time == 0) then
-        call assert( this%model%num_time_steps /= 0 )
-        this%model%model_end_time = this%model%current_model_time + (this%model%num_time_steps * this%model%time_step_size)
-     end if
-
-     call assert( this%model%model_end_time /= 0, &
-                  "model_end_time 0 after attempting to compute from num_time_steps" )
-  
-     if ( this%model%model_end_time /= 0 ) then
-        this%model%num_time_steps = (this%model%model_end_time - this%model%current_model_time) / this%model%time_step_size
-     end if
-
-
      c_iresult         = 0 ! TODO: is this return value BMI-compliant?
      jampi             = 0
      numranks          = 1
@@ -372,19 +344,7 @@ function dflowfm_initialize(this, config_file) result (bmi_status)
      ! do this until default has changed
      jaGUI = 0
 
-     ! TODO: check why these are needed to avoid a segfault
-     !KNX    = 8
-     !MXB    = 10
-     !MAXLAN = 500
-     !MAXPOL = MAXLAN
-
-
-     !call start()
-     !call resetFullFlowModel()
-     !call loadmodel(config_file)
-     !call init_core() ! All done in inidat()
-
-     CALL INIDAT()
+     call inidat()
      call api_loadmodel(trim(this%model%DFLOWFM_dir) // trim(this%model%DFLOWFM_mdu))
 
      !PETSC must be called AFTER reading the mdu file, so the icgsolver option is
@@ -1031,14 +991,9 @@ end function dflowfm_finalizer
   
     select case(name)
     !!!!!! No integer values currently advertised fo DFLOWFM !!!!!!
-    !case("INPUT_VAR_3")
-    !   this%model%input_var_3 = src(1)
-    !   bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
     end select
-    ! NOTE, if vars are gridded, then use:
-    ! this%model%var= reshape(src, [this%model%n_y, this%model%n_x])
   end function dflowfm_set_int
 
   ! Set new real values.
@@ -1050,14 +1005,9 @@ end function dflowfm_finalizer
 
     select case(name)
     !!!!!! No float values currently advertised fo DFLOWFM !!!!!!
-    !case("INPUT_VAR_2")
-    !   this%model%input_var_2 = src(1)
-    !   bmi_status = BMI_SUCCESS
     case default
        bmi_status = BMI_FAILURE
     end select
-    ! NOTE, if vars are gridded, then use:
-    ! this%model%temperature = reshape(src, [this%model%n_y, this%model%n_x])
   end function dflowfm_set_float
 
   ! Set new double values.
@@ -1491,8 +1441,6 @@ end function dflowfm_finalizer
     case default
        bmi_status = BMI_FAILURE
     end select
-    ! NOTE, if vars are gridded, then use:
-    ! this%model%var = reshape(src, [this%model%n_y, this%model%n_x])
   end function dflowfm_set_double
 
   ! DFLOWFM setting integer values at particular (one-dimensional) indices.
@@ -1541,9 +1489,6 @@ end function dflowfm_finalizer
     type (c_ptr) dest
     double precision, pointer :: dest_flattened(:)
     integer :: i,iitem,loop
-
-    !dest = c_loc(this%model%temperature(1,1))
-    !c_f_pointer(dest, dest_flattened, [this%model%n_y * this%model%n_x])
 
     select case(name)
     case("ETA2_bnd_t0_left")
@@ -2054,18 +1999,10 @@ end function dflowfm_finalizer
 
     select case(name)
     !!!!!! No integer values currently advertised fo DFLOWFM !!!!!!
-    !case("INPUT_VAR_3")
-    !   dest = [this%model%input_var_3]
-    !   bmi_status = BMI_SUCCESS
-    !case("OUTPUT_VAR_3")
-    !  dest = [this%model%output_var_3]
-    !  bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1
        bmi_status = BMI_FAILURE
     end select
-    ! NOTE, if vars are gridded, then use:
-    ! dest = reshape(this%model%var, [this%model%n_x*this%model%n_y])
   end function dflowfm_get_int
 
   ! Get a copy of a real variable's values, flattened.
@@ -2077,18 +2014,10 @@ end function dflowfm_finalizer
 
     select case(name)
     !!!!!! No float values currently advertised fo DFLOWFM !!!!!!
-    !case("INPUT_VAR_2")
-    !   dest = [this%model%input_var_2]
-    !   bmi_status = BMI_SUCCESS
-    !case("OUTPUT_VAR_2")
-    !  dest = [this%model%output_var_2]
-    !  bmi_status = BMI_SUCCESS
     case default
        dest(:) = -1.0
        bmi_status = BMI_FAILURE
     end select
-    ! NOTE, if vars are gridded, then use:
-    ! dest = reshape(this%model%temperature, [this%model%n_x*this%model%n_y]) 
   end function dflowfm_get_float
 
   ! Get a copy of a double variable's values, flattened.
@@ -2114,8 +2043,6 @@ end function dflowfm_finalizer
        dest(:) = -1.d0
        bmi_status = BMI_FAILURE
     end select
-    ! NOTE, if vars are gridded, then use:
-    ! dest = reshape(this%model%var, [this%model%n_x*this%model%n_y])
   end function dflowfm_get_double
 
 
