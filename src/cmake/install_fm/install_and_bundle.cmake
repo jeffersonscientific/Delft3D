@@ -31,3 +31,4 @@ set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
 set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
 
 file(RENAME ${CMAKE_INSTALL_PREFIX}/bin/dflowfm-cli ${CMAKE_INSTALL_PREFIX}/bin/dflowfm)
+ENDIF(UNIX)
