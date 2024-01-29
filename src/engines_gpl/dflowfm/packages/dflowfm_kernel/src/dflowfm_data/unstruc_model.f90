@@ -1648,24 +1648,18 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'time', 'TStop', tstop_user)
     select case (md_tunit)                                            ! tfac added here for use in sedmorinit
     case('D')
-        tstart_tlfsmo_user = tstart_tlfsmo_user*3600*24 
-        tstart_user = tstart_user*3600*24
-        tstop_user  = tstop_user*3600*24
         tfac = 3600d0*24d0
     case('H')
-        tstart_tlfsmo_user = tstart_tlfsmo_user*3600 
-        tstart_user = tstart_user*3600
-        tstop_user  = tstop_user*3600
         tfac = 3600d0
     case('M')
-        tstart_tlfsmo_user = tstart_tlfsmo_user*60 
-        tstart_user = tstart_user*60
-        tstop_user  = tstop_user*60
         tfac = 60d0
     case default
         tfac = 1d0
     end select
-
+    tstart_tlfsmo_user = tstart_tlfsmo_user*tfac 
+    tstart_user = tstart_user*tfac
+    tstop_user  = tstop_user*tfac
+    
     call setTUDUnitString()
 
     call prop_get_double  (md_ptr, 'time', 'DtUser', dt_user)
