@@ -2288,7 +2288,7 @@ end subroutine apply_hardcoded_specific_input
 !> restore au and q1 for 3D case for the first write into a history file    
 subroutine restore_au_q1_3D_for_1st_history_record()
    use m_flow,                 only : q1, LBot, kmx, kmxL   
-   use m_flowexternalforcings, only : fusav, rusav, ausav, ncgen
+   use m_flowexternalforcings, only : fusav, rusav, ausav
    use m_flowgeom,             only : lnx
 
    implicit none
@@ -2297,17 +2297,13 @@ subroutine restore_au_q1_3D_for_1st_history_record()
    double precision, allocatable :: fu_temp(:,:), ru_temp(:,:), au_temp(:,:)
 
    if ( kmx > 0 ) then
-      if (ncgen > 0) then
-         fu_temp = fusav
-         ru_temp = rusav
-         au_temp = ausav
-      endif   
+      fu_temp = fusav
+      ru_temp = rusav
+      au_temp = ausav
       call furusobekstructures() ! to have correct au values but it provides incorrect q1 values for structures
-      if (ncgen > 0) then
-         fusav = fu_temp
-         rusav = ru_temp
-         ausav = au_temp
-      endif   
+      fusav = fu_temp
+      rusav = ru_temp
+      ausav = au_temp
 !  restore correct discharge values
       do i_q1_0 = 1, lnx
          q1(i_q1_0) = 0d0 
