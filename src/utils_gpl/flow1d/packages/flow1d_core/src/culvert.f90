@@ -96,6 +96,8 @@ contains
    subroutine ComputeCulvert(culvert, fum, rum, aum, dadsm, kfum, cmustr, s1m1, s1m2, qm,  &
                              q0m, u1m, u0m, dxm, dt, wetdown)
       use m_Roughness
+      use m_flowparameters, only: eps10
+      use precision_basics, only: comparereal
       
       implicit none
       !
@@ -211,7 +213,7 @@ contains
          dpt = max(CrossSection%charHeight, dpt)
       endif
       call GetCSParsFlow(CrossSection, dpt, wArea, wPerimiter, wWidth)
-      if (warea==0) then 
+      if (comparereal(warea, 0d0, eps10) == 0 .or. comparereal(culvert%valveOpening, 0d0, eps10) == 0) then 
          kfum  = 0
          fum   = 0.0d0
          rum   = 0.0d0
