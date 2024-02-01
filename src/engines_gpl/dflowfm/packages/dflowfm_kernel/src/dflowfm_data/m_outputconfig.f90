@@ -279,6 +279,8 @@ private
    integer, public :: IDX_HIS_SED
    integer, public :: IDX_HIS_WS
    integer, public :: IDX_HIS_SEDDIF
+   integer, public :: IDX_HIS_BODSED
+   integer, public :: IDX_HIS_DPSED
 
    integer, public :: IDX_HIS_OBSCRS_DISCHARGE
    integer, public :: IDX_HIS_OBSCRS_DISCHARGE_CUM

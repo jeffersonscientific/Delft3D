@@ -1001,6 +1001,37 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_SEDDIF,                                             &
                      'Wrihis_sediment', 'seddif', 'Sediment vertical diffusion',                                      &
                      '', 'm2 s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_BODSED,                                                &
+                     'Wrihis_sediment', 'bodsed', 'Available sediment mass in the bed',                   &
+                     '', 'kg m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_DPSED,                                                 &
+                     'Wrihis_sediment', 'dpsed', 'Sediment thickness in the bed',                         &
+                     '', 'm', UNC_LOC_STATION, nc_atts = atts(1:1))
+      !case (2)
+      !   ierr = nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim)
+      !   !  
+      !   ierr = nf90_def_var(ihisfile, 'msed', nc_precision, (/ id_nlyrdim, id_statdim, id_sedtotdim, id_timedim /), id_msed)
+      !   ierr = nf90_put_att(ihisfile, id_msed, 'long_name', 'Available sediment mass in a layer of the bed')
+      !   ierr = nf90_put_att(ihisfile, id_msed, 'units', 'kg m-2')
+      !   ierr = write_real_fill_value(id_msed)
+      !   ierr = nf90_put_att(ihisfile, id_msed, 'coordinates', statcoordstring)
+      !   ierr = nf90_put_att(ihisfile, id_msed, 'geometry', station_geom_container_name)
+      !   !
+      !   ierr = nf90_def_var(ihisfile, 'thlyr', nc_precision, (/ id_nlyrdim, id_statdim, id_timedim /), id_thlyr)
+      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'long_name', 'Thickness of a layer of the bed')
+      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'units', 'm')
+      !   ierr = write_real_fill_value(id_thlyr)
+      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'coordinates', statcoordstring)
+      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'geometry', station_geom_container_name)
+      !   !
+      !   if (stmpar%morlyr%settings%iporosity>0) then
+      !      ierr = nf90_def_var(ihisfile, 'poros', nc_precision, (/ id_nlyrdim, id_statdim, id_timedim /), id_poros)
+      !      ierr = nf90_put_att(ihisfile, id_poros, 'long_name', 'Porosity of a layer of the bed')
+      !      ierr = nf90_put_att(ihisfile, id_poros, 'units', '-')
+      !      ierr = write_real_fill_value(id_poros)
+      !      ierr = nf90_put_att(ihisfile, id_poros, 'coordinates', statcoordstring)
+      !      ierr = nf90_put_att(ihisfile, id_poros, 'geometry', station_geom_container_name)
+      !   endif
 
       !
       ! HIS: Variables on observation cross sections
@@ -1564,7 +1595,7 @@ private
       use m_observations
       use m_statistical_callback
       use m_transport, only: NUMCONST, itemp, isalt, ised1
-      use m_sediment, only: stm_included
+      use m_sediment, only: stm_included, stmpar
       use m_longculverts, only: nlongculverts
       USE m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug
@@ -2003,10 +2034,17 @@ private
          if (kmx > 0) then
             call c_f_pointer (c_loc(valobs(1:ntot,IVAL_SF1:IVAL_SFN+(IVAL_SFN-IVAL_SF1*kmx))), temp_pointer, [(IVAL_SFN-IPNT_SF1+1)*kmx*ntot])
          else
-            temp_pointer => valobs(:,IPNT_SF1)
-            call pointer_cast(valobs(1:ntot,IPNT_SF1:IPNT_SFN),temp_pointer)
+            temp_pointer(1:(IVAL_SFN-IPNT_SF1+1)*ntot) => valobs(:,IPNT_SF1:IVAL_SFN)
          end if
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)   
+      endif
+      if (jahissed>0 .and. jased>0 .and. stm_included) then
+         select case (stmpar%morlyr%settings%iunderlyr)
+         case (1)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DPSED),valobs(:,IPNT_DPSED))
+            temp_pointer(1:(IVAL_BODSEDN-IVAL_BODSED1+1)*ntot) => valobs(:,IVAL_BODSED1:IVAL_BODSEDN)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BODSED),temp_pointer)
+         end select
       endif
       if (IVAL_WS1 > 0) then
          if (kmx > 0) then
@@ -2059,7 +2097,7 @@ private
       !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
       !      do j = IVAL_SF1,IVAL_SFN
       !         i = j - IVAL_SF1 + 1
-      !         toutputx(:,i) = valobsT(:,IPNT_SF1 + (i-1)*(kmx+1)+kk-1)
+      !         toutputx(:,i) = valobs(:,IPNT_SF1 + (i-1)*(kmx+1)+kk-1)
       !      enddo
       !      ierr = nf90_put_var(ihisfile, id_sf, toutputx, start = (/ kk, 1, 1, it_his /), count = (/ 1, ntot, stmpar%lsedsus, 1/)
       !   endif
@@ -2067,7 +2105,7 @@ private
       !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
       !      do j = IVAL_SF1,IVAL_SFN
       !         i = j - IVAL_SF1 + 1
-      !         toutputx(:,i) = valobsT(:,IPNT_SF1 + i-1)
+      !         toutputx(:,i) = valobs(:,IPNT_SF1 + i-1)
       !      end do
       !      ierr = nf90_put_var(ihisfile, id_sf, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1/))
       !   end if
@@ -2075,7 +2113,7 @@ private
       !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
       !      do j = IVAL_WS1,IVAL_WSN
       !         i = j - IVAL_WS1 + 1
-      !         toutputx(:,i) = valobsT(:,IPNT_WS1 + (i-1)*(kmx+1)+kk-1)
+      !         toutputx(:,i) = valobs(:,IPNT_WS1 + (i-1)*(kmx+1)+kk-1)
       !      enddo
       !      ierr = nf90_put_var(ihisfile, id_ws, toutputx, start = (/ kk, 1, 1, it_his /), count = (/ 1, ntot, stmpar%lsedsus, 1/))
       !   end if
@@ -2083,7 +2121,7 @@ private
       !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
       !      do j = IVAL_WS1,IVAL_WSN
       !         i = j - IVAL_WS1 + 1
-      !         toutputx(:,i) = valobsT(:,IPNT_WS1 + i-1)
+      !         toutputx(:,i) = valobs(:,IPNT_WS1 + i-1)
       !         ierr = nf90_put_var(ihisfile, id_ws, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1/))
       !      enddo
       !   end if
@@ -2286,11 +2324,4 @@ private
          
    end subroutine flow_init_statistical_output_his
    
-   subroutine pointer_cast( x, p )
-    !real, contiguous, intent(inout), target :: x(:,:)
-    double precision, contiguous, intent(in), target :: x(:,:)
-    double precision, intent(out), pointer :: p(:)
-
-    p(1:size(x)) => x
-   end subroutine pointer_cast
 end module fm_statistical_output

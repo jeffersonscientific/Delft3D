@@ -155,8 +155,7 @@ subroutine unc_write_his(tim)            ! wrihis
     integer, allocatable, save :: id_const(:), id_const_cum(:), id_voltot(:)
     integer, allocatable, save :: id_sedbtransfrac(:)
     integer, allocatable, save :: id_sedstransfrac(:)
-    double precision, allocatable, save :: valobsT(:,:)
-    integer :: maxlocT, maxvalT !< row+column count of valobsT
+    integer :: maxlocT, maxvalT !< row+column count of valobs
 
     integer                      :: IP, num, ngenstru_, n, nlyrs
 
@@ -259,7 +258,6 @@ subroutine unc_write_his(tim)            ! wrihis
                       NUMVALS_WEIRGEN, NUMVALS_GENSTRU, &
                       NUMVALS_DAMBREAK, NUMVALS_ORIFGEN, NUMVALS_BRIDGE, NUMVALS_CULVERT, &
                       NUMVALS_UNIWEIR, NUMVALS_CMPSTRU, NUMVALS_LONGCULVERT)
-        call realloc(valobsT, (/ maxlocT, maxvalT /), keepExisting = .false.)
 
         if (ti_split > 0d0) then
             filename = defaultFilename('his', timestamp=time_split0)
@@ -378,43 +376,6 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = nf90_put_att(ihisfile, id_varruh, 'coordinates', 'rug_x_coordinate rug_y_coordinate rug_name')
            ierr = nf90_put_att(ihisfile, id_varruh, '_FillValue', dmiss)
         endif
-        
-        !if (stm_included .and. ISED1 > 0 .and. jahissed > 0) then
-        !       ! New implementation, sedsus fraction is additional dimension
-        !       ierr = nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
-        !       ierr = nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
-        !       !
-        !       ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
-        !       ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
-        !       !
-        !       if (kmx>0) then
-        !          ierr = nf90_def_var(ihisfile, 'sed', nc_precision, (/  id_laydim, id_statdim, id_sedsusdim, id_timedim /), id_sf)
-        !          ierr = nf90_def_var(ihisfile, 'ws', nc_precision, (/  id_laydimw, id_statdim, id_sedsusdim, id_timedim /), id_ws)
-        !          ierr = nf90_def_var(ihisfile, 'seddif', nc_precision, (/  id_laydimw, id_statdim, id_sedsusdim, id_timedim /), id_seddif)
-        !          ierr = nf90_put_att(ihisfile, id_seddif, 'long_name', 'Sediment vertical diffusion')
-        !          ierr = nf90_put_att(ihisfile, id_seddif, 'units', 'm2 s-1')
-        !          ierr = write_real_fill_value(id_seddif)
-        !          ierr = nf90_put_att(ihisfile, id_seddif, 'coordinates', statcoordstring)
-        !          ierr = nf90_put_att(ihisfile, id_seddif, 'geometry', station_geom_container_name)
-        !          !
-        !          jawrizc = 1
-        !          jawrizw = 1
-        !       else
-        !          ierr = nf90_def_var(ihisfile, 'sed', nc_precision, (/  id_statdim, id_sedsusdim, id_timedim /), id_sf)
-        !          ierr = nf90_def_var(ihisfile, 'ws', nc_precision, (/ id_statdim, id_sedsusdim, id_timedim /), id_ws)
-        !       endif
-        !       !
-        !       ierr = nf90_put_att(ihisfile, id_sf, 'long_name', 'Sediment concentration')
-        !       ierr = nf90_put_att(ihisfile, id_sf, 'units', 'kg m-3')
-        !       ierr = nf90_put_att(ihisfile, id_sf, 'coordinates', statcoordstring)
-        !       ierr = nf90_put_att(ihisfile, id_sf, 'geometry', station_geom_container_name)
-        !       !
-        !       ierr = nf90_put_att(ihisfile, id_ws, 'long_name', 'Sediment settling velocity')
-        !       ierr = nf90_put_att(ihisfile, id_ws, 'units', 'm s-1')
-        !       ierr = nf90_put_att(ihisfile, id_ws, 'coordinates', statcoordstring)
-        !       ierr = nf90_put_att(ihisfile, id_ws, 'geometry', station_geom_container_name)
-        !       !
-        !    endif
 
         ! Source-sinks
         if (jahissourcesink > 0 .and. numsrc > 0) then
@@ -1065,7 +1026,6 @@ subroutine unc_write_his(tim)            ! wrihis
    end do
    
    
-    valobsT(1:ntot, 1:IPNT_NUM) = transpose(valobs)
     if (ntot > 0 .and. .false.) then
        if ( jahiswatlev > 0 ) then
          ivar = 1 ! Remove after testing
@@ -1074,11 +1034,11 @@ subroutine unc_write_his(tim)            ! wrihis
          ierr = nf90_put_var(ihisfile, id_var,   out_variable_set_his%statout(ivar)%stat_output,    start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
 
-       ierr = nf90_put_var(ihisfile,    id_hs  ,   valobsT(:,IPNT_HS),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile,    id_hs  ,   valobs(:,IPNT_HS),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
        if( stm_included ) then
-          ierr = nf90_put_var(ihisfile,    id_varb,   valobsT(:,IPNT_BL),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_varb,   valobs(:,IPNT_BL),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
        else
-          ierr = nf90_put_var(ihisfile,    id_varb,   valobsT(:,IPNT_BL),    start = (/ 1 /) )
+          ierr = nf90_put_var(ihisfile,    id_varb,   valobs(:,IPNT_BL),    start = (/ 1 /) )
        endif
 
        ! write geometry variables at the first time of history output
@@ -1117,21 +1077,21 @@ subroutine unc_write_his(tim)            ! wrihis
     if (ntot > 0 .and. .false.) then
     if (timon) call timstrt('unc_write_his obs data 1', handle_extra(56))
     if (japatm > 0) then
-       ierr = nf90_put_var(ihisfile, id_varpatm, valobsT(:,IPNT_patm), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_varpatm, valobs(:,IPNT_patm), start = (/ 1, it_his /), count = (/ ntot, 1 /))
     endif
 
     if (jawind > 0) then
-       ierr = nf90_put_var(ihisfile, id_varwx,  valobsT(:,IPNT_wx),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_varwy,  valobsT(:,IPNT_wy),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_varwx,  valobs(:,IPNT_wx),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_varwy,  valobs(:,IPNT_wy),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
     endif
 
     if ((jarain > 0) .and. (jahisrain > 0)) then
-       ierr = nf90_put_var(ihisfile, id_varrain,  valobsT(:,IPNT_rain),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_varrain,  valobs(:,IPNT_rain),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
     endif
 
     if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-       ierr = nf90_put_var(ihisfile, id_infiltcap,  valobsT(:,IPNT_infiltcap),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_infiltact,  valobsT(:,IPNT_infiltact),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_infiltcap,  valobs(:,IPNT_infiltcap),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_infiltact,  valobs(:,IPNT_infiltact),    start = (/ 1, it_his /), count = (/ ntot, 1 /))
     endif
     if (timon) call timstop(handle_extra(56))
 
@@ -1140,116 +1100,116 @@ subroutine unc_write_his(tim)            ! wrihis
     if (numobs+nummovobs > 0) then
       if ( kmx>0 ) then
 !      3D
-       ierr = nf90_put_var(ihisfile,    id_varucxq, valobsT(:,IPNT_UCXQ),  start = (/ 1, it_his /), count = (/ ntot, 1 /)) ! depth-averaged velocity
-       ierr = nf90_put_var(ihisfile,    id_varucyq, valobsT(:,IPNT_UCYQ),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile,    id_varucxq, valobs(:,IPNT_UCXQ),  start = (/ 1, it_his /), count = (/ ntot, 1 /)) ! depth-averaged velocity
+       ierr = nf90_put_var(ihisfile,    id_varucyq, valobs(:,IPNT_UCYQ),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
 
        do kk = 1,kmx
              if (jahisvelvec > 0) then
-          ierr = nf90_put_var(ihisfile,    id_varucx, valobsT(:,IPNT_UCX+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
-          ierr = nf90_put_var(ihisfile,    id_varucy, valobsT(:,IPNT_UCY+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
-          ierr = nf90_put_var(ihisfile,    id_varucz, valobsT(:,IPNT_UCZ+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_varucx, valobs(:,IPNT_UCX+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_varucy, valobs(:,IPNT_UCY+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_varucz, valobs(:,IPNT_UCZ+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
              end if
        if (jasal > 0) then
-             ierr = nf90_put_var(ihisfile, id_varsal, valobsT(:,IPNT_SA1 +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_varsal, valobs(:,IPNT_SA1 +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
        end if
        if (jatem > 0) then
-             ierr = nf90_put_var(ihisfile, id_vartem, valobsT(:,IPNT_TEM1+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_vartem, valobs(:,IPNT_TEM1+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
        end if
        if( (jasal > 0 .or. jatem > 0 .or. jased > 0 ) .and. jahisrho > 0) then
-          ierr = nf90_put_var(ihisfile, id_varrhop , valobsT(:,IPNT_RHOP +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_varrhop , valobs(:,IPNT_RHOP +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
           if (idensform > 10) then
-             ierr = nf90_put_var(ihisfile, id_varrho  , valobsT(:,IPNT_RHO +kk-1) , start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_varrho  , valobs(:,IPNT_RHO +kk-1) , start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
           endif
        end if
        if (jased > 0 .and. .not. stm_included) then
-             ierr = nf90_put_var(ihisfile, id_varsed, valobsT(:,IPNT_SED +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_varsed, valobs(:,IPNT_SED +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
        end if
              if (jahisvelocity > 0) then
-                ierr = nf90_put_var(ihisfile, id_varumag, valobsT(:,IPNT_UMAG+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+                ierr = nf90_put_var(ihisfile, id_varumag, valobs(:,IPNT_UMAG+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
              end if
              if (jahisdischarge > 0) then
-                ierr = nf90_put_var(ihisfile, id_varqmag, valobsT(:,IPNT_QMAG+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+                ierr = nf90_put_var(ihisfile, id_varqmag, valobs(:,IPNT_QMAG+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
              end if
           if (IVAL_TRA1 > 0) then
              do j = IVAL_TRA1,IVAL_TRAN   ! enumerators of tracers in valobs array (not the pointer)
                i = j - IVAL_TRA1 + 1
-               ierr = nf90_put_var(ihisfile, id_tra(i), valobsT(:,IPNT_TRA1 + (i-1)*kmx+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1/))
+               ierr = nf90_put_var(ihisfile, id_tra(i), valobs(:,IPNT_TRA1 + (i-1)*kmx+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1/))
              enddo
           end if
           if (IVAL_HWQ1 > 0) then
              do j = IVAL_HWQ1,IVAL_HWQN   ! enumerators of waq output in valobs array (not the pointer)
                i = j - IVAL_HWQ1 + 1
                if (i .le. noout_user + noout_statt) then
-                  ierr = nf90_put_var(ihisfile, id_hwq(i), valobsT(:,IPNT_HWQ1 + (i-1)*kmx+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1/))
+                  ierr = nf90_put_var(ihisfile, id_hwq(i), valobs(:,IPNT_HWQ1 + (i-1)*kmx+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1/))
                else if (comparereal(tim, ti_hise, eps10) == 0) then
-                  ierr = nf90_put_var(ihisfile, id_hwq(i), valobsT(:,IPNT_HWQ1 + (i-1)*kmx+kk-1), start = (/ kk, 1 /), count = (/ 1, ntot, 1/))
+                  ierr = nf90_put_var(ihisfile, id_hwq(i), valobs(:,IPNT_HWQ1 + (i-1)*kmx+kk-1), start = (/ kk, 1 /), count = (/ 1, ntot, 1/))
                endif
                 enddo
           end if
           if (IVAL_WQB3D1 > 0) then
              do j = IVAL_WQB3D1,IVAL_WQB3DN   ! enumerators of 3d waqbot output in valobs array (not the pointer)
                i = j - IVAL_WQB3D1 + 1
-               ierr = nf90_put_var(ihisfile, id_hwqb3d(i), valobsT(:,IPNT_WQB3D1 + (i-1)*kmx+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1/))
+               ierr = nf90_put_var(ihisfile, id_hwqb3d(i), valobs(:,IPNT_WQB3D1 + (i-1)*kmx+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1/))
              enddo
           end if
           if (IVAL_SF1 > 0) then
              call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
              do j = IVAL_SF1,IVAL_SFN
                i = j - IVAL_SF1 + 1
-               toutputx(:,i) = valobsT(:,IPNT_SF1 + (i-1)*(kmx+1)+kk-1)
+               toutputx(:,i) = valobs(:,IPNT_SF1 + (i-1)*(kmx+1)+kk-1)
              enddo
              ierr = nf90_put_var(ihisfile, id_sf, toutputx, start = (/ kk, 1, 1, it_his /), count = (/ 1, ntot, stmpar%lsedsus, 1/))
           end if
           if (jawave>0 .and. .not. flowwithoutwaves) then
-             ierr = nf90_put_var(ihisfile,    id_ustx, valobsT(:,IPNT_UCXST+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
-             ierr = nf90_put_var(ihisfile,    id_usty, valobsT(:,IPNT_UCYST+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile,    id_ustx, valobs(:,IPNT_UCXST+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile,    id_usty, valobs(:,IPNT_UCYST+kk-1),  start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
           endif
        enddo
      else
 !      2D
           if (jahisvelvec > 0) then
-       ierr = nf90_put_var(ihisfile,    id_varucx, valobsT(:,IPNT_UCX),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile,    id_varucy, valobsT(:,IPNT_UCY),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile,    id_varucx, valobs(:,IPNT_UCX),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile,    id_varucy, valobs(:,IPNT_UCY),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
           end if
           if (jahisvelocity > 0) then
-             ierr = nf90_put_var(ihisfile, id_varumag, valobsT(:,IPNT_UMAG),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_varumag, valobs(:,IPNT_UMAG),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
           end if
           if (jahisdischarge > 0) then
-            ierr = nf90_put_var(ihisfile, id_varqmag, valobsT(:,IPNT_QMAG),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+            ierr = nf90_put_var(ihisfile, id_varqmag, valobs(:,IPNT_QMAG),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
           end if
        if (jasal > 0) then
-          ierr = nf90_put_var(ihisfile, id_varsal, valobsT(:,IPNT_SA1),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_varsal, valobs(:,IPNT_SA1),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        endif
        if (jatem > 0) then
-          ierr = nf90_put_var(ihisfile, id_vartem, valobsT(:,IPNT_TEM1), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_vartem, valobs(:,IPNT_TEM1), start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
           if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
-             ierr = nf90_put_var(ihisfile, id_varrhop, valobsT(:,IPNT_RHOP) ,  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_varrhop, valobs(:,IPNT_RHOP) ,  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
 
        if (IVAL_TRA1 > 0) then
           do j = IVAL_TRA1,IVAL_TRAN   ! enumerators of tracers in valobs array (not the pointer)
             i = j - IVAL_TRA1 + 1
-            ierr = nf90_put_var(ihisfile, id_tra(i), valobsT(:,IPNT_TRA1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
+            ierr = nf90_put_var(ihisfile, id_tra(i), valobs(:,IPNT_TRA1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
           end do
        end if
        if (IVAL_HWQ1 > 0) then
           do j = IVAL_HWQ1,IVAL_HWQN   ! enumerators of extra waq output in valobs array (not the pointer)
             i = j - IVAL_HWQ1 + 1
-            ierr = nf90_put_var(ihisfile, id_hwq(i), valobsT(:,IPNT_HWQ1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
+            ierr = nf90_put_var(ihisfile, id_hwq(i), valobs(:,IPNT_HWQ1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
           end do
        end if
        if (IVAL_WQB3D1 > 0) then
           do j = IVAL_WQB3D1,IVAL_WQB3DN   ! enumerators of waqbot variables in valobs array (not the pointer)
             i = j - IVAL_WQB3D1 + 1
-            ierr = nf90_put_var(ihisfile, id_hwqb3d(i), valobsT(:,IPNT_WQB3D1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
+            ierr = nf90_put_var(ihisfile, id_hwqb3d(i), valobs(:,IPNT_WQB3D1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
           end do
        end if
        if (IVAL_SF1 > 0) then
           call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
           do j = IVAL_SF1,IVAL_SFN
             i = j - IVAL_SF1 + 1
-            toutputx(:,i) = valobsT(:,IPNT_SF1 + i-1)
+            toutputx(:,i) = valobs(:,IPNT_SF1 + i-1)
           end do
           ierr = nf90_put_var(ihisfile, id_sf, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1/))
        end if
@@ -1257,103 +1217,103 @@ subroutine unc_write_his(tim)            ! wrihis
           call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
           do j = IVAL_WS1,IVAL_WSN
             i = j - IVAL_WS1 + 1
-            toutputx(:,i) = valobsT(:,IPNT_WS1 + i-1)
+            toutputx(:,i) = valobs(:,IPNT_WS1 + i-1)
             ierr = nf90_put_var(ihisfile, id_ws, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1/))
           enddo
        end if
        !
        if (jased > 0 .and. .not. stm_included) then
-          ierr = nf90_put_var(ihisfile, id_varsed, valobsT(:,IPNT_SED),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_varsed, valobs(:,IPNT_SED),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
        !
        if (jawave>0 .and. .not. flowwithoutwaves) then
-          ierr = nf90_put_var(ihisfile,    id_ustx, valobsT(:,IPNT_UCXST),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-          ierr = nf90_put_var(ihisfile,    id_usty, valobsT(:,IPNT_UCYST),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_ustx, valobs(:,IPNT_UCXST),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_usty, valobs(:,IPNT_UCYST),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        endif
      endif
 
     if (jahistaucurrent>0) then
-       ierr = nf90_put_var(ihisfile, id_TAUX,   valobsT(:,IPNT_TAUX), start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_TAUY,   valobsT(:,IPNT_TAUY), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_TAUX,   valobs(:,IPNT_TAUX), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_TAUY,   valobs(:,IPNT_TAUY), start = (/ 1, it_his /), count = (/ ntot, 1 /))
     endif
 
     if ( jawave.eq.4 ) then
-       ierr = nf90_put_var(ihisfile, id_R,      valobsT(:,IPNT_WAVER), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_R,      valobs(:,IPNT_WAVER), start = (/ 1, it_his /), count = (/ ntot, 1 /))
     end if
 
     if (jawave>0) then
-       ierr = nf90_put_var(ihisfile, id_WH,      valobsT(:,IPNT_WAVEH),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_WD,      valobsT(:,IPNT_WAVED),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_WL,      valobsT(:,IPNT_WAVEL),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_WT,      valobsT(:,IPNT_WAVET),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_WU,      valobsT(:,IPNT_WAVEU),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_WH,      valobs(:,IPNT_WAVEH),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_WD,      valobs(:,IPNT_WAVED),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_WL,      valobs(:,IPNT_WAVEL),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_WT,      valobs(:,IPNT_WAVET),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_WU,      valobs(:,IPNT_WAVEU),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
     endif
 
    !    waq bottom variables are always 2D
      if (IVAL_WQB1 > 0) then
        do j = IVAL_WQB1,IVAL_WQBN   ! enumerators of tracers in valobs array (not the pointer)
          i = j - IVAL_WQB1 + 1
-         ierr = nf90_put_var(ihisfile, id_hwqb(i), valobsT(:,IPNT_WQB1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
+         ierr = nf90_put_var(ihisfile, id_hwqb(i), valobs(:,IPNT_WQB1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
        end do
      endif
     endif
 
     if (jatem > 1 .and. jahisheatflux > 0) then
-       ierr = nf90_put_var(ihisfile,    id_Wind   , valobsT(:,IPNT_WIND),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile,    id_Wind   , valobs(:,IPNT_WIND),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
 
        if ( jatem.gt.1 ) then   ! also heat modelling involved
-          ierr = nf90_put_var(ihisfile, id_Tair   , valobsT(:,IPNT_TAIR),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_Tair   , valobs(:,IPNT_TAIR),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
 
        if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou) ) then
-           ierr = nf90_put_var(ihisfile, id_Rhum   , valobsT(:,IPNT_RHUM),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-           ierr = nf90_put_var(ihisfile, id_Clou   , valobsT(:,IPNT_CLOU),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+           ierr = nf90_put_var(ihisfile, id_Rhum   , valobs(:,IPNT_RHUM),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+           ierr = nf90_put_var(ihisfile, id_Clou   , valobs(:,IPNT_CLOU),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
 
        if (jatem == 5 ) then
-          ierr = nf90_put_var(ihisfile, id_Qsun   , valobsT(:,IPNT_QSUN),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-          ierr = nf90_put_var(ihisfile, id_Qeva   , valobsT(:,IPNT_QEVA),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-          ierr = nf90_put_var(ihisfile, id_Qcon   , valobsT(:,IPNT_QCON),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-          ierr = nf90_put_var(ihisfile, id_Qlong  , valobsT(:,IPNT_QLON),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-          ierr = nf90_put_var(ihisfile, id_Qfreva , valobsT(:,IPNT_QFRE),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
-          ierr = nf90_put_var(ihisfile, id_Qfrcon , valobsT(:,IPNT_QFRC),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_Qsun   , valobs(:,IPNT_QSUN),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_Qeva   , valobs(:,IPNT_QEVA),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_Qcon   , valobs(:,IPNT_QCON),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_Qlong  , valobs(:,IPNT_QLON),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_Qfreva , valobs(:,IPNT_QFRE),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_Qfrcon , valobs(:,IPNT_QFRC),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        endif
 
-       ierr = nf90_put_var(ihisfile,    id_Qtot   , valobsT(:,IPNT_QTOT),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile,    id_Qtot   , valobs(:,IPNT_QTOT),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
 
     end if ! jamapheatflux > 0! jatem > 0
 
     if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity> 0) then
-       ierr = nf90_put_var(ihisfile, id_airdensity   , valobsT(:,IPNT_AIRDENSITY),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       ierr = nf90_put_var(ihisfile, id_airdensity   , valobs(:,IPNT_AIRDENSITY),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
     end if
 
     ! 3d layer interface quantities
     if (kmx > 0 ) then
        do kk = 1, kmx+1
-          ierr = nf90_put_var(ihisfile,    id_zws,    valobsT(:,IPNT_ZWS+kk-1),   start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
-          ierr = nf90_put_var(ihisfile,    id_zwu,    valobsT(:,IPNT_ZWU+kk-1),   start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_zws,    valobs(:,IPNT_ZWS+kk-1),   start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+          ierr = nf90_put_var(ihisfile,    id_zwu,    valobs(:,IPNT_ZWU+kk-1),   start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
           if (kk > 1) then
-             ierr = nf90_put_var(ihisfile, id_zcs,    valobsT(:,IPNT_ZCS+kk-2),   start = (/ kk-1,1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_zcs,    valobs(:,IPNT_ZCS+kk-2),   start = (/ kk-1,1, it_his /), count = (/ 1, ntot, 1 /))
           endif
           if ( (jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
-             ierr = nf90_put_var(ihisfile, id_bruv,   valobsT(:,IPNT_BRUV+kk-1),  start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_bruv,   valobs(:,IPNT_BRUV+kk-1),  start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
           end if
        if (iturbulencemodel >= 3 .and. jahistur > 0) then
-             ierr = nf90_put_var(ihisfile, id_turkin, valobsT(:,IPNT_TKIN +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
-             ierr = nf90_put_var(ihisfile, id_tureps, valobsT(:,IPNT_TEPS +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_turkin, valobs(:,IPNT_TKIN +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_tureps, valobs(:,IPNT_TEPS +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
        end if
        if (iturbulencemodel > 1) then
-             ierr = nf90_put_var(ihisfile, id_vicwwu, valobsT(:,IPNT_VICWW+kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_vicwwu, valobs(:,IPNT_VICWW+kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
        end if
        if (idensform > 0 .and. jaRichardsononoutput > 0) then
-             ierr = nf90_put_var(ihisfile, id_rich,   valobsT(:,IPNT_RICH +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_rich,   valobs(:,IPNT_RICH +kk-1), start = (/ kk,  1, it_his /), count = (/ 1, ntot, 1 /))
        end if
           !
           if (IVAL_WS1 > 0) then
              call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
              do j = IVAL_WS1,IVAL_WSN
                i = j - IVAL_WS1 + 1
-               toutputx(:,i) = valobsT(:,IPNT_WS1 + (i-1)*(kmx+1)+kk-1)
+               toutputx(:,i) = valobs(:,IPNT_WS1 + (i-1)*(kmx+1)+kk-1)
              enddo
              ierr = nf90_put_var(ihisfile, id_ws, toutputx, start = (/ kk, 1, 1, it_his /), count = (/ 1, ntot, stmpar%lsedsus, 1/))
           end if
@@ -1362,7 +1322,7 @@ subroutine unc_write_his(tim)            ! wrihis
              call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
              do j = IVAL_SEDDIF1,IVAL_SEDDIFN
                i = j - IVAL_SEDDIF1 + 1
-               toutputx(:,i) = valobsT(:,IPNT_SEDDIF1 + (i-1)*(kmx+1)+kk-1)
+               toutputx(:,i) = valobs(:,IPNT_SEDDIF1 + (i-1)*(kmx+1)+kk-1)
              enddo
              ierr = nf90_put_var(ihisfile, id_seddif, toutputx, start = (/ kk, 1, 1, it_his /), count = (/ 1, ntot, stmpar%lsedsus, 1/))
           end if
@@ -1373,18 +1333,18 @@ subroutine unc_write_his(tim)            ! wrihis
     ! Bed composition variables
     if (jahissed>0 .and. jased>0 .and. stm_included) then
        if (stmpar%morpar%moroutput%taub) then
-          ierr = nf90_put_var(ihisfile, id_taub, valobsT(:,IPNT_TAUB), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_taub, valobs(:,IPNT_TAUB), start = (/ 1, it_his /), count = (/ ntot, 1 /))
        endif
        !
        select case (stmpar%morlyr%settings%iunderlyr)
           case (1)
              ! dpsed
-             ierr = nf90_put_var(ihisfile, id_dpsed, valobsT(:,IPNT_DPSED),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
+             ierr = nf90_put_var(ihisfile, id_dpsed, valobs(:,IPNT_DPSED),   start = (/ 1, it_his /), count = (/ ntot, 1 /))
              ! bodsed
              call realloc(toutputx, (/ntot, stmpar%lsedtot /), keepExisting=.false., fill = dmiss)
              do j = IVAL_BODSED1, IVAL_BODSEDN
                i = j - IVAL_BODSED1 + 1
-               toutputx(:,i) = valobsT(:,IPNT_BODSED1 + i-1)
+               toutputx(:,i) = valobs(:,IPNT_BODSED1 + i-1)
              end do
              ierr = nf90_put_var(ihisfile, id_bodsed, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1/))
           case (2)
@@ -1395,7 +1355,7 @@ subroutine unc_write_his(tim)            ! wrihis
              do j = IVAL_MSED1,IVAL_MSEDN
                 i = j - IVAL_MSED1 + 1
                 do kk = 1,nlyrs
-                   toutput3(kk,:,i) = valobsT(:,IPNT_MSED1 + (i-1)*(nlyrs)+kk-1)
+                   toutput3(kk,:,i) = valobs(:,IPNT_MSED1 + (i-1)*(nlyrs)+kk-1)
                 enddo
              enddo
              ierr = nf90_put_var(ihisfile, id_msed, toutput3, start = (/ 1, 1, 1, it_his /), count = (/ nlyrs, ntot, stmpar%lsedtot, 1/))
@@ -1404,20 +1364,20 @@ subroutine unc_write_his(tim)            ! wrihis
              do j = IVAL_LYRFRAC1,IVAL_LYRFRACN
                 i = j - IVAL_LYRFRAC1 + 1
                 do kk = 1,nlyrs
-                   toutput3(kk,:,i) = valobsT(:,IPNT_LYRFRAC1 + (i-1)*(nlyrs)+kk-1)
+                   toutput3(kk,:,i) = valobs(:,IPNT_LYRFRAC1 + (i-1)*(nlyrs)+kk-1)
                 enddo
              enddo
              ierr = nf90_put_var(ihisfile, id_lyrfrac, toutput3, start = (/ 1, 1, 1, it_his /), count = (/ nlyrs, ntot, stmpar%lsedtot, 1/))
              ! thlyr
              call realloc(toutputx, (/nlyrs, ntot /), keepExisting=.false., fill = dmiss)
              do kk = 1,nlyrs
-                toutputx(kk,:) = valobsT(:,IPNT_THLYR+kk-1)
+                toutputx(kk,:) = valobs(:,IPNT_THLYR+kk-1)
              enddo
              ierr = nf90_put_var(ihisfile, id_thlyr, toutputx,  start = (/ 1, 1, it_his /), count = (/ nlyrs, ntot, 1 /))
              ! poros
              if (stmpar%morlyr%settings%iporosity>0) then
                 do kk = 1,nlyrs
-                   toutputx(kk,:) = valobsT(:,IPNT_POROS+kk-1)
+                   toutputx(kk,:) = valobs(:,IPNT_POROS+kk-1)
                 enddo
                 ierr = nf90_put_var(ihisfile, id_poros, toutputx,  start = (/ 1, 1, it_his /), count = (/ nlyrs, ntot, 1 /))
              endif
@@ -1428,24 +1388,24 @@ subroutine unc_write_his(tim)            ! wrihis
           call realloc(toutputx, (/ntot, stmpar%lsedtot /), keepExisting=.false., fill = dmiss)
           do j = IVAL_FRAC1,IVAL_FRACN
             i = j - IVAL_FRAC1 + 1
-            toutputx(:,i) = valobsT(:,IPNT_FRAC1 + i-1)
+            toutputx(:,i) = valobs(:,IPNT_FRAC1 + i-1)
           enddo
           ierr = nf90_put_var(ihisfile, id_frac, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1/))
        endif
        if (stmpar%morpar%moroutput%mudfrac) then
           ! mudfrac
-          ierr = nf90_put_var(ihisfile, id_mudfrac, valobsT(:,IPNT_MUDFRAC), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_mudfrac, valobs(:,IPNT_MUDFRAC), start = (/ 1, it_his /), count = (/ ntot, 1 /))
        endif
        if (stmpar%morpar%moroutput%sandfrac) then
           ! sandfrac
-          ierr = nf90_put_var(ihisfile, id_sandfrac, valobsT(:,IPNT_SANDFRAC), start = (/ 1, it_his /), count = (/ ntot, 1 /))
+          ierr = nf90_put_var(ihisfile, id_sandfrac, valobs(:,IPNT_SANDFRAC), start = (/ 1, it_his /), count = (/ ntot, 1 /))
        endif
        if (stmpar%morpar%moroutput%fixfac) then
           !fixfac
           call realloc(toutputx, (/ntot, stmpar%lsedtot /), keepExisting=.false., fill = dmiss)
           do j = IVAL_FIXFAC1,IVAL_FIXFACN
             i = j - IVAL_FIXFAC1 + 1
-            toutputx(:,i) = valobsT(:,IPNT_FIXFAC1 + i-1)
+            toutputx(:,i) = valobs(:,IPNT_FIXFAC1 + i-1)
           enddo
           ierr = nf90_put_var(ihisfile, id_fixfac, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1/))
        endif
@@ -1454,7 +1414,7 @@ subroutine unc_write_his(tim)            ! wrihis
           call realloc(toutputx, (/ntot, stmpar%lsedtot /), keepExisting=.false., fill = dmiss)
           do j = IVAL_HIDEXP1,IVAL_HIDEXPN
             i = j - IVAL_HIDEXP1 + 1
-            toutputx(:,i) = valobsT(:,IPNT_HIDEXP1 + i-1)
+            toutputx(:,i) = valobs(:,IPNT_HIDEXP1 + i-1)
           enddo
           ierr = nf90_put_var(ihisfile, id_hidexp, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1/))
        endif
@@ -1463,7 +1423,7 @@ subroutine unc_write_his(tim)            ! wrihis
           call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
           do j = IVAL_MFLUFF1,IVAL_MFLUFFN
             i = j - IVAL_MFLUFF1 + 1
-            toutputx(:,i) = valobsT(:,IPNT_MFLUFF1 + i-1)
+            toutputx(:,i) = valobs(:,IPNT_MFLUFF1 + i-1)
           enddo
           ierr = nf90_put_var(ihisfile, id_mfluff, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1/))
        end if
@@ -1507,32 +1467,32 @@ subroutine unc_write_his(tim)            ! wrihis
             enddo
          end if
          if (ngenstru > 0) then
-            valobsT(1:ngenstru, 1:NUMVALS_GENSTRU) = transpose(valgenstru)
-            ierr = nf90_put_var(ihisfile, id_genstru_dis   , valobsT(1:ngenstru,IVAL_DIS),       (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_crestl, valobsT(1:ngenstru,IVAL_CRESTL),    (/ 1, it_his /)) ! changed
-            ierr = nf90_put_var(ihisfile, id_genstru_edgel , valobsT(1:ngenstru,IVAL_EDGEL),     (/ 1, it_his /)) ! changed
-            ierr = nf90_put_var(ihisfile, id_genstru_openw , valobsT(1:ngenstru,IVAL_OPENW),     (/ 1, it_his /)) ! changed
-            ierr = nf90_put_var(ihisfile, id_genstru_s1up  , valobsT(1:ngenstru,IVAL_S1UP),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_s1dn  , valobsT(1:ngenstru,IVAL_S1DN),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_head,   valobsT(1:ngenstru,IVAL_HEAD),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_au,     valobsT(1:ngenstru,IVAL_AREA),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_vel,    valobsT(1:ngenstru,IVAL_VEL),       (/ 1, it_his /))
+            valobs(1:ngenstru, 1:NUMVALS_GENSTRU) = transpose(valgenstru)
+            ierr = nf90_put_var(ihisfile, id_genstru_dis   , valobs(1:ngenstru,IVAL_DIS),       (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_genstru_crestl, valobs(1:ngenstru,IVAL_CRESTL),    (/ 1, it_his /)) ! changed
+            ierr = nf90_put_var(ihisfile, id_genstru_edgel , valobs(1:ngenstru,IVAL_EDGEL),     (/ 1, it_his /)) ! changed
+            ierr = nf90_put_var(ihisfile, id_genstru_openw , valobs(1:ngenstru,IVAL_OPENW),     (/ 1, it_his /)) ! changed
+            ierr = nf90_put_var(ihisfile, id_genstru_s1up  , valobs(1:ngenstru,IVAL_S1UP),      (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_genstru_s1dn  , valobs(1:ngenstru,IVAL_S1DN),      (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_genstru_head,   valobs(1:ngenstru,IVAL_HEAD),      (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_genstru_au,     valobs(1:ngenstru,IVAL_AREA),      (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_genstru_vel,    valobs(1:ngenstru,IVAL_VEL),       (/ 1, it_his /))
             if (network%sts%numGeneralStructures > 0) then
-               ierr = nf90_put_var(ihisfile, id_genstru_s1crest,       valobsT(1:ngenstru,IVAL_S1ONCREST),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_crestw,        valobsT(1:ngenstru,IVAL_CRESTW),     (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_stat,      int(valobsT(1:ngenstru,IVAL_STATE)),     (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_forcedif,      valobsT(1:ngenstru,IVAL_FORCEDIF),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_openh,         valobsT(1:ngenstru,IVAL_OPENH),      (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_uppl,          valobsT(1:ngenstru,IVAL_UPPL),       (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_open, valobsT(1:ngenstru,IVAL_DIS_OPEN),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_over, valobsT(1:ngenstru,IVAL_DIS_OVER),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_under,valobsT(1:ngenstru,IVAL_DIS_UNDER),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_au_open,       valobsT(1:ngenstru,IVAL_AREA_OPEN),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_au_over,       valobsT(1:ngenstru,IVAL_AREA_OVER),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_au_under,      valobsT(1:ngenstru,IVAL_AREA_UNDER), (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_velgateopen,   valobsT(1:ngenstru,IVAL_VEL_OPEN),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_velgateover,   valobsT(1:ngenstru,IVAL_VEL_OVER),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_velgateunder,  valobsT(1:ngenstru,IVAL_VEL_UNDER),  (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_s1crest,       valobs(1:ngenstru,IVAL_S1ONCREST),  (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_crestw,        valobs(1:ngenstru,IVAL_CRESTW),     (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_stat,      int(valobs(1:ngenstru,IVAL_STATE)),     (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_forcedif,      valobs(1:ngenstru,IVAL_FORCEDIF),   (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_openh,         valobs(1:ngenstru,IVAL_OPENH),      (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_uppl,          valobs(1:ngenstru,IVAL_UPPL),       (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_open, valobs(1:ngenstru,IVAL_DIS_OPEN),   (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_over, valobs(1:ngenstru,IVAL_DIS_OVER),   (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_under,valobs(1:ngenstru,IVAL_DIS_UNDER),  (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_au_open,       valobs(1:ngenstru,IVAL_AREA_OPEN),  (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_au_over,       valobs(1:ngenstru,IVAL_AREA_OVER),  (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_au_under,      valobs(1:ngenstru,IVAL_AREA_UNDER), (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_velgateopen,   valobs(1:ngenstru,IVAL_VEL_OPEN),   (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_velgateover,   valobs(1:ngenstru,IVAL_VEL_OVER),   (/ 1, it_his /))
+               ierr = nf90_put_var(ihisfile, id_genstru_velgateunder,  valobs(1:ngenstru,IVAL_VEL_UNDER),  (/ 1, it_his /))
             end if
             ! write geometry variables at the first time of history output
             if (it_his == 1) then
@@ -1570,7 +1530,7 @@ subroutine unc_write_his(tim)            ! wrihis
       endif
 
       if (jahispump > 0 .and. npumpsg > 0) then
-         valobsT(1:npumpsg, 1:NUMVALS_PUMP) = transpose(valpump)
+         valobs(1:npumpsg, 1:NUMVALS_PUMP) = transpose(valpump)
          !do i=1,npumpsg
          !   ierr = nf90_put_var(ihisfile, id_pump_dis,     valpump(2,i), (/ i, it_his /))
          !   ierr = nf90_put_var(ihisfile, id_pump_s1up,    valpump(3,i), (/ i, it_his /))
@@ -1584,17 +1544,17 @@ subroutine unc_write_his(tim)            ! wrihis
          !   ierr = nf90_put_var(ihisfile, id_pump_s1del,   valpump(10,i),(/ i, it_his /))
          !   ierr = nf90_put_var(ihisfile, id_pump_s1suc,   valpump(11,i),(/ i, it_his /))
          !end do
-         ierr = nf90_put_var(ihisfile, id_pump_dis,     valobsT(1:npumpsg,IVAL_DIS),      (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1up,    valobsT(1:npumpsg,IVAL_S1UP),     (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1dn,    valobsT(1:npumpsg,IVAL_S1DN),     (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_struhead,valobsT(1:npumpsg,IVAL_HEAD),     (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_cap,     valobsT(1:npumpsg,IVAL_PP_CAP),   (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_disdir,  valobsT(1:npumpsg,IVAL_PP_DISDIR),(/ 1, it_his /))
-        ierr = nf90_put_var(ihisfile, id_pump_stage,int(valobsT(1:npumpsg,IVAL_PP_STAG)),(/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_head,    valobsT(1:npumpsg,IVAL_PP_HEAD),  (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_redufact,valobsT(1:npumpsg,IVAL_PP_RED),   (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1del,   valobsT(1:npumpsg,IVAL_PP_S1DEL), (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1suc,   valobsT(1:npumpsg,IVAL_PP_S1SUC), (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_dis,     valobs(1:npumpsg,IVAL_DIS),      (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_s1up,    valobs(1:npumpsg,IVAL_S1UP),     (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_s1dn,    valobs(1:npumpsg,IVAL_S1DN),     (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_struhead,valobs(1:npumpsg,IVAL_HEAD),     (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_cap,     valobs(1:npumpsg,IVAL_PP_CAP),   (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_disdir,  valobs(1:npumpsg,IVAL_PP_DISDIR),(/ 1, it_his /))
+        ierr = nf90_put_var(ihisfile, id_pump_stage,int(valobs(1:npumpsg,IVAL_PP_STAG)),(/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_head,    valobs(1:npumpsg,IVAL_PP_HEAD),  (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_redufact,valobs(1:npumpsg,IVAL_PP_RED),   (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_s1del,   valobs(1:npumpsg,IVAL_PP_S1DEL), (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_pump_s1suc,   valobs(1:npumpsg,IVAL_PP_S1SUC), (/ 1, it_his /))
          ! write geometry variables at the first time of history output
          if (it_his == 1) then
             if (network%sts%numPumps > 0) then ! new pump
@@ -1844,19 +1804,19 @@ subroutine unc_write_his(tim)            ! wrihis
       end if
 
       if (jahisweir > 0 .and. nweirgen > 0) then
-         valobsT(1:nweirgen, 1:NUMVALS_WEIRGEN) = transpose(valweirgen)
-         ierr = nf90_put_var(ihisfile, id_weirgen_dis   , valobsT(1:nweirgen,IVAL_DIS),    (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_weirgen_s1up  , valobsT(1:nweirgen,IVAL_S1UP),   (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_weirgen_s1dn  , valobsT(1:nweirgen,IVAL_S1DN),   (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_weirgen_crestl, valobsT(1:nweirgen,IVAL_CRESTL), (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_weirgen_crestw, valobsT(1:nweirgen,IVAL_CRESTW), (/ 1, it_his /))
+         valobs(1:nweirgen, 1:NUMVALS_WEIRGEN) = transpose(valweirgen)
+         ierr = nf90_put_var(ihisfile, id_weirgen_dis   , valobs(1:nweirgen,IVAL_DIS),    (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_weirgen_s1up  , valobs(1:nweirgen,IVAL_S1UP),   (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_weirgen_s1dn  , valobs(1:nweirgen,IVAL_S1DN),   (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_weirgen_crestl, valobs(1:nweirgen,IVAL_CRESTL), (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_weirgen_crestw, valobs(1:nweirgen,IVAL_CRESTW), (/ 1, it_his /))
          if (network%sts%numWeirs > 0) then ! write extra files for new weirs
-            ierr = nf90_put_var(ihisfile, id_weirgen_head  , valobsT(1:nweirgen,IVAL_HEAD),     (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_weirgen_au    , valobsT(1:nweirgen,IVAL_AREA),     (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_weirgen_vel   , valobsT(1:nweirgen,IVAL_VEL),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_weirgen_s1crest,valobsT(1:nweirgen,IVAL_S1ONCREST),(/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_weir_stat, int(valobsT(1:nweirgen,IVAL_STATE)),    (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_weirgen_forcedif,valobsT(1:nweirgen,IVAL_FORCEDIF),(/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_weirgen_head  , valobs(1:nweirgen,IVAL_HEAD),     (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_weirgen_au    , valobs(1:nweirgen,IVAL_AREA),     (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_weirgen_vel   , valobs(1:nweirgen,IVAL_VEL),      (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_weirgen_s1crest,valobs(1:nweirgen,IVAL_S1ONCREST),(/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_weir_stat, int(valobs(1:nweirgen,IVAL_STATE)),    (/ 1, it_his /))
+            ierr = nf90_put_var(ihisfile, id_weirgen_forcedif,valobs(1:nweirgen,IVAL_FORCEDIF),(/ 1, it_his /))
          end if
          ! write geometry variables at the first time of history output
          if (it_his == 1) then
@@ -1927,8 +1887,8 @@ subroutine unc_write_his(tim)            ! wrihis
                case (2)
                   rhol = stmpar%sedpar%rhosol(l)
                end select
-               toutputy(:,l) = valobsT(:,IPNT_SBCY1+l-1)/rhol
-               toutputx(:,l) = valobsT(:,IPNT_SBCX1+l-1)/rhol
+               toutputy(:,l) = valobs(:,IPNT_SBCY1+l-1)/rhol
+               toutputx(:,l) = valobs(:,IPNT_SBCX1+l-1)/rhol
             end do
             ierr = nf90_put_var(ihisfile, id_sbcx, toutputx  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
             ierr = nf90_put_var(ihisfile, id_sbcy, toutputy  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
@@ -1946,8 +1906,8 @@ subroutine unc_write_his(tim)            ! wrihis
                case (2)
                   rhol = stmpar%sedpar%rhosol(l)
                end select
-               toutputy(:,l) = valobsT(:,IPNT_SSCY1+l-1)/rhol
-               toutputx(:,l) = valobsT(:,IPNT_SSCX1+l-1)/rhol
+               toutputy(:,l) = valobs(:,IPNT_SSCY1+l-1)/rhol
+               toutputx(:,l) = valobs(:,IPNT_SSCX1+l-1)/rhol
             end do
             ierr = nf90_put_var(ihisfile, id_sscx, toutputx  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
             ierr = nf90_put_var(ihisfile, id_sscy, toutputy  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
@@ -1965,8 +1925,8 @@ subroutine unc_write_his(tim)            ! wrihis
                case (2)
                   rhol = stmpar%sedpar%rhosol(l)
                end select
-               toutputy(:,l) = valobsT(:,IPNT_SBWY1+l-1)/rhol
-               toutputx(:,l) = valobsT(:,IPNT_SBWX1+l-1)/rhol
+               toutputy(:,l) = valobs(:,IPNT_SBWY1+l-1)/rhol
+               toutputx(:,l) = valobs(:,IPNT_SBWX1+l-1)/rhol
             end do
             ierr = nf90_put_var(ihisfile, id_sbwx, toutputx  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
             ierr = nf90_put_var(ihisfile, id_sbwy, toutputy  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
@@ -1984,8 +1944,8 @@ subroutine unc_write_his(tim)            ! wrihis
                case (2)
                   rhol = stmpar%sedpar%rhosol(l)
                end select
-               toutputy(:,l) = valobsT(:,IPNT_SSWY1+l-1)/rhol
-               toutputx(:,l) = valobsT(:,IPNT_SSWX1+l-1)/rhol
+               toutputy(:,l) = valobs(:,IPNT_SSWY1+l-1)/rhol
+               toutputx(:,l) = valobs(:,IPNT_SSWX1+l-1)/rhol
             end do
             ierr = nf90_put_var(ihisfile, id_sswx, toutputx  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
             ierr = nf90_put_var(ihisfile, id_sswy, toutputy  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedtot, 1 /))
@@ -1996,8 +1956,8 @@ subroutine unc_write_his(tim)            ! wrihis
             call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
             call realloc(toutputy, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
             do l = 1, stmpar%lsedsus
-               toutputx(:,l) = valobsT(:,IPNT_SOUR1+l-1)
-               toutputy(:,l) = valobsT(:,IPNT_SINK1+l-1)
+               toutputx(:,l) = valobs(:,IPNT_SOUR1+l-1)
+               toutputy(:,l) = valobs(:,IPNT_SINK1+l-1)
             end do
             ierr = nf90_put_var(ihisfile, id_sour, toutputx  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1 /))
             ierr = nf90_put_var(ihisfile, id_sink, toutputy  , start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1 /))
