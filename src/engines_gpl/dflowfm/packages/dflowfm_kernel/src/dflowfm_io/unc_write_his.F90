@@ -75,6 +75,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use fm_statistical_output
     use m_output_config
     use m_particles
+    use MessageHandling, only: err
    
     implicit none
 
@@ -161,13 +162,13 @@ subroutine unc_write_his(tim)            ! wrihis
     integer                      :: IP, num, ngenstru_, n, nlyrs
 
     double precision, save       :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
-    integer                      :: ntot, k, i, j, jj, ierr, kk, idims(3),L, Lf, k3, k4, nNodeTot, nNodes, L0, k1, k2, nlinks
+    integer                      :: ntot, k, i, j, ierr, kk, L, Lf, k3, k4, nNodeTot, nNodes, L0, k1, k2, nlinks
     double precision             :: cof0
 
     integer                      :: strlen_netcdf  ! string length definition for (station) names on history file
     character(len=255)           :: filename
     character(len=25)            :: transpunit
-    character(len=1024)          :: statcoordstring
+    character(len=1024)          :: statcoordstring, local_statcoordstring
     integer                      :: igen, istru
     integer                      :: ndims
     character(len=255)           :: tmpstr
@@ -682,7 +683,21 @@ subroutine unc_write_his(tim)            ! wrihis
             case (UNC_LOC_LATERAL)
                call definencvar(ihisfile, id_var, config%nc_type, (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_STATION)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_statdim, id_timedim /), var_name, var_long_name, config%unit, statcoordstring, fillVal=dmiss, add_gridmapping = .true., attset=config%additional_attributes)
+               if (allocated(config%nc_dim_ids)) then
+                  if (config%nc_dim_ids%laydim) then
+                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_c'
+                  else if (config%nc_dim_ids%laydimw_center) then
+                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_w'
+                  else if (config%nc_dim_ids%laydimw_edge) then
+                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_wu'
+                  else
+                     local_statcoordstring = statcoordstring
+                  end if
+                  call definencvar(ihisfile, id_var, config%nc_type, build_nc_dimension_id_list(config%nc_dim_ids), var_name, var_long_name, &
+                                   config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., attset=config%additional_attributes)
+               else
+                  call err('Programming error: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
+               end if
             case (UNC_LOC_OBSCRS)
                call definencvar(ihisfile, id_var, config%nc_type, (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_GLOBAL)
@@ -2070,6 +2085,20 @@ contains
       end if
 
    end function unc_def_his_structure_static_vars
+
+function build_nc_dimension_id_list(nc_dim_ids) result(res)
+   type(t_nc_dim_ids), intent(in) :: nc_dim_ids
+   integer, allocatable :: res(:)
+   logical :: laydim = .false.
+      logical :: laydimw = .false.
+      logical :: nlyrdim = .false.
+      logical :: statdim = .false.
+      logical :: sedsusdim = .false.
+      logical :: sedtotdim = .false.
+      logical :: timedim = .false.
+   res = pack([id_laydim, id_laydimw, id_nlyrdim, id_statdim, id_sedsusdim, id_sedtotdim, id_timedim], &
+              [nc_dim_ids%laydim, nc_dim_ids%laydimw_center .or. nc_dim_ids%laydimw_edge, nc_dim_ids%nlyrdim, nc_dim_ids%statdim, nc_dim_ids%sedsusdim, nc_dim_ids%sedtotdim, nc_dim_ids%timedim])
+end function build_nc_dimension_id_list
 
 end subroutine unc_write_his
 
