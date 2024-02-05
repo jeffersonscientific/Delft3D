@@ -37,6 +37,7 @@
    use unstruc_messages
    use m_sediment, only: stmpar, jabndtreatment  
    use sediment_basics_module
+   use morphology_data_module, only: BL_SCHEME_UPWSB
    use m_fm_erosed, only: link1, link1sign, tratyp, kfsed
    implicit none
 
@@ -49,9 +50,9 @@
 
    integer                                               :: k1, k2, Lf, l, lnxlnxi
    logical                                               :: pure1d_mor
-   logical                                               :: upwindbedload
+   integer                                               :: bedload_scheme
 
-   upwindbedload = stmpar%morpar%mornum%upwindbedload
+   bedload_scheme = stmpar%morpar%mornum%bedload_scheme
    pure1d_mor = stmpar%morpar%mornum%pure1d
    !if ( laterallyaveragedbedload ) then
    !   call mess(LEVEL_ERROR, 'upwbed: laterally averaged bedload not supported')
@@ -94,7 +95,7 @@
                    sutot2 = link1sign(k2) * sxtot(k2,l)
                endif
 
-               if (upwindbedload .or. Lf>Lnxi) then
+               if (bedload_scheme==BL_SCHEME_UPWSB .or. Lf>Lnxi) then
                    ! upwind approximation (also at boundary cells for central scheme if jabndtreatment==0)
                    if ( sutot1>0d0 .and. sutot2>0d0 ) then
                       e_sn(Lf,l) =  sx(k1,l)
@@ -113,7 +114,7 @@
                sutot1 =  csu(Lf)*sxtot(k1,l) + snu(Lf)*sytot(k1,l)
                sutot2 =  csu(Lf)*sxtot(k2,l) + snu(Lf)*sytot(k2,l)
 
-               if (upwindbedload .or. Lf>Lnxi) then
+               if (bedload_scheme==BL_SCHEME_UPWSB .or. Lf>Lnxi) then
                    ! upwind approximation (also at boundary cells for central scheme if jabndtreatment==0)
                    if ( sutot1>0d0 .and. sutot2>0d0 ) then
                       e_sn(Lf,l) =  csu(Lf)*sx(k1,l) + snu(Lf)*sy(k1,l)

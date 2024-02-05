@@ -137,6 +137,10 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:)      , pointer :: rsdqlc
     real(fp)         , dimension(:,:)    , pointer :: sbcu
     real(fp)         , dimension(:,:)    , pointer :: sbcv
+    real(fp)         , dimension(:,:)    , pointer :: dsbcudu
+    real(fp)         , dimension(:,:)    , pointer :: dsbcudv
+    real(fp)         , dimension(:,:)    , pointer :: dsbcvdu
+    real(fp)         , dimension(:,:)    , pointer :: dsbcvdv
     real(fp)         , dimension(:,:)    , pointer :: sbcuu
     real(fp)         , dimension(:,:)    , pointer :: sbcvv
     real(fp)         , dimension(:,:)    , pointer :: sbwu
@@ -239,7 +243,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfs     !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfu     !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfv     !  Description and declaration in esm_alloc_int.f90
-    real(fp)                                                  , intent(in)  :: dt
+    real(fp)                                                  , intent(in)  :: dt      !< flow time step [s]
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: dps     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: deltau  !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: deltav  !  Description and declaration in esm_alloc_real.f90
@@ -322,7 +326,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)                        :: difbot
     real(fp)                        :: drho
     real(fp)                        :: dstari
-    real(fp)                        :: dtmor
+    real(fp)                        :: dtmor     !< morphological time step [s] = flow time step * morphological factor
     real(fp)                        :: dzduz
     real(fp)                        :: dzdvz
     real(fp)                        :: fi
@@ -458,6 +462,10 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     rsdqlc              => gdp%gderosed%rsdqlc
     sbcu                => gdp%gderosed%sbcx
     sbcv                => gdp%gderosed%sbcy
+    dsbcudu             => gdp%gderosed%dsbcudu
+    dsbcudv             => gdp%gderosed%dsbcudv
+    dsbcvdu             => gdp%gderosed%dsbcvdu
+    dsbcvdv             => gdp%gderosed%dsbcvdv
     sbcuu               => gdp%gderosed%e_sbcn
     sbcvv               => gdp%gderosed%e_sbct
     sbwu                => gdp%gderosed%sbwx
@@ -1176,20 +1184,21 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
              ! Solve equilibrium concentration vertical and
              ! integrate over vertical
              !
-             call eqtran(sig       ,thick     ,kmax      ,wslc      ,ltur      , &
-                       & frac(nm,l),tsigmol   ,dcwwlc    ,lundia    ,taucr(l)  , &
-                       & rksr(nm)  ,3         ,lsecfl    ,spirint   ,suspfrac  , &
-                       & tetacr(l) ,concin3d  , &
-                       & dzduz     ,dzdvz     ,ubot(nm)  ,tauadd    ,sus       , &
-                       & bed       ,susw      ,bedw      ,espir     ,wave      , &
-                       & scour     ,ubot_from_com        ,camax     ,eps       , &
-                       & iform(l)  ,npar      ,localpar  ,max_integers,max_reals, &
-                       & max_strings,dll_function(l),dll_handle(l),dll_integers,dll_reals, &
-                       & dll_strings, &
-                       & taks      ,caks      ,taurat(nm,l),sddflc  ,rsdqlc    , &
-                       & kmaxsd    ,conc2d    ,sbcu(nm,l ),sbcv(nm,l),sbwu(nm,l), &
-                       & sbwv(nm,l),sswu(nm,l),sswv(nm,l),tdss      ,caks_ss3d , &
-                       & aks_ss3d  ,ust2(nm)  ,tsd       ,error     )
+             call eqtrander(sig       ,thick     ,kmax      ,wslc      ,ltur      , &
+                          & frac(nm,l),tsigmol   ,dcwwlc    ,lundia    ,taucr(l)  , &
+                          & rksr(nm)  ,3         ,lsecfl    ,spirint   ,suspfrac  , &
+                          & tetacr(l) ,concin3d  , &
+                          & dzduz     ,dzdvz     ,ubot(nm)  ,tauadd    ,sus       , &
+                          & bed       ,susw      ,bedw      ,espir     ,wave      , &
+                          & scour     ,ubot_from_com        ,camax     ,eps       , &
+                          & iform(l)  ,npar      ,localpar  ,max_integers,max_reals, &
+                          & max_strings,dll_function(l),dll_handle(l),dll_integers,dll_reals, &
+                          & dll_strings, &
+                          & taks      ,caks      ,taurat(nm,l),sddflc  ,rsdqlc    , &
+                          & kmaxsd    ,conc2d    ,sbcu(nm,l ),sbcv(nm,l),sbwu(nm,l), &
+                          & sbwv(nm,l),sswu(nm,l),sswv(nm,l),tdss      ,caks_ss3d , &
+                          & aks_ss3d  ,ust2(nm)  ,tsd       ,error     , &
+                          & dsbcudu(l,nm), dsbcudv(l,nm), dsbcvdu(l,nm), dsbcvdv(l,nm) )
              if (error) call d3stop(1, gdp)
              if (gdp%gdmorpar%moroutput%sedpar) then
                  do i = 1,gdp%gdtrapar%noutpar(l)
@@ -1259,20 +1268,21 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
              ! integrate over vertical; compute bedload
              ! transport excluding slope effects.
              !
-             call eqtran(sig2d     ,thck2d    ,kmax2d    ,ws2d      ,ltur      , &
-                       & frac(nm,l),tsigmol   ,dcww2d    ,lundia    ,taucr(l)  , &
-                       & rksr(nm)  ,2         ,lsecfl    ,spirint   ,suspfrac  , &
-                       & tetacr(l) ,concin2d  , &
-                       & dzduz     ,dzdvz     ,ubot(nm)  ,tauadd    ,sus       , &
-                       & bed       ,susw      ,bedw      ,espir     ,wave      , &
-                       & scour     ,ubot_from_com        ,camax     ,eps       , &
-                       & iform(l)  ,npar      ,localpar  ,max_integers,max_reals, &
-                       & max_strings,dll_function(l),dll_handle(l),dll_integers,dll_reals, &
-                       & dll_strings, &
-                       & taks      ,caks      ,taurat(nm,l),sddf2d  ,rsdq2d    , &
-                       & kmaxsd    ,trsedeq   ,sbcu(nm,l),sbcv(nm,l),sbwu(nm,l), &
-                       & sbwv(nm,l),sswu(nm,l),sswv(nm,l),tdss      ,caks_ss3d , &
-                       & aks_ss3d  ,ust2(nm)  ,tsd       ,error     )
+             call eqtrander(sig2d     ,thck2d    ,kmax2d    ,ws2d      ,ltur      , &
+                          & frac(nm,l),tsigmol   ,dcww2d    ,lundia    ,taucr(l)  , &
+                          & rksr(nm)  ,2         ,lsecfl    ,spirint   ,suspfrac  , &
+                          & tetacr(l) ,concin2d  , &
+                          & dzduz     ,dzdvz     ,ubot(nm)  ,tauadd    ,sus       , &
+                          & bed       ,susw      ,bedw      ,espir     ,wave      , &
+                          & scour     ,ubot_from_com        ,camax     ,eps       , &
+                          & iform(l)  ,npar      ,localpar  ,max_integers,max_reals, &
+                          & max_strings,dll_function(l),dll_handle(l),dll_integers,dll_reals, &
+                          & dll_strings, &
+                          & taks      ,caks      ,taurat(nm,l),sddf2d  ,rsdq2d    , &
+                          & kmaxsd    ,trsedeq   ,sbcu(nm,l),sbcv(nm,l),sbwu(nm,l), &
+                          & sbwv(nm,l),sswu(nm,l),sswv(nm,l),tdss      ,caks_ss3d , &
+                          & aks_ss3d  ,ust2(nm)  ,tsd       ,error     ,            &
+                          & dsbcudu(l,nm), dsbcudv(l,nm), dsbcvdu(l,nm), dsbcvdv(l,nm) )
              if (error) call d3stop(1, gdp)
              if (gdp%gdmorpar%moroutput%sedpar) then
                  do i = 1,gdp%gdtrapar%noutpar(l)
@@ -1327,8 +1337,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! Upwind bed load transport
        !
        call upwbed(sbcu      ,sbcv      ,sbcuu     ,sbcvv     ,kfu       , &
+                 & dsbcudu   ,dsbcudv   ,dsbcvdu   ,dsbcvdv   , &
                  & kfv       ,kcs       ,kfsed     ,lsedtot   , &
                  & nmmax     ,icx       ,icy       ,sutot     ,svtot     , &
+                 & gvu       ,guv       ,hu        ,hv        ,u0eul     , & ! or should we use u1/v1?
+                 & v0eul     ,cdryb     ,dtmor     ,ag        ,dps       , &
                  & gdp       )
     endif
     !
@@ -1337,8 +1350,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! Upwind wave-related bed load load transports
        !
        call upwbed(sbwu      ,sbwv      ,sbwuu     ,sbwvv     ,kfu       , &
+                 & dsbcudu   ,dsbcudv   ,dsbcvdu   ,dsbcvdv   , &
                  & kfv       ,kcs       ,kfsed     ,lsedtot   , &
                  & nmmax     ,icx       ,icy       ,sutot     ,svtot     , &
+                 & gvu       ,guv       ,hu        ,hv        ,u0eul     , & ! or should we use u1/v1?
+                 & v0eul     ,cdryb     ,dtmor     ,ag        ,dps       , &
                  & gdp       )
     endif
     !
@@ -1347,8 +1363,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! Upwind wave-related suspended load transports
        !
        call upwbed(sswu      ,sswv      ,sswuu     ,sswvv     ,kfu       , &
+                 & dsbcudu   ,dsbcudv   ,dsbcvdu   ,dsbcvdv   , &
                  & kfv       ,kcs       ,kfsed     ,lsedtot   , &
                  & nmmax     ,icx       ,icy       ,sutot     ,svtot     , &
+                 & gvu       ,guv       ,hu        ,hv        ,u0eul     , & ! or should we use u1/v1?
+                 & v0eul     ,cdryb     ,dtmor     ,ag        ,dps       , &
                  & gdp       )
     endif
     !

@@ -97,6 +97,7 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
     logical                                                           :: ex       !< Logical flag for file existence
     logical                                                           :: found
     character(10)                                                     :: versionstring
+    character(20)                                                     :: fluxlimstring
     character(256)                                                    :: errmsg
     character(256)                                                    :: pxxstr
     character(256)                                                    :: string
@@ -209,7 +210,7 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
                     julday, nto, nambnd, filmor, lundia, error)
           if (error) return
           !
-          call read_morphology_numerical_settings(mor_ptr, morpar%mornum)
+          call read_morphology_numerical_settings(mor_ptr, morpar%mornum, lundia, error)
           !
           call read_morphology_output_options(mor_ptr, morpar%moroutput, lsedtot, filmor, lundia, error)
           if (error) return
@@ -758,21 +759,56 @@ end subroutine read_morphology_boundary_conditions
                
                
 !> reading numerical setting for rdmor
-subroutine read_morphology_numerical_settings(mor_ptr, mornum)
+subroutine read_morphology_numerical_settings(mor_ptr, mornum, lundia, error)
+    use message_module, only: write_error
     use tree_data_types
     use morphology_data_module
     use properties
 
     implicit none
     
-    type(tree_data)                , pointer     :: mor_ptr
-    type(mornumericstype)          , pointer     :: mornum
+    type(tree_data)                , pointer       :: mor_ptr
+    type(mornumericstype)          , pointer       :: mornum
+    integer                        , intent(in)    :: lundia  !<  Description and declaration in inout.igs
+    logical                        , intent(inout) :: error
     
-    character(20)                                :: fluxlimstring
+    character(20)                                                     :: fluxlimstring
+    logical                                                           :: upwsb_iso_central
+    character(20)                                                     :: bl_scheme_string
+    character(256)                                                    :: errmsg
     
-    call prop_get_logical(mor_ptr, 'Numerics', 'Pure1D', mornum%pure1d)
-    call prop_get_logical(mor_ptr, 'Numerics', 'UpwindBedload', mornum%upwindbedload)
+    bl_scheme_string = ''
+    call prop_get_string(mor_ptr, 'Numerics', 'BedloadScheme', bl_scheme_string)
+    if (bl_scheme_string == '') then
+       upwsb_iso_central = .true.
+       call prop_get_logical(mor_ptr, 'Numerics', 'UpwindBedload', upwsb_iso_central)
+       if (upwsb_iso_central) then
+          mornum%bedload_scheme = BL_SCHEME_UPWSB
+       else
+          mornum%bedload_scheme = BL_SCHEME_CENTRAL
+       endif
+    else
+       call str_lower(bl_scheme_string)
+       select case(bl_scheme_string)
+           case('upwsb')
+               mornum%bedload_scheme = BL_SCHEME_UPWSB
+           case('central')
+               mornum%bedload_scheme = BL_SCHEME_CENTRAL
+           case('upwind')
+               mornum%bedload_scheme = BL_SCHEME_UPWIND
+           case default
+              errmsg = 'String "'//trim(bl_scheme_string)//'" not recognized as bedload scheme.'
+              call write_error(errmsg, unit=lundia)
+              error = .true.
+              return
+       end select
+    endif
+    !
+    ! Delft3D 4 only
     call prop_get_logical(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
+    !
+    ! Delft3D FM only
+    call prop_get_logical(mor_ptr, 'Numerics', 'Pure1D', mornum%pure1d)
     call prop_get_logical(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
     call prop_get_double(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
     fluxlimstring = ' '
@@ -1389,7 +1425,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     logical                                , pointer :: eulerisoglm
     logical                                , pointer :: glmisoeuler
     logical                                , pointer :: l_suscor    
-    logical                                , pointer :: upwindbedload
     logical                                , pointer :: pure1d_mor
     character(256)                         , pointer :: bcmfilnam
     character(256)                         , pointer :: flsthetsd
@@ -1514,7 +1549,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     flsthetsd           => morpar%flsthetsd
     thetsduni           => morpar%thetsduni
     suscorfac           => morpar%suscorfac
-    upwindbedload       => mornum%upwindbedload
     pure1d_mor          => mornum%pure1d
     bermslopetransport  => morpar%bermslopetransport
     bermslopebed        => morpar%bermslopebed
@@ -1826,12 +1860,17 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     !
     txtput1 = 'Numerical parameters:'
     write (lundia, '(a)') txtput1
-    txtput1 = '   Upwind scheme for bedload'
-    if (upwindbedload) then
-       txtput2 = '                 YES'
-    else
-       txtput2 = '                  NO'
-    end if
+    txtput1 = 'Bedload scheme'
+    select case (mornum%bedload_scheme)
+       case (BL_SCHEME_UPWSB)
+          txtput2 = ' BASED ON TRANSP DIR'
+       case (BL_SCHEME_CENTRAL)
+          txtput2 = '             CENTRAL'
+       case (BL_SCHEME_UPWIND)
+          txtput2 = '              UPWIND'
+       case default
+          txtput2 = '             UNKNOWN'
+    end select
     write (lundia, '(3a)') txtput1, ':', txtput2
     txtput1 = '   Pure1D for morphodynamics'
     if (pure1d_mor) then

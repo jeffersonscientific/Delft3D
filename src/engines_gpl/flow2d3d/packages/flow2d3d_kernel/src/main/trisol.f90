@@ -2188,7 +2188,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
                       & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumax) , &
                       & i(kfumin) ,i(kfvmax) ,i(kfvmin) ,r(dzu1)   ,r(dzv1)   , &
-                      & r(u0)     ,r(wrkb5)  ,r(v0)     ,r(wrkb6)  , &
+                      & r(u1)     ,r(wrkb5)  ,r(v1)     ,r(wrkb6)  , &
                       & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
                       & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
                       & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )
@@ -3030,7 +3030,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
                       & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumax) , &
                       & i(kfumin) ,i(kfvmax) ,i(kfvmin) ,r(dzu1)   ,r(dzv1)   , &
-                      & r(u0)     ,r(wrkb5)  ,r(v0)     ,r(wrkb6)  , &
+                      & r(u1)     ,r(wrkb5)  ,r(v1)     ,r(wrkb6)  , &
                       & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
                       & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
                       & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )
@@ -3261,7 +3261,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
                       & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumax) , &
                       & i(kfumin) ,i(kfvmax) ,i(kfvmin) ,r(dzu1)   ,r(dzv1)   , &
-                      & r(u0)     ,r(wrkb5)  ,r(v0)     ,r(wrkb6)  , &
+                      & r(u1)     ,r(wrkb5)  ,r(v1)     ,r(wrkb6)  , &
                       & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
                       & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
                       & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )

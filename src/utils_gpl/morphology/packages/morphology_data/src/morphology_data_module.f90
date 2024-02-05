@@ -195,6 +195,11 @@ integer, parameter, public :: WS_MAX_SP   =  2
 integer, parameter, public :: CODE_DEFAULT = 0
 integer, parameter, public :: CODE_DELFT3D = 1
 
+integer, parameter, public  :: BL_SCHEME_UNDEF   = -1
+integer, parameter, public  :: BL_SCHEME_UPWSB   = 0
+integer, parameter, public  :: BL_SCHEME_CENTRAL = 1
+integer, parameter, public  :: BL_SCHEME_UPWIND  = 2
+
 integer,parameter, public  :: FLUX_LIMITER_NONE   = 0
 integer,parameter, public  :: FLUX_LIMITER_MINMOD = 1
 integer,parameter, public  :: FLUX_LIMITER_MC     = 2
@@ -283,7 +288,7 @@ end type moroutputtype
 !
 type mornumericstype
     logical :: pure1d                   ! temporary switch for 1D treatment in FM
-    logical :: upwindbedload            ! switch for upwind bedload in UPWBED
+    integer :: bedload_scheme           ! switch for bedload scheme used in UPWBED
     logical :: laterallyaveragedbedload ! bedload transport laterally averaged in UPWBED
     logical :: maximumwaterdepth        ! limit minimum water depth at zeta point for morphodynamics 
     double precision :: maximumwaterdepthfrac   ! if `maximumwaterdepth=.true.`, the minimum water depth
@@ -748,6 +753,10 @@ type sedtra_type
     real(fp)         , dimension(:,:)    , pointer :: sour_im  !(nc1:nc2,lsed)
     !
     real(fp)         , dimension(:,:)    , pointer :: dbodsd   !(lsedtot,nc1:nc2)
+    real(fp)         , dimension(:,:)    , pointer :: dsbcudu  !< (nc1:nc2,lsedtot) derivative in U-direction of bed load transport component in U-direction
+    real(fp)         , dimension(:,:)    , pointer :: dsbcudv  !< (nc1:nc2,lsedtot) derivative in V-direction of bed load transport component in U-direction
+    real(fp)         , dimension(:,:)    , pointer :: dsbcvdu  !< (nc1:nc2,lsedtot) derivative in U-direction of bed load transport component in V-direction
+    real(fp)         , dimension(:,:)    , pointer :: dsbcvdv  !< (nc1:nc2,lsedtot) derivative in V-direction of bed load transport component in V-direction    
     !
     real(fp)         , dimension(:,:)    , pointer :: sbcx     !(nc1:nc2,lsedtot) sbcu in structured Delft3D-FLOW
     real(fp)         , dimension(:,:)    , pointer :: sbcy     !(nc1:nc2,lsedtot) sbcv in structured Delft3D-FLOW
@@ -847,6 +856,10 @@ subroutine nullsedtra(sedtra)
     nullify(sedtra%sour_im)
     !
     nullify(sedtra%dbodsd)
+    nullify(sedtra%dsbcudu)
+    nullify(sedtra%dsbcudv)
+    nullify(sedtra%dsbcvdu)
+    nullify(sedtra%dsbcvdv)
     !
     nullify(sedtra%sbcx)
     nullify(sedtra%sbcy)
@@ -966,6 +979,10 @@ subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu
     if (istat==0) allocate(sedtra%sour_im (nc1:nc2,lsed), STAT = istat)
     !
     if (istat==0) allocate(sedtra%dbodsd  (lsedtot,nc1:nc2), STAT = istat)
+    if (istat==0) allocate(sedtra%dsbcudu (lsedtot,nc1:nc2), STAT = istat)
+    if (istat==0) allocate(sedtra%dsbcudv (lsedtot,nc1:nc2), STAT = istat)
+    if (istat==0) allocate(sedtra%dsbcvdu (lsedtot,nc1:nc2), STAT = istat)
+    if (istat==0) allocate(sedtra%dsbcvdv (lsedtot,nc1:nc2), STAT = istat)
     !
     if (istat==0) allocate(sedtra%sbcx    (nc1:nc2,lsedtot), STAT = istat)
     if (istat==0) allocate(sedtra%sbcy    (nc1:nc2,lsedtot), STAT = istat)
@@ -1547,7 +1564,7 @@ subroutine nullmorpar(morpar)
     call initmoroutput(morpar%moroutput)
     !
     morpar%mornum%pure1d                   = .false.
-    morpar%mornum%upwindbedload            = .true.
+    morpar%mornum%bedload_scheme           = BL_SCHEME_UNDEF
     morpar%mornum%laterallyaveragedbedload = .false.
     morpar%mornum%maximumwaterdepth        = .false.
     morpar%mornum%maximumwaterdepthfrac    = 1.0d0 !by default, if `maximumwaterdepth=.true.`, `hs_mor=max(hs,hu)`, which is the old functionality. 
