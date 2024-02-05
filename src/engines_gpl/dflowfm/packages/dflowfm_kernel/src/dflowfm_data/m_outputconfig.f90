@@ -48,8 +48,10 @@ private
    integer, parameter, public :: UNC_LOC_OBSCRS      = 36 !< Data location: his file observation cross section data
    integer, parameter, public :: UNC_LOC_LATERAL     = 37 !< Data location: his file lateral locations data
    integer, parameter, public :: UNC_LOC_RUG         = 38 !< Data location: his file run-up gauge data
-
-   !> indices for output variables
+   integer, parameter, public :: UNC_LOC_DRED        = 39 !<
+   integer, parameter, public :: UNC_LOC_DREDLINK        = 39 !<
+   
+   !> indexes for output variables 
    integer, public :: IDX_HIS_VOLTOT
    integer, public :: IDX_HIS_STOR
    integer, public :: IDX_HIS_VOLERR
@@ -322,6 +324,16 @@ private
    integer, public :: IDX_HIS_FIXFRAC
    integer, public :: IDX_HIS_HIDEXP
    integer, public :: IDX_HIS_MFLUFF
+
+   
+   integer, public :: IDX_HIS_DRED_AREA_NAME
+   integer, public :: IDX_HIS_DUMP_AREA_NAME
+   integer, public :: IDX_HIS_DRED_LINK_DISCHARGE
+   integer, public :: IDX_HIS_DRED_DISCHARGE
+   integer, public :: IDX_HIS_DUMP_DISCHARGE
+   integer, public :: IDX_HIS_DRED_TIME_FRAC
+   integer, public :: IDX_HIS_PLOUGH_TIME_FRAC
+
 
    integer, public :: IDX_MAP_S0
    integer, public :: IDX_MAP_S1

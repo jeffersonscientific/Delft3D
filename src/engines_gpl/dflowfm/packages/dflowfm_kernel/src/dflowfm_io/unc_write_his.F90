@@ -539,37 +539,37 @@ subroutine unc_write_his(tim)            ! wrihis
         ! TODO: UNST-7239: remove separate average IDX?
         if (timon) call timstop (handle_extra(60))
 
-        if(dad_included) then  ! Output for dredging and dumping
-            ierr = nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim)
-            ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%nadred+dadpar%nasupl, id_dreddim)
-            ierr = nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim)
-
-            ierr = nf90_def_var(ihisfile, 'dredge_area_name',         nf90_char,   (/ id_strlendim, id_dreddim /), id_dred_name)
-            ierr = nf90_put_att(ihisfile, id_dred_name,  'long_name'    , 'dredge area identifier')
-
-            ierr = nf90_def_var(ihisfile, 'dump_area_name',         nf90_char,   (/ id_strlendim, id_dumpdim /), id_dump_name)
-            ierr = nf90_put_att(ihisfile, id_dump_name,  'long_name'    , 'dump area identifier')
-
-            ierr = nf90_def_var(ihisfile, 'dred_link_discharge', nc_precision, (/ id_dredlinkdim, id_sedtotdim, id_timedim /), id_dredlink_dis)
-            ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'long_name', 'Cumulative dredged material transported via links per fraction')
-            ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'units', 'm3') !link_sum
-
-            ierr = nf90_def_var(ihisfile, 'dred_discharge', nc_precision, (/ id_dreddim, id_timedim /), id_dred_dis)
-            ierr = nf90_put_att(ihisfile, id_dred_dis, 'long_name', 'Cumulative dredged material for dredge areas')
-            ierr = nf90_put_att(ihisfile, id_dred_dis, 'units', 'm3') !totvoldred
-
-            ierr = nf90_def_var(ihisfile, 'dump_discharge', nc_precision, (/ id_dumpdim, id_timedim /), id_dump_dis)
-            ierr = nf90_put_att(ihisfile, id_dump_dis, 'long_name', 'Cumulative dredged material for dump areas')
-            ierr = nf90_put_att(ihisfile, id_dump_dis, 'units', 'm3') !totvoldump
-
-            ierr = nf90_def_var(ihisfile, 'dred_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_dred_tfrac)
-            ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'long_name', 'Time fraction spent dredging')
-            ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'units', '-') !ndredged
-
-            ierr = nf90_def_var(ihisfile, 'plough_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_plough_tfrac)
-            ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'long_name', 'Time fraction spent ploughing')
-            ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'units', '-') !nploughed
-        endif
+        !if(dad_included) then  ! Output for dredging and dumping
+        !    ierr = nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim)
+        !    ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%nadred+dadpar%nasupl, id_dreddim)
+        !    ierr = nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim)
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dredge_area_name',         nf90_char,   (/ id_strlendim, id_dreddim /), id_dred_name)
+        !    ierr = nf90_put_att(ihisfile, id_dred_name,  'long_name'    , 'dredge area identifier')
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dump_area_name',         nf90_char,   (/ id_strlendim, id_dumpdim /), id_dump_name)
+        !    ierr = nf90_put_att(ihisfile, id_dump_name,  'long_name'    , 'dump area identifier')
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dred_link_discharge', nc_precision, (/ id_dredlinkdim, id_sedtotdim, id_timedim /), id_dredlink_dis)
+        !    ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'long_name', 'Cumulative dredged material transported via links per fraction')
+        !    ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'units', 'm3') !link_sum
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dred_discharge', nc_precision, (/ id_dreddim, id_timedim /), id_dred_dis)
+        !    ierr = nf90_put_att(ihisfile, id_dred_dis, 'long_name', 'Cumulative dredged material for dredge areas')
+        !    ierr = nf90_put_att(ihisfile, id_dred_dis, 'units', 'm3') !totvoldred
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dump_discharge', nc_precision, (/ id_dumpdim, id_timedim /), id_dump_dis)
+        !    ierr = nf90_put_att(ihisfile, id_dump_dis, 'long_name', 'Cumulative dredged material for dump areas')
+        !    ierr = nf90_put_att(ihisfile, id_dump_dis, 'units', 'm3') !totvoldump
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dred_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_dred_tfrac)
+        !    ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'long_name', 'Time fraction spent dredging')
+        !    ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'units', '-') !ndredged
+        !
+        !    ierr = nf90_def_var(ihisfile, 'plough_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_plough_tfrac)
+        !    ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'long_name', 'Time fraction spent ploughing')
+        !    ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'units', '-') !nploughed
+        !endif
 
         if ( jacheckmonitor.eq.1 ) then
            ierr = nf90_def_var(ihisfile, 'checkerboard_monitor', nc_precision, (/ id_laydim, id_timedim /), id_checkmon)
@@ -952,18 +952,12 @@ subroutine unc_write_his(tim)            ! wrihis
         end if
 
         if (dad_included) then
-           !
-           !do i=1,stmpar%lsedtot
-           !   ierr = nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), (/ 1, i /))
-           !enddo
-           !ierr = nf90_put_var(ihisfile, id_frac_name, 'subsoil sediment', (/ 1, stmpar%lsedtot+1 /))        ! rest category
-           !
            do i=1,(dadpar%nadred+dadpar%nasupl)
-              ierr = nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /))
+              ierr = nf90_put_var(ihisfile, IDX_HIS_DRED_AREA_NAME, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /))
            enddo
            !
            do i=1,dadpar%nadump
-              ierr = nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), (/ 1, i /))
+              ierr = nf90_put_var(ihisfile, IDX_HIS_DUMP_AREA_NAME, trimexact(dadpar%dump_areas(i), strlen_netcdf), (/ 1, i /))
            enddo
         endif
         if (timon) call timstop ( handle_extra(63))

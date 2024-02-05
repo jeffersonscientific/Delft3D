@@ -1284,8 +1284,68 @@ private
                      'Wrihis_lateral', 'lateral_realized_discharge_average',              &
                      'Realized discharge through lateral, average over the last history time interval',             &
                      '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1))
-
-
+      call addoutval(out_quan_conf_his, IDX_HIS_DRED_AREA_NAME,                 &
+                     'Wrihis_dred', 'dredge_area_name',              &
+                     'dredge area identifier',             &
+                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_DUMP_AREA_NAME,                 &
+                     'Wrihis_dred', 'dump_area_name',              &
+                     'dump area identifier',             &
+                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_DRED_LINK_DISCHARGE,                 &
+                     'Wrihis_dred', 'dred_link_discharge',              &
+                     'Cumulative dredged material transported via links per fraction',             &
+                     '', 'm3', UNC_LOC_DREDLINK, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_DRED_DISCHARGE,                 &
+                     'Wrihis_dred', 'dred_discharge',              &
+                     'Cumulative dredged material for dredge areas',             &
+                     '', 'm3', UNC_LOC_DRED, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_DUMP_DISCHARGE,                 &
+                     'Wrihis_dred', 'dump_discharge',              &
+                     'Cumulative dredged material for dump areas',             &
+                     '', 'm3', UNC_LOC_DRED, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_DRED_TIME_FRAC,                 &
+                     'Wrihis_dred', 'dred_time_frac',              &
+                     'Time fraction spent dredging',             &
+                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_PLOUGH_TIME_FRAC,                 &
+                     'Wrihis_dred', 'plough_time_frac',              &
+                     'Time fraction spent ploughing',             &
+                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+      
+      
+         !if(dad_included) then  ! Output for dredging and dumping
+        !    ierr = nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim)
+        !    ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%nadred+dadpar%nasupl, id_dreddim)
+        !    ierr = nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim)
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dredge_area_name',         nf90_char,   (/ id_strlendim, id_dreddim /), id_dred_name)
+        !    ierr = nf90_put_att(ihisfile, id_dred_name,  'long_name'    , 'dredge area identifier')
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dump_area_name',         nf90_char,   (/ id_strlendim, id_dumpdim /), id_dump_name)
+        !    ierr = nf90_put_att(ihisfile, id_dump_name,  'long_name'    , 'dump area identifier')
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dred_link_discharge', nc_precision, (/ id_dredlinkdim, id_sedtotdim, id_timedim /), id_dredlink_dis)
+        !    ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'long_name', 'Cumulative dredged material transported via links per fraction')
+        !    ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'units', 'm3') !link_sum
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dred_discharge', nc_precision, (/ id_dreddim, id_timedim /), id_dred_dis)
+        !    ierr = nf90_put_att(ihisfile, id_dred_dis, 'long_name', 'Cumulative dredged material for dredge areas')
+        !    ierr = nf90_put_att(ihisfile, id_dred_dis, 'units', 'm3') !totvoldred
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dump_discharge', nc_precision, (/ id_dumpdim, id_timedim /), id_dump_dis)
+        !    ierr = nf90_put_att(ihisfile, id_dump_dis, 'long_name', 'Cumulative dredged material for dump areas')
+        !    ierr = nf90_put_att(ihisfile, id_dump_dis, 'units', 'm3') !totvoldump
+        !
+        !    ierr = nf90_def_var(ihisfile, 'dred_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_dred_tfrac)
+        !    ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'long_name', 'Time fraction spent dredging')
+        !    ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'units', '-') !ndredged
+        !
+        !    ierr = nf90_def_var(ihisfile, 'plough_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_plough_tfrac)
+        !    ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'long_name', 'Time fraction spent ploughing')
+        !    ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'units', '-') !nploughed
+        !endif
+      
       !TEST: all his output default on true
       out_quan_conf_his%statout(:)%input_value = 'current'
       !
@@ -1782,9 +1842,9 @@ private
       use m_transport, only: NUMCONST, itemp, isalt, ised1
       use m_sediment, only: stm_included, stmpar
       use m_longculverts, only: nlongculverts
-      use m_monitoring_crosssections, only: ncrs
-      use m_monitoring_runupgauges, only: nrug, rug
-      use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
+      USE m_monitoring_crosssections, only: ncrs
+      use m_monitoring_runupgauges, only: nrug
+      use m_dad
       USE, INTRINSIC :: ISO_C_BINDING
 
       type(t_output_quantity_config_set), intent(inout) :: output_config !< output config for which an output set is needed.
@@ -2354,7 +2414,18 @@ private
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
       endif
-
+      if ( dad_included ) then  ! Output for dredging and dumping
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_LINK_DISCHARGE),dadpar%link_sum               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_DISCHARGE),dadpar(:)%totvoldred               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DUMP_DISCHARGE),dadpar(:)%totvoldump               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_TIME_FRAC),dadpar(:)%totvoldump               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PLOUGH_TIME_FRAC),dadpar(:)%totvoldump               )
+         !
+         !
+         !cof0 = 1d0 ; if( time_his > 0d0 ) cof0 = time_his
+         !ierr = nf90_put_var(ihisfile, id_dred_tfrac  , dadpar%tim_dredged/cof0  , start = (/ 1, it_his /), count = (/ dadpar%nadred+dadpar%nasupl, 1 /))
+         !ierr = nf90_put_var(ihisfile, id_plough_tfrac, dadpar%tim_ploughed/cof0 , start = (/ 1, it_his /), count = (/ dadpar%nadred+dadpar%nasupl, 1 /))
+      endif
       ! TODO: UNST-7239: runup gauges
 
 
