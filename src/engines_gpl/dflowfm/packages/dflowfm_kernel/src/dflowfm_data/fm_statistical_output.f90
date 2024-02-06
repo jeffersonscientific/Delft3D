@@ -1060,12 +1060,6 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_SEDDIF,                                             &
                      'Wrihis_sediment', 'seddif', 'Sediment vertical diffusion',                                      &
                      '', 'm2 s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
-      call addoutval(out_quan_conf_his, IDX_HIS_BODSED,                                                &
-                     'Wrihis_sediment', 'bodsed', 'Available sediment mass in the bed',                   &
-                     '', 'kg m-2', UNC_LOC_STATION, nc_atts = atts(1:1))
-      call addoutval(out_quan_conf_his, IDX_HIS_DPSED,                                                 &
-                     'Wrihis_sediment', 'dpsed', 'Sediment thickness in the bed',                         &
-                     '', 'm', UNC_LOC_STATION, nc_atts = atts(1:1))
       !case (2)
       !   ierr = nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim)
       !   !  

@@ -2099,7 +2099,7 @@ function build_nc_dimension_id_list(nc_dim_ids) result(res)
    integer, allocatable :: res(:)
 
    res = pack([id_laydim, id_laydimw, id_nlyrdim, id_statdim, id_sedsusdim, id_sedtotdim, id_timedim], &
-              [nc_dim_ids%laydim, nc_dim_ids%laydim_interface_center .or. nc_dim_ids%laydim_interface_edge, nc_dim_ids%nlyrdim, nc_dim_ids%statdim, nc_dim_ids%sedsusdim, nc_dim_ids%sedtotdim, nc_dim_ids%timedim])
+              make_mask_from_dim_ids(nc_dim_ids))
 end function build_nc_dimension_id_list
 
 function build_nc_dimension_id_start_array(nc_dim_ids) result(res)
@@ -2107,7 +2107,7 @@ function build_nc_dimension_id_start_array(nc_dim_ids) result(res)
    integer, allocatable :: res(:)
    
    res = pack([1, 1, 1, 1, 1, 1, it_his], &
-              [nc_dim_ids%laydim, nc_dim_ids%laydim_interface_center .or. nc_dim_ids%laydim_interface_edge, nc_dim_ids%nlyrdim, nc_dim_ids%statdim, nc_dim_ids%sedsusdim, nc_dim_ids%sedtotdim, nc_dim_ids%timedim])
+              make_mask_from_dim_ids(nc_dim_ids))
 end function build_nc_dimension_id_start_array
 
 function build_nc_dimension_id_count_array(nc_dim_ids) result(res)
@@ -2115,8 +2115,22 @@ function build_nc_dimension_id_count_array(nc_dim_ids) result(res)
    integer, allocatable :: res(:)
    
    res = pack([get_dimid_len(id_laydim),get_dimid_len(id_laydimw), get_dimid_len(id_nlyrdim), get_dimid_len(id_statdim), get_dimid_len(id_sedsusdim), get_dimid_len(id_sedtotdim), 1], &
-              [nc_dim_ids%laydim, nc_dim_ids%laydim_interface_center .or. nc_dim_ids%laydim_interface_edge, nc_dim_ids%nlyrdim, nc_dim_ids%statdim, nc_dim_ids%sedsusdim, nc_dim_ids%sedtotdim, nc_dim_ids%timedim])
+              make_mask_from_dim_ids(nc_dim_ids))
 end function build_nc_dimension_id_count_array
+
+!> Build mask of which dimensions to include in netcdf variable, based on nc_dim_ids
+pure function make_mask_from_dim_ids(nc_dim_ids) result(mask)
+   type(t_nc_dim_ids), intent(in) :: nc_dim_ids  !< The active NetCDF dimensions for this variable
+   logical, allocatable           :: mask(:)     !< The same but as a 1-D array of logicals
+   
+   mask = [nc_dim_ids%laydim, &
+           nc_dim_ids%laydim_interface_center .or. nc_dim_ids%laydim_interface_edge, &
+           nc_dim_ids%nlyrdim, &
+           nc_dim_ids%statdim, &
+           nc_dim_ids%sedsusdim, &
+           nc_dim_ids%sedtotdim, &
+           nc_dim_ids%timedim]
+end function make_mask_from_dim_ids
 
 integer function get_dimid_len(id)
 integer, intent(in) :: id
