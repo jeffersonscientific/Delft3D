@@ -1914,7 +1914,7 @@ private
       endif
       if( jahisvelvec > 0 ) then
          if (numobs+nummovobs > 0) then
-            if ( kmx>0 ) then
+            if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(IPNT_UCX:IPNT_UCX+kmx,1:ntot)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
 
@@ -1935,14 +1935,14 @@ private
       endif
       if (jahisvelocity > 0) then
          if (jaeulervel==0) then
-            if(kmx>0) then
+            if(model_is_3D()) then
                call c_f_pointer (c_loc(valobs(IPNT_UMAG:IPNT_UMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),temp_pointer)
             else
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),valobs(IPNT_UMAG,:)                                        )
             endif
          else
-            if(kmx>0) then
+            if(model_is_3D()) then
                call c_f_pointer (c_loc(valobs(IPNT_UMAG:IPNT_UMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),temp_pointer)
             else
@@ -1951,7 +1951,7 @@ private
          endif
       endif
       if (jahisdischarge > 0) then
-         if(kmx>0) then
+         if(model_is_3D()) then
             call c_f_pointer (c_loc(valobs(IPNT_QMAG:IPNT_QMAG+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),temp_pointer)
          else
@@ -1960,7 +1960,7 @@ private
       endif
 
       ! Turbulence model
-      if ( kmx.gt.0 ) then
+      if (model_is_3D()) then
          if (iturbulencemodel >= 3 .and. jahistur > 0) then
             call c_f_pointer (c_loc(valobs(IPNT_TKIN:IPNT_TKIN+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TKE      ),temp_pointer                            )
@@ -1985,7 +1985,7 @@ private
 
       ! Gravity + buoyancy
       if (jasal > 0 .and. jahissal > 0) then
-         if (kmx>0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(IPNT_SA1:IPNT_SA1+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SALINITY   ),temp_pointer                                )
          else
@@ -1994,7 +1994,7 @@ private
       endif
 
       if (jatem > 0 .and. jahistem > 0) then
-         if (kmx > 0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(IPNT_TEM1:IPNT_TEM1+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TEMPERATURE),temp_pointer)
          else
@@ -2003,7 +2003,7 @@ private
       end if
 
       if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
-         if (kmx>0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(IPNT_RHOP:IPNT_RHOP+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
 
@@ -2027,7 +2027,7 @@ private
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PHIWAV  ),valobs(IPNT_WAVED,:)                                    )
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RLABDA  ),valobs(IPNT_WAVEL,:)                              )
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UORB    ),valobs(IPNT_WAVEU,:)                              )
-         if ( kmx>0 .and. .not. flowwithoutwaves) then
+         if (model_is_3D() .and. .not. flowwithoutwaves) then
             call c_f_pointer (c_loc(valobs(IPNT_UCXST:IPNT_UCXST+kmx,1:ntot)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
 
@@ -2081,7 +2081,7 @@ private
 
       ! Sediment model
       if (jased > 0 .and. .not. stm_included) then
-         if (kmx >0) then
+         if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(IPNT_SED:IPNT_SED+kmx,1:ntot)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
          else
@@ -2089,7 +2089,7 @@ private
          endif
       endif
       if (IVAL_WS1 > 0) then
-         if (kmx > 0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
          else
@@ -2312,14 +2312,22 @@ private
       end do
    end subroutine process_output_quantity_configs
 
+   !> Deactivate 3D dimension IDs for 2D variables
    subroutine process_nc_dim_ids(nc_dim_ids)
-      use m_flow, only: kmx
       type(t_nc_dim_ids), intent(inout) :: nc_dim_ids !< The NetCDF dimension IDs for a possible output variable config
 
-      if (.not. (kmx > 0)) then ! Turn off layer dimensions in 2D
+      if (.not. model_is_3D()) then ! Turn off layer dimensions in 2D
          nc_dim_ids%laydim = .false.
          nc_dim_ids%laydim_interface_center = .false.
          nc_dim_ids%laydim_interface_edge = .false.
       end if
    end subroutine process_nc_dim_ids
+
+   !> Check if model is 3D
+   pure function model_is_3D() result(res)
+      use m_flow, only: kmx
+      logical :: res !< Return value
+
+      res = (kmx > 0)
+   end function model_is_3D
 end module fm_statistical_output
