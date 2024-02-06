@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setprg
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -36,11 +36,10 @@
 
       use m_setgrd
       use m_setgr2
-      use m_zoek
-      use dhralloc
+      use m_array_manipulation, only : resize_integer_array
       use processet
       use timers       !   performance timers
-      use m_dhggd
+      use math_utils, only : greatest_common_divisor
 
       implicit none
 
@@ -139,9 +138,9 @@
                endif
             enddo
 
-            call zoek ( proc%routine, nmnoag , monoag, 10    , imnoag)
+            imnoag = index_in_array(proc%routine(:10), monoag(:nmnoag))
             if ( imnoag .le. 0 ) then
-               call zoek ( proc%name, nmnoag , monoag, 10    , imnoag)
+               imnoag = index_in_array(proc%name(:10), monoag(:nmnoag))
             endif
             if ( imnoag .gt. 0 ) then
                proc%grid = 1
@@ -193,7 +192,7 @@
                            nototg = nototg + 1
                            if ( nototg .gt. maxwrk ) then
                               maxwrk = maxwrk*2
-                              call dhralloc_int(grdwrk,maxwrk,nototg-1)
+                              call resize_integer_array(grdwrk,maxwrk,nototg-1)
                            endif
                            grdwrk(nototg) = proc2%grid
                         endif
@@ -226,9 +225,9 @@ cjvb              afhandelen exception? of error
       do iproc = 1, nproc
          proc => procesdef%procesprops(iproc)
          if ( proc%active ) then
-            call zoek ( proc%routine, nmnoag , monoag, 10    , imnoag)
+            imnoag = index_in_array( proc%routine(:10), monoag(:nmnoag))
             if ( imnoag .le. 0 ) then
-               call zoek ( proc%name, nmnoag , monoag, 10    , imnoag)
+               imnoag = index_in_array( proc%name(:10), monoag(:nmnoag))
             endif
             if ( imnoag .gt. 0 ) then
                proc%ndt = 1
@@ -239,13 +238,13 @@ cjvb              afhandelen exception? of error
                      nndt = nndt + 1
                      if ( nndt .gt. maxwrk ) then
                         maxwrk = maxwrk*2
-                        call dhralloc_int(grdwrk,maxwrk,nndt-1)
+                        call resize_integer_array(grdwrk,maxwrk,nndt-1)
                      endif
                      grdwrk(nndt) = sysndt(proc%fluxstochi(istochi)%subindx)
                   endif
                enddo
                if ( nndt .gt. 0 ) then
-                  call dhggd ( nndt  , grdwrk, ndt   )
+                  call greatest_common_divisor ( nndt  , grdwrk, ndt   )
                   proc%ndt = ndt
                else
 
@@ -280,14 +279,14 @@ cjvb              afhandelen exception? of error
                            nndt = nndt + 1
                            if ( nndt .gt. maxwrk ) then
                               maxwrk = maxwrk*2
-                              call dhralloc_int(grdwrk,maxwrk,nndt-1)
+                              call resize_integer_array(grdwrk,maxwrk,nndt-1)
                            endif
                            grdwrk(nndt) = proc2%ndt
                         endif
                      endif
                   enddo
                enddo
-               call dhggd ( nndt  , grdwrk, ndt   )
+               call greatest_common_divisor ( nndt  , grdwrk, ndt   )
                proc%ndt = ndt
             endif
          endif

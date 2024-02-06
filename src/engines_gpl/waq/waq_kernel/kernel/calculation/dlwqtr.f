@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwqtr
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -36,7 +36,6 @@
      +                    FUNC   , SEGFUN , DISPER , VELO   , ITIME  ,
      +                    IDT    , SYNAME , NOCONS , NOFUN  , CONAME ,
      +                    PANAME , FUNAME , SFNAME , UPDATR , ILFLAG )
-      use m_zoek
       use m_srstop
       use m_monsys
 
@@ -149,7 +148,7 @@
 !
 !        Set pointers in param array
 !
-         CALL ZOEK ( 'SURF      ', NOPA  , PANAME , 10    , ISURF  )
+         ISURF = index_in_array( 'SURF      ', PANAME (:NOPA))
 !
 !          read surface areas
 !

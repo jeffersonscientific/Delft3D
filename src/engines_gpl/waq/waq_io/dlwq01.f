@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq01
       use m_waq_precision
-
+      use m_string_utils, only: string_equals
 
       implicit none
 
@@ -64,14 +64,13 @@
 !                           lun( 2) = unit system-intermediate file
 
       use m_check
-      use m_zoek
       use m_srstop
       use m_read_version_number
       use time_module
       use rd_token     !   tokenized reading
-      use dlwq0t_data
+      use date_time_utils, only: system_time_factor_seconds, base_julian_time
       use timers       !   performance timers
-      use computeRefday
+      use date_time_utils, only : compute_reference_day
 
       implicit none
 
@@ -191,11 +190,11 @@
       endif
 
 !     Compute refday
-      call compute_refday(iyear, imonth, iday, refday)
+      call compute_reference_day(iyear, imonth, iday, refday)
 
 !     Copy timers data to dlwqt0_data
-      dlwq0t_otime  = otime 
-      dlwq0t_isfact = isfact  
+      base_julian_time  = otime
+      system_time_factor_seconds = isfact
 
 !     Read number of transported and number of passive systems
 
@@ -288,8 +287,7 @@
 
          if ( sname(isys) .eq. ' ' ) write ( sname(isys), 2120 ) isys
          do isys2 = 1 , isys-1
-            call ZOEK ( sname(isys), 1, sname(isys2:), 20, ifound )
-            if ( ifound .gt. 0 ) then
+               if (string_equals(sname(isys), sname(isys2))) then
                write(lunut,2130)
                ierr = ierr + 1
             endif

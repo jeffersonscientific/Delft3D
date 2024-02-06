@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setgeo
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -65,9 +65,8 @@
 !     IERR    INTEGER(kind=int_wp) ::1  IN/OUT  cummulative error count
 !     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
 !
-      use m_zoek
       use m_srstop
-      use m_dhslen
+      use m_string_manipulation, only : get_trimmed_length
       USE ProcesSet
       use timers       !   performance timers
 !
@@ -75,22 +74,21 @@
 !
 !     Declaration of arguments
 !
-      INTEGER(kind=int_wp) ::LUNREP, NOKEY , PSTART, PSTOP , IPROC ,
-     +              IERR  , NOWARN
-      CHARACTER*20  PERNAM, PERSFX
-      CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
-      type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
-      type(ItemPropColl)    :: AllItems            ! all items of the proces system
+      INTEGER(kind=int_wp) ::LUNREP, NOKEY , PSTART, PSTOP , IPROC , IERR  , NOWARN
+      CHARACTER*20         :: PERNAM, PERSFX
+      CHARACTER*20         :: KEYNAM(NOKEY), KEYVAL(NOKEY)
+      type(ProcesProp)     :: aProcesProp         ! output statistical proces definition
+      type(ItemPropColl)   :: AllItems            ! all items of the proces system
 !
 !     Local declarations
 !
-      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,
-     +              IERR2     , IRET
-      INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      REAL(kind=real_wp) ::THRESH
-      CHARACTER*20  KEY       , SUFFIX
-      type(ItemProp)        :: aItemProp            ! one item
+      INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY, ISTART, ISTOP, ISLEN , IERR2, IRET
+      INTEGER(kind=int_wp), ALLOCATABLE  ::ISUSED(:)
+      REAL(kind=real_wp)   ::THRESH
+      CHARACTER*20         ::SUFFIX
+      type(ItemProp)       :: aItemProp            ! one item
       integer(kind=int_wp) ::ithndl = 0
+
       if (timon) call timstrt( "setgeo", ithndl )
 !
 !     init
@@ -103,8 +101,8 @@
          CALL SRSTOP(1)
       ENDIF
       ISUSED = 0
-      KEY='OUTPUT-OPERATION'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+
+      IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
       IF ( IKEY .GT. 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
@@ -135,8 +133,7 @@
 !
 !     input on segments
 !
-      KEY='SUBSTANCE'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUBSTANCE',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          IERR = IERR + 1
@@ -212,8 +209,7 @@
       aProcesProp%input_item(5)%indx  = 5
       aProcesProp%input_item(5)%ip_val  = 0
 !
-      KEY = 'THRESH'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('THRESH',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          THRESH = 1.0
       ELSE
@@ -250,21 +246,20 @@
 !
 !     output
 !
-      KEY = 'SUFFIX'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUFFIX',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          SUFFIX = ' '
       ELSE
          SUFFIX = KEYVAL(IKEY)
          ISUSED(IKEY) = 1
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
+      CALL get_trimmed_length(SUFFIX,ISLEN)
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
          SUFFIX =SUFFIX(1:ISLEN)//'_'//PERSFX
       ELSE
          SUFFIX ='GEO_'//PERSFX
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
+      CALL get_trimmed_length(SUFFIX,ISLEN)
 
       aItemProp%name    = 'T_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       aItemProp%default = -999.

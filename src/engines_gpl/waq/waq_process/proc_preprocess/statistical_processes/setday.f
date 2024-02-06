@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_setday
       use m_waq_precision
+      use m_string_utils
       USE ProcesSet
 
       implicit none
@@ -44,7 +45,7 @@
 !
 !     SUBROUTINES CALLED  : SRSTOP, stops execution
 !                           ZOEK  , finds string in character array
-!                           DLWQ0T, converts absolute time to system time (seconds)
+!                           convert_string_to_time_offset, converts absolute time to system time (seconds)
 !
 !
 !     PARAMETERS          :
@@ -60,13 +61,11 @@
 !     IERR    INTEGER        1  IN/OUT  cummulative error count
 !     NOWARN  INTEGER        1  IN/OUT  cummulative warning count
 !
-      use m_zoek
       use m_srstop
-      use m_dhslen
-      
+      use m_string_manipulation, only : get_trimmed_length
+
       use timers       !   performance timers
-      use m_cnvper
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_period_to_timer, convert_relative_time
 !
       IMPLICIT NONE
 !
@@ -83,7 +82,7 @@
       INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISLEN     , IERR2 , IRET
       integer(kind=int_wp) ::istart , iperiod
       INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      CHARACTER*20  KEY       , SUFFIX  , NAME, item_name
+      CHARACTER*20  SUFFIX  , NAME, item_name
       CHARACTER*50  item_desc
       REAL(kind=real_wp) ::PERIOD, default_value
       type(ItemProp)        :: aItemProp            ! one item
@@ -100,8 +99,8 @@
          CALL SRSTOP(1)
       ENDIF
       ISUSED = 0
-      KEY='OUTPUT-OPERATION'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+
+      IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
       IF ( IKEY .GT. 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
@@ -130,8 +129,7 @@
          CALL SRSTOP(1)
       ENDIF
 !
-      KEY='SUBSTANCE'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUBSTANCE',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          IERR = IERR + 1
@@ -152,53 +150,51 @@
          endif
          aProcesProp%input_item(1)%item=>AllItems%ItemPropPnts(iret)%pnt
       ENDIF
-!
-      KEY = 'TINIT'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+
+      IKEY = index_in_array('TINIT',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          istart = 0
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) istart
          IF ( IERR2 .NE. 0 ) THEN
-            CALL DLWQ0T( KEYVAL(IKEY), istart, .FALSE., .FALSE., IERR2)
+            CALL convert_string_to_time_offset( KEYVAL(IKEY), istart, .FALSE., .FALSE., IERR2)
             IF ( IERR2 .NE. 0 ) THEN
                WRITE(LUNREP,*)'ERROR interpreting start time:',
      +                         KEYVAL(IKEY)
                IERR = IERR + 1
             ENDIF
          ELSE
-            CALL CNVTIM ( istart, 1     , DTFLG1 , DTFLG3 )
+            call convert_relative_time ( istart, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
 
       item_desc = 'start time for statistics'
       item_ind = 2
-      item_name = KEY(1:10)//aProcesProp%name(1:10)
-      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, 
+      item_name = 'TINIT'(1:10)//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name,
      + IOTYPE_SEGMENT_INPUT)
 !
-      KEY = 'PERIOD'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('PERIOD',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          iperiod = 86400.
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) iperiod
          IF ( IERR2 .NE. 0 ) THEN
-            CALL CNVPER( KEYVAL(IKEY), iperiod, .FALSE., .FALSE., IERR2)
+            CALL convert_period_to_timer( KEYVAL(IKEY), iperiod, .FALSE., .FALSE., IERR2)
             IF ( IERR2 .NE. 0 ) THEN
                WRITE(LUNREP,*)'ERROR interpreting period:',KEYVAL(IKEY)
                IERR = IERR + 1
             ENDIF
          ELSE
-            CALL CNVTIM ( iperiod, 1     , DTFLG1 , DTFLG3 )
+            call convert_relative_time ( iperiod, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
-      
+
       item_desc = 'period of time averaged output'
       item_ind = 3
-      item_name = KEY(1:10)//aProcesProp%name(1:10)
+      item_name = 'PERIOD'(1:10)//aProcesProp%name(1:10)
       call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name,
      + IOTYPE_SEGMENT_INPUT)
 !
@@ -242,15 +238,14 @@
       item_name =  'TCOUNT    '//aProcesProp%name(1:10)
       call update_process_properties(AllItems, aProcesProp, aItemProp, 0.0, item_desc, item_ind, item_name, IOTYPE_SEGMENT_WORK)
 !
-      KEY = 'SUFFIX'
-      CALL ZOEK(KEY,NOKEY,KEYNAM,20,IKEY)
+      IKEY = index_in_array('SUFFIX',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          SUFFIX = ' '
       ELSE
          SUFFIX = KEYVAL(IKEY)
          ISUSED(IKEY) = 1
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
+      CALL get_trimmed_length(SUFFIX,ISLEN)
 !
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
          aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
@@ -405,12 +400,12 @@
  2000 FORMAT(5A)
       END
 
-      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name, 
+      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name,
      + item_type)
 !
 !     FUNCTION            : Update process properties
 !
-!     SUBROUTINES CALLED  : 
+!     SUBROUTINES CALLED  :
 !
 !
 !     PARAMETERS          :
@@ -425,7 +420,7 @@
 !     item_ind                   INPUT   item index
 !     item_name                  INPUT   item name
 !
-         
+
          TYPE(ItemPropColl), INTENT(IN) :: all_items  ! all items of the proces system
          TYPE(ItemProp), INTENT(OUT) :: item_prop  ! one item
          TYPE(ProcesProp), INTENT(OUT) :: process_prop ! output statistical proces definition

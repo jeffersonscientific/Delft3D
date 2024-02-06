@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_getinv
       use m_waq_precision
+      use m_string_utils
       use m_vxlpoi
       use m_valpoi
 
@@ -41,13 +42,12 @@
       ! if nessacary turns on secondary processes
       ! fills defaults in defaul array
 
-      use m_zoek
       use m_monsys
-      use m_dhrmis
+      use m_array_manipulation, only : is_missing
       use timers       !   performance timers
       use dlwq_hyd_data
       use processet
-      use output
+      use results, only : OutputPointers
       implicit none
 
       ! declaration of arguments
@@ -72,7 +72,7 @@
       integer(kind=int_wp) ::noloc           ! number of local values
       integer(kind=int_wp) ::nodef           ! number of default
       character(len=*)          :: dename(*)       ! default names
-      type(outputcoll)          :: outputs         ! output structure
+      type(OutputPointers)          :: outputs         ! output structure
       integer(kind=int_wp) ::ndspx           ! number of dispersions
       integer(kind=int_wp) ::nvelx           ! number of velocities
       integer(kind=int_wp) ::nlocx           ! number of local values on exchanges
@@ -106,7 +106,6 @@
       real(kind=real_wp), parameter            ::rmis0  = -888.  ! missing but no matter (set to 0.0)
       integer(kind=int_wp) ::i_star          ! index of * in name
       integer(kind=int_wp) ::ithndl = 0      ! handle for performance timer
-      integer(kind=int_wp) ::refDayFound = -1 ! check for RefDay default
 
       if (timon) call timstrt( "getinv", ithndl )
 
@@ -248,15 +247,14 @@
                   endif
 
                   if ( ivalip .eq. -1 ) then
-                     if ( dhrmis(proc1%input_item(i_input)%actdef) )then
+                     if ( is_missing(proc1%input_item(i_input)%actdef) )then
                         nmis        = nmis + 1
                         write ( line1, '(a)' )  'error: not in input'
                      else
                         nodef   = nodef + 1
                         dename(nodef) = valnam
                         ivalip = -3
-                        call ZOEKNS ( 'RefDay', 1, valnam, 6 , refDayFound)
-                        if (refDayFound /= -1) then
+                        if (string_equals( 'RefDay', valnam)) then
                            defaul(nodef) = real(refday)
                            write(line1,'(a,g13.6)') '       based on T0-string:',real(refday)
                         else
@@ -354,7 +352,7 @@
                   endif
 
                   if ( ivalip .eq. -1 ) then
-                     if ( dhrmis(proc1%input_item(i_input)%actdef) )then
+                     if ( is_missing(proc1%input_item(i_input)%actdef) )then
                         nmis        = nmis + 1
                         write ( line1, '(a)' )  'error: not in input'
                      else
@@ -389,7 +387,7 @@
                   ioux  = 0
   350             continue
                   nrout = outputs%cursize - ioux
-                  call zoek ( valnam, nrout, outputs%names(ioux+1), 20    , iou   )
+                  iou = index_in_array(valnam, outputs%names(ioux+1:nrout))
                   if ( iou .gt. 0 ) then
                      iou = iou + ioux
                      if ( outputs%pointers(iou) .eq. -1 ) then

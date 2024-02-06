@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -1092,7 +1092,7 @@
     nonLin   = inonLin(3)
  end if
 
- if (japure1D > 0) then
+ if (japure1D == 1 .or. japure1D == 2) then 
     call setisnbnodisnblin() ! set signarray isnbnod for left and rightneighbouring uc1d.
  endif
 

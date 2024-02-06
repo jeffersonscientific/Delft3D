@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -43,15 +43,13 @@
 
       use timers         !< performance timers
       use processet      !< use processet definitions
+      use m_process_lib_data !< tables read from proces definition file
+      
       implicit none
 
       ! decalaration of arguments
 
       type(old_item_coll)                :: old_items         !< the old_items table to be filled
-
-      ! common declarations
-
-      include 'data.inc'                           ! tables read from proces definition file
 
       ! local declaration
 

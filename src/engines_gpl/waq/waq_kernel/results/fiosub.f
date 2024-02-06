@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_fiosub
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -36,8 +36,7 @@
      +                   bound , noloc , proloc, nodef , defaul,
      +                   ncout , ntdmpq, paname, sfname, funame,
      +                   danam )
-      use m_zoek
-      use m_zero
+      use m_array_manipulation, only : initialize_real_array
       use timers
 
       implicit none
@@ -107,7 +106,7 @@
      +            iodef , ip    , ip1   , ip2   , itel2 ,
      +            isys  , ivar  , idump , isc   , iseg  ,
      +            nsc   , iofdmp, iocons, iip   , iidump,
-     +            indx 
+     +            indx
       integer(kind=int_wp) ::ifun   ! index in function arrays
       real(kind=real_wp) ::hlpvar, hlpcum, valcum, valvar, srf, cumsrf
       logical     parm
@@ -126,7 +125,7 @@
 !
 !     Zero the output buffer for it is used as accumulation variable.
 !
-      call zero(outval,(ncout+nrvar)*ndmpar)
+      call initialize_real_array(outval,(ncout+nrvar)*ndmpar)
 !
 !     Fill the output buffer OUTVAL
 !
@@ -236,12 +235,12 @@
                cumsrf = 0.0
                if ( nosys .ne. notot ) then
                   cumsrf = 1.0
-                  call zoek20 ( 'SURF      ', nopa, paname, 10, indx )
+                  indx = index_in_array( 'SURF      ', paname(:nopa))
                   if  ( indx .gt. 0 ) then
                      cumsrf = 0.0
                      parm = .true.
                   else
-                     call zoek20 ( 'SURF      ', nosfun, sfname, 10, indx )
+                     indx = index_in_array( 'SURF      ', sfname(:nosfun))
                      if  ( indx .gt. 0 ) then
                         cumsrf = 0.0
                         parm = .false.

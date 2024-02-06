@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -24,8 +24,8 @@
       module partable
       use m_waq_precision
       use m_valpoi
-      use m_zoek
       use m_monsys
+      use m_string_utils
 
 
 ! NB This is a module, because the subroutine partab allocates the array proref
@@ -396,8 +396,7 @@
          if ( ivalip .ne. -1 ) then
             status = 0
          else
-            call zoek( locnam,  1, input, 20, ifound)
-            if ( ifound .gt. 0 ) then
+            if ( string_equals(locnam, input) ) then
                status = 1
             else
                ! if name contains star, remove it

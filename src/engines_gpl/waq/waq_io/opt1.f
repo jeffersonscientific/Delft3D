@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_opt1
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -54,13 +54,12 @@
 
 !     LOGICAL UNITS      : LUN(33) = working unit for opening binary files
 
-      use m_zoek
       use m_fffind
       use m_open_waq_files
       use timers       !   performance timers
       use rd_token
-      use m_cnvtim
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       implicit none
 
@@ -95,7 +94,6 @@
       integer(kind=int_wp) :: it1 , it2 , it3    ! timer variables
       integer(kind=int_wp) :: it1a, it2a, it3a   ! timer variables
       integer(kind=int_wp) :: itype     ! returned type of input from gettoken
-      integer(kind=int_wp) :: ihyd      ! location of 'hyd' in the file name string
       integer(kind=int_wp) :: k         ! implicit loop counter
       real(kind=real_wp) :: adummy    ! dummy to read data from file
       integer(kind=int_wp) ::  ithndl = 0
@@ -151,7 +149,7 @@
             lchar(is) = cdummy
             write ( lunut , 2040 ) cdummy
 !                   Check if file exists
-            call open_waq_files  ( lun(33) , cdummy    , 33     , 2     , ierr2 )
+            call open_waq_files  ( lun(33), cdummy, 33, 2, ierr2 )
             if ( ierr2 .gt. 0 ) then
                ierr2 = -2
             else
@@ -184,9 +182,9 @@
             if ( gettoken( intopt , ierr2 ) .gt. 0 ) goto 30     !   Get interpolation option
             if ( gettoken( sstring, ierr2 ) .gt. 0 ) goto 30     !   Get file string
 !                 Open the binary intermediate file for output
-            call dhfext(lchar(27),filext,extpos,extlen)
+            call extract_file_extension(lchar(27),filext,extpos,extlen)
             lchar(is) = lchar(27)(1:max(1,(extpos-1)))//'-'//sstring
-            call dhfext(lchar(is),filext,extpos,extlen)
+            call extract_file_extension(lchar(is),filext,extpos,extlen)
             lchar(is)(extpos:) = '.wrk'
             call open_waq_files  ( lun(is), lchar(is),  1 , 1   , ierr2 )
             if ( ierr2 .gt. 0 ) then
@@ -201,7 +199,7 @@
                if ( gettoken( fact   , ierr2 ) .gt. 0 ) goto 30  !   Get multiplication factor
                if ( gettoken( cdummy , it1   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'from' time
                if ( itype .eq. 1 ) then
-                  call dlwq0t(cdummy, it1    , .false., .false., ierr2  )
+                  call convert_string_to_time_offset(cdummy, it1    , .false., .false., ierr2  )
                   if ( ierr2 .gt. 0 ) then
                      write ( lunut , 2130 ) trim(cdummy)
                      goto 30
@@ -212,11 +210,11 @@
                      goto 30
                   endif
                else
-                  call cnvtim ( it1    , 1     , dtflg1 , dtflg3 )
+                  call convert_relative_time ( it1    , 1     , dtflg1 , dtflg3 )
                endif
                if ( gettoken( cdummy , it2   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'to' time
                if ( itype .eq. 1 ) then
-                  call dlwq0t(cdummy, it2    , .false., .false., ierr2  )
+                  call convert_string_to_time_offset(cdummy, it2    , .false., .false., ierr2  )
                   if ( ierr2 .gt. 0 ) then
                      write ( lunut , 2130 ) trim(cdummy)
                      goto 30
@@ -227,11 +225,11 @@
                      goto 30
                   endif
                else
-                  call cnvtim ( it2    , 1     , dtflg1 , dtflg3 )
+                  call convert_relative_time ( it2    , 1     , dtflg1 , dtflg3 )
                endif
                if ( gettoken( cdummy , it3   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'step'
                if ( itype .eq. 1 ) then
-                  call dlwq0t(cdummy, it3    , .false., .false., ierr2  )
+                  call convert_string_to_time_offset(cdummy, it3    , .false., .false., ierr2  )
                   if ( ierr2 .gt. 0 ) then
                      write ( lunut , 2130 ) trim(cdummy)
                      goto 30
@@ -242,21 +240,20 @@
                      goto 30
                   endif
                else
-                  call cnvtim ( it3    , 1     , dtflg1 , dtflg3 )
+                  call convert_relative_time ( it3    , 1     , dtflg1 , dtflg3 )
                endif
                if ( gettoken( sfile , ierr2 ) .gt. 0 ) then       !     Get file string
                   ierr2 = -1
                   goto 30
                endif
-               call dhfext(sfile,filext,extpos,extlen)
-               call zoek ( 'hyd ', 1, filext, 4, ihyd )
-               if ( ihyd .eq. 1 ) then                            !     hyd file processing
+               call extract_file_extension(sfile,filext,extpos,extlen)
+               if ( string_equals('hyd ', filext)) then                            !     hyd file processing
                   call fffind ( lunut, sstring, sfile , cdummy, it3   ,
      &                          it1a   , it2a  , it3a , nitem , ierr  )
                else                                               !     other file processing
                   cdummy = sfile
                   it2a   = 0
-                  call open_waq_files  ( lun(33), cdummy   , 33    , 2    , ierr2 )
+                  call open_waq_files  ( lun(33), cdummy, 33, 2, ierr2 )
                   if ( ierr2 .gt. 0 ) then
                      ierr2 = -2
                      goto 30

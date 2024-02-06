@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -58,7 +58,8 @@
       use m_rd_filid
       use m_dhpfil
       use timers         !< performance timers
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
+      use m_process_lib_data
 
       implicit none
 
@@ -72,9 +73,6 @@
       integer(kind=int_wp), intent(inout)  ::nowarn                 !< cummulative warning count
       integer(kind=int_wp), intent(inout)  ::nerror                 !< cummulative error count
 
-      ! common declarations
-
-      include 'data.inc'
 !
 !     declaration of file identification group
 !
@@ -107,7 +105,7 @@
 !
 !     initialize proces definition file
 !
-      call dhfext (pdffil, filext, extpos, extlen)
+      call extract_file_extension (pdffil, filext, extpos, extlen)
       if ( filext .ne. ' ' ) then
 
          ! files with extension, assume nefis file made out of one file, fildat equals fildef

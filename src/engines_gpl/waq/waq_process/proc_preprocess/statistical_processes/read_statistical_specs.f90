@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,7 @@
 !!  rights reserved.
 module m_rdstat
 use m_waq_precision
+use m_string_utils, only : index_in_array, string_equals
 
 
 implicit none
@@ -67,10 +68,9 @@ contains
       !     PSTART  INTEGER(kind=int_wp) ::NPERIOD     OUTPUT  period start
       !     PSTOP   INTEGER(kind=int_wp) ::NPERIOD     OUTPUT  period stop
       !
-      use m_zoek
-      use timers 
-      USE DHRALLOC
-      use m_cnvtim
+      use timers
+      use m_array_manipulation, only : resize_integer_array, resize_character_array
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       implicit none
 
@@ -131,8 +131,8 @@ contains
       KEYPAR(2) = 'time-parameter'
       KEYPAR(3) = 'logical-parameter'
 
-      CALL DLWQ0T ( 'START               ', itstrt, .FALSE., .FALSE., IERR2 )
-      CALL DLWQ0T ( 'STOP                ', itstop, .FALSE., .FALSE., IERR2 )
+      CALL convert_string_to_time_offset ( 'START               ', itstrt, .FALSE., .FALSE., IERR2 )
+      CALL convert_string_to_time_offset ( 'STOP                ', itstop, .FALSE., .FALSE., IERR2 )
 
   100 CONTINUE
          ITYPE = 0
@@ -153,7 +153,7 @@ contains
             GOTO 500
          ENDIF
 
-         CALL ZOEK (KNAM,NPKEY,KEYS,20,IKEY)
+         IKEY = index_in_array(KNAM,KEYS)
          IF ( IKEY .LE. 0 ) THEN
             WRITE(LUNREP,*) 'ERROR : unexpected keyword found'
             WRITE(LUNREP,*) 'found    :',KNAM
@@ -185,10 +185,10 @@ contains
             NPERIOD = NPERIOD + 1
             IF ( NPERIOD .GT. MPERIOD ) THEN
                MPERIOD = 2*MPERIOD
-               CALL DHRALLOC_CH20(PERNAM, MPERIOD, NPERIOD-1)
-               CALL DHRALLOC_CH20(PERSFX, MPERIOD, NPERIOD-1)
-               CALL DHRALLOC_INT(PSTART, MPERIOD, NPERIOD-1)
-               CALL DHRALLOC_INT(PSTOP , MPERIOD, NPERIOD-1)
+               CALL resize_character_array(PERNAM, MPERIOD, NPERIOD-1)
+               CALL resize_character_array(PERSFX, MPERIOD, NPERIOD-1)
+               CALL resize_integer_array(PSTART, MPERIOD, NPERIOD-1)
+               CALL resize_integer_array(PSTOP , MPERIOD, NPERIOD-1)
             ENDIF
             ITYPE = 0
             CALL RDTOK1 ( LUNREP , ILUN   , LCH    , LSTACK , CCHAR  , &
@@ -197,10 +197,10 @@ contains
             IF ( IERR2 /= 0 ) GOTO 900
             PERNAM(NPERIOD) = KNAM
             KEY = 'START'
-            CALL DLWQ0T ( KEY, istart, .FALSE., .FALSE., IERR2 )
+            CALL convert_string_to_time_offset ( KEY, istart, .FALSE., .FALSE., IERR2 )
             PSTART(NPERIOD) = istart
             KEY = 'STOP'
-            CALL DLWQ0T ( KEY, istop, .FALSE., .FALSE., IERR2 )
+            CALL convert_string_to_time_offset ( KEY, istop, .FALSE., .FALSE., IERR2 )
             PSTOP (NPERIOD) = istop
             WRITE(PERSFX(NPERIOD),'(''period'',i2.2)') NPERIOD
 
@@ -212,12 +212,12 @@ contains
                          IPOSR  , NPOS   , KNAM   , IDUMMY , ADUMMY , &
                                                     ITYPE  , IERR2  )
             IF ( IERR2 /= 0 ) GOTO 900
-   
+
             KEYPER(1) = 'SUFFIX'
             KEYPER(2) = 'START-TIME'
             KEYPER(3) = 'STOP-TIME'
             KEYPER(4) = 'END-PERIOD'
-            CALL ZOEK (KNAM,NKEYPER,KEYPER,20,IKEY2)
+            IKEY2 = index_in_array(KNAM,KEYPER)
             IF ( IKEY2 .LE. 0 ) THEN
                WRITE(LUNREP,*) 'ERROR : unexpected keyword found'
                WRITE(LUNREP,*) 'found    :',KNAM
@@ -245,13 +245,13 @@ contains
                istart = IDUMMY
                IF ( IERR2 /= 0 ) GOTO 900
                IF ( ITYPE == 1 ) THEN
-                  CALL DLWQ0T ( KNAM, istart, .FALSE., .FALSE., IERR2 )
+                  CALL convert_string_to_time_offset ( KNAM, istart, .FALSE., .FALSE., IERR2 )
                   IF ( IERR2 /= 0 ) THEN
                      WRITE(LUNREP,*)'ERROR interpreting start time:', KNAM
                      IERR = IERR + 1
                   ENDIF
                ELSE
-                  CALL CNVTIM ( istart, 1     , DTFLG1 , DTFLG3 )
+                  call convert_relative_time ( istart, 1     , DTFLG1 , DTFLG3 )
                ENDIF
                PSTART(NPERIOD) = max( itstrt, istart )
 
@@ -266,13 +266,13 @@ contains
                istop = IDUMMY
                IF ( IERR2 /= 0 ) GOTO 900
                IF ( ITYPE == 1 ) THEN
-                  CALL DLWQ0T ( KNAM, istop , .FALSE., .FALSE., IERR2 )
+                  CALL convert_string_to_time_offset ( KNAM, istop , .FALSE., .FALSE., IERR2 )
                   IF ( IERR2 /= 0 ) THEN
                      WRITE(LUNREP,*)'ERROR interpreting stop time:',KNAM
                      IERR = IERR + 1
                   ENDIF
                ELSE
-                  CALL CNVTIM ( istop , 1     , DTFLG1 , DTFLG3 )
+                  call convert_relative_time ( istop , 1     , DTFLG1 , DTFLG3 )
                ENDIF
                PSTOP(NPERIOD) = min( itstop, istop )
 
@@ -293,7 +293,7 @@ contains
             NOSTAT = NOSTAT + 1
             IF ( NOSTAT .GT. MAXSTAT ) THEN
                MAXSTAT = 2*MAXSTAT
-               CALL DHRALLOC_INT(NOKEY,MAXSTAT,NOSTAT-1)
+               CALL resize_integer_array(NOKEY,MAXSTAT,NOSTAT-1)
             ENDIF
             NOKEY(NOSTAT) = 0
 
@@ -301,7 +301,7 @@ contains
 
             ! check if it a parameter with extra key word real-parameter, time-parameter, logical-parameter, ?integer-parameter
 
-            CALL ZOEK (KNAM,3,KEYPAR,20,IPAR)
+            IPAR = index_in_array(KNAM,KEYPAR)
             IF ( IPAR .GT. 0 ) THEN
 
             ! get real KNAM
@@ -325,12 +325,12 @@ contains
             NKEY         = NKEY + 1
             IF ( NKEY .GT. MAXKEY ) THEN
                MAXKEY = 2*MAXKEY
-               CALL DHRALLOC_CH20(KEYNAM,MAXKEY,NKEY-1)
-               CALL DHRALLOC_CH20(KEYVAL,MAXKEY,NKEY-1)
+               CALL resize_character_array(KEYNAM,MAXKEY,NKEY-1)
+               CALL resize_character_array(KEYVAL,MAXKEY,NKEY-1)
             ENDIF
             KEYNAM(NKEY) = KNAM
             KEYVAL(NKEY) = KVAL
-      
+
             ITYPE = 0
             CALL RDTOK1 ( LUNREP , ILUN   , LCH    , LSTACK , CCHAR  , &
                          IPOSR  , NPOS   , KNAM   , IDUMMY , ADUMMY , &
@@ -338,8 +338,7 @@ contains
             IF ( IERR2 /= 0 ) GOTO 900
 
             KEY = 'END-OUTPUT-OPERATION'
-            CALL ZOEK (KNAM,1,KEY,20,IKEY)
-            IF ( IKEY .LE. 0 ) THEN
+            if (.not. string_equals(KNAM, KEY)) then
                GOTO 300
             ENDIF
          ENDIF

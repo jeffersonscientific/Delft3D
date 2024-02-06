@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 !
       module m_hsurf
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -48,7 +48,6 @@
 
 !     Subroutines called  : none
 
-      use m_zoek
       use timers
       implicit none
 
@@ -79,12 +78,12 @@
 
       if ( first ) then
          first = .false.
-         call zoek20 ( 'SURF      ', nopa  , paname , 10 , indx )
+         indx = index_in_array( 'SURF      ', paname )
          if ( indx .gt. 0 ) then                           ! SURF is found
             mode = 1
             surface(:) = param(indx,1:noseg)
          else
-            call zoek20 ( 'SURF      ', nosfun, sfname, 10, indx )
+            indx = index_in_array( 'SURF      ', sfname)
             if ( indx .gt. 0 ) then
                mode = -1
             else

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_read_header
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -39,10 +39,10 @@
 !     Global declarations
 
       use m_compact_usefor
-      use m_zoek
       use dlwq_hyd_data ! for definition and storage of data
       use rd_token
       use timers       !   performance timers
+      use date_time_utils, only : convert_string_to_time_offset
 
       implicit none
 
@@ -68,7 +68,6 @@
       integer(kind=int_wp) ::  k              ! shifted item index
       integer(kind=int_wp) ::  icnt           ! shift in item index
       character(len=8)                      :: strng         ! string to be printed
-      integer(kind=int_wp) ::  ifound         ! index in list if found
       integer(kind=int_wp) ::  nitm          ! number of items in data
       integer(kind=int_wp) ::  ierr2         ! local error indication
       integer(kind=int_wp) ::  ithndl = 0
@@ -87,7 +86,7 @@
             !  a string has arrived, check for date string
 
             if ( itype .eq. 1 ) then
-               call dlwq0t ( ctoken , itoken, .false., .false., ierr2 )
+               call convert_string_to_time_offset ( ctoken , itoken, .false., .false., ierr2 )
                if ( ierr2 .eq. 0 ) then
 
                   ! date string found, push back, exit input loop
@@ -108,8 +107,7 @@
                nocol = nocol + 1
                strng = 'not used'
                do i = 1 , data_param%no_item
-                  call zoek(ctoken,1,data_param%name(i),20,ifound)
-                  if ( ifound .ge. 1 ) then
+                  if (string_equals(ctoken(1:20), data_param%name(i))) then
                      strng = 'used'
                      data_param%sequence(i) = nocol
                   endif

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dlwq5g
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -87,14 +87,13 @@
 !
 !
       use m_dlwq5h
-      use m_zoek
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       integer(kind=int_wp) :: i_max
-      character*(*) lch   (lstack) , chulp , names_to_check(*)
+      character*(*) lch   (lstack) , chulp , names_to_check(:)
       character     cchar*1 , strng*8
-      dimension     i_array(*) , ilun( lstack )
+      dimension     i_array(:) , ilun( lstack )
       logical       dtflg1 , dtflg3 , first, must_read_more
       integer(kind=INT64)  :: ihulp8
       integer(kind=int_wp) ::  ithndl = 0
@@ -110,14 +109,14 @@
 !
 !     Array offsets
 !
-      offset_i_array = count_items_assign + count_items_comp_rule + 
+      offset_i_array = count_items_assign + count_items_comp_rule +
      +                 count_subs_assign  + count_subs_comp_rule
       if ( index_first .eq. 1 ) then ! items first
          offset_names  = count_items_assign + count_items_comp_rule + count_subs_assign
          offset_common = count_items_assign + count_items_comp_rule
          count_names   = count_subs_comp_rule
       else if ( index_first .eq. 2 ) then !substances first
-         offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign 
+         offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign
          offset_common = count_subs_comp_rule + count_subs_assign
          count_names   = count_items_comp_rule
       endif
@@ -131,16 +130,15 @@
           call rdtok1 ( lunut, ilun, lch, lstack, cchar,
      *              start_in_line, npos, chulp, ihulp, rhulp,
      *              itype  , error_idx)
-         
+
           if ( error_idx  .ne. 0 ) then ! error occurred when reading
               if (timon) call timstop( ithndl )
               return !exit subroutine
           end if
-         
+
 !         no error
           if ( itype .eq. 1 ) then ! a string has arrived
-             ! get time (ihulp) from string (chulp)
-             call dlwq0t ( chulp , ihulp, .false., .false., error_idx )
+             call convert_string_to_time_offset ( chulp , ihulp, .false., .false., error_idx )
              if ( error_idx .eq. 0 ) then
                 error_idx = -2
                 if ( first ) then
@@ -161,8 +159,7 @@
              nocol = nocol + 1
              strng = 'NOT used'
              do i = 1 , count_names
-                call zoek(chulp,1,names_to_check(offset_names+i),20,ifound)
-                if ( ifound >= 1 ) then
+                if (string_equals(chulp(:20), names_to_check(offset_names+i))) then
                    strng = 'used'
                    i_array(i+offset_i_array) = nocol
                 endif
@@ -170,7 +167,7 @@
              write ( lunut , 1000 ) nocol, chulp, strng
           else
              if ( itype .eq. 2 ) then ! an integer has arrived
-                call cnvtim ( ihulp  , itfact, dtflg1 , dtflg3 )
+                call convert_relative_time ( ihulp  , itfact, dtflg1 , dtflg3 )
              endif
              error_idx = -1
              must_read_more = .false.
@@ -184,7 +181,7 @@
 !     is everything resolved ?
       icnt = 0
       iods = 0
-      
+
       do i = 1, count_names
          k = i - icnt
          if ( (names_to_check(offset_names + k) /= '&$&$SYSTEM_NAME&$&$!')

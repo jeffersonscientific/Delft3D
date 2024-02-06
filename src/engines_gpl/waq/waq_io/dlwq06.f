@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_dlwq06
       use m_waq_precision
+      use m_string_utils
       use m_opt1
       use m_opt0
       use m_dlwq5a
@@ -73,27 +74,25 @@
 !                          lun(15) = unit intermediate file (waste load)
 
       use m_check
-      use m_zoek
       use m_srstop
       use rd_token
       use timers       !   performance timers
       implicit none
 
-!     Parameters    :
-!     type     kind  function         name             description
+!     Arguments:
 
-      integer(kind=int_wp), intent(inout) ::  lun    (*)      !< array with unit numbers
-      character( *), intent(inout) :: lchar  (*)     !< Filenames for the items
+      integer(kind=int_wp), intent(inout) ::  lun    (:)      !< array with unit numbers
+      character( *), intent(inout)        ::  lchar  (:)     !< Filenames for the items
       integer(kind=int_wp), intent(inout) ::  filtype(*)      !< type of binary files
       integer(kind=int_wp), intent(in   ) ::  icmax           !< size of the character workspace
-      character(20), intent(inout) :: car   (icmax)  !< local character workspace
+      character(20), intent(inout)        ::  car   (icmax)  !< local character workspace
       integer(kind=int_wp), intent(in   ) ::  iimax           !< size of the integer   workspace
       integer(kind=int_wp), intent(inout) ::  iar   (iimax)   !< local integer   workspace
       integer(kind=int_wp), intent(in   ) ::  irmax           !< size of the real      workspace
       real(kind=real_wp), intent(inout) ::  rar   (irmax)   !< local real      workspace
       integer(kind=int_wp), intent(in   ) ::  notot           !< total number of substances
       integer(kind=int_wp), intent(in   ) ::  noseg           !< number of computational volumes
-      character(20), intent(in   ) :: sname (notot)  !< IDs of the substances
+      character(20), intent(inout) :: sname (notot)  !< IDs of the substances
       integer(kind=int_wp), intent(  out) ::  nowst           !< number of waste loads
       integer(kind=int_wp), intent(  out) ::  nowtyp          !< number of waste load types
       integer(kind=int_wp), intent(inout) ::  nrftot( 11 )    !< number of function items per kind
@@ -102,11 +101,11 @@
       logical      , intent(in   ) :: dtflg3         !< 'date'-format (F;ddmmhhss,T;yydddhh)
       integer(kind=int_wp), intent(in   ) ::  iwidth          !< width of the output file
       integer(kind=int_wp), intent(in   ) ::  ioutpt          !< Degree of output in report file
-      logical      , intent(out   ) :: chkpar(2)     !< Check for parameters SURF and LENGTH
+      logical      , intent(  out) :: chkpar(2)     !< Check for parameters SURF and LENGTH
       integer(kind=int_wp), intent(inout) ::  ierr            !< cumulative error count
       integer(kind=int_wp), intent(inout) ::  iwar            !< cumulative warning count
 
-!     local
+!     Locals
 
       character( 40)                 chulp       (3) !  Help for reading
       character(255)                 cdummy          !  Help for reading
@@ -255,9 +254,9 @@
 
 !          check for unique ID, error if non-truncated ID is unique otherwise warning
 
-         call ZOEK( wstid(i), i-1, wstid, 20, ifound )
+         ifound = index_in_array( wstid(i), wstid(:i-1))
          if ( ifound .gt. 0 ) then
-            call ZOEK( wstid_long(i), i-1, wstid_long, 256, ifound2 )
+            ifound2 = index_in_array( wstid_long(i), wstid_long(:i-1))
             if ( ifound .eq. ifound2 ) then
                write(lunut,2130) wstid(i)
                iwar = iwar + 1
@@ -269,8 +268,8 @@
 
 !          check if truncated type and non truncated type give the same number
 
-         call ZOEK( wsttype(i)     , nowtyp, wsttype     , 20 , ifound  )
-         call ZOEK( wsttype_long(i), nowtyp, wsttype_long, 256, ifound2 )
+         ifound =  index_in_array( wsttype(i)     , wsttype(:nowtyp))
+         ifound2 = index_in_array( wsttype_long(i), wsttype_long(:nowtyp))
          if ( ifound .ne. ifound2 ) then
             write(lunut,2150) trim(wsttype_long(i))
             ierr = ierr + 1
@@ -334,9 +333,10 @@
 !          now get the values
 
       allocate( drar(irmax) )             ! this array is 100 mb lp
-      call dlwq5a ( lun    , lchar  , 15     , iwidth , icmax  ,
-     &              car    , iimax  , iar    , irmax  , rar    ,
-     &              sname  , wstid  , wsttype, nowst  , notot+1,
+      idummy = notot+1
+      call dlwq5a ( lun    , lchar  , 15     , iwidth , icmax ,
+     &              car    , iimax  , iar    , irmax  , rar   ,
+     &              sname  , wstid  , wsttype, nowst  , idummy,
      &              nowtyp , drar   , dtflg1 , dtflg3 , 
      &              ioutpt , ierr2  , ierr   , iwar   )
       deallocate( drar )

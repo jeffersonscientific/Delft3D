@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_setopo
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -34,17 +34,16 @@
 
       ! set output pointers
 
-      use m_zoek
       use m_monsys
       use timers         !< performance timers
       use processet
-      use output
+      use results, only : OutputPointers
       implicit none
 
       ! declaration of arguments
 
       type(procespropcoll)      :: procesdef       ! all processes
-      type(outputcoll)          :: outputs         ! output structure
+      type(OutputPointers)          :: outputs         ! output structure
       integer(kind=int_wp) ::iloc            ! offset to local array
       integer(kind=int_wp) ::idef            ! offset to default array
       integer(kind=int_wp) ::iflx            ! offset to flux array
@@ -82,7 +81,7 @@
 
          ! check of deze al eerder aan de beurt is geweest
 
-         call zoek( outputs%names(iou), iou-1 , outputs%names , 10 , iou2 )
+         iou2 = index_in_array( outputs%names(iou)(:10), outputs%names(:iou-1))
          if ( iou2 .gt. 0 ) then
 
             ! if pointer the same get out ( can they be different except for -1 ?? )
@@ -124,7 +123,7 @@
 
             ! predefined ?
 
-            call zoek ( outputs%names(iou), 3    , predef , 20   , indx  )
+            indx = index_in_array(outputs%names(iou), predef)
             if ( indx .eq. 1 ) then
                write(line,'(3a)') ' output [',outputs%names (iou)(1:20),'] using delwaq volume'
                call monsys( line , 4 )

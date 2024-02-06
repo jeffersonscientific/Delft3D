@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_wq_processes_initialise
 use m_waq_precision
-
+use m_string_utils, only: index_in_array
 
 implicit none
 
@@ -66,22 +66,22 @@ contains
       use m_blmeff
       use m_algrep
       use m_actrep
-      use m_zoek
       use m_dattim
       use m_srstop
       use m_rd_stt
       use m_monsys
       use m_getidentification
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use processes_input
       use processes_pointers
       use process_registration
 
       use dlwq_hyd_data
-      use dlwq0t_data
+      use date_time_utils, only : simulation_start_time_scu, simulation_stop_time_scu, system_time_factor_seconds, &
+                                base_julian_time
       use bloom_data_io, only:runnam
       use processet
-      use output
+      use results, only : OutputPointers
       use string_module
       use m_alloc
       use timers
@@ -99,7 +99,7 @@ contains
       character(len=*)    , intent(inout) :: sttfil          !< filename stt
 
       type(procespropcoll), intent(inout) :: statprocesdef   !< the statistical proces definition
-      type(outputcoll)    , intent(inout) :: outputs         !< output structure
+      type(OutputPointers)    , intent(inout) :: outputs         !< output structure
       character(len=20)                   :: statproc        !< name of statistics proces
       character(len=20)                   :: statname        !< name of stat output variable
       integer(kind=int_wp) ::  statival         !< pointer in waq arrays of stat output
@@ -118,7 +118,7 @@ contains
       integer(kind=int_wp), parameter ::  nbprm  = 1750    ! max number of processes
       integer(kind=int_wp), parameter ::  nopred = 6       ! number of pre-defined variables
       integer(kind=int_wp) ::  open_shared_library
- 
+
       integer(kind=int_wp) ::  noqtt            ! total number of exhanges
       integer(kind=int_wp) ::  no_ins           ! number of output items
       integer(kind=int_wp) ::  no_ine           ! number of output items
@@ -201,7 +201,7 @@ contains
 
       logical        l_eco
       integer(kind=int_wp) :: maxtyp, maxcof
-      parameter   ( maxtyp = 500 , maxcof = 50 ) 
+      parameter   ( maxtyp = 500 , maxcof = 50 )
       integer(kind=int_wp) :: notyp , nocof , nogrp
       character*10  alggrp(maxtyp), algtyp(maxtyp)
       character*5   abrgrp(maxtyp), abrtyp(maxtyp)
@@ -281,9 +281,6 @@ contains
       write( lunlsp, '(/)')
       ! command line settingen , commands
 
-      ! case sensitivity
-      call setzmo ( 0 )
-
       ! monitoring level
       call setmmo ( 10     )
 
@@ -295,10 +292,10 @@ contains
       statprocesdef%cursize = 0
       statprocesdef%maxsize = 0
       if (sttfil.ne.' ') then
-         dlwq0t_itstrt = itstrt_process
-         dlwq0t_itstop = itstop_process
-         dlwq0t_isfact = isfact
-         dlwq0t_otime  = otime
+         simulation_start_time_scu  = itstrt_process
+         simulation_stop_time_scu = itstop_process
+         system_time_factor_seconds = isfact
+         base_julian_time  = otime
 
          write(lunlsp,*) ' '
          write(lunlsp,*) ' Reading statistics definition file: ', trim(sttfil)
@@ -361,7 +358,7 @@ contains
       ! old serial definitions
       swi_nopro = .false.
       if ( .not. swi_nopro ) then
-         call getcom ( '-target_serial'  , 1    , lfound, target_serial, rdummy, cdummy, ierr2)
+         call retrieve_command_argument ( '-target_serial'  , 1    , lfound, target_serial, rdummy, cdummy, ierr2)
          if ( lfound ) then
             write(line,'(a)' ) ' found -target_serial command line switch'
             call monsys(line,1)
@@ -382,7 +379,7 @@ contains
 
       ! configuration
 
-      call getcom ( '-conf'  , 3    , lfound, idummy, rdummy, config, ierr2)
+      call retrieve_command_argument ( '-conf'  , 3    , lfound, idummy, rdummy, config, ierr2)
       if ( lfound ) then
          write(line,'(a)' ) ' found -conf command line switch'
          call monsys(line,1)
@@ -469,7 +466,7 @@ contains
          noalg = 0
          do ialg = 1 , notyp
             name10 = algtyp(ialg)
-            call zoekns( name10, notot, syname, 10 , isys )
+            isys = index_in_array( name10, syname)
             if ( isys .gt. 0 ) then
                noalg        = noalg + 1
                algact(ialg) = 1
@@ -490,7 +487,7 @@ contains
             nogrp = 0
             do iatyp = 1 , notyp
                if ( algact(iatyp) .eq. 1 ) then
-                  call zoekns( alggrp(iatyp), nogrp , grpnam, 10 , igrp )
+                  igrp = index_in_array( alggrp(iatyp), grpnam)
                   if ( igrp .le. 0 ) then
                      nogrp = nogrp + 1
                      grpnam(nogrp)= alggrp(iatyp)
@@ -595,10 +592,10 @@ contains
                      noout = outputs%cursize + 1
                      noout_statt = noout_statt + 1
                      call reallocP(outputs%names, noout, keepExisting = .true., fill=statname)
-                     call reallocP(outputs%stdnames, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%std_var_name, noout, keepExisting = .true., fill=' ')
                      call reallocP(outputs%pointers, noout, keepExisting = .true., fill=-1)
                      call reallocP(outputs%units, noout, keepExisting = .true., fill=' ')
-                     call reallocP(outputs%descrs, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%description, noout, keepExisting = .true., fill=' ')
                      outputs%cursize = noout
                   endif
                endif
@@ -616,10 +613,10 @@ contains
                      noout = outputs%cursize + 1
                      noout_state = noout_state + 1
                      call reallocP(outputs%names, noout, keepExisting = .true., fill=statname)
-                     call reallocP(outputs%stdnames, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%std_var_name, noout, keepExisting = .true., fill=' ')
                      call reallocP(outputs%pointers, noout, keepExisting = .true., fill=-1)
                      call reallocP(outputs%units, noout, keepExisting = .true., fill=' ')
-                     call reallocP(outputs%descrs, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%description, noout, keepExisting = .true., fill=' ')
                      outputs%cursize = noout
                   endif
                endif
@@ -856,7 +853,7 @@ contains
 
       ! Get location of FixAlg in algcof
       name10 = 'FixAlg'
-      call zoekns( name10, maxcof, cofnam, 10 , icof )
+      icof = index_in_array( name10, cofnam)
 
       ! Get information about the substances
       call realloc (substdname, notot, keepExisting=.false.,Fill=' ')
@@ -865,7 +862,7 @@ contains
       do isys = 1, notot
          subname = syname(isys)
          call str_lower(subname)
-         call zoekns(subname,allitems%cursize,ainame,20,iindx)
+         iindx = index_in_array(subname,ainame)
          if ( iindx .gt. 0) then
             substdname(isys) = allitems%itemproppnts(iindx)%pnt%stdn
             subunit(isys) = allitems%itemproppnts(iindx)%pnt%stdu
@@ -873,7 +870,7 @@ contains
                                   allitems%itemproppnts(iindx)%pnt%unit
          else
             ! Is it an algae?
-            call zoekns( subname(1:10), maxtyp, algtyp, 10 , ialg )
+            ialg = index_in_array( subname(1:10), algtyp)
             if ( ialg .gt. 0) then
                if (algcof(icof, ialg) .ge. 0) then
                   substdname(isys) = ' '
@@ -896,32 +893,32 @@ contains
       do ioutp = 1, outputs%cursize
          outname = outputs%names(ioutp)
          call str_lower(outname)
-         call zoekns(outname,allitems%cursize,ainame,20,iindx)
+         iindx = index_in_array(outname,ainame)
          if ( iindx .gt. 0) then
-            outputs%stdnames(ioutp) = allitems%itemproppnts(iindx)%pnt%stdn
+            outputs%std_var_name(ioutp) = allitems%itemproppnts(iindx)%pnt%stdn
             outputs%units(ioutp) = allitems%itemproppnts(iindx)%pnt%unit
-            outputs%descrs(ioutp) = allitems%itemproppnts(iindx)%pnt%text//' '//allitems%itemproppnts(iindx)%pnt%unit
+            outputs%description(ioutp) = allitems%itemproppnts(iindx)%pnt%text//' '//allitems%itemproppnts(iindx)%pnt%unit
          else if (outname.eq.'theta') then
-            outputs%stdnames(ioutp) = ' '
+            outputs%std_var_name(ioutp) = ' '
             outputs%units(ioutp) = ' '
-            outputs%descrs(ioutp) = 'Local-theta, generated by numerical scheme (-)'
+            outputs%description(ioutp) = 'Local-theta, generated by numerical scheme (-)'
          else
             ! Is it an algae?
-            call zoekns( outname(1:10), maxtyp, algtyp, 10 , ialg )
+            ialg = index_in_array( outname(1:10), algtyp)
             if ( ialg .gt. 0) then
                if (algcof(icof, ialg) .ge. 0) then
-                  outputs%stdnames(ioutp) = ' '
+                  outputs%std_var_name(ioutp) = ' '
                   outputs%units(ioutp) = 'g m-3'
-                  outputs%descrs(ioutp) = algdsc(ialg)//' (gC/m3)'
+                  outputs%description(ioutp) = algdsc(ialg)//' (gC/m3)'
                else
-                  outputs%stdnames(ioutp) = ' '
+                  outputs%std_var_name(ioutp) = ' '
                   outputs%units(ioutp) = 'g m-2'
-                  outputs%descrs(ioutp) = algdsc(ialg)//' (gC/m2)'
+                  outputs%description(ioutp) = algdsc(ialg)//' (gC/m2)'
                endif
             else
-               outputs%stdnames(ioutp) = ' '
+               outputs%std_var_name(ioutp) = ' '
                outputs%units(ioutp) = ' '
-               outputs%descrs(ioutp) = outputs%names(ioutp)
+               outputs%description(ioutp) = outputs%names(ioutp)
             endif
          endif
       enddo

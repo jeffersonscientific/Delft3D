@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -70,6 +70,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    use unstruc_inifields, only: initInitialFields, set_friction_type_values
    use Timers
    use m_subsidence
+ use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
 
    implicit none
    character(len=256)            :: filename, sourcemask
@@ -183,6 +184,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       if (exist) then
          iresult = initInitialFields(md_inifieldfile)
          if (iresult /= DFM_NOERR) then
+            call timstop(handle_extra(49)) ! initInitialFields
             goto 888
          end if
       else
@@ -190,6 +192,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          write(msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
          call warn_flush()
          iresult = DFM_EXTFORCERROR
+         call timstop(handle_extra(49)) ! initInitialFields
          goto 888
       endif
       call timstop(handle_extra(49)) ! initInitialFields
@@ -802,7 +805,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          maxSearchRadius = -1
          call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname,sourcemask,maxSearchRadius)
          if (ja == 1) then
-            call resolvePath(filename, md_extfile_dir, filename)
+            call resolvePath(filename, md_extfile_dir)
 
             call mess(LEVEL_INFO, 'External Forcing or Initialising '''//trim(qid)//''' from file '''//trim(filename)//'''.')
             ! Initialize success to be .false.
@@ -911,15 +914,27 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
             else if (qid == 'windspeedfactor') then
 
-               if (jawindspeedfac == 0) then
-                  if (allocated (Windspeedfac) ) deallocate(Windspeedfac)
-                  allocate ( Windspeedfac(lnx) , stat=ierr )
-                  call aerr('Windspeedfac(lnx)', ierr, lnx )
-                  Windspeedfac = dmiss
+               if (ja_wind_speed_factor == 0) then
+                  if (allocated (wind_speed_factor) ) deallocate(wind_speed_factor)
+                  allocate ( wind_speed_factor(lnx) , stat=ierr )
+                  call aerr('wind_speed_factor(lnx)', ierr, lnx )
+                  wind_speed_factor(:) = dmiss
                endif
 
-               jawindspeedfac = 1
-               success = timespaceinitialfield(xu, yu, Windspeedfac, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
+               ja_wind_speed_factor = 1
+               success = timespaceinitialfield(xu, yu, wind_speed_factor, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
+
+            else if (qid == 'solarradiationfactor') then
+
+               if (ja_solar_radiation_factor == 0) then
+                  if (allocated (solar_radiation_factor) ) deallocate(solar_radiation_factor)
+                  allocate ( solar_radiation_factor(ndx) , stat=ierr )
+                  call aerr('solar_radiation_factor(ndx)', ierr, lnx )
+                  solar_radiation_factor(:) = dmiss
+               endif
+
+               ja_solar_radiation_factor = 1
+               success = timespaceinitialfield(xz, yz, solar_radiation_factor, ndx, filename, filetype, method, operand, transformcoef, 1)
 
             else if (qid == 'secchidepth') then
 
@@ -1638,6 +1653,24 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   dewpoint_available = .true.
                endif
 
+        else if (qid == 'sea_ice_area_fraction' .or. qid == 'sea_ice_thickness') then
+
+           ! if ice properties not yet read before, initialize ...
+           if (.not. (ja_ice_area_fraction_read .or. ja_ice_thickness_read)) then
+               call fm_ice_activate_by_ext_forces(ndx)
+           endif
+           ! add the EC link
+           if (len_trim(sourcemask)>0)  then
+              success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
+           else
+              success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+           endif
+           ! update the administration
+           if (success) then
+               if (qid == 'sea_ice_area_fraction') ja_ice_area_fraction_read = 1
+               if (qid == 'sea_ice_thickness') ja_ice_thickness_read = 1
+           endif
+
             else if (qid == 'cloudiness') then
 
                if (.not. allocated(clou) ) then
@@ -2016,6 +2049,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   ! We do a direct goto 888 end, so qnerror for GUI is allowed here.
                   call qnerror('flow_initexternalforcings: Error while initializing quantity: ', qid, '. Check preceding log lines for details.')
                   iresult = DFM_EXTFORCERROR
+                  call timstop(handle_extra(50)) ! extforcefile old
                   goto 888
             endif
 
@@ -2078,7 +2112,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          do while (ja .eq. 1)                             ! for gates again postponed read *.ext file
             call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname)
             if (ja == 1 .and. qid == 'gateloweredgelevel') then
-               call resolvePath(filename, md_extfile_dir, filename)
+               call resolvePath(filename, md_extfile_dir)
                ngatesg = ngatesg + 1
                ! Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename,'.', back=.true.) - 1
@@ -2133,7 +2167,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          do while (ja .eq. 1)                             ! for cdams again postponed read *.ext file
             call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname)
             if (ja == 1 .and. qid == 'damlevel') then
-               call resolvePath(filename, md_extfile_dir, filename)
+               call resolvePath(filename, md_extfile_dir)
                ncdamsg = ncdamsg + 1
                ! Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename,'.', back=.true.) - 1
@@ -2158,7 +2192,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          do while (ja .eq. 1)                             ! for cdams again postponed read *.ext file
             call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname)
             if (ja == 1 .and. qid(1:7) == 'valve1D') then
-               call resolvePath(filename, md_extfile_dir, filename)
+               call resolvePath(filename, md_extfile_dir)
                nvalv = nvalv + 1
 
                L = index(filename,'.', back=.true.) - 1
@@ -2193,7 +2227,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          do while (ja .eq. 1)                             ! for cdams again postponed read *.ext file
             call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname)
             if (ja == 1 .and. qid(1:16) == 'lateraldischarge') then
-               call resolvePath(filename, md_extfile_dir, filename)
+               call resolvePath(filename, md_extfile_dir)
                numlatsg = numlatsg + 1
 
                L = index(filename,'.', back=.true.) - 1
@@ -2263,7 +2297,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          do while (ja .eq. 1)                             ! for cgens again postponed read *.ext file
             call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname)
             if (ja == 1 .and. qid == 'generalstructure') then
-               call resolvePath(filename, md_extfile_dir, filename)
+               call resolvePath(filename, md_extfile_dir)
                ncgensg = ncgensg + 1
                ! Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename,'.', back=.true.) - 1
@@ -2311,7 +2345,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          if (allocated (pumponoff)) deallocate( pumponoff)
          allocate ( xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg) , stat=ierr     )
          call aerr('xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg)',ierr, npump*10 )
-         kpump = 0d0; qpump = 0d0; kdp = 1
+         kpump = 0; qpump = 0d0; kdp = 1
 
          if ( allocated( pump_ids ) ) deallocate( pump_ids )
          allocate( pump_ids(npumpsg) ) ! TODO: names are not stored here yet (they are in init_structure_control, but not for old ext file)
@@ -2345,7 +2379,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          do while (ja .eq. 1)                             ! for pumps again postponed read *.ext file
             call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname)
             if (ja == 1 .and. ( qid == 'pump1D' .or. qid == 'pump') ) then
-               call resolvePath(filename, md_extfile_dir, filename)
+               call resolvePath(filename, md_extfile_dir)
                qid = 'pump'
                npumpsg = npumpsg + 1
                success = ec_addtimespacerelation(qid, xpump, ypump, kdp, kx, filename, filetype, method, operand, xy2pump, targetIndex=npumpsg)
@@ -2367,7 +2401,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          do while (ja == 1)                                 ! for sorsin again read *.ext file
             call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja,varname)
             if (ja == 1 .and. qid == 'discharge_salinity_temperature_sorsin') then
-               call resolvePath(filename, md_extfile_dir, filename)
+               call resolvePath(filename, md_extfile_dir)
                numsrc = numsrc + 1
                ! 2. Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename,'.', back=.true.) - 1
@@ -2700,10 +2734,10 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       if (nstor > 0) then
          stors => network%stors%stor
          do i = 1, nstor
-            k1 = stors(i)%gridPoint
+            k1 = stors(i)%grid_point
             if (k1 > 0) then
                ! Add storage area to BARE by using a water depth of 1000 m
-               bare(k1)   = bare(k1)   + getSurface(stors(i), bl(k1) + 1d3) 
+               bare(k1)   = bare(k1)   + get_surface(stors(i), bl(k1) + 1d3) 
             endif
          enddo
       endif

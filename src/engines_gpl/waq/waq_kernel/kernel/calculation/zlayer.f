@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_zlayer
       use m_waq_precision
-
+      use m_string_utils
 
       implicit none
 
@@ -67,13 +67,12 @@
 
 !     Files               : none
 
-!     Routines            : zoek20  - to search the DRY_TRESH constant
+!     Routines            : zoek  - to search the DRY_TRESH constant
 !                                     and SURF parameter/segfunction
-!                           dhkmst  - to set features
+!                           set_feature  - to set features
 !                           evaluate_waq_attribute  - to get features
 
-      use m_zoek
-      use m_dhkmst
+      use waq_attribute_utils, only: set_feature
       use m_evaluate_waq_attribute
       use timers
       implicit none
@@ -123,12 +122,12 @@
 
       integer(kind=int_wp) ::ithandl = 0
 
-      call zoek20 ( 'Z_THRESH  ', nocons, coname, 10, idryfld )
+      idryfld = index_in_array( 'Z_THRESH  ', coname)
       if ( idryfld .le. 0 ) then                                       ! constant not found
          iknmkv = iknmrk                                               ! set variable property to
 
          minarea = 1.00E-04                                            ! default value of 1.00E-04 m2 = 1 cm2
-         call zoek20 ( 'MIN_AREA', nocons, coname, 8, idryfld )
+         idryfld = index_in_array( 'MIN_AREA', coname)
          if ( idryfld .gt. 0 ) minarea = cons(idryfld)                 ! or the given value
          area = max( area, minarea )                                   ! set minimum area
          return                                                        ! and return
@@ -137,7 +136,7 @@
                                                                        ! and proceed with z-layer
       if ( timon ) call timstrt ( "zlayer", ithandl )                  ! correction
       nosegl = nosegw / nolay
-      call zoek20 ( 'SURF      ', nopa  , paname, 10, isurf   )
+      isurf = index_in_array( 'SURF      ', paname)
 
 !        SURF is a parameter
 
@@ -153,9 +152,9 @@
                      call evaluate_waq_attribute(2, iknmrk(ivol-nosegl), ikm )         ! get second one of cell above
                      select case ( ikm )
                         case ( 1 )                                     ! the cell above is surface cell
-                           call dhkmst(2, iknmrk(ivol-nosegl), 0 )     ! now it also has a bed
+                           call set_feature(2, iknmrk(ivol-nosegl), 0 )     ! now it also has a bed
                         case ( 2 )                                     ! the cell on top is middle cell
-                           call dhkmst(2, iknmrk(ivol-nosegl), 3 )     ! now it is the bed
+                           call set_feature(2, iknmrk(ivol-nosegl), 3 )     ! now it is the bed
                      end select
                      do isub = nosys+1,notot
                         conc(isub,ivol-nosegl) = conc(isub,ivol-nosegl) + conc(isub,ivol)
@@ -170,7 +169,7 @@
             enddo
          enddo
       else
-         call zoek20 ( 'SURF      ', nosfun, sfname, 10, isurf )
+         isurf = index_in_array( 'SURF      ', sfname)
 
 !        SURF is a spatial time function (often with 1D models)
 
@@ -186,9 +185,9 @@
                         call evaluate_waq_attribute(2, iknmrk(ivol-nosegl), ikm )
                         select case ( ikm )
                            case ( 1 )                                  ! the cell on top is surface cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
                            case ( 2 )                                  ! the cell on top is middle cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
                         end select
                         do isub = nosys+1,notot
                            conc(isub,ivol-nosegl) = conc(isub,ivol-nosegl) + conc(isub,ivol)
@@ -217,9 +216,9 @@
                         call evaluate_waq_attribute(2, iknmrk(ivol-nosegl), ikm )
                         select case ( ikm )
                            case ( 1 )                                  ! the cell on top is surface cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
                            case ( 2 )                                  ! the cell on top is middle cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
                         end select
                         do isub = nosys+1,notot
                            conc(isub,ivol-nosegl) = conc(isub,ivol-nosegl) + conc(isub,ivol)
@@ -239,7 +238,7 @@
       iknmkv = iknmrk
 
       minarea = 1.00E-04                                            ! default value of 1.00E-04 m2 = 1 cm2
-      call zoek20 ( 'MIN_AREA', nocons, coname, 8, idryfld )
+      idryfld = index_in_array( 'MIN_AREA', coname)
       if ( idryfld .gt. 0 ) minarea = cons(idryfld)                 ! or the given value
       area = max( area, minarea )                                   ! set minimum area
 
@@ -281,9 +280,8 @@
 
 !     Files               : none
 
-!     Routines            : zoek20  - to search the DRY_TRESH constant
+!     Routines            : zoek  - to search the DRY_TRESH constant
 
-      use m_zoek
       use timers
       implicit none
 
@@ -308,7 +306,7 @@
 
       integer(kind=int_wp) ::ithandl = 0
 
-      call zoek20 ( 'Z_THRESH  ', nocons, coname, 10, iq )
+      iq = index_in_array( 'Z_THRESH  ', coname)
       if ( iq .le. 0 ) return
 
       if ( timon ) call timstrt ( "zflows", ithandl )
