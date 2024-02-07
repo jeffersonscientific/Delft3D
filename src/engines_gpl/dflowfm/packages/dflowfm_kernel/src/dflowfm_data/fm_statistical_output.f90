@@ -346,9 +346,11 @@ private
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils
       use m_missing
+      use m_sediment, only: stmpar
 
       type(ug_nc_attribute) :: atts(5)
-
+     character(len=25)      :: transpunit
+     
       out_quan_conf_his%count = 0
       out_quan_conf_map%count = 0
       out_quan_conf_clm%count = 0
@@ -1149,44 +1151,51 @@ private
                      '', 'kg m-2', UNC_LOC_STATION, nc_atts = atts(1:1),nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true., timedim = .true.))
       call addoutval(out_quan_conf_his, IDX_HIS_DPSED,                                                 &
                      'Wrihis_sediment', 'dpsed', 'Sediment thickness in the bed',                         &
-                     '', 'm', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., timedim = .true.))
+                     '', 'm', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
        call addoutval(out_quan_conf_his, IDX_HIS_TAUB,                 &
                      'wrihis_sediment', 'taub',              &
                      'Bed shear stress for morphology',             &
-                     '', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., timedim = .true.))
-       !TODO: UNITS
+                     '', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
+       select case(stmpar%morpar%moroutput%transptype)
+       case (0)
+          transpunit = 'kg s-1 m-1'
+       case (1)
+          transpunit = 'm3 s-1 m-1'
+       case (2)
+          transpunit = 'm3 s-1 m-1'
+       end select
        call addoutval(out_quan_conf_his, IDX_HIS_SBCX,                 &
                      'wrihis_sediment', 'sbcx',              &
                      'Current related bedload transport, x-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call addoutval(out_quan_conf_his, IDX_HIS_SBCY,                 &
                      'wrihis_sediment', 'sbcy',              &
                      'Current related bedload transport, y-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
       call addoutval(out_quan_conf_his, IDX_HIS_SBWX,                 &
                      'wrihis_sediment', 'sbwx',              &
                      'Wave related bedload transport, x-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call addoutval(out_quan_conf_his, IDX_HIS_SBWY,                 &
                      'wrihis_sediment', 'sbwy',              &
                      'Wave related bedload transport, y-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
       call addoutval(out_quan_conf_his, IDX_HIS_SSWX,                 &
                      'wrihis_sediment', 'sswx',              &
                      'Wave related suspended transport, x-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call addoutval(out_quan_conf_his, IDX_HIS_SSWX,                 &
                      'wrihis_sediment', 'sswy',              &
                      'Wave related suspended transport, y-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
       call addoutval(out_quan_conf_his, IDX_HIS_SSCX,                 &
                      'wrihis_sediment', 'scwx',              &
                      'Current related suspended transport, x-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call addoutval(out_quan_conf_his, IDX_HIS_SSCX,                 &
                      'wrihis_sediment', 'sscy',              &
                      'Current related suspended transport, y-component',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
        
        ! Bed composition variables
        call addoutval(out_quan_conf_his, IDX_HIS_MSED,                 &
@@ -1212,11 +1221,11 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_MUDFRAC,                 &
                      'wrihis_sediment', 'mudfrac',              &
                      'Mud fraction in top layer',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,  timedim = .true.))
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_SANDFRAC,                 &
                      'wrihis_sediment', 'sandfrac',              &
                      'Sand fraction in top layer',             &
-                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,  timedim = .true.))
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_FIXFRAC,                 &
                      'wrihis_sediment', 'fixfac',              &
                      'Reduction factor due to limited sediment thickness',             &
