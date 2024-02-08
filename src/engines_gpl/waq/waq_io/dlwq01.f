@@ -33,94 +33,85 @@
      &                    multp  , iwidth , otime  , isfact , refday ,
      &                    ioutpt , ierr   , iwar   )
 
-!       Deltares Software Centre
+      !< Reads the model identification and substances IDs
+      !> This routine reads:
+      !>    - the first non tokenized line with line lengthes and comment character
+      !>    - the version number of the input file
+      !>    - the 3 40 character strings with model documentation
+      !>    - a 4th 40 character strings with the optional absolute reference time
+      !>    - number of transported and passive substances
+      !>    - the substance names (need not necessarily be process library reserved names)
+      !>      the names may end with *nn to indicate a multiple occurence of the substance
 
-!>\file
-!>                          Reads the model identification and substances IDs
-!>
-!>                          This routine reads:
-!>                             - the first non tokenized line with line lengthes and comment character
-!>                             - the version number of the input file
-!>                             - the 3 40 character strings with model documentation
-!>                             - a 4th 40 character strings with the optional absolute reference time
-!>                             - number of transported and passive substances
-!>                             - the substance names (need not necessarily be process library reserved names)
-!>                               the names may end with *nn to indicate a multiple occurence of the substance
-
-!       Created           :    April    1988 by M.E. Sileon / L. Postma
-
-!       Modified          :    April    1997 by R. Bruinsma: Tokenized input data file reading added
-!                            9 November 2010 by L. Postma  : Multiple substances, F90 look and feel
-!                           13 April    2011 by L. Postma  : Further streamlining tokenized reading
-
-!       Subroutines called: read_version_number  read version number from user input file
-!                           check   for end of data block
-!                           srstop  stop processing with return code
-!                           zoek    to find previous occurences of the same name
-
-!       Logical units     : lun(26) = unit user input file
-!                           lun(27) = unit stripped input file
-!                           lun(29) = unit formatted output file
-!                           lun( 2) = unit system-intermediate file
+      !       Logical units     : lun(26) = unit user input file
+      !                           lun(27) = unit stripped input file
+      !                           lun(29) = unit formatted output file
+      !                           lun( 2) = unit system-intermediate file
 
       use m_check
       use m_srstop
       use m_read_version_number
       use time_module
       use rd_token     !   tokenized reading
-      use date_time_utils, only: system_time_factor_seconds, base_julian_time
+      use date_time_utils, only: system_time_factor_seconds, base_julian_time, compute_reference_day
       use timers       !   performance timers
-      use date_time_utils, only : compute_reference_day
 
       implicit none
 
 !     Parameters
 
-!     kind           function         name                 description
+      character(20), dimension(:), pointer :: syname !< array with substance names
 
-      integer(kind=int_wp), intent(in   ) ::  lun  (*)           !< array with unit numbers
-      character(20), pointer       :: syname(:)         !< array with substance names
-      integer(kind=int_wp), intent(  out) ::  nosys              !< number of transported substances
-      integer(kind=int_wp), intent(  out) ::  notot              !< total number of substances
-      integer(kind=int_wp), intent(  out) ::  nomult             !< number of multiple substances
-      integer(kind=int_wp), pointer ::  multp (:,:)        !< multiple substance administration
-      integer(kind=int_wp), intent(  out) ::  iwidth             !< width of the output file
-      real(kind=dp), intent(  out) ::  otime              !< Offset of the system time (Julian)
-      integer(kind=int_wp), intent(  out) ::  isfact             !< Units (in sec) of the system clock
-      integer(kind=int_wp), intent(  out) ::  refday             !< reference day, varying from 1 till 365
-      integer(kind=int_wp), intent(  out) ::  ioutpt             !< flag for more or less output
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
+      integer(kind=int_wp), intent(in   ), dimension(*  ) :: lun    !< array with unit numbers
+      integer(kind=int_wp), intent(inout) :: ierr   !< cumulative error   count
+      integer(kind=int_wp), intent(  out) :: ioutpt !< flag for more or less output
+      integer(kind=int_wp), intent(  out) :: isfact !< Units (in sec) of the system clock
+      integer(kind=int_wp), intent(inout) :: iwar   !< cumulative warning count
+      integer(kind=int_wp), intent(  out) :: iwidth !< width of the output file
+      integer(kind=int_wp), dimension(:,:), pointer :: multp !< multiple substance administration
+      integer(kind=int_wp), intent(  out) :: nomult !< number of multiple substances
+      integer(kind=int_wp), intent(  out) :: nosys  !< number of transported substances
+      integer(kind=int_wp), intent(  out) :: notot  !< total number of substances
+      integer(kind=int_wp), intent(  out) :: refday !< reference day, varying from 1 till 365
+
+      real(kind=dp), intent(  out) :: otime !< Offset of the system time (Julian)
 
 !     Local
 
-      integer(kind=int_wp) ::  itype                              !  input type  0 = any, 1 = char, 2 = int, 3 = float
-      integer(kind=int_wp) ::  ierr2                              !  local error   accumulator
-      integer(kind=int_wp) ::  iwar2                              !  local warning accumulator
-      character(40)   :: modid1, modid2,  runid1, runid2   !  model identification strings
-      integer(kind=int_wp) ::  idummy                             !  integer   read help variable
-      real(kind=real_wp) ::  adummy                             !  real      read help variable
-      character(255)  :: cdummy                            !  character read help variable
-      integer(kind=int_wp) ::  isys, isys2                        !  loop counters for substances
-      logical         :: intread                           !  flag for read of substance numbers
-      integer(kind=int_wp) ::  ilen                               !  length help variable
-      integer(kind=int_wp) ::  idate                              !  date of the time offset
-      integer(kind=int_wp) ::  itime                              !  time of the time offset
-      integer(kind=int_wp) ::  iyear                              !  year of the time offset
-      integer(kind=int_wp) ::  imonth                             !  month of the time offset
-      integer(kind=int_wp) ::  iday                               !  day of the time offset
-      integer(kind=int_wp) ::  ihour                              !  hour of the time offset
-      integer(kind=int_wp) ::  iminut                             !  minute of the time offset
-      integer(kind=int_wp) ::  isecnd                             !  second of the time offset
-      integer(kind=int_wp) ::  ifound                             !  help variable for name search
-      integer(kind=int_wp) ::  nosyss                             !  help variable for transported substance
-      integer(kind=int_wp) ::  notots                             !  help variable for total substance
-      real(kind=real_wp) ::  input_version_number               !  version number of this input
-      integer(kind=int_wp), allocatable ::  imult(:)             !  help array for number of substances
-      character(20), allocatable :: sname(:)            !  help array for substance names
-      integer(kind=int_wp) ::  ithndl = 0
-      if (timon) call timstrt( "dlwq01", ithndl )
+      character(255) :: cdummy !  character read help variable
+      character(40 ) :: modid1 !  model identification strings
+      character(40 ) :: modid2 !  model identification strings
+      character(40 ) :: runid1 !  model identification strings
+      character(40 ) :: runid2 !  model identification strings
+      character(20 ), dimension(:), allocatable :: sname  !  help array for substance names
 
+      integer(kind=int_wp), dimension(:), allocatable :: imult  !  help array for number of substances
+      integer(kind=int_wp) :: idate  !  date of the time offset
+      integer(kind=int_wp) :: iday   !  day of the time offset
+      integer(kind=int_wp) :: idummy !  integer   read help variable
+      integer(kind=int_wp) :: ierr2  !  local error   accumulator
+      integer(kind=int_wp) :: ifound !  help variable for name search
+      integer(kind=int_wp) :: ihour  !  hour of the time offset
+      integer(kind=int_wp) :: ilen   !  length help variable
+      integer(kind=int_wp) :: iminut !  minute of the time offset
+      integer(kind=int_wp) :: imonth !  month of the time offset
+      integer(kind=int_wp) :: isecnd !  second of the time offset
+      integer(kind=int_wp) :: isys   !  loop counters for substances
+      integer(kind=int_wp) :: isys2  !  loop counters for substances
+      integer(kind=int_wp) :: itime  !  time of the time offset
+      integer(kind=int_wp) :: itype  !  input type  0 = any, 1 = char, 2 = int, 3 = float
+      integer(kind=int_wp) :: iwar2  !  local warning accumulator
+      integer(kind=int_wp) :: iyear  !  year of the time offset
+      integer(kind=int_wp) :: nosyss !  help variable for transported substance
+      integer(kind=int_wp) :: notots !  help variable for total substance
+      integer(kind=int_wp) :: ithndl = 0
+
+      logical :: intread !  flag for read of substance numbers
+
+      real(kind=real_wp) :: adummy               !  real      read help variable
+      real(kind=real_wp) :: input_version_number !  version number of this input
+
+      if (timon) call timstrt( "dlwq01", ithndl )
 
 !        Initialize the read stack, output unit and error and warning help variables
 
@@ -139,9 +130,9 @@
 
 !     Read version number and initialize position on start of new line
 
-      call read_version_number ( ilun(1), lch(1) , lunut  , npos   , input_version_number  ,
-     &                                                  ioutpt  )
+      call read_version_number ( ilun(1), lch(1) , lunut, npos, input_version_number, ioutpt )
       call compare_version_number_to_lower_limit(input_version_number, lunut)
+
       iposr = 0
 
 !     Read model documentation strings
