@@ -301,20 +301,22 @@
  hs = max(hs,0d0)
 
  if (jased > 0 .and. stm_included) then
-    if ( jatimer.eq.1 ) call starttimer(IEROSED)
-    !
-    call setucxucy_mor (u1)
-    call fm_flocculate()               ! fraction transitions due to flocculation
+     if (time1 >= tstart_user + stmpar%trapar%ti_sedtrans * tfac) then
+        if ( jatimer.eq.1 ) call starttimer(IEROSED)
+        !
+        call setucxucy_mor (u1)
+        call fm_flocculate()               ! fraction transitions due to flocculation
     
-    call timstrt('Settling velocity   ', handle_extra(87))
-    call fm_fallve()                   ! update fall velocities
-    call timstop(handle_extra(87))
+        call timstrt('Settling velocity   ', handle_extra(87))
+        call fm_fallve()                   ! update fall velocities
+        call timstop(handle_extra(87))
     
-    call timstrt('Erosed_call         ', handle_extra(88))
-    call fm_erosed()                   ! source/sink, bedload/total load
-    call timstop(handle_extra(88))
+        call timstrt('Erosed_call         ', handle_extra(88))
+        call fm_erosed()                   ! source/sink, bedload/total load
+        call timstop(handle_extra(88))
     
-    if ( jatimer.eq.1 ) call stoptimer(IEROSED)
+        if ( jatimer.eq.1 ) call stoptimer(IEROSED)
+    end if
  end if
 
  ! secondary flow
@@ -333,7 +335,9 @@
 
 
  if (jased > 0 .and. stm_included) then
-    call fm_bott3d() ! bottom update
+     if (time1 >= tstart_user + stmpar%trapar%ti_sedtrans * tfac) then
+        call fm_bott3d() ! bottom update
+    end if
  endif
 
  if (jasubsupl>0) then

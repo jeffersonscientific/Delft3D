@@ -167,6 +167,8 @@
    real(hp)         , dimension(:)      , pointer :: dll_reals
    character(256)   , dimension(:)      , pointer :: dll_strings
    character(256)   , dimension(:)      , pointer :: dll_usrfil
+   
+   real(fp)                             , pointer :: ti_sedtrans
 
    ! sedtra
    real(fp)         , dimension(:, :)   , pointer :: aks

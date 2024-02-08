@@ -67,6 +67,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     use sediment_basics_module, only: TRA_ADVDIFF
     use properties ! includes tree_structures
     use m_ini_noderel ! for node relation definitions
+    use message_module
     !
     implicit none
     !
@@ -105,6 +106,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     type(tree_data)               , pointer  :: sedfil_tree
     integer, dimension(2,NPARDEF)            :: ipardef
     real(fp), dimension(NPARDEF)             :: rpardef
+    character(256)                           :: errmsg
 !
 !! executable statements -------------------------------------------------------
 !
@@ -222,6 +224,14 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                 & stm%sedpar%sedtyp, stm%sedpar%sedblock, &
                 & griddim, stm%sedpar%max_mud_sedtyp)
     if (error) return
+    
+    if (stm%trapar%ti_sedtrans > stm%morpar%tmor .or. stm%trapar%ti_sedtrans > stm%morpar%tcmp) then
+        errmsg = 'SedtransStt must be smaller than or equal to CmpUpdStt and BedUpdStt (MorStt) in ' // trim(filmor)
+        call write_error(errmsg, unit=lundia)
+        error = .true.
+        return   
+    end if 
+    
     !
     ! update tratyp based on the transport formula selected
     ! switch off the bed load component when a transport formula based on
@@ -238,7 +248,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     ! Echo sediment and transport parameters
     !
     call echosed(lundia, error, stm%lsedsus, stm%lsedtot, &
-               & stm%morpar%iopsus, stm%sedpar, stm%trapar, stm%morpar%cmpupd)
+               & stm%morpar%iopsus, stm%sedpar, stm%trapar, stm%morpar%cmpupd, dtunit)
     if (error) return
     !
     ! Echo morphology parameters

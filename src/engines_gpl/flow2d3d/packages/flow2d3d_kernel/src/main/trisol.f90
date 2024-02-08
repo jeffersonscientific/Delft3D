@@ -548,6 +548,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: dryrun
     logical                              , pointer :: eulerisoglm
     integer(pntrsize)                    , pointer :: typbnd
+    
+    integer                              , pointer :: iti_sedtrans
 !
     include 'tri-dyn.igd'
 !
@@ -1094,6 +1096,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     dryrun              => gdp%gdtmpfil%dryrun
     nrcmp               => gdp%gdtfzeta%nrcmp
     typbnd              => gdp%gdr_i_ch%typbnd
+    
+    !
+    iti_sedtrans        => gdp%gdtrapar%iti_sedtrans
+    
     !
     icx     = 0
     icy     = 0
@@ -1925,7 +1931,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -2174,7 +2180,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! mass flux and temporary set in WRKB5 (U0EUL) and WRKB6 (V0EUL)
        ! these are used in BOTT3D
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           !
           ! don't compute suspended transport vector in middle of timestep
@@ -2998,7 +3004,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -3246,7 +3252,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! these are used in BOTT3D
        !
        call timer_start(timer_3dmor, gdp)
-       if (lsedtot>0) then
+       
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           !
           ! compute suspended sediment transport vector at the end of each
           ! dt. Would be better to just calculate it when required for

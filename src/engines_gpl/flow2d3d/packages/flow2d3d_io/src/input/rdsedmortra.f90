@@ -43,6 +43,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     use m_rdmor
     use m_rdsed
     use m_rdtrafrm
+    use message_module
     !
     use globaldata
     !
@@ -90,6 +91,8 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     type(tree_data)               , pointer  :: sed_ptr
     integer, dimension(2,NPARDEF)            :: ipardef
     real(fp), dimension(NPARDEF)             :: rpardef
+    
+    character(256)                           :: errmsg
 !
 !! executable statements -------------------------------------------------------
 !
@@ -196,9 +199,19 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                 & gdp%gdsedpar%sedtyp  ,gdp%gdsedpar%sedblock  , &
                    & gdp%griddim, gdp%gdsedpar%max_mud_sedtyp)
     endif
+    
+    if (.not.error) then     
+    !
+        if (gdp%gdtrapar%ti_sedtrans > gdp%gdmorpar%tmor .or. gdp%gdtrapar%ti_sedtrans > gdp%gdmorpar%tcmp) then
+            errmsg = 'SedtransStt must be smaller than or equal to CmpUpdStt and BedUpdStt (MorStt) in ' // trim(filmor)
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+        endif
+    endif
+    
     if (.not.error) then
-     !
-
+    !
+    !
        ! update tratyp based on the transport formula selected
        ! switch off the bed load component when Partheniades-Krone is used.
        !
@@ -224,7 +237,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Echo sediment and transport parameters
     !
     call echosed(lundia    ,error     ,lsed      ,lsedtot   , &
-               & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
+               & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd, gdp%gdexttim%tunitstr)
     endif
     if (.not.error) then
     !

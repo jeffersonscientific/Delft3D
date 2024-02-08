@@ -394,6 +394,9 @@ subroutine tricom_init(olv_handle, gdp)
     real(fp)                            , pointer :: anglon        ! Angle of longitude of the model centre (used to determine solar radiation) 
     real(fp)                            , pointer :: dtsec         ! DT in seconds 
     real(fp)                            , pointer :: timnow        ! Current timestep (multiples of dt)  = number of time steps since itdate, 00:00:00 hours
+    real(fp)                            , pointer :: ti_sedtrans   ! Sediment transport start time
+    integer                             , pointer :: iti_sedtrans  ! Sediment transport start time step
+    
 !
 ! Global variables
 !
@@ -769,6 +772,8 @@ subroutine tricom_init(olv_handle, gdp)
     anglat              => gdp%gdtricom%anglat
     anglon              => gdp%gdtricom%anglon
     dtsec               => gdp%gdtricom%dtsec
+    ti_sedtrans         => gdp%gdtrapar%ti_sedtrans
+    iti_sedtrans        => gdp%gdtrapar%iti_sedtrans
     !
     call timer_start(timer_tricomtot, gdp)
     !
@@ -1014,6 +1019,18 @@ subroutine tricom_init(olv_handle, gdp)
        endif
        write(txtput,'(a,i0)') 'Bed level updating starts at (step) : ',itmor
        call prterr(lundia, 'G051', txtput)
+       
+       !
+       tdif  = ti_sedtrans + itstrt*dt
+       iti_sedtrans = nint(tdif/dt)
+       if (abs(iti_sedtrans*dt-tdif) > (0.1*dt)) then
+          error  = .true.
+          txtput = 'Sediment transport start time'
+          call prterr(lundia, 'U044', txtput)
+       endif
+       write(txtput,'(a,i0)') 'Sediment transport starts at (step) : ',iti_sedtrans
+       call prterr(lundia, 'G051', txtput)       
+       !
     endif
     !
     ! Initialize input arrays and verify input

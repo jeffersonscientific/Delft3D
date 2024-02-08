@@ -639,6 +639,8 @@ type trapar_type
     !
     ! reals
     !
+    real(fp)                                   :: ti_sedtrans         !  Sediment transport computation start time
+    !
     ! integers
     !
     integer                                    :: max_integers_settle !  Maximum number of integers which can be delivered to shared library
@@ -651,6 +653,7 @@ type trapar_type
     integer                                    :: npar                !  Maximum number of sediment transport formula parameters
     integer                                    :: nparfld             !  Number of sediment transport formula 2D field parameters
     integer                                    :: nouttot             !  Total number of output parameters (sum of noutpar)
+    integer                                    :: iti_sedtrans        !  Sediment transport computation start time step
     !
     ! pointers
     !
@@ -1918,6 +1921,9 @@ subroutine nulltrapar(trapar  )
     nullify(trapar%parfil)
     nullify(trapar%iparfld)
     nullify(trapar%parfld)
+    
+    trapar%ti_sedtrans = 0.0_fp
+    trapar%iti_sedtrans = 0
 end subroutine nulltrapar
 
 
@@ -1976,6 +1982,7 @@ subroutine clrtrapar(istat     ,trapar  )
     if (associated(trapar%parfil      )) deallocate(trapar%parfil      , STAT = istat)
     if (associated(trapar%iparfld     )) deallocate(trapar%iparfld     , STAT = istat)
     if (associated(trapar%parfld      )) deallocate(trapar%parfld      , STAT = istat)
+
 end subroutine clrtrapar
 
 end module morphology_data_module
