@@ -174,13 +174,13 @@ class TestTreeComparer:
     def test_compareTreePaths(self):
         # Check that two fod files that are known to be the same are the same
         # Start parsing
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c, ""
+            join(self.testdata, "Unit_test.xml"), "", credentials, ""
         )
         file = settings.configs
         # Define parameters
@@ -221,13 +221,13 @@ class TestTreeComparer:
 
             # The right xml is passed to test
             # Start parsing
-            c = Credentials()
-            c.name = "commandline"
+            credentials = Credentials()
+            credentials.name = "commandline"
             # Parse the xml file.
             xmlcp = XmlConfigParser()
             settings = TestBenchSettings()
             settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-                join(self.testdata, "Unit_test.xml"), "", c, ""
+                join(self.testdata, "Unit_test.xml"), "", credentials, ""
             )
             file = settings.configs
 
@@ -256,13 +256,13 @@ class TestTreeComparer:
     def test_compare(self):
         # Set the inputs
         testcase_name = "Testing_all_the_fod_file"
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c, ""
+            join(self.testdata, "Unit_test.xml"), "", credentials, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -283,14 +283,14 @@ class TestTreeComparer:
         testcase_name = "Testing_all_the_fod_file"
 
         # Inputs for parsing the xml
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
 
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_wrong_name.xml"), "", c, ""
+            join(self.testdata, "Unit_test_wrong_name.xml"), "", credentials, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -327,13 +327,13 @@ class TestTreeComparer:
         copyfile(join(self.rp, "Unit_test.fod"), join(self.rp, "Unit_test_wrong.fod"))
 
         # Inputs for parsing the xml
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_wrong_name.xml"), "", c, ""
+            join(self.testdata, "Unit_test_wrong_name.xml"), "", credentials, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -361,13 +361,13 @@ class TestTreeComparer:
         # Inputs for the function to be tested
         testcase_name = "Testing_all_the_fod_file"
         # Inputs for parsing the xml
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_NOK_values.xml"), "", c, ""
+            join(self.testdata, "Unit_test_NOK_values.xml"), "", credentials, ""
         )
         file = settings.configs
         file_check = file[0].checks[0]
@@ -385,13 +385,13 @@ class TestTreeComparer:
 
     def test_pullIgnored_No_ignored_values(self):
         # Inputs for the xml file
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c, ""
+            join(self.testdata, "Unit_test.xml"), "", credentials, ""
         )
         file = settings.configs
         parameters = file[0].checks[0].parameters["parameters"]
@@ -404,13 +404,13 @@ class TestTreeComparer:
 
     def test_pullIgnored_ignored_values(self):
         # Inputs for the xml file
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_Ignored.xml"), "", c, ""
+            join(self.testdata, "Unit_test_Ignored.xml"), "", credentials, ""
         )
         file = settings.configs
         parameters = file[0].checks[0].parameters["parameters"]
@@ -427,13 +427,13 @@ class TestTreeComparer:
     def test_compareThisNode(self):
         # Check that two fod files that are known to be the same are the same
         # Inputs for the xml parser
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -487,13 +487,13 @@ class TestTreeComparer:
 
     def test_compareThisNode_Table(self):
         # Check that two fod files that are knonw to be the same are the same
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -547,13 +547,13 @@ class TestTreeComparer:
         temp, refbranch = TreeComparer.getBranchFromPath(self.trcmp, reftree, pathstr)
         temp, testbranch = TreeComparer.getBranchFromPath(self.trcmp, testtree, pathstr)
 
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node_1.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node_1.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -701,13 +701,13 @@ class TestTreeComparer:
 
     def test_compareDictionary_OK(self):
         # Inputs for the xml
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -765,13 +765,13 @@ class TestTreeComparer:
 
     def test_compareDictionary_NOK(self):
         # Xml Inputs
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -793,13 +793,13 @@ class TestTreeComparer:
         import numpy
 
         # Inputs for the xml file
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -831,13 +831,13 @@ class TestTreeComparer:
         import numpy
 
         # Inputs for the xml file
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter = file[0].checks[0].parameters["parameters"][0]
@@ -869,13 +869,13 @@ class TestTreeComparer:
         import numpy
 
         # Inputs for the xml file
-        c = Credentials()
-        c.name = "commandline"
+        credentials = Credentials()
+        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         settings = TestBenchSettings()
         settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", c, ""
+            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
         )
         file = settings.configs
         parameter: Parameter = file[0].checks[0].parameters["parameters"][0]
