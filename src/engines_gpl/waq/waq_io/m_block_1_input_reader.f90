@@ -20,16 +20,24 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_dlwq01
+module m_block_1_input_reader
    use m_waq_precision
+   use m_check
+   use m_srstop
+   use m_read_version_number
+   use time_module
+   use rd_token     !   tokenized reading
+   use timers       !   performance timers
+   use m_dlwq01_input_data
    use m_string_utils, only: string_equals
+   use date_time_utils, only: system_time_factor_seconds, base_julian_time, compute_reference_day
 
    implicit none
 
    contains
 
 
-   subroutine dlwq01 ( lun    , syname , nosys  , notot  , nomult , &
+   subroutine read_block_1_from_input ( lun    , syname , nosys  , notot  , nomult , &
                         multp  , iwidth , otime  , isfact , refday , &
                         ioutpt , ierr   , iwar   )
 
@@ -48,15 +56,7 @@ module m_dlwq01
    !                           lun(29) = unit formatted output file
    !                           lun( 2) = unit system-intermediate file
 
-   use m_check
-   use m_srstop
-   use m_read_version_number
-   use time_module
-   use rd_token     !   tokenized reading
-   use date_time_utils, only: system_time_factor_seconds, base_julian_time, compute_reference_day
-   use timers       !   performance timers
-
-   implicit none
+   ! Parameters
 
 !     Parameters
 
@@ -111,7 +111,7 @@ module m_dlwq01
    real(kind=real_wp) :: adummy               !  real      read help variable
    real(kind=real_wp) :: input_version_number !  version number of this input
 
-   if (timon) call timstrt( "dlwq01", ithndl )
+   if (timon) call timstrt( "read_block_1_from_input", ithndl )
 
 !        Initialize the read stack, output unit and error and warning help variables
 
@@ -362,4 +362,4 @@ module m_dlwq01
 
    end
 
-end module m_dlwq01
+end module m_block_1_input_reader
