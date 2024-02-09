@@ -36,4 +36,4 @@ fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/calcage" "${BUILD_LIBRARIES}" "${THIRD
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
 set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
-endif()
+endif(UNIX)

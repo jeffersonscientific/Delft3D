@@ -53,6 +53,10 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_poi
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
 
+if(WIN32)
+      SET(library_renamed gridgeom.dll)
+endif(WIN32)
+
 if(UNIX)
     SET(library_renamed libgridgeom.so)
     # Actual rename is done in the the install step below
