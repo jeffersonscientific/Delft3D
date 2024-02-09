@@ -1645,24 +1645,23 @@ subroutine readMDUFile(filename, istat)
     call prop_get_string(md_ptr, 'time', 'Tunit', md_tunit)
     call prop_get_double(md_ptr, 'time', 'TStart', tstart_user)
     tstart_user = max(tstart_user, 0d0)
+    tstart_tlfsmo_user = tstart_user
+    call prop_get_double(md_ptr, 'time', 'TStartTlfsmo', tstart_tlfsmo_user)
     call prop_get_double (md_ptr, 'time', 'TStop', tstop_user)
     select case (md_tunit)                                            ! tfac added here for use in sedmorinit
     case('D')
-        tstart_user = tstart_user*3600*24
-        tstop_user  = tstop_user*3600*24
         tfac = 3600d0*24d0
     case('H')
-        tstart_user = tstart_user*3600
-        tstop_user  = tstop_user*3600
         tfac = 3600d0
     case('M')
-        tstart_user = tstart_user*60
-        tstop_user  = tstop_user*60
         tfac = 60d0
     case default
         tfac = 1d0
     end select
-
+    tstart_tlfsmo_user = tstart_tlfsmo_user*tfac 
+    tstart_user = tstart_user*tfac
+    tstop_user  = tstop_user*tfac
+    
     call setTUDUnitString()
 
     call prop_get_double  (md_ptr, 'time', 'DtUser', dt_user)
@@ -2398,9 +2397,8 @@ subroutine readMDUFile(filename, istat)
    endif
 
    if (len_trim(md_restartfile)>0 .and. Tlfsmo>0d0) then
-      write (msgbuf, '(a,g16.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. This is no longer allowed. Tlfsmo is set to 0.0.'
+      write (msgbuf, '(a,g16.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. Be aware that you need to adjust TStartTlfsmo to obtain the same results between the original and restart simulations.'
       call warn_flush()
-      Tlfsmo = 0d0
    endif
 
    if (len_trim(md_crsfile) == 0 .and. jashp_crs > 0) then
@@ -3758,6 +3756,7 @@ endif
     end select
     call prop_set(prop_ptr, 'time', 'TStart',             tstart_user/tfac,       'Start time w.r.t. RefDate (in TUnit)')
     call prop_set(prop_ptr, 'time', 'TStop',              tstop_user/tfac,        'Stop  time w.r.t. RefDate (in TUnit)')
+    call prop_set(prop_ptr, 'time', 'TStartTlfsmo',       tstart_tlfsmo_user/tfac,       'Start time of smoothing of boundary conditions (Tlfsmo) w.r.t. RefDate (in TUnit)')
 
     if (len_trim(Startdatetime) > 0) then
     call prop_set(prop_ptr, 'time', 'Startdatetime', trim(Startdatetime),  'Computation Startdatetime (yyyymmddhhmmss), when specified, overrides Tstart')
