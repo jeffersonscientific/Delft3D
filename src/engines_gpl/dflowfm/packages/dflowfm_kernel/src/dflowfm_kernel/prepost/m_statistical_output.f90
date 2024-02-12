@@ -296,6 +296,7 @@ contains
             item%source_input => data_pointer
             if (present(source_input_function_pointer)) then
                item%source_input_function_pointer => source_input_function_pointer
+               call item%source_input_function_pointer(item%source_input)
             endif
 
             output_set%statout(output_set%count) = item

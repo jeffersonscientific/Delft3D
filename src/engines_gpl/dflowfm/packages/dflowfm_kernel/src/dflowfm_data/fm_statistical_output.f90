@@ -23,11 +23,97 @@ private
 
    double precision, dimension(:,:), allocatable, target, public :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
    double precision, dimension(:), allocatable, target, public :: rug_ruheight !< Run-up height on run-up gauges to be written.
-
+   double precision, dimension(:), allocatable, target, public :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
+   
    public default_fm_statistical_output, flow_init_statistical_output_his
 
    contains
-
+   
+   !> allocate array and associate pointer with it if not already done.
+   subroutine allocate_and_associate(source_input, size, array1, array2)
+   double precision, pointer, dimension(:), intent(inout)                        :: source_input   !< Pointer to associate with array1
+   double precision, dimension(:), allocatable, target, intent(inout)            :: array1         !< Data array 1 to allocate
+   double precision, dimension(:), allocatable, target, intent(inout), optional  :: array2         !< Data array 2 to allocate (but not point to)
+   integer, intent(in) :: size
+   
+   if (.not. allocated(array1)) then
+         allocate(array1(size))
+      if (present(array2)) then !array 1 and array2 are either both allocated or both not.
+         allocate(array2(size))
+      endif
+   endif
+   if (.not. associated(source_input))then
+      source_input => array1
+   endif
+   end subroutine allocate_and_associate
+   
+   !> Subroutine that divides sediment transport x,y variables by rho
+   subroutine assign_sediment_transport(X,Y,IPNT_X,IPNT_Y,ntot)
+   use m_sediment
+   use m_observations
+   
+   double precision, dimension(:), intent(out) :: X,Y !< arrays to assign valobs values to
+   integer, intent(in) :: IPNT_X, IPNT_Y              !< location specifier inside valobs array
+   integer, intent(in) :: ntot                        !< number of stations
+   
+   integer :: l, k
+   double precision :: rhol
+   
+   do l = 1, stmpar%lsedtot
+      select case(stmpar%morpar%moroutput%transptype)
+      case (0)
+         rhol = 1d0
+      case (1)
+         rhol = stmpar%sedpar%cdryb(l)
+      case (2)
+         rhol = stmpar%sedpar%rhosol(l)
+      end select
+      k = ntot*(l-1)
+      X(k+1:k+ntot) = valobs(:,IPNT_X)/rhol
+      Y(k+1:k+ntot) = valobs(:,IPNT_Y)/rhol
+   end do
+   end subroutine assign_sediment_transport
+   
+   !> Wrapper function that will allocate and fill the sediment transport arrays
+   subroutine calculate_sediment_SSW(source_input)
+   use m_observations
+   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
+   integer :: ntot
+   ntot = numobs + nummovobs
+   call allocate_and_associate(source_input,ntot,SSWX,SSWY)
+   call assign_sediment_transport(SSWX,SSWY,IPNT_SSWX1,IPNT_SSWY1,ntot)
+   end subroutine calculate_sediment_SSW
+   
+   !> Wrapper function that will allocate and fill the sediment transport arrays
+   subroutine calculate_sediment_SSC(source_input)
+   use m_observations
+   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSCX" item, to be assigned once on first call.
+   integer :: ntot
+   ntot = numobs + nummovobs
+   call allocate_and_associate(source_input,ntot,SSCX,SSCY)
+   call assign_sediment_transport(SSCX,SSCY,IPNT_SSCX1,IPNT_SSCY1,ntot)
+   end subroutine calculate_sediment_SSC
+   
+   !> Wrapper function that will allocate and fill the sediment transport arrays
+   subroutine calculate_sediment_SBW(source_input)
+   use m_observations
+   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBWX" item, to be assigned once on first call.
+   integer :: ntot
+   ntot = numobs + nummovobs
+   call allocate_and_associate(source_input,ntot,SBWX,SBWY)
+   call assign_sediment_transport(SBWX,SBWY,IPNT_SBWX1,IPNT_SBWY1,ntot)
+   end subroutine calculate_sediment_SBW
+   
+   !> Wrapper function that will allocate and fill the sediment transport arrays
+   subroutine calculate_sediment_SBC(source_input)
+   use m_observations
+   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+   integer :: ntot
+   ntot = numobs + nummovobs
+   call allocate_and_associate(source_input,ntot,SBCX,SBCY)
+   call assign_sediment_transport(SBCX,SBCY,IPNT_SBCX1,IPNT_SBCY1,ntot)
+   end subroutine calculate_sediment_SBC
+   
    !> Initialize (allocate) observation crosssection data array obscrs_data.
    !! This subroutine should be called only once, such that afterward individual calls
    !! to add_stat_output_items can point to obscrs_data(:,i) slices in this array.
@@ -259,9 +345,11 @@ private
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils
       use m_missing
+      use m_sediment, only: stmpar
 
       type(ug_nc_attribute) :: atts(5)
-
+     character(len=25)      :: transpunit
+     
       out_quan_conf_his%count = 0
       out_quan_conf_map%count = 0
       out_quan_conf_clm%count = 0
@@ -1065,36 +1153,91 @@ private
                      'Wrihis_sediment', 'seddif', 'Sediment vertical diffusion', &
                      '', 'm2 s-1', UNC_LOC_STATION, nc_atts = atts(1:1),         &
                      nc_dim_ids = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
-      call addoutval(out_quan_conf_his, IDX_HIS_SEDDIF,                                             &
-                     'Wrihis_sediment', 'seddif', 'Sediment vertical diffusion',                                      &
-                     '', 'm2 s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
-      !case (2)
-      !   ierr = nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim)
-      !   !  
-      !   ierr = nf90_def_var(ihisfile, 'msed', nc_precision, (/ id_nlyrdim, id_statdim, id_sedtotdim, id_timedim /), id_msed)
-      !   ierr = nf90_put_att(ihisfile, id_msed, 'long_name', 'Available sediment mass in a layer of the bed')
-      !   ierr = nf90_put_att(ihisfile, id_msed, 'units', 'kg m-2')
-      !   ierr = write_real_fill_value(id_msed)
-      !   ierr = nf90_put_att(ihisfile, id_msed, 'coordinates', statcoordstring)
-      !   ierr = nf90_put_att(ihisfile, id_msed, 'geometry', station_geom_container_name)
-      !   !
-      !   ierr = nf90_def_var(ihisfile, 'thlyr', nc_precision, (/ id_nlyrdim, id_statdim, id_timedim /), id_thlyr)
-      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'long_name', 'Thickness of a layer of the bed')
-      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'units', 'm')
-      !   ierr = write_real_fill_value(id_thlyr)
-      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'coordinates', statcoordstring)
-      !   ierr = nf90_put_att(ihisfile, id_thlyr, 'geometry', station_geom_container_name)
-      !   !
-      !   if (stmpar%morlyr%settings%iporosity>0) then
-      !      ierr = nf90_def_var(ihisfile, 'poros', nc_precision, (/ id_nlyrdim, id_statdim, id_timedim /), id_poros)
-      !      ierr = nf90_put_att(ihisfile, id_poros, 'long_name', 'Porosity of a layer of the bed')
-      !      ierr = nf90_put_att(ihisfile, id_poros, 'units', '-')
-      !      ierr = write_real_fill_value(id_poros)
-      !      ierr = nf90_put_att(ihisfile, id_poros, 'coordinates', statcoordstring)
-      !      ierr = nf90_put_att(ihisfile, id_poros, 'geometry', station_geom_container_name)
-      !   endif
+      call addoutval(out_quan_conf_his, IDX_HIS_BODSED,                                                &
+                     'Wrihis_sediment', 'bodsed', 'Available sediment mass in the bed',                   &
+                     '', 'kg m-2', UNC_LOC_STATION, nc_atts = atts(1:1),nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true., timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_DPSED,                                                 &
+                     'Wrihis_sediment', 'dpsed', 'Sediment thickness in the bed',                         &
+                     '', 'm', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
+       call addoutval(out_quan_conf_his, IDX_HIS_TAUB,                 &
+                     'wrihis_sediment', 'taub',              &
+                     'Bed shear stress for morphology',             &
+                     '', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
+       call addoutval(out_quan_conf_his, IDX_HIS_SBCX,                 &
+                     'wrihis_sediment', 'sbcx',              &
+                     'Current related bedload transport, x-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+       call addoutval(out_quan_conf_his, IDX_HIS_SBCY,                 &
+                     'wrihis_sediment', 'sbcy',              &
+                     'Current related bedload transport, y-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_SBWX,                 &
+                     'wrihis_sediment', 'sbwx',              &
+                     'Wave related bedload transport, x-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+       call addoutval(out_quan_conf_his, IDX_HIS_SBWY,                 &
+                     'wrihis_sediment', 'sbwy',              &
+                     'Wave related bedload transport, y-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_SSWX,                 &
+                     'wrihis_sediment', 'sswx',              &
+                     'Wave related suspended transport, x-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+       call addoutval(out_quan_conf_his, IDX_HIS_SSWY,                 &
+                     'wrihis_sediment', 'sswy',              &
+                     'Wave related suspended transport, y-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_SSCX,                 &
+                     'wrihis_sediment', 'sscx',              &
+                     'Current related suspended transport, x-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+       call addoutval(out_quan_conf_his, IDX_HIS_SSCY,                 &
+                     'wrihis_sediment', 'sscy',              &
+                     'Current related suspended transport, y-component',             &
+                     '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+       
+       ! Bed composition variables
+       call addoutval(out_quan_conf_his, IDX_HIS_MSED,                 &
+                     'wrihis_sediment', 'msed',              &
+                     'Available sediment mass in a layer of the bed',             &
+                     '', 'kg m-2', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true.,sedtotdim = .true., timedim = .true.))
+       call addoutval(out_quan_conf_his, IDX_HIS_THLYR,                 &
+                     'wrihis_sediment', 'thlyr',              &
+                     'Thickness of a layer of the bed',             &
+                     '', 'm', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true., timedim = .true.))
+       call addoutval(out_quan_conf_his, IDX_HIS_POROS,                 &
+                     'wrihis_sediment', 'poros',              &
+                     'Porosity of a layer of the bed',             &
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true., timedim = .true.))
+       call addoutval(out_quan_conf_his, IDX_HIS_LYRFRAC,                 &
+                     'wrihis_sediment', 'lyrfrac',              &
+                     'Volume fraction in a layer of the bed',             &
+                     '', 'm', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true., sedtotdim = .true., timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_FRAC,                 &
+                     'wrihis_sediment', 'frac',              &
+                     'Availability fraction in top layer',             &
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true., timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_MUDFRAC,                 &
+                     'wrihis_sediment', 'mudfrac',              &
+                     'Mud fraction in top layer',             &
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
+      call addoutval(out_quan_conf_his, IDX_HIS_SANDFRAC,                 &
+                     'wrihis_sediment', 'sandfrac',              &
+                     'Sand fraction in top layer',             &
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
+      call addoutval(out_quan_conf_his, IDX_HIS_FIXFRAC,                 &
+                     'wrihis_sediment', 'fixfac',              &
+                     'Reduction factor due to limited sediment thickness',             &
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true. , timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_HIDEXP,                 &
+                     'wrihis_sediment', 'hidexp',              &
+                     'Hiding and exposure factor',             &
+                     '', '', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true. , timedim = .true.))
+      call addoutval(out_quan_conf_his, IDX_HIS_MFLUFF,                 &
+                     'wrihis_sediment', 'mfluff',              &
+                     'Sediment mass in fluff layer',             &
+                     '', 'kg', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedsusdim = .true. , timedim = .true.))
 
-      !
       ! HIS: Variables on observation cross sections
       !
       call ncu_set_att(atts(1), 'geometry', 'cross_section_geom')
@@ -1162,6 +1305,7 @@ private
                      'Wrihis_lateral', 'lateral_realized_discharge_average',              &
                      'Realized discharge through lateral, average over the last history time interval',             &
                      '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1))
+
 
       !TEST: all his output default on true
       out_quan_conf_his%statout(:)%input_value = 'current'
@@ -1641,6 +1785,7 @@ private
       call addoutval(out_quan_conf_clm, IDX_CLS_UCDIR_EULER,                         &
                      'WriClass_Velocity', 'ucdir', 'Flow element center Eulerian velocity direction',                          &
                      'sea_water_eulerian_velocity_to_direction', 'degree', UNC_LOC_S)
+
    end subroutine default_fm_statistical_output
 
 
@@ -1655,8 +1800,8 @@ private
       use m_structures
       use m_observations
       use m_statistical_callback
-      use m_transport, only: NUMCONST, itemp, isalt
-      use m_sediment, only: stm_included
+      use m_transport, only: NUMCONST, itemp, isalt, ised1
+      use m_sediment, only: stm_included, stmpar
       use m_longculverts, only: nlongculverts
       USE m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug
@@ -1666,9 +1811,10 @@ private
       type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
 
       double precision, pointer, dimension(:) :: temp_pointer
+
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
 
-      integer :: i, ntot, num_const_items
+      integer :: i, ntot, num_const_items, nlyrs
       integer, allocatable, dimension(:) :: idx_const
 
       call process_output_quantity_configs(output_config)
@@ -1911,13 +2057,10 @@ private
 
       ! Basic flow quantities
       if (ntot > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERLEVEL), valobs(:,IPNT_S1))
-
-         output_config%statout(IDX_HIS_BEDLEVEL)%nc_dim_ids%timedim = stm_included
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BEDLEVEL), valobs(:,IPNT_BL))
-
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERLEVEL),valobs(:,IPNT_S1)                               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
          if (jahiswatdep > 0) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS))
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS)                               )
          endif
       endif
       if( jahisvelvec > 0 ) then
@@ -1925,10 +2068,10 @@ private
             if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCX:IPNT_UCX+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
-
+               
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCY:IPNT_UCY+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
-
+               
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCZ:IPNT_UCZ+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),temp_pointer)
 
@@ -1943,14 +2086,14 @@ private
       endif
       if (jahisvelocity > 0) then
          if (jaeulervel==0) then
-            if(model_is_3D()) then
+            if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UMAG:IPNT_UMAG+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),temp_pointer)
             else
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),valobs(:,IPNT_UMAG)                                        )
             endif
          else
-            if(model_is_3D()) then
+            if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UMAG:IPNT_UMAG+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),temp_pointer)
             else
@@ -1959,7 +2102,7 @@ private
          endif
       endif
       if (jahisdischarge > 0) then
-         if(model_is_3D()) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_QMAG:IPNT_QMAG+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),temp_pointer)
          else
@@ -1986,7 +2129,7 @@ private
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAU     ),temp_pointer                      )
          endif
       endif
-      if (idensform > 0 .and. jaRichardsononoutput > 0 .and. kmx > 0) then
+      if (idensform > 0 .and. jaRichardsononoutput > 0 .and. model_is_3D()) then
          call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RICH:IPNT_RICH+kmx)), temp_pointer, [kmx*ntot])
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RICH),temp_pointer)
       endif
@@ -2014,7 +2157,7 @@ private
          if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RHOP:IPNT_RHOP+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
-
+            
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_BRUV:IPNT_BRUV+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
             if (idensform > 10) then
@@ -2041,7 +2184,7 @@ private
          if (model_is_3D() .and. .not. flowwithoutwaves) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCXST:IPNT_UCXST+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
-
+            
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCYST:IPNT_UCYST+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VSTOKES),temp_pointer)
          else
@@ -2097,11 +2240,18 @@ private
       ! Sediment model
       if (jased > 0 .and. .not. stm_included) then
          if (model_is_3D()) then
-               call c_f_pointer (c_loc(valobs(1:ntot,IPNT_SED:IPNT_SED+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
+            call c_f_pointer (c_loc(valobs(1:ntot,IPNT_SED:IPNT_SED+kmx)), temp_pointer, [kmx*ntot])
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
          else
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),valobs(:,IPNT_SED)                                  )
          endif
+      else if (stm_included .and. ISED1 > 0 .and. jahissed > 0 .and. IVAL_SF1 > 0) then
+         if (model_is_3D()) then
+            call c_f_pointer (c_loc(valobs(1:ntot,IVAL_SF1:IVAL_SFN+(IVAL_SFN-IVAL_SF1*kmx))), temp_pointer, [(IVAL_SFN-IPNT_SF1+1)*kmx*ntot])
+         else
+            temp_pointer(1:(IVAL_SFN-IPNT_SF1+1)*ntot) => valobs(:,IPNT_SF1:IVAL_SFN)
+         end if
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)   
       endif
       if (IVAL_WS1 > 0) then
          if (model_is_3D()) then
@@ -2109,12 +2259,86 @@ private
          else
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_WS1:IVAL_WSN)), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*ntot])
          endif
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
       endif
       if (IVAL_SEDDIF1 > 0) then
          call c_f_pointer (c_loc(valobs(1:ntot,IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx))), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*kmx*ntot])
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
       endif
+      
+      if (jahissed>0 .and. jased>0 .and. stm_included) then
+         if (stmpar%morpar%moroutput%taub) then
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAUB),valobs(IPNT_TAUB,:))
+         endif
+         if (stmpar%lsedtot>0) then
+            if (stmpar%morpar%moroutput%sbcuv) then
+               function_pointer => calculate_sediment_SBC
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBCX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBCY),SBCY)
+            endif
+            if (stmpar%morpar%moroutput%sbwuv) then
+               function_pointer => calculate_sediment_SBW
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBWX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBWY),SBWY)
+            endif
+            if (stmpar%morpar%moroutput%sscuv .and. jawave>0 .and. .not. flowWithoutWaves) then
+               function_pointer => calculate_sediment_SSC
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSCX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSCY),SSCY)
+            endif
+            if (stmpar%morpar%moroutput%sswuv .and. jawave>0 .and. .not. flowWithoutWaves) then
+               function_pointer => calculate_sediment_SSW
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSWX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSWY),SSWY)
+            endif
+         endif
+      endif
+      ! Bed composition variables
+      if (jahissed>0 .and. jased>0 .and. stm_included) then
+         select case (stmpar%morlyr%settings%iunderlyr)
+         case (1)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DPSED),valobs(:,IPNT_DPSED))
+            temp_pointer(1:(IVAL_BODSEDN-IVAL_BODSED1+1)*ntot) => valobs(:,IVAL_BODSED1:IVAL_BODSEDN)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BODSED),temp_pointer)
+         case (2)
+            nlyrs = stmpar%morlyr%settings%nlyr
+            
+            temp_pointer(1:(IVAL_MSEDN-IVAL_MSED1+1)*ntot*nlyrs) => valobs(:,IVAL_MSED1:IVAL_MSED1+(IVAL_MSEDN-IVAL_MSED1+1)*nlyrs)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MSED),temp_pointer)
 
+            temp_pointer(1:(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*ntot*nlyrs) => valobs(:,IVAL_LYRFRAC1:IVAL_LYRFRAC1+(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*nlyrs)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LYRFRAC),temp_pointer)
+
+            temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_THLYR:IPNT_THLYR+(nlyrs-1))
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_THLYR),temp_pointer)
+
+            temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_POROS:IPNT_POROS+(nlyrs-1))
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POROS),temp_pointer)
+         end select
+         !
+         if (stmpar%morpar%moroutput%frac) then
+            temp_pointer(1:ntot*(IPNT_FRACN-IPNT_FRAC1)) => valobs(:,IPNT_FRAC1:IPNT_FRACN)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_FRAC),temp_pointer)
+         endif
+         if (stmpar%morpar%moroutput%mudfrac) then
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MUDFRAC),valobs(:,IPNT_MUDFRAC))
+         endif
+         if (stmpar%morpar%moroutput%sandfrac) then
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SANDFRAC),valobs(:,IPNT_SANDFRAC))
+         endif
+         if (stmpar%morpar%moroutput%fixfac) then
+            temp_pointer(1:ntot*(IVAL_FIXFACN-IVAL_FIXFAC1)) => valobs(:,IVAL_FIXFAC1:IVAL_FIXFACN)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_FIXFRAC),temp_pointer)
+         endif
+         if (stmpar%morpar%moroutput%hidexp) then
+            temp_pointer(1:ntot*(IVAL_HIDEXPN-IVAL_HIDEXP1)) => valobs(:,IVAL_HIDEXP1:IVAL_HIDEXPN)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_HIDEXP),temp_pointer)
+         endif
+         if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
+            temp_pointer(1:ntot*(IVAL_MFLUFFN-IVAL_MFLUFF1)) => valobs(:,IVAL_MFLUFF1:IVAL_MFLUFFN)
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MFLUFF),temp_pointer)
+         end if
+      endif
       !
       ! Variables on observation cross sections
       !
