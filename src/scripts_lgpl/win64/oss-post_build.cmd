@@ -2205,7 +2205,7 @@ rem ===========================
 
     call :makeDir !dest_bin!
 
-    call :copyFile "!build_dir!\gridgeom_dll\!configuration!\gridgeom.dll"                                           !dest_bin!
+    xcopy "!build_dir!\gridgeom_dll\!configuration!\gridgeom_dll.lib" "!dest_bin!\gridgeom.dll"* /Y
 
     )
 
@@ -2216,8 +2216,7 @@ rem ===========================
     set dest_share="!install_dir!\x64\Release\share\bin"
 
     call :makeDir !dest_share!
-    call :copyFile "!build_dir!\gridgeom_dll\!configuration!\gridgeom.dll"                                           !dest_share!
-
+    xcopy "!build_dir!\gridgeom_dll\!configuration!\gridgeom_dll.lib" "!dest_share!\gridgeom.dll"* /Y
     )
 
 goto :endproc
