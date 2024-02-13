@@ -472,6 +472,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     integer      , dimension(:)          , pointer :: modify_dzsuv
     logical                              , pointer :: ztbml
     logical                              , pointer :: ztbml_upd_r1
+    integer                              , pointer :: iti_sedtrans
 !
     include 'tri-dyn.igd'
 !
@@ -935,6 +936,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     eqmbcsand           => gdp%gdmorpar%eqmbcsand
     eqmbcmud            => gdp%gdmorpar%eqmbcmud
     sedtyp              => gdp%gdsedpar%sedtyp
+    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     !
     icx     = 0
     icy     = 0
@@ -1693,7 +1695,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -1916,7 +1918,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
        ! Suspended transport vector for output
        !
        call timer_start(timer_3dmor, gdp)
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           !
           ! don't compute suspended transport vector in middle of timestep
           ! note: IWRK1 used as local work array

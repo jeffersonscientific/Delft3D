@@ -46,6 +46,7 @@
  use m_sobekdfm
  use m_subsidence
  use m_fm_bott3d, only: fm_bott3d
+ use m_fm_erosed
  use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
 
  implicit none
@@ -60,6 +61,7 @@
  double precision   :: dif, difmaxlevm
 
  character(len=128) :: msg
+ 
 
 !-----------------------------------------------------------------------------------------------
  numnodneg = 0
@@ -300,23 +302,23 @@
  hs = s1-bl
  hs = max(hs,0d0)
 
- if (jased > 0 .and. stm_included) then
-     if (time1 >= tstart_user + stmpar%trapar%ti_sedtrans * tfac) then
-        if ( jatimer.eq.1 ) call starttimer(IEROSED)
-        !
-        call setucxucy_mor (u1)
-        call fm_flocculate()               ! fraction transitions due to flocculation
+ ti_sedtrans => stmpar%morpar%ti_sedtrans
+ 
+ if (jased > 0 .and. stm_included .and. (time1 >= tstart_user + ti_sedtrans * tfac)) then
+    if ( jatimer.eq.1 ) call starttimer(IEROSED)
+    !
+    call setucxucy_mor (u1)
+    call fm_flocculate()               ! fraction transitions due to flocculation
     
-        call timstrt('Settling velocity   ', handle_extra(87))
-        call fm_fallve()                   ! update fall velocities
-        call timstop(handle_extra(87))
+    call timstrt('Settling velocity   ', handle_extra(87))
+    call fm_fallve()                   ! update fall velocities
+    call timstop(handle_extra(87))
     
-        call timstrt('Erosed_call         ', handle_extra(88))
-        call fm_erosed()                   ! source/sink, bedload/total load
-        call timstop(handle_extra(88))
+    call timstrt('Erosed_call         ', handle_extra(88))
+    call fm_erosed()                   ! source/sink, bedload/total load
+    call timstop(handle_extra(88))
     
-        if ( jatimer.eq.1 ) call stoptimer(IEROSED)
-    end if
+    if ( jatimer.eq.1 ) call stoptimer(IEROSED)
  end if
 
  ! secondary flow
@@ -334,10 +336,8 @@
  if ( jatimer.eq.1 ) call stoptimer (ITRANSPORT)
 
 
- if (jased > 0 .and. stm_included) then
-     if (time1 >= tstart_user + stmpar%trapar%ti_sedtrans * tfac) then
-        call fm_bott3d() ! bottom update
-    end if
+ if (jased > 0 .and. stm_included .and. (time1 >= tstart_user + ti_sedtrans * tfac)) then
+    call fm_bott3d() ! bottom update
  endif
 
  if (jasubsupl>0) then

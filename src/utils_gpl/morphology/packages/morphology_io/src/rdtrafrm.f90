@@ -100,7 +100,6 @@ subroutine initrafrm(lundia    ,error     ,lsedtot   ,trapar    )
     real(fp)         , dimension(:,:), pointer :: par
     character(256)   , dimension(:,:), pointer :: parfil
     integer          , dimension(:,:), pointer :: iparfld
-    real(fp)                         , pointer :: ti_sedtrans
 !
     integer                        :: istat
     character(256)                 :: errmsg
@@ -223,10 +222,6 @@ subroutine initrafrm(lundia    ,error     ,lsedtot   ,trapar    )
     ioutpar              = 0
     outpar_name          = ''
     outpar_longname      = ''
-    
-    ti_sedtrans          => trapar%ti_sedtrans
-    ti_sedtrans          = 0
-    
 end subroutine initrafrm
 
 

@@ -153,6 +153,7 @@
    real(fp)                             , pointer :: bermslopefac           !< calibration factor
    real(fp)                             , pointer :: bermslopegamma         !< bermslope nudging applied for region where Hrms/h>bermslopegamma
    real(fp)                             , pointer :: bermslopedepth         !< minimum depth to apply nudging
+   real(fp)                             , pointer :: ti_sedtrans            !< sediment transport computation start time in TUnits
 
    ! trapar
    integer          , dimension(:)      , pointer :: iform
@@ -168,8 +169,6 @@
    character(256)   , dimension(:)      , pointer :: dll_strings
    character(256)   , dimension(:)      , pointer :: dll_usrfil
    
-   real(fp)                             , pointer :: ti_sedtrans
-
    ! sedtra
    real(fp)         , dimension(:, :)   , pointer :: aks
    real(fp)         , dimension(:)      , pointer :: bc_mor_array

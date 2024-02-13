@@ -1098,7 +1098,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     typbnd              => gdp%gdr_i_ch%typbnd
     
     !
-    iti_sedtrans        => gdp%gdtrapar%iti_sedtrans
+    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     
     !
     icx     = 0

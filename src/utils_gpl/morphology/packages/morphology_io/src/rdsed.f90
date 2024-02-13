@@ -126,7 +126,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     integer          , dimension(:,:)  , pointer :: floclist
     character(20)    , dimension(:)    , pointer :: namclay
     character(20)    , dimension(:)    , pointer :: namflocpop    
-    real(fp)                           , pointer :: ti_sedtrans
 !
 ! Arguments
 !
@@ -242,7 +241,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     par_settle           => trapar%par_settle
     iform                => trapar%iform
     flstrn               => trapar%flstrn
-    ti_sedtrans          => trapar%ti_sedtrans
     !
     rmissval = -999.0_fp
     fmttmp   = 'formatted'
@@ -589,11 +587,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           endif
           !
           call prop_get(sed_ptr, 'SedimentOverall', 'CritFluffFactor', sc_flcf)
-       endif
-       
-       ti_sedtrans = 0.0_fp
-       call prop_get(sed_ptr, 'SedimentOverall', 'SedtransSTT', ti_sedtrans)
-       
+       endif      
        !
        do l = 1, lsedtot
           !
@@ -1199,8 +1193,7 @@ end subroutine opensedfil
 
 
 subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
-                 & iopsus    ,sedpar    ,trapar    ,cmpupd    , &
-                 & dtunit)
+                 & iopsus    ,sedpar    ,trapar    ,cmpupd    )
 !!--description-----------------------------------------------------------------
 !
 ! Report sediment parameter to diag file
@@ -1225,7 +1218,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     logical                                  , intent(out) :: error   !< Flag=TRUE if an error is encountered
     type(sedpar_type)                        , pointer     :: sedpar
     type(trapar_type)                        , pointer     :: trapar
-     character(*)                            , intent(in)  :: dtunit
 !
 ! Local variables
 !
@@ -1273,7 +1265,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     integer         , dimension(:)    , pointer :: iform_settle
     real(fp)        , dimension(:,:)  , pointer :: par_settle
     integer         , dimension(:)    , pointer :: iform
-    real(fp)                          , pointer :: ti_sedtrans
     !
     integer                   :: i
     integer                   :: l
@@ -1336,17 +1327,12 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     iform_settle         => trapar%iform_settle
     par_settle           => trapar%par_settle
     iform                => trapar%iform
-    ti_sedtrans          => trapar%ti_sedtrans
     !
     rmissval = -999.0_fp
     !
     ! echo input in diagnose-file
     !
     write (lundia, '(a)')   '*** Start  of sediment input'
-        
-    txtput1 = 'Sediment transport starts after ('//trim(dtunit)//')'
-    write (lundia, '(2a,e12.4)') txtput1, ':', ti_sedtrans
-    
     txtput1 = 'Ref concentration'
     write (lundia, '(2a,e12.4)') txtput1, ':', csoil
     if (csoil <= 0.0_fp) then

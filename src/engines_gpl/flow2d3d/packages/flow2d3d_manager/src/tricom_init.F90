@@ -772,8 +772,8 @@ subroutine tricom_init(olv_handle, gdp)
     anglat              => gdp%gdtricom%anglat
     anglon              => gdp%gdtricom%anglon
     dtsec               => gdp%gdtricom%dtsec
-    ti_sedtrans         => gdp%gdtrapar%ti_sedtrans
-    iti_sedtrans        => gdp%gdtrapar%iti_sedtrans
+    ti_sedtrans         => gdp%gdmorpar%ti_sedtrans
+    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     !
     call timer_start(timer_tricomtot, gdp)
     !

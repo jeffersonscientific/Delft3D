@@ -199,16 +199,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                 & gdp%gdsedpar%sedtyp  ,gdp%gdsedpar%sedblock  , &
                    & gdp%griddim, gdp%gdsedpar%max_mud_sedtyp)
     endif
-    
-    if (.not.error) then     
-    !
-        if (gdp%gdtrapar%ti_sedtrans > gdp%gdmorpar%tmor .or. gdp%gdtrapar%ti_sedtrans > gdp%gdmorpar%tcmp) then
-            errmsg = 'SedtransStt must be smaller than or equal to CmpUpdStt and BedUpdStt (MorStt) in ' // trim(filmor)
-            call write_error(errmsg, unit=lundia)
-            error = .true.
-        endif
-    endif
-    
+
     if (.not.error) then
     !
     !
@@ -237,7 +228,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Echo sediment and transport parameters
     !
     call echosed(lundia    ,error     ,lsed      ,lsedtot   , &
-               & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd, gdp%gdexttim%tunitstr)
+               & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
     endif
     if (.not.error) then
     !
