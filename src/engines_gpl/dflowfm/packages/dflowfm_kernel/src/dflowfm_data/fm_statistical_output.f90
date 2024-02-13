@@ -14,7 +14,7 @@ private
    type(t_output_variable_set), public :: out_variable_set_his
    type(t_output_variable_set), public :: out_variable_set_map
    type(t_output_variable_set), public :: out_variable_set_clm
-   
+
    public default_fm_statistical_output, flow_init_statistical_output_his
 
    type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
@@ -27,14 +27,14 @@ private
    double precision, dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
 
    contains
-   
+
    !> allocate array and associate pointer with it if not already done.
    subroutine allocate_and_associate(source_input, size, array1, array2)
    double precision, pointer, dimension(:), intent(inout)                        :: source_input   !< Pointer to associate with array1
    double precision, dimension(:), allocatable, target, intent(inout)            :: array1         !< Data array 1 to allocate
    double precision, dimension(:), allocatable, target, intent(inout), optional  :: array2         !< Data array 2 to allocate (but not point to)
    integer, intent(in) :: size
-   
+
    if (.not. allocated(array1)) then
          allocate(array1(size))
       if (present(array2)) then !array 1 and array2 are either both allocated or both not.
@@ -45,19 +45,19 @@ private
       source_input => array1
    endif
    end subroutine allocate_and_associate
-   
+
    !> Subroutine that divides sediment transport x,y variables by rho
    subroutine assign_sediment_transport(X,Y,IPNT_X,IPNT_Y,ntot)
    use m_sediment
    use m_observations
-   
+
    double precision, dimension(:), intent(out) :: X,Y !< arrays to assign valobs values to
    integer, intent(in) :: IPNT_X, IPNT_Y              !< location specifier inside valobs array
    integer, intent(in) :: ntot                        !< number of stations
-   
+
    integer :: l, k
    double precision :: rhol
-   
+
    do l = 1, stmpar%lsedtot
       select case(stmpar%morpar%moroutput%transptype)
       case (0)
@@ -72,7 +72,7 @@ private
       Y(k+1:k+ntot) = valobs(:,IPNT_Y)/rhol
    end do
    end subroutine assign_sediment_transport
-   
+
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSW(source_input)
    use m_observations
@@ -82,7 +82,7 @@ private
    call allocate_and_associate(source_input,ntot,SSWX,SSWY)
    call assign_sediment_transport(SSWX,SSWY,IPNT_SSWX1,IPNT_SSWY1,ntot)
    end subroutine calculate_sediment_SSW
-   
+
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSC(source_input)
    use m_observations
@@ -92,7 +92,7 @@ private
    call allocate_and_associate(source_input,ntot,SSCX,SSCY)
    call assign_sediment_transport(SSCX,SSCY,IPNT_SSCX1,IPNT_SSCY1,ntot)
    end subroutine calculate_sediment_SSC
-   
+
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBW(source_input)
    use m_observations
@@ -102,7 +102,7 @@ private
    call allocate_and_associate(source_input,ntot,SBWX,SBWY)
    call assign_sediment_transport(SBWX,SBWY,IPNT_SBWX1,IPNT_SBWY1,ntot)
    end subroutine calculate_sediment_SBW
-   
+
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBC(source_input)
    use m_observations
@@ -112,7 +112,7 @@ private
    call allocate_and_associate(source_input,ntot,SBCX,SBCY)
    call assign_sediment_transport(SBCX,SBCY,IPNT_SBCX1,IPNT_SBCY1,ntot)
    end subroutine calculate_sediment_SBC
-   
+
    !> Initialize (allocate) observation crosssection data array obscrs_data.
    !! This subroutine should be called only once, such that afterward individual calls
    !! to add_stat_output_items can point to obscrs_data(:,i) slices in this array.
@@ -234,7 +234,6 @@ private
 
    end subroutine init_obscrs_data_and_config
 
-
    !> Aggregate observation crossection data from crs()% value arrays into source_input data array.
    !! Will fill *all* obscrs_data, and leave the input data_pointer untouched: it assumes that all
    !! individual calls to add_stat_output_items() have already associated their obscrs data_pointer variables
@@ -317,6 +316,49 @@ private
 
    end subroutine aggregate_obscrs_data
 
+   subroutine add_station_tracer_configs(output_config, )
+      use m_alloc, only: realloc
+
+      integer, allocatable, intent(out) :: IDX_HIS_TRACERS(:) !< indices of just-in-time added tracers in output_config set array
+      integer :: num_tracers
+      character(len=idlen) :: conststr
+      character(len=idlen) :: unitstr
+      type(ug_nc_attribute) :: atts(5)
+
+      if (.not. model_has_tracers()) then
+         return
+      end if
+
+      num_tracers = ITRAN - ITRA1 + 1
+
+      call realloc(IDX_HIS_TRACERS, num_tracers, keepExisting = .false., fill = 0)
+
+      do i = 1, num_tracers
+
+         j = i + ITRA1 - 1
+
+         namestr = const_names(j)
+         ! Forbidden chars in NetCDF names: space, /, and more.
+         call replace_char(namestr,32,95)
+
+         if (const_units(j).ne.' ') then
+            unitstr = const_units(j)
+         else
+            unitstr = '-'
+         endif
+
+         ! add output config item
+         call addoutval(output_config, IDX_HIS_TRACERS(i), 'Wrihis_constituents', namestr, const_names(j), unitstr, &
+                        UNC_LOC_STATION, nc_dim_ids = nc_dims_3D_center )
+
+      end do
+
+
+
+
+
+   end subroutine add_station_tracer_configs
+
    !> Calculates run-up gauge data for his output.
    !! Will allocate and fill the rug_ruheight array.
    subroutine calculate_rug_data(source_input)
@@ -350,7 +392,7 @@ private
 
       type(ug_nc_attribute) :: atts(5)
      character(len=25)      :: transpunit
-     
+
       out_quan_conf_his%count = 0
       out_quan_conf_map%count = 0
       out_quan_conf_clm%count = 0
@@ -1196,7 +1238,7 @@ private
                      'wrihis_sediment', 'sscy',              &
                      'Current related suspended transport, y-component',             &
                      '', transpunit, UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
-       
+
        ! Bed composition variables
        call addoutval(out_quan_conf_his, IDX_HIS_MSED,                 &
                      'wrihis_sediment', 'msed',              &
@@ -2069,10 +2111,10 @@ private
             if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCX:IPNT_UCX+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
-               
+
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCY:IPNT_UCY+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
-               
+
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCZ:IPNT_UCZ+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),temp_pointer)
 
@@ -2158,7 +2200,7 @@ private
          if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RHOP:IPNT_RHOP+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
-            
+
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_BRUV:IPNT_BRUV+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
             if (idensform > 10) then
@@ -2185,7 +2227,7 @@ private
          if (model_is_3D() .and. .not. flowwithoutwaves) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCXST:IPNT_UCXST+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
-            
+
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCYST:IPNT_UCYST+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VSTOKES),temp_pointer)
          else
@@ -2252,7 +2294,7 @@ private
          else
             temp_pointer(1:(IVAL_SFN-IPNT_SF1+1)*ntot) => valobs(:,IPNT_SF1:IVAL_SFN)
          end if
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)   
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
       endif
       if (IVAL_WS1 > 0) then
          if (model_is_3D()) then
@@ -2266,7 +2308,7 @@ private
          call c_f_pointer (c_loc(valobs(1:ntot,IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx))), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*kmx*ntot])
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
       endif
-      
+
       if (jahissed>0 .and. jased>0 .and. stm_included) then
          if (stmpar%morpar%moroutput%taub) then
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAUB),valobs(IPNT_TAUB,:))
@@ -2303,7 +2345,7 @@ private
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BODSED),temp_pointer)
          case (2)
             nlyrs = stmpar%morlyr%settings%nlyr
-            
+
             temp_pointer(1:(IVAL_MSEDN-IVAL_MSED1+1)*ntot*nlyrs) => valobs(:,IVAL_MSED1:IVAL_MSED1+(IVAL_MSEDN-IVAL_MSED1+1)*nlyrs)
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MSED),temp_pointer)
 
@@ -2561,11 +2603,20 @@ private
       end if
    end subroutine process_nc_dim_ids
 
-   !> Check if model is 3D
+   !> Check if model is 3D.
    pure function model_is_3D() result(res)
       use m_flow, only: kmx
       logical :: res !< Return value
 
       res = (kmx > 0)
    end function model_is_3D
+
+   !> Check if model contains tracers.
+   pure function model_has_tracers() result(res)
+      use m_transport, only: ITRA1
+      logical :: res !< Return value
+
+      res = (ITRA1 > 0)
+   end function model_has_tracers
+
 end module fm_statistical_output
