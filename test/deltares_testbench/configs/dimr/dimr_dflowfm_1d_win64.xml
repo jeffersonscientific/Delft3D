@@ -52,7 +52,7 @@
             <location ref="engines_to_compare" type="check">
                 <from>teamcity_artifacts/x64</from>
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
             <shell ref="command_prompt"/>
@@ -62,7 +62,7 @@
             <location ref="engines_to_compare" type="check">
                 <from>teamcity_artifacts/x64</from>
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
         </program>
         <program name="dfm_volume_tool" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
          <location ref="reference_engines" type="reference">

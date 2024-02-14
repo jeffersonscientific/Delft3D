@@ -81,7 +81,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="mpi"/>
             <environments>
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
@@ -97,7 +97,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="mpi4"/>
             <environments>
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
@@ -113,7 +113,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dflowfm/bin/dfmoutput.exe</path>
+            <path>bin/dfmoutput.exe</path>
             <shell ref="command_prompt"/>
         </program>
     </programs>
