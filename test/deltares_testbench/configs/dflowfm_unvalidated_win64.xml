@@ -99,7 +99,7 @@
     </program>
   </programs>
   <defaultTestCases>
-    <testCase name="dflowfm_default">
+    <testCase name="dflowfm_default" version="2024.01.15T09:00">
       <location ref="dsctestbench-cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -112,7 +112,7 @@
     </testCase>
   </defaultTestCases>
       <testCases>
-	    <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default">
+	    <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default" version="2024.01.15T09:00">
 		  <path>e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
 		  <programs>
 			<program ref="DFlowFM">
@@ -135,7 +135,7 @@
 			<file name="depthgr.xyz" ignore="true" />
 		  </checks>
 		</testCase>
-		<testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default">
+		<testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default" version="2024.01.15T09:00">
 		  <path>e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">
@@ -157,7 +157,7 @@
 			</file>
 		  </checks>
 		</testCase>
-		<testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default">
+		<testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default" version="2024.01.15T09:00">
 		  <path>e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">

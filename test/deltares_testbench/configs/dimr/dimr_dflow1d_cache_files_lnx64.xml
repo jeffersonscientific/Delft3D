@@ -71,7 +71,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dimr_trunk">
+        <testCase name="dimr_trunk" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>

@@ -73,7 +73,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="sif_dimr">
+        <testCase name="sif_dimr" version="2024.01.15T09:00">
             <location ref="reference_results" type="reference">
                 <from>lnx64</from>
             </location>
@@ -82,7 +82,7 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="sif_postproc">
+        <testCase name="sif_postproc" version="2024.01.15T09:00">
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>

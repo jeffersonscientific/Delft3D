@@ -72,7 +72,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="sobek3_default">
+        <testCase name="sobek3_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="PYTHON" seq="1">
                     <arguments>
@@ -99,7 +99,7 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="dimr_default">
+        <testCase name="dimr_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>

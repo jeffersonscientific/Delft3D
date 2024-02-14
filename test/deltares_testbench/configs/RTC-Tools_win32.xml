@@ -106,7 +106,7 @@
 				ref="name_of_default_testcase"
 				-->
 	<defaultTestCases>
-		<testCase name="RTC-Tools_default">
+		<testCase name="RTC-Tools_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -147,19 +147,19 @@
 				
 				-->
 	<testCases>
-		<testCase name="ex_f00_c01-bodensee" ref="RTC-Tools_default">
+		<testCase name="ex_f00_c01-bodensee" ref="RTC-Tools_default" version="2024.01.15T09:00">
 			<path>RTCTools/examples-proprietary/f00_examples/c01_bodensee</path>
 			<checks>
 				<file name="timeseries_0000.csv" type="ASCII"/>
 			</checks>
 		</testCase>
-		<testCase name="ex_f00_c02-nhi1" ref="RTC-Tools_default">
+		<testCase name="ex_f00_c02-nhi1" ref="RTC-Tools_default" version="2024.01.15T09:00">
 			<path>RTCTools/examples-proprietary/f00_examples/c02_nhi1</path>
 			<checks>
 				<file name="timeseries_0000.csv" type="ASCII"/>
 			</checks>
 		</testCase>
-		<testCase name="ex_f00_c03_TestBench182b_000" ref="RTC-Tools_default">
+		<testCase name="ex_f00_c03_TestBench182b_000" ref="RTC-Tools_default" version="2024.01.15T09:00">
 			<path>RTCTools/examples-proprietary/f00_examples/c03_TestBench182b_000</path>
 			<checks>
 				<file name="timeseries_0000.csv" type="ASCII"/>

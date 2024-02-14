@@ -76,7 +76,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dflow1d_default">
+        <testCase name="dflow1d_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>

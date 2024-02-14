@@ -89,7 +89,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dimr">
+        <testCase name="dimr" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -105,7 +105,7 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="postproc">
+        <testCase name="postproc" version="2024.01.15T09:00">
             <programs>
                 <program ref="dfmoutput">
                 </program>

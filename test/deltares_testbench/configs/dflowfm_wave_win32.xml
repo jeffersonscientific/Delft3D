@@ -138,7 +138,7 @@
 				ref="name_of_default_testcase"
 				-->
 	<defaultTestCases>
-		<testCase name="d_hydro_default">
+		<testCase name="d_hydro_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -179,7 +179,7 @@
 				
 				-->
          <testCases>
-		<testCase name="e26_f01_c04-botnow_curnow" ref="d_hydro_default">
+		<testCase name="e26_f01_c04-botnow_curnow" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f01_general_originalgrid/c04-botnow_curnow</path>
 			<checks>
 				<file name="fm/dflowfmoutput/r17_his.nc" type="netCDF">
@@ -204,7 +204,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f01_c06-wavecon" ref="d_hydro_default">
+		<testCase name="e26_f01_c06-wavecon" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f01_general_originalgrid/c06-wavecon</path>
 			<checks>
 				<file name="fm/dflowfmoutput/obw_his.nc" type="netCDF">
@@ -229,7 +229,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f01_c07-wavewatch_file" ref="d_hydro_default">
+		<testCase name="e26_f01_c07-wavewatch_file" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f01_general_originalgrid/c07-wavewatch_file</path>
 			<checks>
 				<file name="fm/DFM_OUTPUT_cca/cca_his.nc" type="netCDF">
@@ -254,7 +254,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f01_c08-f34" ref="d_hydro_default">
+		<testCase name="e26_f01_c08-f34" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f01_general_originalgrid/c08-f34</path>
 			<checks>
 				<file name="fm/DFM_OUTPUT_f34/f34_his.nc" type="netCDF">
@@ -279,7 +279,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f02_c00-test0_smallclosedbasin" ref="d_hydro_default">
+		<testCase name="e26_f02_c00-test0_smallclosedbasin" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/te0_map.nc" type="netCDF">
@@ -297,7 +297,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f02_c01-validation_3.1.6" ref="d_hydro_default">
+		<testCase name="e26_f02_c01-validation_3.1.6" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f02_delft3d_cases/c01-validation_3.1.6/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/fff_his.nc" type="netCDF">
@@ -322,7 +322,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f02_c02-FriesianInlet_schematic" ref="d_hydro_default">
+		<testCase name="e26_f02_c02-FriesianInlet_schematic" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f02_delft3d_cases/c02-FriesianInlet_schematic/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/f34_his.nc" type="netCDF">
@@ -347,7 +347,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f02_c03-FriesianInlet_realistic" ref="d_hydro_default">
+		<testCase name="e26_f02_c03-FriesianInlet_realistic" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/r17_his.nc" type="netCDF">
@@ -372,7 +372,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f02_c04-obstacle" ref="d_hydro_default">
+		<testCase name="e26_f02_c04-obstacle" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f02_delft3d_cases/c04-obstacle/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/obw_his.nc" type="netCDF">
@@ -397,7 +397,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f02_c05-california" ref="d_hydro_default">
+		<testCase name="e26_f02_c05-california" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f02_delft3d_cases/c05-california/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/cca_his.nc" type="netCDF">
@@ -422,7 +422,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f02_c06-loosdrecht" ref="d_hydro_default">
+		<testCase name="e26_f02_c06-loosdrecht" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f02_delft3d_cases/c06-loosdrecht/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/loo_his.nc" type="netCDF">
@@ -447,7 +447,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f03_c00-test0_smallclosedbasin" ref="d_hydro_default">
+		<testCase name="e26_f03_c00-test0_smallclosedbasin" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f03_delft3d_cases_triangular_grid/c00-test0_smallclosedbasin/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/te0_map.nc" type="netCDF">
@@ -465,7 +465,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f03_c01-validation_3.1.6" ref="d_hydro_default">
+		<testCase name="e26_f03_c01-validation_3.1.6" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f03_delft3d_cases_triangular_grid/c01-validation_3.1.6/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/fff_his.nc" type="netCDF">
@@ -490,7 +490,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f03_c02-FriesianInlet_schematic" ref="d_hydro_default">
+		<testCase name="e26_f03_c02-FriesianInlet_schematic" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f03_delft3d_cases_triangular_grid/c02-FriesianInlet_schematic/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/f34_his.nc" type="netCDF">
@@ -515,7 +515,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f03_c03-FriesianInlet_realistic" ref="d_hydro_default">
+		<testCase name="e26_f03_c03-FriesianInlet_realistic" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f03_delft3d_cases_triangular_grid/c03-FriesianInlet_realistic/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/r17_his.nc" type="netCDF">
@@ -540,7 +540,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f03_c04-obstacle" ref="d_hydro_default">
+		<testCase name="e26_f03_c04-obstacle" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f03_delft3d_cases_triangular_grid/c04-obstacle/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/obw_his.nc" type="netCDF">
@@ -565,7 +565,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f03_c05-california" ref="d_hydro_default">
+		<testCase name="e26_f03_c05-california" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f03_delft3d_cases_triangular_grid/c05-california/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/cca_his.nc" type="netCDF">
@@ -590,7 +590,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e26_f03_c06-loosdrecht" ref="d_hydro_default">
+		<testCase name="e26_f03_c06-loosdrecht" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f03_delft3d_cases_triangular_grid/c06-loosdrecht/dfm</path>
 			<checks>
 				<file name="fm/dflowfmoutput/loo_his.nc" type="netCDF">
@@ -616,7 +616,7 @@
 			</checks>
 		</testCase>
 
-		<testCase name="e26_f99_c99-of_loosdrecht_mean" ref="d_hydro_default">
+		<testCase name="e26_f99_c99-of_loosdrecht_mean" ref="d_hydro_default" version="2024.01.15T09:00">
 			<path>e26_dflowfm-wave/f99_longruns/c99-of_loosdrecht_mean</path>
 			<checks>
 				<file name="fm/dflowfmoutput/loo_his.nc" type="netCDF">

@@ -54,7 +54,7 @@
     
     
 	<defaultTestCases>
-		<testCase name="sobek3_default">
+		<testCase name="sobek3_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 			</location>
@@ -68,7 +68,7 @@
     
     
     <testCases>
-         <testCase name="e07_f01_c01_maas_95" ref="sobek3_default">
+         <testCase name="e07_f01_c01_maas_95" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c01_maas_95</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -81,7 +81,7 @@
                  <file name="sobek-maas-j95_5-v2.dsproj_data/Discharge (op)-6b61a240-ec6c-41fd-acf3-d9e0e7a1b4fa.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c02_maas_14_hw1993" ref="sobek3_default">
+         <testCase name="e07_f01_c02_maas_14_hw1993" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c02_maas_14_HW1993</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -94,7 +94,7 @@
                  <file name="sobek-maas-j14_5-v2_HW1993.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c03_maas_14_hw1995" ref="sobek3_default">
+         <testCase name="e07_f01_c03_maas_14_hw1995" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c03_maas_14_HW1995</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -107,7 +107,7 @@
                  <file name="sobek-maas-j14_5-v2_HW1995.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c04_maas_14_hw2003" ref="sobek3_default">
+         <testCase name="e07_f01_c04_maas_14_hw2003" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c04_maas_14_HW2003</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -120,7 +120,7 @@
                  <file name="sobek-maas-j14_5-v2_HW2003.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c05_maas_14_hw2011" ref="sobek3_default">
+         <testCase name="e07_f01_c05_maas_14_hw2011" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c05_maas_14_HW2011</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -133,7 +133,7 @@
                  <file name="sobek-maas-j14_5-v2_HW2011.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c06_maas_14_jd1" ref="sobek3_default">
+         <testCase name="e07_f01_c06_maas_14_jd1" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c06_maas_14_jd1</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -146,7 +146,7 @@
                  <file name="sobek-maas-j14_5-v2_jd1.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c07_maas_14_jd2" ref="sobek3_default">
+         <testCase name="e07_f01_c07_maas_14_jd2" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c07_maas_14_jd2</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -159,7 +159,7 @@
                  <file name="sobek-maas-j14_5-v2_jd2.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c08_maas_14_jd3" ref="sobek3_default">
+         <testCase name="e07_f01_c08_maas_14_jd3" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c08_maas_14_jd3</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -172,7 +172,7 @@
                  <file name="sobek-maas-j14_5-v2_jd3.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c09_maas_14_jd4" ref="sobek3_default">
+         <testCase name="e07_f01_c09_maas_14_jd4" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c09_maas_14_jd4</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -185,7 +185,7 @@
                  <file name="sobek-maas-j14_5-v2_jd4.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c10_maas_14_js1" ref="sobek3_default">
+         <testCase name="e07_f01_c10_maas_14_js1" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c10_maas_14_js1</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -198,7 +198,7 @@
                  <file name="sobek-maas-j14_5-v2_js1.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c11_maas_14_js2" ref="sobek3_default">
+         <testCase name="e07_f01_c11_maas_14_js2" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c11_maas_14_js2</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -211,7 +211,7 @@
                  <file name="sobek-maas-j14_5-v2_js2.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c12_maas_14_js3" ref="sobek3_default">
+         <testCase name="e07_f01_c12_maas_14_js3" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c12_maas_14_js3</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -224,7 +224,7 @@
                  <file name="sobek-maas-j14_5-v2_js3.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c13_maas_14_js4" ref="sobek3_default">
+         <testCase name="e07_f01_c13_maas_14_js4" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c13_maas_14_js4</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -237,7 +237,7 @@
                  <file name="sobek-maas-j14_5-v2_js4.dsproj_data/Discharge (op)-e4e1abff-6036-4afe-a117-d1266a3caee5.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c21_rijn_14" ref="sobek3_default">
+         <testCase name="e07_f01_c21_rijn_14" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c21_rijn_14</path>
              <programs><program ref="sobek3">
                  <arguments>
@@ -250,7 +250,7 @@
                  <file name="sobek-rijn-j14_5-v2.dsproj_data/Discharge (op)-8a0957fd-c19a-48c6-b10b-034c85a78ae4.nc" type="netCDF"><parameters><parameter name="value" toleranceAbsolute="0.0001"/></parameters></file>
              </checks>
          </testCase>
-         <testCase name="e07_f01_c22_rijn_95" ref="sobek3_default">
+         <testCase name="e07_f01_c22_rijn_95" ref="sobek3_default" version="2024.01.15T09:00">
              <path>e07_sobek/f01_rws_acceptance/c22_rijn_95</path>
              <programs><program ref="sobek3">
                  <arguments>

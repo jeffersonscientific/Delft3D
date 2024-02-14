@@ -72,7 +72,7 @@
         </program>
     </programs>
     <defaultTestCases>
-        <testCase name="dwaq_tools_default">
+        <testCase name="dwaq_tools_default" version="2024.01.15T09:00">
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
@@ -87,7 +87,7 @@
     testCases
     -->
     <testCases>
-        <testCase name="waqpb_import_01" ref="dwaq_tools_default">
+        <testCase name="waqpb_import_01" ref="dwaq_tools_default" version="2024.01.15T09:00">
             <path>e602_waqtools/waqpb/waqpb_import_01</path>
             <programs>
                 <program ref= "waqpb_import">
@@ -119,7 +119,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="waqpb_export_01" ref="dwaq_tools_default">
+        <testCase name="waqpb_export_01" ref="dwaq_tools_default" version="2024.01.15T09:00">
             <path>e602_waqtools/waqpb/waqpb_export_01</path>
             <programs>
                 <program ref= "waqpb_export">

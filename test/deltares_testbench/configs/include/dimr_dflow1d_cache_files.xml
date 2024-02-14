@@ -1,5 +1,5 @@
     <testCases>
-        <testCase name="e106_f17_c01_cache_files" ref="dimr_trunk">
+        <testCase name="e106_f17_c01_cache_files" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e106_dflow1d/f17_cache_files/c01</path>
             <maxRunTime>60.0</maxRunTime>
             <programs>
@@ -27,7 +27,7 @@
                 </file>
             </checks>
         </testCase>
-        <testCase name="e106_f17_c02_cache_files" ref="dimr_trunk">
+        <testCase name="e106_f17_c02_cache_files" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e106_dflow1d/f17_cache_files/c02_salinity</path>
             <maxRunTime>60.0</maxRunTime>
             <programs>

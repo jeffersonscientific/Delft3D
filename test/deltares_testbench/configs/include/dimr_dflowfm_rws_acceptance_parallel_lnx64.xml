@@ -1,5 +1,5 @@
     <testCases>
-        <testCase name="e110_f03_c010" ref="dimr_trunk_4">
+        <testCase name="e110_f03_c010" ref="dimr_trunk_4" version="2024.01.15T09:00">
             <path>e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
             <programs>
                 <program ref="dimr4" >
@@ -52,7 +52,7 @@
             </checks>
             <processCount>4</processCount>
         </testCase>
-        <testCase name="e110_f03_c020" ref="dimr_trunk_4">
+        <testCase name="e110_f03_c020" ref="dimr_trunk_4" version="2024.01.15T09:00">
             <path>e110_delft3dfm_suite/f03_caching/c020_maas</path>
             <programs>
                 <program ref="dimr4" >
@@ -85,7 +85,7 @@
             </checks>
             <processCount>4</processCount>
         </testCase>
-        <testCase name="e110_f03_c030" ref="dimr_trunk_4">
+        <testCase name="e110_f03_c030" ref="dimr_trunk_4" version="2024.01.15T09:00">
             <path>e110_delft3dfm_suite/f03_caching/c030_rijntakken</path>
             <programs>
                 <program ref="dimr4" >
@@ -118,7 +118,7 @@
             </checks>
             <processCount>4</processCount>
         </testCase>
-        <testCase name="e110_f03_c040" ref="dimr_trunk_4">
+        <testCase name="e110_f03_c040" ref="dimr_trunk_4" version="2024.01.15T09:00">
             <path>e110_delft3dfm_suite/f03_caching/c040_rmm</path>
             <programs>
                 <program ref="dimr4" >

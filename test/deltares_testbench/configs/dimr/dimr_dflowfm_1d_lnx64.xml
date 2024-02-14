@@ -83,7 +83,7 @@
     <!-- ======================================================================== -->
 
     <defaultTestCases>
-        <testCase name="dimr_default">
+        <testCase name="dimr_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -100,7 +100,7 @@
             </location>
             <maxRunTime>600.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="volumetool">
+        <testCase name="volumetool" version="2024.01.15T09:00">
          <programs>
              <program ref="dfm_volume_tool">
              </program>

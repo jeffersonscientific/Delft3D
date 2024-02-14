@@ -103,7 +103,7 @@
     </program>
   </programs>
   <defaultTestCases>
-    <testCase name="dflowfm_default">
+    <testCase name="dflowfm_default" version="2024.01.15T09:00">
       <location ref="dsctestbench-cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -114,7 +114,7 @@
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->
     </testCase>
-    <testCase name="platform_specific">
+    <testCase name="platform_specific" version="2024.01.15T09:00">
       <location ref="dsctestbench-cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>

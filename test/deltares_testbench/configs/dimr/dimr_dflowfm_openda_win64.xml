@@ -56,7 +56,7 @@
     </program>
   </programs>
   <defaultTestCases>
-    <testCase name="dflowfm_default">
+    <testCase name="dflowfm_default" version="2024.01.15T09:00">
     <programs>
         <program ref="dimr">
             <arguments>
@@ -75,7 +75,7 @@
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->
     </testCase>
-    <testCase name="dflowfm_config">
+    <testCase name="dflowfm_config" version="2024.01.15T09:00">
     <programs>
         <program ref="dimr">
             <arguments>
@@ -94,7 +94,7 @@
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->
     </testCase>
-    <testCase name="platform_specific">
+    <testCase name="platform_specific" version="2024.01.15T09:00">
     <programs>
         <program ref="dimr">
             <arguments>

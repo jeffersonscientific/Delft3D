@@ -70,7 +70,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dimr_trunk">
+        <testCase name="dimr_trunk" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -86,7 +86,7 @@
             </location>
             <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="dimr_trunk_parallel_2">
+        <testCase name="dimr_trunk_parallel_2" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>

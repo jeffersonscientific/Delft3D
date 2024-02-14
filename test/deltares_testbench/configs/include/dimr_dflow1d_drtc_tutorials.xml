@@ -1,6 +1,6 @@
     <testCases>
     <!-- ++++++++++++++++++++++++++++++++++++++++++++ -->
-        <testCase name="e103_f06_c01_simple_control_flow" ref="dflow1d_default">
+        <testCase name="e103_f06_c01_simple_control_flow" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c01_simple_control_flow</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -13,7 +13,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="e103_f06_c02_multiple_controlled_parameters" ref="dflow1d_default">
+        <testCase name="e103_f06_c02_multiple_controlled_parameters" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c02_multiple_controlled_parameters</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -26,7 +26,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="e103_f06_c03_multiple_controlled_structures" ref="dflow1d_default">
+        <testCase name="e103_f06_c03_multiple_controlled_structures" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c03_multiple_controlled_structures</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -39,7 +39,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-         <testCase name="e103_f06_c04_control_flow_with_one_condition" ref="dflow1d_default">
+         <testCase name="e103_f06_c04_control_flow_with_one_condition" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c04_control_flow_with_one_condition</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -52,7 +52,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="e103_f06_c05_control_flow_with_logical_and" ref="dflow1d_default">
+        <testCase name="e103_f06_c05_control_flow_with_logical_and" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c05_control_flow_with_logical_and</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -65,7 +65,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="e103_f06_c06_control_flow_with_logical_or" ref="dflow1d_default">
+        <testCase name="e103_f06_c06_control_flow_with_logical_or" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c06_control_flow_with_logical_or</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -78,7 +78,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="e103_f06_c07_deadbandtrigger_headdifference" ref="dflow1d_default">
+        <testCase name="e103_f06_c07_deadbandtrigger_headdifference" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c07_deadbandtrigger_headdifference</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -91,7 +91,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="e103_f06_c08_deadbandtrigger_observation_point" ref="dflow1d_default">
+        <testCase name="e103_f06_c08_deadbandtrigger_observation_point" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f06_tutorials/c08_deadbandtrigger_observation_point</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">

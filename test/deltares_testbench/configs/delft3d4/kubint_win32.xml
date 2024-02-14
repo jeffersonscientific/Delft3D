@@ -64,7 +64,7 @@
 	default testCases
 	-->
 	<defaultTestCases>
-		<testCase name="kubint_default">
+		<testCase name="kubint_default" version="2024.01.15T09:00">
 			<programs>
 				<program ref="kubint"/>
 			</programs>
@@ -81,7 +81,7 @@
 	testCases
 	-->
 	<testCases>
-		<testCase name="e55_f01_c01_test" ref="kubint_default">
+		<testCase name="e55_f01_c01_test" ref="kubint_default" version="2024.01.15T09:00">
 			<path>e55_kubint/f01_general/c01_test</path>
 			<programs>
 				<program ref="kubint">
@@ -95,7 +95,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e55_f01_c02_test" ref="kubint_default">
+		<testCase name="e55_f01_c02_test" ref="kubint_default" version="2024.01.15T09:00">
 			<path>e55_kubint/f01_general/c02_test</path>
 			<programs>
 				<program ref="kubint">
@@ -109,7 +109,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e55_f01_c03_test" ref="kubint_default">
+		<testCase name="e55_f01_c03_test" ref="kubint_default" version="2024.01.15T09:00">
 			<path>e55_kubint/f01_general/c03_test</path>
 			<programs>
 				<program ref="kubint">

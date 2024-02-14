@@ -65,7 +65,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="skillbed_default">
+        <testCase name="skillbed_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr"/>
             </programs>

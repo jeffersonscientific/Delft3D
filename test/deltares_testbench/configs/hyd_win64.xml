@@ -102,7 +102,7 @@
     </program>
   </programs>
   <defaultTestCases>
-    <testCase name="dflowfm_default">
+    <testCase name="dflowfm_default" version="2024.01.15T09:00">
       <location ref="dsctestbench-cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -115,7 +115,7 @@
     </testCase>
   </defaultTestCases>
   <testCases>
-    <testCase name="e59_f02_c001_frisianinlet_schematized_2D" ref="dflowfm_default">
+    <testCase name="e59_f02_c001_frisianinlet_schematized_2D" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e59_hyd_file/f02_dflowfm/c001_frisianinlet_schematized_2D</path>
       <programs>
         <program ref="DFlowFM" seq="1">
@@ -144,7 +144,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e59_f02_c002_frisianinlet_schematized_3D_s" ref="dflowfm_default">
+    <testCase name="e59_f02_c002_frisianinlet_schematized_3D_s" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e59_hyd_file/f02_dflowfm/c002_frisianinlet_schematized_3D_s</path>
       <programs>
         <program ref="DFlowFM" seq="1">
@@ -173,7 +173,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e59_f02_c002_frisianinlet_schematized_3D_z" ref="dflowfm_default">
+    <testCase name="e59_f02_c002_frisianinlet_schematized_3D_z" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e59_hyd_file/f02_dflowfm/c003_frisianinlet_schematized_3D_z</path>
       <programs>
         <program ref="DFlowFM" seq="1">

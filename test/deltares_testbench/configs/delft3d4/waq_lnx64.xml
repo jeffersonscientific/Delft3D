@@ -127,7 +127,7 @@
                 ref="name_of_default_testcase"
                 -->
     <defaultTestCases>
-        <testCase name="waq_default">
+        <testCase name="waq_default" version="2024.01.15T09:00">
             <location ref="dsctestbench-cases" type="input">
                 <!-- if "to" is not specified, "from" is used as target -->
                 <from>.</from>
@@ -165,7 +165,7 @@
                 
                 -->
     <testCases>
-        <testCase name="e03_f01_c01_test001" ref="waq_default">
+        <testCase name="e03_f01_c01_test001" ref="waq_default" version="2024.01.15T09:00">
             <path>e03_waq/f01_general/c01_test001</path>
             <programs>
                 <program ref="WAQ" seq="1">
@@ -212,7 +212,7 @@
                 </file>
             </checks>
         </testCase>
-        <testCase name="e03_f01_c31_test031" ref="waq_default">
+        <testCase name="e03_f01_c31_test031" ref="waq_default" version="2024.01.15T09:00">
             <path>e03_waq/f01_general/c31_test031</path>
             <programs>
                 <program ref="WAQ" seq="1">

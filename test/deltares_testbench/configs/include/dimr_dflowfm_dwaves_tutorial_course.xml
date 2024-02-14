@@ -3,7 +3,7 @@
     -->
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c01" ref="dimr_trunk">
+        <testCase name="e100_f08_c01" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c01_wad</path>
             <maxRunTime>40.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -24,7 +24,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c02" ref="dimr_trunk">
+        <testCase name="e100_f08_c02" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c02_nested</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -73,7 +73,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c03" ref="dimr_trunk">
+        <testCase name="e100_f08_c03" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c03_wave_growth</path>
             <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -94,7 +94,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c04" ref="dimr_trunk">
+        <testCase name="e100_f08_c04" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c04_strom_wavecon</path>
             <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -115,7 +115,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c05" ref="dimr_trunk">
+        <testCase name="e100_f08_c05" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c05_rousse_profile</path>
             <maxRunTime>200.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -137,7 +137,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c06" ref="dimr_trunk">
+        <testCase name="e100_f08_c06" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c06_01a_straight_coast</path>
             <maxRunTime>1800.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -157,7 +157,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c07" ref="dimr_trunk">
+        <testCase name="e100_f08_c07" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c07_01b_straight_coast</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -177,7 +177,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c08" ref="dimr_trunk">
+        <testCase name="e100_f08_c08" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c08_01c_straight_coast</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -197,7 +197,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c09" ref="dimr_trunk">
+        <testCase name="e100_f08_c09" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c09_01d_straight_coast</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -217,7 +217,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c10" ref="dimr_trunk">
+        <testCase name="e100_f08_c10" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c10_02a_tidal_inlet</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -237,7 +237,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c11" ref="dimr_trunk">
+        <testCase name="e100_f08_c11" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c11_02b_tidal_inlet</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -257,7 +257,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c12" ref="dimr_trunk">
+        <testCase name="e100_f08_c12" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c12_02c_tidal_inlet</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -285,7 +285,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c13" ref="dimr_trunk">
+        <testCase name="e100_f08_c13" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c13_03a_westernscheldt</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -303,7 +303,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c14" ref="dimr_trunk">
+        <testCase name="e100_f08_c14" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c14_03b_westernscheldt</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -321,7 +321,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c15" ref="dimr_trunk">
+        <testCase name="e100_f08_c15" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c15_03c_westernscheldt</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -339,7 +339,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c16" ref="dimr_trunk">
+        <testCase name="e100_f08_c16" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c16_03d_westernscheldt</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
@@ -365,7 +365,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e100_f08_c18" ref="dimr_trunk">
+        <testCase name="e100_f08_c18" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e100_dflowfm-dwaves/f08_tutorial_course_models/c18_01b_straight_coast_triangles</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>

@@ -75,7 +75,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dimr_trunk">
+        <testCase name="dimr_trunk" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -97,7 +97,7 @@
     -->
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e02_f091_c040_rws_waal" ref="dimr_trunk">
+        <testCase name="e02_f091_c040_rws_waal" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
             <maxRunTime>7200.0</maxRunTime> <!-- seconds -->
              <checks>

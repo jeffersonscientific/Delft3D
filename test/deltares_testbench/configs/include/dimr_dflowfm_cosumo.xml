@@ -1,6 +1,6 @@
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c01_mod2_FM_D3D4_folders" ref="dimr_trunk">
+        <testCase name="e38_f01_c01_mod2_FM_D3D4_folders" ref="dimr_trunk" version="2024.02.02T15:30">
             <path>e38_dflowfm-cosumo/f01_general/c01_mod2_FM_D3D4_folders</path>
             <checks>
                 <file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -15,7 +15,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c02_mod2_FM_separated_intake_sink_source" ref="dimr_trunk">
+        <testCase name="e38_f01_c02_mod2_FM_separated_intake_sink_source" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c02_mod2_FM_separated_intake_sink_source</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -30,7 +30,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c03_mod2_FM_sources_partly_below_bed" ref="dimr_trunk">
+        <testCase name="e38_f01_c03_mod2_FM_sources_partly_below_bed" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c03_mod2_FM_sources_partly_below_bed</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -45,7 +45,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c04_mod2_FM_sources_below_bed" ref="dimr_trunk">
+        <testCase name="e38_f01_c04_mod2_FM_sources_below_bed" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c04_mod2_FM_sources_below_bed</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -60,7 +60,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c05_mod2_FM_sources_below_bed" ref="dimr_trunk">
+        <testCase name="e38_f01_c05_mod2_FM_sources_below_bed" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c05_mod2_FM_sources_below_bed</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -75,7 +75,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c06_mod2_FM_sources_below_bed" ref="dimr_trunk">
+        <testCase name="e38_f01_c06_mod2_FM_sources_below_bed" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c06_mod2_FM_sources_below_bed</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -90,7 +90,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c07_mod2_FM_abs_const_operator" ref="dimr_trunk">
+        <testCase name="e38_f01_c07_mod2_FM_abs_const_operator" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c07_mod2_FM_abs_const_operator</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -105,7 +105,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c08_mod2_FM" ref="dimr_trunk">
+        <testCase name="e38_f01_c08_mod2_FM" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c08_mod2_FM</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -120,7 +120,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c09_mod2_FM" ref="dimr_trunk">
+        <testCase name="e38_f01_c09_mod2_FM" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c09_mod2_FM</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -135,7 +135,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c13_mod2_FM_excess_on_intake" ref="dimr_trunk">
+        <testCase name="e38_f01_c13_mod2_FM_excess_on_intake" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c13_mod2_FM_excess_on_intake</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -150,7 +150,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c14_mod2_FM_excess_const_operator" ref="dimr_trunk">
+        <testCase name="e38_f01_c14_mod2_FM_excess_const_operator" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c14_mod2_FM_excess_const_operator</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -165,7 +165,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c15_mod2_FM_massflux_sinks" ref="dimr_trunk">
+        <testCase name="e38_f01_c15_mod2_FM_massflux_sinks" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c15_mod2_FM_massflux_sinks</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -180,7 +180,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c19_mod2_FM_bv_is_half_width" ref="dimr_trunk">
+        <testCase name="e38_f01_c19_mod2_FM_bv_is_half_width" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c19_mod2_FM_bv_is_half_width</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -195,7 +195,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c20_mod2_FM" ref="dimr_trunk">
+        <testCase name="e38_f01_c20_mod2_FM" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c20_mod2_FM</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -210,7 +210,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c21_mod2_FM_multiple_sources" ref="dimr_trunk">
+        <testCase name="e38_f01_c21_mod2_FM_multiple_sources" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c21_mod2_FM_multiple_sources</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -225,7 +225,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c22_mod3_FM_bh_is_half_height" ref="dimr_trunk">
+        <testCase name="e38_f01_c22_mod3_FM_bh_is_half_height" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c22_mod3_FM_bh_is_half_height</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -240,7 +240,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c23_mod3_FM_discharge_momentum" ref="dimr_trunk">
+        <testCase name="e38_f01_c23_mod3_FM_discharge_momentum" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c23_mod3_FM_discharge_momentum</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -255,7 +255,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c24_mod3_FM" ref="dimr_trunk">
+        <testCase name="e38_f01_c24_mod3_FM" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c24_mod3_FM</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -270,7 +270,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c25_mod3_FM_long" ref="dimr_trunk">
+        <testCase name="e38_f01_c25_mod3_FM_long" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c25_mod3_FM_long</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -285,7 +285,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c26_mod3_FM_long" ref="dimr_trunk">
+        <testCase name="e38_f01_c26_mod3_FM_long" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c26_mod3_FM_long</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -300,7 +300,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c27_mod3_FM_long" ref="dimr_trunk">
+        <testCase name="e38_f01_c27_mod3_FM_long" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c27_mod3_FM_long</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -315,7 +315,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c28_mod3_FM_entrainment_momentum" ref="dimr_trunk">
+        <testCase name="e38_f01_c28_mod3_FM_entrainment_momentum" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c28_mod3_FM_entrainment_momentum</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -330,7 +330,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c29_mod3_FM_entrainment_momentum" ref="dimr_trunk">
+        <testCase name="e38_f01_c29_mod3_FM_entrainment_momentum" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c29_mod3_FM_entrainment_momentum</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -345,7 +345,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c30_mod3_FM_entrainment_momentum" ref="dimr_trunk">
+        <testCase name="e38_f01_c30_mod3_FM_entrainment_momentum" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c30_mod3_FM_entrainment_momentum</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -360,7 +360,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c31_mod1_FM_discharge_momentum_orientation" ref="dimr_trunk">
+        <testCase name="e38_f01_c31_mod1_FM_discharge_momentum_orientation" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c31_mod1_FM_discharge_momentum_orientation</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -375,7 +375,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c32_mod1_FM_high_ambient_flow" ref="dimr_trunk">
+        <testCase name="e38_f01_c32_mod1_FM_high_ambient_flow" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c32_mod1_FM_high_ambient_flow</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -390,7 +390,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c33_mod1_FM_multiple_couplings" ref="dimr_trunk">
+        <testCase name="e38_f01_c33_mod1_FM_multiple_couplings" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c33_mod1_FM_multiple_couplings</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -405,7 +405,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c34_mod2_FM_multiple_couplings" ref="dimr_trunk">
+        <testCase name="e38_f01_c34_mod2_FM_multiple_couplings" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c34_mod2_FM_multiple_couplings</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -420,7 +420,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c35_mod2_FM" ref="dimr_trunk">
+        <testCase name="e38_f01_c35_mod2_FM" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c35_mod2_FM</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -435,7 +435,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c37_mod2_FM" ref="dimr_trunk">
+        <testCase name="e38_f01_c37_mod2_FM" ref="dimr_trunk" version="2024.02.07T15:05">
             <path>e38_dflowfm-cosumo/f01_general/c37_mod2_FM</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -450,7 +450,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c40_mod2_FM_multiple_sources_v03" ref="dimr_trunk">
+        <testCase name="e38_f01_c40_mod2_FM_multiple_sources_v03" ref="dimr_trunk" version="2024.02.02T15:30">
             <path>e38_dflowfm-cosumo/f01_general/c40_mod2_FM_multiple_sources_v03</path>
             <checks>
                 <file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">

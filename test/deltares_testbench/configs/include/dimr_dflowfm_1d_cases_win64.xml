@@ -1,5 +1,5 @@
 <testCases>
-    <testCase name="e02_f150_c01_didact-sewer-system" ref="dimr_default">
+    <testCase name="e02_f150_c01_didact-sewer-system" ref="dimr_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f150_1d2d_acceptance_urban/c01_didact-sewer-system</path>
         <checks>
             <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">

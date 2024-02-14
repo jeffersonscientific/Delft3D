@@ -73,7 +73,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dimr_trunk">
+        <testCase name="dimr_trunk" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -95,7 +95,7 @@
     -->
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e109_f01_c010" ref="dimr_trunk">
+        <testCase name="e109_f01_c010" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
              <checks>
                 <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_map.nc" type="NETCDF">

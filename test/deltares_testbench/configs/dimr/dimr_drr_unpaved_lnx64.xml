@@ -76,7 +76,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="drr_default">
+        <testCase name="drr_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>

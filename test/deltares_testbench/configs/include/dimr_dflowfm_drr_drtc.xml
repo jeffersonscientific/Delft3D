@@ -1,6 +1,6 @@
 <testCases>
     <!-- ======================================================================== -->
-    <testCase name="e114_f01_c01_hunze_en_aas" ref="dimr_trunk">
+    <testCase name="e114_f01_c01_hunze_en_aas" ref="dimr_trunk" version="2024.01.15T09:00">
         <path>e114_dflowfm-drr-drtc/f01_general/c01_hunze_en_aas</path>
         <checks>
             <file name="dflowfm/output/FlowFM_map.nc" type="NETCDF">

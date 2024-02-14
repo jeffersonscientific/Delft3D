@@ -1,6 +1,6 @@
     <testCases>
 	<!-- ======================================================================== -->
-        <testCase name="e108(drr)_f03(walrus)_c01_Regge-regression-test" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c01_Regge-regression-test" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c01_Regge-regression-test</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -68,7 +68,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== --> 
-        <testCase name="e108(drr)_f03(walrus)_c02_Aa-en-Maas-regression-test" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c02_Aa-en-Maas-regression-test" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c02_Aa-en-Maas-regression-test</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -166,7 +166,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-        <testCase name="e108(drr)_f03(walrus)_c03_wetness-index" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c03_wetness-index" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c03_wetness-index</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -190,7 +190,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-        <testCase name="e108(drr)_f03(walrus)_c04_transpiration-reduction-factor" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c04_transpiration-reduction-factor" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c04_transpiration-reduction-factor</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -214,7 +214,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   		
-        <testCase name="e108(drr)_f03(walrus)_c05_equilibrium-storage-deficit" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c05_equilibrium-storage-deficit" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c05_equilibrium-storage-deficit</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -238,7 +238,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-        <testCase name="e108(drr)_f03(walrus)_c06_stage-discharge-relationship" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c06_stage-discharge-relationship" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c06_stage-discharge-relationship</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -270,7 +270,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-        <testCase name="e108(drr)_f03(walrus)_c07_contiguous-simulation-part1and2" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c07_contiguous-simulation-part1and2" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c07_contiguous-simulation-part1and2</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -300,7 +300,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-        <testCase name="e108(drr)_f03(walrus)_c08_generate-restart-file-part1" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c08_generate-restart-file-part1" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c08_generate-restart-file-part1</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -330,7 +330,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-		    <testCase name="e108(drr)_f03(walrus)_c09_start-from-restart-file-part2" ref="drr_default">
+		    <testCase name="e108(drr)_f03(walrus)_c09_start-from-restart-file-part2" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c09_start-from-restart-file-part2</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -360,7 +360,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-		    <testCase name="e108(drr)_f03(walrus)_c10_crest-level-weir-surface-water-reservoir" ref="drr_default">
+		    <testCase name="e108(drr)_f03(walrus)_c10_crest-level-weir-surface-water-reservoir" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c10_crest-level-weir-surface-water-reservoir</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
@@ -392,7 +392,7 @@
             <!-- seconds -->
         </testCase>
 	    <!-- ======================================================================== -->   
-		    <testCase name="e108(drr)_f03(walrus)_c11_different-computational-time-steps" ref="drr_default">
+		    <testCase name="e108(drr)_f03(walrus)_c11_different-computational-time-steps" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f03_walrus/c11_different-computational-time-steps</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">

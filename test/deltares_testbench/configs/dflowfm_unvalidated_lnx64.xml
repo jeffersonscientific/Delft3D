@@ -149,7 +149,7 @@
 				ref="name_of_default_testcase"
 				-->
 	<defaultTestCases>
-		<testCase name="dflowfm_default">
+		<testCase name="dflowfm_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<!-- if "to" is not specified, "from" is used as target -->
 				<from>.</from>
@@ -187,7 +187,7 @@
 				
 				-->
      <testCases>
-		<testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default">
+		<testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default" version="2024.01.15T09:00">
 		  <path>e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">
@@ -209,7 +209,7 @@
 			</file>
 		  </checks>		  
 		 </testCase>
-		<testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default">
+		<testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default" version="2024.01.15T09:00">
 		  <path>e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">

@@ -57,7 +57,7 @@
             <file name=""></file>                                
         </checks>
     </testCase>
-    <testCase name="e101_f01_c006_1D2D_Water_balance_1D2D_for_flow_from_2D_to_1D" ref="dimr_trunk">
+    <testCase name="e101_f01_c006_1D2D_Water_balance_1D2D_for_flow_from_2D_to_1D" ref="dimr_trunk" version="2024.01.15T09:00">
         <path>e101_dflow1d-dflowfm/f01_lateral_exchange/c006_1D2D_Water_balance_1D2D_for_flow_from_2D_to_1D</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">

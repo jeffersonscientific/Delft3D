@@ -70,7 +70,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="coupsds_default">
+        <testCase name="coupsds_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="coupsds"/>
             </programs>
@@ -87,7 +87,7 @@
     testCases
     -->
     <testCases>
-        <testCase name="e52_f01_c01" ref="coupsds_default">
+        <testCase name="e52_f01_c01" ref="coupsds_default" version="2024.01.15T09:00">
             <path>e52_coupsds/f01_general/c01_test_01</path>
             <programs>
                 <program ref="coupsds">
@@ -106,7 +106,7 @@
             </checks>
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="e52_f01_c02" ref="coupsds_default">
+        <testCase name="e52_f01_c02" ref="coupsds_default" version="2024.01.15T09:00">
             <path>e52_coupsds/f01_general/c02_test_02</path>
             <programs>
                 <program ref="coupsds">
@@ -127,7 +127,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
 		<!--- Case e52_f01_c03 seems to be invallid (sds-file doesn't contain the right information)
-        <testCase name="e52_f01_c03" ref="coupsds_default">
+        <testCase name="e52_f01_c03" ref="coupsds_default" version="2024.01.15T09:00">
             <path>e52_coupsds/f01_general/c03_test_03</path>
             <programs>
                 <program ref="coupsds">
@@ -146,7 +146,7 @@
             <maxRunTime>6.0</maxRunTime> 
         </testCase>
 		-->
-        <testCase name="e52_f01_c04" ref="coupsds_default">
+        <testCase name="e52_f01_c04" ref="coupsds_default" version="2024.01.15T09:00">
             <path>e52_coupsds/f01_general/c04_test_04</path>
             <programs>
                 <program ref="coupsds">

@@ -64,7 +64,7 @@
 	default testCases
 	-->
 	<defaultTestCases>
-		<testCase name="lint_default">
+		<testCase name="lint_default" version="2024.01.15T09:00">
 			<programs>
 				<program ref="lint"/>
 			</programs>
@@ -81,7 +81,7 @@
 	testCases
 	-->
 	<testCases>
-		<testCase name="e56_f01_c01_test" ref="lint_default">
+		<testCase name="e56_f01_c01_test" ref="lint_default" version="2024.01.15T09:00">
 			<path>e56_lint/f01_general/c01_test</path>
 			<programs>
 				<program ref="lint">
@@ -95,7 +95,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e56_f01_c02_test" ref="lint_default">
+		<testCase name="e56_f01_c02_test" ref="lint_default" version="2024.01.15T09:00">
 			<path>e56_lint/f01_general/c02_test</path>
 			<programs>
 				<program ref="lint">
@@ -109,7 +109,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e56_f01_c03_test" ref="lint_default">
+		<testCase name="e56_f01_c03_test" ref="lint_default" version="2024.01.15T09:00">
 			<path>e56_lint/f01_general/c03_test</path>
 			<programs>
 				<program ref="lint">

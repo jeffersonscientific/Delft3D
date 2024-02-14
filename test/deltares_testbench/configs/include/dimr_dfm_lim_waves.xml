@@ -1,5 +1,5 @@
 <testCases>
-	<testCase name="e02_f043_c01_WAQ_2D" ref="dflowfm_fetch_limited_waves">
+	<testCase name="e02_f043_c01_WAQ_2D" ref="dflowfm_fetch_limited_waves" version="2024.01.15T09:00">
       <path>e02_dflowfm/f043_fetch_limited_waves/c01_WAQ_2D/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
@@ -13,7 +13,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e02_f043_c02_WAQ_3D" ref="dflowfm_fetch_limited_waves">
+	<testCase name="e02_f043_c02_WAQ_3D" ref="dflowfm_fetch_limited_waves" version="2024.01.15T09:00">
       <path>e02_dflowfm/f043_fetch_limited_waves/c02_WAQ_3D/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
@@ -27,7 +27,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e02_f043_c03_WAQ_3D" ref="dflowfm_fetch_limited_waves">
+	<testCase name="e02_f043_c03_WAQ_3D" ref="dflowfm_fetch_limited_waves" version="2024.01.15T09:00">
       <path>e02_dflowfm/f043_fetch_limited_waves/c03_WAQ_3D/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
@@ -41,7 +41,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e02_f043_c04" ref="dflowfm_fetch_limited_waves">
+	<testCase name="e02_f043_c04" ref="dflowfm_fetch_limited_waves" version="2024.01.15T09:00">
       <path>e02_dflowfm/f043_fetch_limited_waves/c04/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
@@ -54,7 +54,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e02_f043_c05" ref="dflowfm_fetch_limited_waves">
+	<testCase name="e02_f043_c05" ref="dflowfm_fetch_limited_waves" version="2024.01.15T09:00">
       <path>e02_dflowfm/f043_fetch_limited_waves/c05/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>

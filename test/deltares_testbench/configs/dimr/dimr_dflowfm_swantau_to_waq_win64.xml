@@ -104,7 +104,7 @@
   default testCases
   -->
   <defaultTestCases>
-    <testCase name="dflowfm_swantau_to_waq_default">
+    <testCase name="dflowfm_swantau_to_waq_default" version="2024.01.15T09:00">
       <location ref="dsctestbench-cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -127,7 +127,7 @@
   testCases
   -->
   <testCases>
-    <testCase name="e02_f041_c01_FriesianInlet_schematic" ref="dflowfm_swantau_to_waq_default">
+    <testCase name="e02_f041_c01_FriesianInlet_schematic" ref="dflowfm_swantau_to_waq_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
       <checks>
         <file name="dflowfm/dflowfmoutput/f34_map.nc" type="netCDF">
@@ -138,7 +138,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f041_c02_California" ref="dflowfm_swantau_to_waq_default">
+    <testCase name="e02_f041_c02_California" ref="dflowfm_swantau_to_waq_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f041_SWAN-tau_to_WAQ/c02_California</path>
       <checks>
         <file name="dflowfm/dflowfmoutput/cca_map.nc" type="netCDF">

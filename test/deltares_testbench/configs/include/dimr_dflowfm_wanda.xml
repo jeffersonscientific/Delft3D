@@ -1,6 +1,6 @@
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e121_f02_c01_sequential" ref="dimr_trunk">
+        <testCase name="e121_f02_c01_sequential" ref="dimr_trunk" version="2024.01.15T09:00">
             <path>e121_dflowfm_wanda/f02_turbines/c01_sequential</path>
             <checks>
                 <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_map.nc" type="NETCDF">
@@ -20,7 +20,7 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e121_f02_c02_parallel" ref="dimr_trunk_parallel_2">
+        <testCase name="e121_f02_c02_parallel" ref="dimr_trunk_parallel_2" version="2024.01.15T09:00">
             <path>e121_dflowfm_wanda/f02_turbines/c02_parallel</path>
             <checks>
                 <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_0000_map.nc" type="NETCDF">

@@ -64,7 +64,7 @@
 	default testCases
 	-->
 	<defaultTestCases>
-		<testCase name="datsel_default">
+		<testCase name="datsel_default" version="2024.01.15T09:00">
 			<programs>
 				<program ref="datsel"/>
 			</programs>
@@ -81,7 +81,7 @@
 	testCases
 	-->
 	<testCases>
-		<testCase name="e53_f01_c01_test" ref="datsel_default">
+		<testCase name="e53_f01_c01_test" ref="datsel_default" version="2024.01.15T09:00">
 			<path>e53_datsel/f01_general/c01_test</path>
 			<programs>
 				<program ref="datsel">
@@ -98,7 +98,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e53_f01_c02_test" ref="datsel_default">
+		<testCase name="e53_f01_c02_test" ref="datsel_default" version="2024.01.15T09:00">
 			<path>e53_datsel/f01_general/c02_test</path>
 			<programs>
 				<program ref="datsel">
@@ -115,7 +115,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e53_f01_c03_test" ref="datsel_default">
+		<testCase name="e53_f01_c03_test" ref="datsel_default" version="2024.01.15T09:00">
 			<path>e53_datsel/f01_general/c03_test</path>
 			<programs>
 				<program ref="datsel">
@@ -132,7 +132,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e53_f01_c04_ijmuiden" ref="datsel_default">
+		<testCase name="e53_f01_c04_ijmuiden" ref="datsel_default" version="2024.01.15T09:00">
 			<path>e53_datsel/f01_general/c04_ijmuiden</path>
 			<programs>
 				<program ref="datsel">
@@ -149,7 +149,7 @@
 			</checks>
 			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
 		</testCase>
-		<testCase name="e53_f01_c05_comm-file" ref="datsel_default">
+		<testCase name="e53_f01_c05_comm-file" ref="datsel_default" version="2024.01.15T09:00">
 			<path>e53_datsel/f01_general/c05_comm-file</path>
 			<programs>
 				<program ref="datsel">

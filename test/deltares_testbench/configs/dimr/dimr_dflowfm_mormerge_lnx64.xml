@@ -88,7 +88,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dflowfm_default">
+        <testCase name="dflowfm_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -104,7 +104,7 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="dflowfm_config">
+        <testCase name="dflowfm_config" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -120,7 +120,7 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="platform_specific">
+        <testCase name="platform_specific" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -141,7 +141,7 @@
     testCases
     -->
 <testCases>
-    <testCase name="e123_f01_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
+    <testCase name="e123_f01_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default" version="2024.01.15T09:00">
         <path>e123_dflowfm-mormerge/f01_general/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
         <maxRunTime>600.0000000</maxRunTime>
         <programs>
@@ -182,7 +182,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e123_f02_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
+    <testCase name="e123_f02_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default" version="2024.01.15T09:00">
         <path>e123_dflowfm-mormerge/f02_mergedtuser/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
         <maxRunTime>600.0000000</maxRunTime>
         <programs>

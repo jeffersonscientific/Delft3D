@@ -1,7 +1,7 @@
   <testCases>
     <!-- TEST CASES FOR SOURCE SINK -->
 
-    <testCase name="e02_f029_c010_sourcesink_2D" ref="dflowfm_default">
+    <testCase name="e02_f029_c010_sourcesink_2D" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c010_sourcesink_2D</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -80,7 +80,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c011_sourcesink_3D_s" ref="dflowfm_default">
+    <testCase name="e02_f029_c011_sourcesink_3D_s" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c011_sourcesink_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -159,7 +159,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c012_sourcesink_3D_z" ref="dflowfm_default">
+    <testCase name="e02_f029_c012_sourcesink_3D_z" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c012_sourcesink_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -241,7 +241,7 @@
 
     <!-- TEST CASES FOR 1D models -->
 
-    <testCase name="e02_f029_c500_simple_1D_model" ref="dflowfm_default">
+    <testCase name="e02_f029_c500_simple_1D_model" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c500_simple_1D_model</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -324,7 +324,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c501_junction-advection-acceleration-equidistant" ref="dflowfm_default">
+    <testCase name="e02_f029_c501_junction-advection-acceleration-equidistant" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c501_junction-advection-acceleration-equidistant</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -407,7 +407,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c501_junction-advection-acceleration-equidistant_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c501_junction-advection-acceleration-equidistant_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c501_junction-advection-acceleration-equidistant</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -443,7 +443,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c502_junction-advection-deceleration-equidistant" ref="dflowfm_default">
+    <testCase name="e02_f029_c502_junction-advection-deceleration-equidistant" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c502_junction-advection-deceleration-equidistant</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -526,7 +526,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c502_junction-advection-deceleration-equidistant_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c502_junction-advection-deceleration-equidistant_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c502_junction-advection-deceleration-equidistant_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -551,7 +551,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c503_junction-advection-acceleration-non-equidistant" ref="dflowfm_default">
+    <testCase name="e02_f029_c503_junction-advection-acceleration-non-equidistant" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c503_junction-advection-acceleration-non-equidistant</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -634,7 +634,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c504_junction-advection-deceleration-non-equidistant" ref="dflowfm_default">
+    <testCase name="e02_f029_c504_junction-advection-deceleration-non-equidistant" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c504_junction-advection-deceleration-non-equidistant</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -717,7 +717,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream" ref="dflowfm_default">
+    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -801,7 +801,7 @@
     </testCase>
 
 
-    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c505_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c505_junction-advection-flood-wave-divergence-equidistant-pos-flow_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -831,7 +831,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c506_junction-advection-flood-wave-divergence-equidistant-neg-flow-upstream" ref="dflowfm_default">
+    <testCase name="e02_f029_c506_junction-advection-flood-wave-divergence-equidistant-neg-flow-upstream" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c506_junction-advection-flood-wave-divergence-equidistant-neg-flow-upstream</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -914,7 +914,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream" ref="dflowfm_default">
+    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -997,7 +997,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c507_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c507_junction-advection-flood-wave-confluence-equidistant-pos-flow_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -1027,7 +1027,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c508_junction-advection-flood-wave-confluence-equidistant-neg-flow-upstream" ref="dflowfm_default">
+    <testCase name="e02_f029_c508_junction-advection-flood-wave-confluence-equidistant-neg-flow-upstream" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c508_junction-advection-flood-wave-confluence-equidistant-neg-flow-upstream</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1110,7 +1110,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c510_1D-boundaries_steady-state-flow" ref="dflowfm_default">
+    <testCase name="e02_f029_c510_1D-boundaries_steady-state-flow" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c510_1D-boundaries_steady-state-flow</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1193,7 +1193,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c516_curved-channel-junction-advection-reference" ref="dflowfm_default">
+    <testCase name="e02_f029_c516_curved-channel-junction-advection-reference" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c516_curved-channel-junction-advection-reference</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1276,7 +1276,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c516_curved-channel-junction-advection-reference_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c516_curved-channel-junction-advection-reference_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c516_curved-channel-junction-advection-reference_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -1298,7 +1298,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c517_initial-conditions-water-level" ref="dflowfm_default">
+    <testCase name="e02_f029_c517_initial-conditions-water-level" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c517_initial-conditions-water-level</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1381,7 +1381,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c518_initial-conditions-water-depth" ref="dflowfm_default">
+    <testCase name="e02_f029_c518_initial-conditions-water-depth" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c518_initial-conditions-water-depth</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1464,7 +1464,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c519_1Dnetwork-length-noOpenBC" ref="dflowfm_default">
+    <testCase name="e02_f029_c519_1Dnetwork-length-noOpenBC" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c519_1Dnetwork-length-noOpenBC</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1547,7 +1547,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c520_1Dnetwork-length-OpenBC" ref="dflowfm_default">
+    <testCase name="e02_f029_c520_1Dnetwork-length-OpenBC" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c520_1Dnetwork-length-OpenBC</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1631,7 +1631,7 @@
     </testCase>
 <!--
 ! MDK 10-10-2022 Test case disabled since it contains odd results on the D-FlowFM side.
-    <testCase name="e02_f029_c521_1Dnetwork_pipes_urban" ref="dflowfm_default">
+    <testCase name="e02_f029_c521_1Dnetwork_pipes_urban" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c521_1Dnetwork_pipes_urban</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1686,7 +1686,7 @@
 
     <!-- TEST CASES FOR 1D2D models -->
 
-    <testCase name="e02_f029_c600_Equal1D_Equal2D_Rural_Lateral_Links" ref="dflowfm_default">
+    <testCase name="e02_f029_c600_Equal1D_Equal2D_Rural_Lateral_Links" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c600_Equal1D_Equal2D_Rural_Lateral_Links</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1772,7 +1772,7 @@
 
     <!-- TEST CASES FOR structures-->
 
-    <testCase name="e02_f029_c601_Weir" ref="dflowfm_default">
+    <testCase name="e02_f029_c601_Weir" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c601_Weir</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1855,7 +1855,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c601_Weir_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c601_Weir_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c601_Weir_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -1873,7 +1873,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c602_Orifice" ref="dflowfm_default">
+    <testCase name="e02_f029_c602_Orifice" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c602_Orifice</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -1956,7 +1956,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c602_Orifice_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c602_Orifice_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c602_Orifice_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -1980,7 +1980,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c603_Culvert" ref="dflowfm_default">
+    <testCase name="e02_f029_c603_Culvert" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c603_Culvert</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2063,7 +2063,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c604_Pump" ref="dflowfm_default">
+    <testCase name="e02_f029_c604_Pump" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c604_Pump</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2146,7 +2146,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c604_Pump_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c604_Pump_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c604_Pump_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -2176,7 +2176,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c605_Bridge" ref="dflowfm_default">
+    <testCase name="e02_f029_c605_Bridge" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c605_Bridge</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2259,7 +2259,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c606_Universal_Weir" ref="dflowfm_default">
+    <testCase name="e02_f029_c606_Universal_Weir" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c606_Universal_Weir</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2342,7 +2342,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c606_Universal_Weir_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c606_Universal_Weir_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c606_Universal_Weir_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -2360,7 +2360,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c607_Compound" ref="dflowfm_default">
+    <testCase name="e02_f029_c607_Compound" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c607_Compound</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2443,7 +2443,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c608_Pump_without_stages" ref="dflowfm_default">
+    <testCase name="e02_f029_c608_Pump_without_stages" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c608_Pump_without_stages</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2526,7 +2526,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c609_Inverted_siphon" ref="dflowfm_default">
+    <testCase name="e02_f029_c609_Inverted_siphon" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c609_Inverted_siphon</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2609,7 +2609,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c614_Pump_with_bc_timeseries" ref="dflowfm_default">
+    <testCase name="e02_f029_c614_Pump_with_bc_timeseries" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c614_Pump_with_bc_timeseries</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2692,7 +2692,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c620_sewer_overflow_urban" ref="dflowfm_default">
+    <testCase name="e02_f029_c620_sewer_overflow_urban" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c620_sewer_overflow_urban</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2775,7 +2775,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c621_orifice_urban" ref="dflowfm_default">
+    <testCase name="e02_f029_c621_orifice_urban" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c621_orifice_urban</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2858,7 +2858,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c622_pump_urban" ref="dflowfm_default">
+    <testCase name="e02_f029_c622_pump_urban" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c622_pump_urban</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -2941,7 +2941,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f029_c622_pump_urban_WAQ" ref="dwaq_default">
+    <testCase name="e02_f029_c622_pump_urban_WAQ" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e02_dflowfm/f029_hyd_file/c622_pump_urban_WAQ</path>
         <programs>
           <program ref="dimr_waq" seq="1">
@@ -2969,7 +2969,7 @@
         </checks>
     </testCase>
 
-    <testCase name="e02_f029_c623_AllowedFlowDir" ref="dflowfm_default">
+    <testCase name="e02_f029_c623_AllowedFlowDir" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c623_AllowedFlowDir</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -3054,7 +3054,7 @@
 
    
 
-    <testCase name="e02_f029_c702_1d-precipitation" ref="dflowfm_default">
+    <testCase name="e02_f029_c702_1d-precipitation" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c702_1d-precipitation</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -3138,7 +3138,7 @@
     </testCase>
 
 
-    <testCase name="e02_f029_c702a_1d-precipitation" ref="dflowfm_default">
+    <testCase name="e02_f029_c702a_1d-precipitation" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c702a_1d-precipitation</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -3222,7 +3222,7 @@
     </testCase>
 
 
-    <testCase name="e02_f029_c702b_1d-precipitation" ref="dflowfm_default">
+    <testCase name="e02_f029_c702b_1d-precipitation" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c702b_1d-precipitation</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -3306,7 +3306,7 @@
     </testCase>
 
 
-    <testCase name="e02_f029_c702c_1d-precipitation" ref="dflowfm_default">
+    <testCase name="e02_f029_c702c_1d-precipitation" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c702c_1d-precipitation</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -3390,7 +3390,7 @@
     </testCase>
 
 
-    <testCase name="e02_f029_c702d_1d-precipitation" ref="dflowfm_default">
+    <testCase name="e02_f029_c702d_1d-precipitation" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c702d_1d-precipitation</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -3474,7 +3474,7 @@
     </testCase>
 
 
-    <testCase name="e02_f029_c702e_1d-precipitation" ref="dflowfm_default">
+    <testCase name="e02_f029_c702e_1d-precipitation" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f029_hyd_file/c702e_1d-precipitation</path>
       <programs>
         <program ref="dimr" seq="1">

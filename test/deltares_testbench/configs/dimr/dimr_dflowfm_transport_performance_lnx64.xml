@@ -78,7 +78,7 @@
     </program>
   </programs>
   <defaultTestCases>
-    <testCase name="dflowfm_default">
+    <testCase name="dflowfm_default" version="2024.01.15T09:00">
       <location ref="dsctestbench-cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -94,7 +94,7 @@
 
     <!-- PERFORMANCE TESTS - ONE DOMAIN -->
 
-    <testCase name="e02_f031_c001_westerschelde_2d_performance" ref="dflowfm_default">
+    <testCase name="e02_f031_c001_westerschelde_2d_performance" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f031_performance_transport/c001_westerschelde_2d_perf</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -158,7 +158,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f031_c002_westerschelde_3d_sigma_performance" ref="dflowfm_default">
+    <testCase name="e02_f031_c002_westerschelde_3d_sigma_performance" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f031_performance_transport/c002_westerschelde_3d_s_perf</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -222,7 +222,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f031_c003_westerschelde_3d_z_performance" ref="dflowfm_default">
+    <testCase name="e02_f031_c003_westerschelde_3d_z_performance" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f031_performance_transport/c003_westerschelde_3d_z_perf</path>
       <programs>
         <program ref="dimr" seq="1">
@@ -288,7 +288,7 @@
 
     <!-- PERFORMANCE TESTS - THREE DOMAINS -->
 
-    <testCase name="e02_f031_c101_westerschelde_2d_performance_3_domains" ref="dflowfm_default">
+    <testCase name="e02_f031_c101_westerschelde_2d_performance_3_domains" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f031_performance_transport/c101_westerschelde_2d_perf_3dom</path>
       <programs>
         <program ref="adapt_mdu_parallel" seq="1">
@@ -374,7 +374,7 @@
       <processCount>3</processCount>
     </testCase>
 
-    <testCase name="e02_f031_c102_westerschelde_3d_s_performance_3_domains" ref="dflowfm_default">
+    <testCase name="e02_f031_c102_westerschelde_3d_s_performance_3_domains" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f031_performance_transport/c102_westerschelde_3d_s_perf_3dom</path>
       <programs>
         <program ref="adapt_mdu_parallel" seq="1">
@@ -460,7 +460,7 @@
       <processCount>3</processCount>
     </testCase>
 
-    <testCase name="e02_f031_c103_westerschelde_3d_z_performance_3_domains" ref="dflowfm_default">
+    <testCase name="e02_f031_c103_westerschelde_3d_z_performance_3_domains" ref="dflowfm_default" version="2024.01.15T09:00">
       <path>e02_dflowfm/f031_performance_transport/c103_westerschelde_3d_z_perf_3dom</path>
       <programs>
         <program ref="adapt_mdu_parallel" seq="1">

@@ -69,7 +69,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dflow1d_default">
+        <testCase name="dflow1d_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr" seq="1">
                     <arguments>
@@ -92,7 +92,7 @@
     -->
     <testCases>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f07(compound-structures)_c01_246c_compound-pump_free-surface-flow" ref="dflow1d_default">
+		<testCase name="e106(dflow1d)_f07(compound-structures)_c01_246c_compound-pump_free-surface-flow" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e106_dflow1d/f07_compound-structures/c01_246c_compound-pump_free-surface-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -177,7 +177,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f07(compound-structures)_c02_366c_compound-pump_free-surface-flow_rws-reduction-table(neg-pump-heads)" ref="dflow1d_default">
+		<testCase name="e106(dflow1d)_f07(compound-structures)_c02_366c_compound-pump_free-surface-flow_rws-reduction-table(neg-pump-heads)" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e106_dflow1d/f07_compound-structures/c02_366c_compound-pump_free-surface-flow_rws-reduction-table(neg-pump-heads)</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -218,7 +218,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f07(compound-structures)_c03_236c_internal-compound-pump_free-surface-flow" ref="dflow1d_default">
+		<testCase name="e106(dflow1d)_f07(compound-structures)_c03_236c_internal-compound-pump_free-surface-flow" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e106_dflow1d/f07_compound-structures/c03_236c_internal-compound-pump_free-surface-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -303,7 +303,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f07(compound-structures)_c04_288c_internal-compound-pump_pressurized-pipe-flow" ref="dflow1d_default">
+		<testCase name="e106(dflow1d)_f07(compound-structures)_c04_288c_internal-compound-pump_pressurized-pipe-flow" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e106_dflow1d/f07_compound-structures/c04_288c_internal-compound-pump_pressurized-pipe-flow</path>
             <checks>
 				<file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -393,7 +393,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f07(compound-structures)_c05_287c_external-compound-pump_free-surface-flow" ref="dflow1d_default">
+		<testCase name="e106(dflow1d)_f07(compound-structures)_c05_287c_external-compound-pump_free-surface-flow" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e106_dflow1d/f07_compound-structures/c05_287c_external-compound-pump_free-surface-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -478,7 +478,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f07(compound-structures)_c06_289c_external-compound-pump_pressurized-pipe-flow" ref="dflow1d_default">
+		<testCase name="e106(dflow1d)_f07(compound-structures)_c06_289c_external-compound-pump_pressurized-pipe-flow" ref="dflow1d_default" version="2024.01.15T09:00">
             <path>e106_dflow1d/f07_compound-structures/c06_289c_external-compound-pump_pressurized-pipe-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">

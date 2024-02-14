@@ -75,7 +75,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="sobek_default">
+        <testCase name="sobek_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -96,7 +96,7 @@
     testCases
     -->
     <testCases>
-        <testCase name="e103_f01_c01_maas" ref="sobek_default">
+        <testCase name="e103_f01_c01_maas" ref="sobek_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f01_rws_acceptance/c01_maas</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -108,7 +108,7 @@
             </checks>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="e103_f01_c04_overijsselse_vecht_delta" ref="sobek_default">
+        <testCase name="e103_f01_c04_overijsselse_vecht_delta" ref="sobek_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f01_rws_acceptance/c04_overijsselse_vecht_delta</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -120,7 +120,7 @@
             </checks>
             <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="e103_f01_c02_rijn" ref="sobek_default">
+        <testCase name="e103_f01_c02_rijn" ref="sobek_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f01_rws_acceptance/c02_rijn</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -132,7 +132,7 @@
             </checks>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="e103_f01_c03_rmm" ref="sobek_default">
+        <testCase name="e103_f01_c03_rmm" ref="sobek_default" version="2024.01.15T09:00">
             <path>e103_dflow1d-drtc/f01_rws_acceptance/c03_rmm</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">

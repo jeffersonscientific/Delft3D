@@ -56,7 +56,7 @@
         </program>
 	</programs>
 	<defaultTestCases>
-		<testCase name="sedmor_default">
+		<testCase name="sedmor_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-references" type="reference">
 				<from>win32</from>
 			</location>
@@ -101,7 +101,7 @@
 				
 				-->
 	<testCases>
-		<testCase name="e40_f01_c01_test" ref="sedmor_default">
+		<testCase name="e40_f01_c01_test" ref="sedmor_default" version="2024.01.15T09:00">
 			<path>e40_dmor1d/f01_general/c01_test</path>
                         <checks>
 				<file name="WORK\CALCPNT.HIS" type="HIS"/>

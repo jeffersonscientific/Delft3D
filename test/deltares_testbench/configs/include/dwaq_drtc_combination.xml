@@ -1,7 +1,11 @@
 <testCases>
     <!-- Combination of D-Water Quality and D-RTC: 1D cases -->
-    <testCase name="e601_f01_c01_waq_rtc_oxy" ref="dwaq_default">
+    <!-- 
+    <testCase name="e601_f01_c01_waq_rtc_oxy" ref="dwaq_default" version="2024.01.15T09:00">
         <path>e601_waq_rtc/f01_wasteload/c01_waq_rtc_oxy</path>
+    -->
+    <testCase name="e601_f01_c01_waq_rtc_oxy" ref="dwaq_default" version="2024.02.07T17:00">
+        <path>e601_waq-rtc/f01_wasteload/c01_waq_rtc_oxy</path>
         <programs>
             <program ref="dimr" seq="1">
                <arguments>
@@ -43,8 +47,8 @@
             </file>
         </checks>
    </testCase>
-    <testCase name="e601_f01_c02_monitor" ref="dwaq_default">
-        <path>e601_waq_rtc/f01_wasteload/c02_monitor</path>
+    <testCase name="e601_f01_c02_monitor" ref="dwaq_default" version="2024.02.07T17:00">
+        <path>e601_waq-rtc/f01_wasteload/c02_monitor</path>
         <programs>
             <program ref="dimr" seq="1">
                <arguments>
@@ -69,8 +73,8 @@
             </file>
         </checks>
    </testCase>
-    <testCase name="e601_f02_c01_filter_wasteload" ref="dwaq_default">
-        <path>e601_waq_rtc/f02_filtering/c01_filter_wasteload</path>
+    <testCase name="e601_f02_c01_filter_wasteload" ref="dwaq_default" version="2024.02.07T17:00">
+        <path>e601_waq-rtc/f02_filtering/c01_filter_wasteload</path>
         <programs>
             <program ref="dimr" seq="1">
                <arguments>

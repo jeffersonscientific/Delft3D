@@ -57,7 +57,7 @@
     </program>
   </programs>
   <defaultTestCases>
-    <testCase name="dimr_default">
+    <testCase name="dimr_default" version="2024.01.15T09:00">
       <location ref="dsctestbench-cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>

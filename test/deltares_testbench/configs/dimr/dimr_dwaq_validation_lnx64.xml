@@ -78,7 +78,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dwaq_default">
+        <testCase name="dwaq_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="dimr">
                     <arguments>
@@ -95,7 +95,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-        <testCase name="dummy">
+        <testCase name="dummy" version="2024.01.15T09:00">
             <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro -->
             <location ref="reference_results" type="reference">
                 <from>lnx64</from>

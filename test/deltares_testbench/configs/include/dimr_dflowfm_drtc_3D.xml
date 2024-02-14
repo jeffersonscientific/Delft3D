@@ -1,6 +1,6 @@
     <testCases>
         <!-- ======================================================================== -->
-	<testCase name="e105_f06_c071_generalstructure_door_closing_at_sill_3Dsigma" ref="dimr_trunk">
+	<testCase name="e105_f06_c071_generalstructure_door_closing_at_sill_3Dsigma" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c071_generalstructure_door_closing_at_sill_3Dsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -19,7 +19,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e105_f06_c074_generalstructure_door_closing_at_sill_3Dz" ref="dimr_trunk">
+    <testCase name="e105_f06_c074_generalstructure_door_closing_at_sill_3Dz" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c074_generalstructure_door_closing_at_sill_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -38,7 +38,7 @@
         </file>
       </checks>
     </testCase>
-   <testCase name="e105_f06_c077_generalstructure_door_closing_at_sill_3Dz_sigma" ref="dimr_trunk">
+   <testCase name="e105_f06_c077_generalstructure_door_closing_at_sill_3Dz_sigma" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c077_generalstructure_door_closing_at_sill_3Dz_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -57,7 +57,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e105_f06_c072__generalstructure_lowering_open_door_3Dsigma" ref="dimr_trunk">
+	<testCase name="e105_f06_c072__generalstructure_lowering_open_door_3Dsigma" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c072_generalstructure_lowering_open_door_3Dsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -76,7 +76,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e105_f06_c075__generalstructure_lowering_open_door_3Dz" ref="dimr_trunk">
+	<testCase name="e105_f06_c075__generalstructure_lowering_open_door_3Dz" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c075_generalstructure_lowering_open_door_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -95,7 +95,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e105_f06_c078__generalstructure_lowering_open_door_3Dz_sigma" ref="dimr_trunk">
+	<testCase name="e105_f06_c078__generalstructure_lowering_open_door_3Dz_sigma" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c078_generalstructure_lowering_open_door_3Dz_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -114,7 +114,7 @@
         </file>
       </checks>
     </testCase>
-	 <testCase name="e105_f06_c073_generalstructure_lowering_closed_door_3Dsigma" ref="dimr_trunk">
+	 <testCase name="e105_f06_c073_generalstructure_lowering_closed_door_3Dsigma" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c073_generalstructure_lowering_closed_door_3Dsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -133,7 +133,7 @@
         </file>
       </checks>
     </testCase>
-	 <testCase name="e105_f06_c076_generalstructure_lowering_closed_door_3Dz" ref="dimr_trunk">
+	 <testCase name="e105_f06_c076_generalstructure_lowering_closed_door_3Dz" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c076_generalstructure_lowering_closed_door_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -152,7 +152,7 @@
         </file>
       </checks>
     </testCase>
-	 <testCase name="e105_f06_c079_generalstructure_lowering_closed_door_3Dz_sigma" ref="dimr_trunk">
+	 <testCase name="e105_f06_c079_generalstructure_lowering_closed_door_3Dz_sigma" ref="dimr_trunk" version="2024.01.15T09:00">
       <path>e105_dflowfm-drtc/f06_3D_RTC/c079_generalstructure_lowering_closed_door_3Dz_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>

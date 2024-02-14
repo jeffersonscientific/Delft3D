@@ -2,7 +2,7 @@
     testCases
     -->
     <testCases>
-        <testCase name="e108(drr)_f02(dnam)_c01_382_baseflow" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c01_382_baseflow" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c01_382_baseflow</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -89,7 +89,7 @@
 <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
 
 
-        <testCase name="e108(drr)_f02(dnam)_c02_448_baseflow" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c02_448_baseflow" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c02_448_baseflow</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -156,7 +156,7 @@
 	-->	
 		
 		
-         <testCase name="e108(drr)_f02(dnam)_c03_449_gwpump" ref="drr_default">
+         <testCase name="e108(drr)_f02(dnam)_c03_449_gwpump" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c03_449_gwpump</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -220,7 +220,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>    
-        <testCase name="e108(drr)_f02(dnam)_c04_450_gwpump" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c04_450_gwpump" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c04_450_gwpump</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -284,7 +284,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>  
-        <testCase name="e108(drr)_f02(dnam)_c05_451_gwpump" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c05_451_gwpump" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c05_451_gwpump</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -354,7 +354,7 @@
 
 
 		
-        <testCase name="e108(drr)_f02(dnam)_c06_452_gwinflow" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c06_452_gwinflow" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c06_452_gwinflow</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -420,7 +420,7 @@
 		
 	-->	
 		
-        <testCase name="e108(drr)_f02(dnam)_c07_453_capillary_rise" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c07_453_capillary_rise" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c07_453_capillary_rise</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -484,7 +484,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>     
-        <testCase name="e108(drr)_f02(dnam)_c08_454_transpiration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c08_454_transpiration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c08_454_transpiration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -548,7 +548,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>     
-        <testCase name="e108(drr)_f02(dnam)_c09_455_evaporation" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c09_455_evaporation" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c09_455_evaporation</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -612,7 +612,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>              
-        <testCase name="e108(drr)_f02(dnam)_c10_456_transpiration_evaporation" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c10_456_transpiration_evaporation" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c10_456_transpiration_evaporation</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -676,7 +676,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>                  
-        <testCase name="e108(drr)_f02(dnam)_c11_457_rainfall" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c11_457_rainfall" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c11_457_rainfall</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -740,7 +740,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>                        
-        <testCase name="e108(drr)_f02(dnam)_c12_458_interflow" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c12_458_interflow" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c12_458_interflow</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -804,7 +804,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>          
-        <testCase name="e108(drr)_f02(dnam)_c13_459_overland_flow" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c13_459_overland_flow" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c13_459_overland_flow</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -868,7 +868,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>          
-        <testCase name="e108(drr)_f02(dnam)_c14_460_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c14_460_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c14_460_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -932,7 +932,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c15_461_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c15_461_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c15_461_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -996,7 +996,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c16_462_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c16_462_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c16_462_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1060,7 +1060,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c17_463_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c17_463_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c17_463_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1124,7 +1124,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c18_464_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c18_464_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c18_464_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1188,7 +1188,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c19_465_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c19_465_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c19_465_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1252,7 +1252,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c20_466_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c20_466_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c20_466_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1316,7 +1316,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c21_467_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c21_467_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c21_467_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1380,7 +1380,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c22_468_infiltration" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c22_468_infiltration" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c22_468_infiltration</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1444,7 +1444,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c23_469_correction_NH_distribution" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c23_469_correction_NH_distribution" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c23_469_correction_NH_distribution</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1508,7 +1508,7 @@
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase> 
-        <testCase name="e108(drr)_f02(dnam)_c24_470_correction_NH_distribution" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c24_470_correction_NH_distribution" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c24_470_correction_NH_distribution</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1578,7 +1578,7 @@
 		
 		
 		
-        <testCase name="e108(drr)_f02(dnam)_c25_471_correction_NH_distribution" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c25_471_correction_NH_distribution" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c25_471_correction_NH_distribution</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1648,7 +1648,7 @@
 <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
 
 
-        <testCase name="e108(drr)_f02(dnam)_c26_472_baseflow_timestep_consistency" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c26_472_baseflow_timestep_consistency" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c26_472_baseflow_timestep_consistency</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1718,7 +1718,7 @@
 <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen	
 
 	
-        <testCase name="e108(drr)_f02(dnam)_c27_473_gwinflow_timestep_consistency" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c27_473_gwinflow_timestep_consistency" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c27_473_gwinflow_timestep_consistency</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">
@@ -1784,7 +1784,7 @@
 
     -->
 
-        <testCase name="e108(drr)_f02(dnam)_c28_474_interflow_timestep_consistency" ref="drr_default">
+        <testCase name="e108(drr)_f02(dnam)_c28_474_interflow_timestep_consistency" ref="drr_default" version="2024.01.15T09:00">
             <path>e108_drr/f02_dnam/c28_474_interflow_timestep_consistency</path>
             <checks>
                 <file name="rr/3bareas.his" type="HIS">

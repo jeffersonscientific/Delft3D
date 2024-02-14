@@ -1,6 +1,6 @@
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c01_sobek-maas-j19_5-v3" ref="sobek3_default">
+        <testCase name="e111_f01_c01_sobek-maas-j19_5-v3" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c01_sobek-maas-j19_5-v3</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -87,7 +87,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c02_sobek-markermeer-j10_5-v2_rvw2007" ref="sobek3_default">
+        <testCase name="e111_f01_c02_sobek-markermeer-j10_5-v2_rvw2007" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c02_sobek-markermeer-j10_5-v2_rvw2007</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -105,7 +105,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c03_sobek-nzk_ark-j15_5-v4" ref="sobek3_default">
+        <testCase name="e111_f01_c03_sobek-nzk_ark-j15_5-v4" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c03_sobek-nzk_ark-j15_5-v4</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -156,7 +156,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c04_sobek-ovd-j14_5-v2" ref="sobek3_default">
+        <testCase name="e111_f01_c04_sobek-ovd-j14_5-v2" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c04_sobek-ovd-j14_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -197,7 +197,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c05_sobek-ovd_dv-j14_5-v2" ref="sobek3_default">
+        <testCase name="e111_f01_c05_sobek-ovd_dv-j14_5-v2" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c05_sobek-ovd_dv-j14_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -238,7 +238,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c06_sobek-rijn-j17_5-v3" ref="sobek3_default">
+        <testCase name="e111_f01_c06_sobek-rijn-j17_5-v3" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c06_sobek-rijn-j17_5-v3</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -291,7 +291,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c06_sobek-rijn-j22_v1a1_D16000" ref="dimr_default">
+        <testCase name="e111_f01_c06_sobek-rijn-j22_v1a1_D16000" ref="dimr_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c06_sobek-rijn-j22_v1a1_D16000</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -344,7 +344,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c07_sobek-rijn-j22_v1a1_S1020" ref="dimr_default">
+        <testCase name="e111_f01_c07_sobek-rijn-j22_v1a1_S1020" ref="dimr_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c07_sobek-rijn-j22_v1a1_S1020</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -397,7 +397,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c08_sobek-rmm-vozo-j15_5-v3" ref="sobek3_default">
+        <testCase name="e111_f01_c08_sobek-rmm-vozo-j15_5-v3" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c08_sobek-rmm-vozo-j15_5-v3</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -431,7 +431,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c10_sobek-twentekanaal_j10_5-v2" ref="sobek3_default">
+        <testCase name="e111_f01_c10_sobek-twentekanaal_j10_5-v2" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c10_sobek-twentekanaal_j10_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -482,7 +482,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c11_sobek-vrm-j10_5-v2" ref="sobek3_default">
+        <testCase name="e111_f01_c11_sobek-vrm-j10_5-v2" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c11_sobek-vrm-j10_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -503,7 +503,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c12_sobek-ym_ijd-j16_5-v3_rvw2007" ref="sobek3_default">
+        <testCase name="e111_f01_c12_sobek-ym_ijd-j16_5-v3_rvw2007" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c12_sobek-ym_ijd-j16_5-v3_rvw2007</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -532,7 +532,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c13_sobek-oosterschelde-j12_5-v2" ref="dimr_default">
+        <testCase name="e111_f01_c13_sobek-oosterschelde-j12_5-v2" ref="dimr_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c13_sobek-oosterschelde-j12_5-v2</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -603,7 +603,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c14_sobek-rmm-vzm-j15_5-v4" ref="sobek3_default">
+        <testCase name="e111_f01_c14_sobek-rmm-vzm-j15_5-v4" ref="sobek3_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c14_sobek-rmm-vzm-j15_5-v4</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -637,7 +637,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c15_sobek-rijn-j22_v1a1" ref="dimr_default">
+        <testCase name="e111_f01_c15_sobek-rijn-j22_v1a1" ref="dimr_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c15_sobek-rijn-j22_v1a1</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">
@@ -690,7 +690,7 @@
             <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e111_f01_c16_sobek-lsm3-j18_5-v6" ref="dimr_default">
+        <testCase name="e111_f01_c16_sobek-lsm3-j18_5-v6" ref="dimr_default" version="2024.01.15T09:00">
             <path>e111_sobek3_suite/f01_rws_acceptance_models/c16_sobek-lsm3-j18_5-v6</path>
             <checks>
                 <file name="dflow1d/output/observations.nc" type="NETCDF">

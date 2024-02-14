@@ -232,7 +232,7 @@
 				ref="name_of_default_testcase"
 				-->
 	<defaultTestCases>
-		<testCase name="flow2d3d_default">
+		<testCase name="flow2d3d_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -245,7 +245,7 @@
 				<program ref="FLOW2D3D"/>
 			</programs>
 		</testCase>
-		<testCase name="flow2d3d_fluidmud_default">
+		<testCase name="flow2d3d_fluidmud_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -277,7 +277,7 @@
 				</program>
 			</programs>
 		</testCase>
-		<testCase name="flow2d3d_rtc_default">
+		<testCase name="flow2d3d_rtc_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -305,7 +305,7 @@
 				</program>
 			</programs>
 		</testCase>
-		<testCase name="wave_default">
+		<testCase name="wave_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -346,7 +346,7 @@
 				
 				-->
 	<testCases>
-		<testCase name="e01_f30_c01-2D_annular_curv_cold" ref="flow2d3d_default">
+		<testCase name="e01_f30_c01-2D_annular_curv_cold" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f30_immersed_boundaries/c01-2D_annular_curv_cold</path>
 			<maxRunTime>26.5610001087</maxRunTime>
 			<checks>
@@ -366,7 +366,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e01_f30_c02-2D_annular_curv_hot" ref="flow2d3d_default">
+		<testCase name="e01_f30_c02-2D_annular_curv_hot" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f30_immersed_boundaries/c02-2D_annular_curv_hot</path>
 			<maxRunTime>27.5610001087</maxRunTime>
 			<checks>
@@ -386,7 +386,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e01_f30_c03-2D_annular_ibm_cold" ref="flow2d3d_default">
+		<testCase name="e01_f30_c03-2D_annular_ibm_cold" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f30_immersed_boundaries/c03-2D_annular_ibm_cold</path>
 			<maxRunTime>179.6910001087</maxRunTime>
 			<checks>
@@ -406,7 +406,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e01_f30_c04-2D_annular_ibm_hot" ref="flow2d3d_default">
+		<testCase name="e01_f30_c04-2D_annular_ibm_hot" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f30_immersed_boundaries/c04-2D_annular_ibm_hot</path>
 			<maxRunTime>179.6910001087</maxRunTime>
 			<checks>
@@ -426,7 +426,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e01_f30_c05-2D_skewed_43d80_hot" ref="flow2d3d_default">
+		<testCase name="e01_f30_c05-2D_skewed_43d80_hot" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f30_immersed_boundaries/c05-2D_skewed_43d80_hot</path>
 			<maxRunTime>10.0010001087</maxRunTime>
 			<checks>

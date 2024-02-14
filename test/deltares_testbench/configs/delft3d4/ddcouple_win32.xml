@@ -64,7 +64,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="ddcouple_default">
+        <testCase name="ddcouple_default" version="2024.01.15T09:00">
             <programs>
                 <program ref="ddcouple"/>
             </programs>
@@ -81,7 +81,7 @@
     testCases
     -->
     <testCases>
-        <testCase name="e54_f01_c01" ref="ddcouple_default">
+        <testCase name="e54_f01_c01" ref="ddcouple_default" version="2024.01.15T09:00">
             <path>e54_ddcouple/f01_general/c01_test</path>
             <programs>
                 <program ref="ddcouple">

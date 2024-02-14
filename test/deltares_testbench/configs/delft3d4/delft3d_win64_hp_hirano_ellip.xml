@@ -214,7 +214,7 @@
 				ref="name_of_default_testcase"
 				-->
 	<defaultTestCases>
-		<testCase name="flow2d3d_default">
+		<testCase name="flow2d3d_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-main" type="input">
 				<from>branches/20161020_Delft3D_ellipticity_check/cases</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -227,7 +227,7 @@
 				<program ref="FLOW2D3D"/>
 			</programs>
 		</testCase>
-		<testCase name="flow2d3d_fluidmud_default">
+		<testCase name="flow2d3d_fluidmud_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -246,7 +246,7 @@
 				</program>
 			</programs>
 		</testCase>
-		<testCase name="flow2d3d_rtc_default">
+		<testCase name="flow2d3d_rtc_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -260,7 +260,7 @@
 				<program ref="RTC" delay="10.0"/>
 			</programs>
 		</testCase>
-		<testCase name="wave_default">
+		<testCase name="wave_default" version="2024.01.15T09:00">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
 				<!-- if "to" is not specified, "from" is used as target -->
@@ -301,7 +301,7 @@
 				
 				-->
 	<testCases>
-		<testCase name="e01_f22_c12-pankop" ref="flow2d3d_default">
+		<testCase name="e01_f22_c12-pankop" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f31_hirano_ellipticity/c12_pankop</path>
 			<maxRunTime>10.3739998341</maxRunTime>
 			<checks>
@@ -325,7 +325,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e01_f22_c13_S1" ref="flow2d3d_default">
+		<testCase name="e01_f22_c13_S1" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f31_hirano_ellipticity/c13_S1</path>
 			<maxRunTime>10.3739998341</maxRunTime>
 			<checks>
@@ -351,7 +351,7 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e01_f22_c14_S2" ref="flow2d3d_default">
+		<testCase name="e01_f22_c14_S2" ref="flow2d3d_default" version="2024.01.15T09:00">
 			<path>e01_d3dflow/f31_hirano_ellipticity/c14_S2</path>
 			<maxRunTime>10.3739998341</maxRunTime>
 			<checks>

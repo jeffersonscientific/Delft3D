@@ -1,5 +1,5 @@
 <testCases>
-    <testCase name="e02_f012_c0322" ref="dimr">
+    <testCase name="e02_f012_c0322" ref="dimr" version="2024.01.15T09:00">
         <path>e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
          <checks>
             <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
@@ -19,7 +19,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f012_c0323_mapmerge" ref="postproc">
+    <testCase name="e02_f012_c0323_mapmerge" ref="postproc" version="2024.01.15T09:00">
         <programs>
           <program ref="dfmoutput">
             <arguments>
@@ -43,7 +43,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f012_c0324_max25" ref="postproc">
+    <testCase name="e02_f012_c0324_max25" ref="postproc" version="2024.01.15T09:00">
         <programs>
           <program ref="dfmoutput">
             <arguments>
@@ -62,7 +62,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f012_c0327_runningmean" ref="postproc">
+    <testCase name="e02_f012_c0327_runningmean" ref="postproc" version="2024.01.15T09:00">
         <programs>
           <program ref="dfmoutput">
             <arguments>
@@ -83,7 +83,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f012_c0328_runningmean_cross" ref="postproc">
+    <testCase name="e02_f012_c0328_runningmean_cross" ref="postproc" version="2024.01.15T09:00">
         <programs>
           <program ref="dfmoutput">
             <arguments>
@@ -109,7 +109,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f012_c0325" ref="dimr">
+    <testCase name="e02_f012_c0325" ref="dimr" version="2024.01.15T09:00">
         <path>e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
          <checks>
             <file name="dflowfmoutput/classmap_0000.nc" type="NETCDF">
@@ -129,7 +129,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f012_c0326_classmap_mapmerge" ref="postproc">
+    <testCase name="e02_f012_c0326_classmap_mapmerge" ref="postproc" version="2024.01.15T09:00">
         <programs>
           <program ref="dfmoutput">
             <arguments>
@@ -153,7 +153,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f012_c327_specialgrid_mapmerge" ref="postproc">
+    <testCase name="e02_f012_c327_specialgrid_mapmerge" ref="postproc" version="2024.01.15T09:00">
         <programs>
           <program ref="dfmoutput">
             <arguments>
@@ -176,7 +176,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f014_c001_trench_EH_par_crs" ref="dimr">
+    <testCase name="e02_f014_c001_trench_EH_par_crs" ref="dimr" version="2024.01.15T09:00">
       <path>e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
       <programs>
         <program ref="dflowfm" seq="1">
@@ -202,7 +202,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f014_c041_westerscheldt_structures" ref="dimr">
+    <testCase name="e02_f014_c041_westerscheldt_structures" ref="dimr" version="2024.01.15T09:00">
       <path>e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
       <programs>
         <program ref="dflowfm" seq="1">
@@ -228,7 +228,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f014_c100" ref="dimr">
+    <testCase name="e02_f014_c100" ref="dimr" version="2024.01.15T09:00">
         <path>e02_dflowfm/f014_parallel/c100_guayas_model</path>
         <programs>
           <program ref="dimr">
@@ -260,7 +260,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f014_c101_icg7" ref="dimr">
+    <testCase name="e02_f014_c101_icg7" ref="dimr" version="2024.01.15T09:00">
         <path>e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
         <programs>
           <program ref="dimr">
@@ -292,7 +292,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f014_c120" ref="dimr">
+    <testCase name="e02_f014_c120" ref="dimr" version="2024.01.15T09:00">
         <path>e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
         <programs>
           <program ref="dimr">
@@ -333,7 +333,7 @@
             </file>
          </checks>
     </testCase>
-    <testCase name="e02_f014_c150" ref="dimr">
+    <testCase name="e02_f014_c150" ref="dimr" version="2024.01.15T09:00">
         <path>e02_dflowfm/f014_parallel/c150_longculvert_parallel</path>
         <programs>
           <program ref="dimr">
@@ -350,7 +350,7 @@
             </file>
         </checks>
     </testCase>
-	<testCase name="e02_f014_c201" ref="dimr">
+	<testCase name="e02_f014_c201" ref="dimr" version="2024.01.15T09:00">
         <path>e02_dflowfm/f014_parallel/c201_genstruc_partition</path>
         <programs>
           <program ref="dimr">
