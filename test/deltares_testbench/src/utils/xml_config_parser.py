@@ -456,8 +456,10 @@ class XmlConfigParser(object):
             tag = element["dependency"][0]
             local_dir = str(tag["local_dir"][0])
             cases_path = str(tag["txt"])
+            version_list = tag.get("version")
+            version = str(version_list[0]) if isinstance(version_list, list) and version_list else None
 
-            test_case.dependency = Dependency(local_dir, cases_path)
+            test_case.dependency = Dependency(local_dir, cases_path, version)
 
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])

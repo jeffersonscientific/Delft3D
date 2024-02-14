@@ -109,7 +109,7 @@ class Rewinder:
                 continue
 
             filename_and_sub__dir_with_extension = object_path.replace(
-                source_path + "/", ""
+                f"{source_path.rstrip('/')}/", ""
             )
 
             destination_file_path = os.path.join(

@@ -4,13 +4,15 @@ Description: Local Paths Data Class
 Copyright (C)  Stichting Deltares, 2023
 """
 
+from typing import Optional
 
 class Dependency:
     """Class for registering dependencies of tests"""
 
-    def __init__(self, local_dir: str, case_path: str):
+    def __init__(self, local_dir: str, case_path: str, version: Optional[str] = None):
         self.__cases_path: str = case_path
         self.__local_dir: str = local_dir
+        self.__version: Optional[str] = version
 
     @property
     def cases_path(self) -> str:
@@ -29,3 +31,12 @@ class Dependency:
     @local_dir.setter
     def local_dir(self, value: str):
         self.__local_dir = value
+
+    @property
+    def version(self) -> str:
+        """Local directory to download the case to"""
+        return self.__version
+
+    @version.setter
+    def version(self, value: Optional[str]):
+        self.__version = value
