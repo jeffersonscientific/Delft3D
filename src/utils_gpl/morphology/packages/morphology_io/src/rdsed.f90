@@ -414,7 +414,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        tpsmud  = 0.7_fp
        call prop_get(sed_ptr, 'SedimentOverall', 'MudTPS', tpsmud)
        do i = 1,lsed
-          if (sedtyp(i) == sedpar%max_mud_sedtyp) then
+          if (sedtyp(i) <= sedpar%max_mud_sedtyp) then
               tpsnumber(i) = tpsmud
           endif
        enddo
