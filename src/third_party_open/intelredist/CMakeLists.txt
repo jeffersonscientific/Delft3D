@@ -31,6 +31,7 @@ PATTERN "mkl_core.*.dll"
 PATTERN "mkl_def.*.dll"
 PATTERN "mkl_avx*.dll"
 PATTERN "mkl_intel_thread.*.dll"
+PATTERN "mkl_sequential.*.dll"
 PATTERN "1033" EXCLUDE
 )
 
