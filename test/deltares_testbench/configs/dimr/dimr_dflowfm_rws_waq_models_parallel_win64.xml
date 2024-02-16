@@ -57,7 +57,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>share/bin/mpiexec.exe</path>
+            <path>bin/mpiexec.exe</path>
             <arguments>
                 <argument>-n 3 -localonly</argument>
             </arguments>
@@ -69,7 +69,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>share/bin/mpiexec.exe</path>
+            <path>bin/mpiexec.exe</path>
             <arguments>
                 <argument>-n 4 -localonly</argument>
             </arguments>
