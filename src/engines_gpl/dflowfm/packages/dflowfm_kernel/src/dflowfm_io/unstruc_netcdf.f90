@@ -5079,11 +5079,12 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    character(16)                                       :: dxname
    character(64)                                       :: dxdescr
    character(15)                                       :: transpunit
-   double precision                                    :: rhol, dens, mortime, wavfac
+   double precision                                    :: rhol, mortime, wavfac
    double precision                                    :: moravg, dmorft, dmorfs, rhodt
    double precision                                    :: um, ux, uy
    double precision, dimension(:,:), allocatable       :: poros, toutputx, toutputy, sxtotori, sytotori
    double precision, dimension(:,:,:), allocatable     :: frac
+   double precision, dimension(:), allocatable         :: dens
    integer, dimension(:), allocatable                  :: flag_val
    character(len=10000)                                :: flag_mean
 
@@ -7081,23 +7082,27 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_msed  , UNC_LOC_S, stmpar%morlyr%state%msed , locdim=3, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_thlyr , UNC_LOC_S, stmpar%morlyr%state%thlyr, locdim=2, jabndnd=jabndnd_)
          !
-         if (.not. allocated(frac) ) allocate( frac(1:ndx, 1:stmpar%morlyr%settings%nlyr, stmpar%lsedtot) )
+         if (.not. allocated(frac) ) allocate( frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx) )
+         if (.not. allocated(dens) ) allocate( dens(stmpar%lsedtot) )
          frac = -999d0
+         dens = -999d0
          do l = 1, stmpar%lsedtot
             if (stmpar%morlyr%settings%iporosity==0) then
-               dens = stmpar%sedpar%cdryb(l)
+               dens(l) = stmpar%sedpar%cdryb(l)
             else
-               dens = stmpar%sedpar%rhosol(l)
+               dens(l) = stmpar%sedpar%rhosol(l)
             endif
+         enddo   
+         do nm = 1, ndxndxi
             do k = 1, stmpar%morlyr%settings%nlyr
-               do nm = 1, ndxndxi
-                  if (stmpar%morlyr%state%thlyr(k,nm)>0.0_fp) then
-                       frac(nm, k, l) = stmpar%morlyr%state%msed(l, k, nm)/(dens*stmpar%morlyr%state%svfrac(k, nm) * &
+               if (stmpar%morlyr%state%thlyr(k,nm)>0.0_fp) then
+                  do l = 1, stmpar%lsedtot
+                       frac(l, k, nm) = stmpar%morlyr%state%msed(l, k, nm)/(dens(l)*stmpar%morlyr%state%svfrac(k, nm) * &
                                         stmpar%morlyr%state%thlyr(k, nm))
-                  else
-                       frac(nm, k, l) = 0d0
-                  endif
-               enddo
+                  enddo
+               else
+                  frac(:, k, nm) = 0d0
+               endif
             enddo
          enddo
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_lyrfrac  , UNC_LOC_S, frac, jabndnd=jabndnd_)
