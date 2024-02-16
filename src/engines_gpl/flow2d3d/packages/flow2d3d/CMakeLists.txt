@@ -196,10 +196,11 @@ if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_rtc.sh               DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
+endif(UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/dioconfig.ini    DESTINATION share/delft3d)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/files.def        DESTINATION share/delft3d)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/tabmom           DESTINATION share/delft3d)
-endif(UNIX)
+
 
 # Change project flags at the end of this file
 # target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
