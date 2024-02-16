@@ -46,6 +46,7 @@
  use m_sobekdfm
  use m_subsidence
  use m_fm_bott3d, only: fm_bott3d
+ use m_fm_erosed, only: ti_sedtrans
  use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
  use mass_balance_areas_routines, only: comp_bedload_fluxmba
 
@@ -301,7 +302,7 @@
  hs = s1-bl
  hs = max(hs,0d0)
 
- if (jased > 0 .and. stm_included) then
+ if (jased > 0 .and. stm_included .and. (time1 >= tstart_user + ti_sedtrans * tfac)) then
     if ( jatimer.eq.1 ) call starttimer(IEROSED)
     !
     call setucxucy_mor (u1)
@@ -334,7 +335,7 @@
  if ( jatimer.eq.1 ) call stoptimer (ITRANSPORT)
 
 
- if (jased > 0 .and. stm_included) then
+ if (jased > 0 .and. stm_included .and. (time1 >= tstart_user + ti_sedtrans * tfac)) then
     call fm_bott3d() ! bottom update
  endif
 
