@@ -4472,13 +4472,13 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
                    call getkbotktop(kk,kb,kt)
                    call getlayerindices(kk, nlayb, nrlay)
                    do k = kb,kt
-                      work1(k-kb+nlayb,kk) = constituents(j,k)
+                      work1(k-kb+nlayb,kk) = sed(j-ISED1+1,k) 
                    enddo
                 enddo
                 ierr = nf90_put_var(irstfile, id_sf1(j-ISED1+1), work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
              else
                 do kk=1,ndxi
-                   dum(kk) = constituents(j,kk)
+                   dum(kk) = sed(j-ISED1+1,kk)
                 enddo
                 ierr = nf90_put_var(irstfile, id_sf1(j-ISED1+1), dum, (/ 1, itim /), (/ ndxi, 1 /) )
              endif
@@ -13494,6 +13494,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
                 call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//''' from the specified restart file. Skip reading this variable.')
              else
                 call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, 0, 0)
+                sed(i,:)=constituents(iconst,:)
              endif
              call check_error(ierr, const_names(iconst))
           enddo
