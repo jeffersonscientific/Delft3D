@@ -1296,18 +1296,12 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'physics', 'Xlozmidov'      , Xlozmidov)
 
     call prop_get_double (md_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity)
-    if (Schmidt_number_salinity < eps10) then
-       call mess(LEVEL_ERROR, 'SchmidtNumberSalinity should be larger than 0.')
-    end if
+    call check_positive_value('SchmidtNumberSalinity', Schmidt_number_salinity)
     call prop_get_double (md_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature)
-    if (Prandtl_number_temperature < eps10) then
-       call mess(LEVEL_ERROR, 'PrandtlNumberTemperature should be larger than 0.')
-    end if
+    call check_positive_value('PrandtlNumberTemperature', Prandtl_number_temperature)
     call prop_get_double (md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
-    if (Schmidt_number_tracer < eps10) then
-       call mess(LEVEL_ERROR, 'SchmidtNumberTracer should be larger than 0.')
-    end if
-
+    call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
+    
     call prop_get_double (md_ptr, 'physics', 'Smagorinsky'    , Smagorinsky)
     call prop_get_double (md_ptr, 'physics', 'Elder   '       , Elder)
     call prop_get_integer(md_ptr, 'physics', 'irov'           , irov)
@@ -4541,5 +4535,18 @@ logical function is_not_multiple(time_interval, user_time_step)
     end if
 
 end function is_not_multiple
+
+!> Raise an error when provided value is not positive (also to avoid division by zero)
+subroutine check_positive_value(mdu_keyword, value)
+    use m_flowparameters, only: eps10
+    implicit none
+    
+    character(*),     intent(in) :: mdu_keyword !< Keyword in the mdu-file
+    double precision, intent(in) :: value       !< Corresponding value
+    
+    if (value < eps10) then
+       call mess(LEVEL_ERROR, trim(mdu_keyword), ' should be larger than 0.')
+    end if
+end subroutine check_positive_value
 
 end module unstruc_model
