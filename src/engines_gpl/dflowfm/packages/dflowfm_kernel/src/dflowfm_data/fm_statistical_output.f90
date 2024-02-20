@@ -315,14 +315,22 @@ private
 
    end subroutine aggregate_obscrs_data
 
-   subroutine add_station_tracer_configs(output_config, )
+   !> Adds output configs for every tracer on observation stations just in time,
+   !! because the tracers are only known during model initialization.
+   !! Returns config indices for these variables such that they can be added to the output items for the same tracers
+   subroutine add_station_tracer_configs(output_config, idx_tracers_stations)
       use m_alloc, only: realloc
+      use netcdf_utils, only: ncu_sanitize_name
+      use m_ug_nc_attribute, only: ug_nc_attribute
+      use m_transportdata, only: const_names, const_units, ITRA1, ITRAN
+      type(t_output_quantity_config_set), intent(inout) :: output_config           !< Output configuration for the HIS file.
+      integer, allocatable,               intent(  out) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config set array
 
-      integer, allocatable, intent(out) :: IDX_HIS_TRACERS(:) !< indices of just-in-time added tracers in output_config set array
       integer :: num_tracers
-      character(len=idlen) :: conststr
-      character(len=idlen) :: unitstr
+      character(len=idlen) :: constituent_string
+      character(len=idlen) :: unit_string
       type(ug_nc_attribute) :: atts(5)
+      integer :: tracer_index, constituent_index
 
       if (.not. model_has_tracers()) then
          return
@@ -330,34 +338,43 @@ private
 
       num_tracers = ITRAN - ITRA1 + 1
 
-      call realloc(IDX_HIS_TRACERS, num_tracers, keepExisting = .false., fill = 0)
+      call realloc(idx_tracers_stations, num_tracers, keepExisting = .false., fill = 0)
 
-      do i = 1, num_tracers
+      do tracer_index = 1, num_tracers
+         constituent_index = tracer_index + ITRA1 - 1
 
-         j = i + ITRA1 - 1
+         constituent_string = const_names(constituent_index)
+         call ncu_sanitize_name(constituent_string)
 
-         namestr = const_names(j)
-         ! Forbidden chars in NetCDF names: space, /, and more.
-         call replace_char(namestr,32,95)
-
-         if (const_units(j).ne.' ') then
-            unitstr = const_units(j)
+         if (const_units(constituent_index) .ne. ' ') then
+            unit_string = const_units(constituent_index)
          else
-            unitstr = '-'
+            unit_string = '-'
          endif
 
          ! add output config item
-         call addoutval(output_config, IDX_HIS_TRACERS(i), 'Wrihis_constituents', namestr, const_names(j), unitstr, &
-                        UNC_LOC_STATION, nc_dim_ids = nc_dims_3D_center )
+         call addoutval(output_config, idx_tracers_stations(tracer_index), 'Wrihis_constituents', constituent_string, &
+                        const_names(constituent_index), '', unit_string, UNC_LOC_STATION, nc_dim_ids = nc_dims_3D_center)
 
+         output_config%statout(idx_tracers_stations(tracer_index))%input_value =     &
+            output_config%statout(IDX_HIS_TRACERS_ABSTRACT)%input_value
       end do
-
-
-
-
-
    end subroutine add_station_tracer_configs
 
+   !> Add output items for all tracers on stations to output set.
+   subroutine add_station_tracer_output_items(output_set, idx_tracers_stations)
+   use m_transportdata, only: ITRA1, ITRAN
+   type(t_output_variable_set), intent(inout) :: output_set              !< Output set that item will be added to
+   integer,                     intent(in   ) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config set array
+
+   integer :: num_tracers
+
+   num_tracers = ITRAN - ITRA1 + 1
+   do i = 1, num_tracers
+      call add_stat_output_items(output_set, output_config%statout(idx_tracers_stations(i)), !TODO: hier iets met valobs-tracers doen)
+   enddo 
+
+   end subroutine add_station_tracer_output_items
 
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
@@ -1260,6 +1277,11 @@ private
                      'Sediment mass in fluff layer',             &
                      '', 'kg', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedsusdim = .true. , timedim = .true.))
 
+      call addoutval(out_quan_conf_his, IDX_HIS_TRACERS_ABSTRACT, &
+                     'Wrihis_tracers', 'station_tracer_abstract', '', &
+                     '', '-', UNC_LOC_STATION, description = 'Write tracers to his file')
+
+      !
       ! HIS: Variables on observation cross sections
       !
       call ncu_set_att(atts(1), 'geometry', 'cross_section_geom')
@@ -1837,7 +1859,7 @@ private
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
 
       integer :: i, ntot, num_const_items, nlyrs
-      integer, allocatable, dimension(:) :: idx_const
+      integer, allocatable, dimension(:) :: idx_constituents_crs, idx_tracers_stations
 
       call process_output_quantity_configs(output_config)
 
@@ -2360,6 +2382,10 @@ private
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MFLUFF),temp_pointer)
          end if
       endif
+
+      ! Transported constituents
+      call add_station_tracer_configs(output_config, idx_tracers_stations)
+
       !
       ! Variables on observation cross sections
       !
@@ -2368,7 +2394,7 @@ private
          ! Prepare data array
          ! Add configuration items for constituents and sediment output (During reading of MDU file this data was not available)
          !
-         call init_obscrs_data_and_config(num_const_items, output_config, idx_const)
+         call init_obscrs_data_and_config(num_const_items, output_config, idx_constituents_crs)
 
          !
          ! Basic flow quantities
@@ -2379,11 +2405,11 @@ private
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),        obscrs_data(:,4))
 
          !
-         ! Transported consituents
+         ! Transported constituents
          !
          do i = 1, num_const_items
-            if (idx_const(i) > 0) then
-               call add_stat_output_items(output_set, output_config%statout(idx_const(i)),      obscrs_data(:,5 + i))
+            if (idx_constituents_crs(i) > 0) then
+               call add_stat_output_items(output_set, output_config%statout(idx_constituents_crs(i)), obscrs_data(:,5 + i))
             endif
          enddo
       endif
