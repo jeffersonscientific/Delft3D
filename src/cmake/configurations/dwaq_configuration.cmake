@@ -31,7 +31,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_utils.cmake)
 #=============
 add_subdirectory(${checkout_src_root}/${install_waq_module} install_waq)
 
-
+#
+# Intel libs
+#=============
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/windows_postbuild_configuration.cmake)
 
 #
 # Unit tests for D-Waq
