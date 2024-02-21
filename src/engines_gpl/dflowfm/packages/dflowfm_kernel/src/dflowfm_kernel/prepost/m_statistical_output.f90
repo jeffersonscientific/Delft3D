@@ -295,9 +295,12 @@ contains
             item%output_config => output_config
             item%source_input => data_pointer
             if (present(source_input_function_pointer)) then
-               item%source_input_function_pointer => source_input_function_pointer
-               call item%source_input_function_pointer(item%source_input)
-            endif
+               if (associated(source_input_function_pointer)) then
+                  item%source_input_function_pointer => source_input_function_pointer
+                  ! First "init" call to callback functions, such that %source_input is allocated
+                  call item%source_input_function_pointer(item%source_input)
+               end if
+            end if
 
             output_set%statout(output_set%count) = item
          end if
@@ -405,12 +408,6 @@ contains
       
       do j = 1, output_set%count
          item => output_set%statout(j)
-
-         ! First "init" call to callback functions, such that %source_input is allocated
-         if (associated(item%source_input_function_pointer)) then
-            call item%source_input_function_pointer(item%source_input)
-         endif
-
          input_size = size(item%source_input)
 
          select case (item%operation_type)

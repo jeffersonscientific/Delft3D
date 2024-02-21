@@ -22,7 +22,7 @@ private
    type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
 
-   double precision, dimension(:), allocatable, target :: water_quality_output_data !< Water quality data to be written
+   double precision, dimension(:, :), allocatable, target :: water_quality_output_data !< Water quality data to be written, each column contains one water_quality_output variable
    double precision, dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
    double precision, dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
 
@@ -113,6 +113,24 @@ private
    call assign_sediment_transport(SBCX,SBCY,IPNT_SBCX1,IPNT_SBCY1,ntot)
    end subroutine calculate_sediment_SBC
 
+   !> Procedure called to transform the valobs data for writing to the water_quality_output NetCDF variables
+   subroutine transform_water_quality_inputs(source_input)
+      use m_observations, only: numobs, nummovobs
+      use m_flow, only: kmx
+      use m_observations, only: valobs, IPNT_HWQ1
+      use processes_input, only: num_wq_user_outputs => noout_user
+      double precision, pointer, dimension(:), intent(inout) :: source_input   !< Pointer to source input array for water_quality_output_# item, unused
+
+      integer :: ntot, variable_index
+      double precision, pointer, dimension(:, :) :: valobs_slice
+      ntot = numobs + nummovobs
+
+      do variable_index = 1, num_wq_user_outputs
+         valobs_slice => valobs(:, IPNT_HWQ1 + (variable_index - 1) * kmx : IPNT_HWQ1 + variable_index * kmx - 1)
+         water_quality_output_data(:, variable_index) = reshape(transpose(valobs_slice), [kmx * ntot])
+      end do
+   end subroutine transform_water_quality_inputs
+
    subroutine add_station_water_quality_configs(output_config, idx_his_hwq)
       use processes_input, only: num_wq_user_outputs => noout_user
       use results, only : OutputPointers
@@ -120,10 +138,12 @@ private
       use m_ug_nc_attribute, only: ug_nc_attribute
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_set_att
+      use m_observations, only: numobs, nummovobs
+      use m_flow, only: kmx
       type(t_output_quantity_config_set), intent(inout) :: output_config   !< Output configuration for the HIS file.
       integer, allocatable, dimension(:), intent(  out) :: idx_his_hwq
 
-      integer               :: i
+      integer               :: i, ntot
       character(len=255)    :: name, description
       type(ug_nc_attribute) :: atts(2)
 
@@ -132,7 +152,8 @@ private
       end if
 
       if (.not. allocated(water_quality_output_data)) then
-         allocate(water_quality_output_data(num_wq_user_outputs))
+         ntot = numobs + nummovobs
+         allocate(water_quality_output_data(kmx * ntot, num_wq_user_outputs))
          allocate(idx_his_hwq(num_wq_user_outputs))
       else
          call err('Internal error, please report: water_quality_output_data was already allocated')
@@ -1843,7 +1864,7 @@ private
 
       double precision, pointer, dimension(:) :: temp_pointer
 
-      procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
+      procedure(process_data_double_interface), pointer :: function_pointer => NULL()
 
       integer :: i, ntot, num_const_items, nlyrs
       integer, allocatable, dimension(:) :: id_hwq
@@ -2375,10 +2396,12 @@ private
       if(jawaqproc > 0) then
          call add_station_water_quality_configs(out_quan_conf_his, idx_his_hwq)
 
+         ! Only provide function pointer to the first one, so that it transforms all data
+         function_pointer => transform_water_quality_inputs
          do i = 1, num_wq_user_outputs
             if (model_is_3D()) then
-               temp_pointer(1 : ntot * kmx) => valobs(:, IPNT_HWQ1 + (i - 1) * kmx : IPNT_HWQ1 + i * kmx - 1)
-               call add_stat_output_items(output_set, output_config%statout(idx_his_hwq(i)), temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(idx_his_hwq(i)), water_quality_output_data(:,i), function_pointer)
+               function_pointer => null()
             else
                call add_stat_output_items(output_set, output_config%statout(idx_his_hwq(i)), valobs(:,IPNT_HWQ1 + i - 1))
             end if
