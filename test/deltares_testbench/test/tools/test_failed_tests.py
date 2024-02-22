@@ -15,7 +15,7 @@ from src.utils.comparers.comparison_result import ComparisonResult
 class TestFailedTests:
     def test_get_failed_tests(self, tmpdir):
         # Arrange
-        expected_result = ["test1", "test3"]
+        expected_result = ["Test 1", "Test 3"]
         test1 = self.__create_test_case_config("Test 1")
         test2 = self.__create_test_case_config("Test 2")
         test3 = self.__create_test_case_config("Test 3")
