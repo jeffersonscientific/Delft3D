@@ -897,7 +897,7 @@ logical function initboundaryblocksforcings(filename)
  use m_flowexternalforcings
  use m_flowgeom
  use timespace_data, only: weightfactors, poly_tim, uniform, spaceandtime, getmeteoerror
- use m_wind ! for laterals
+ use m_lateral, only : balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
  use m_alloc
  use m_meteo, only: ec_addtimespacerelation
  use timespace
@@ -1457,7 +1457,7 @@ end function initboundaryblocksforcings
 
 !> Initializes memory for laterals on flow nodes.
 subroutine ini_alloc_laterals()
-   use m_wind
+   use m_lateral, only : qqlat, kclat, nnlat
    use m_flowgeom, only: ndx2d, ndxi, ndx
    use m_alloc
    integer :: ierr
@@ -1482,7 +1482,7 @@ end subroutine ini_alloc_laterals
 !> Prepare the 'kclat' mask array for a specific type of lateral.
 subroutine prepare_lateral_mask(kc, ilattype)
    use m_flowgeom
-   use m_wind
+   use m_lateral, only : ILATTP_1D, ILATTP_2D, ILATTP_ALL
    implicit none
 
    integer         , intent(inout) :: kc(:) !< (ndx) The mask array that is to be filled.

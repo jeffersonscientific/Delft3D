@@ -24,6 +24,7 @@
 						ignore="true" Don't bother when this file is in the reference dir but absent in the check dir
 				
 				-->
+
 	<testCases>
 		<testCase name="e01_f01_c02-fff" ref="flow2d3d_default">
 			<path>e01_d3dflow/f01_general/c02-fff</path>
@@ -10802,22 +10803,8 @@
 				<program ref="mormerge">
 					<workingDirectory>merge</workingDirectory>
 					<arguments>
-						<argument>-i basin.mm</argument>
-						<argument>-w .</argument>
-						<argument>-r bas</argument>
+						<argument>basin_lnx64_hp.mm</argument>
 					</arguments>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>0deg</workingDirectory>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>180deg</workingDirectory>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>270deg</workingDirectory>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>90deg</workingDirectory>
 				</program>
 			</programs>
 			<maxRunTime>110.454999924</maxRunTime>
@@ -10901,49 +10888,7 @@
 				<program ref="mormerge">
 					<workingDirectory>merge</workingDirectory>
 					<arguments>
-						<argument>-i groin4.mm</argument>
-						<argument>-w .</argument>
-						<argument>-r nsw</argument>
-					</arguments>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>w00</workingDirectory>
-				</program>
-				<program ref="WAVE">
-					<workingDirectory>w00</workingDirectory>
-					<arguments>
-						<argument>nsw.mdw</argument>
-						<argument>1</argument>
-					</arguments>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>w01</workingDirectory>
-				</program>
-				<program ref="WAVE">
-					<workingDirectory>w01</workingDirectory>
-					<arguments>
-						<argument>nsw.mdw</argument>
-						<argument>1</argument>
-					</arguments>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>w02</workingDirectory>
-				</program>
-				<program ref="WAVE">
-					<workingDirectory>w02</workingDirectory>
-					<arguments>
-						<argument>nsw.mdw</argument>
-						<argument>1</argument>
-					</arguments>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>w03</workingDirectory>
-				</program>
-				<program ref="WAVE">
-					<workingDirectory>w03</workingDirectory>
-					<arguments>
-						<argument>nsw.mdw</argument>
-						<argument>1</argument>
+						<argument>groin4_lnx64_hp.mm</argument>
 					</arguments>
 				</program>
 			</programs>
@@ -11056,37 +11001,7 @@
 				<program ref="mormerge">
 					<workingDirectory>merge</workingDirectory>
 					<arguments>
-						<argument>-i basin.mm</argument>
-						<argument>-w .</argument>
-						<argument>-r det</argument>
-					</arguments>
-				</program>
-				<program ref="mormerge">
-					<workingDirectory>merge</workingDirectory>
-					<arguments>
-						<argument>-i basin.mm</argument>
-						<argument>-w .</argument>
-						<argument>-r ove</argument>
-					</arguments>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>0deg</workingDirectory>
-				</program>
-				<program ref="WAVE">
-					<workingDirectory>0deg</workingDirectory>
-					<arguments>
-						<argument>bas.mdw</argument>
-						<argument>1</argument>
-					</arguments>
-				</program>
-				<program ref="FLOW2D3D" ignoreStandardError="true" ignoreReturnValue="true">
-					<workingDirectory>45deg</workingDirectory>
-				</program>
-				<program ref="WAVE">
-					<workingDirectory>45deg</workingDirectory>
-					<arguments>
-						<argument>bas.mdw</argument>
-						<argument>1</argument>
+						<argument>basin_lnx64_hp.mm</argument>
 					</arguments>
 				</program>
 			</programs>
