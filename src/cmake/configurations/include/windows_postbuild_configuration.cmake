@@ -17,8 +17,4 @@ if(WIN32)
     if(NOT TARGET pthreads)
         add_subdirectory(${checkout_src_root}/${pthreads_module} pthreads)
     endif()
-    
-    if(NOT TARGET expat)
-        add_subdirectory(${checkout_src_root}/${expat_module} expat)
-    endif()
 endif(WIN32)

@@ -75,13 +75,13 @@
       </arguments>
     </program>
     <program name="waqmerge" addSearchPaths="false" logOutputToFile="true" >
-      <path>data/engines/teamcity_artifacts/x64/dwaq/scripts/run_waqmerge.bat</path>
+      <path>data/engines/teamcity_artifacts/x64/bin/run_waqmerge.bat</path>
     </program>
     <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
       <path>thirdparty/checkhydbal/win64/checkhydbal.exe</path>
     </program>
     <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true">
-      <path>data/engines/teamcity_artifacts/x64/dwaq/scripts/run_maptonetcdf.bat</path>
+      <path>data/engines/teamcity_artifacts/x64/bin/run_maptonetcdf.bat</path>
     </program>
     <program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
       <path>thirdparty/poi2asc/win64/poi2asc.exe</path>

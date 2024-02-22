@@ -14,8 +14,7 @@ add_subdirectory(${checkout_src_root}/${dimr_module} dimr)
 # install
 add_subdirectory(${checkout_src_root}/${install_dimr_module} install_dimr)
 
-if(${configuration_type} STREQUAL ${dimr_configuration})
-   add_subdirectory(${checkout_src_root}/${expat_module} expat)
-endif()
+add_subdirectory(${checkout_src_root}/${expat_module} expat)
+
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(dimr)
