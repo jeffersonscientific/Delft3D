@@ -305,8 +305,6 @@ private
 
    if (jased == 4) then
       
-      write(0,*) 'stmpar%lsedtot = ', stmpar%lsedtot, ', stmpar%lsedsus = ', stmpar%lsedsus
-      
       if (stmpar%lsedtot > 0) then
          ! Bed load (cumulative)
          IP = IPNT_HUA + NUMCONST_MDU + 1

@@ -296,6 +296,9 @@ subroutine unc_write_his(tim)            ! wrihis
            ! New implementation, sedsus fraction is additional dimension
            ierr = nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
            ierr = nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
+           ! Names of different sediment fractions are saved in a separate character variable
+           ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
+           ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
         endif
 
         !
@@ -951,11 +954,6 @@ subroutine unc_write_his(tim)            ! wrihis
         end if
 
         if (dad_included) then
-           !
-           !do i=1,stmpar%lsedtot
-           !   ierr = nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), (/ 1, i /))
-           !enddo
-           !ierr = nf90_put_var(ihisfile, id_frac_name, 'subsoil sediment', (/ 1, stmpar%lsedtot+1 /))        ! rest category
            !
            do i=1,(dadpar%nadred+dadpar%nasupl)
               ierr = nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /))
