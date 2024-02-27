@@ -222,6 +222,8 @@ module process_registration
 
     type(process_routine_info), save, allocatable :: process_routine(:)
 
+    integer(kind=int_wp), save, allocatable :: ithand(:)
+
 contains
 
 subroutine pronrs( pronam, imodul )
@@ -443,28 +445,14 @@ subroutine pronrs( pronam, imodul )
         ]
 
         max_processes = size(process_routine)
+
+        allocate( ithand(max_processes) )
+        ithand = 0
     endif
 
 !
 !   Determine the index of the routine
-!
-!
-!   Note: This statement did not work with builds from TeamCity.
-!         I saw a problem report on the Intel Forum that seems relevant in this context.
-!         For now I will do it the pedestrian way.
-!         MDK: There is a known bug in intel oneAPI 2021.03 regarding findloc
-!
-!   imodul = findloc( process_routine%pronam, pronam, 1 )
-!
-    imodul = 0
-    do i = 1,size(process_routine)
-        if ( process_routine(i)%pronam == pronam ) then
-            imodul = i
-            exit
-        endif
-    enddo
-
-    !write(*,*) 'PRONRS:', pronam, imodul
+    imodul = findloc( process_routine%pronam, pronam, 1 )
 
 end subroutine pronrs
 
@@ -509,19 +497,10 @@ subroutine procal (pmsa   , imodul , flux   , ipoint , increm , &
     integer(kind=int_wp)              :: lunrep
     integer(kind=int_wp)              :: ierror
 
-    integer(kind=int_wp), save, allocatable :: ithand(:) !  timer handles, just a wee bit more than the number of "standard" routines
-    logical, save                     :: first = .true.
-
     !
     ! Only monitor the "standard" routines (otherwise we would have to
     ! record the process routines loaded from the open processes library)
     !
-    if ( first ) then
-        first = .false.
-        allocate( ithand(max_processes+10) )
-        ithand = 0
-    endif
-
     if ( timon ) then
         if ( imodul > 0 .and. imodul <= size(ithand) ) call timstrt ( pronam, ithand(imodul) )
     endif
