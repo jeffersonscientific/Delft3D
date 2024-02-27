@@ -831,7 +831,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ! Compute bed stress resulting from skin friction
           !
           if (iflufflyr>0) then
-             afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:,nm), gdp%gdtrapar, gdp%gdsedpar)
+             afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:,nm), gdp%gdtrapar, gdp%gdsedpar, timhr)
           else
              afluff = 0.0_fp  
           endif
