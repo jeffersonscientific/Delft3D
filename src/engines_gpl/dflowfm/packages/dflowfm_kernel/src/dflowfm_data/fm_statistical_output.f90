@@ -23,7 +23,8 @@ private
    type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
 
    double precision, dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
-   double precision, dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
+   double precision, dimension(:,:), allocatable, target :: station_tracer_data !< (numstations, numtracers*numlayers) tracer data on observation stations to be written
+   double precision, dimension(:),   allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
 
    contains
 
@@ -315,6 +316,27 @@ private
 
    end subroutine aggregate_obscrs_data
 
+   !> Transform the valobs data for writing to the station tracer NetCDF variables
+   subroutine transform_station_tracer_inputs(source_input)
+      use m_observations, only: numobs, nummovobs
+      use m_transportdata, only: ITRA1, ITRAN
+      use m_flow, only: kmx
+      use m_observations, only: valobs, IPNT_TRA1
+      double precision, pointer, dimension(:), intent(inout) :: source_input   !< Pointer to source input array for water_quality_output_# item, unused
+
+      integer :: ntot, variable_index, num_layers, num_tracers, i_start
+      double precision, pointer, dimension(:, :) :: valobs_slice
+
+      num_layers = max(1,kmx)
+      ntot = numobs + nummovobs
+      num_tracers = ITRAN - ITRA1 + 1
+      do variable_index = 1, num_tracers
+         i_start = IPNT_TRA1 + (variable_index - 1) * num_layers
+         valobs_slice => valobs(:, i_start : i_start + num_layers - 1)
+         station_tracer_data(:, variable_index) = reshape(transpose(valobs_slice), [num_layers * ntot])
+      end do
+   end subroutine transform_station_tracer_inputs
+
    !> Adds output configs for every tracer on observation stations just in time,
    !! because the tracers are only known during model initialization.
    !! Returns config indices for these variables such that they can be added to the output items for the same tracers
@@ -364,15 +386,23 @@ private
    !> Add output items for all tracers on stations to output set.
    subroutine add_station_tracer_output_items(output_set, idx_tracers_stations)
    use m_transportdata, only: ITRA1, ITRAN
+   use m_flow, only: kmx
+   use m_observations, only: numobs, nummovobs
    type(t_output_variable_set), intent(inout) :: output_set              !< Output set that item will be added to
    integer,                     intent(in   ) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config set array
 
-   integer :: num_tracers
+   integer :: num_tracers, num_layers, ntot, variable_index
 
+   num_layers = max(1,kmx)
+   ntot = numobs + nummovobs
    num_tracers = ITRAN - ITRA1 + 1
-   do i = 1, num_tracers
-      call add_stat_output_items(output_set, output_config%statout(idx_tracers_stations(i)), !TODO: hier iets met valobs-tracers doen)
-   enddo 
+
+   allocate(station_tracer_data(kmx*ntot,num_tracers))
+
+   call add_stat_output_items(output_set, output_config%statout(idx_tracers_stations(variable_index)), station_tracer_data(:,1), transform_station_tracer_inputs)
+   do variable_index = 2, num_tracers
+      call add_stat_output_items(output_set, output_config%statout(idx_tracers_stations(variable_index)), station_tracer_data(:,variable_index))
+   end do
 
    end subroutine add_station_tracer_output_items
 
