@@ -316,6 +316,7 @@ private
 
    end subroutine aggregate_obscrs_data
 
+!TODO: make generieke transpose routine
    !> Transform the valobs data for writing to the station tracer NetCDF variables
    subroutine transform_station_tracer_inputs(source_input)
       use m_observations, only: numobs, nummovobs
@@ -328,7 +329,7 @@ private
       double precision, pointer, dimension(:, :) :: valobs_slice
 
       num_layers = max(1,kmx)
-      ntot = numobs + nummovobs
+      ntot = numobs + nummovobs !TODO: REFACTOR ntot
       num_tracers = ITRAN - ITRA1 + 1
       do variable_index = 1, num_tracers
          i_start = IPNT_TRA1 + (variable_index - 1) * num_layers
@@ -397,7 +398,8 @@ private
    ntot = numobs + nummovobs
    num_tracers = ITRAN - ITRA1 + 1
 
-   allocate(station_tracer_data(kmx*ntot,num_tracers))
+   allocate(station_tracer_data(kmx*ntot,num_tracers)) !TODO deallocate in reset flow_model or something-   
+  hn
 
    call add_stat_output_items(output_set, output_config%statout(idx_tracers_stations(variable_index)), station_tracer_data(:,1), transform_station_tracer_inputs)
    do variable_index = 2, num_tracers
@@ -2415,6 +2417,8 @@ private
 
       ! Transported constituents
       call add_station_tracer_configs(output_config, idx_tracers_stations)
+      call add_station_tracer_output_items()
+      !testcase: UNST-7713
 
       !
       ! Variables on observation cross sections
