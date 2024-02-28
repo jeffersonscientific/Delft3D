@@ -102,12 +102,6 @@ contains
                   ioutpt, nsegdmp, isegdmp, nexcraai, &
                   iexcraai, ioptraai, ierr, iwar)
 
-      if (mod(intopt, 16) .gt. 7) then
-         ibflag = 1
-      else
-         ibflag = 0
-      end if
-
       call dlwq03(lun, lchar, filtype, nrftot, nrharm, &
                   ivflag, dtflg1, iwidth, dtflg3, &
                   ioutpt, gridps, syname, ierr, iwar, &
@@ -167,7 +161,7 @@ contains
                   gridps, ierr, iwar)
 
       call dlwq09(lun, lchar, filtype, car, iar, &
-                  icmak, iimax, iwidth, ibflag, &
+                  icmak, iimax, iwidth, &
                   ioutpt, ioutps, outputs, ierr, iwar)
 
       call setup_statistical(lunrep, npos, cchar, &

@@ -112,7 +112,6 @@ module m_delwaq1_data
    integer                        :: itota
    integer                        :: itoti
    integer                        :: itotc
-   integer                        :: ibflag
    integer                        :: lunrep
    integer                        :: nosss
    integer                        :: noinfo
