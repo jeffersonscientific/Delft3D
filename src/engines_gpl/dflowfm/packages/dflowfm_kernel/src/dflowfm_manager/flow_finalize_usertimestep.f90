@@ -48,6 +48,8 @@ subroutine flow_finalize_usertimestep(iresult)
    use m_oned_functions, only: updateFreeboard, updateDepthOnGround, updateVolOnGround
    use m_update_fourier, only : update_fourier
    use mass_balance_areas_routines, only : mba_update
+   use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
+   use m_statistical_output, only: update_source_data
    implicit none
 
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -126,6 +128,11 @@ subroutine flow_finalize_usertimestep(iresult)
             endif
          endif
       endif
+
+      ! valobs was updated, also call the function pointers to make sure that the data has been processed properly for writing in flow_externaloutput
+      call update_source_data(out_variable_set_his)
+      call update_source_data(out_variable_set_map)
+      call update_source_data(out_variable_set_clm)
 
       call timstrt('call flow_externaloutput', handle_extra(79))
       call flow_externaloutput(time1)
