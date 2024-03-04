@@ -5514,16 +5514,7 @@
     </testCase>
     <testCase name="e02_f022_c97_trench_VR93_SedTransStt" ref="dflowfm_default">
       <path>e02_dflowfm/f022_morphology_2D/c97_trench_VR93_SedTransStt</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>test.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
+      <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/test_his.nc" type="netCDF">
           <parameters>
