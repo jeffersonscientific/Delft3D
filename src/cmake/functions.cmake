@@ -23,6 +23,36 @@
 # set(src kernel/calculations)
 # create_target(${target_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src target_type "library" recursive True)
 # create_target(${target_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
+function(create_vs_user_files)
+   
+   	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
+	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+    file(
+        WRITE "${userfilename}"
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<VisualStudioUserFile>
+	<Configurations>
+		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
+)
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
+    file(
+        WRITE "${userfilename}"
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+</Project>"
+    )
+endfunction()
+
 function(create_target target_name source_group_name)
     # Set default values for optional parameters
     set(options shared recursive) # For options without values
