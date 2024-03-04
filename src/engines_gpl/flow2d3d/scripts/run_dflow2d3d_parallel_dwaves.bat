@@ -115,7 +115,7 @@ echo executing in separate window: "mpiexec.exe" -n %numpar% -localonly "%dflow2
 
     rem Start WAVE
 title Delft3D-WAVE simulation
-set PATH=%waveexedir%;%swanbatdir%;%sharedir%
+set PATH=%waveexedir%;%swanbatdir%;%sharedir%;;%libdir%
 echo executing in this window: "%waveexedir%\wave.exe" %mdwfile% 1
 "%waveexedir%\wave.exe" %mdwfile% 1
 title %CD%
