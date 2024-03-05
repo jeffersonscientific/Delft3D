@@ -1975,7 +1975,6 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
          character(len=20), dimension(icmax)   :: car
          integer(kind=int_wp), dimension(iimax) ::  iar
          integer(kind=int_wp) ::  iwidth
-         integer(kind=int_wp) ::  ibflag
          integer(kind=int_wp) ::  iwar
          integer(kind=int_wp) ::  ioutpt  ! Dummy
          real                                  :: version = 4.9
@@ -2007,12 +2006,11 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
          ioutpt = 0
          ierr = 0
          iwar = 0
-         ibflag = 0 ! TODO: correct value
          ilun(1) = 9
          lch(1) = trim(name)//'.inp'
 
          call dlwq09(lun, lchar, filtype, car, iar, icmax, &
-                     iimax, iwidth, ibflag, &
+                     iimax, iwidth, &
                      ioutpt, ioutps, outputs, ierr, iwar)
 
          close (9) ! TODO: status = 'delete'

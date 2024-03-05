@@ -29,7 +29,7 @@ module m_delwaq1_read_input_data
    use m_dlwq04
    use m_dlwq03
    use m_dlwq02
-   use m_dlwq01
+   use m_block_1_input_reader
 
    implicit none
 
@@ -38,7 +38,7 @@ contains
    !>\file
    !>                    delwaq1_read_user_data
    !     SUBROUTINES CALLED :
-   !                          DLWQ01, reads block 1 of user data
+   !                          read_block_1_from_input, reads block 1 of user data
    !                          DLWQ02, reads block 2 of user data
    !                          DLWQ03, reads block 3 of user data
    !                          DLWQ04, reads block 4 of user data
@@ -64,7 +64,8 @@ contains
       ilun(1) = lun(26)
       lch(1) = lchar(26)
       lunut = lun(29)
-      call dlwq01(lun, psynam, nosys, notot, nomult, &
+
+      call read_block_1_from_input(lun, psynam, nosys, notot, nomult, &
                   multp, iwidth, otime, isfact, refday, &
                   ioutpt, ierr, iwar)
 
@@ -100,12 +101,6 @@ contains
                   noraai, ntraaq, nosys, notot, nototp, &
                   ioutpt, nsegdmp, isegdmp, nexcraai, &
                   iexcraai, ioptraai, ierr, iwar)
-
-      if (mod(intopt, 16) .gt. 7) then
-         ibflag = 1
-      else
-         ibflag = 0
-      end if
 
       call dlwq03(lun, lchar, filtype, nrftot, nrharm, &
                   ivflag, dtflg1, iwidth, dtflg3, &
@@ -166,7 +161,7 @@ contains
                   gridps, ierr, iwar)
 
       call dlwq09(lun, lchar, filtype, car, iar, &
-                  icmak, iimax, iwidth, ibflag, &
+                  icmak, iimax, iwidth, &
                   ioutpt, ioutps, outputs, ierr, iwar)
 
       call setup_statistical(lunrep, npos, cchar, &
