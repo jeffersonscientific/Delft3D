@@ -26,6 +26,7 @@ module m_dlwq09
     use m_outboo
     use m_opt1
     use m_getopo
+    use m_error_status
 
     implicit none
 
@@ -34,7 +35,7 @@ contains
 
     subroutine dlwq09 (lun, lchar, filtype, car, iar, &
             icmax, iimax, iwidth, &
-            ioutpt, ioutps, outputs, ierr, iwar)
+            ioutpt, ioutps, outputs, status)
         !> Defines variables for output per available output file
 
         use m_defout
@@ -62,10 +63,8 @@ contains
         integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
         integer(kind = int_wp), intent(out) :: ioutps(7, noutp)    !< output administration array
         type(OutputPointers)                Outputs           !< output collection
-        integer(kind = int_wp), intent(inout) :: ierr               !< cumulative error   count
-        integer(kind = int_wp), intent(inout) :: iwar               !< cumulative warning count
 
-
+        type(error_status), intent(inout) :: status !< current error status
 
         !     Local
 
@@ -169,7 +168,7 @@ contains
             write (lunut, 2020)
         else                             !        Handle option -1 and 1
             call opt1   (iopt1, lun, 18, lchar, filtype, &
-                    ldummy, ldummy, 0, ierr2, iwar, &
+                    ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 100
         endif
@@ -178,7 +177,7 @@ contains
 
         call rdodef (noutp, nrvar, nrvarm, isrtou, car, &
                 infile, nx, ny, nodump, ibflag, &
-                lmoutp, ldoutp, lhoutp, lncout, ierr, &
+                lmoutp, ldoutp, lhoutp, lncout, status, &
                 igrdou, ndmpar)
 
         !     Calculate OUTPUT boot variables NVART, NBUFMX
@@ -193,7 +192,7 @@ contains
 
             !        Only if no previous errors , otherwise the reading will fail
 
-            if (ierr == 0) then
+            if (status%ierr == 0) then
 
                 !           Read part of delwaq file
 
@@ -223,7 +222,7 @@ contains
                 endif
             else
                 write (lunut, 2040)
-                iwar = iwar + 1
+                call status%increase_warning_count()
             endif
         endif
 
@@ -256,7 +255,7 @@ contains
         enddo
 
         100 if (infile) then
-            call check  (lchloc, iwidth, 9, ierr2, ierr)
+            call check  (lchloc, iwidth, 9, ierr2, status)
         else
             if (iwidth == 5) then
                 write (lunut, 2060) 9
@@ -270,9 +269,9 @@ contains
         !       Output formats
 
         2000 format (//, ' Option selected for output specification :', I4)
-        2010 format (/, ' ERROR, option not implemented')
-        2020 format (/, ' Output not specified, using default output parameters')
-        2040 format (/, ' WARNING, Not able to locate extra output variables', &
+        2010 format ( /, ' ERROR, option not implemented')
+        2020 format ( /, ' Output not specified, using default output parameters')
+        2040 format ( /, ' WARNING, Not able to locate extra output variables', &
                 /, '          because of errors in input')
         2060 format (/1X, 59('*'), ' B L O C K -', I2, ' ', 5('*')/)
         2070 format (/1X, 109('*'), ' B L O C K -', I2, ' ', 5('*')/)

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_rdodef
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
@@ -30,7 +30,7 @@
 
       subroutine rdodef ( noutp  , nrvar  , nrvarm , isrtou , ounam  , &
                          infile , nx     , ny     , nodump , ibflag , &
-                         lmoutp , ldoutp , lhoutp , lncout , ierr   , &
+                         lmoutp , ldoutp , lhoutp , lncout , status , &
                          igrdou , ndmpar )
 
 !       Deltares Software Centre
@@ -70,9 +70,10 @@
       logical      , intent(in   ) :: ldoutp                !< Dump output active
       logical      , intent(in   ) :: lhoutp                !< History output active
       logical      , intent(in   ) :: lncout                !< NetCDF output active
-      integer(kind=int_wp), intent(inout) ::  ierr                   !< Cumulative error count
       integer(kind=int_wp), intent(in   ) ::  igrdou(4)              !< Output grid indication
       integer(kind=int_wp), intent(in   ) ::  ndmpar                 !< number of dump areas
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     Local
 
@@ -143,11 +144,11 @@
                      enddo
                      if ( nrv < 0 ) then
                         write (lunut,2100)
-                        ierr = ierr + 1
+                        call status%increase_error_count()
                         nrvar(io) = 0
                      else if ( nrv > max2 ) then
                         write (lunut,2110) nrv,max2  ,(nrv-max2)*noutp*2
-                        ierr = ierr + 1
+                        call status%increase_error_count()
                         nrvar(io) = max2
                      else
                         nrvar(io) = nrv
@@ -166,11 +167,11 @@
                      enddo
                      if ( nrv < 0 ) then
                         write (lunut,2100)
-                        ierr = ierr + 1
+                        call status%increase_error_count()
                         nrvar(io) = 0
                      else if ( nrv > nrvarm+1 ) then
                         write (lunut,2110) nrv,max2  ,(nrv-max2)*noutp*2
-                        ierr = ierr + 1
+                        call status%increase_error_count()
                         nrvar(io) = nrvarm
                      else
                         nrvar(io) = nrv
@@ -182,8 +183,7 @@
 
                case default    !   Option not implemented
                   write (lunut,2150) ioopt
-                  ierr = ierr + 1
-
+                  call status%increase_error_count()
             end select
           end do
       endif
@@ -216,7 +216,7 @@
                write (lunut,3000) ' ERROR option out of range!'
                isrtou(3) = 0
                nrvar (3) = 0
-               ierr = ierr + 1
+               call status%increase_error_count()
          end select
 
 !       Switch for MAP BINARY
@@ -234,7 +234,7 @@
                write (lunut,3000) ' ERROR option out of range!'
                isrtou(4) = 0
                nrvar (4) = 0
-               ierr = ierr + 1
+               call status%increase_error_count()
          end select
 
 !       Switch for HIS NEFIS, copy HIS definition if active
@@ -268,7 +268,7 @@
             case default
                write (lunut,3010) ' NEFIS/NetCDF history file option =',ioptf
                write (lunut,3000) ' ERROR option out of range!'
-               ierr = ierr + 1
+               call status%increase_error_count()
          end select
 
 !       Switch for MAP NEFIS, copy MAP definition if active
@@ -298,7 +298,7 @@
             case default
                write (lunut,3010) ' NEFIS/NetCDF map file option =',ioptf
                write (lunut,3000) ' ERROR option out of range!'
-               ierr = ierr + 1
+               call status%increase_error_count()
          end select
 
          ! Read the options for the NetCDF file:
@@ -349,7 +349,7 @@
             ounam(4,5) = ' '
          else
             write (lunut,2110) 4,nrvarm,(4-nrvarm)*noutp
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       endif
 
@@ -445,7 +445,7 @@
       end do
       if (timon) call timstop( ithndl )
       return
-  100 ierr = ierr + 1
+  100 call status%increase_error_count()
       if (timon) call timstop( ithndl )
       return
 
