@@ -155,7 +155,6 @@ endif(UNIX)
 
 if(WIN32)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
-    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_INSTALL_PREFIX}/bin)
 endif(WIN32)
 
 
@@ -237,7 +236,7 @@ if (WIN32)
 	endif()
 endif(WIN32)
 
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm.sh           DESTINATION bin)
