@@ -27,15 +27,16 @@ program tests_dlwq5a
 
     use m_waq_precision
     use m_delwaq1_data, only: npos, ilun, lch
-    use date_time_utils, only: system_time_factor_seconds , base_julian_time 
+    use date_time_utils, only: system_time_factor_seconds , base_julian_time
     use ftnunit, only: runtests_init, runtests, runtests_final, assert_true, assert_equal, assert_files_comparable, test
     use m_string_utils, only: remove_duplicates
     use m_dlwq5a, only: dlwq5a
+    use m_error_status
 
     implicit none
 
     type :: bc_fixture
-        integer(kind=int_wp) :: nosys, nobnd, nobtyp, ioutpt, iwar, ierr, ierr2
+        integer(kind=int_wp) :: nosys, nobnd, nobtyp, ioutpt, ierr2
         character(255)       :: bc_file, wrk_file, lchar(50)
         character(20), dimension(:), allocatable :: bc_ids
         character(20), dimension(:), allocatable :: bc_types
@@ -50,6 +51,8 @@ program tests_dlwq5a
         integer(kind=int_wp) :: icmax = 1000000
         integer(kind=int_wp) :: iwidth = 150
         integer(kind=int_wp) :: lun(50)
+        type(error_status) :: status
+
     end type bc_fixture
 
     call prepare_tests
@@ -76,7 +79,7 @@ program tests_dlwq5a
         character(*),     intent(in   ) :: substance_names(:) !< names of substances in BC's
         character(*),     intent(in   ) :: bc_types(:)        !< Types of the BC's for each consecutive BC id. Therefore, there can be repetitions, e.g. ['Sea', 'River', 'River'].
         character(*),     intent(in   ) :: case_name
-        
+
         character(200) :: data_path
         integer(kind=int_wp) :: j
 
@@ -86,7 +89,7 @@ program tests_dlwq5a
         this%nosys = size(substance_names)
         this%nobnd = size(bc_types)
         this%nobtyp = size(remove_duplicates(bc_types))
-        
+
         this%lun = (/14, 15, 16, 17, 18, 19, 20, 21, 22, 23, &
                      24, 25, 26, 27, 28, 29, 30, 31, 32, 33, &
                      34, 35, 36, 37, 38, 39, 40, 41, 42, 43, &
@@ -110,9 +113,8 @@ program tests_dlwq5a
         ! global variable declared in rd_token, loaded inside m_delwaq1_data
         npos = 150
         ! global variables declared in m_delwaq1_data
-        !iwidth = 150
-        this%ierr = 0
-        this%iwar = 0
+
+        call this%status%initialize(0,0,0)
         this%lchar(14) = trim(data_path) // '/' // trim(case_name) // '.wrk'
         this%lchar(26) = trim(data_path) // '/' // trim(case_name) // '.inc'
         this%dtflg1 = .true.
@@ -147,7 +149,7 @@ program tests_dlwq5a
         ! Note:
         !     This routine merely takes care that the unit tests are indeed run
         integer :: lunrun
- 
+
         open (newunit=lunrun, file='ftnunit.run')
         write (lunrun, '(a)') 'ALL'
         close (lunrun)
@@ -183,9 +185,9 @@ program tests_dlwq5a
                     fixture%car, fixture%iimax, fixture%iar, fixture%irmax,  fixture%rar,   &
                     fixture%sname, fixture%bc_ids, fixture%bc_types(1:fixture%nobtyp), fixture%nobnd, fixture%nosys, &
                     fixture%nobtyp, fixture%drar, fixture%dtflg1, fixture%dtflg3, fixture%ioutpt, &
-                    fixture%ierr2, fixture%ierr, fixture%iwar)
+                    fixture%ierr2, fixture%status)
     end subroutine parse_bc
- 
+
     subroutine test_dlwq5a_1_item_1_conc_1_const
         !< Test defining one item, and one concentration defined by one constant
         type(bc_fixture) :: fx       !< fixture containing all local variables
@@ -198,8 +200,8 @@ program tests_dlwq5a
 
         ! Assert
         call assert_true(fx%ierr2 == 0, 'Validate no error in this subroutine.')
-        call assert_true(fx%ierr == 0, 'Validate no error in total.')
-        call assert_true(fx%iwar == 0, 'Validate no warning.')
+        call assert_true(fx%status%ierr == 0, 'Validate no error in total.')
+        call assert_true(fx%status%iwar == 0, 'Validate no warning.')
         call assert_equal(fx%iar(1), -2, 'Validate index of boundary type.')
         call assert_equal(fx%car(1),'Sea', 'Validate name of boundary type.')
         call assert_equal(fx%car(3), 'OXY', 'Validate name of substance in boundary condition.')
@@ -221,8 +223,8 @@ program tests_dlwq5a
 
         ! Assert
         call assert_true(fx%ierr2 == 0, 'Validate no error in this subroutine.')
-        call assert_true(fx%ierr == 0, 'Validate no error in total.')
-        call assert_true(fx%iwar == 0, 'Validate no warning.')
+        call assert_true(fx%status%ierr == 0, 'Validate no error in total.')
+        call assert_true(fx%status%iwar == 0, 'Validate no warning.')
         call assert_equal(fx%iar(1), -2, 'Validate index of "Sea" boundary type.')
         call assert_equal(fx%iar(2), 1, 'Validate index of "OXY" in substance names array.')
         call assert_equal(fx%iar(3), 3, 'Validate index of "Salinity" in substance names array.')
@@ -249,8 +251,8 @@ program tests_dlwq5a
 
         ! Assert
         call assert_true(fx%ierr2 == 0, 'Validate no error in this subroutine.')
-        call assert_true(fx%ierr == 0, 'Validate no error in total.')
-        call assert_true(fx%iwar == 0, 'Validate no warning.')
+        call assert_true(fx%status%ierr == 0, 'Validate no error in total.')
+        call assert_true(fx%status%iwar == 0, 'Validate no warning.')
         call assert_equal(fx%iar(1), -1, 'Validate index of "Sea" boundary type.')
         call assert_equal(fx%iar(2), 3, 'Validate index of "OXY" in substance names array.')
         call assert_equal(fx%iar(4), 86400, 'Validate time duration of first block in time series.')
@@ -277,8 +279,8 @@ program tests_dlwq5a
 
         ! Assert
         call assert_true(fx%ierr2 == 0, 'Validate no error in this subroutine.')
-        call assert_true(fx%ierr == 0, 'Validate no error in total.')
-        call assert_true(fx%iwar == 0, 'Validate no warning.')
+        call assert_true(fx%status%ierr == 0, 'Validate no error in total.')
+        call assert_true(fx%status%iwar == 0, 'Validate no warning.')
         call assert_equal(fx%iar(1), -1, 'Validate index of "Sea" boundary type.')
         call assert_equal(fx%iar(2), 2, 'Validate index of "OXY" in substance names array.')
         call assert_equal(fx%iar(5), 86400, 'Validate time duration of first block in time series.')
@@ -297,5 +299,5 @@ program tests_dlwq5a
         ! Tear down
         call teardown_case(fx)
     end subroutine test_dlwq5a_1_item_2_conc_1_tseries
- 
+
  end program tests_dlwq5a

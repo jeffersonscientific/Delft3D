@@ -27,6 +27,7 @@
       use m_readmp
       use m_dlwq0i
       use m_time_validation
+      use m_error_status
 
 
       implicit none
@@ -40,7 +41,7 @@
      &                    noint   , iwidth  , dtflg3  , ndmpar  , ntdmps  ,
      &                    noraai  , ntraaq  , nosys   , notot   , nototp  ,
      &                    ioutpt  , nsegdmp , isegdmp , nexcraai,
-     &                    iexcraai, ioptraai, ierr    , iwar    )
+     &                    iexcraai, ioptraai, status    )
 
 !       Deltares Software Centre
 
@@ -134,8 +135,8 @@
       integer(kind=int_wp), pointer       ::  nexcraai(:)        !< number of exchanges in this monitoring transect
       integer(kind=int_wp), pointer       ::  iexcraai(:)        !< exchange area numbers of the transect
       integer(kind=int_wp), pointer       ::  ioptraai(:)        !< option for the transects
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
+
+      type(error_status), intent(inout) :: status !< error status
 
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ---------------------------------------------------------
@@ -201,10 +202,10 @@
             if ( itfact .ne. 1 ) write ( lunut , 2040 )
          elseif ( date2 .eq. 'YYDDDHH'.or. date2 .eq.'yydddhh' ) then    ! not allowed
             write ( lunut , 2050 )
-            ierr = ierr + 1
+            call status%increase_error_count()
          elseif ( date2 .ne. ' ' ) then                                  ! or blank
             write ( lunut , 2060 ) date2
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
 
 !        Year string for date1
@@ -220,17 +221,17 @@
             if ( itfact .ne. 1 ) write ( lunut , 2040 )
          elseif ( date2 .eq.'DDHHMMSS' .or. date2 .eq.'ddhhmmss' ) then  ! not allowed
             write ( lunut , 2090 )
-            ierr = ierr + 1
+            call status%increase_error_count()
          elseif ( date2 .ne. ' ' ) then                                  ! or blank
             write ( lunut , 2060 ) date2
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
 
 !        or blank for date1
 
       elseif ( date1 .ne. ' ' ) then
          write ( lunut , 2100 ) date1
-         ierr = ierr + 1
+         call status%increase_error_count()
       endif
 
 !        Read integration type
@@ -255,13 +256,13 @@
          if ( int( 10.*aint ) .eq. iopt(i) ) goto 10
       enddo
       write ( lunut , 2110 )
-      ierr = ierr + 1
+      call status%increase_error_count()
    10 write ( lunut , 2120 ) aint
 
 !     No in-active substances for fast solver steady state
 
-      if ( notot .ne. nosys .and. ( intsrt .eq. 17 .or. intsrt .eq. 18 ) ) then
-         ierr = ierr + 1
+      if (notot .ne. nosys .and. ( intsrt .eq. 17 .or. intsrt .eq. 18 ) ) then
+         call status%increase_error_count()
          write ( lunut, 2130 )
       endif
 
@@ -300,7 +301,7 @@
          if ( ierr2 .eq. 0 ) then
             if ( gettoken( cdummy, idummy, itype, ierr2 ) .gt. 0 ) goto 30
          else                                                        ! it was no keyword but a time string
-            call convert_string_to_time_offset ( cdummy, itstrt, .false., .false., ierr2 )  ! returns start time in seconds since time offset,
+            call convert_string_to_time_offset (cdummy, itstrt, .false., .false., ierr2 )  ! returns start time in seconds since time offset,
             if ( itstrt .eq. -999 ) then                             ! max is about 68 year since time offset
                write ( lunut , 2140 ) trim(cdummy)
                goto 30
@@ -319,7 +320,7 @@
       if ( .not. alone ) then
          if ( itstrt .ne. itstrtp ) then
             write ( lunut, 2430 ) itstrt, itstrtp
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       endif
 
@@ -343,16 +344,16 @@
       if ( .not. alone ) then
          if ( itstop .ne. itstopp ) then
             write ( lunut, 2440 ) itstop, itstopp
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       endif
       if ( itstrt .lt. 0 ) then
          write ( lunut , 2155 ) itstrt
-         ierr = ierr+1
+         call status%increase_error_count()
       endif
       if ( itstrt .gt. itstop ) then
          write ( lunut , 2160 ) itstop, itstrt
-         ierr = ierr+1
+         call status%increase_error_count()
       endif
       if ( dtflg1 ) then
          write ( lunut, 2170)
@@ -393,27 +394,27 @@
             endif
             if ( idt .le. 0 ) then
                write ( lunut , 2230 ) idt
-               ierr = ierr+1
+               call status%increase_error_count()
                call srstop(1)
             endif
             if ( .not. alone ) then
                if ( idt .ne. idelt ) then
                   write ( lunut, 2450 ) idt, idelt
-                  ierr = ierr + 1
+                  call status%increase_error_count()
                endif
             endif
 
          case ( 1 )                                             !    time varying time step
             if ( .not. alone ) then
                write ( lunut, 2460 )
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
             if ( gettoken( nobrk , ierr2 ) .gt. 0 ) goto 30
             write ( lunut, 2240 ) nobrk
             allocate ( iar(nobrk*2), stat=ierr_alloc )
             if ( ierr_alloc .ne. 0 ) then
                write ( lunut , 2250 ) ierr_alloc
-               ierr = ierr + 1
+               call status%increase_error_count()
                goto 30
             endif
             do k = 1, nobrk*2
@@ -429,8 +430,8 @@
                   write ( lunut , 2260 )
                   write ( lunut , 2270 )
      &                 ( iar(k)/31536000       , mod(iar(k),31536000)/86400,
-     &                   mod(iar(k),86400)/3600, mod(iar(k),3600)/60       ,
-     &                   mod(iar(k),60)        ,      k = 1,nobrk*2        )
+     &                   mod(iar(k),86400)/3600, mod(iar(k),3600)/60,
+     &                   mod(iar(k),60)        ,      k = 1,nobrk*2)
                else
                   write ( lunut , 2280 )
                endif
@@ -444,26 +445,26 @@
             endif
             if ( iar(1) .gt. itstrt ) then
                write ( lunut , 2300 ) iar(1) , itstrt
-               ierr = ierr+1
+               call status%increase_error_count()
             endif
-            call open_waq_files  ( lun(5 ) , lchar(5 ) , 5      , 1     , ioerr )
+            call open_waq_files(lun(5 ) , lchar(5 ) , 5      , 1     , ioerr )
             do ibrk = 1,nobrk*2,2
                write ( lun(5) ) iar(ibrk), float (iar(ibrk+1))
                if ( iar(ibrk+1) .le. 0 ) then
                   write ( lunut , 2310 ) iar(ibrk+1)
-                  ierr = ierr+1
+                  call status%increase_error_count()
                   call srstop(1)
                endif
                if ( ibrk .eq. 1 ) cycle
                if ( iar(ibrk) .le. iar(ibrk-2) ) then
                   write ( lunut , 2320 ) iar(ibrk) , iar(ibrk-2)
-                  ierr = ierr+1
+                  call status%increase_error_count()
                endif
             enddo
             close ( lun(5) )
          case default                                           !    option not implemented
             write ( lunut , 2330 )
-            ierr = ierr + 1
+            call status%increase_error_count()
       end select
 
 
@@ -478,11 +479,10 @@
       nullify(duname)
 !             new input processssing
 
-      ierr2 = 0
       call readmp ( lun    , lchar  , filtype, duname , nsegdmp,
      &              isegdmp, dmpbal , ndmpar , ntdmps , ioutpt ,
-     &              ierr2  , iwar   )
-      if ( ierr2 .ne. 0 ) goto 30
+     &              ierr2  ,status   )
+      if ( status%ierr /= 0 ) goto 30
 
       if ( ndmpar .gt. 0 ) then
          write ( lun(2) ) ( duname(k), k=1, ndmpar )
@@ -497,7 +497,7 @@
       nullify(raname)
       call rearaa ( lun     , lchar   , filtype , raname  , nexcraai,
      &              iexcraai, ioptraai, noraai  , ntraaq  , ioutpt  ,
-     &              ierr2   , iwar    )
+     &              ierr2   , status)
       if ( ierr2 .ne. 0 ) goto 30
       if ( noraai .gt. 0 .and. ibflag .eq. 0 ) then
          write ( lunut,2420 )
@@ -505,7 +505,7 @@
          intopt = ibset(intopt,3)
          intopt = ibset(intopt,4)
       endif
-      if ( noraai .gt. 0 .and. ierr .eq. 0 ) then
+      if ( noraai .gt. 0 .and. status%ierr .eq. 0 ) then
          write ( lun(2) ) ( raname(k), k=1, noraai )
       endif
       if ( associated(raname) ) deallocate(raname)
@@ -530,7 +530,7 @@
       ierr2 = 0
 
 
-      call validate_time_settings(lunut, ierr,
+      call validate_time_settings(lunut, status,
      &                            itstrt, itstop, idt,
      &                            imstrt, imstop, imstep,
      &                            idstrt, idstop, idstep,
@@ -540,10 +540,10 @@
 !        Check number of data in inputfile
 
    30 continue
-      if ( ierr2 .ne. 0 ) ierr = ierr + 1
+      if ( ierr2 .ne. 0 ) call status%increase_error_count()
       if ( ierr2 .eq. 3 ) call srstop(1)
-      call check  ( cdummy , iwidth , 2      , ierr2  , ierr   )
-      iwar = iwar + iwar2
+      call check  ( cdummy , iwidth , 2      , ierr2  , status)
+      call status%increase_warning_count_with(iwar2)
       if ( timon ) call timstop( ithndl )
       return
 
