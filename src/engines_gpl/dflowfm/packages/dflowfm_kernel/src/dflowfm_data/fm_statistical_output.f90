@@ -927,11 +927,11 @@ private
                      'upward_sea_water_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                                 &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_DEPTH_AVERAGED_X_VELOCITY,                                                                     &
-                     'Wrihis_velocity_vector', 'depth_averaged_x_velocity', 'flow element center depth-averaged velocity vector, x-component', &
+                     'Wrihis_velocity_vector', 'depth-averaged_x_velocity', 'flow element center depth-averaged velocity vector, x-component', &
                      'sea_water_depth-averaged_x_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                                     &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY,                                                                     &
-                     'Wrihis_velocity_vector', 'depth_averaged_y_velocity', 'flow element center depth-averaged velocity vector, y-component', &
+                     'Wrihis_velocity_vector', 'depth-averaged_y_velocity', 'flow element center depth-averaged velocity vector, y-component', &
                      'sea_water_depth-averaged_y_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                                     &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE,                                                                        &
