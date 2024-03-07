@@ -1284,34 +1284,36 @@ private
                      'Wrihis_lateral', 'lateral_realized_discharge_average',              &
                      'Realized discharge through lateral, average over the last history time interval',             &
                      '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1))
+      
+      ! HIS: Dredge & Dump variables
       call addoutval(out_quan_conf_his, IDX_HIS_DRED_AREA_NAME,                 &
                      'Wrihis_dred', 'dredge_area_name',              &
                      'dredge area identifier',             &
-                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+                     '', '', UNC_LOC_DREDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DUMP_AREA_NAME,                 &
                      'Wrihis_dred', 'dump_area_name',              &
                      'dump area identifier',             &
-                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+                     '', '', UNC_LOC_DUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DRED_LINK_DISCHARGE,                 &
                      'Wrihis_dred', 'dred_link_discharge',              &
                      'Cumulative dredged material transported via links per fraction',             &
-                     '', 'm3', UNC_LOC_DREDLINK, nc_atts = atts(1:1))
+                     '', 'm3', UNC_LOC_DRED_LINK, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DRED_DISCHARGE,                 &
                      'Wrihis_dred', 'dred_discharge',              &
                      'Cumulative dredged material for dredge areas',             &
-                     '', 'm3', UNC_LOC_DRED, nc_atts = atts(1:1))
+                     '', 'm3', UNC_LOC_DREDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DUMP_DISCHARGE,                 &
                      'Wrihis_dred', 'dump_discharge',              &
                      'Cumulative dredged material for dump areas',             &
-                     '', 'm3', UNC_LOC_DRED, nc_atts = atts(1:1))
+                     '', 'm3', UNC_LOC_DUMP, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_DRED_TIME_FRAC,                 &
                      'Wrihis_dred', 'dred_time_frac',              &
                      'Time fraction spent dredging',             &
-                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+                     '', '', UNC_LOC_DREDGE, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_PLOUGH_TIME_FRAC,                 &
                      'Wrihis_dred', 'plough_time_frac',              &
                      'Time fraction spent ploughing',             &
-                     '', '', UNC_LOC_DRED, nc_atts = atts(1:1))
+                     '', '', UNC_LOC_DREDGE, nc_atts = atts(1:1))
       
       
          !if(dad_included) then  ! Output for dredging and dumping
@@ -1845,6 +1847,7 @@ private
       USE m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug, rug
       use m_dad
+      use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       USE, INTRINSIC :: ISO_C_BINDING
 
       type(t_output_quantity_config_set), intent(inout) :: output_config !< output config for which an output set is needed.
@@ -2415,11 +2418,12 @@ private
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
       endif
       if ( dad_included ) then  ! Output for dredging and dumping
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_LINK_DISCHARGE),dadpar%link_sum               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_DISCHARGE),dadpar(:)%totvoldred               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DUMP_DISCHARGE),dadpar(:)%totvoldump               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_TIME_FRAC),dadpar(:)%totvoldump               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PLOUGH_TIME_FRAC),dadpar(:)%totvoldump               )
+         temp_pointer(1:size(stmpar%sedpar%rhosol,1)*dadpar%nalink) => dadpar%link_sum(:,:)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_LINK_DISCHARGE),   temp_pointer               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_DISCHARGE),        dadpar%totvoldred               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DUMP_DISCHARGE),        dadpar%totvoldump               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_TIME_FRAC),        dadpar%totvoldump               )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PLOUGH_TIME_FRAC),      dadpar%totvoldump               )
          !
          !
          !cof0 = 1d0 ; if( time_his > 0d0 ) cof0 = time_his

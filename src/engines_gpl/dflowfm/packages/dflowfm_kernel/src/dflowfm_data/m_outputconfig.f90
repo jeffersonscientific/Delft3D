@@ -48,8 +48,9 @@ private
    integer, parameter, public :: UNC_LOC_OBSCRS      = 36 !< Data location: his file observation cross section data
    integer, parameter, public :: UNC_LOC_LATERAL     = 37 !< Data location: his file lateral locations data
    integer, parameter, public :: UNC_LOC_RUG         = 38 !< Data location: his file run-up gauge data
-   integer, parameter, public :: UNC_LOC_DRED        = 39 !<
-   integer, parameter, public :: UNC_LOC_DREDLINK    = 40 !<
+   integer, parameter, public :: UNC_LOC_DREDGE        = 39 !<
+   integer, parameter, public :: UNC_LOC_DUMP        = 40 !<
+   integer, parameter, public :: UNC_LOC_DRED_LINK    = 41 !<
    
    !> indexes for output variables 
    integer, public :: IDX_HIS_VOLTOT

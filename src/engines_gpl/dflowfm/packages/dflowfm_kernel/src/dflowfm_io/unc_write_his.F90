@@ -539,37 +539,11 @@ subroutine unc_write_his(tim)            ! wrihis
         ! TODO: UNST-7239: remove separate average IDX?
         if (timon) call timstop (handle_extra(60))
 
-        !if(dad_included) then  ! Output for dredging and dumping
-        !    ierr = nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim)
-        !    ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%nadred+dadpar%nasupl, id_dreddim)
-        !    ierr = nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim)
-        !
-        !    ierr = nf90_def_var(ihisfile, 'dredge_area_name',         nf90_char,   (/ id_strlendim, id_dreddim /), id_dred_name)
-        !    ierr = nf90_put_att(ihisfile, id_dred_name,  'long_name'    , 'dredge area identifier')
-        !
-        !    ierr = nf90_def_var(ihisfile, 'dump_area_name',         nf90_char,   (/ id_strlendim, id_dumpdim /), id_dump_name)
-        !    ierr = nf90_put_att(ihisfile, id_dump_name,  'long_name'    , 'dump area identifier')
-        !
-        !    ierr = nf90_def_var(ihisfile, 'dred_link_discharge', nc_precision, (/ id_dredlinkdim, id_sedtotdim, id_timedim /), id_dredlink_dis)
-        !    ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'long_name', 'Cumulative dredged material transported via links per fraction')
-        !    ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'units', 'm3') !link_sum
-        !
-        !    ierr = nf90_def_var(ihisfile, 'dred_discharge', nc_precision, (/ id_dreddim, id_timedim /), id_dred_dis)
-        !    ierr = nf90_put_att(ihisfile, id_dred_dis, 'long_name', 'Cumulative dredged material for dredge areas')
-        !    ierr = nf90_put_att(ihisfile, id_dred_dis, 'units', 'm3') !totvoldred
-        !
-        !    ierr = nf90_def_var(ihisfile, 'dump_discharge', nc_precision, (/ id_dumpdim, id_timedim /), id_dump_dis)
-        !    ierr = nf90_put_att(ihisfile, id_dump_dis, 'long_name', 'Cumulative dredged material for dump areas')
-        !    ierr = nf90_put_att(ihisfile, id_dump_dis, 'units', 'm3') !totvoldump
-        !
-        !    ierr = nf90_def_var(ihisfile, 'dred_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_dred_tfrac)
-        !    ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'long_name', 'Time fraction spent dredging')
-        !    ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'units', '-') !ndredged
-        !
-        !    ierr = nf90_def_var(ihisfile, 'plough_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_plough_tfrac)
-        !    ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'long_name', 'Time fraction spent ploughing')
-        !    ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'units', '-') !nploughed
-        !endif
+        if(dad_included) then  ! Output for dredging and dumping
+            ierr = nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim)
+            ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%nadred+dadpar%nasupl, id_dreddim)
+            ierr = nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim)
+        endif
 
         if ( jacheckmonitor.eq.1 ) then
            ierr = nf90_def_var(ihisfile, 'checkerboard_monitor', nc_precision, (/ id_laydim, id_timedim /), id_checkmon)
@@ -599,7 +573,7 @@ subroutine unc_write_his(tim)            ! wrihis
             config => out_variable_set_his%statout(ivar)%output_config
             id_var => out_variable_set_his%statout(ivar)%id_var
                
-            if (config%location_specifier /= UNC_LOC_STATION &
+            if (config%location_specifier         /= UNC_LOC_STATION &
                   .and. config%location_specifier /= UNC_LOC_OBSCRS &
                   .and. config%location_specifier /= UNC_LOC_GLOBAL &
                   .and. config%location_specifier /= UNC_LOC_SOSI &
@@ -617,6 +591,10 @@ subroutine unc_write_his(tim)            ! wrihis
                   .and. config%location_specifier /= UNC_LOC_CMPSTRU &
                   .and. config%location_specifier /= UNC_LOC_LONGCULVERT &
                   .and. config%location_specifier /= UNC_LOC_LATERAL &
+                  .and. config%location_specifier /= UNC_LOC_DREDGE &
+                  .and. config%location_specifier /= UNC_LOC_DUMP &
+                  .and. config%location_specifier /= UNC_LOC_DRED_LINK &
+
             ) then
                call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known output location.')
                cycle
@@ -686,6 +664,12 @@ subroutine unc_write_his(tim)            ! wrihis
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_LATERAL)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, attset=config%additional_attributes)
+            case (UNC_LOC_DREDGE)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dreddim,        id_timedim /), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, attset=config%additional_attributes)
+             case (UNC_LOC_DUMP)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, attset=config%additional_attributes)
+             case (UNC_LOC_DRED_LINK)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dredlinkdim, id_sedtotdim, id_timedim /), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_STATION)
                if (allocated(config%nc_dim_ids)) then
                   if (config%nc_dim_ids%laydim) then
@@ -704,8 +688,6 @@ subroutine unc_write_his(tim)            ! wrihis
                end if
             case (UNC_LOC_OBSCRS)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, attset=config%additional_attributes)
-            case (UNC_LOC_DRED)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_GLOBAL)
                if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, attset=config%additional_attributes)
@@ -1008,6 +990,9 @@ subroutine unc_write_his(tim)            ! wrihis
             .and. config%location_specifier /= UNC_LOC_CMPSTRU &
             .and. config%location_specifier /= UNC_LOC_LONGCULVERT &
             .and. config%location_specifier /= UNC_LOC_LATERAL &
+            .and. config%location_specifier /= UNC_LOC_DREDGE &
+            .and. config%location_specifier /= UNC_LOC_DUMP &
+            .and. config%location_specifier /= UNC_LOC_DRED_LINK &
             ) then
          call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known statistical output location.')
          cycle
@@ -1029,10 +1014,14 @@ subroutine unc_write_his(tim)            ! wrihis
          UNC_LOC_UNIWEIR, &
          UNC_LOC_CMPSTRU, &
          UNC_LOC_LONGCULVERT, &
-         UNC_LOC_LATERAL &
+         UNC_LOC_LATERAL, &
+         UNC_LOC_DREDGE, &
+         UNC_LOC_DUMP &
          )
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, it_his /))
       case (UNC_LOC_STATION)
+         ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /))
+      case (UNC_LOC_DRED_LINK)
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, count = build_nc_dimension_id_count_array(config%nc_dim_ids), start = build_nc_dimension_id_start_array(config%nc_dim_ids))
       case (UNC_LOC_GLOBAL)
          if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
