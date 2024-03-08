@@ -621,6 +621,9 @@ end subroutine unc_set_ncformat
 !> Sets the default NetCDF compression setting (only applied when ncformat = NetCDF 4)
 subroutine unc_set_nccompress(md_nccompress)
    logical, intent(in) :: md_nccompress !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
+   if (md_nccompress .and. unc_cmode /= nf90_netcdf4) then
+      call mess(LEVEL_ERROR, 'NetCDF compression (deflation) is a NetCDF4 feature; make sure NcFormat is set to 4.')
+   endif
    unc_nccompress = md_nccompress
 end subroutine unc_set_nccompress
 
