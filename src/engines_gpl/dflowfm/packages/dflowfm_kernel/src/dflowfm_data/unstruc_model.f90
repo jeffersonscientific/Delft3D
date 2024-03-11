@@ -1595,9 +1595,25 @@ subroutine readMDUFile(filename, istat)
        fwfac = 0d0  
     endif
     
-    ! using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
-    if (jawave==1 .or. jawave==2) then
-       jawaveStokes = 0 
+    if (jawave == 0) then 
+       jawaveStokes          = 0  
+       jawaveforces          = 0  
+       jawavestreaming       = 0  
+       jawavedelta           = 0 
+       jawavebreakturbulence = 0  ! default switch off, but switchable see below
+    else if (jawave==1 .or. jawave==2) then
+       jawaveStokes          = 0  !  using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
+       jawaveforces          = 0  
+       jawavestreaming       = 0  
+       jawavedelta           = 0  
+       jawavebreakturbulence = 1  ! default switch off, but switchable see below
+    else 
+       jawaveStokes          = 0  !  using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
+       jawaveforces          = 0  
+       jawavestreaming       = 0  
+       jawavedelta           = 0  
+       jawavebreakturbulence = 0  ! default switch off, but switchable see below
+
     endif 
 
     call prop_get_integer(md_ptr, 'waves', '3Dstokesprofile'     , jawaveStokes)    ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity 
@@ -1605,9 +1621,8 @@ subroutine readMDUFile(filename, istat)
        write(msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=',jawave,', and 3Dstokesprofile=',jawavestokes,'. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
        call warn_flush()
     endif   
-
-    if (jawave > 0) jawavesinturbulence = 1
-    call prop_get_integer(md_ptr, 'waves', '3Dwavesinturbulence' , jawavesinturbulence)
+    
+    call prop_get_integer(md_ptr, 'waves', '3Dwavebreakturbulence' , jawavebreakturbulence) ! Add Wave produktion terms in turbulence 0=No, 1=Yes
     call prop_get_integer(md_ptr, 'waves', '3Dwavestreaming'     , jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
     call prop_get_integer(md_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta)     ! Boundary layer formulation. 1: Sana
     call prop_get_integer(md_ptr, 'waves', '3Dwaveforces'        , jawaveforces)    ! Diagnostic mode: apply wave forces (1) or not (0)
@@ -3706,10 +3721,10 @@ endif
           call prop_set(prop_ptr, 'waves', 'Tifetchcomp'      , Tifetch,           'Time interval fetch comp (s) in wavemodel 1,2')
        endif
        if (writeall .or. kmx>0) then
-          call prop_set(prop_ptr, 'waves', '3Dstokesprofile'     , jawaveStokes    ,'Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve ')
-          call prop_set(prop_ptr, 'waves', '3Dwavesinturbulence' , jawavesinturbulence  ,'Waves in turbulence, 0=no, 1=yes')
-          call prop_set(prop_ptr, 'waves', '3Dwavestreaming'     , jawavestreaming ,'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
-          call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta     ,'Boundary layer formulation. 1: Sana                                                                                  ')
+          call prop_set(prop_ptr, 'waves', '3Dstokesprofile'       , jawaveStokes    ,'Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve ')
+          call prop_set(prop_ptr, 'waves', '3Dwavebreakturbulence' , jawavebreakturbulence  ,'Waves in turbulence, 0=no, 1=yes')
+          call prop_set(prop_ptr, 'waves', '3Dwavestreaming'       , jawavestreaming ,'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
+          call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer'   , jawavedelta     ,'Boundary layer formulation. 1: Sana                                                                                  ')
        endif
        if (jawave == 7) then
            call prop_set(prop_ptr, 'waves', 'Waveforcing'        , waveforcing     ,'Wave forcing (in combination with Wavemodelnr = 7 only). 1: based on radiation stress gradients, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')

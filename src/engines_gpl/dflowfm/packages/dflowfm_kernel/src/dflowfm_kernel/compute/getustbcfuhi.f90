@@ -121,13 +121,10 @@
 
       umod = sqrt( u1Lb*u1Lb + v(Lb)*v(Lb) )
       ! updated ustokes needed before conversion to eulerian velocities
-      if (jawave>2 .and. .not. flowwithoutwaves) then
+      if (jawavestokes>0 .and. .not. flowwithoutwaves) then
          ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
          call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
-         !
-         if (jawaveStokes >= 1) then      ! ustokes correction at bed
-            umod  = sqrt( (u1Lb-ustokes(Lb))*(u1Lb-ustokes(Lb)) + (v(Lb)-vstokes(Lb))*(v(Lb)-vstokes(Lb)) )
-         endif
+         umod  = sqrt( (u1Lb-ustokes(Lb))*(u1Lb-ustokes(Lb)) + (v(Lb)-vstokes(Lb))*(v(Lb)-vstokes(Lb)) )
       endif
 
       if (umod == 0d0) then            ! from dry to wet
@@ -136,9 +133,9 @@
          umod = max(umod, umodeps)     ! 1d-6 for klopman     ! until 3D handled like 2D iterative loop , solves Roses problem: ust=1.1e-104 to the power 3 is underflow
       endif
 
-      ustbLL = sqcf*umod                                   ! ustar based upon bottom layer/layer integral velocity
+      ustbLL = sqcf*umod               ! ustar based upon bottom layer/layer integral velocity
 
-      if (jawave>2 .and. .not. flowWithoutWaves) then
+      if (jawavestokes>0 .and. .not. flowWithoutWaves) then
          rhoL = rhomean      ! for now
          if (ustw2 > 1d-8) then
             !
@@ -221,7 +218,7 @@
             if (stm_included) wblt(LL) = deltau
             !
             ! Streaming below deltau with linear distribution
-            if (jawavestreaming == 1 .and. deltau > 1d-7)  then     ! Streaming below deltau with linear distribution                                
+            if (jawavestreaming>0 .and. deltau > 1d-7)  then     ! Streaming below deltau with linear distribution                                
                Dfu0  = Dfuc                                        ! (m/s2)
                do L  = Lb, Ltop(LL)
                   if (hu(L) <= deltau) then
@@ -261,7 +258,8 @@
         z0urou(LL) = z0ucur(LL)                                ! morfo, bedforms, trachytopes
     endif
 
-    if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
+    ! TDR To do, remove, this was   
+    if (jawave>0 .and. jawaveStokes>0 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
         adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
     endif
 
@@ -269,12 +267,9 @@
       nit = 0
       u1Lb = u1(Lb)
       umod  = sqrt( u1Lb*u1Lb + v(Lb)*v(Lb) )
-      if (jawave>0) then
+      if (jawavestokes>0 .and. .not. flowwithoutwaves) then 
          call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
-         !
-         if (jawaveStokes >= 1) then
-            umod  = sqrt( (u1Lb-ustokes(Lb))*(u1Lb-ustokes(Lb)) + (v(Lb)-vstokes(Lb))*(v(Lb)-vstokes(Lb)) )   ! was ustokes(LL)
-         endif
+         umod  = sqrt( (u1Lb-ustokes(Lb))*(u1Lb-ustokes(Lb)) + (v(Lb)-vstokes(Lb))*(v(Lb)-vstokes(Lb)) )   ! was ustokes(LL)
       endif
 
       r   = umod*hu(Lb)/viskin                                  ! Local re-number:
