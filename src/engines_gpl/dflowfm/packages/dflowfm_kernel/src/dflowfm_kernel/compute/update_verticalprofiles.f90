@@ -559,7 +559,7 @@ double precision, external :: setrhofixedp
 
      enddo  ! Lb, Lt-1
      
-     if (jawavebreakturbulence>0) then
+     if (jawavebreakturbulence>0) then ! still need to review this piece of code 
         ! check if first layer is thicker than fwavpendep*wave height
         ! Then use JvK solution
         if (hu(LL)-hu(Lt-1)>=fwavpendep*hrmsLL) then

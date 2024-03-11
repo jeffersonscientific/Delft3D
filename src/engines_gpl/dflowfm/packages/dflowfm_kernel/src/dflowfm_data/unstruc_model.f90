@@ -1595,25 +1595,12 @@ subroutine readMDUFile(filename, istat)
        fwfac = 0d0  
     endif
     
-    if (jawave == 0) then 
+    if (jawave <= 2) then 
        jawaveStokes          = 0  
        jawaveforces          = 0  
        jawavestreaming       = 0  
        jawavedelta           = 0 
        jawavebreakturbulence = 0  ! default switch off, but switchable see below
-    else if (jawave==1 .or. jawave==2) then
-       jawaveStokes          = 0  !  using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
-       jawaveforces          = 0  
-       jawavestreaming       = 0  
-       jawavedelta           = 0  
-       jawavebreakturbulence = 1  ! default switch off, but switchable see below
-    else 
-       jawaveStokes          = 0  !  using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
-       jawaveforces          = 0  
-       jawavestreaming       = 0  
-       jawavedelta           = 0  
-       jawavebreakturbulence = 0  ! default switch off, but switchable see below
-
     endif 
 
     call prop_get_integer(md_ptr, 'waves', '3Dstokesprofile'     , jawaveStokes)    ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity 

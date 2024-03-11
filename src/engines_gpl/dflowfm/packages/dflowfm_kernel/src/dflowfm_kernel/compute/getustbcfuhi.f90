@@ -258,8 +258,8 @@
         z0urou(LL) = z0ucur(LL)                                ! morfo, bedforms, trachytopes
     endif
 
-    ! TDR To do, remove, this was   
-    if (jawave>0 .and. jawaveStokes>0 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
+    ! hk, TDR, To do, remove, double counting erroneously inserted in a merge   
+    if (jawave>0 .and. jawaveStokes>0 .and. .not. flowWithoutWaves) then       ! Ustokes correction at bed
         adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
     endif
 

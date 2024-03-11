@@ -742,7 +742,7 @@ subroutine default_flowparameters()
 
     jawavestokes = 1      ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
-    jawavebreakturbulence = 0 ! default off    
+    jawavebreakturbulence = 0  ! default off    
 
     jawavedelta = 1       ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
 
