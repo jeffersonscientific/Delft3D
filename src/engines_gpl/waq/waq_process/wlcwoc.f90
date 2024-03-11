@@ -181,7 +181,7 @@
 
       !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 !     
          Temp       = PMSA(IP1)
          Surtemp    = PMSA(IP2)
@@ -211,7 +211,7 @@
 !             Module VELOC calculates FLOW too (only for SWCalVelo=3). This is the preffered option which works for D3D and Sobek
 !             If other options for Velociy calculation are needed this works for Sobek, to make it work in D3D provide WIDTH as input.
          flowsegvel = depth * width * velocity
-         if ( int ( SWCalcVelo + 0.5 ) .eq. 3 ) then
+         if ( int ( SWCalcVelo + 0.5 ) == 3 ) then
              flowabs = abs(flowseg)
          else
              flowabs = abs(flowsegvel)
@@ -256,7 +256,7 @@
          dTWOC = 0
          dTWOC2 = 0
 
-         if (Temp .ge. WO_Tbgn) then
+         if (Temp >= WO_Tbgn) then
              dTWOC = min( max((Temp - WO_Tbgn), WO_Tbgn - WO_Tend), & 
                          WO_dTmax)
 !                 verruim WOC met surplustemperatuur
@@ -291,7 +291,7 @@
          dTKOC = 0
          dTKOC2 = 0
 
-         if ( (Temp .ge. KO_Tmin) .and. (Temp .le. KO_Tbgn) ) then
+         if ( (Temp >= KO_Tmin) .and. (Temp <= KO_Tbgn) ) then
 
               dTKOC = min( max(KO_Tbgn - Temp, KO_Tend - KO_Tbgn), & 
                            KO_dTmax)
@@ -401,7 +401,7 @@
          IP47  = IP47  + INCREM ( 47 )
 
 
- 9000       CONTINUE
+      end do
 !
       RETURN
 !

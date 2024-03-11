@@ -250,18 +250,18 @@
           ifflag  = 0
           iaflag  = 0
           ibflag  = 0
-          if ( mod(intopt,16) .ge. 8 ) ibflag = 1
-          if ( ndspn .eq. 0 ) then
+          if ( mod(intopt,16) >= 8 ) ibflag = 1
+          if ( ndspn == 0 ) then
              nddim = nodisp
           else
              nddim = ndspn
           endif
-          if ( nveln .eq. 0 ) then
+          if ( nveln == 0 ) then
              nvdim = novelo
           else
              nvdim = nveln
           endif
-          lstrec   = icflag .eq. 1
+          lstrec   = icflag == 1
           nosss    = noseg + nseg2
           noqtt    = noq   + noq4
           inwtyp   = intyp + nobnd
@@ -361,7 +361,7 @@
 
 !          set new boundaries
 
-         if ( itime .ge. 0   ) then
+         if ( itime >= 0   ) then
           ! first: adjust boundaries by OpenDA
             if ( dlwqd%inopenda ) then
                do ibnd = 1,nobnd
@@ -404,7 +404,7 @@
 
 !        zero cumulative arrays
 
-         if ( imflag .or. ( ihflag .and. noraai .gt. 0 ) ) then
+         if ( imflag .or. ( ihflag .and. noraai > 0 ) ) then
             call zercum ( notot   , nosys   , nflux   , ndmpar  , ndmpq   , & 
                          ndmps   , a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), & 
                          a(idmpq:), a(idmps:), noraai  , imflag  , ihflag  , & 
@@ -413,8 +413,8 @@
 
 !        simulation done ?
 
-         if ( itime .lt. 0      ) goto 9999
-         if ( itime .ge. itstop ) goto 50
+         if ( itime < 0      ) goto 9999
+         if ( itime >= itstop ) goto 50
 
 !          restore conc-array from mass array
 
@@ -496,13 +496,13 @@
       if (timon) call timstrt ( "ADE solver", ithand1 )
       timon_old = timon
       noth = OMP_GET_MAX_THREADS()
-      if ( noth .gt. 1 ) timon = .false.
+      if ( noth > 1 ) timon = .false.
 
 !$OMP PARALLEL
 !$OMP DO PRIVATE(ith) SCHEDULE(DYNAMIC)
 ! start of loop over substances
 
-      do 40 isys = 1, nosys
+      do isys = 1, nosys
 !        ith = 1             !  number of threads for parallel processing
          ith = OMP_GET_THREAD_NUM()+1
 
@@ -540,11 +540,11 @@
 
 !        end loop over the substances
 
-   40 continue
+      end do
 
 !$OMP ENDDO
 !$OMP ENDPARALLEL
-      if ( noth .gt. 1 ) timon = timon_old
+      if ( noth > 1 ) timon = timon_old
 
       if ( timon ) call timstop ( ithand1 )
 
@@ -579,7 +579,7 @@
          endif
 
 !     integrate the fluxes at dump segments fill asmass with mass
-         if ( ibflag .gt. 0 ) then
+         if ( ibflag > 0 ) then
             call proint ( nflux   , ndmpar  , idt     , itfact  , a(iflxd:), & 
                          a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq  )
          endif

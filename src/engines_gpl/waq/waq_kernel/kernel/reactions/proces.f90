@@ -236,15 +236,15 @@
 !
 !     If no processes, get out of here
 !
-      IF ( NPROC .EQ. 0 ) goto 9999
+      IF ( NPROC == 0 ) goto 9999
 
       ! open openpb dll
 
-      if ( ifirst .eq. 1 ) then
+      if ( ifirst == 1 ) then
          call getmlu(lunrep)
          call retrieve_command_argument ( '-openpb', 3, lfound, idummy, rdummy, shared_dll, ierr2)
          if ( lfound ) then
-            if ( ierr2.eq. 0 ) then
+            if ( ierr2== 0 ) then
                write(lunrep,*) ' -openpb command line argument found'
                write(lunrep,*) ' using dll : ',trim(shared_dll)
             else
@@ -260,7 +260,7 @@
          endif
          dll_opb = 0 ! in C this one could be 4 or 8 bytes, so make sure the last bytes are zero
          ierror = open_shared_library(dll_opb, shared_dll)
-         if ( ierror .ne. 0 .and. l_stop ) then
+         if ( ierror /= 0 .and. l_stop ) then
             write(*,*) 'ERROR : opening process library DLL'
             write(*,*) 'DLL   : ',trim(shared_dll)
             write(*,*) 'dll handle: ', dll_opb
@@ -299,7 +299,7 @@
 !grd  only if there is a process on a higher grid
       maxgrid= maxval(progrd(1:nproc))
       iiknmr = 78 + 30                 !   = iasize + 30
-      if ( maxgrid .gt. 1 ) then
+      if ( maxgrid > 1 ) then
          call aggregate_attributes ( noseg  , arrdm2(iiknmr) , nogrid , iknmrk , grdnos , & 
                       grdseg )
       endif
@@ -321,7 +321,7 @@
 
 !     BLOOM fractional step (derivs assumed zero at entry)
 
-      if ( ipbloo .gt. 0 ) then         !     Check presence of BLOOM module for this run
+      if ( ipbloo > 0 ) then         !     Check presence of BLOOM module for this run
          ivar   = prvvar(ioffbl)
          iarr   = vararr(ivar)
          iv_idx = varidx(ivar)
@@ -332,12 +332,12 @@
 
 !        This timestep fractional step ?
 
-         if ( mod(istep-1,ndtblo) .eq. 0 ) then
+         if ( mod(istep-1,ndtblo) == 0 ) then
 
 !           Set CONC on the Bloom grid if that is not the first grid
 
             igrblo = progrd(ipbloo)
-            if ( igrblo .gt. 1 ) then
+            if ( igrblo > 1 ) then
                noseg2 = grdnos(igrblo)
                ix_cnc = 1
                ia_cnc = 6
@@ -352,7 +352,7 @@
                            notot         , 1                , 1     , isysh , 1         , & 
                            nosys         , grdseg(1,igrblo) , 3     , conc  , volume    , & 
                            a(ip_arh)     , conc(1,1,igrblo) )
-               if ( notot - nosys .gt. 0 )      & !   inactives
+               if ( notot - nosys > 0 )      & !   inactives
               call aggregate( noseg         , noseg2           , notot , 1     , nototh    , & 
                            notot         , nosys + 1        , 1     , isysh , nosys + 1 , & 
                            notot - nosys , grdseg(1,igrblo) , 3     , conc  , surfac    , & 
@@ -364,7 +364,7 @@
             endif
 
             flux = 0.0
-            if ( ibflag .gt. 0 ) flxdmp = 0
+            if ( ibflag > 0 ) flxdmp = 0
 
 !           set idt and delt, bloom itself will multiply with prondt
             idtpro     = prondt(ipbloo)*idt
@@ -388,16 +388,16 @@
             if ( timon ) call timstop ( ithand2 )
             igrid  = progrd(ipbloo)
             noseg2 = grdnos(igrid)
-            if ( ipbloo .ne. nproc ) then
+            if ( ipbloo /= nproc ) then
                nfluxp = iflux(ipbloo+1) - iflux(ipbloo)
             else
                nfluxp = noflux - iflux(ipbloo) + 1
             endif
-            if ( nfluxp .gt. 0 ) then
+            if ( nfluxp > 0 ) then
 
 !              If necessary set volume for this grid. Volume is always variable 1
 
-               if ( vgrset(1,igrid) .ne. 1 ) then
+               if ( vgrset(1,igrid) /= 1 ) then
                   call aggregate_extended( noseg           , noseg2 , 1      , 1      , 1      , & 
                               1               , 1      , 1      , 1      , 1      , & 
                               grdseg(1,igrid) , 1      , volume , volume , volume , & 
@@ -412,7 +412,7 @@
 
 !              For balances store FLXDMP
 
-               if ( ibflag .gt. 0 ) then
+               if ( ibflag > 0 ) then
                   call profld ( noflux  , iflux (ipbloo) , nfluxp  , igrid  , noseg2          , & 
                                noseg   , prondt(ipbloo) , isdmp   , grdseg , flux(1,1,igrid) , & 
                                volume  , flxdmp         )
@@ -422,7 +422,7 @@
 !           If processes on other grid convert derivs to base grid
 
             igrblo = progrd(ipbloo)
-            if ( noflux .gt. 0 .and. igrblo .gt. 1 ) then
+            if ( noflux > 0 .and. igrblo > 1 ) then
                iswcum = 1
                noseg2 = grdnos(igrblo)
                call resample( noseg   , noseg2             , notot  , notot             , notot  , & 
@@ -445,7 +445,7 @@
 
 !           Integrate the fluxes at dump segments
 
-            if ( ibflag .gt. 0 ) then
+            if ( ibflag > 0 ) then
                call proint ( noflux , ndmpar , idt    , itfact , flxdmp , & 
                             flxint , isdmp  , ipdmp  , ntdmpq )
                flxdmp = 0.0
@@ -470,7 +470,7 @@
 
 !     See if converting CONC in one step speeds up. Only in case of no fractional step
 
-      if ( ifracs .eq. 0 .and. maxgrid .gt. 1 ) then
+      if ( ifracs == 0 .and. maxgrid > 1 ) then
          ix_cnc = 1
          ia_cnc = 6
          call dhgvar( ia_cnc, ix_cnc, iv_cnc)
@@ -486,7 +486,7 @@
                         notot         , 1                , 1     , isysh , 1         , & 
                         nosys         , grdseg(1,igrid)  , 3     , conc  , volume    , & 
                         a(ip_arh)     , conc(1,1,igrid)  )
-            if ( notot - nosys .gt. 0 )      & !   inactives
+            if ( notot - nosys > 0 )      & !   inactives
            call aggregate( noseg         , noseg2           , notot , 1     , nototh    , & 
                         notot         , nosys + 1        , 1     , isysh , nosys + 1 , & 
                         notot - nosys , grdseg(1,igrid)  , 3     , conc  , surfac    , & 
@@ -501,7 +501,7 @@
 !     The processes fractional step
 
       flux = 0.0
-      if ( ibflag .gt. 0 ) flxdmp = 0
+      if ( ibflag > 0 ) flxdmp = 0
 
       if ( timon ) call timstrt ( "onepro", ithand2 )
       timon_old = timon
@@ -512,16 +512,16 @@
 
 !        NOT bloom
 
-         if ( iproc .ne. ipbloo ) then
+         if ( iproc /= ipbloo ) then
 
 !           Check fractional step
 
-            if ( mod( istep-1, prondt(iproc) ) .eq. 0 ) then
+            if ( mod( istep-1, prondt(iproc) ) == 0 ) then
                run = .false.                             ! to get the loop running
                do while ( .not. run )                    ! wait untill all input is resolved
                   run = .true.                           ! we are optimistic
                   do k = 1, nrref                        ! maximum number of references / proc
-                     if ( proref(k,iproc) .eq. 0 ) exit        ! no references left
+                     if ( proref(k,iproc) == 0 ) exit        ! no references left
 
                      !
                      ! Flush the array done:
@@ -532,7 +532,7 @@
 
                      !$omp flush(done)
 
-                     if ( done(proref(k,iproc)) .eq. 0 ) then  ! an unresolved one found
+                     if ( done(proref(k,iproc)) == 0 ) then  ! an unresolved one found
                         run = .false.                          ! so no run yet
                         exit
                      endif                                     ! everything is resolved
@@ -584,7 +584,7 @@
 !     processen hebben met een grotere tijdstap de integratie samen met het
 !     transport doen.
 
-      if ( noflux .gt. 0 .and. maxgrid .gt. 1 ) then
+      if ( noflux > 0 .and. maxgrid > 1 ) then
          do igrd = 2 , nogrid
 
             iswcum = 1
@@ -602,13 +602,13 @@
 
 !     Set fractional step
 
-      if ( noflux .gt. 0 .and. ifracs .eq. 1 ) then
+      if ( noflux > 0 .and. ifracs == 1 ) then
 
          ! no fluxes at first step of fractional step
 
-         if ( istep .eq. 1 ) then
+         if ( istep == 1 ) then
             deriv(:,:,1) = 0.0
-            if ( ibflag .gt. 0 ) flxdmp = 0.0
+            if ( ibflag > 0 ) flxdmp = 0.0
          else
 
 !           Scale fluxes and update "processes" accumulation arrays
@@ -624,7 +624,7 @@
 
 !           Integrate the fluxes at dump segments
 
-            if ( ibflag .gt. 0 ) then
+            if ( ibflag > 0 ) then
                call proint ( noflux , ndmpar , idt    , itfact , flxdmp , & 
                             flxint , isdmp  , ipdmp  , ntdmpq )
                flxdmp = 0.0
@@ -634,7 +634,7 @@
 
 !     Calculate new dispersions
 
-      if ( ndspn  .gt. 0 ) then
+      if ( ndspn  > 0 ) then
          call provel ( dispnw , ndspn  , idpnew , disper , nodisp , & 
                       idpnt  , dspx   , ndspx  , dsto   , nosys  , & 
                       noq    , dspndt , istep  )
@@ -642,7 +642,7 @@
 
 !     Calculate new velocities
 
-      if ( nveln  .gt. 0 ) then
+      if ( nveln  > 0 ) then
          call provel ( velonw , nveln  , ivpnew , velo   , novelo , & 
                       ivpnt  , velx   , nvelx  , vsto   , nosys  , & 
                       noq    , velndt , istep  )
@@ -650,7 +650,6 @@
 
  9999 if ( timon ) call timstop ( ithandl )
       return
- 2000 format ( ' ERROR: undefined kind of array in PROCES :', i8 )
       end
 
       SUBROUTINE ONEPRO ( IPROC , K     , IDT   , ITFACT, PROGRD, & 
@@ -734,21 +733,21 @@
          IP_ARR = ARRPOI(IARR)
          IDIM1  = ARRDM1(IARR)
          IDIM2  = ARRDM2(IARR)
-         IF ( ITYP .EQ. 1 ) THEN
+         IF ( ITYP == 1 ) THEN
 !
 !           Only for space varying array's
 !
-            IF ( IARKND .GE. 2 ) THEN
+            IF ( IARKND >= 2 ) THEN
 !
 !              Only if variable isn't actual set for this grid
 !
-               IF ( VGRSET(IVAR,IGRID) .EQ. 0 ) THEN
+               IF ( VGRSET(IVAR,IGRID) == 0 ) THEN
 !
 !                 Set variable for base grid
 !
-                  IF ( VGRSET(IVAR,1) .EQ. 0 ) THEN
+                  IF ( VGRSET(IVAR,1) == 0 ) THEN
                      DO IGR3 = 2 , NOGRID
-                        IF ( VGRSET(IVAR,IGR3) .EQ. 1 ) THEN
+                        IF ( VGRSET(IVAR,IGR3) == 1 ) THEN
                            NOSEG3 = GRDNOS(IGR3)
 !
 !                          Determine characteristics of variable
@@ -770,11 +769,11 @@
 !                          ( Don't mind if this one is actual ? )
 !
                            IDATYP = VARTDA(IVAR)
-                           IF ( IDATYP .EQ. 2 ) THEN
+                           IF ( IDATYP == 2 ) THEN
                               IV_DA  = VARDAG(IVAR)
                               IA_DA  = VARARR(IV_DA)
                               IK_DA  = ARRKND(IA_DA)
-                              IF ( IK_DA .EQ. 1 ) THEN
+                              IF ( IK_DA == 1 ) THEN
 !
 !                                Not variable in space use help var
 !
@@ -799,7 +798,7 @@
                                           IP_HLP, IGR3  , & 
                                           ISYSH , NOTOTH, & 
                                           IP_ARH)
-                           ELSEIF ( IDATYP .EQ. 3 ) THEN
+                           ELSEIF ( IDATYP == 3 ) THEN
                               IV_DA  = IV_HLP
                               IA_DA  = VARARR(IV_DA)
                               IK_DA  = ARRKND(IA_DA)
@@ -850,7 +849,7 @@
 !
 !                 Set the variable for this grid
 !
-                  IF ( IGRID .NE. 1 ) THEN
+                  IF ( IGRID /= 1 ) THEN
 !
 !                    Determine characteristics of variable
 !
@@ -870,7 +869,7 @@
 !                    Determine characteristics of WEIGHT variable
 !
                      IAGTYP = VARTAG(IVAR)
-                     IF ( IAGTYP .EQ. 2 .OR. IAGTYP .EQ. 3) THEN
+                     IF ( IAGTYP == 2 .OR. IAGTYP == 3) THEN
                         IV_AG  = VARAGG(IVAR)
                         IA_AG  = VARARR(IV_AG)
                         IX_AG  = VARIDX(IV_AG)
@@ -921,14 +920,14 @@
 !
 !        Zet pointer structuur voor procesmodule, dit hoeft eigenlijk maar 1 keer
 !
-         IF ( IARKND .EQ. 1 ) THEN
+         IF ( IARKND == 1 ) THEN
             IPMSA (K+IVARIO-1) = IP_ARR + IV_IDX - 1
             INCREM(K+IVARIO-1) = 0
-         ELSEIF ( IARKND .EQ. 2 ) THEN
+         ELSEIF ( IARKND == 2 ) THEN
             IPMSA (K+IVARIO-1) = IP_ARR + (IGRID-1)*IDIM1*IDIM2 + & 
                                 IV_IDX - 1
             INCREM(K+IVARIO-1) = IDIM1
-         ELSEIF ( IARKND .EQ. 3 ) THEN
+         ELSEIF ( IARKND == 3 ) THEN
             IPMSA (K+IVARIO-1) = IP_ARR + (IGRID-1)*IDIM1*IDIM2 + & 
                                 (IV_IDX-1)*IDIM1
             INCREM(K+IVARIO-1) = 1
@@ -949,14 +948,14 @@
 !
       DO IVARIO = 1 , PRVNIO(IPROC)
          ITYP   = PRVTYP(K+IVARIO-1)
-         IF ( ITYP .EQ. 3 .OR. ITYP .EQ. 4 .OR. ITYP .EQ. 5 ) THEN
+         IF ( ITYP == 3 .OR. ITYP == 4 .OR. ITYP == 5 ) THEN
             IVAR   = PRVVAR(K+IVARIO-1)
             IARR   = VARARR(IVAR)
             IARKND = ARRKND(IARR)
 !
 !           Only for space varying array's
 !
-            IF ( IARKND .GE. 2 ) THEN
+            IF ( IARKND >= 2 ) THEN
                DO IGR2 = 1 , NOGRID
                   VGRSET(IVAR,IGR2) = 0
                ENDDO
@@ -966,17 +965,17 @@
 
          ! set fractional step array for dispersion and velocities from the processes
 
-         IF ( ITYP .EQ. 4 ) THEN
+         IF ( ITYP == 4 ) THEN
             IARR   = VARARR(IVAR)
-            IF ( IARR .EQ. 40 ) THEN
+            IF ( IARR == 40 ) THEN
                IV_IDX = VARIDX(IVAR)
-               IF ( IV_IDX .GT. 0 ) THEN
+               IF ( IV_IDX > 0 ) THEN
                   DSPNDT(IV_IDX) = PRONDT(IPROC)
                ENDIF
             ENDIF
-            IF ( IARR .EQ. 41 ) THEN
+            IF ( IARR == 41 ) THEN
                IV_IDX = VARIDX(IVAR)
-               IF ( IV_IDX .GT. 0 ) THEN
+               IF ( IV_IDX > 0 ) THEN
                   VELNDT(IV_IDX) = PRONDT(IPROC)
                ENDIF
             ENDIF
@@ -1085,23 +1084,23 @@
       if ( timon ) call timstrt ( "twopro", ithandl )
 
       do iproc = 1, nproc
-         if ( iproc .eq. ipbloo ) cycle
-         if ( mod( istep-1, prondt(iproc) ) .ne. 0 ) cycle
+         if ( iproc == ipbloo ) cycle
+         if ( mod( istep-1, prondt(iproc) ) /= 0 ) cycle
 
 !        See if this process produces fluxes
 
-         if ( iproc .ne. nproc ) then
+         if ( iproc /= nproc ) then
             nfluxp = iflux(iproc+1) - iflux(iproc)
          else
             nfluxp = noflux - iflux(iproc) + 1
          endif
-         if ( nfluxp .eq. 0 ) cycle
+         if ( nfluxp == 0 ) cycle
 
 !        If necessary set volume for this grid.
 
          igrid  = progrd(iproc)
          noseg2 = grdnos(igrid)
-         if ( vgrset(1,igrid) .ne. 1 ) then  !
+         if ( vgrset(1,igrid) /= 1 ) then  !
             call aggregate_extended( noseg          , noseg2  , 1       , 1       , 1       , & 
                         1              , 1       , 1       , 1       , 1       , & 
                         grdseg(1,igrid), 1       , volume  , volume  , volume  , & 
@@ -1116,7 +1115,7 @@
 
 !        For the use in balances, store fluxes in 'flxdmp' using aggregation pointer 'isdmp'
 
-         if ( ibflag .gt. 0 ) then
+         if ( ibflag > 0 ) then
             call profld ( noflux  , iflux (iproc), nfluxp  , igrid   , noseg2         , & 
                          noseg   , prondt(iproc), isdmp   , grdseg  , flux(1,1,igrid), & 
                          volume  , flxdmp       )

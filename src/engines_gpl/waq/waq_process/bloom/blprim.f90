@@ -191,7 +191,7 @@
 ! Loop over algae species
       do j=1,nuspec
 ! compute remaining biomass after mortality
-         if (biomas (j) .lt. 0.0) then
+         if (biomas (j) < 0.0) then
             x (j) = biomas (j)
          else
             x(j) = dble( biomas(j) - tstepi * flmora(j) ) * ctodry(j)
@@ -199,17 +199,17 @@
             do k=1,nunuco
                i = nutcon(k)
                autnut  = dble( tstepi * flmora(j)) * ctodry(j) * (1.d0 - availn(j)) * aa(k,j)
-               if (i.le.3) then
+               if (i<=3) then
                   auto(i) = auto(i) + autnut                   ! only for N,P,Si
                   concen(i) = concen(i) + autnut
                endif
             enddo
 
 ! Negative biomass after mortality? Message!
-            if (x(j) .lt. -1.0d-2) then
+            if (x(j) < -1.0d-2) then
                ierror = ierror + 1
                write (outdbg, 1050) ierror,j,biomas(j), iseg, x(j)
-               if (ierror .eq. merror) then
+               if (ierror == merror) then
                   write (outdbg,*) 'Fatal ERROR in Bloom module: time step too big'
                   write (*,*) 'Fatal ERROR in Bloom module: time step too big'
                   call srstop(1)
@@ -222,7 +222,7 @@
                  ' Serious error: time step is too big to model', & 
                  ' mortality')
 
-            if (x(j) .lt. toplev) then
+            if (x(j) < toplev) then
 !  Set small biomasses to zero, putting mass into the detritus pools,
 !  by increasing the mortality and detritus production fluxes
                cmort = sngl(x(j))/tstepi
@@ -230,7 +230,7 @@
                fldetn(1) = fldetn(1) + cmort/sngl(ctodry(j))
                do k=1,nunuco
                    i = nutcon(k)
-                   if (i.le.3)                          & ! only N,P,Si
+                   if (i<=3)                          & ! only N,P,Si
                   fldetn(i+1) = fldetn(i+1) + cmort*sngl(aa(k,j))
                enddo
 !  Biomass set to zero, for BLOOM to make proper mortality constraint
@@ -258,7 +258,7 @@
 !   In case of running in stand alone modus (SWBLSA=1) a steady state
 !   is calculated on basis of prescribed total nutrients and
 !   detritus as based on the previous time step (TT dec 2015).
-      if (swblsa.eq.1) then
+      if (swblsa==1) then
          concen (1) = dble(totnin-cdetn)
          concen (2) = dble(totpin-cdetp)
          concen (3) = dble(totsiin)
@@ -304,7 +304,7 @@
          do k = 1,nunuco
              i = nutcon(k)
              i2 = flxcon(k)
-             if (i.le.3) then
+             if (i<=3) then
                 totnut(i+1) = totnut(i+1) + sngl(xdef(j+nurows)*aa(k,j))
              endif
              fluptn(i2)  = fluptn(i2) + flprpa(j)*aa(k,j)*ctodry(j)
@@ -328,7 +328,7 @@
          endif
       enddo
 
-      if (totnut(1) .gt. 1e-30) then
+      if (totnut(1) > 1e-30) then
          fbod5 = fbod5/totnut(1)
       else
          fbod5 = 1.0
@@ -338,20 +338,20 @@
 !  phytoplankton first depletes ammonia (completely)
 
 !  If BLOOM stand alone then derive steady state surplus nutrients
-      if (swblsa.eq.1) then
+      if (swblsa==1) then
          fluptn(2) =  (cnh4 + auto(1)) /tstepi
          fluptn(3) =  (cno3 - totnin + totnut(2) + cdetn) /tstepi
          fluptn(4) =  (cpo4 - totpin + totnut(3) + cdetp) / tstepi
          fluptn(5) =  (csio - totsiin + totnut(4) ) / tstepi
       else
-         if (xdef(1) .le. cno3) then
+         if (xdef(1) <= cno3) then
             uptake = fluptn(2)
             fluptn(2) = (cnh4 + auto(1)) / tstepi
             fluptn(3) = uptake - fluptn(2)
          endif
       endif
       uptnit = fluptn(2) + fluptn(3)
-      if (uptnit .gt. 1e-30) then
+      if (uptnit > 1e-30) then
          fracam = fluptn(2)/uptnit
       else
          fracam = 1.0
@@ -364,7 +364,7 @@
       i = 0
       do j = 1,nunuco + 3
          read ( limit((2*j-1):(2*j)),'(i2)') ihulp
-         if ((j.le.3).or.(j.gt.nunuco)) then
+         if ((j<=3).or.(j>nunuco)) then
             i = i + 1
             faclim(i) = real(ihulp)
          endif
@@ -391,9 +391,6 @@
       enddo
 
       return
-
- 1001 format (A,1X,99E15.5)
- 1002 format (A,1X,i5,1x,99E15.5)
 
       end
       subroutine bl_isplim(noutlim,outlim,nunucom,nuecogm,con2out)
@@ -435,14 +432,14 @@
       outlim = 0.0
       do ii = 1,mt   ! MT is dimension of ISPLIM according to blmdim.inc
          icon = isplim(ii)
-         if (icon.gt.0) then
-            if (icon.le.nunuco) then
+         if (icon>0) then
+            if (icon<=nunuco) then
                iconout = con2out(icon) ! this array determines the mapping of the actual BLOOM constraints to the fixed array of DELWAQ, filled in BLINPU
-            elseif (icon.le.nunuco+2) then
+            elseif (icon<=nunuco+2) then
                iconout = nunucom+(icon-nunuco)
-            elseif (icon.le.nunuco+3) then
+            elseif (icon<=nunuco+3) then
       !                 this is the constraint NUNUCO + 3 that we can neglect
-            elseif (icon.le.nunuco+3+nuecog) then
+            elseif (icon<=nunuco+3+nuecog) then
                iconout = nunucom+2+icon-(nunuco+3)
             else
                iconout = nunucom+2+nuecogm+icon-(nunuco+3+nuecog)

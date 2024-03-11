@@ -197,8 +197,8 @@
       INTEGER(kind=int_wp) ::I_550 , LAMBDA, TELLER
       LOGICAL DOSECC
 !
-      IF ( CHLORO .GE. 0.0 .OR. DETRIT .GE. 0.0 .OR. & 
-          GLOEIR .GE. 0.0) THEN
+      IF ( CHLORO >= 0.0 .OR. DETRIT >= 0.0 .OR. &
+          GLOEIR >= 0.0) THEN
          C_MU = COS ( ANGLE * 0.0174533)
          IF ( DOSECC ) & 
         CALL BEP_D  ( C_GL1 , C_GL2 , C_DET , HELHUM, CORCHL, & 
@@ -216,7 +216,7 @@
          S_D2   = 0.0
          SOM_C  = 0.0
          SOM_H  = 0.0
-         DO 100 TELLER  =  1, 61
+         DO TELLER  =  1, 61
             LAMBDA = 400+(TELLER-1)*5
 !
 !           HUMUSZUREN ABOSORPTIE
@@ -225,7 +225,7 @@
 !
 !           ALGEN ABSOROPTIE EN VERSTROOIING
 !
-            IF ( CHLORO .LT. 0.000001) THEN
+            IF ( CHLORO < 0.000001) THEN
                A_CHL = 0.0
                B_CHL = 0.0
             ELSE
@@ -258,7 +258,7 @@
             SOM_H  = SOM_H  + PLANCK ( TELLER) * EXP ( -(A+B)  * D_1)
             SOM_C  = SOM_C  + PLANCK ( TELLER) * EXP ( -(A+B)  * D_2)
             ENDIF
-  100    CONTINUE
+         end do
          EXTPAR = ( 1.0 / ( DIEP1 - DIEP2) * LOG ( SOM_D2 / SOM_D1))
          IF ( DOSECC ) THEN
          EXTP_D = ( 1.0 / ( D_1   - D_2  ) * LOG ( S_D2   / S_D1  ))
@@ -351,7 +351,7 @@
 !
 !     CHLOROFYL
 !
-      IF ( CHLORO .LT. 0.000001) THEN
+      IF ( CHLORO < 0.000001) THEN
          A_CHL = 0.0
          B_CHL = 0.0
       ELSE

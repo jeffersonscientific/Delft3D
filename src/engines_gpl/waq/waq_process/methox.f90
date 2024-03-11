@@ -172,16 +172,16 @@
 !     -----Warnings-----
 !
       IF (FIRST) THEN
-          IF (PMSA(IP7).LE. 0.0) THEN
+          IF (PMSA(IP7)<= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsMet should be greater than zero'
-          ELSEIF (PMSA(IP8).LE. 0.0) THEN
+          ELSEIF (PMSA(IP8)<= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsOxMet should be greater than zero'
-          ELSEIF (PMSA(IP13) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP13) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsSuMet should be greater than zero'
-          ELSEIF (PMSA(IP17) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP17) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : Poros should be greater', & 
                                'than zero'
           ENDIF
@@ -190,7 +190,7 @@
 !
       IFLUX = 0
 
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
@@ -219,23 +219,23 @@
 !
 !           Set the rates according to CRTEMP, COXC and CSUC
 !
-            IF ( TEMP .LT. CRTEMP .OR. & 
-                COX .LE. 0.0 .OR. COX .LE. (COXC * POROS) ) THEN
+            IF ( TEMP < CRTEMP .OR. &
+                COX <= 0.0 .OR. COX <= (COXC * POROS) ) THEN
                  KOXI1  = 0.0
             ENDIF
-            IF ( COX .LE. 0.0 .OR. COX .GT. (COXC * POROS) ) THEN
+            IF ( COX <= 0.0 .OR. COX > (COXC * POROS) ) THEN
                  K0OXI1 = 0.0
             ENDIF
 !
-            IF ( TEMP .LT. CRTEMP .OR. & 
-                 CSU .LE. 0.0 .OR. CSU .LE. (CSUC * POROS) ) THEN
+            IF ( TEMP < CRTEMP .OR. &
+                 CSU <= 0.0 .OR. CSU <= (CSUC * POROS) ) THEN
                   KOXI2  = 0.0
             ENDIF
-            IF ( CSU .LE. 0.0 .OR. CSU .GT. (CSUC * POROS) ) THEN
+            IF ( CSU <= 0.0 .OR. CSU > (CSUC * POROS) ) THEN
                   K0OXI2 = 0.0
             ENDIF
 !
-            IF ( COX .GT. (COXC * POROS) ) THEN
+            IF ( COX > (COXC * POROS) ) THEN
                  KOXI2  = 0.0
                  K0OXI2 = 0.0
             ENDIF
@@ -245,28 +245,28 @@
             TEMP20 = TEMP - 20.0
             TEMPC  = KTOXI1 ** TEMP20
 !
-            IF ( (KSCH4 * POROS + CCH4) .GT. 0.0 ) THEN
+            IF ( (KSCH4 * POROS + CCH4) > 0.0 ) THEN
                   CHFUNC = CCH4 / ( KSCH4 * POROS + CCH4 )
             ELSE
                   CHFUNC = 0.0
             ENDIF
 !
-            IF ( (KSOX * POROS + COX) .GT. 0.0 ) THEN
+            IF ( (KSOX * POROS + COX) > 0.0 ) THEN
                   OXFUNC = COX  / ( KSOX * POROS  + COX  )
             ELSE
                   OXFUNC = 0.0
             ENDIF
 !
 
-            IF ( (KSSU * POROS + CSU) .GT. 0.0 ) THEN
+            IF ( (KSSU * POROS + CSU) > 0.0 ) THEN
                   SUFUNC = CSU  / ( KSSU * POROS  + CSU  )
             ELSE
                   SUFUNC = 0.0
             ENDIF
 !
 !           Light inhibition function - analogue to salinity dependant mort function
-            IF ( KSRADFR .GE. 0.0 .AND. KSRADFR .LE. 1.0 & 
-                                 .AND. RADINH .GT. 0.1) THEN
+            IF ( KSRADFR >= 0.0 .AND. KSRADFR <= 1.0 &
+                                 .AND. RADINH > 0.1) THEN
                LIFUNC =-1/(1 + EXP(KSRADSh*(min(RAD/RADINH,1.0) - KSRADFR)))+ 1
             ELSE
                LIFUNC = 0.0
@@ -319,7 +319,7 @@
       IP24  = IP24  + IN24
       IP25  = IP25  + IN25
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

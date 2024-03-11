@@ -91,10 +91,10 @@
       IP13 = IPOINT(13)
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 !
       FALG1     = PMSA(IP1)
       NCRAT1    = PMSA(IP2)
@@ -118,8 +118,8 @@
 !     no part of carbon to autolyse!
        DC1 = 0.0
        DC2 = 0.0
-       IF (AUT1 .LT. 1.0) DC1 = DET1 / (1-AUT1)
-       IF (AUT2 .LT. 1.0) DC2 = DET2 / (1-AUT2)
+       IF (AUT1 < 1.0) DC1 = DET1 / (1-AUT1)
+       IF (AUT2 < 1.0) DC2 = DET2 / (1-AUT2)
 
 !@    Production of DETC
       FL ( 1 + IFLUX ) = ( FALG1 * DC1+ & 
@@ -132,7 +132,7 @@
 !@    Autolysis of NN4
       AA = ( FALG1 * NCRAT1 * AUT1 + & 
                  FALG2 * NCRAT2 * AUT2 ) / DEPTH
-      if ( abs(switch) .lt. 0.5 ) then
+      if ( abs(switch) < 0.5 ) then
           FL ( 3 + IFLUX ) = AA
           FL (12 + IFLUX ) = 0.0
       else
@@ -151,7 +151,7 @@
 !@    Autolysis of P
       AA = ( FALG1 * PCRAT1 * AUT1 + & 
                  FALG2 * PCRAT2 * AUT2 ) / DEPTH
-      if ( abs(switch) .lt. 0.5 ) then
+      if ( abs(switch) < 0.5 ) then
           FL ( 6 + IFLUX ) = AA
           FL (13 + IFLUX ) = 0.0
       else
@@ -195,7 +195,7 @@
       IP12  = IP12  + INCREM ( 12 )
       IP13  = IP13  + INCREM ( 13 )
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END

@@ -81,8 +81,8 @@
       ip5  = ipoint( 5)
 !
       varflg = .true.
-      if ( in1 .eq. 0 .and. in2 .eq. 0 .and. in3 .eq. 0 .and. & 
-          in4 .eq. 0                                        ) then
+      if ( in1 == 0 .and. in2 == 0 .and. in3 == 0 .and. &
+          in4 == 0                                        ) then
 
 !        Only constant inputs, so only single calculation of reflec needed to be set to all segments
          varflg = .false.
@@ -96,10 +96,10 @@
          daynr =  mod (time / auxsys + tref, 365.) !- 1
          
          ! Compute reflection correction
-         if (abs(latitudeg).le.23.) then
+         if (abs(latitudeg)<=23.) then
              reflec = 0.05
          else
-             if (latitudeg.gt.0.0) then
+             if (latitudeg>0.0) then
                  daynrrefl = daynr
              else
                  daynrrefl = mod(daynr + 365./2.,365.)
@@ -108,12 +108,12 @@
              
 !            reflection as it was in setabc from (to be improved/expanded later on)
              reflec = 0.05
-             if ((weeknr .le. 17) .or. (weeknr .ge. 32)) reflec=0.06
-             if ((weeknr .le. 13) .or. (weeknr .ge. 36)) reflec=0.08
-             if ((weeknr .le.  4) .or. (weeknr .ge. 45)) reflec=0.10
+             if ((weeknr <= 17) .or. (weeknr >= 32)) reflec=0.06
+             if ((weeknr <= 13) .or. (weeknr >= 36)) reflec=0.08
+             if ((weeknr <=  4) .or. (weeknr >= 45)) reflec=0.10
          endif
       endif
-      do 9000 iseg = 1 , noseg
+      do iseg = 1 , noseg
          if ( varflg ) then
             time    = pmsa( ip1 )
             latitudeg = pmsa( ip2 )
@@ -124,10 +124,10 @@
             daynr =  mod (time / auxsys + tref, 365.)
 
             ! Compute reflection correction
-            if (abs(latitudeg).le.23.) then
+            if (abs(latitudeg)<=23.) then
                 reflec = 0.05
             else
-                if (latitudeg.gt.0.0) then
+                if (latitudeg>0.0) then
                     daynrrefl = daynr
                 else
                     daynrrefl = mod(daynr + 365./2.,365.)
@@ -136,9 +136,9 @@
                 
 !               reflection as in setabc (to be replaced)
                 reflec = 0.05
-                if ((weeknr .le. 17) .or. (weeknr .ge. 32)) reflec=0.06
-                if ((weeknr .le. 13) .or. (weeknr .ge. 36)) reflec=0.08
-                if ((weeknr .le.  4) .or. (weeknr .ge. 45)) reflec=0.10
+                if ((weeknr <= 17) .or. (weeknr >= 32)) reflec=0.06
+                if ((weeknr <= 13) .or. (weeknr >= 36)) reflec=0.08
+                if ((weeknr <=  4) .or. (weeknr >= 45)) reflec=0.10
             endif
          endif
          
@@ -149,7 +149,7 @@
          ip3   = ip3   + in3
          ip4   = ip4   + in4
          ip5   = ip5   + in5
- 9000 continue
+      end do
 
       return
       end

@@ -79,18 +79,18 @@
          proc => procesdef%procesprops(iproc)
 
          do i_item = 1, proc%no_input
-            if ( proc%input_item(i_item)%type .eq. IOTYPE_SEGMENT_INPUT .or. & 
-                proc%input_item(i_item)%type .eq. IOTYPE_SEGMENT_WORK  .or. & 
-                proc%input_item(i_item)%type .eq. IOTYPE_SCALAR_WORK        ) then
+            if ( proc%input_item(i_item)%type == IOTYPE_SEGMENT_INPUT .or. &
+                proc%input_item(i_item)%type == IOTYPE_SEGMENT_WORK  .or. &
+                proc%input_item(i_item)%type == IOTYPE_SCALAR_WORK        ) then
                no_ins = no_ins + 1
             else
                no_ine = no_ine + 1
             endif
          enddo
          do i_item = 1, proc%no_output
-            if ( proc%output_item(i_item)%type .eq. IOTYPE_SEGMENT_OUTPUT .or. & 
-                proc%output_item(i_item)%type .eq. IOTYPE_SEGMENT_WORK   .or. & 
-                proc%output_item(i_item)%type .eq. IOTYPE_SCALAR_WORK        ) then
+            if ( proc%output_item(i_item)%type == IOTYPE_SEGMENT_OUTPUT .or. &
+                proc%output_item(i_item)%type == IOTYPE_SEGMENT_WORK   .or. &
+                proc%output_item(i_item)%type == IOTYPE_SCALAR_WORK        ) then
                no_ous = no_ous + 1
             else
                no_oue = no_oue + 1

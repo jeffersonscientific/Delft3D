@@ -92,10 +92,10 @@
 
 !             only compute where needed
 
-         if ( ifrom .gt. 0 .and. ito .gt. 0 .and. iqdmp(iq) .eq. 0 ) cycle
-         if ( ifrom .eq. 0 .or.  ito .eq. 0 ) cycle
+         if ( ifrom > 0 .and. ito > 0 .and. iqdmp(iq) == 0 ) cycle
+         if ( ifrom == 0 .or.  ito == 0 ) cycle
 
-         if ( ifrom .gt. 0 ) then
+         if ( ifrom > 0 ) then
             cio = conc  ( isys,  ifrom )
             cin = concvt(        ifrom )
          else
@@ -103,7 +103,7 @@
             cin = bound ( isys, -ifrom )
          endif
 
-         if ( ito   .gt. 0 ) then
+         if ( ito   > 0 ) then
             cjo = conc  ( isys,  ito   )
             cjn = concvt(        ito   )
          else
@@ -111,29 +111,29 @@
             cjn = bound ( isys, -ito   )
          endif
 
-         if ( flowtot(iq) .gt. 0 ) then        ! flow from i to j
+         if ( flowtot(iq) > 0 ) then        ! flow from i to j
             fluxij =      theta(iq)  * ( flowtot(iq)*cin - disptot(iq)*(cjn-cin) ) & 
                     + (1-theta(iq)) * ( flowtot(iq)*cio - disptot(iq)*(cjo-cio) )
          else                                  ! flow from j to i
             fluxij =      theta(iq)  * ( flowtot(iq)*cjn - disptot(iq)*(cjn-cin) ) & 
                     + (1-theta(iq)) * ( flowtot(iq)*cjo - disptot(iq)*(cjo-cio) )
          endif
-         if ( ifrom .lt. 0 ) then
-            if ( fluxij .gt. 0 ) then
+         if ( ifrom < 0 ) then
+            if ( fluxij > 0 ) then
                amass2(isys,4) = amass2(isys,4) + real(idt)*fluxij
             else
                amass2(isys,5) = amass2(isys,5) - real(idt)*fluxij
             endif
          endif
-         if ( ito   .lt. 0 ) then
-            if ( fluxij .gt. 0 ) then
+         if ( ito   < 0 ) then
+            if ( fluxij > 0 ) then
                amass2(isys,5) = amass2(isys,5) + real(idt)*fluxij
             else
                amass2(isys,4) = amass2(isys,4) - real(idt)*fluxij
             endif
          endif
-         if ( iqdmp(iq) .gt. 0 ) then
-            if ( fluxij .gt. 0 ) then
+         if ( iqdmp(iq) > 0 ) then
+            if ( fluxij > 0 ) then
                dmpq( isys, iqdmp(iq), 1 ) = dmpq( isys, iqdmp(iq), 1 ) + real(idt)*fluxij
             else
                dmpq( isys, iqdmp(iq), 2 ) = dmpq( isys, iqdmp(iq), 2 ) - real(idt)*fluxij

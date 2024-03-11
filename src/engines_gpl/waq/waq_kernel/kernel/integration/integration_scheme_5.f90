@@ -163,17 +163,17 @@
 
           if ( btest(intopt,3) ) ibflag = 1
           LDUMMY = .FALSE.
-          IF ( NDSPN .EQ. 0 ) THEN
+          IF ( NDSPN == 0 ) THEN
              NDDIM = NODISP
           ELSE
              NDDIM = NDSPN
           ENDIF
-          IF ( NVELN .EQ. 0 ) THEN
+          IF ( NVELN == 0 ) THEN
              NVDIM = NOVELO
           ELSE
              NVDIM = NVELN
           ENDIF
-          LSTREC = ICFLAG .EQ. 1
+          LSTREC = ICFLAG == 1
           nosss  = noseg + nseg2
           NOQTT  = NOQ + NOQ4
           inwtyp = intyp + nobnd
@@ -265,7 +265,7 @@
 
 !          set new boundaries
 
-         if ( itime .ge. 0   ) then
+         if ( itime >= 0   ) then
              if ( dlwqd%inopenda ) then
                  do ibnd = 1,nobnd
                      do isys = 1,nosys
@@ -307,7 +307,7 @@
 
 !          zero cummulative array's
 
-         if ( imflag .or. ( ihflag .and. noraai .gt. 0 ) ) then
+         if ( imflag .or. ( ihflag .and. noraai > 0 ) ) then
             call zercum ( notot   , nosys   , nflux   , ndmpar  , ndmpq   , & 
                          ndmps   , a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), & 
                          a(idmpq:), a(idmps:), noraai  , imflag  , ihflag  , & 
@@ -316,8 +316,8 @@
 
 !          simulation done ?
 
-         if ( itime .lt. 0      ) goto 9999
-         if ( itime .ge. itstop ) goto 20
+         if ( itime < 0      ) goto 9999
+         if ( itime >= itstop ) goto 20
 
 !          add processes
 
@@ -421,7 +421,7 @@
 
 !          integrate the fluxes at dump segments fill ASMASS with mass
 
-         if ( ibflag .gt. 0 ) then
+         if ( ibflag > 0 ) then
             call proint ( nflux   , ndmpar  , idt     , itfact  , a(iflxd:), & 
                          a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq  )
          endif

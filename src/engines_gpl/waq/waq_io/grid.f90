@@ -154,24 +154,24 @@
 
       do
 
-         if ( gettoken( ctoken, itoken, itype, ierr2 ) .gt. 0 ) goto 1000
+         if ( gettoken( ctoken, itoken, itype, ierr2 ) > 0 ) goto 1000
 
-         if ( itype .eq. 2 ) then                    ! integer
+         if ( itype == 2 ) then                    ! integer
             if ( .not. read_input ) then             ! no multigrid, integer
                write ( lunut , 2000 )                ! is meant for print-out
                push = .true.                         ! grid, so push on the
                exit                                  ! stack again
             else
                if ( .not. newinput ) then            ! old way of dealing with
-                  if ( nogrid .eq. 1 ) then          ! multiple grids expects
+                  if ( nogrid == 1 ) then          ! multiple grids expects
                      nogrid = itoken + 1             ! the number of added grids
                      write ( lunut , 2010 ) nogrid   ! after the multigrid keyword
-                     if ( nogrid .eq. 1 ) exit       ! no additional grids
+                     if ( nogrid == 1 ) exit       ! no additional grids
                   else
-                     if ( nogrid .eq. gridps%cursize ) then
+                     if ( nogrid == gridps%cursize ) then
                         do isys = 1, notot-nototp
-                           if ( gettoken( isysg(isys), ierr2 ) .gt. 0 ) goto 1000
-                           if ( gettoken( isyst(isys), ierr2 ) .gt. 0 ) goto 1000
+                           if ( gettoken( isysg(isys), ierr2 ) > 0 ) goto 1000
+                           if ( gettoken( isyst(isys), ierr2 ) > 0 ) goto 1000
                         enddo
                         do isys = notot-nototp+1, notot
                            isysg(isys) = 1
@@ -191,14 +191,14 @@
          if ( .not. multigrid ) then                 ! still no multigrid chosen
             select case ( ctoken )                   ! NOLAY necessary here
                case ( 'NOLAY' )                      ! Deal with number of layers
-                  if ( gettoken( nolay, ierr2 ) .gt. 0 ) goto 1000
+                  if ( gettoken( nolay, ierr2 ) > 0 ) goto 1000
                   write ( lunut , 2020 ) nolay
                case ( 'MULTIGRID' )                  ! Deal with multiple grids
                   multigrid  = .true.                ! Allow an integer to give
                   read_input = .true.                ! number of additional grids
-                  if ( gettoken( ctoken, itoken, itype, ierr2 ) .gt. 0 ) goto 1000
+                  if ( gettoken( ctoken, itoken, itype, ierr2 ) > 0 ) goto 1000
                   push = .true.
-                  if ( itype .eq. 1 ) newinput = .true.
+                  if ( itype == 1 ) newinput = .true.
                   write ( lunut , 2040 )
                case default
                   write ( lunut , 2030 ) trim(ctoken)
@@ -215,11 +215,11 @@
 
             case ( 'NOLAY' )
                ! nolay must precede grid definitions
-               if ( GridPs%cursize .gt. 1 ) then
+               if ( GridPs%cursize > 1 ) then
                   write( lunut, 2050 )
                   goto 1000
                endif
-               if ( gettoken( nolay_tmp, ierr2 ) .gt. 0 ) goto 1000
+               if ( gettoken( nolay_tmp, ierr2 ) > 0 ) goto 1000
                write ( lunut , 2020 ) nolay_tmp
 
                ! z model temp do not do this here but at the end of the routine
@@ -228,7 +228,7 @@
                if ( .not. zmodel ) then
                   nolay = nolay_tmp
                   nosegl = noseg/nolay
-                  if ( nosegl*nolay .ne. noseg ) then
+                  if ( nosegl*nolay /= noseg ) then
                      write ( lunut , 2060 )
                      goto 1000
                   endif
@@ -240,7 +240,7 @@
                aGrid%itype = Bottomgrid
                call read_grid( lun    , aGrid  , GridPs , .false., nosegl_bottom, status)
                igrid = GridPointerCollAdd(GridPs,aGrid)
-               if ( GridPs%bottom_grid .ne. 0 ) then
+               if ( GridPs%bottom_grid /= 0 ) then
                   write ( lunut, 2070 )
                   call status%increase_warning_count()
                else
@@ -293,7 +293,7 @@
 
       do igrid = 1, nogrid
 
-         if (igrid .eq. GridPs%bottom_grid) cycle
+         if (igrid == GridPs%bottom_grid) cycle
 
          noseg2 = GridPs%Pointers(igrid)%noseg_lay
 
@@ -310,7 +310,7 @@
             noseg2 = noseg2*nolay
             GridPs%Pointers(igrid)%noseg = noseg2
          endif
-         if ( igrid .ne. 1 ) write( lunut, 2080 ) igrid, GridPs%Pointers(igrid)%noseg
+         if ( igrid /= 1 ) write( lunut, 2080 ) igrid, GridPs%Pointers(igrid)%noseg
 
       enddo
 
@@ -318,7 +318,7 @@
 
       nseg2  = 0
       i_bottom_grid = GridPs%bottom_grid
-      if ( i_bottom_grid .gt. 0 ) then
+      if ( i_bottom_grid > 0 ) then
          nseg2 = GridPs%Pointers(i_bottom_grid)%noseg
          GridPs%Pointers(i_base_grid)%noseg = noseg + nseg2
       endif
@@ -328,21 +328,21 @@
 
       do igrid = 1 , nogrid
          allocate(GridPs%Pointers(igrid)%finalpointer(nosss))
-         if ( igrid .eq. i_base_grid ) then
+         if ( igrid == i_base_grid ) then
             do iseg = 1 , nosss
                GridPs%Pointers(igrid)%finalpointer(iseg) = iseg
             enddo
-         elseif ( igrid .eq. i_bottom_grid ) then
+         elseif ( igrid == i_bottom_grid ) then
             GridPs%Pointers(igrid)%finalpointer(1:noseg) = 0
             do iseg2 = 1 , nseg2
                GridPs%Pointers(igrid)%finalpointer(noseg+iseg2) = iseg2
             enddo
-         elseif( GridPs%Pointers(igrid)%itype .eq. BottomGrid ) then
+         elseif( GridPs%Pointers(igrid)%itype == BottomGrid ) then
             GridPs%Pointers(igrid)%finalpointer = 0
             iref = GridPs%Pointers(igrid)%iref
             do iseg = 1 , nosss
                iseg2= GridPs%Pointers(iref)%finalpointer(iseg)
-               if ( iseg2 .gt. 0 ) then
+               if ( iseg2 > 0 ) then
                   GridPs%Pointers(igrid)%finalpointer(iseg) = GridPs%Pointers(igrid)%iarray(iseg2)
                endif
             enddo
@@ -351,7 +351,7 @@
             iref = GridPs%Pointers(igrid)%iref
             do iseg = 1 , noseg
                iseg2= GridPs%Pointers(iref)%finalpointer(iseg)
-               if ( iseg2 .gt. 0 ) then
+               if ( iseg2 > 0 ) then
                   GridPs%Pointers(igrid)%finalpointer(iseg) = GridPs%Pointers(igrid)%iarray(iseg2)
                endif
             enddo
@@ -360,12 +360,12 @@
 
       ! z-model
 
-      if ( zmodel .and. nolay_tmp .ne. 1 ) nolay = nolay_tmp
+      if ( zmodel .and. nolay_tmp /= 1 ) nolay = nolay_tmp
 
 !        Write grid to system file
 
       do igrid = 1 , nogrid
-         if ( igrid .eq. GridPs%bottom_grid ) then
+         if ( igrid == GridPs%bottom_grid ) then
             write( lun(2) ) GridPs%Pointers(iGrid)%noseg, & 
                           -GridPs%Pointers(iGrid)%nolay, & 
                            GridPs%Pointers(iGrid)%finalpointer
@@ -384,15 +384,15 @@
       if ( .not. newinput .and. read_input ) then
          write(lunut,2090)
          do isys = 1 , notot-nototp
-            if ( gettoken( isysg(isys), ierr2 ) .gt. 0 ) goto 1000
-            if ( gettoken( isyst(isys), ierr2 ) .gt. 0 ) goto 1000
+            if ( gettoken( isysg(isys), ierr2 ) > 0 ) goto 1000
+            if ( gettoken( isyst(isys), ierr2 ) > 0 ) goto 1000
             write(lunut,2100) isys,isysg(isys),isyst(isys)
-            if ( isysg(isys) .lt. 1      .or. & 
-                isysg(isys) .gt. nogrid      ) then
+            if ( isysg(isys) < 1      .or. &
+                isysg(isys) > nogrid      ) then
                write(lunut,2110) isysg(isys)
                call status%increase_error_count()
             endif
-            if ( isyst(isys) .lt. 1 ) then
+            if ( isyst(isys) < 1 ) then
                write(lunut,2120) isyst(isys)
                call status%increase_error_count()
             endif

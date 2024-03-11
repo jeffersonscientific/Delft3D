@@ -87,12 +87,12 @@
       stat_output%cursize = 0
       stat_output%maxsize = 0
 
-      if ( statprocesdef%cursize .gt. 0 ) then
+      if ( statprocesdef%cursize > 0 ) then
          do istat = 1 , statprocesdef%cursize
             do iioitem = 1 , statprocesdef%procesprops(istat)%no_output
-               if ( statprocesdef%procesprops(istat)%output_item(iioitem)%type .eq. iotype_segment_output ) then
+               if ( statprocesdef%procesprops(istat)%output_item(iioitem)%type == iotype_segment_output ) then
                   aarrayprop%name = statprocesdef%procesprops(istat)%output_item(iioitem)%name
-                  if ( statprocesdef%procesprops(istat)%type .eq. procestype_stat ) then
+                  if ( statprocesdef%procesprops(istat)%type == procestype_stat ) then
                      iret = arraypropcolladd( stat_output, aarrayprop )
                   else
                      iret = arraypropcolladd( normal_output, aarrayprop )
@@ -104,9 +104,9 @@
 
             ! check if there are weigth variables
 
-            if ( ioutps(5,ioutp) .eq. imo3 .or. ioutps(5,ioutp) .eq. imo4 .or. & 
-                ioutps(5,ioutp) .eq. ihi3 .or. ioutps(5,ioutp) .eq. ihi4 .or. & 
-                ioutps(5,ioutp) .eq. ihn3 .or. ioutps(5,ioutp) .eq. ihn4      ) then
+            if ( ioutps(5,ioutp) == imo3 .or. ioutps(5,ioutp) == imo4 .or. &
+                ioutps(5,ioutp) == ihi3 .or. ioutps(5,ioutp) == ihi4 .or. &
+                ioutps(5,ioutp) == ihn3 .or. ioutps(5,ioutp) == ihn4      ) then
                nrvarx = normal_output%cursize*2
             else
                nrvarx = normal_output%cursize
@@ -114,15 +114,15 @@
 
             ! add statistical vars to normal output
 
-            if ( ioutps(5,ioutp) .eq. imon .or. ioutps(5,ioutp) .eq. imo2 .or. & 
-                ioutps(5,ioutp) .eq. imo3 .or. ioutps(5,ioutp) .eq. imo4 .or. & 
-                ioutps(5,ioutp) .eq. idmp .or. ioutps(5,ioutp) .eq. idm2 .or. & 
-                ioutps(5,ioutp) .eq. ihis .or. ioutps(5,ioutp) .eq. ihi2 .or. & 
-                ioutps(5,ioutp) .eq. ihi3 .or. ioutps(5,ioutp) .eq. ihi4 .or. & 
-                ioutps(5,ioutp) .eq. ihnf .or. ioutps(5,ioutp) .eq. ihn2 .or. & 
-                ioutps(5,ioutp) .eq. ihn3 .or. ioutps(5,ioutp) .eq. ihn4 .or. & 
-                ioutps(5,ioutp) .eq. imap .or. ioutps(5,ioutp) .eq. ima2 .or. & 
-                ioutps(5,ioutp) .eq. imnf .or. ioutps(5,ioutp) .eq. imn2      ) then
+            if ( ioutps(5,ioutp) == imon .or. ioutps(5,ioutp) == imo2 .or. &
+                ioutps(5,ioutp) == imo3 .or. ioutps(5,ioutp) == imo4 .or. &
+                ioutps(5,ioutp) == idmp .or. ioutps(5,ioutp) == idm2 .or. &
+                ioutps(5,ioutp) == ihis .or. ioutps(5,ioutp) == ihi2 .or. &
+                ioutps(5,ioutp) == ihi3 .or. ioutps(5,ioutp) == ihi4 .or. &
+                ioutps(5,ioutp) == ihnf .or. ioutps(5,ioutp) == ihn2 .or. &
+                ioutps(5,ioutp) == ihn3 .or. ioutps(5,ioutp) == ihn4 .or. &
+                ioutps(5,ioutp) == imap .or. ioutps(5,ioutp) == ima2 .or. &
+                ioutps(5,ioutp) == imnf .or. ioutps(5,ioutp) == imn2      ) then
                nrvart = nrvart + nrvarx
             endif
          enddo
@@ -143,9 +143,9 @@
 
             ! check if there are weigth variables
 
-            if ( ioutps(5,ioutp) .eq. imo3 .or. ioutps(5,ioutp) .eq. imo4 .or. & 
-                ioutps(5,ioutp) .eq. ihi3 .or. ioutps(5,ioutp) .eq. ihi4 .or. & 
-                ioutps(5,ioutp) .eq. ihn3 .or. ioutps(5,ioutp) .eq. ihn4      ) then
+            if ( ioutps(5,ioutp) == imo3 .or. ioutps(5,ioutp) == imo4 .or. &
+                ioutps(5,ioutp) == ihi3 .or. ioutps(5,ioutp) == ihi4 .or. &
+                ioutps(5,ioutp) == ihn3 .or. ioutps(5,ioutp) == ihn4      ) then
                nrvar1 = ioutps(4,ioutp)/2
                nrvar2 = ioutps(4,ioutp)/2
             else
@@ -164,15 +164,15 @@
 
             ! add statistical vars to normal output
 
-            if ( ioutps(5,ioutp) .eq. imon .or. ioutps(5,ioutp) .eq. imo2 .or. & 
-                ioutps(5,ioutp) .eq. imo3 .or. ioutps(5,ioutp) .eq. imo4 .or. & 
-                ioutps(5,ioutp) .eq. idmp .or. ioutps(5,ioutp) .eq. idm2 .or. & 
-                ioutps(5,ioutp) .eq. ihis .or. ioutps(5,ioutp) .eq. ihi2 .or. & 
-                ioutps(5,ioutp) .eq. ihi3 .or. ioutps(5,ioutp) .eq. ihi4 .or. & 
-                ioutps(5,ioutp) .eq. ihnf .or. ioutps(5,ioutp) .eq. ihn2 .or. & 
-                ioutps(5,ioutp) .eq. ihn3 .or. ioutps(5,ioutp) .eq. ihn4 .or. & 
-                ioutps(5,ioutp) .eq. imap .or. ioutps(5,ioutp) .eq. ima2 .or. & 
-                ioutps(5,ioutp) .eq. imnf .or. ioutps(5,ioutp) .eq. imn2      ) then
+            if ( ioutps(5,ioutp) == imon .or. ioutps(5,ioutp) == imo2 .or. &
+                ioutps(5,ioutp) == imo3 .or. ioutps(5,ioutp) == imo4 .or. &
+                ioutps(5,ioutp) == idmp .or. ioutps(5,ioutp) == idm2 .or. &
+                ioutps(5,ioutp) == ihis .or. ioutps(5,ioutp) == ihi2 .or. &
+                ioutps(5,ioutp) == ihi3 .or. ioutps(5,ioutp) == ihi4 .or. &
+                ioutps(5,ioutp) == ihnf .or. ioutps(5,ioutp) == ihn2 .or. &
+                ioutps(5,ioutp) == ihn3 .or. ioutps(5,ioutp) == ihn4 .or. &
+                ioutps(5,ioutp) == imap .or. ioutps(5,ioutp) == ima2 .or. &
+                ioutps(5,ioutp) == imnf .or. ioutps(5,ioutp) == imn2      ) then
                ioutps(4,ioutp) = ioutps(4,ioutp) + normal_output%cursize
                do iout = 1 , normal_output%cursize
                   iout3 = iout3 + 1
@@ -192,9 +192,9 @@
 
             ! add weight variables for statistical vars to normal output
 
-            if ( ioutps(5,ioutp) .eq. imo3 .or. ioutps(5,ioutp) .eq. imo4 .or. & 
-                ioutps(5,ioutp) .eq. ihi3 .or. ioutps(5,ioutp) .eq. ihi4 .or. & 
-                ioutps(5,ioutp) .eq. ihn3 .or. ioutps(5,ioutp) .eq. ihn4      ) then
+            if ( ioutps(5,ioutp) == imo3 .or. ioutps(5,ioutp) == imo4 .or. &
+                ioutps(5,ioutp) == ihi3 .or. ioutps(5,ioutp) == ihi4 .or. &
+                ioutps(5,ioutp) == ihn3 .or. ioutps(5,ioutp) == ihn4      ) then
                ioutps(4,ioutp) = ioutps(4,ioutp) + normal_output%cursize
                do iout = 1 , normal_output%cursize
                   iout3 = iout3 + 1
@@ -235,8 +235,8 @@
 
       endif
 
-      if ( ioutps(4,8) .eq. 0 ) ioutps(5,8) = 0
-      if ( ioutps(4,9) .eq. 0 ) ioutps(5,9) = 0
+      if ( ioutps(4,8) == 0 ) ioutps(5,8) = 0
+      if ( ioutps(4,9) == 0 ) ioutps(5,9) = 0
 
       if (timon) call timstop( ithndl )
       return

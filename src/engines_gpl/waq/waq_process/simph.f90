@@ -98,7 +98,7 @@
 !
 !     Loop over de segmenten
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 !
 !     Eerste kenmerk actief of inactief segment
 !
@@ -117,63 +117,63 @@
 !
 !     Error messages
 
-      IF ( CARBTOT .LT. 1E-30 ) THEN
+      IF ( CARBTOT < 1E-30 ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NR_MES .LT. 10 ) THEN
+         IF ( NR_MES < 10 ) THEN
             NR_MES = NR_MES + 1
             WRITE ( ILUMON , * ) 'WARNING :total carbonate <= 0', & 
                                 ' segment=',ISEG,' conc=',CARBTOT
          ENDIF
-         IF ( NR_MES .EQ. 10 ) THEN
+         IF ( NR_MES == 10 ) THEN
             NR_MES = NR_MES + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on total carbonate'
             WRITE(ILUMON,*) ' No further messages on total carbonate'
          ENDIF
          CARBTOT = 1E-30
       ENDIF
-      IF ( SAL .LT. 1E-30 ) THEN
+      IF ( SAL < 1E-30 ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NRMES2 .LT. 10 ) THEN
+         IF ( NRMES2 < 10 ) THEN
             NRMES2 = NRMES2 + 1
             WRITE ( ILUMON , * ) 'WARNING :salinity <= 0', & 
                                 ' segment=',ISEG,' conc=',SAL
          ENDIF
-         IF ( NRMES2 .EQ. 10 ) THEN
+         IF ( NRMES2 == 10 ) THEN
             NRMES2 = NRMES2 + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on salinity'
             WRITE(ILUMON,*) ' No further messages on salinity'
          ENDIF
          SAL = 1E-30
       ENDIF
-      IF ( SAL .GT. 50. ) THEN
+      IF ( SAL > 50. ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NRMES4 .LT. 10 ) THEN
+         IF ( NRMES4 < 10 ) THEN
             NRMES4 = NRMES4 + 1
             WRITE ( ILUMON , * ) 'WARNING :salinity => 50.', & 
                                 ' segment=',ISEG,' conc=',SAL
          ENDIF
-         IF ( NRMES4 .EQ. 10 ) THEN
+         IF ( NRMES4 == 10 ) THEN
             NRMES4 = NRMES4 + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on salinity'
             WRITE(ILUMON,*) ' No further messages on salinity'
          ENDIF
          SAL = 50.
       ENDIF
-      IF ( ALKA .LT. 1E-30 ) THEN
+      IF ( ALKA < 1E-30 ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NRMES3 .LT. 10 ) THEN
+         IF ( NRMES3 < 10 ) THEN
             NRMES3 = NRMES3 + 1
             WRITE ( ILUMON , * ) 'WARNING: alkalinity <= 0', & 
                                 ' segment=',ISEG,' conc=',ALKA
          ENDIF
-         IF ( NRMES3 .EQ. 10 ) THEN
+         IF ( NRMES3 == 10 ) THEN
             NRMES3 = NRMES3 + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on alkalinity'
             WRITE(ILUMON,*) ' No further messages on alkalinity'
          ENDIF
          ALKA = 1E-30
       ENDIF
-      IF (TEMP .LE. -KELVIN) THEN
+      IF (TEMP <= -KELVIN) THEN
         WRITE (ILUMON,*) ' WARNING: Temperature drops below 0 Kelvin', & 
         ' segment=',ISEG,' Temp set to 15 oC (288.15 K)'
         TEMP = 15
@@ -222,20 +222,20 @@
       B = ALKA - CARBTOT
       C = K2 * (ALKA - 2 * CARBTOT)
       D = B**2 - 4 * A * C
-      IF (D .LT. 0) THEN
+      IF (D < 0) THEN
         CALL GETMLU(ILUMON)
         WRITE (ILUMON,*) 'No solution for pH: discriminant<0'
         goto 10
       ENDIF
 
       AHPLUS = (-B + SQRT (D) ) / (2 * A)
-      IF (AHPLUS .LE. 0) THEN
+      IF (AHPLUS <= 0) THEN
         CALL GETMLU(ILUMON)
-         IF ( NRMES5 .LT. 10 ) THEN
+         IF ( NRMES5 < 10 ) THEN
             NRMES5 = NRMES5 + 1
             WRITE (ILUMON,*) 'WARNING: H+ negative: ',AHPLUS,' in segment ',ISEG
          ENDIF
-         IF ( NRMES5 .EQ. 10 ) THEN
+         IF ( NRMES5 == 10 ) THEN
             NRMES5 = NRMES5 + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on H+'
             WRITE(ILUMON,*) ' No further messages on H+'
@@ -270,7 +270,7 @@
       IP7   = IP7   + INCREM (  7 )
       IP8   = IP8   + INCREM (  8 )
 !
- 9000 CONTINUE
+      end do
 !
 !
       RETURN

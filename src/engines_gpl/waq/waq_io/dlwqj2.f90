@@ -76,12 +76,12 @@
 !
       ITEL = 0
       JTEL = 0
-      DO 10 I = 1 , NOBRK
+      DO I = 1 , NOBRK
          WRITE ( LUNWR ) ( IAR(ITEL+K) , K=1,ITAL  ) , & 
                         ( RAR(JTEL+K) , K=1,NOTOT )
          ITEL = ITEL + ITAL
          JTEL = JTEL + NOTOT
-   10 CONTINUE
+      end do
 !
 !           Update the space count
 !

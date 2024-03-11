@@ -111,19 +111,19 @@
 !     read and check dimensions
 !
       READ (LUNWRO, ERR=900, END=900) NOUTPD, NRVARD, NBUFMD, NCOPT
-      IF ( NOUTPD .NE. NOUTP  ) THEN
+      IF ( NOUTPD /= NOUTP  ) THEN
          WRITE ( LUREP, 2020 ) NOUTPD, NOUTP
          IERR = IERR + 1
       ENDIF
-      IF ( NRVARD .NE. NRVART ) THEN
+      IF ( NRVARD /= NRVART ) THEN
          WRITE ( LUREP, 2030 ) NRVARD, NRVART
          IERR = IERR + 1
       ENDIF
-      IF ( NBUFMD .NE. NBUFMX ) THEN
+      IF ( NBUFMD /= NBUFMX ) THEN
          WRITE ( LUREP, 2040 ) NBUFMD, NBUFMX
          IERR = IERR + 1
       ENDIF
-      IF ( IERR .GT. 0 ) GOTO 910
+      IF ( IERR > 0 ) GOTO 910
 !
       READ (LUNWRO, ERR=900, END=900) ( IOUTPS(1,K) , K = 1 , NOUTP )
       READ (LUNWRO, ERR=900, END=900) ( IOUTPS(2,K) , K = 1 , NOUTP )
@@ -131,14 +131,14 @@
       READ (LUNWRO, ERR=900, END=900) ( IOUTPS(4,K) , K = 1 , NOUTP )
       READ (LUNWRO, ERR=900, END=900) ( IOUTPS(5,K) , K = 1 , NOUTP )
       READ (LUNWRO, ERR=900, END=900) ( IOUTPS(6,K) , K = 1 , NOUTP )
-      IF (NRVART.GT.0) THEN
+      IF (NRVART>0) THEN
          READ (LUNWRO, ERR=900, END=900) ( IOPOIN(K)   , K = 1 , NRVART)
          READ (LUNWRO, ERR=900, END=900) ( OUNAM (K)   , K = 1 , NRVART)
          READ (LUNWRO, ERR=900, END=900) ( OUSNM (K)   , K = 1 , NRVART)
          READ (LUNWRO, ERR=900, END=900) ( OUUNI (K)   , K = 1 , NRVART)
          READ (LUNWRO, ERR=900, END=900) ( OUDSC (K)   , K = 1 , NRVART)
       ENDIF
-      IF (NOTOT.GT.0) THEN
+      IF (NOTOT>0) THEN
          READ (LUNWRO, ERR=900, END=900) ( SYSNM (K)   , K = 1 , NOTOT)
          READ (LUNWRO, ERR=900, END=900) ( SYUNI (K)   , K = 1 , NOTOT)
          READ (LUNWRO, ERR=900, END=900) ( SYDSC (K)   , K = 1 , NOTOT)
@@ -146,11 +146,11 @@
 !
 !     Set initialize flag, open files: only on first subdomain
 !
-         DO 10 K = 1,NOUTP
+         DO K = 1,NOUTP
             ISRTOU = IOUTPS(5,K)
-            IF ( K .LE. 4 ) THEN
+            IF ( K <= 4 ) THEN
                IFI = K + LUOFF
-            ELSEIF ( K .LE. 7 ) THEN
+            ELSEIF ( K <= 7 ) THEN
                IFI = K + LUOFF2 - 4
             ELSE
                IFI = K + LUOFF2 - 2
@@ -159,25 +159,25 @@
 !           Open the output-file in the correct way, depending on type of output
 !
             IOUTPS(7,K) = 1
-            IF ( ISRTOU .EQ. IMON .OR. ISRTOU .EQ. IMO2 .OR. & 
-                ISRTOU .EQ. IMO3 .OR. ISRTOU .EQ. IMO4 ) THEN
+            IF ( ISRTOU == IMON .OR. ISRTOU == IMO2 .OR. &
+                ISRTOU == IMO3 .OR. ISRTOU == IMO4 ) THEN
 !
 !              Do not open the normal monitor file
 !
-               IF ( K .NE. 1 ) THEN
+               IF ( K /= 1 ) THEN
                   CALL open_waq_files ( LUN(IFI), LCHAR(IFI), 19   , 1    , IDUM )
                ENDIF
-            ELSEIF ( ISRTOU .EQ. IDMP .OR. ISRTOU .EQ. IDM2 ) THEN
+            ELSEIF ( ISRTOU == IDMP .OR. ISRTOU == IDM2 ) THEN
                CALL open_waq_files ( LUN(IFI), LCHAR(IFI), 20    , 1     , IDUM  )
-            ELSEIF ( ISRTOU .EQ. IHIS .OR. ISRTOU .EQ. IHI2 .OR. & 
-                    ISRTOU .EQ. IHI3 .OR. ISRTOU .EQ. IHI4 ) THEN
+            ELSEIF ( ISRTOU == IHIS .OR. ISRTOU == IHI2 .OR. &
+                    ISRTOU == IHI3 .OR. ISRTOU == IHI4 ) THEN
                CALL open_waq_files ( LUN(IFI), LCHAR(IFI), 21    , 1     , IDUM  )
-            ELSEIF ( ISRTOU .EQ. IMAP .OR. ISRTOU .EQ. IMA2 ) THEN
+            ELSEIF ( ISRTOU == IMAP .OR. ISRTOU == IMA2 ) THEN
                CALL open_waq_files ( LUN(IFI), LCHAR(IFI), 22    , 1     , IDUM  )
-            ELSEIF ( ISRTOU .EQ. IBAL .OR. ISRTOU .EQ. IBA2 ) THEN
+            ELSEIF ( ISRTOU == IBAL .OR. ISRTOU == IBA2 ) THEN
                CALL open_waq_files ( LUN(IFI), LCHAR(IFI), 37    , 1     , IDUM  )
             ENDIF
-   10    CONTINUE
+      end do
 !
       if ( timon ) call timstop ( ithandl )
       RETURN

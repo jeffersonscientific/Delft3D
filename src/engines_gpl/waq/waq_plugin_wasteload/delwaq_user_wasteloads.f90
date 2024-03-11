@@ -66,7 +66,7 @@
          first = .false.
 
          call open_waq_files (lunrep, 'delwaq_user_wasteloads.mon', 19, 1, ierr)
-         if (ierr .ne. 0) then
+         if (ierr /= 0) then
             write(*,'(A)') 'Could not open delwaq_user_wasteloads.mon for writing.'
             call srstop(1)
          endif
@@ -152,7 +152,7 @@
             open  ( newunit = lunscr , file='screen.dat' )        !  read file with
             read  ( lunscr , * ) noscrn                 !  screen-names
             write ( lunrep , * ) 'Number of screens:', noscrn
-            if ( noscrn .gt. 0 ) then               !  may be more names
+            if ( noscrn > 0 ) then               !  may be more names
                allocate ( scrnam(noscrn) )          !  than existing in the
                do iscrn = 1, noscrn                 !  problem
                   read  ( lunscr , * ) scrnam(iscrn)
@@ -178,7 +178,7 @@
          endif
       endif
 
-      if ( noscrn .eq. 0 ) return
+      if ( noscrn == 0 ) return
 
 !        First  step: sum the withdrawn masses and flow per screen
 
@@ -186,9 +186,9 @@
       scrwdf = 0.0                                  !  accumulation arrays
       do iwst = 1, nowst
          iscrn = scrloc(iwst)
-         if ( iscrn .ne. 0 ) then                   !  screens only
+         if ( iscrn /= 0 ) then                   !  screens only
             wflow = wls(iwst)%flow
-            if ( wflow .lt. 0.0 ) then              !  withdrawals only
+            if ( wflow < 0.0 ) then              !  withdrawals only
                scrwdf( iscrn ) = scrwdf( iscrn ) + wflow
                do isub = 1, nosys
                   scrwtd ( iscrn, isub ) = scrwtd ( iscrn, isub ) + & 
@@ -207,7 +207,7 @@
 
       do iscrn = 1, noscrn                          !  make the mixed
          wflow = scrwdf( iscrn )                    !  concentrations
-         if ( wflow .ne. 0.0 ) then                 !  per active screen
+         if ( wflow /= 0.0 ) then                 !  per active screen
 
             do isub = 1, notot
                scrwtd ( iscrn, isub ) = scrwtd ( iscrn, isub ) / wflow
@@ -219,9 +219,9 @@
 
       do iwst = 1, nowst
          iscrn = scrloc(iwst)
-         if ( iscrn .ne. 0 ) then                   !  screens only
+         if ( iscrn /= 0 ) then                   !  screens only
             wflow = wls(iwst)%flow
-            if ( wflow .gt. 0.0 ) then              !  releases only
+            if ( wflow > 0.0 ) then              !  releases only
                do isub = 1, notot
                   wls(iwst)%loads(isub ) = scrwtd ( iscrn, isub )
                enddo
@@ -341,7 +341,7 @@
          do icomb = 1 , ncomb
             ipin  = find_wasteload( namin(icomb) , wasteloads)
             ipout = find_wasteload( namout(icomb), wasteloads)
-            if ( ipin .gt. 0 .and. ipout .gt. 0 ) then
+            if ( ipin > 0 .and. ipout > 0 ) then
 
                ! a combination found, print and set administration
 
@@ -355,7 +355,7 @@
 
             endif
          enddo
-         if ( ninout .eq. 0 ) write(lunrep,2013)
+         if ( ninout == 0 ) write(lunrep,2013)
          write(lunrep,2003)
 
       endif
@@ -395,7 +395,6 @@
  2003 format (' end extra functionality INLET/OUTLET')
  2004 format ('    possible INLET/OUTLET combinations will be read from ', & 
              'file <inloutl.dat>')
- 2005 format ('    error : number of combinations exceed maximum:',i4)
  2006 format ('    no file <inloutl.dat> using default combinations names')
  2013 format ('    no INLET/OUTLET combination found')
 
@@ -459,7 +458,7 @@
       lens  = len_trim(string) - 1
       lent  = len_trim(test  )
       do i = 1, lent-lens
-         if ( string .eq. test(i:i+lens) ) return
+         if ( string == test(i:i+lens) ) return
       enddo
       found = .false.
 
@@ -629,8 +628,6 @@
  2002 format ('    grid mismatch in LGA file (walking.lga): ',/, & 
              '    number of segments',i10, & 
              ' not a multiple of number of segments per layer:',i10)
- 2003 format ('    unexpected end of file at simulation time: ', i10,/, & 
-             '    time in walking.dat file:                  ', i10)
  2005 format (' No file <walking.dat> detected' )
  2006 format (' end extra functionality WALKING DISCHARGES')
 

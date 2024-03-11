@@ -153,7 +153,7 @@
       IP19 = IPOINT(19)
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 
@@ -161,7 +161,7 @@
 !
 !     Use new version when IVERSN = 1.0
 !
-      IF ( IVERSN .EQ. 1 ) THEN
+      IF ( IVERSN == 1 ) THEN
 
             K0TEMP = PMSA(IP1 )
             NH4    = MAX ( 0.0, PMSA(IP2 ) )
@@ -179,17 +179,17 @@
 !
 !           Set the rates according to CRTEMP and CROXY
 !
-            IF ( TEMP .LT. CRTEMP .OR. OXY .LE. 0.0 ) KNIT = 0.0
+            IF ( TEMP < CRTEMP .OR. OXY <= 0.0 ) KNIT = 0.0
 !
                   K0NIT = 0.0
 !
-            IF ( TEMP .LT. CRTEMP .AND. OXY .GT. 0.0 ) THEN
+            IF ( TEMP < CRTEMP .AND. OXY > 0.0 ) THEN
                   K0NIT = K0TEMP
-            ELSEIF ( TEMP .GE. CRTEMP .AND. OXY .LE. 0.0 ) THEN
+            ELSEIF ( TEMP >= CRTEMP .AND. OXY <= 0.0 ) THEN
                   K0NIT = K0OX
             ENDIF
 !
-            IF ( OXY .LE. (CROXY * POROS) ) K0NIT = 0.0
+            IF ( OXY <= (CROXY * POROS) ) K0NIT = 0.0
 !
 !           Calculate the nitrification flux
 !
@@ -213,7 +213,7 @@
 !
 !     Use TEWOR version when IVERSN = 2.0
 !
-      ELSEIF ( IVERSN .EQ. 2 ) THEN
+      ELSEIF ( IVERSN == 2 ) THEN
 
             NH4    = MAX ( 0.0, PMSA(IP2 ) )
             RC     = PMSA(IP14)
@@ -249,11 +249,11 @@
 !
 !           Calculate oxygen function
 !
-            IF ( (OOX - COX) .LT. 1E-20 )  CALL write_error_message & 
+            IF ( (OOX - COX) < 1E-20 )  CALL write_error_message &
                  ('OOX - COX in NITRIF zero')
-            IF ( OXY .GT. (OOX*POROS) ) THEN
+            IF ( OXY > (OOX*POROS) ) THEN
                   O2FUNC = 1.0
-            ELSEIF (OXY .LT. (COX*POROS) ) THEN
+            ELSEIF (OXY < (COX*POROS) ) THEN
                   O2FUNC = CFL
             ELSE
                   O2FUNC = (1.0 - CFL) * (OXY-COX*POROS)/ & 
@@ -264,7 +264,7 @@
 !
 !           Calculate flux
 !
-            IF (TEMP .LE. CRTEMP) THEN
+            IF (TEMP <= CRTEMP) THEN
                   FL( 1+ IFLUX ) = ZERO
             ELSE
                   TEMP20 = TEMP - 20.0
@@ -301,7 +301,7 @@
       IP18  = IP18  + IN18
       IP19  = IP19  + IN19
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

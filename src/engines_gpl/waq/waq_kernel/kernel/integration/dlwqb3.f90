@@ -89,26 +89,26 @@
       I5 = 4*NOTOT+1
       I6 = NOSYS*NDMPQ
       B  = 0.0
-      IF ( IAFLAG .EQ. 1 ) B = 1.0/IDT
+      IF ( IAFLAG == 1 ) B = 1.0/IDT
       MASBAL = .FALSE.
-      IF ( MOD(IOPT,16) .GE. 8  ) MASBAL = .TRUE.
-      DO 60 IQ = 1 , NOQ
+      IF ( MOD(IOPT,16) >= 8  ) MASBAL = .TRUE.
+      DO IQ = 1 , NOQ
 !
 !         initialisations, check for transport anyhow
 !
       I    = IPOINT(1,IQ)
       J    = IPOINT(2,IQ)
-      IF ( I .EQ. 0 .OR. J .EQ. 0 ) GOTO 60
+      IF ( I == 0 .OR. J == 0 ) GOTO 60
       Q    = FLOW(IQ)*IDT
-      IF ( IVPNT(1) .GT. 0 ) & 
+      IF ( IVPNT(1) > 0 ) &
            Q = Q + VELO((IQ-1)*NOVELO+IVPNT(1)) * AREA(IQ) * IDT
 !
 !     accumulate balance for dumped exchanges
 !
       IF ( MASBAL ) THEN
-         IF ( IQDMP(IQ) .GT. 0 ) THEN
+         IF ( IQDMP(IQ) > 0 ) THEN
             IPQ = (IQDMP(IQ)-1)*NOSYS + 1
-            IF ( Q .GT. 0.0 ) THEN
+            IF ( Q > 0.0 ) THEN
                DMPQ(IPQ)=DMPQ(IPQ) + Q
             ELSE
                DMPQ(IPQ+I6)=DMPQ(IPQ+I6) - Q
@@ -116,8 +116,8 @@
          ENDIF
       ENDIF
 !
-      IF ( I .LT. 0 ) GOTO 20
-      IF ( J .LT. 0 ) GOTO 40
+      IF ( I < 0 ) GOTO 20
+      IF ( J < 0 ) GOTO 40
 !
 !         The regular case
 !
@@ -127,9 +127,9 @@
 !
 !        The 'from' element was a boundary. Note the 2 options.
 !
-   20 IF ( J .LT. 0 ) GOTO 60
+   20 IF ( J < 0 ) GOTO 60
       VOLUME(J) = VOLUME(J) + Q
-      IF ( Q .GT. 0.0 ) THEN
+      IF ( Q > 0.0 ) THEN
            AMASS2(I4) = AMASS2(I4) + Q*B
       ELSE
            AMASS2(I5) = AMASS2(I5) - Q*B
@@ -139,7 +139,7 @@
 !        The 'to' element was a boundary.
 !
    40 VOLUME(I) = VOLUME(I) - Q
-      IF ( Q .GT. 0.0 ) THEN
+      IF ( Q > 0.0 ) THEN
          AMASS2(I5) = AMASS2(I5) + Q*B
       ELSE
          AMASS2(I4) = AMASS2(I4) - Q*B
@@ -148,6 +148,7 @@
 !        end of the loop over exchanges
 !
    60 CONTINUE
+      end do
 !
       if ( timon ) call timstop ( ithandl )
       RETURN

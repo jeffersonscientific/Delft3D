@@ -59,7 +59,7 @@
 !
       ILUN = 148
       CALL open_waq_files  ( ILUN , AFILE  , 33 , 1   , IERR )
-      IF ( IERR .GT. 0 ) THEN
+      IF ( IERR > 0 ) THEN
          WRITE ( LUNUT , 1000 ) AFILE
          RETURN
       ENDIF
@@ -67,27 +67,27 @@
 !
 !          Search for the file name of this item
 !
-      DO 10 I = 1,10000
+      DO I = 1,10000
          READ ( ILUN , * , END=20 ) S1, BFILE
-         IF ( S1 .EQ. 'conversion-ref-time  ' ) & 
+         IF ( S1 == 'conversion-ref-time  ' ) &
                       READ ( BFILE , '(I4,I2,I2,I2,I2,I2)' ) & 
                              IYEAR1,IMONTH1,IDAY1,IHOUR1,IMIN1,ISEC1
-         IF ( S1 .EQ. 'conversion-start-time' ) & 
+         IF ( S1 == 'conversion-start-time' ) &
                       READ ( BFILE , '(I4,I2,I2,I2,I2,I2)' ) & 
                              IYEAR2,IMONTH2,IDAY2,IHOUR2,IMIN2,ISEC2
-         IF ( S1 .EQ. 'conversion-stop-time ' ) & 
+         IF ( S1 == 'conversion-stop-time ' ) &
                       READ ( BFILE , '(I4,I2,I2,I2,I2,I2)' ) & 
                              IYEAR3,IMONTH3,IDAY3,IHOUR3,IMIN3,ISEC3
-         IF ( S1 .EQ. 'conversion-timestep  ' ) & 
+         IF ( S1 == 'conversion-timestep  ' ) &
                       READ ( BFILE , '(I4,I2,I2,I2,I2,I2)' ) & 
                              IYEAR4,IMONTH4,IDAY4,IHOUR4,IMIN4,ISEC4
-         IF ( S1 .EQ. SGET ) GOTO 30
-   10 CONTINUE
+         IF ( S1 == SGET ) GOTO 30
+      end do
    20 WRITE ( LUNUT , 1010 ) SGET
       IERR = 1
       RETURN
    30 CONTINUE
-      IF ( PATHLEN .GT. 0 ) THEN
+      IF ( PATHLEN > 0 ) THEN
          BFILE = FILPATH(1:PATHLEN)//BFILE
       ENDIF
       IDATE    = IYEAR1*10000+IMONTH1*100+IDAY1
@@ -102,7 +102,7 @@
       IT4      = IYEAR4*31536000+IMONTH4*2592000+IDAY4*86400+ & 
                 IHOUR4*3600+IMIN4*60+ISEC4
       AFACT    = ISFACT/864.0D+02
-      IF ( ISFACT .LT. 0 ) AFACT = -1.0D+00/ISFACT/864.0D+02
+      IF ( ISFACT < 0 ) AFACT = -1.0D+00/ISFACT/864.0D+02
       IT2      = (STARTTIM-REFTIM)/AFACT + 0.5
       IT3      = (STOPTIM-REFTIM)/AFACT + 0.5
       CLOSE ( ILUN )
@@ -110,7 +110,7 @@
 !          Open the binary file for this item
 !
       CALL open_waq_files  ( ILUN , BFILE  , 33 , 2   , IERR )
-      IF ( IERR .GT. 0 ) THEN
+      IF ( IERR > 0 ) THEN
          WRITE ( LUNUT , 1020 ) BFILE
          RETURN
       ENDIF
@@ -118,19 +118,19 @@
 !          Find the time step in the file where to start
 !
       READ ( ILUN , END=50 ) ITIM , (A,K=1,ABS(NUMBR))
-      IF ( ITIM .NE. IT2 ) THEN
+      IF ( ITIM /= IT2 ) THEN
          WRITE ( LUNUT , 1030 ) IT2, ITIM, BFILE
          IERR = 1
          RETURN
       ENDIF
       READ ( ILUN , END=50 ) ITIM2, (A,K=1,ABS(NUMBR))
       IDTF = ITIM2-ITIM
-      IF ( IDTF .NE. IT4 ) THEN
+      IF ( IDTF /= IT4 ) THEN
          WRITE ( LUNUT , 1040 ) IT4, IDTF, BFILE
          IERR = 1
          RETURN
       ENDIF
-      IF ( ((ISTEP-ITIM)/IDTF)*IDTF .EQ. ISTEP-ITIM ) THEN
+      IF ( ((ISTEP-ITIM)/IDTF)*IDTF == ISTEP-ITIM ) THEN
          CLOSE ( ILUN )
          RETURN
       ENDIF

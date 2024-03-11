@@ -74,8 +74,8 @@
 
       IF (FIRST) THEN
           FIRST = .FALSE.
-          IF ( (INCREM(1) .GT. 0) .OR. & 
-              (INCREM(2) .GT. 0) ) THEN
+          IF ( (INCREM(1) > 0) .OR. &
+              (INCREM(2) > 0) ) THEN
               CALL GETMLU(LUNREP)
               WRITE (LUNREP,*) & 
              ' DEPAVE: INPUT parameters function(x) not ALLOWED'
@@ -93,11 +93,11 @@
 !     Add 1 to counter and check for period
 
       TELLER = TELLER + 1
-      IF ( TELLER .GT. NAVERA ) TELLER = TELLER - NAVERA
+      IF ( TELLER > NAVERA ) TELLER = TELLER - NAVERA
 
 !     Loop over segments
 
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
           IF (BTEST(IKNMRK(ISEG),0)) THEN
 
@@ -105,7 +105,7 @@
               ADEPTH = PMSA(IP4)
               PMSA(IP6) = ADEPTH
 
-              IF ( NSWITS .EQ. 0 ) THEN
+              IF ( NSWITS == 0 ) THEN
 
 !                 No averaging: copy depth to average depth
 
@@ -127,7 +127,7 @@
           IP5  = IP5  + INCREM( 5)
           IP6  = IP6  + INCREM( 6)
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

@@ -35,47 +35,55 @@
 !                                                                           C
 !     ----------------------------------------------------------------------C
       SUBROUTINE INVERM (A,B,N,M,NMAX,IH,WORK,IER)
-      IMPLICIT REAL*8  (A-H,O-Z)
+      IMPLICIT REAL(kind=8)  (A-H,O-Z)
       IMPLICIT INTEGER (i,j,m,n)
       
       DIMENSION A(NMAX,*),B(NMAX,*),IH(*),WORK(*)
       IER = 0
-      DO 10 IR = 1,N
-   10 IH(IR) = IR
-      DO 100 IK = 1,N
-      DO  20 IR = IK+1,N
-      IF (ABS(A(IK,IH(IR))).GT.ABS(A(IK,IH(IK)))) THEN
+      DO IR = 1,N
+   IH(IR) = IR
+      end do
+      DO IK = 1,N
+      DO  IR = IK+1,N
+      IF (ABS(A(IK,IH(IR)))>ABS(A(IK,IH(IK)))) THEN
       IDUM = IH(IR)
       IH(IR) = IH(IK)
       IH(IK) = IDUM
       ENDIF
-   20 CONTINUE
-      IF (ABS(A(IK,IH(IK))).LT.1D-10) THEN
+          end do
+      IF (ABS(A(IK,IH(IK)))<1D-10) THEN
       IER = -IK
       RETURN
       ENDIF
-      DO 50 IR = IK+1,N
+      DO IR = IK+1,N
       F = A(IK,IH(IR))/A(IK,IH(IK))
-      IF (ABS(F).LT.1E-10) GOTO 50
-      DO 30 J=1,M
-   30 B(IH(IR),J) = B(IH(IR),J) - F*B(IH(IK),J)
-      DO 40 IK2 = IK,N
-   40 A(IK2,IH(IR)) = A(IK2,IH(IR)) - F*A(IK2,IH(IK))
+      IF (ABS(F)<1E-10) GOTO 50
+      DO J=1,M
+   B(IH(IR),J) = B(IH(IR),J) - F*B(IH(IK),J)
+      end do
+      DO IK2 = IK,N
+   A(IK2,IH(IR)) = A(IK2,IH(IR)) - F*A(IK2,IH(IK))
+      end do
    50 CONTINUE
-  100 CONTINUE
-      DO 200 IR2 = 1,N
+      end do
+      end do
+      DO IR2 = 1,N
       IR = N + 1 - IR2
-      DO 120 J  = 1,M
-      DO 110 IK = IR+1,N
-  110 B(IH(IR),J) = B(IH(IR),J) - A(IK,IH(IR)) * B(IH(IK),J)
-  120 B(IH(IR),J) = B(IH(IR),J) / A(IR,IH(IR))
-  200 CONTINUE
-      DO 300 J=1,M
-      DO 210 I=1,N
-  210 WORK(I) = B(IH(I),J)
-      DO 220 I=1,N
-  220 B(I,J) = WORK(I)
-  300 CONTINUE
+      DO J  = 1,M
+      DO IK = IR+1,N
+  B(IH(IR),J) = B(IH(IR),J) - A(IK,IH(IR)) * B(IH(IK),J)
+          end do
+  B(IH(IR),J) = B(IH(IR),J) / A(IR,IH(IR))
+      end do
+      end do
+      DO J=1,M
+      DO I=1,N
+  WORK(I) = B(IH(I),J)
+          end do
+      DO I=1,N
+  B(I,J) = WORK(I)
+      end do
+      end do
       RETURN
       END
 

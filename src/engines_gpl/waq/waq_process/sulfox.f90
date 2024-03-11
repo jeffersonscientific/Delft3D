@@ -112,7 +112,7 @@
 !     -----Warnings-----
 !
       IF (FIRST) THEN
-          IF (PMSA(IP8) .LE. 0.0) THEN
+          IF (PMSA(IP8) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : Poros should be', & 
                           ' greater than zero'
           ENDIF
@@ -120,7 +120,7 @@
       ENDIF
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
@@ -136,10 +136,10 @@
 !
 !           Set the rates according to the DO concentration
 !
-            IF ( COX .LE. 0.0 ) THEN
+            IF ( COX <= 0.0 ) THEN
                   KOXI  = 0.0
             ENDIF
-            IF ( COX .GT. (COXC * POROS) ) THEN
+            IF ( COX > (COXC * POROS) ) THEN
                   K0OXI = 0.0
             ENDIF
 !
@@ -167,7 +167,7 @@
       IP8   = IP8   + IN8
       IP9   = IP9   + IN9
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

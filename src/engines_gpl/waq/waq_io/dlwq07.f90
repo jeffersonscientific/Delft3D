@@ -128,12 +128,12 @@
 
       do
 
-         if ( gettoken(ctoken,ierr2) .ne. 0 ) exit
+         if ( gettoken(ctoken,ierr2) /= 0 ) exit
 
-         if ( ctoken .eq. 'CONSTANTS'     .or. & 
-             ctoken .eq. 'FUNCTIONS'     .or. & 
-             ctoken .eq. 'PARAMETERS'    .or. & 
-             ctoken .eq. 'SEG_FUNCTIONS'      ) then
+         if ( ctoken == 'CONSTANTS'     .or. &
+             ctoken == 'FUNCTIONS'     .or. &
+             ctoken == 'PARAMETERS'    .or. &
+             ctoken == 'SEG_FUNCTIONS'      ) then
 
             ! new file strucure
 
@@ -143,34 +143,34 @@
                              segfuncs  , segments  , gridps    , dlwqdata  , ierr2    , & 
                              status)
 
-            if ( ierr2 .gt. 0 ) goto 30
+            if ( ierr2 > 0 ) goto 30
 
             ! check for special constants, get directly from structure (ignore order, scaling etc this is not clean)
 
-            if ( dlwqdata%subject .eq. SUBJECT_CONSTANT ) then
+            if ( dlwqdata%subject == SUBJECT_CONSTANT ) then
                ch20 = 'NOVEC'
                inovec = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
-               if ( inovec .gt. 0 ) then
+               if ( inovec > 0 ) then
                   novec = nint(dlwqdata%values(inovec,1,1))
                   write(lunut,2240)
                   write(lunut,2250) novec
                endif
                ch20 = 'NOTHREADS'
                inothr = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
-               if ( inothr .gt. 0 ) then
+               if ( inothr > 0 ) then
                   nothrd = nint(dlwqdata%values(inothr,1,1))
                   write(lunut,2310)
                   write(lunut,2320) nothrd
-                  if ( nothrd .gt. 0 ) call omp_set_num_threads( nothrd )
+                  if ( nothrd > 0 ) call omp_set_num_threads( nothrd )
                   nothrd = omp_get_max_threads()
                endif
             endif
             ch20 = 'TAU'
             inovec = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
-            if ( inovec .gt. 0 ) taupart = .true.
+            if ( inovec > 0 ) taupart = .true.
             ch20 = 'VERTDISPER'
             inovec = index_in_array( ch20 , dlwqdata%param_name(: dlwqdata%no_param))
-            if ( inovec .gt. 0 ) vdfpart = .true.
+            if ( inovec > 0 ) vdfpart = .true.
 
             ! add to the collection
 
@@ -180,7 +180,7 @@
 
             ! unrecognised keyword
 
-            if ( ctoken(1:1) .ne. '#' ) then
+            if ( ctoken(1:1) /= '#' ) then
                write ( lunut , 2040 ) trim(ctoken)
                call status%increase_error_count()
                goto 30
@@ -193,14 +193,14 @@
 
       enddo
       if ( .not. alone ) then              ! Delwaq runs with Delpar
-         if ( lsettl .or. layt .gt. 1 ) then
+         if ( lsettl .or. layt > 1 ) then
             if ( taupart ) then
                write ( lunut, 2330 )
             else
                write ( lunut, 2340 )
                call status%increase_warning_count()
             endif
-            if ( layt .gt. 1 ) then
+            if ( layt > 1 ) then
                if ( vdfpart ) then
                   write ( lunut, 2350 )
                else
@@ -222,10 +222,10 @@
       write ( lunut , 2060 ) parameters%no_item
       write ( lunut , 2070 ) functions%no_item
       write ( lunut , 2080 ) segfuncs%no_item
-      if ( constants%no_item  .gt. 0 ) write ( lun(2) ) (constants%name(i) , i=1, constants%no_item)
-      if ( parameters%no_item .gt. 0 ) write ( lun(2) ) (parameters%name(i), i=1, parameters%no_item)
-      if ( functions%no_item  .gt. 0 ) write ( lun(2) ) (functions%name(i) , i=1, functions%no_item)
-      if ( segfuncs%no_item   .gt. 0 ) write ( lun(2) ) (segfuncs%name(i)  , i=1, segfuncs%no_item)
+      if ( constants%no_item  > 0 ) write ( lun(2) ) (constants%name(i) , i=1, constants%no_item)
+      if ( parameters%no_item > 0 ) write ( lun(2) ) (parameters%name(i), i=1, parameters%no_item)
+      if ( functions%no_item  > 0 ) write ( lun(2) ) (functions%name(i) , i=1, functions%no_item)
+      if ( segfuncs%no_item   > 0 ) write ( lun(2) ) (segfuncs%name(i)  , i=1, segfuncs%no_item)
 
 
       call open_waq_files(lun(16), lchar(16), 16, 1, ioerr)
@@ -240,7 +240,7 @@
 
       itime = 0
       do i = 1, proc_pars%cursize
-         if ( proc_pars%dlwqdata(i)%subject .eq. SUBJECT_CONSTANT ) then
+         if ( proc_pars%dlwqdata(i)%subject == SUBJECT_CONSTANT ) then
             ierr3 = dlwqdataevaluate(proc_pars%dlwqdata(i),gridps,itime,constants%no_item,1,constants%constant)
          endif
       enddo
@@ -280,8 +280,8 @@
       ierr3 = dlwq_cleanup(segments)
 
    30 continue
-      if ( ierr2 .gt. 0 .and. ierr2 .ne. 2 ) call status%increase_error_count()
-      if ( ierr2 .eq. 3 ) call srstop(1)
+      if ( ierr2 > 0 .and. ierr2 /= 2 ) call status%increase_error_count()
+      if ( ierr2 == 3 ) call srstop(1)
       call check ( ctoken, iwidth, 7     , ierr2  , status)
       if ( timon ) call timstop( ithndl )
       return

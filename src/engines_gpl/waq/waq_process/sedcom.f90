@@ -80,8 +80,8 @@
               NO7OPT , NO8OPT , NO9OPT
 
 !        Substance 1 IM1
-      IF ( INCREM( 1) .EQ. 0 .AND. INCREM( 9) .EQ. 0 .AND. & 
-          INCREM(16) .EQ. 0                               ) THEN
+      IF ( INCREM( 1) == 0 .AND. INCREM( 9) == 0 .AND. &
+          INCREM(16) == 0                               ) THEN
          MASS1  = PMSA(IPOINT( 1))
          DMCF1  = PMSA(IPOINT( 9))
          RHO1   = PMSA(IPOINT(16))
@@ -92,8 +92,8 @@
          NO1OPT = .FALSE.
       ENDIF
 !        Substance 2  IM2
-      IF ( INCREM( 2) .EQ. 0 .AND. INCREM(10) .EQ. 0 .AND. & 
-          INCREM(17) .EQ. 0                               ) THEN
+      IF ( INCREM( 2) == 0 .AND. INCREM(10) == 0 .AND. &
+          INCREM(17) == 0                               ) THEN
          MASS2  = PMSA(IPOINT( 2))
          DMCF2  = PMSA(IPOINT(10))
          RHO2   = PMSA(IPOINT(17))
@@ -104,8 +104,8 @@
          NO2OPT = .FALSE.
       ENDIF
 !        Substance 3 IM3
-      IF ( INCREM( 3) .EQ. 0 .AND. INCREM(11) .EQ. 0 .AND. & 
-          INCREM(18) .EQ. 0                               ) THEN
+      IF ( INCREM( 3) == 0 .AND. INCREM(11) == 0 .AND. &
+          INCREM(18) == 0                               ) THEN
          MASS3  = PMSA(IPOINT( 3))
          DMCF3  = PMSA(IPOINT(11))
          RHO3   = PMSA(IPOINT(18))
@@ -116,9 +116,9 @@
          NO3OPT = .FALSE.
       ENDIF
 !        Substance 4 DetC
-      IF ( INCREM( 4) .EQ. 0 .AND. INCREM(12) .EQ. 0 .AND. & 
-          INCREM(19) .EQ. 0 .AND. INCREM(25) .EQ. 0 .AND. & 
-          INCREM(26) .EQ. 0 .AND. INCREM(27) .EQ. 0       ) THEN
+      IF ( INCREM( 4) == 0 .AND. INCREM(12) == 0 .AND. &
+          INCREM(19) == 0 .AND. INCREM(25) == 0 .AND. &
+          INCREM(26) == 0 .AND. INCREM(27) == 0       ) THEN
          MASS4  = PMSA(IPOINT( 4))
          DMCF4  = PMSA(IPOINT(12))
          RHO4   = PMSA(IPOINT(19))
@@ -130,7 +130,7 @@
          CN4    = -999.
          CP4    = -999.
          CS4    = -999.
-         IF ( MASS4 .GE. 1E-10) THEN
+         IF ( MASS4 >= 1E-10) THEN
             CN4 = NMASS4 / MASS4
             CP4 = PMASS4 / MASS4
             CS4 = SMASS4 / MASS4
@@ -140,9 +140,9 @@
          NO4OPT = .FALSE.
       ENDIF
 !        Substance 5 OOC
-      IF ( INCREM( 5) .EQ. 0 .AND. INCREM(13) .EQ. 0 .AND. & 
-          INCREM(20) .EQ. 0 .AND. INCREM(28) .EQ. 0 .AND. & 
-          INCREM(29) .EQ. 0 .AND. INCREM(30) .EQ. 0       ) THEN
+      IF ( INCREM( 5) == 0 .AND. INCREM(13) == 0 .AND. &
+          INCREM(20) == 0 .AND. INCREM(28) == 0 .AND. &
+          INCREM(29) == 0 .AND. INCREM(30) == 0       ) THEN
 
          MASS5  = PMSA(IPOINT( 5))
          DMCF5  = PMSA(IPOINT(13))
@@ -155,7 +155,7 @@
          CN5    = -999.
          CP5    = -999.
          CS5    = -999.
-         IF ( MASS5 .GE. 1E-10) THEN
+         IF ( MASS5 >= 1E-10) THEN
             CN5 = NMASS5 / MASS5
             CP5 = PMASS5 / MASS5
             CS5 = SMASS5 / MASS5
@@ -165,8 +165,8 @@
          NO5OPT = .FALSE.
       ENDIF
 !        Substance 6 Diat
-      IF ( INCREM( 6) .EQ. 0 .AND. INCREM(14) .EQ. 0 .AND. & 
-          INCREM(21) .EQ. 0                               ) THEN
+      IF ( INCREM( 6) == 0 .AND. INCREM(14) == 0 .AND. &
+          INCREM(21) == 0                               ) THEN
          MASS6  = PMSA(IPOINT( 6))
          DMCF6  = PMSA(IPOINT(14))
          RHO6   = PMSA(IPOINT(21))
@@ -177,8 +177,8 @@
          NO6OPT = .FALSE.
       ENDIF
 !        Substance 7 Green
-      IF ( INCREM( 7) .EQ. 0 .AND. INCREM(15) .EQ. 0 .AND. & 
-          INCREM(22) .EQ. 0                               ) THEN
+      IF ( INCREM( 7) == 0 .AND. INCREM(15) == 0 .AND. &
+          INCREM(22) == 0                               ) THEN
          MASS7  = PMSA(IPOINT( 7))
          DMCF7  = PMSA(IPOINT(15))
          RHO7   = PMSA(IPOINT(22))
@@ -189,8 +189,8 @@
          NO7OPT = .FALSE.
       ENDIF
 !        Substance 8 MFB1
-      IF ( INCREM(31) .EQ. 0 .AND. INCREM(33) .EQ. 0 .AND. & 
-          INCREM(35) .EQ. 0                               ) THEN
+      IF ( INCREM(31) == 0 .AND. INCREM(33) == 0 .AND. &
+          INCREM(35) == 0                               ) THEN
          MASS8  = PMSA(IPOINT(31))
          DMCF8  = PMSA(IPOINT(33))
          RHO8   = PMSA(IPOINT(35))
@@ -201,8 +201,8 @@
          NO8OPT = .FALSE.
       ENDIF
 !        Substance 9 MFB2
-      IF ( INCREM(32) .EQ. 0 .AND. INCREM(34) .EQ. 0 .AND. & 
-          INCREM(36) .EQ. 0                               ) THEN
+      IF ( INCREM(32) == 0 .AND. INCREM(34) == 0 .AND. &
+          INCREM(36) == 0                               ) THEN
          MASS9  = PMSA(IPOINT(32))
          DMCF9  = PMSA(IPOINT(34))
          RHO9   = PMSA(IPOINT(36))
@@ -338,11 +338,11 @@
       IP61  = IPOINT(61)
 !
       IFLUX = 0
-      DO 100 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
 !        Substance 1
       IF ( .NOT. NO1OPT ) THEN
@@ -381,7 +381,7 @@
          CN4    = 0.0
          CP4    = 0.0
          CS4    = 0.0
-         IF ( MASS4 .GE. 1E-10) THEN
+         IF ( MASS4 >= 1E-10) THEN
             CN4 = NMASS4 / MASS4
             CP4 = PMASS4 / MASS4
             CS4 = SMASS4 / MASS4
@@ -400,7 +400,7 @@
          CN5    = 0.0
          CP5    = 0.0
          CS5    = 0.0
-         IF ( MASS5 .GE. 1E-10) THEN
+         IF ( MASS5 >= 1E-10) THEN
             CN5 = NMASS5 / MASS5
             CP5 = PMASS5 / MASS5
             CS5 = SMASS5 / MASS5
@@ -454,7 +454,7 @@
       TPOC  = MASS4 + MASS5
       PHYT  = MASS6 + MASS7 + MASS8 + MASS9
 
-      IF ( SOMDM .GT. 1.0E-20 ) THEN
+      IF ( SOMDM > 1.0E-20 ) THEN
          FRAC1  = MASS1 / SOMDM
          FRAC2  = MASS2 / SOMDM
          FRAC3  = MASS3 / SOMDM
@@ -493,7 +493,7 @@
       ENDIF
 
       FRAC10 =  0.0
-      IF ( SOMDM .GT. 1.0E-20 ) FRAC10 = MASS10 / SOMDM
+      IF ( SOMDM > 1.0E-20 ) FRAC10 = MASS10 / SOMDM
 
       PMSA(IP37) = SOMDM
       PMSA(IP38) = TIM
@@ -586,7 +586,7 @@
       IP60  = IP60  + IN60
       IP61  = IP61  + IN61
 !
-  100 CONTINUE
+      end do
 !
       RETURN
 !

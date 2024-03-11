@@ -80,49 +80,49 @@
 !     Loop over the raaien
 !
       ITEL1 = 0
-      DO 100 IRAAI = 1 , NORAAI
+      DO IRAAI = 1 , NORAAI
 !
 !        the exchange contributes
 !
          NQC  = NQRAAI(IRAAI)
          IOPT = IORAAI(IRAAI)
-         DO 30 IQC = 1 , NQC
+         DO IQC = 1 , NQC
             ITEL1 = ITEL1 + 1
             IQ    = IQRAAI(ITEL1)
-            IF ( IQ .GT. 0 ) THEN
+            IF ( IQ > 0 ) THEN
                IPQ  = IQDMP(IQ)
-               DO 10 ISYS = 1 , NOSYS
-                  IF ( IOPT .EQ. 1 ) THEN
+               DO ISYS = 1 , NOSYS
+                  IF ( IOPT == 1 ) THEN
                      TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)+ & 
                                          DMPQ(ISYS,IPQ,1)  - & 
                                          DMPQ(ISYS,IPQ,2)
-                  ELSEIF ( IOPT .EQ. 2 ) THEN
+                  ELSEIF ( IOPT == 2 ) THEN
                      TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)+ & 
                                          DMPQ(ISYS,IPQ,1)
-                  ELSEIF ( IOPT .EQ. 3 ) THEN
+                  ELSEIF ( IOPT == 3 ) THEN
                      TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)- & 
                                          DMPQ(ISYS,IPQ,2)
                   ENDIF
-   10          CONTINUE
+               end do
             ELSE
                IPQ  = IQDMP(-IQ)
-               DO 20 ISYS = 1 , NOSYS
-                  IF ( IOPT .EQ. 1 ) THEN
+               DO ISYS = 1 , NOSYS
+                  IF ( IOPT == 1 ) THEN
                      TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)- & 
                                          DMPQ(ISYS,IPQ,1)  + & 
                                          DMPQ(ISYS,IPQ,2)
-                  ELSEIF ( IOPT .EQ. 2 ) THEN
+                  ELSEIF ( IOPT == 2 ) THEN
                      TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)+ & 
                                          DMPQ(ISYS,IPQ,2)
-                  ELSEIF ( IOPT .EQ. 3 ) THEN
+                  ELSEIF ( IOPT == 3 ) THEN
                      TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)- & 
                                          DMPQ(ISYS,IPQ,1)
                   ENDIF
-   20          CONTINUE
+               end do
             ENDIF
-   30    CONTINUE
+         end do
 !
-  100 CONTINUE
+      end do
 !
       if ( timon ) call timstop ( ithandl )
       RETURN

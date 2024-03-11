@@ -89,7 +89,7 @@
 !  Print heading for output on unit outdbg if "DUMP" is specified.
       write (cdate, 115) iseg, id
 115   format (i5,1x,i2)
-      if ( idump .ne. 0) then
+      if ( idump /= 0) then
          write (outdbg,99960) iseg, id
          write (outdbg,99950) tmp, solpar, dep
       end if
@@ -106,15 +106,11 @@
          totcar = totcar + xdef(i+nurows)/ctodry(i)
       end do
 
-99980 format(2X,'The following species have reduced relative depth',/, & 
-            2X,'for buoyancy control: ')
-99970 format(2X,'Species ',A8,' has relative depth of ',F5.2)
 99960 format (/,23X,'******',2X,' SEGMENT ',I8,' WEEK ', & 
             I2, 2X,'******',/)
 99950 format(2X,'Important parameter values for this week:',/, & 
             2X,'Temperature =',F5.1,4X,'Solar radiation =',F8.1, & 
             4X,'Total depth =',F5.2)
-99930 format (' Period: ',I4,' Potential degeneracy for species: ',20I3)
       return
       end
 

@@ -90,13 +90,13 @@
 !         Open the DELWAQ .HIS file
 !
       CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
-      IF ( IERROR .NE. 0 ) RETURN
+      IF ( IERROR /= 0 ) RETURN
 
       ! map or his
 
       call extract_file_extension(fname(1), ext, extpos, extlen)
       call upper_case(ext, ext, extlen)
-      if ( ext .eq. 'MAP' ) then
+      if ( ext == 'MAP' ) then
          mapfil = .true.
       else
          mapfil = .false.
@@ -105,10 +105,10 @@
 !         Read primary system characteristics
 !
       READ ( lun , ERR=100 )   FNAME(3)(1:160)
-      IF ( FNAME(3)(121:123) .NE. 'T0: ' .AND. & 
-          FNAME(3)(121:123) .NE. 't0: ' .AND. & 
-          FNAME(3)(121:123) .NE. 'T0= ' .AND. & 
-          FNAME(3)(121:123) .NE. 't0= '       ) THEN
+      IF ( FNAME(3)(121:123) /= 'T0: ' .AND. &
+          FNAME(3)(121:123) /= 't0: ' .AND. &
+          FNAME(3)(121:123) /= 'T0= ' .AND. &
+          FNAME(3)(121:123) /= 't0= '       ) THEN
          GOTO 150
       ENDIF
       READ ( FNAME(3)(125:128) , '(I4)' ) IYEAR
@@ -134,20 +134,20 @@
       ALLOCATE(RDATA(NTT))
       NRLST = 0
       SETALL = .FALSE.
-      IF ( TIMDEF(1,1) .LT. 0.5 ) SETALL = .TRUE.
+      IF ( TIMDEF(1,1) < 0.5 ) SETALL = .TRUE.
 
    10 READ ( lun , ERR=140 , END=200 ) IDUMMY, ( RDATA(K), K=1,NTT )
-      DO 20 I = 1 , MAXDEF
+      DO I = 1 , MAXDEF
          ATIME = OTIME + IDUMMY*ISFACT*SECOND
-         IF ( (ATIME.GT.TIMDEF(1,I) .AND. ATIME.LT.TIMDEF(2,I)) .OR. & 
+         IF ( (ATIME>TIMDEF(1,I) .AND. ATIME<TIMDEF(2,I)) .OR. &
                                                   SETALL    ) THEN
             NRLST = NRLST + 1
-            IF ( NRLST .GT. MAXLST ) GOTO 160
+            IF ( NRLST > MAXLST ) GOTO 160
             TIMLST(NRLST) = ATIME
             ITMTYP(NRLST) = 2
             GOTO 10
          ENDIF
-   20 CONTINUE
+      end do
       GOTO 10
 !
 !         Error messages

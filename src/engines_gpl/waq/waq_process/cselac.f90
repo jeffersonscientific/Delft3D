@@ -183,35 +183,35 @@
 !     -----Warnings-----
 !
       IF (FIRST) THEN
-          IF (PMSA(IP(11)).LE. 0.0) THEN
+          IF (PMSA(IP(11))<= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsOxCon should be greater than zero'
-          ELSEIF (PMSA(IP(12)).LE. 0.0) THEN
+          ELSEIF (PMSA(IP(12))<= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsNiDen should be greater than zero'
-          ELSEIF (PMSA(IP(13)).LE. 0.0) THEN
+          ELSEIF (PMSA(IP(13))<= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsFeRed should be greater than zero'
-          ELSEIF (PMSA(IP(14)) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP(14)) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsSuRed should be greater than zero'
-          ELSEIF (PMSA(IP(15)) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP(15)) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsOxDen should be greater than zero'
-          ELSEIF (PMSA(IP(16)) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP(16)) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsNiIRdInh should be greater than zero'
-          ELSEIF (PMSA(IP(17)) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP(17)) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsNiSRdInh should be greater than zero'
-          ELSEIF (PMSA(IP(18)) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP(18)) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : half saturation constant', & 
                                ' KsSuMet should be greater than zero'
-          ELSEIF (PMSA(IP(35)) .LE. 0.0) THEN
+          ELSEIF (PMSA(IP(35)) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : Poros, PORS1 or PORS2', & 
                                ' should be greater than zero'
           ENDIF
-          IF (PMSA(IP(38)) .GT. 0.5) THEN
+          IF (PMSA(IP(38)) > 0.5) THEN
             ONLY_OX = .TRUE.
           ELSE
             ONLY_OX = .FALSE.
@@ -222,7 +222,7 @@
 !     Do the segment loop.
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
@@ -282,7 +282,7 @@
 !
 !           Calculation of the temperature dependency coefficients
 !
-            IF ( TEMP .GE. CRTEMP ) THEN
+            IF ( TEMP >= CRTEMP ) THEN
                   FCT2 = 1.0
                   FCT3 = 1.0
                   FCT4 = 1.0
@@ -328,11 +328,11 @@
 !           dissolved oxygen or nitrate concentrations to allow
 !           sulphate reduction or methanogenesis.
 !
-            IF ( COX .GE. (COXC1*POROS) )  FNI = 0.0
-            IF ( COX .GE. (COXC2*POROS) )  FFE = 0.0
-            IF ( COX .GE. (COXC3*POROS) )  FSU = 0.0
-            IF ( COX .GE. (COXC4*POROS) .OR. & 
-                CNI .GE. (CNIC*POROS) )  FCH4 = 0.0
+            IF ( COX >= (COXC1*POROS) )  FNI = 0.0
+            IF ( COX >= (COXC2*POROS) )  FFE = 0.0
+            IF ( COX >= (COXC3*POROS) )  FSU = 0.0
+            IF ( COX >= (COXC4*POROS) .OR. &
+                CNI >= (CNIC*POROS) )  FCH4 = 0.0
 !
 !           Calculation of the scaled contributions
 !
@@ -361,7 +361,7 @@
 !           acceptors nitrate, oxygen, iron and sulphate
 !
             RDEN  = FRNI  * RTMIN
-            IF ( RDEN .GT. RDMAX .AND. RDEN .GT. 0.0 ) THEN
+            IF ( RDEN > RDMAX .AND. RDEN > 0.0 ) THEN
                    FRNIC = FRNI * RDMAX / RDEN
                    FROX  = FROX + FRNI - FRNIC
             ELSE
@@ -369,7 +369,7 @@
             ENDIF
 !
             ROXC  = FROX  * RTMIN
-            IF ( ROXC .GT. ROMAX .AND. ROXC .GT. 0.0 ) THEN
+            IF ( ROXC > ROMAX .AND. ROXC > 0.0 ) THEN
                    FROXC = FROX * ROMAX / ROXC
                    FRFE  = FRFE + FROX - FROXC
             ELSE
@@ -377,7 +377,7 @@
             ENDIF
 !
             RIRED  = FRFE  * RTMIN
-            IF ( RIRED .GT. RIMAX .AND. RIRED .GT. 0.0 ) THEN
+            IF ( RIRED > RIMAX .AND. RIRED > 0.0 ) THEN
                    FRFEC = FRFE * RIMAX / RIRED
                    FRSU  = FRSU + FRFE - FRFEC
             ELSE
@@ -385,7 +385,7 @@
             ENDIF
 !
             RSRED  = FRSU  * RTMIN
-            IF ( RSRED .GT. RSMAX .AND. RSRED .GT. 0.0 ) THEN
+            IF ( RSRED > RSMAX .AND. RSRED > 0.0 ) THEN
                    FRSUC = FRSU * RSMAX / RSRED
             ELSE
                    FRSUC = FRSU
@@ -418,7 +418,7 @@
       IFLUX = IFLUX + NOFLUX
       IP   = IP   + IN
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

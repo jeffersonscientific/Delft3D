@@ -76,15 +76,15 @@
       if ( timon ) call timstrt ( "dlwqt2", ithandl )
 
       IF ( ONLINE ) THEN
-         if ( lunin .eq. 20 ) write (*,*) ' Read VOLUME record'
-         if ( lunin .eq. 24 ) write (*,*) ' Read FLOW   record'
+         if ( lunin == 20 ) write (*,*) ' Read VOLUME record'
+         if ( lunin == 24 ) write (*,*) ' Read FLOW   record'
       ENDIF
 !
 !         is this the first time?
 !         BYPASS FOR ONLINE MODE, TO AVOID APPARENT CONSTANT FUNCTION
 !
       MESSGE = 0
-      IF ( IFFLAG .EQ. 1 .AND. .NOT. ONLINE ) GOTO 20
+      IF ( IFFLAG == 1 .AND. .NOT. ONLINE ) GOTO 20
 !
 !         normal time varying read
 !
@@ -137,13 +137,13 @@
 !         error, during read
 !
    40 MESSGE = 3
-   50 IF ( ISFLAG .EQ. 1 ) THEN
+   50 IF ( ISFLAG == 1 ) THEN
            WRITE(LUNOUT,2010) MSGTXT(MESSGE), LUNIN, LUNTXT , & 
                              ITIME /86400, MOD(ITIME ,86400)/3600, & 
                              MOD(ITIME ,3600)/60, MOD(ITIME ,60) , & 
                              ITIME1/86400, MOD(ITIME1,86400)/3600, & 
                              MOD(ITIME1,3600)/60, MOD(ITIME1,60)
-      ELSEIF ( ISFLAG .EQ. 2 ) THEN
+      ELSEIF ( ISFLAG == 2 ) THEN
            WRITE(LUNOUT,2020) MSGTXT(MESSGE), LUNIN, LUNTXT , & 
                                  ITIME /31536000           , & 
                              MOD(ITIME ,31536000)/86400    , & 
@@ -159,7 +159,7 @@
            WRITE(LUNOUT,2000) MSGTXT(MESSGE), LUNIN, LUNTXT , & 
                              ITIME, ITIME1
       ENDIF
-      IF ( MESSGE .LT. 3 ) goto 9999  !   RETURN
+      IF ( MESSGE < 3 ) goto 9999  !   RETURN
       CALL SRSTOP ( 1 )
  9999 if ( timon ) call timstop ( ithandl )
       RETURN

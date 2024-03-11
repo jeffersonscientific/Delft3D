@@ -86,7 +86,7 @@
 !
 !     Loop over de segmenten
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 !
 !     Eerste kenmerk actief of inactief segment
 !
@@ -108,7 +108,7 @@
 !
 !     Error messages
 !
-      IF ( TEMP .LE. -KELVIN) CALL & 
+      IF ( TEMP <= -KELVIN) CALL &
                       write_error_message ('TEMP in NH3FREE < 0 KELVIN')
 !
 !---- Procesformuleringen ---------------------------------------
@@ -117,12 +117,12 @@
 
 !     Berekening alleen indien NH4 > 0
 
-      IF (TNH4.GT.1.E-15) THEN
+      IF (TNH4>1.E-15) THEN
          CTNH4   = M3TOL * TNH4 / MNITRO
 !
 !        OPTION 1 -- log K berekenen
 !
-         IF (INH3SW.EQ.1) THEN
+         IF (INH3SW==1) THEN
             LKNH3 = ( KRF1A + KRF1B*TEMP )
             LRATIO = LKNH3 + PH
             CNH3 = CTNH4 * (10**LRATIO)/(1.+(10**LRATIO))
@@ -131,7 +131,7 @@
 !
 !        OPTION 2 ACCORDING TO MILLERO
 !
-         ELSEIF (INH3SW .EQ. 2) THEN
+         ELSEIF (INH3SW == 2) THEN
             LKNH3 = -6285.33/TEMPK + 0.0001635*TEMPK - 0.25444 + & 
                   (0.46532 -123.7184/TEMPK) * SAL**0.5 + & 
                   (-0.01992 + 3.17556/TEMPK) * SAL
@@ -171,7 +171,7 @@
       IP8   = IP8   + INCREM (  8 )
       IP9   = IP9   + INCREM (  9 )
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END

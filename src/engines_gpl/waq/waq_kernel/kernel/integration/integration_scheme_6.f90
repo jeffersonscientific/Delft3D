@@ -163,7 +163,7 @@
       ITIMEL  = ITSTRT
       ITIME   = ITSTRT+IDT
       IBFLAG  = 0
-      IF ( MOD(INTOPT,16) .GE. 8 ) IBFLAG = 1
+      IF ( MOD(INTOPT,16) >= 8 ) IBFLAG = 1
       call initialize_real_array ( A(IMAS2:) , NOTOT*5 )
       LDUMMY = .FALSE.
       LSTREC = .FALSE.
@@ -182,10 +182,10 @@
 !
 !       make closure error correction
 !
-      IF ( IDT.EQ.0 ) THEN
+      IF ( IDT==0 ) THEN
 
          call initialize_real_array ( A(IVOL2:), NOSEG )
-      ELSE IF ( J(INRH2+1).GE.0 .AND. IVFLAG.EQ.0 ) THEN
+      ELSE IF ( J(INRH2+1)>=0 .AND. IVFLAG==0 ) THEN
          CALL DLWQ41 ( LUN     , ITIME   , ITIMEL  , A(IHARM:), A(IFARR:), & 
                       J(INRHA:), J(INRH2:), J(INRFT:), NOSEG   , A(IVOL2:), & 
                       J(IBULK:), LCHAR   , ftype   , ISFLAG  , IVFLAG  , & 
@@ -201,8 +201,8 @@
 !
       NSYS   = 1
       IAFLAG = 1
-      DO 10 ISYS = 1 , NOSYS
-         IF ( ISYS .EQ. NOSYS ) NSYS = 1 + NOTOT - NOSYS
+      DO ISYS = 1 , NOSYS
+         IF ( ISYS == NOSYS ) NSYS = 1 + NOTOT - NOSYS
 !
 !          do the user transport processes
 !
@@ -249,7 +249,7 @@
                                                     A(IDERV:),    0    )
          CALL DLWQ63 ( A(ICONC:), A(IDERV:), A(IMAS2:), NOSEG   , NOTOT   , & 
                       ISYS    , NSYS    , A(IDMPS:), INTOPT  , J(ISDMP:))
-   10 CONTINUE
+      end do
 !
 !          mass balance
 !

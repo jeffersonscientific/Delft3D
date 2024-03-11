@@ -72,13 +72,13 @@
       IN5 = INCREM(5)
 
 !.....Zero the workspace
-      DO 6000 ISEG=1,NOSEG
+      DO ISEG=1,NOSEG
 
          PMSA(IP2) = 0.0
 
          IP2 = IP2 + IN2
 
- 6000 CONTINUE
+      end do
 
       IP1 = IPOINT(1)
       IP2 = IPOINT(2)
@@ -87,7 +87,7 @@
       IP5 = IPOINT(5)
 
 !.....Exchange loop
-      DO 7000 IQ=1,NOQ1+NOQ2+NOQ3
+      DO IQ=1,NOQ1+NOQ2+NOQ3
 
 !........Bepaal het van- en naar- segment
          IFROM = IEXPNT(1,IQ)
@@ -96,11 +96,11 @@
          FLOW = PMSA(IP3)
 
 !........Absolute flows per segment sommeren in de workspace
-         IF (IFROM .GT. 0) THEN
+         IF (IFROM > 0) THEN
             PMSA ( IP2 + (IFROM-1) * IN2 ) = & 
            PMSA ( IP2 + (IFROM-1) * IN2 ) + ABS(FLOW)
          ENDIF
-         IF (ITO  .GT. 0)  THEN
+         IF (ITO  > 0)  THEN
             PMSA ( IP2 + (ITO  -1) * IN2 ) = & 
            PMSA ( IP2 + (ITO  -1) * IN2 ) + ABS(FLOW)
          ENDIF
@@ -108,7 +108,7 @@
 !........Ophogen van de exchange-pointers
          IP3 = IP3 + IN3
 
- 7000 CONTINUE
+      end do
 
       IP1 = IPOINT(1)
       IP2 = IPOINT(2)
@@ -117,11 +117,11 @@
       IP5 = IPOINT(5)
 
 !.....Segmentloop
-      DO 8000 ISEG=1,NOSEG
+      DO ISEG=1,NOSEG
 
 !........Niet-actieve segmenten afhandelen
          CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK)
-         IF ( IKMRK .EQ. 0 ) THEN
+         IF ( IKMRK == 0 ) THEN
             PMSA(IP4) = -999.999
             GOTO 100
          ENDIF
@@ -130,7 +130,7 @@
          SOMFLW = PMSA(IP2)
 
 !........Oneindige verblijftijden afhandelen
-         IF ( SOMFLW .LT. 1.0E-20 ) THEN
+         IF ( SOMFLW < 1.0E-20 ) THEN
             PMSA(IP4) = 1.0E7
             GOTO 100
          ENDIF
@@ -149,7 +149,7 @@
          IP4 = IP4 + IN4
          IP5 = IP5 + IN5
 
- 8000 CONTINUE
+      end do
 
       RETURN
       END

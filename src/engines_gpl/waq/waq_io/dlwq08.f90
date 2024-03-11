@@ -139,22 +139,22 @@
 
 !        Let's see what comes, file option or a token
 
-      if ( gettoken( cdummy, icopt1, itype, ierr2 ) .gt. 0 ) goto 10
-      if ( itype .eq. STRING ) then
-         if ( cdummy .eq. 'mass/m2' .or. & 
-             cdummy .eq. 'MASS/M2' ) then
+      if ( gettoken( cdummy, icopt1, itype, ierr2 ) > 0 ) goto 10
+      if ( itype == STRING ) then
+         if ( cdummy == 'mass/m2' .or. &
+             cdummy == 'MASS/M2' ) then
             masspm2 = .true.
             write ( lunut, 2030 )
-            if ( gettoken( cdummy, icopt1, itype, ierr2 ) .gt. 0 ) goto 10
-         elseif ( cdummy .ne. 'INITIALS') then
+            if ( gettoken( cdummy, icopt1, itype, ierr2 ) > 0 ) goto 10
+         elseif ( cdummy /= 'INITIALS') then
             write ( lunut, 2040 ) trim(cdummy)
             ierr2 = 3
             goto 10
          endif
       endif
 
-      if ( itype .eq. STRING ) then
-         if ( cdummy .eq. 'INITIALS') then
+      if ( itype == STRING ) then
+         if ( cdummy == 'INITIALS') then
             icopt1 = THISFILE
             old_input = .false.
          else
@@ -169,8 +169,8 @@
 !        The file option
 
       write ( lunut , 2000 ) icopt1
-      if ( icopt1 .ne. EXTASCII .and. icopt1 .ne. BINARY   .and. & 
-          icopt1 .ne. THISFILE       ) then
+      if ( icopt1 /= EXTASCII .and. icopt1 /= BINARY   .and. &
+          icopt1 /= THISFILE       ) then
          write ( lunut , 2020 )
          goto 10
       endif
@@ -180,18 +180,18 @@
       call opt1   ( icopt1  , lun     , 18, lchar, filtype , & 
                    ldummy  , ldummy  , 0 , ierr2, status , & 
                    .false. )
-      if ( ierr2  .gt. 0 ) goto 10
-      if ( icopt1 .eq. BINARY ) then
+      if ( ierr2  > 0 ) goto 10
+      if ( icopt1 == BINARY ) then
          ip = scan ( lchar(18), '.', back = .true. )              ! look for the file type
          cext = lchar(18)(ip:ip+3)
          call str_lower(cext)
-         if ( cext .eq. '.map' .or. cext .eq. '.rmp' .or. & 
-             cext .eq. '.rm2' ) then                             ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
+         if ( cext == '.map' .or. cext == '.rmp' .or. &
+             cext == '.rm2' ) then                             ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
             call open_waq_files(lun(18) , lchar(18) , 18    , 2     , ierr2 )
             read ( lun(18) ) cdummy(1:160)                        ! read title of simulation
             close ( lun(18) )
-            if ( cdummy(114:120) .eq. 'mass/m2' .or. & 
-                cdummy(114:120) .eq. 'MASS/M2' ) then            !  at end of third line ...
+            if ( cdummy(114:120) == 'mass/m2' .or. &
+                cdummy(114:120) == 'MASS/M2' ) then            !  at end of third line ...
                write ( lunut , 2070 )
             else if ( masspm2 ) then
                write ( lunut , 2080 )
@@ -213,13 +213,13 @@
 !        Make the file a .map file instead of the previous .wrk file
 
       ip = scan ( lchar(18), '.', back=.true. )
-      if ( ip .eq. 0 ) then
+      if ( ip == 0 ) then
          lchar(18) = trim(lchar(18))//'.map'
       else
          lchar(18)(ip:ip+3) = '.map'
       endif
       call open_waq_files( lun(18) , lchar(18) , 18    , 1     , ierr2 )
-      if ( ierr2 .gt. 0 ) goto 10
+      if ( ierr2 > 0 ) goto 10
 
 !        Write the .map header
 
@@ -240,12 +240,12 @@
       if ( old_input ) then
 !                see how the data comes
 
-         if ( gettoken( cdummy, icopt2, itype, ierr2 ) .gt. 0 ) goto 10
-         if ( itype .eq. STRING ) then
-            if ( cdummy .eq. 'TRANSPOSE' ) then
+         if ( gettoken( cdummy, icopt2, itype, ierr2 ) > 0 ) goto 10
+         if ( itype == STRING ) then
+            if ( cdummy == 'TRANSPOSE' ) then
                transp = .true.
                write ( lunut, 2060 )
-               if ( gettoken( icopt2, ierr2 ) .gt. 0 ) goto 10
+               if ( gettoken( icopt2, ierr2 ) > 0 ) goto 10
             else
                write ( lunut, 2040 ) trim(cdummy)
                ierr2 = 3
@@ -253,7 +253,7 @@
             endif
          endif
          write ( lunut , 2010 ) icopt2
-         if ( icopt2 .ne. NODEFAUL .and. icopt2 .ne. DEFAULTS ) then
+         if ( icopt2 /= NODEFAUL .and. icopt2 /= DEFAULTS ) then
             write ( lunut , 2020 )
             goto 10
          endif
@@ -273,12 +273,12 @@
             write ( lun(18) ) values
          endif
          close ( lun(18) )
-         if ( ierr2 .gt. 0 ) goto 10
+         if ( ierr2 > 0 ) goto 10
 
       else
 
          allocate ( values(notot,noseg), stat=ierr2 )
-         if ( ierr2 .ne. 0 ) then
+         if ( ierr2 /= 0 ) then
             write( lunut, * ) 'ERROR allocating memory for initials'
             ierr2 = 3
             goto 10
@@ -290,14 +290,14 @@
          itime = 0
          write(lun(18)) itime,values
          close ( lun(18) )
-         if ( ierr2 .gt. 0 ) goto 10
+         if ( ierr2 > 0 ) goto 10
 
       endif
 
       ierr2 = 0
-   10 if ( ierr2 .gt. 0 ) call status%increase_error_count()
-      if ( ierr2 .gt. 0 ) write ( lunut, 2050 )
-      if ( ierr2 .eq. 3 ) call SRSTOP(1)
+   10 if ( ierr2 > 0 ) call status%increase_error_count()
+      if ( ierr2 > 0 ) write ( lunut, 2050 )
+      if ( ierr2 == 3 ) call SRSTOP(1)
       if ( old_input ) then
          call check( cdummy , iwidth , 8, ierr2  , status)
       endif

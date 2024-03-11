@@ -90,10 +90,10 @@
             nfrac  = sfracs%nfrac(isfrac)
             basnam = sfracs%name(isfrac)
             nlink  = 0
-            if ( sfracs%linked(isfrac) .ne. 0 ) then
+            if ( sfracs%linked(isfrac) /= 0 ) then
                do isfrac_2 = 1, sfracs%nsfrac
-                  if ( isfrac_2 .ne. isfrac ) then
-                     if ( sfracs%linked(isfrac_2) .eq. sfracs%linked(isfrac) ) then
+                  if ( isfrac_2 /= isfrac ) then
+                     if ( sfracs%linked(isfrac_2) == sfracs%linked(isfrac) ) then
                         nlink = nlink + 1
                         linklst(nlink) = isfrac_2
                      endif
@@ -105,39 +105,39 @@
 
                ! skip dummy rules, factor equal zero
 
-               if ( abs(proc%fluxstochi(istochi)%scale) .gt. 1e-10 ) then
+               if ( abs(proc%fluxstochi(istochi)%scale) > 1e-10 ) then
 
                   if (string_equals( basnam(1:10), proc%fluxstochi(istochi)%substance)) then
 
                      ! flux found, check if flux has to be split
 
-                     if ( procesdef%procesprops(iproc)%sfrac_type .eq. SFRAC_SPLITFLUX ) then
+                     if ( procesdef%procesprops(iproc)%sfrac_type == SFRAC_SPLITFLUX ) then
 
                         ! check which fraction is used for the split
 
-                        if ( proc%fluxstochi(istochi)%scale .gt. 0.0 ) then
+                        if ( proc%fluxstochi(istochi)%scale > 0.0 ) then
 
                            ! for positive flux, check if the fraction is linked with flux with negative stochi on the same flux, best is equal scale, all this is speculation
 
                            isfrac_negative = isfrac
                            isfrac_positive = 0
                            do istochi_2 = 1 , proc%no_fluxstochi
-                              if ( istochi_2 .eq. istochi ) cycle
-                              if ( proc%fluxstochi(istochi_2)%ioitem .eq.  proc%fluxstochi(istochi)%ioitem ) then
+                              if ( istochi_2 == istochi ) cycle
+                              if ( proc%fluxstochi(istochi_2)%ioitem ==  proc%fluxstochi(istochi)%ioitem ) then
                                  do ilink = 1, nlink
                                     if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                       if ( abs(proc%fluxstochi(istochi_2)%scale+proc%fluxstochi(istochi)%scale) .lt. 1e-20 ) then
+                                       if ( abs(proc%fluxstochi(istochi_2)%scale+proc%fluxstochi(istochi)%scale) < 1e-20 ) then
 
                                           ! same flux same -scale, set fraction and exit link loop
 
                                           isfrac_positive = linklst(ilink)
                                           goto 10
 
-                                       elseif ( proc%fluxstochi(istochi_2)%scale .lt. -1e-20 ) then
+                                       elseif ( proc%fluxstochi(istochi_2)%scale < -1e-20 ) then
 
                                           ! same flux other scale set fraction if not already set and keep looking
 
-                                          if ( isfrac_positive .eq. 0 ) then
+                                          if ( isfrac_positive == 0 ) then
                                              isfrac_positive = linklst(ilink)
                                           endif
 
@@ -150,12 +150,12 @@
 
                            ! if not found look for any flux with linked negative stochi
 
-                           if ( isfrac_positive .eq. 0 ) then
+                           if ( isfrac_positive == 0 ) then
                               do istochi_2 = 1 , proc%no_fluxstochi
-                                 if ( istochi_2 .eq. istochi ) cycle
+                                 if ( istochi_2 == istochi ) cycle
                                  do ilink = 1, nlink
                                     if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                       if ( proc%fluxstochi(istochi_2)%scale .lt. -1e-20 ) then
+                                       if ( proc%fluxstochi(istochi_2)%scale < -1e-20 ) then
 
                                           isfrac_positive = linklst(ilink)
                                           goto 20
@@ -167,33 +167,33 @@
    20                         continue
                            endif
 
-                           if ( isfrac_positive .eq. 0 ) then
+                           if ( isfrac_positive == 0 ) then
                               isfrac_positive = isfrac
                            endif
 
-                        elseif (proc%fluxstochi(istochi)%scale .lt. 0.0 ) then
+                        elseif (proc%fluxstochi(istochi)%scale < 0.0 ) then
 
                            ! negative flux, check if the fraction is linked with flux with negative stochi
 
                            isfrac_positive = isfrac
                            isfrac_negative = 0
                            do istochi_2 = 1 , proc%no_fluxstochi
-                              if ( istochi_2 .eq. istochi ) cycle
-                              if ( proc%fluxstochi(istochi_2)%ioitem .eq.  proc%fluxstochi(istochi)%ioitem ) then
+                              if ( istochi_2 == istochi ) cycle
+                              if ( proc%fluxstochi(istochi_2)%ioitem ==  proc%fluxstochi(istochi)%ioitem ) then
                                  do ilink = 1, nlink
                                     if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                       if ( abs(proc%fluxstochi(istochi_2)%scale+proc%fluxstochi(istochi)%scale) .lt. 1e-20 ) then
+                                       if ( abs(proc%fluxstochi(istochi_2)%scale+proc%fluxstochi(istochi)%scale) < 1e-20 ) then
 
                                           ! same flux same -scale, set fraction and exit link loop
 
                                           isfrac_negative = linklst(ilink)
                                           goto 30
 
-                                       elseif ( proc%fluxstochi(istochi_2)%scale .gt. 1e-20 ) then
+                                       elseif ( proc%fluxstochi(istochi_2)%scale > 1e-20 ) then
 
                                           ! same flux other scale set fraction if not already set and keep looking
 
-                                          if ( isfrac_negative .eq. 0 ) then
+                                          if ( isfrac_negative == 0 ) then
                                              isfrac_negative = linklst(ilink)
                                           endif
 
@@ -206,12 +206,12 @@
 
                            ! if not found look for any flux with linked negative stochi
 
-                           if ( isfrac_negative .eq. 0 ) then
+                           if ( isfrac_negative == 0 ) then
                               do istochi_2 = 1 , proc%no_fluxstochi
-                                 if ( istochi_2 .eq. istochi ) cycle
+                                 if ( istochi_2 == istochi ) cycle
                                  do ilink = 1, nlink
                                     if (string_equals(sfracs%name(linklst(ilink))(1:10), proc%fluxstochi(istochi_2)%substance)) then
-                                       if ( proc%fluxstochi(istochi_2)%scale .gt. 1e-20 ) then
+                                       if ( proc%fluxstochi(istochi_2)%scale > 1e-20 ) then
 
                                           isfrac_negative = linklst(ilink)
                                           goto 40
@@ -223,7 +223,7 @@
    40                         continue
                            endif
 
-                           if ( isfrac_negative .eq. 0 ) then
+                           if ( isfrac_negative == 0 ) then
                               isfrac_negative = isfrac
                            endif
 
@@ -245,7 +245,7 @@
                         procn%no_velostochi = 0
                         allocate(procn%input_item(procn%no_input),procn%fluxoutput(procn%no_fluxoutput), & 
                                 procn%fluxstochi(procn%no_fluxstochi),stat=ierr_alloc)
-                        if ( ierr_alloc .ne. 0 ) then
+                        if ( ierr_alloc /= 0 ) then
                            write(lunrep,*) 'error allocating work array in routine add_flxfrc:',ierr_alloc
                            write(lunrep,*) 'array length:',procn%no_input,procn%no_fluxoutput,procn%no_fluxstochi
                            write(*,*) 'error allocating array:',ierr_alloc
@@ -261,7 +261,7 @@
                         procn%input_item(1)%ip_val = 0
                         item%name                  = procn%input_item(1)%name
                         iret                       = itempropcollfind( allitems, item )
-                        if ( iret .le. 0 ) then
+                        if ( iret <= 0 ) then
                            item%text    = procn%input_item(1)%name
                            item%default = nfrac
                            item%waqtype = waqtype_none
@@ -276,7 +276,7 @@
                         procn%input_item(2)%ip_val = 0
                         item%name                  = procn%input_item(2)%name
                         iret                       = itempropcollfind( allitems, item )
-                        if ( iret .le. 0 ) then
+                        if ( iret <= 0 ) then
                            item%text    = procn%input_item(2)%name
                            item%default = -999.0
                            item%waqtype = waqtype_none
@@ -285,7 +285,7 @@
                         procn%input_item(2)%item=>allitems%itemproppnts(iret)%pnt
 
                         do ifrac = 1, nfrac
-                           if ( ifrac .lt. 100 ) then
+                           if ( ifrac < 100 ) then
                               write(suffix,'(i2.2)') ifrac
                            else
                               write(suffix,'(i3.3)') ifrac
@@ -297,7 +297,7 @@
                            procn%input_item(2+ifrac)%ip_val = 0
                            item%name                       = procn%input_item(2+ifrac)%name
                            iret                            = itempropcollfind( allitems, item )
-                           if ( iret .le. 0 ) then
+                           if ( iret <= 0 ) then
                               item%text    = procn%input_item(2+ifrac)%name
                               item%default = 0.0
                               item%waqtype = waqtype_none
@@ -307,7 +307,7 @@
                         enddo
 
                         do ifrac = 1, nfrac
-                           if ( ifrac .lt. 100 ) then
+                           if ( ifrac < 100 ) then
                               write(suffix,'(i2.2)') ifrac
                            else
                               write(suffix,'(i3.3)') ifrac
@@ -319,7 +319,7 @@
                            procn%input_item(2+nfrac+ifrac)%ip_val = 0
                            item%name                             = procn%input_item(2+nfrac+ifrac)%name
                            iret                                  = itempropcollfind( allitems, item )
-                           if ( iret .le. 0 ) then
+                           if ( iret <= 0 ) then
                               item%text    = procn%input_item(2+nfrac+ifrac)%name
                               item%default = 0.0
                               item%waqtype = waqtype_none
@@ -331,7 +331,7 @@
                         ! split fluxes and stochi
 
                         do ifrac = 1, nfrac
-                           if ( ifrac .lt. 100 ) then
+                           if ( ifrac < 100 ) then
                               write(suffix,'(i2.2)') ifrac
                            else
                               write(suffix,'(i3.3)') ifrac
@@ -343,7 +343,7 @@
                            procn%fluxoutput(ifrac)%ip_val = 0
                            item%name                     = procn%fluxoutput(ifrac)%name
                            iret                          = itempropcollfind( allitems, item )
-                           if ( iret .le. 0 ) then
+                           if ( iret <= 0 ) then
                               item%text    = procn%fluxoutput(ifrac)%name
                               item%default = -999.
                               item%waqtype = waqtype_none

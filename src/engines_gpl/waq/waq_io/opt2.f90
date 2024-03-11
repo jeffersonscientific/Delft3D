@@ -95,17 +95,17 @@
       integer(kind=int_wp) :: ierr2              !  local error variable
       integer(kind=int_wp) ::  ithndl = 0
  
-      if ( nitem .eq. 0 ) return                   !  no items specified
+      if ( nitem == 0 ) return                   !  no items specified
 
 
       allocate ( factor(nvals), stat=ierr2 )
-      if ( ierr2 .ne. 0 ) then
+      if ( ierr2 /= 0 ) then
          write ( lunut, 2000 ) nvals
          goto 100
       endif
 
       do iscal = 1, nscale
-         if ( gettoken( factor(iscal), ierr2 ) .gt. 0 ) goto 100
+         if ( gettoken( factor(iscal), ierr2 ) > 0 ) goto 100
       enddo
 
       select case ( iopt2 )
@@ -114,14 +114,14 @@
             write ( lunut, 2010 )
             do item = 1, nitem
                do ival = 1, nvals
-                  if ( gettoken( array(ival,item), ierr2 ) .gt. 0 ) goto 100
+                  if ( gettoken( array(ival,item), ierr2 ) > 0 ) goto 100
                enddo
             enddo
-            if ( ioutpt .lt. 4 ) write ( lunut, 2020 )
+            if ( ioutpt < 4 ) write ( lunut, 2020 )
             do iw = 1, nvals, iwidth
                ie1 = min(iw+iwidth-1,nscale)
                ie2 = min(iw+iwidth-1,nvals )
-               if ( ioutpt .ge. 4 ) then
+               if ( ioutpt >= 4 ) then
                   write ( lunut, 2030 )          (        ival      , ival = iw, ie1 )
                   write ( lunut, 2040 )          ( factor(ival)     , ival = iw, ie1 )
                   write ( lunut, 2050 )
@@ -134,13 +134,13 @@
          case ( 2 )                    !   Read constant items with defaults
             write ( lunut, 2070 )
             do ival = 1, nvals
-               if ( gettoken( array(ival,1), ierr2 ) .gt. 0 ) goto 100
+               if ( gettoken( array(ival,1), ierr2 ) > 0 ) goto 100
             enddo
-            if ( ioutpt .lt. 3 ) write ( lunut, 2080 )
+            if ( ioutpt < 3 ) write ( lunut, 2080 )
             do iw = 1, nvals, iwidth
                ie1 = min(iw+iwidth-1,nscale)
                ie2 = min(iw+iwidth-1,nvals )
-               if ( ioutpt .ge. 3 ) then
+               if ( ioutpt >= 3 ) then
                   write ( lunut, 2030 ) (         ival   , ival = iw, ie1 )
                   write ( lunut, 2040 ) (  factor(ival  ), ival = iw, ie1 )
                   write ( lunut, 2090 )
@@ -156,22 +156,22 @@
 
 !           Read overridings of the constant values
 
-            if ( gettoken( nover, ierr2 ) .gt. 0 ) goto 100
+            if ( gettoken( nover, ierr2 ) > 0 ) goto 100
             write ( lunut, 2100 ) nover
-            if ( nover .gt. 0 .and. ioutpt .ge. 3) write ( lunut, 2110 )
+            if ( nover > 0 .and. ioutpt >= 3) write ( lunut, 2110 )
             do iover = 1, nover
-               if ( gettoken( item, ierr2 ) .gt. 0 ) goto 100
-               if ( item .lt. 1 .or. item .gt. nitem ) then
-                  if ( ioutpt .ge. 3 ) write ( lunut, 2120 ) item, 1, nitem
+               if ( gettoken( item, ierr2 ) > 0 ) goto 100
+               if ( item < 1 .or. item > nitem ) then
+                  if ( ioutpt >= 3 ) write ( lunut, 2120 ) item, 1, nitem
                   ierr = ierr + 1
                   do ival = 1, nvals
-                     if ( gettoken( value, ierr2 ) .gt. 0 ) goto 100
+                     if ( gettoken( value, ierr2 ) > 0 ) goto 100
                   enddo
                else
                   do ival = 1, nvals
-                     if ( gettoken( array(ival,item), ierr2 ) .gt. 0 ) goto 100
+                     if ( gettoken( array(ival,item), ierr2 ) > 0 ) goto 100
                   enddo
-                  if ( ioutpt .ge. 3 ) & 
+                  if ( ioutpt >= 3 ) &
                      write ( lunut, 2130 ) item,(array(ival,item),ival=1,nvals)
                endif
             enddo
@@ -180,7 +180,7 @@
 
 !     Scale the values
 
-      if ( nscale .eq. 1 ) then
+      if ( nscale == 1 ) then
          do iscal = 2, nvals
             factor(iscal) = factor(1)
          enddo
@@ -189,7 +189,7 @@
 
 !     Write if unit specified
 
-      if ( lun1 .gt. 0 ) write ( lun1 ) array
+      if ( lun1 > 0 ) write ( lun1 ) array
       if (timon) call timstop( ithndl )
       return
 

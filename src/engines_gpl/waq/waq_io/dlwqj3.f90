@@ -110,18 +110,18 @@
 !     Write headers
 !
       defaults_on = .FALSE.
-      IF ( NODIM .LT. 0 ) defaults_on = .TRUE.
+      IF ( NODIM < 0 ) defaults_on = .TRUE.
       NODI2 = NODIM
-      IF ( NODIM .LE. 0 ) NODI2 = 1
-      IF ( IORDER .EQ. 1 ) THEN
+      IF ( NODIM <= 0 ) NODI2 = 1
+      IF ( IORDER == 1 ) THEN
          WRITE ( LUNUT , 1000 ) NOITM, NODI2, STRNG2
          WRITE ( LUNWR ) IORDER, & 
                         NOITM, ( IAR(K) , K=      1,      NOITM ) , & 
                         NODIM, ( IAR(K) , K=NOITM+1,NOITM+NODIM ) , & 
                         IOPT , IPRO
-      ELSEIF ( IORDER .EQ. 2 ) THEN
+      ELSEIF ( IORDER == 2 ) THEN
          WRITE ( LUNUT , 1000 ) NODI2, NOITM, STRNG1
-         IF ( LUNWR .GT. 0 ) & 
+         IF ( LUNWR > 0 ) &
            WRITE ( LUNWR ) IORDER, & 
                         NODIM, ( IAR(K) , K=      1,      NODIM ) , & 
                         NOITM, ( IAR(K) , K=NODIM+1,NODIM+NOITM ) , & 
@@ -142,7 +142,7 @@
 !
 !       Initialisation
 !
-      IF ( NOBRK .EQ. 0 ) THEN
+      IF ( NOBRK == 0 ) THEN
          SCALE = .FALSE.
          GOTO 70
       ENDIF
@@ -152,8 +152,8 @@
       ISKIP = 1
       ISKP2 = NODI2
       NOTOT = NOITM*NODI2
-      IF ( IOPT .EQ. 3 .OR. IOPT .EQ. 4 ) NOTOT = NOTOT + 1
-      IF ( IORDER .EQ. 2 ) THEN
+      IF ( IOPT == 3 .OR. IOPT == 4 ) NOTOT = NOTOT + 1
+      IF ( IORDER == 2 ) THEN
          IOFFI = MAX(NODIM,0)
          IOFFS = 0
          ISKIP = NOITM
@@ -166,43 +166,43 @@
       IF ( SCALE ) THEN
          SCALE = .FALSE.
          ISS = 1
-         IF ( IOUTPT .GE. 4 ) THEN
+         IF ( IOUTPT >= 4 ) THEN
             WRITE ( LUNUT , 1010 )
-            DO 10 I2 = 1,NODIM,IWIDTH
+            DO I2 = 1,NODIM,IWIDTH
                IE = MIN(I2+IWIDTH-1,NODIM)
                WRITE (LUNUT,1020) (    IAR(IOFFS+K) ,K=I2,IE)
                WRITE (LUNUT,1025) (CAR_OF_DUM(CAR,IAR(IOFFS+K)),K=I2,IE)
                WRITE (LUNUT,1030) (RAR(K),K=I2,IE)
-   10       CONTINUE
+            end do
          ENDIF
-         DO 30 I1 = 1,NOBRK
-            DO 20 I2 = 0,NOTOT-1
-               IF ( IORDER .EQ. 1 ) ITEL2 = MOD(I2,NODIM) + 1
-               IF ( IORDER .EQ. 2 ) ITEL2 = I2/NODIM + 1
+         DO I1 = 1,NOBRK
+            DO I2 = 0,NOTOT-1
+               IF ( IORDER == 1 ) ITEL2 = MOD(I2,NODIM) + 1
+               IF ( IORDER == 2 ) ITEL2 = I2/NODIM + 1
                RMAT(ISS+I2) = RMAT(ISS+I2)*RAR(ITEL2)
-   20       CONTINUE
+             end do
             ISS = ISS + NOTOT
-   30    CONTINUE
+         end do
       ENDIF
 !
 !       Convert breakpoints
 !
-      IF ( NOBRK .GT. 1 ) THEN
-         IF ( IOUTPT .GE. 4 ) WRITE ( LUNUT , 1040 ) STRNG3, NOBRK
+      IF ( NOBRK > 1 ) THEN
+         IF ( IOUTPT >= 4 ) WRITE ( LUNUT , 1040 ) STRNG3, NOBRK
          IF ( .NOT. ODS ) & 
                CALL CONVER ( IAR(IOFFB:), NOBRK, ITFACT, DTFLG1, DTFLG3)
-         IF ( defaults_on .AND. IOUTPT .GE. 4 ) WRITE ( LUNUT , 1050 )
+         IF ( defaults_on .AND. IOUTPT >= 4 ) WRITE ( LUNUT , 1050 )
       ELSE
          IF ( defaults_on ) THEN
-            IF ( IOUTPT .GE. 4 ) WRITE ( LUNUT , 1050 )
+            IF ( IOUTPT >= 4 ) WRITE ( LUNUT , 1050 )
          ELSE
-            IF ( IOUTPT .GE. 4 ) WRITE ( LUNUT , 1060 )
+            IF ( IOUTPT >= 4 ) WRITE ( LUNUT , 1060 )
          ENDIF
       ENDIF
 !
 !       Write binary file
 !
-      IF ( LUNWR .GT. 0 ) THEN
+      IF ( LUNWR > 0 ) THEN
          I1DUM = 0
          I2DUM = 0
          CALL DLWQJ2 ( LUNWR , NOBRK , NOTOT  , 1      , IAR(IOFFB:) ,  & ! write table in binary format to wrk file.
@@ -215,39 +215,39 @@
 !
 !       Write formatted output
 !
-      IF ( IOUTPT .GE. 4 ) THEN
+      IF ( IOUTPT >= 4 ) THEN
          ITELS = 0
-         DO 60 I1 = 1,NOBRK
-            IF ( NOBRK .GT. 1 ) THEN
-               IF ( IOPT .EQ. 1 ) & 
+         DO I1 = 1,NOBRK
+            IF ( NOBRK > 1 ) THEN
+               IF ( IOPT == 1 ) &
                       WRITE ( LUNUT, 1070 ) STRNG3, I1, IAR(IOFFB+I1-1)
-               IF ( IOPT .EQ. 2 ) & 
+               IF ( IOPT == 2 ) &
                       WRITE ( LUNUT, 1070 ) STRNG3, I1, IAR(IOFFB+I1-1)
-               IF ( IOPT .EQ. 3 ) THEN
+               IF ( IOPT == 3 ) THEN
                   ITELS = ITELS + 1
                   WRITE ( LUNUT, 1080 ) I1, IAR(IOFFB+I1-1), RMAT(ITELS)
                ENDIF
-               IF ( IOPT .EQ. 4 ) THEN
+               IF ( IOPT == 4 ) THEN
                   ITELS = ITELS + 1
                   WRITE ( LUNUT, 1090 ) I1, IAR(IOFFB+I1-1), RMAT(ITELS)
                ENDIF
             ENDIF
-            DO 50 I2 = 1,NODI2,IWIDTH
+            DO I2 = 1,NODI2,IWIDTH
                IE2 = MIN(I2+IWIDTH-1,NODI2)
-               IF ( NODIM .GT. 0 ) THEN
+               IF ( NODIM > 0 ) THEN
                   WRITE ( LUNUT, 1100 ) STRNG2, (IAR(IOFFS+K) ,K=I2,IE2)
                   WRITE ( LUNUT, 1150 ) STRNG1, & 
                                 (CAR_OF_DUM(CAR,IAR(IOFFS+K)),K=I2,IE2)
                ENDIF
                ITEL = ITELS
-               DO 40 I3 = 1,NOITM
+               DO I3 = 1,NOITM
                   WRITE ( LUNUT, 1120 )  ABS(IAR(IOFFI+I3)), & 
                  ( RMAT(ITEL+K),K=(I2-1)*ISKIP+1,(IE2-1)*ISKIP+1,ISKIP)
                   ITEL = ITEL + ISKP2
-   40          CONTINUE
-   50       CONTINUE
+               end do
+            end do
             ITELS = ITELS + NODI2*NOITM
-   60    CONTINUE
+         end do
       ENDIF
 !
    70 WRITE ( LUNUT , 1140 )
@@ -270,16 +270,15 @@
  1120 FORMAT (   I10,2X,1P,10E12.4 )
  1130 FORMAT ( ' Info comes at runtime from binary file at unit: ',I3 )
  1140 FORMAT(/' ====> input item completed <==== '//   )
- 1160 FORMAT ( ' All data from this block ignored' )
 !
       END
 !
       CHARACTER*20 FUNCTION CAR_OF_DUM(CAR,I)
       INTEGER(kind=int_wp) :: I
       CHARACTER*(*) CAR(*)
-      IF ( I .GT. 0 ) THEN
+      IF ( I > 0 ) THEN
          CAR_OF_DUM = CAR(I)
-      ELSEIF ( I .EQ. 0 ) THEN
+      ELSEIF ( I == 0 ) THEN
          CAR_OF_DUM = 'FLOW'
       ELSE
          CAR_OF_DUM = 'ignored'

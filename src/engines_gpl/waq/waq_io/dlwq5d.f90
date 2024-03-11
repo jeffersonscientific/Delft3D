@@ -109,7 +109,7 @@
       ITEL   = 1
       ITEL2  = 1
       ierr3  = 0
-      IF ( ITYPE .NE. 0 ) GOTO 20                                  ! it was called with an argument
+      IF ( ITYPE /= 0 ) GOTO 20                                  ! it was called with an argument
 !
 !     Read loop
 !
@@ -122,17 +122,17 @@
                    IPOSR  , NPOS   , CHULP  , IHULP  , RHULP  , & 
                                               ITYPE  , IERR   )
 !          A read error
-      IF ( IERR  .NE. 0 ) goto 9999
+      IF ( IERR  /= 0 ) goto 9999
 !          A token has arrived
-      IF ( ITYPE .EQ. 1 ) THEN                                     ! that must be an absolute timer string
+      IF ( ITYPE == 1 ) THEN                                     ! that must be an absolute timer string
          CALL convert_string_to_time_offset ( CHULP , IHULP, .FALSE., .FALSE., IERR )    !  2^31 =  2147483648
-         IF ( IHULP .EQ. -999 ) THEN                              !       YYYYDDDHHMMSS so 64 bits integer
+         IF ( IHULP == -999 ) THEN                              !       YYYYDDDHHMMSS so 64 bits integer
             IERR = 1
             WRITE ( LUNUT , 1020 ) TRIM(CHULP)
             goto 9999
          ENDIF
-         IF ( IERR   .NE.    0 ) THEN                              ! the found entry is not a new time value
-            if ( nobrk .le. 1 ) then
+         IF ( IERR   /=    0 ) THEN                              ! the found entry is not a new time value
+            if ( nobrk <= 1 ) then
                write ( lunut, 1040 ) nobrk
                !ierr3 = ierr3 + 1
             endif
@@ -140,7 +140,7 @@
             goto 9999
          ENDIF
          IHULP = ITFACT * IHULP
-      ELSEIF ( ITYPE .EQ. 2 ) THEN
+      ELSEIF ( ITYPE == 2 ) THEN
          call convert_relative_time ( IHULP, 1      , DTFLG1 , DTFLG3 )
       else
          ihulp = 0
@@ -148,15 +148,15 @@
 !          Getting the data of this block (no strings any more)
    20 IF (time_dependent .AND. NEWREC ) THEN
 !          it was a non-real and characters has been caught
-         IF ( IHULP .EQ. -999 ) THEN
+         IF ( IHULP == -999 ) THEN
             IGNORE = .TRUE.
          ELSE                                                      ! a new breakpoint found
             IGNORE = .FALSE.
             NOBRK = NOBRK + 1
-            IF ( NOBRK .LE. IIMAX ) THEN
+            IF ( NOBRK <= IIMAX ) THEN
                IAR(NOBRK) = IHULP
-               if ( nobrk .gt. 1 ) then
-                   if ( ihulp .le. iar(nobrk-1) ) then ! times not strinctly ascending
+               if ( nobrk > 1 ) then
+                   if ( ihulp <= iar(nobrk-1) ) then ! times not strinctly ascending
                      write ( lunut, 1030 ) ihulp, iar(nobrk-1)
                      ierr3 = ierr3 + 1
                   endif
@@ -177,7 +177,7 @@
          END DO
       ENDIF
 !        are we to expect a new record ?
-      IF ( MOD(ITEL2,NOTOTC) .EQ. 0 ) THEN
+      IF ( MOD(ITEL2,NOTOTC) == 0 ) THEN
          NEWREC = .TRUE.
          ITEL = ITEL + NOTOT - NOTOTC
       END IF
@@ -195,8 +195,6 @@
       return
 !
  1000 FORMAT ( ' ERROR ! Number of breakpoints exceeds system', & 
-              ' maximum of: ' , I10 )
- 1010 FORMAT ( ' ERROR ! Number of data points exceeds system', & 
               ' maximum of: ' , I10 )
  1020 FORMAT ( ' ERROR ! Absolute timer does not fit in timer ', & 
               'format: ', A,/ & 

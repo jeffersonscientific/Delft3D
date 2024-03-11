@@ -87,12 +87,12 @@
       IP6  = IPOINT( 6)
       IP7  = IPOINT( 7)
 !
-      IF ( IN1 .EQ. 0 .AND. IN3 .EQ. 0 .AND. IN4 .EQ. 0 .AND. & 
-          IN5 .EQ. 0 .AND. IN6 .EQ. 0                        ) THEN
+      IF ( IN1 == 0 .AND. IN3 == 0 .AND. IN4 == 0 .AND. &
+          IN5 == 0 .AND. IN6 == 0                        ) THEN
          DENR   = PMSA(IP1)
          TEMP   = PMSA(IP5)
          CRTEMP = PMSA(IP6)
-         IF ( TEMP .LE. CRTEMP ) THEN
+         IF ( TEMP <= CRTEMP ) THEN
             TEMFAK = 0.0
          ELSE
             DENRC  = PMSA(IP3)
@@ -106,17 +106,17 @@
       ENDIF
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 !
       IF ( TMPOPT ) THEN
          DENR   = PMSA(IP1)
          TEMP   = PMSA(IP5)
          CRTEMP = PMSA(IP6)
-         IF ( TEMP .LE. CRTEMP ) THEN
+         IF ( TEMP <= CRTEMP ) THEN
             TEMFAK = 0.0
          ELSE
             DENRC  = PMSA(IP3)
@@ -150,7 +150,7 @@
          IP6 = IP6 + IN6
       IP7   = IP7   + IN7
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

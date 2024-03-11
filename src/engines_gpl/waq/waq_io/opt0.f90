@@ -161,17 +161,17 @@
             iopt1 = 0 ! Ugly hack, all other files are time-dependent
          endif
       else
-         if ( gettoken( cdummy, iopt1, itype, ierr2 ) .gt. 0 ) goto 50
-         if ( itype .eq. 1 ) then
-            if ( volume .ne. 1 ) then
+         if ( gettoken( cdummy, iopt1, itype, ierr2 ) > 0 ) goto 50
+         if ( itype == 1 ) then
+            if ( volume /= 1 ) then
                write ( lunut, 2070 ) cdummy
                ierr2 = 1
                goto 50
             else
-               if ( cdummy .eq. 'FRAUD' ) then
+               if ( cdummy == 'FRAUD' ) then
                   volume = -1
                   write ( lunut, 2080 )
-                  if ( gettoken( iopt1, ierr2 ) .gt. 0 ) goto 50
+                  if ( gettoken( iopt1, ierr2 ) > 0 ) goto 50
                else
                   write ( lunut, 2090 ) cdummy
                   ierr2 = 1
@@ -185,17 +185,17 @@
       call opt1   ( iopt1   , lun     , is      , lchar   , filtype , & 
                    dtflg1  , dtflg3  , ndtot   , ierr2   , status    , & 
                    dont_read                                       )
-      if ( ierr2 .gt. 0 ) goto 50
+      if ( ierr2 > 0 ) goto 50
 
 !        Binary file, option = -2 (or sequence of binary files option = -4)
 !                           everything is block function, except volume
 
-      if ( iopt1 .eq. -2 .or. iopt1 .eq. -4 ) then
+      if ( iopt1 == -2 .or. iopt1 == -4 ) then
          nlines    = nlines + ndim1*ndim2*2
          npoins    = npoins + ndim1 + 3
          nrftot    = ndim1*ndim2
          nrharm    = 0
-         if ( volume .eq. 1 ) then
+         if ( volume == 1 ) then
             write( lun(4) ) (  k , k=1,ndim1 ) , ( idummy , k=1,3 )
          else
             write( lun(4) ) ( -k , k=1,ndim1 ) , ( idummy , k=1,3 )
@@ -206,24 +206,24 @@
 !        Dispersion in three directions if DISPER, return if NODISP=0
 
       if ( disper ) then
-         if ( iopt1 .eq. 0 ) then                            ! binary file, then
+         if ( iopt1 == 0 ) then                            ! binary file, then
             write ( lun(2) ) idummy , ( adummy , k=1,3 )     ! no fixed dispersions
          else
             write ( lun(2) ) idummy
             call opt2 ( 1      , disp   , 1      , 3      , 3      , & 
                        iwidth , lun(2) , ioutpt , ierr2  )
-            if ( ierr2 .gt. 0 ) goto 50
-            if ( ndim2 .eq. 0 ) goto 9999
+            if ( ierr2 > 0 ) goto 50
+            if ( ndim2 == 0 ) goto 9999
          endif
       endif
 
-      if ( iopt1 .eq. 0 ) goto 9999                          ! binary file, we are ready
+      if ( iopt1 == 0 ) goto 9999                          ! binary file, we are ready
 
 !        Read second option, set volume flag if OPT2 > 3 AND VOLUME
 
-   10 if ( gettoken( iopt2, ierr2 ) .gt. 0 ) goto 50
+   10 if ( gettoken( iopt2, ierr2 ) > 0 ) goto 50
       write ( lunut , 2010 ) iopt2
-      if ( volume .eq. 1 .and. iopt2 .gt. 3 ) then                  ! Computed volumes !!
+      if ( volume == 1 .and. iopt2 > 3 ) then                  ! Computed volumes !!
          volume = 0
          iopt2 = iopt2 - 3
       endif
@@ -235,21 +235,21 @@
             allocate ( values( ndim2, max(noql1,noql2,noql3) ) )
             call open_waq_files ( lun(is) , lchar(is) , is    , 1     , ierr2 )
             write ( lun(is) ) idummy
-            if ( noql1 .gt. 0 ) write ( lunut , 2030 )
+            if ( noql1 > 0 ) write ( lunut , 2030 )
             call opt2 ( iopt2  , values , noql1  , ndim2  , ndim3  , & 
                        iwidth , lun(is), ioutpt , ierr2  )
-            if ( ierr2 .gt. 0 ) goto 50
+            if ( ierr2 > 0 ) goto 50
 
-            if ( noql2 .gt. 0 ) write ( lunut , 2040 )
+            if ( noql2 > 0 ) write ( lunut , 2040 )
             call opt2 ( iopt2  , values , noql2  , ndim2  , ndim3  , & 
                        iwidth , lun(is), ioutpt , ierr2  )
-            if ( ierr2 .gt. 0 ) goto 50
+            if ( ierr2 > 0 ) goto 50
 
-            if ( noql3 .gt. 0 .and. noql3 .ne. ndim1 ) write ( lunut , 2050 )
+            if ( noql3 > 0 .and. noql3 /= ndim1 ) write ( lunut , 2050 )
             call opt2 ( iopt2  , values , noql3  , ndim2  , ndim3  , & 
                        iwidth , lun(is), ioutpt , ierr2      )
             close ( lun(is) )
-            if ( ierr2 .gt. 0 ) goto 50
+            if ( ierr2 > 0 ) goto 50
 
          case ( 3 )                 !   Time varying data
             ierr2 = 0
@@ -258,7 +258,7 @@
             call opt3 ( lun    , lchar  , is     , ndim1  , ndim2  , & 
                        ndim3  , ifact  , dtflg1 , dtflg3 , nrftot , & 
                        nrharm , iwidth , ioutpt , ierr2  )
-            if ( ierr2 .gt. 0 ) goto 50
+            if ( ierr2 > 0 ) goto 50
 
          case default
             write ( lunut , 2020 )
@@ -280,10 +280,6 @@
  2030 format (  /,' First  direction:')
  2040 format (  /,' Second direction:')
  2050 format (  /,' Third  direction:')
- 2060 format (  /,' ERROR the number of values (',I7,') exceeds the maximum (',I7,').', & 
-               /,' The maximum is limited by REAL array space', & 
-               /,' Consult your system manager to obtain at least',I7, & 
-               /,' words of additional storage.' )
  2070 format (  /,' ERROR. No character string allowed: ',A )
  2080 format (    ' Keyword FRAUD found for fraudulent computations.' )
  2090 format (  /,' ERROR. This keyword is not allowed here: ',A )

@@ -135,7 +135,7 @@
 
 !         open the harmonics and pointer files
 
-      if ( ifflag .eq. 1 ) then
+      if ( ifflag == 1 ) then
          bndset = .false.
          wstset = .false.
          funset = .false.
@@ -161,7 +161,7 @@
 
 !         integration step size IDT
 
-      if ( nrftot( 1) .gt. 0 ) then
+      if ( nrftot( 1) > 0 ) then
          call dlwqt1 ( lun       , itime      , itimel , iharm(ipf), harmat(iph), & 
                          array(ipa), ipoint(ipi), adt    , 1         , nrharm( 1) , & 
                          1         , nrftot( 1) , ipa    , iph       , ipf        , & 
@@ -184,10 +184,10 @@
 !         volumes
 
 !     if read anyway or ( read-requested and there is something to read )
-      if ( nrharm( 2) .ge. 0 ) then
+      if ( nrharm( 2) >= 0 ) then
          if   ( rdvolu ) then
 !           if .not. computed volumes .or. this is the first time
-            if ( ivflag     .eq. 0 .or. ifflag .eq. 1 ) then
+            if ( ivflag     == 0 .or. ifflag == 1 ) then
                   call dlwqt1 ( lun       , itime      , itimel , iharm(ipf), harmat(iph), & 
                                array(ipa), ipoint(ipi), volume , 1         , nrharm( 2) , & 
                                noseg     , nrftot( 2) , ipa    , iph       , ipf        , & 
@@ -214,7 +214,7 @@
 
 !         dispersions
 
-      if ( nrharm( 3) .ge. 0 ) then
+      if ( nrharm( 3) >= 0 ) then
          call dlwqt1 ( lun       , itime      , itimel , iharm(ipf), harmat(iph), & 
                          array(ipa), ipoint(ipi), disper , nodisp    , nrharm( 3) , & 
                          noq       , nrftot( 3) , ipa    , iph       , ipf        , & 
@@ -235,7 +235,7 @@
 
 !         area
 
-      if ( nrharm( 4) .ge. 0 ) then
+      if ( nrharm( 4) >= 0 ) then
          call dlwqt1 ( lun       , itime      , itimel , iharm(ipf), harmat(iph), & 
                          array(ipa), ipoint(ipi), area   , 1         , nrharm( 4) , & 
                          noq       , nrftot( 4) , ipa    , iph       , ipf        , & 
@@ -256,7 +256,7 @@
 
 !         flow
 
-      if ( nrharm( 5) .ge. 0 ) then
+      if ( nrharm( 5) >= 0 ) then
             call dlwqt1 ( lun       , itime      , itimel , iharm(ipf) , harmat(iph), & 
                          array(ipa), ipoint(ipi), flow   , 1          , nrharm( 5) , & 
                          noq       , nrftot( 5) , ipa    , iph        , ipf        , & 
@@ -277,7 +277,7 @@
 
 !         velocities
 
-      if ( nrharm( 6) .ge. 0 ) then
+      if ( nrharm( 6) >= 0 ) then
          call dlwqt1 ( lun       , itime      , itimel , iharm(ipf) , harmat(iph), & 
                          array(ipa), ipoint(ipi), velo   , novelo     , nrharm( 6) , & 
                          noq       , nrftot( 6) , ipa    , iph        , ipf        , & 
@@ -298,7 +298,7 @@
 
 !         'from'- and 'to'-length
 
-      if ( nrharm( 7) .ge. 0 .and. ilflag .eq. 1 ) then
+      if ( nrharm( 7) >= 0 .and. ilflag == 1 ) then
             call dlwqt1 ( lun       , itime      , itimel , iharm(ipf), harmat(iph), & 
                          array(ipa), ipoint(ipi), aleng  , 2         , nrharm( 7) , & 
                          noq       , nrftot( 7) , ipa    , iph       , ipf        , & 
@@ -318,12 +318,12 @@
 
 !         boundaries
 
-      if ( intsrt .eq. 6 .or. intsrt .eq. 7 ) then
+      if ( intsrt == 6 .or. intsrt == 7 ) then
          nosubs = notot
       else
          nosubs = nosys
       endif
-      if ( nrharm( 8) .ge. 0 .and. .not. bndset ) then
+      if ( nrharm( 8) >= 0 .and. .not. bndset ) then
          call dlwqt1 ( lun       , itime      , itimel , iharm(ipf), harmat(iph), & 
                          array(ipa), ipoint(ipi), bounds , nosubs    , nrharm( 8) , & 
                          nobnd     , nrftot( 8) , ipa    , iph       , ipf        , & 
@@ -359,7 +359,7 @@
 
 !         wastes
 
-      if ( nrharm( 9) .ge. 0 .and. .not. wstset ) then
+      if ( nrharm( 9) >= 0 .and. .not. wstset ) then
          call dlwqt1 ( lun       , itime      , itimel , iharm(ipf), harmat(iph), & 
                          array(ipa), ipoint(ipi), wastes , notot+1   , nrharm( 9) , & 
                          nowst     , nrftot( 9) , ipa    , iph       , ipf        , & 
@@ -396,7 +396,7 @@
 !         functions
 
       nosss = noseg + nseg2
-      if ( nrharm(10) .ge. 0 ) then
+      if ( nrharm(10) >= 0 ) then
          call dlwqta ( lun(16), luntxt(16), lun(19), nosss  , nocons , & 
                          nopa   , nofun     , nosfun , consts , param  , & 
                          funcs  , sfuncs    , isflag , ifflag , itime  , & 
@@ -411,7 +411,7 @@
 
 !         close the harmonics and pointer files
 
-   10 if ( ifflag .eq. 1 ) then
+   10 if ( ifflag == 1 ) then
          close ( lun( 3) )
          close ( lun( 4) )
          if ( othset ) then

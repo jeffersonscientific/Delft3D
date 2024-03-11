@@ -108,11 +108,11 @@
       IP15 = IPOINT(15)
       IP16 = IPOINT(16)
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
       SOMRES  = PMSA( IP1 )
       ZDIGS1  = PMSA( IP2 )
@@ -138,16 +138,16 @@
 
 ! --- First option (fixed layer thickness)
 !     no maxima for digging flux in this option!
-      IF ( ISW .EQ. 0 ) THEN
+      IF ( ISW == 0 ) THEN
          DIGS1 = SOMRES + & 
                ( (FIXS1-ACTHS1)*RHOS1*(1.0-PORS1) )/ DELT
 
-         IF (ACTHS1 .GE. FIXS1 ) DIGS1 = SOMRES
+         IF (ACTHS1 >= FIXS1 ) DIGS1 = SOMRES
 
          DIGS2 = DIGS1 + & 
                ( (FIXS2-ACTHS2)*RHOS2*(1.0-PORS2) )/ DELT
 
-         IF (ACTHS2 .GE. FIXS2 )  DIGS2 = DIGS1
+         IF (ACTHS2 >= FIXS2 )  DIGS2 = DIGS1
 
        ENDIF
 
@@ -161,7 +161,7 @@
 !     Maximum upward transport towards layer S1 (=amount in layer S2)
       MAXDS1 = DMS2 / DELT / SURF
 
-      IF ( ISW .EQ. 1 ) THEN
+      IF ( ISW == 1 ) THEN
 
       DIGS1 = MIN ( ZDIGS1, MAXDS1)
       DIGS2 = ZDIGS2
@@ -191,7 +191,7 @@
       IP15  = IP15  + IN15
       IP16  = IP16  + IN16
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

@@ -81,7 +81,7 @@
       IP9  = IPOINT( 9)
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
@@ -101,7 +101,7 @@
 !     basic relation sal-chlorinity: sal = 0.03 +1.805*chlor/density
 !     density = f(temp and salt concentration)
 !
-      IF (NINT(SWSALCL) .EQ. 1) THEN
+      IF (NINT(SWSALCL) == 1) THEN
       DENS =   1000. + 0.7 * CL/1000 * GTCL & 
             - 0.0061 * (TEMP-4.0) * (TEMP-4.0)
       SAL = CL * GTCL / DENS + SAL0
@@ -110,7 +110,7 @@
       DENS = 1000. + 0.7 * SAL / (1-SAL/1000.) & 
             - 0.0061 * (TEMP-4.0) * (TEMP-4.0)
 !
-      IF (SAL .LE. SAL0) THEN
+      IF (SAL <= SAL0) THEN
           SAL = 0.0
       ELSE
           SAL = SAL - SAL0
@@ -138,7 +138,7 @@
       IP8   = IP8   + INCREM (  8 )
       IP9   = IP9   + INCREM (  9 )
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END

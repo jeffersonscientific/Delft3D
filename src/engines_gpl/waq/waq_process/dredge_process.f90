@@ -168,12 +168,12 @@
 
       ! initialisatie loop
 
-      if ( no_basin .eq. -1 ) then
+      if ( no_basin == -1 ) then
          no_basin    = 0
          ip_basin_no = ipoint(2)
          do iseg = 1 , noseg
             basin_no = nint(pmsa(ip_basin_no))
-            if ( basin_no .gt. max_basin ) then
+            if ( basin_no > max_basin ) then
                write (lunrep,*) 'ERROR in dredge process'
                write (lunrep,*) 'basin_no is greater than max_basin in dredge process'
                write (*,*) 'ERROR in dredge process'
@@ -188,7 +188,7 @@
 
       ! if no basins then return
 
-      if ( no_basin .eq. 0 ) return
+      if ( no_basin == 0 ) return
 
       nim1                = nint(pmsa(ipoint(11)))
       nim2                = nint(pmsa(ipoint(12)))
@@ -287,8 +287,8 @@
       do i_basin = 1 , no_basin
          it_start_dredge = nint(pmsa(ip_it_start_dredge(i_basin)))
          it_freq_dredge  = max(nint(pmsa(ip_it_freq_dredge(i_basin))),1)
-         if ( itime .ge. it_start_dredge .and. & 
-             mod(itime-it_start_dredge,it_freq_dredge) .lt. idt ) then
+         if ( itime >= it_start_dredge .and. &
+             mod(itime-it_start_dredge,it_freq_dredge) < idt ) then
             dredge_moment(i_basin) = .true.
          endif
       enddo
@@ -306,9 +306,9 @@
       do iseg = 1 , noseg
          if (btest(iknmrk(iseg),0)) then
             call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
-            if ((ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
+            if ((ikmrk2==0).or.(ikmrk2==3)) then
                basin_no = nint(pmsa(ip_basin_no))
-               if ( basin_no .gt. 0 ) then
+               if ( basin_no > 0 ) then
                   if ( dredge_moment(basin_no) ) then
                      dredge_criterium    = pmsa(ip_dredge_criterium(basin_no))
                      sws1s2_dredge       = nint(pmsa(ip_sws1s2_dredge(basin_no)))
@@ -317,10 +317,10 @@
                      volume              = pmsa(ip_volume)
                      surf                = pmsa(ip_surf)
                      delt                = pmsa(ip_delt)
-                     if ( sws1s2_dredge .eq. 1 ) then
-                        if ( actths1 .gt. 1.e-15 ) then
+                     if ( sws1s2_dredge == 1 ) then
+                        if ( actths1 > 1.e-15 ) then
                            fraction_dredge = (actths1-dredge_criterium)/actths1
-                           if ( fraction_dredge .gt. 0.0 ) then
+                           if ( fraction_dredge > 0.0 ) then
                               do ifrac_im1 = 1, nim1
                                  ip_im1s1            = ipoint(ip0_im1s1(ifrac_im1)) + (iseg-1)*increm(ip0_im1s1(ifrac_im1))
                                  im1s1               = pmsa(ip_im1s1)*surf
@@ -350,9 +350,9 @@
                            endif
                         endif
                      else
-                        if ( actths2 .gt. 1.e-15 ) then
+                        if ( actths2 > 1.e-15 ) then
                            fraction_dredge = (actths2-dredge_criterium)/actths2
-                           if ( fraction_dredge .gt. 0.0 ) then
+                           if ( fraction_dredge > 0.0 ) then
                               do ifrac_im1 = 1, nim1
                                  ip_im1s2            = ipoint(ip0_im1s2(ifrac_im1)) + (iseg-1)*increm(ip0_im1s2(ifrac_im1))
                                  im1s2               = pmsa(ip_im1s2)*surf
@@ -422,7 +422,7 @@
             dredge_tot    = dredge_tot + dredge_im3
          enddo
 
-         if ( dredge_tot .gt. 1e-20) then
+         if ( dredge_tot > 1e-20) then
 
             ip_volume  = ipoint(6) + (dumpsegment-1)*increm(6)
             ip_delt    = ipoint(8) + (dumpsegment-1)*increm(8)
@@ -436,13 +436,13 @@
                dredge_im1    = sum_dredge(ip_dredge_im1)
                dump_im1      = dump*(dredge_im1/dredge_tot)
                dredge_im1    = max(0.0, dredge_im1 - dump_im1)
-               if ( relabel .gt. 0 ) then
+               if ( relabel > 0 ) then
                   ifrac_dump_im1 = max(1,min(nim1,relabel))
                else
                   ifrac_dump_im1 = ifrac_im1
                endif
                sum_dredge(ip_dredge_im1) = dredge_im1
-               if (dumpsegment .gt. 0) then
+               if (dumpsegment > 0) then
                   ifl_dump_im1        = (dumpsegment-1)*noflux + nim1+nim2+nim3+nim1+nim2+nim3 + ifrac_dump_im1
                   fl(ifl_dump_im1)    = fl(ifl_dump_im1) + dump_im1/volume/delt
                endif
@@ -452,13 +452,13 @@
                dredge_im2    = sum_dredge(ip_dredge_im2)
                dump_im2      = dump*(dredge_im2/dredge_tot)
                dredge_im2    = max(0.0, dredge_im2 - dump_im2)
-               if ( relabel .gt. 0 ) then
+               if ( relabel > 0 ) then
                   ifrac_dump_im2 = max(1,min(nim2,relabel))
                else
                   ifrac_dump_im2 = ifrac_im2
                endif
                sum_dredge(ip_dredge_im2) = dredge_im2
-               if (dumpsegment .gt. 0) then
+               if (dumpsegment > 0) then
                   ifl_dump_im2        = (dumpsegment-1)*noflux + nim1+nim2+nim3+nim1+nim2+nim3 + nim1 + ifrac_dump_im2
                   fl(ifl_dump_im2)    = fl(ifl_dump_im2) + dump_im2/volume/delt
                endif
@@ -468,13 +468,13 @@
                dredge_im3    = sum_dredge(ip_dredge_im3)
                dump_im3      = dump*(dredge_im3/dredge_tot)
                dredge_im3    = max(0.0, dredge_im3 - dump_im3)
-               if ( relabel .gt. 0 ) then
+               if ( relabel > 0 ) then
                   ifrac_dump_im3 = max(1,min(nim3,relabel))
                else
                   ifrac_dump_im3 = ifrac_im3
                endif
                sum_dredge(ip_dredge_im3) = dredge_im3
-               if (dumpsegment .gt. 0) then
+               if (dumpsegment > 0) then
                   ifl_dump_im3        = (dumpsegment-1)*noflux + nim1+nim2+nim3+nim1+nim2+nim3+ nim1 + nim2 + ifrac_dump_im3
                   fl(ifl_dump_im3)    = fl(ifl_dump_im3) + dump_im3/volume/delt
                endif

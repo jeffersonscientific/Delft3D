@@ -196,18 +196,18 @@
       ifflag  = 0
       iaflag  = 0
       ibflag  = 0
-      if ( mod(intopt,16) .ge. 8 ) ibflag = 1
-      if ( ndspn .eq. 0 ) then
+      if ( mod(intopt,16) >= 8 ) ibflag = 1
+      if ( ndspn == 0 ) then
          nddim = nodisp
       else
          nddim = ndspn
       endif
-      if ( nveln .eq. 0 ) then
+      if ( nveln == 0 ) then
          nvdim = novelo
       else
          nvdim = nveln
       endif
-      lstrec = icflag .eq. 1
+      lstrec = icflag == 1
       nosss  = noseg + nseg2
       noqtt  = noq + noq4
       inwtyp = intyp + nobnd
@@ -225,8 +225,8 @@
 !
 !          make closure error correction
 !
-      if ( j(inrh2+1) .ge. 0 .and. ivflag .eq. 0 .and. & 
-           idt       .gt. 0 .and. lstrec               ) then
+      if ( j(inrh2+1) >= 0 .and. ivflag == 0 .and. &
+           idt       > 0 .and. lstrec               ) then
          call dlwq41 ( lun     , itstrt+idt, itstrt  , a(iharm:), a(ifarr:), & 
                       j(inrha:), j(inrh2:)  , j(inrft:), noseg   , a(ivol2:), & 
                       j(ibulk:), lchar     , ftype   , isflag  , ivflag  , & 
@@ -289,7 +289,7 @@
 
       ith = 1
       IAFLAG = 1
-      DO 10 ISYS = 1 , NOSYS
+      DO ISYS = 1 , NOSYS
 
 !          do the user water quality processes
 
@@ -343,7 +343,7 @@
          call dlwqh6 ( noseg        , notot   , isys    , 1       , a(iconc:), & 
                       gm_sol(1,ith), a(imas2:), a(idmps:), intopt  , j(isdmp:))
 
-   10 continue
+      end do
 !
 !          mass balance
 !

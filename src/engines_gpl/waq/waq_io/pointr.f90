@@ -119,23 +119,23 @@
 
 !        Read and check first line of matrix
 
-      if ( ipopt1 .eq. 0 )  then         ! binary file
+      if ( ipopt1 == 0 )  then         ! binary file
          call open_waq_files  ( lun(8) , lchar(8) , 8      , 2     , ierr2 )
-         if ( ierr2 .ne. 0 ) goto 100
+         if ( ierr2 /= 0 ) goto 100
          read  ( lun( 8) ) nmax2, mmax2, nm, nlay, noq1, noq2, noq3
       else
-         if ( gettoken( nmax2, ierr2 ) .gt. 0 ) goto 100
-         if ( gettoken( mmax2, ierr2 ) .gt. 0 ) goto 100
-         if ( gettoken( nm   , ierr2 ) .gt. 0 ) goto 100
-         if ( gettoken( nlay , ierr2 ) .gt. 0 ) goto 100
+         if ( gettoken( nmax2, ierr2 ) > 0 ) goto 100
+         if ( gettoken( mmax2, ierr2 ) > 0 ) goto 100
+         if ( gettoken( nm   , ierr2 ) > 0 ) goto 100
+         if ( gettoken( nlay , ierr2 ) > 0 ) goto 100
          noq1 = 0
          noq2 = 0
          noq3 = 0
-         if ( nmax .gt. 1 ) noq1 =  noseg
-         if ( mmax .gt. 1 ) noq2 =  noseg
-         if ( kmax .gt. 1 ) noq3 = (noseg/kmax) * (kmax-1)
+         if ( nmax > 1 ) noq1 =  noseg
+         if ( mmax > 1 ) noq2 =  noseg
+         if ( kmax > 1 ) noq3 = (noseg/kmax) * (kmax-1)
       endif
-      if ( nmax2 .ne. nmax .or. mmax2 .ne. mmax .or. nlay  .ne. kmax ) then
+      if ( nmax2 /= nmax .or. mmax2 /= mmax .or. nlay  /= kmax ) then
          write ( lunut, 2010 ) nmax2, nmax, mmax2, mmax, nlay, kmax
          ierr2 = 1
          goto 100
@@ -147,7 +147,7 @@
 
       noqt = noq  + noqt
       allocate ( ipnt(4,noqt) , cellpnt(noseg), flowpnt(noq), stat = ierr2 )
-      if ( ierr2 .ne. 0 ) then
+      if ( ierr2 /= 0 ) then
          write ( lunut , 2160 ) ierr2, 4*noqt
          goto 100
       endif
@@ -157,21 +157,21 @@
       ierr2  = 0
       ntot = nmax*mmax
       allocate ( imat(ntot), stat = ierr2 )
-      if ( ierr2 .ne. 0 ) then
+      if ( ierr2 /= 0 ) then
          write ( lunut , 2000 ) ierr2, nmax*mmax
          goto 100
       endif
 
 !        Read the pointer itself, write it to the intermediate file
 
-      if ( ipopt1 .eq. 0 )  then
+      if ( ipopt1 == 0 )  then
          read  ( lun( 8) ) imat
       else
          do i1 = 1 , ntot
-            if ( gettoken( imat(i1), ierr2 ) .gt. 0 ) goto 100
+            if ( gettoken( imat(i1), ierr2 ) > 0 ) goto 100
          enddo
          call open_waq_files  ( lun(8) , lchar(8) , 8      , 1     , ierr2 )
-         if ( ierr2 .ne. 0 ) goto 100
+         if ( ierr2 /= 0 ) goto 100
          write ( lun( 8) ) nmax,mmax,noseg,kmax,noq1,noq2,noq3
          write ( lun( 8) ) imat
       endif
@@ -209,21 +209,21 @@
 
       filename = lchar(8)(1:index(lchar(8),'.',.true.))//'cco'
       call open_waq_files ( lun(8), filename, 8, 2, ierr2 )
-      if ( ierr2 .ne. 0 ) then
+      if ( ierr2 /= 0 ) then
          write ( lunut, 2060 ) filename
          goto 100
       endif
       read ( lun(8) )
       read ( lun(8) ) mmax2, nmax2, x0, y0, alpha, npart, nlay
-      if ( mmax2 .ne. mmax .or. nmax2 .ne. nmax .or. & 
-          nlay  .ne. kmax                           ) then
+      if ( mmax2 /= mmax .or. nmax2 /= nmax .or. &
+          nlay  /= kmax                           ) then
          write ( lunut, 2010 ) nmax2, nmax, mmax2, mmax, nlay, kmax
          ierr2 = 1
          goto 100
       endif
 
       deallocate ( imat )
-  100 if ( ierr2 .ne. 0 ) call status%increase_error_count()
+  100 if ( ierr2 /= 0 ) call status%increase_error_count()
       close ( lun(8) )
       if (timon) call timstop( ithndl )
       return
@@ -235,7 +235,6 @@
                /2I10/2I10/2I10 )
  2020 format (  /,10X, 20I6,/)
  2030 format (    1X,I6,' * ',20I6 )
- 2040 format (  /,' ERROR. allocating memory for boundary pointers:',i4,i10 )
  2050 format ( //,' Dimensions of the system :', & 
                /,' Number of exchanges 1st direction : ',I7, & 
                /,' Number of exchanges 2nd direction : ',I7, & 

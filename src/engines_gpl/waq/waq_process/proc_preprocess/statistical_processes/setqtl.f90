@@ -94,7 +94,7 @@
 !     init
 !
       ALLOCATE(ISUSED(NOKEY),STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETQTL_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
@@ -102,7 +102,7 @@
       ENDIF
       ISUSED = 0
       IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
-      IF ( IKEY .GT. 0 ) THEN
+      IF ( IKEY > 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
 !
@@ -120,12 +120,12 @@
 !     actual number of buckets is one larger, bucket00 the rest bucket for values below CLOBND
 !
       IKEY = index_in_array('NOBUCK',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          NOBUCK = 10
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) NOBUCK
-         IF ( IERR2 .NE. 0 ) THEN
+         IF ( IERR2 /= 0 ) THEN
             WRITE(LUNREP,*)'ERROR interpreting number of buckets:', & 
               KEYVAL(IKEY)
             call status%increase_error_count()
@@ -142,7 +142,7 @@
       ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), & 
               aProcesProp%output_item(aProcesProp%no_output), & 
               STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_1, array length:',aProcesProp%no_input,aProcesProp%no_output
          WRITE(*,*) 'ERROR allocating array:',IERR_ALLOC
@@ -152,7 +152,7 @@
 !     input on segments
 !
       IKEY = index_in_array('SUBSTANCE',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          call status%increase_error_count()
       ELSE
@@ -164,7 +164,7 @@
          aProcesProp%input_item(1)%ip_val= 0
          aItemProp%name = KEYVAL(IKEY)
          iret = ItemPropCollFind( AllItems, aItemProp )
-         if ( iret .le. 0 ) then
+         if ( iret <= 0 ) then
             aItemProp%text    = 'input parameter for statistics'
             aItemProp%default = -999.
             aItemProp%waqtype = WAQTYPE_NONE
@@ -199,7 +199,7 @@
 !
       aItemProp%name    = 'ITIME'
       iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
+      if ( iret <= 0 ) then
          aItemProp%default = -999.
          aItemProp%text    = 'time in calculation'
          aItemProp%waqtype = WAQTYPE_DEFAULT
@@ -214,7 +214,7 @@
 !
       aItemProp%name    = 'IDT'
       iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
+      if ( iret <= 0 ) then
          aItemProp%default = -999.
          aItemProp%text    = 'time step'
          aItemProp%waqtype = WAQTYPE_DEFAULT
@@ -240,12 +240,12 @@
       aProcesProp%input_item(6)%ip_val  = 0
 !
       IKEY = index_in_array('CLOBND',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          CLOBND = 0.0
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(F20.0)',IOSTAT=IERR2) CLOBND
-         IF ( IERR2 .NE. 0 ) THEN
+         IF ( IERR2 /= 0 ) THEN
             WRITE(LUNREP,*)'ERROR lower boundary:', & 
               KEYVAL(IKEY)
             call status%increase_error_count()
@@ -264,12 +264,12 @@
       aProcesProp%input_item(7)%ip_val  = 0
 !
       IKEY = index_in_array('CUPBND',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          CUPBND = 0.0
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(F20.0)',IOSTAT=IERR2) CUPBND
-         IF ( IERR2 .NE. 0 ) THEN
+         IF ( IERR2 /= 0 ) THEN
             WRITE(LUNREP,*)'ERROR upper boundary:', & 
               KEYVAL(IKEY)
             call status%increase_error_count()
@@ -288,14 +288,14 @@
       aProcesProp%input_item(8)%ip_val  = 0
 !
       IKEY = index_in_array('CQLEV',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR quantile not specified'
          call status%increase_error_count()
          CQLEV = 0.0
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(F20.0)',IOSTAT=IERR2) CQLEV
-         IF ( IERR2 .NE. 0 ) THEN
+         IF ( IERR2 /= 0 ) THEN
             WRITE(LUNREP,*)'ERROR quantile:', & 
               KEYVAL(IKEY)
             call status%increase_error_count()
@@ -326,7 +326,7 @@
       aProcesProp%input_item(10)%ip_val  = 0
 !
       IKEY = index_in_array('SUFFIX',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
 !        something involving pcount ??
          SUFFIX = ' '
       ELSE
@@ -334,7 +334,7 @@
          ISUSED(IKEY) = 1
       ENDIF
       CALL get_trimmed_length(SUFFIX,ISLEN)
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          SUFFIX =SUFFIX(1:ISLEN)//'_'//PERSFX
       ELSE
          SUFFIX ='QUANT_'//PERSFX
@@ -391,7 +391,7 @@
 !     check the use of the key words
 !
       DO IKEY = 1 , NOKEY
-         IF ( ISUSED(IKEY) .EQ. 0 ) THEN
+         IF ( ISUSED(IKEY) == 0 ) THEN
             call status%increase_warning_count()
             WRITE(LUNREP,*) 'WARNING: keyword not used'
             WRITE(LUNREP,*) 'key   :',KEYNAM(IKEY)

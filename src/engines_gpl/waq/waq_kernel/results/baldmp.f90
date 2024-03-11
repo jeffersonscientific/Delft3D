@@ -92,32 +92,32 @@
       ITEL1 = NDMPAR
       IP1   = NDMPAR + NTDMPQ
       ITEL2 = NDMPAR + NTDMPQ + NDMPAR
-      DO 100 IDUMP = 1 , NDMPAR
+      DO IDUMP = 1 , NDMPAR
 !
 !        the exchange contributes
 !
          NQC = IPDMP(IDUMP)
-         DO 30 IQC = 1 , NQC
+         DO IQC = 1 , NQC
             ITEL1 = ITEL1 + 1
             IQ    = IPDMP(ITEL1)
-            IF ( IQ .GT. 0 ) THEN
+            IF ( IQ > 0 ) THEN
                IPQ  = IQDMP(IQ)
-               DO 10 ISYS = 1 , NOSYS
+               DO ISYS = 1 , NOSYS
                   ASMASS(ISYS,IDUMP,5) = ASMASS(ISYS,IDUMP,5) + & 
                                         DMPQ(ISYS,IPQ,2)
                   ASMASS(ISYS,IDUMP,6) = ASMASS(ISYS,IDUMP,6) + & 
                                         DMPQ(ISYS,IPQ,1)
-   10          CONTINUE
+               end do
             ELSE
                IPQ  = IQDMP(-IQ)
-               DO 20 ISYS = 1 , NOSYS
+               DO ISYS = 1 , NOSYS
                   ASMASS(ISYS,IDUMP,5) = ASMASS(ISYS,IDUMP,5) + & 
                                         DMPQ(ISYS,IPQ,1)
                   ASMASS(ISYS,IDUMP,6) = ASMASS(ISYS,IDUMP,6) + & 
                                         DMPQ(ISYS,IPQ,2)
-   20          CONTINUE
+               end do
             ENDIF
-   30    CONTINUE
+         end do
 !
 !        the segment contributes
 !
@@ -125,12 +125,12 @@
             ASMASS(ISYS,IDUMP,1) = 0.0
          ENDDO
          NSC = IPDMP(IP1+IDUMP)
-         DO 60 ISC = 1 , NSC
+         DO ISC = 1 , NSC
             ITEL2 = ITEL2 + 1
             ISEG  = IPDMP(ITEL2)
-            IF ( ISEG .GT. 0 ) THEN
+            IF ( ISEG > 0 ) THEN
                IPS   = ISDMP(ISEG)
-               DO 40 ISYS = 1 , NOTOT
+               DO ISYS = 1 , NOTOT
                   ASMASS(ISYS,IDUMP,1) = ASMASS(ISYS,IDUMP,1) + & 
                                         MASS(ISYS,ISEG)
                   ASMASS(ISYS,IDUMP,2) = ASMASS(ISYS,IDUMP,2) + & 
@@ -139,12 +139,12 @@
                                         DMPS(ISYS,IPS,2)
                   ASMASS(ISYS,IDUMP,4) = ASMASS(ISYS,IDUMP,4) + & 
                                         DMPS(ISYS,IPS,3)
-   40          CONTINUE
+               end do
             ENDIF
 !
-   60    CONTINUE
+         end do
 !
-  100 CONTINUE
+      end do
 !
       if ( timon ) call timstop ( ithandl )
       RETURN

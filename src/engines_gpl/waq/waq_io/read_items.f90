@@ -105,39 +105,39 @@
       else
          ierr = gettoken(ctoken, itoken, itype , ierr2 )
       endif
-      if ( ierr .ne. 0 ) then
+      if ( ierr /= 0 ) then
          push = .true.
          goto 9999
       endif
 
 !     a keyword was met
 
-      if ( iabs(itype) .eq. 1 .and. & 
-              (  ctoken(1: 5) .eq. 'BLOCK'        .or. & 
-                 ctoken(1: 6) .eq. 'LINEAR'       .or. & 
-                 ctoken(1: 4) .eq. 'ITEM'         .or. & 
-                 ctoken(1:13) .eq. 'IDENTICALITEM'.or. & 
-                 ctoken(1:12) .eq. 'USEDATA_ITEM' .or. & 
-                 ctoken(1: 7) .eq. 'FORITEM'      .or. & 
-                 ctoken(1: 9) .eq. 'DATA_ITEM'    .or. & 
-                 ctoken(1: 6) .eq. 'CONCEN'       .or. & 
-                 ctoken(1: 6) .eq. 'DATA'         .or. & 
-                 ctoken(1:10) .eq. 'TIME_DELAY'   .or. & 
-                 ctoken(1: 8) .eq. 'ODS_FILE'     .or. & 
-                 ctoken(1:11) .eq. 'BINARY_FILE'  .or. & 
-                 ctoken(1: 8) .eq. 'ABSOLUTE'     .or. & 
-                 ctoken(1: 4) .eq. 'TIME'         .or. & 
-                 ctoken(1: 9) .eq. 'HARMONICS'    .or. & 
-                 ctoken(1: 8) .eq. 'FOURIERS'     .or. & 
-                 ctoken(1: 5) .eq. 'SCALE'        .or. & 
-                 ctoken(1: 8) .eq. 'DEFAULTS'     .or. & 
-                 ctoken(1: 3) .eq. 'ALL'          .or. & 
-                 ctoken(1: 8) .eq. 'SEGMENTS'     .or. & 
-                 ctoken(1: 9) .eq. 'CONSTANTS'    .or. & 
-                 ctoken(1:10) .eq. 'PARAMETERS'   .or. & 
-                 ctoken(1: 9) .eq. 'FUNCTIONS'    .or. & 
-                 ctoken(1: 9) .eq. 'INPUTGRID'    .or. & 
-                 ctoken(1:13) .eq. 'SEG_FUNCTIONS'     )   ) then
+      if ( iabs(itype) == 1 .and. &
+              (  ctoken(1: 5) == 'BLOCK'        .or. &
+                 ctoken(1: 6) == 'LINEAR'       .or. &
+                 ctoken(1: 4) == 'ITEM'         .or. &
+                 ctoken(1:13) == 'IDENTICALITEM'.or. &
+                 ctoken(1:12) == 'USEDATA_ITEM' .or. &
+                 ctoken(1: 7) == 'FORITEM'      .or. &
+                 ctoken(1: 9) == 'DATA_ITEM'    .or. &
+                 ctoken(1: 6) == 'CONCEN'       .or. &
+                 ctoken(1: 6) == 'DATA'         .or. &
+                 ctoken(1:10) == 'TIME_DELAY'   .or. &
+                 ctoken(1: 8) == 'ODS_FILE'     .or. &
+                 ctoken(1:11) == 'BINARY_FILE'  .or. &
+                 ctoken(1: 8) == 'ABSOLUTE'     .or. &
+                 ctoken(1: 4) == 'TIME'         .or. &
+                 ctoken(1: 9) == 'HARMONICS'    .or. &
+                 ctoken(1: 8) == 'FOURIERS'     .or. &
+                 ctoken(1: 5) == 'SCALE'        .or. &
+                 ctoken(1: 8) == 'DEFAULTS'     .or. &
+                 ctoken(1: 3) == 'ALL'          .or. &
+                 ctoken(1: 8) == 'SEGMENTS'     .or. &
+                 ctoken(1: 9) == 'CONSTANTS'    .or. &
+                 ctoken(1:10) == 'PARAMETERS'   .or. &
+                 ctoken(1: 9) == 'FUNCTIONS'    .or. &
+                 ctoken(1: 9) == 'INPUTGRID'    .or. &
+                 ctoken(1:13) == 'SEG_FUNCTIONS'     )   ) then
          if ( usefor ) then
             write ( lunut , 1035 ) ctoken
             goto 40
@@ -149,10 +149,10 @@
 
 !     computations
 
-      if ( iabs(itype) .eq. 1 .and. & 
-          ( ctoken .eq.  '*'  .or. ctoken .eq.  '/'  .or. & 
-            ctoken .eq.  '+'  .or. ctoken .eq.  '-'  .or. & 
-            ctoken .eq. 'MIN' .or. ctoken .eq. 'MAX'      ) ) then
+      if ( iabs(itype) == 1 .and. &
+          ( ctoken ==  '*'  .or. ctoken ==  '/'  .or. &
+            ctoken ==  '+'  .or. ctoken ==  '-'  .or. &
+            ctoken == 'MIN' .or. ctoken == 'MAX'      ) ) then
          if ( .not. comput ) then
             write ( lunut , 1070 )
             goto 40
@@ -166,31 +166,31 @@
          ierr2 = dlwq_resize(data_item,noitm)
          data_item%no_item = noitm
          data_item%sequence(noitm) = 0
-         if ( ctoken .eq.  '*'  ) data_item%ipnt(noitm) = -1000000
-         if ( ctoken .eq.  '/'  ) data_item%ipnt(noitm) = -10000000
-         if ( ctoken .eq.  '+'  ) data_item%ipnt(noitm) = -100000000
-         if ( ctoken .eq.  '-'  ) data_item%ipnt(noitm) = -1000000000
-         if ( ctoken .eq. 'MIN' ) data_item%ipnt(noitm) = -1100000000
-         if ( ctoken .eq. 'MAX' ) data_item%ipnt(noitm) = -1200000000
+         if ( ctoken ==  '*'  ) data_item%ipnt(noitm) = -1000000
+         if ( ctoken ==  '/'  ) data_item%ipnt(noitm) = -10000000
+         if ( ctoken ==  '+'  ) data_item%ipnt(noitm) = -100000000
+         if ( ctoken ==  '-'  ) data_item%ipnt(noitm) = -1000000000
+         if ( ctoken == 'MIN' ) data_item%ipnt(noitm) = -1100000000
+         if ( ctoken == 'MAX' ) data_item%ipnt(noitm) = -1200000000
          signon = .true.
          goto 10
       endif
 
 !     an item used in computations
 
-      if ( iabs(itype) .eq. 1 .and. signon ) then
+      if ( iabs(itype) == 1 .and. signon ) then
 
          do i = 1 , itmnr-1
-            if ( waq_item%ipnt(i) .eq. -1300000000 ) cycle
+            if ( waq_item%ipnt(i) == -1300000000 ) cycle
             if (string_equals(ctoken(1:20), waq_item%name(i))) then
                noits = noits - 1
                i2 = data_item%ipnt(noitm)
-               if ( i2 .eq. -1000000 )    write(lunut,1120)i,ctoken
-               if ( i2 .eq. -10000000 )   write(lunut,1110)i,ctoken
-               if ( i2 .eq. -100000000 )  write(lunut,1100)i,ctoken
-               if ( i2 .eq. -1000000000 ) write(lunut,1090)i,ctoken
-               if ( i2 .eq. -1100000000 ) write(lunut,1092)i,ctoken
-               if ( i2 .eq. -1200000000 ) write(lunut,1094)i,ctoken
+               if ( i2 == -1000000 )    write(lunut,1120)i,ctoken
+               if ( i2 == -10000000 )   write(lunut,1110)i,ctoken
+               if ( i2 == -100000000 )  write(lunut,1100)i,ctoken
+               if ( i2 == -1000000000 ) write(lunut,1090)i,ctoken
+               if ( i2 == -1100000000 ) write(lunut,1092)i,ctoken
+               if ( i2 == -1200000000 ) write(lunut,1094)i,ctoken
                data_item%ipnt(noitm) = i2 + i
                data_item%name(noitm) = '&$&$SYSTEM_NAME&$&$!'
                signon = .false.
@@ -199,12 +199,12 @@
          enddo
 
          i2 = data_item%ipnt(noitm)
-         if ( i2 .eq. -1000000 )    write(lunut,1130)ctoken
-         if ( i2 .eq. -10000000 )   write(lunut,1140)ctoken
-         if ( i2 .eq. -100000000 )  write(lunut,1150)ctoken
-         if ( i2 .eq. -1000000000 ) write(lunut,1160)ctoken
-         if ( i2 .eq. -1100000000 ) write(lunut,1162)ctoken
-         if ( i2 .eq. -1200000000 ) write(lunut,1164)ctoken
+         if ( i2 == -1000000 )    write(lunut,1130)ctoken
+         if ( i2 == -10000000 )   write(lunut,1140)ctoken
+         if ( i2 == -100000000 )  write(lunut,1150)ctoken
+         if ( i2 == -1000000000 ) write(lunut,1160)ctoken
+         if ( i2 == -1100000000 ) write(lunut,1162)ctoken
+         if ( i2 == -1200000000 ) write(lunut,1164)ctoken
          data_item%sequence(noitm) = noits
          data_item%name(noitm) = ctoken
          signon = .false.
@@ -213,7 +213,7 @@
 
 !     a number is used in computations
 
-      if ( iabs(itype) .eq. 2 .or. iabs(itype) .eq. 3 ) then
+      if ( iabs(itype) == 2 .or. iabs(itype) == 3 ) then
          if ( setnam .or. signon ) then
             nconst = nconst + 1
             noits = noits - 1
@@ -221,27 +221,27 @@
             data_item%name(noitm) = '&$&$SYSTEM_NAME&$&$!'
             data_item%constant(noitm) = rtoken
             if ( signon ) then
-               if ( i2 .eq. -1000000 )    write(lunut,1170)rtoken
-               if ( i2 .eq. -10000000 )   write(lunut,1180)rtoken
-               if ( i2 .eq. -100000000 )  write(lunut,1190)rtoken
-               if ( i2 .eq. -1000000000 ) write(lunut,1200)rtoken
-               if ( i2 .eq. -1100000000 ) write(lunut,1210)rtoken
-               if ( i2 .eq. -1200000000 ) write(lunut,1220)rtoken
+               if ( i2 == -1000000 )    write(lunut,1170)rtoken
+               if ( i2 == -10000000 )   write(lunut,1180)rtoken
+               if ( i2 == -100000000 )  write(lunut,1190)rtoken
+               if ( i2 == -1000000000 ) write(lunut,1200)rtoken
+               if ( i2 == -1100000000 ) write(lunut,1210)rtoken
+               if ( i2 == -1200000000 ) write(lunut,1220)rtoken
                data_item%ipnt(noitm) = i2 - nconst
                signon = .false.
             endif
             if ( setnam ) then
                namset = waq_item%ipnt(itmnr)
-               if ( namset .gt. 0 .and. ioutpt .ge. 3 ) then
+               if ( namset > 0 .and. ioutpt >= 3 ) then
                   write ( lunut , 1001 ) callr, itmnr, callr, namset , & 
                                         name_item%name(namset) , rtoken
-               elseif ( namset .eq. 0 .and. ioutpt .ge. 3  ) then
+               elseif ( namset == 0 .and. ioutpt >= 3  ) then
                   write ( lunut , 1001 ) callr, itmnr, callr, namset , & 
                                         'flow'        , rtoken
-               elseif (namset .eq. -1300000000 .and. ioutpt .ge. 3) then
+               elseif (namset == -1300000000 .and. ioutpt >= 3) then
                   write ( lunut , 1001 ) callr, itmnr, callr, namset , & 
                                         'Ignored'     , rtoken
-               elseif ( ioutpt .ge. 3 ) then
+               elseif ( ioutpt >= 3 ) then
                   write ( lunut , 1011 ) callr, itmnr, callr,-namset , & 
                                         type_item%name(-namset) , rtoken
                endif
@@ -257,7 +257,7 @@
 !
 !          A local redirection of the name of an item or substance
 !
-      if ( iabs(itype) .eq. 1 .and. ctoken .eq. 'USEFOR') then
+      if ( iabs(itype) == 1 .and. ctoken == 'USEFOR') then
          if ( usefor ) then
             write ( lunut , 1035 ) ctoken
             goto 40
@@ -275,19 +275,19 @@
 !                        ANAME/ATYPE(NAMSET) is the corresponding reserved name or type (delwaq item)
 !                        ctoken              is the name that should be used.
 !
-      if ( itype .eq. 1 ) then
+      if ( itype == 1 ) then
          if ( usefor .and. setnam ) then
             namset = waq_item%ipnt(itmnr)
-            if ( namset .gt. 0 .and. ioutpt .ge. 3 ) then
+            if ( namset > 0 .and. ioutpt >= 3 ) then
                write ( lunut , 1000 ) callr , itmnr , callr , namset , & 
                                      name_item%name(namset) , ctoken
-            elseif ( namset .eq. 0 .and. ioutpt .ge. 3  ) then
+            elseif ( namset == 0 .and. ioutpt >= 3  ) then
                write ( lunut , 1000 ) callr , itmnr , callr , namset , & 
                                      'FLOW'        , ctoken
-            elseif ( namset .eq. -1300000000 .and. ioutpt .ge. 3  ) then
+            elseif ( namset == -1300000000 .and. ioutpt >= 3  ) then
                write ( lunut , 1000 ) callr , itmnr , callr , namset , & 
                                      'Ignored'     , ctoken
-            elseif ( ioutpt .ge. 3 ) then
+            elseif ( ioutpt >= 3 ) then
                write ( lunut , 1010 ) callr , itmnr , callr ,-namset , & 
                                      type_item%name(-namset) , ctoken
             endif
@@ -302,8 +302,8 @@
 !
 !              fill in a string value if an empty string is provided
 !
-         if ( chkflg      .eq. -1 .and. & 
-             ctoken(1:20) .eq. '                    ' ) then
+         if ( chkflg      == -1 .and. &
+             ctoken(1:20) == '                    ' ) then
             ctoken = 'Item-'
             write ( ctoken(6:12) , '(i7)' ) noitm+1
          endif
@@ -311,7 +311,7 @@
 !              FLOW is only valid as CONCENTR. and item number is 0
 !
          if (string_equals(ctoken(1:20), 'FLOW                ') & 
-           .and. callr .eq. 'CONCENTR. ' ) then
+           .and. callr == 'CONCENTR. ' ) then
             itmnr = itmnr + 1
             ierr2 = dlwq_resize(waq_item,itmnr)
             waq_item%no_item = itmnr
@@ -328,7 +328,7 @@
             waq_item%name(itmnr)      = ctoken
             data_item%name(noitm)     = ctoken
             if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+            if ( ioutpt >= 3 .and. .not. usefor ) &
            write ( lunut , 1020 ) callr , itmnr , callr , 0 , 'FLOW'
             goto 10
          endif
@@ -336,7 +336,7 @@
 !              ctoken equals an item-NAME
 !
          i2= dlwq_find(name_item,ctoken)
-         if ( i2 .ge. 1 ) then
+         if ( i2 >= 1 ) then
             itmnr = itmnr + 1
             ierr2 = dlwq_resize(waq_item,itmnr)
             waq_item%no_item = itmnr
@@ -353,7 +353,7 @@
             waq_item%name(itmnr)       = ctoken
             data_item%name(noitm)      = ctoken
             if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+            if ( ioutpt >= 3 .and. .not. usefor ) &
            write ( lunut , 1020 ) callr, itmnr, callr, i2, name_item%name(i2)
             goto 10
          endif
@@ -361,7 +361,7 @@
 !        ctoken equals an item-TYPE. the index reference is set negative
 
          i2= dlwq_find(type_item,ctoken)
-         if ( i2 .ge. 1 ) then
+         if ( i2 >= 1 ) then
             itmnr = itmnr + 1
             ierr2 = dlwq_resize(waq_item,itmnr)
             waq_item%no_item = itmnr
@@ -379,14 +379,14 @@
             data_item%name(noitm)     = ctoken
 
             if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+            if ( ioutpt >= 3 .and. .not. usefor ) &
            write ( lunut , 1030 ) callr, itmnr, callr, i2, type_item%name(i2)
             goto 10
          endif
 
 !        name does not exist
 
-         if ( chkflg .eq. 1 ) then
+         if ( chkflg == 1 ) then
 
 !           ignore the data
 
@@ -438,7 +438,7 @@
             data_item%name(noitm)     = ctoken
 
             if ( usefor ) setnam = .true.
-            if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+            if ( ioutpt >= 3 .and. .not. usefor ) &
                         write ( lunut , 1020 ) callr, itmnr, callr, & 
                                                ntitm, name_item%name(ntitm)
             goto 10
@@ -447,8 +447,8 @@
 
 !     no item name was given, but an item number
 
-      if ( itype .eq. 2 ) then
-         if ( itoken .le.  ntitm .and. itoken .ge. -nttype ) then
+      if ( itype == 2 ) then
+         if ( itoken <=  ntitm .and. itoken >= -nttype ) then
 
             itmnr = itmnr + 1
             ierr2 = dlwq_resize(waq_item,itmnr)
@@ -463,29 +463,29 @@
             waq_item%ipnt(itmnr)      = itoken
             data_item%ipnt(noitm)     = itmnr
             data_item%sequence(noitm) = noits
-            if ( callr .eq. 'segment' ) then
-               if ( itoken .le. 0 ) then
+            if ( callr == 'segment' ) then
+               if ( itoken <= 0 ) then
                   write ( lunut , 1060 ) itoken
                   goto 40
                endif
-               if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+               if ( ioutpt >= 3 .and. .not. usefor ) &
                    write ( lunut , 1015 ) callr, itmnr, callr,  itoken
                write ( ctoken , '(''Segment '',i8)' ) itoken
-            elseif ( itoken .eq. 0 .and. callr .ne. 'CONCENTR. ' ) then
+            elseif ( itoken == 0 .and. callr /= 'CONCENTR. ' ) then
                write ( lunut , 1060 ) itoken
                goto 40
-            elseif ( itoken .gt. 0 ) then
-               if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+            elseif ( itoken > 0 ) then
+               if ( ioutpt >= 3 .and. .not. usefor ) &
                    write ( lunut , 1020 ) callr, itmnr, callr,  itoken, & 
                                                         name_item%name(itoken)
                ctoken = name_item%name(itoken)
-            elseif ( itoken .eq. 0 .and. callr .eq. 'CONCENTR. ' ) then
-               if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+            elseif ( itoken == 0 .and. callr == 'CONCENTR. ' ) then
+               if ( ioutpt >= 3 .and. .not. usefor ) &
               write ( lunut , 1020 ) callr, itmnr, callr, itoken, & 
                                                          'FLOW'
                ctoken = 'FLOW'
             else
-               if ( ioutpt .ge. 3 .and. .not. usefor ) & 
+               if ( ioutpt >= 3 .and. .not. usefor ) &
               write ( lunut , 1030 ) callr, itmnr, callr, -itoken, & 
                                                         type_item%name(-itoken)
                ctoken = type_item%name(-itoken)
@@ -520,7 +520,6 @@
  1035 FORMAT (  ' ERROR: no reserved keyword expected: ', A20 )
  1040 FORMAT (  ' WARNING: Input ',A,' nr:',I5,' with name: ',A20, & 
                ' is not a valid ID, data ignored' )
- 1050 FORMAT ( /' ERROR: string is no valid item ID: ',A )
  1060 FORMAT (  ' ERROR: number: ',I5,' is not a valid item number !' )
  1070 FORMAT (  ' ERROR: multiplication is only allowed in USEFOR', & 
                ' context !')
@@ -537,7 +536,6 @@
  1160 FORMAT (  ' Subtracted by local substitution: ',A20 )
  1162 FORMAT (  ' Minimum value is local substitution: ',A20 )
  1164 FORMAT (  ' Maximum value is local substitution: ',A20 )
- 1169 FORMAT (  ' Substituted by: ',E15.6 )
  1170 FORMAT (  ' Multiplied by: ',E15.6 )
  1180 FORMAT (  ' Divided by: ',E15.6 )
  1190 FORMAT (  ' Summed with: ',E15.6 )

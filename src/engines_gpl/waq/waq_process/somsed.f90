@@ -76,10 +76,10 @@
       IP = IPOINT
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 !
 
       FLX1    = PMSA(IP(1 ))
@@ -129,19 +129,19 @@
       IFLUX = IFLUX + NOFLUX
       IP    = IP    + INCREM
 !
- 9000 CONTINUE
+      end do
 !
 
 !.....Exchangeloop over de horizontale richting
       IP = IPOINT
-      DO 8000 IQ=1,NOQ1+NOQ2
+      DO IQ=1,NOQ1+NOQ2
          PMSA(IP(39)) = 0.0
          PMSA(IP(40)) = 0.0
          IP = IP + INCREM
- 8000 CONTINUE
+      end do
 
 !.....Exchangeloop over de verticale richting
-      DO 7000 IQ = NOQ1+NOQ2+1 , NOQ1+NOQ2+NOQ3
+      DO IQ = NOQ1+NOQ2+1 , NOQ1+NOQ2+NOQ3
 
          PMSA(IP(39)) = 0.0
          PMSA(IP(40)) = 0.0
@@ -150,10 +150,10 @@
 
 !        Zoek eerste kenmerk van- en naar-segmenten
 
-         IF ( IVAN .GT. 0 .AND. INAAR .GT. 0 ) THEN
+         IF ( IVAN > 0 .AND. INAAR > 0 ) THEN
          CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
          CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
-         IF (IKMRKV.EQ.1.AND.IKMRKN.EQ.1) THEN
+         IF (IKMRKV==1.AND.IKMRKN==1) THEN
 
 !            Water-water uitwisseling
 
@@ -173,16 +173,16 @@
              VP4 = PMSA(IP(33))
              CTOT = C1 + C2 + C3
              CPTOT = CP1 + CP2 + CP3 + CP4
-             IF ( CTOT .GT. 0.0 ) & 
+             IF ( CTOT > 0.0 ) &
             PMSA(IP(39)) = ( C1*V1+C2*V2+C3*V3 ) / CTOT
-             IF ( CPTOT .GT. 0.0 ) & 
+             IF ( CPTOT > 0.0 ) &
             PMSA(IP(40)) = ( CP1*VP1+CP2*VP2+CP3*VP3+CP4*VP4 ) / CPTOT
          ENDIF
          ENDIF
 
          IP = IP + INCREM
 
- 7000 CONTINUE
+      end do
 
 
       RETURN

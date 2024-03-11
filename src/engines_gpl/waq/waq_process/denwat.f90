@@ -146,7 +146,7 @@
 !
 !     Factors that determine temperature effect space dependent?
 !
-      IF ( IN4 .EQ. 0 .AND. IN8 .EQ. 0 ) THEN
+      IF ( IN4 == 0 .AND. IN8 == 0 ) THEN
 !
 !        NO! Compute temperature effect and switch TMPOPT off
 !
@@ -166,10 +166,10 @@
 !     Only relevant for old version IVERSN=0
 !
       IVERSN = NINT ( PMSA( IP13) )
-      IF ( IVERSN .EQ. 0 ) THEN
+      IF ( IVERSN == 0 ) THEN
 
-         IF ( IN5 .EQ. 0 .AND. IN15 .EQ. 0 .AND. IN11 .EQ. 0 .AND. & 
-             IN16 .EQ. 0 .AND. IN12 .EQ. 0 ) THEN
+         IF ( IN5 == 0 .AND. IN15 == 0 .AND. IN11 == 0 .AND. &
+             IN16 == 0 .AND. IN12 == 0 ) THEN
 !
 !        NO! Compute oxygen effect and switch OXYOPT off
 !
@@ -178,11 +178,11 @@
             OOXDEN = PMSA(IP15)
             COXDEN = PMSA(IP11)
             DELTOX = (COXDEN - OOXDEN) * POROS
-            IF ( DELTOX .LT. 1E-20 )  CALL write_error_message & 
+            IF ( DELTOX < 1E-20 )  CALL write_error_message &
               ('(COXDEN - OOXDEN) in DENWAT <= zero')
-            IF (OXY .GT. (COXDEN*POROS)) THEN
+            IF (OXY > (COXDEN*POROS)) THEN
                O2FUNC = 0.0
-            ELSEIF (OXY .LT. (OOXDEN*POROS)) THEN
+            ELSEIF (OXY < (OOXDEN*POROS)) THEN
                O2FUNC = 1.0
             ELSE
                CURVA  = MAX(PMSA(IP16),1.0)
@@ -203,13 +203,13 @@
 !     Loop over segments
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !     Use new version when IVERSN=1
 !
-      IF ( IVERSN .EQ. 1 ) THEN
+      IF ( IVERSN == 1 ) THEN
 !
             K0TEMP = PMSA(IP1 )
             NO3    = MAX ( 0.0, PMSA(IP2 ) )
@@ -226,13 +226,13 @@
 !
 !           Set the rates according to CRTEMP and CROXY
 !
-            IF (TEMP .LT. CRTEMP .OR. OXY .GE. (CROXY*POROS)) KDEN = 0.0
+            IF (TEMP < CRTEMP .OR. OXY >= (CROXY*POROS)) KDEN = 0.0
 !
             K0DEN = 0.0
 !
-            IF (TEMP .LT. CRTEMP .AND. OXY .LT. (CROXY * POROS)) THEN
+            IF (TEMP < CRTEMP .AND. OXY < (CROXY * POROS)) THEN
                   K0DEN = K0TEMP
-            ELSEIF (TEMP .GE. CRTEMP .AND. OXY .LT.(CROXY * POROS)) THEN
+            ELSEIF (TEMP >= CRTEMP .AND. OXY <(CROXY * POROS)) THEN
                   K0DEN = K0OX
             ENDIF
 !
@@ -247,7 +247,7 @@
 !
             NIFUNC = NO3 / ( KSNI * POROS + NO3 )
             OXFUNC = 1.0 - OXY / ( KSOX * POROS + OXY )
-            IF ( OXY .LT. 0.0 ) OXFUNC = 1.0
+            IF ( OXY < 0.0 ) OXFUNC = 1.0
 !
             FL( 1 + IFLUX ) = K0DEN + KDEN * TEMPC * NIFUNC * OXFUNC
 !
@@ -272,7 +272,7 @@
                   TEMP20 = TEMP - 20.0
                   TEMPC  = TC ** TEMP20
             ENDIF
-            IF (TEMP .LE. CRTEMP ) DENRC = 0.0
+            IF (TEMP <= CRTEMP ) DENRC = 0.0
 !
 !           Compute space dependent oxygen effect if OXYOPT on
 !
@@ -282,11 +282,11 @@
                   OOXDEN = PMSA(IP15)
                   COXDEN = PMSA(IP11)
                   DELTOX = (COXDEN - OOXDEN) * POROS
-                  IF ( DELTOX .LT. 1E-20 )  CALL write_error_message & 
+                  IF ( DELTOX < 1E-20 )  CALL write_error_message &
                     ('(COXDEN - OOXDEN) in DENWAT <= zero')
-                  IF (OXY .GT. COXDEN*POROS) THEN
+                  IF (OXY > COXDEN*POROS) THEN
                         O2FUNC = 0.0
-                  ELSEIF (OXY .LT. OOXDEN*POROS) THEN
+                  ELSEIF (OXY < OOXDEN*POROS) THEN
                         O2FUNC = 1.0
                   ELSE
                         CURVA  = MAX(PMSA(IP16),1.0)
@@ -337,7 +337,7 @@
       IP16 = IP16 + IN16
       IP17 = IP17 + IN17
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END

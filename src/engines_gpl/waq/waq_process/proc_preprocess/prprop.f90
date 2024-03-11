@@ -114,13 +114,13 @@
 
       if ( .not. laswi ) then
          iconf = index_in_array(config(:10), confid(:nconf))
-         if ( iconf .le. 0 ) then
+         if ( iconf <= 0 ) then
             write(lunrep,*) & 
             'error: configuration not found in process definition file'
             write(lunrep,*) 'configuration id:',config
             call srstop(1)
          else
-            if ( liconf(iconf) .ne. 1 ) then
+            if ( liconf(iconf) /= 1 ) then
                write(lunrep,*) & 
               'error: no valid license found for configuration:',config
                call srstop(1)
@@ -134,7 +134,7 @@
 !     first find then replace to speed up the process
 !
       allocate(itemidx(nitem),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then
+      if ( ierr_alloc /= 0 ) then
          WRITE ( lunrep , * ) 'error allocating work array in PRPROP:',ierr_alloc,nitem
          call srstop(1)
       endif
@@ -156,7 +156,7 @@
          aItemProp%wk      = itemwk(iitem)
          aItemProp%waqtype = WAQTYPE_UNKNOWN
          iret = itemidx(iitem)
-         if ( iret .gt. 0 ) then
+         if ( iret > 0 ) then
 !
 !           from statistics, replace content
 !
@@ -173,15 +173,15 @@
       ! set old defaults
 
       do i = 1, old_items%cursize
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_DEFAULT ) then
-            if ( old_items%old_items(i)%serial .gt. old_items%target_serial ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_DEFAULT ) then
+            if ( old_items%old_items(i)%serial > old_items%target_serial ) then
                aItemProp%name = old_items%old_items(i)%old_name
                iitem = ItemPropCollFind( AllItems, aItemProp )
-               if ( iitem .gt. 0 ) then
+               if ( iitem > 0 ) then
                   write(lunrep,'(3a)') ' Replaced default [',old_items%old_items(i)%old_name,']'
                   write(lunrep,'(a,g13.6)') ' current value     :',AllItems%ItemPropPnts(iitem)%pnt%default
                   write(lunrep,'(a,g13.6)') ' replaced by       :',old_items%old_items(i)%old_default
-                  if ( old_items%old_items(i)%serial .lt. 2100000000 ) then
+                  if ( old_items%old_items(i)%serial < 2100000000 ) then
                      write(lunrep,'(a,i13)') ' based on serial no:     :',old_items%old_items(i)%serial
                   else
                      write(lunrep,'(a)') ' based on old process definition'
@@ -195,7 +195,7 @@
 !     loop over all processes
 !
       allocate(actuse(no_act))
-      do 800 iproc=1,nproc
+      do iproc=1,nproc
 !
 !        Check if process is requested and licensed
 !
@@ -204,14 +204,14 @@
             IGET   = ICNPRO(IPRCNF)
          ELSE
             IACT = index_in_array(PROCID(IPROC), ACTLST(:NO_ACT))
-            IF ( IACT .GT. 0 ) THEN
+            IF ( IACT > 0 ) THEN
                IGET = 1
                ACTUSE(IACT) = 1
             ELSE
                IGET = 0
             ENDIF
          ENDIF
-         IF ( IGET .GT. 0 ) THEN
+         IF ( IGET > 0 ) THEN
 
             ! initialise process structure
 
@@ -245,7 +245,7 @@
 
                   aItemProp%name = inpuit(iinpu)
                   iitem = ItemPropCollFind( AllItems, aItemProp )
-                  if ( iitem .le. 0 ) then
+                  if ( iitem <= 0 ) then
                      write(lunrep,*) 'ERROR: unknown ITEM:',aItemProp%name
                      call srstop(1)
                   endif
@@ -253,7 +253,7 @@
                   ! check this name in the old items table
 
                   do i = 1, old_items%cursize
-                     if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_PPEQUAL2 ) then
+                     if ( old_items%old_items(i)%action_type == ITEM_ACTION_PPEQUAL2 ) then
                         if (string_equals(old_items%old_items(i)%new_name(1:10), inpuit(iinpu))) then
                            inpuit(iinpu) = old_items%old_items(i)%old_name
                            write(lunrep,'(7a)') ' Input item  [',old_items%old_items(i)%new_name, & 
@@ -261,7 +261,7 @@
                                                '] for process [',procid(iproc),']'
                            aItemProp%name = inpuit(iinpu)
                            iitem2 = ItemPropCollFind( AllItems, aItemProp )
-                           if ( iitem2 .le. 0 ) then
+                           if ( iitem2 <= 0 ) then
                               aItemProp = AllItems%ItemPropPnts(iitem)%pnt
                               aItemProp%name = old_items%old_items(i)%old_name
                               iitem = ItemPropCollAdd( AllItems, aItemProp )
@@ -272,15 +272,15 @@
                      endif
                   enddo
 
-                  if ( inpude(iinpu) .eq. 'Y' .or. switui ) then
+                  if ( inpude(iinpu) == 'Y' .or. switui ) then
                       actdef = AllItems%ItemPropPnts(iitem)%pnt%default
-                  elseif ( inpude(iinpu) .eq. 'G' ) then
+                  elseif ( inpude(iinpu) == 'G' ) then
                       actdef = -888.
-                  elseif ( inpude(iinpu) .eq. 'B' ) then
+                  elseif ( inpude(iinpu) == 'B' ) then
                       actdef = -101.
-                  elseif ( inpude(iinpu) .eq. 'M' ) then
+                  elseif ( inpude(iinpu) == 'M' ) then
                       actdef = -11.
-                  elseif ( inpude(iinpu) .eq. 'O' ) then
+                  elseif ( inpude(iinpu) == 'O' ) then
                       actdef = -1.
                   else
                       actdef = -999.
@@ -291,7 +291,7 @@
                   aIOitemProp%actdef = actdef
                   aIOitemProp%indx   = inpunm(iinpu)
                   aIOitemProp%ip_val = 0
-                  if ( inpusx(iinpu) .eq. 1 ) then
+                  if ( inpusx(iinpu) == 1 ) then
                      aIOitemProp%type = IOTYPE_SEGMENT_INPUT
                   else
                      aIOitemProp%type = IOTYPE_EXCHANG_INPUT
@@ -310,7 +310,7 @@
 
                   aItemProp%name = outpit(ioutp)
                   iitem = ItemPropCollFind( AllItems, aItemProp )
-                  if ( iitem .le. 0 ) then
+                  if ( iitem <= 0 ) then
                      write(lunrep,*) 'ERROR: unknown ITEM:',aItemProp%name
                      call srstop(1)
                   endif
@@ -318,7 +318,7 @@
                   aIOitemProp%name   = AllItems%ItemPropPnts(iitem)%pnt%name
                   aIOitemProp%indx   = outpnm(ioutp)
                   aIOitemProp%ip_val = 0
-                  if ( outpsx(ioutp) .eq. 1 ) then
+                  if ( outpsx(ioutp) == 1 ) then
                      aIOitemProp%type = IOTYPE_SEGMENT_OUTPUT
                   else
                      aIOitemProp%type = IOTYPE_EXCHANG_OUTPUT
@@ -326,7 +326,7 @@
                   indx = outpnm(ioutp)
                   iret =IOitemPropCollAddIndx(output_item, aIOitemProp, indx)
 
-                  if ( outpsx(ioutp) .ne. 1 ) then
+                  if ( outpsx(ioutp) /= 1 ) then
 
                       ! scan disp table for lines associated with current output item on exchange level
 
@@ -372,7 +372,7 @@
 
                   aItemProp%name = outffl(ioutf)
                   iflux = ItemPropCollFind( AllItems, aItemProp )
-                  if ( iflux .le. 0 ) then
+                  if ( iflux <= 0 ) then
                      write(lunrep,*) 'ERROR: unknown ITEM:',aItemProp%name
                      call status%increase_error_count()
                      goto 900
@@ -420,11 +420,11 @@
 
          endif
 
-  800 continue
+      end do
 !
       IF ( LASWI ) THEN
          DO IACT = 1 , NO_ACT
-            IF ( ACTUSE(IACT) .NE. 1 ) THEN
+            IF ( ACTUSE(IACT) /= 1 ) THEN
                WRITE(lunrep,*) ' WARNING: activated process not found ', & 
                 'in process definition file'
                WRITE(lunrep,*) ' process ID: ',ACTLST(IACT)

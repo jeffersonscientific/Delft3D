@@ -115,8 +115,8 @@
 
       !
       VARFLG = .TRUE.
-      IF ( IN2 .EQ. 0 .AND. IN3 .EQ. 0 .AND. IN4 .EQ. 0 .AND. & 
-          IN5 .EQ. 0                                        ) THEN
+      IF ( IN2 == 0 .AND. IN3 == 0 .AND. IN4 == 0 .AND. &
+          IN5 == 0                                        ) THEN
 !
          VARFLG = .FALSE.
 !

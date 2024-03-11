@@ -86,8 +86,8 @@
 
       varflg = .true.
 
-      if ( in1 .eq. 0 .and. in2 .eq. 0 .and. in3 .eq. 0 .and. & 
-          in4 .eq. 0                                        ) then
+      if ( in1 == 0 .and. in2 == 0 .and. in3 == 0 .and. &
+          in4 == 0                                        ) then
 
 !        Only constant inputs, so only single calculation of daylength needed to be set to all segments
          varflg = .false.
@@ -101,7 +101,7 @@
          daynr =  mod (time / auxsys + tref, 365.)
 
 !        Computes declination of sun on day DAYNR.
-         if (( daynr .lt. 0.) .or. ( daynr .gt. 365.)) then
+         if (( daynr < 0.) .or. ( daynr > 365.)) then
             declin = 9.9999d9
          else
             declin = 6.918d-3 - & 
@@ -118,9 +118,9 @@
          temp = (( sin50m - dsin ( declin) * dsin ( latitu)) / & 
                          ( dcos ( declin) * dcos ( latitu)))
 
-         if ( temp .gt. 1.0) then
+         if ( temp > 1.0) then
             temp   = 0.0
-         elseif ( temp .lt. -1.0) then
+         elseif ( temp < -1.0) then
             temp   = 24.0
          else
             temp   = 7.639437268d0 * acos ( temp)
@@ -128,7 +128,7 @@
          daylength = temp / 24.0
       endif
 
-      do 9000 iseg = 1 , noseg
+      do iseg = 1 , noseg
          if ( varflg ) then
             time    = pmsa( ip1 )
 !           Conversion Latitude to rads
@@ -140,7 +140,7 @@
             daynr =  mod (time / auxsys + tref, 365.)
 
 !           Computes declination of sun on day DAYNR.
-            if (( daynr .lt. 0) .or. ( daynr .gt. 365.)) then
+            if (( daynr < 0) .or. ( daynr > 365.)) then
                declin = 9.9999d9
             else
                declin = 6.918d-3 - & 
@@ -157,9 +157,9 @@
             temp = (( sin50m - dsin ( declin) * dsin ( latitu)) / & 
                             ( dcos ( declin) * dcos ( latitu)))
 
-            if ( temp .gt. 1.0) then
+            if ( temp > 1.0) then
                temp   = 0.0
-            elseif ( temp .lt. -1.0) then
+            elseif ( temp < -1.0) then
                temp   = 24.0
             else
                temp   = 7.639437268d0 * acos ( temp)
@@ -174,7 +174,7 @@
          ip4   = ip4   + in4
          ip5   = ip5   + in5
 
- 9000 continue
+      end do
 
       return
       end

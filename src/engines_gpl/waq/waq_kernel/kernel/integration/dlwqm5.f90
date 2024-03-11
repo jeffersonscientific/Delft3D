@@ -134,15 +134,15 @@
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
 
-         if ( ifrom .eq. 0 .or.  ito .eq. 0 ) cycle
-         if ( ifrom .gt. 0 ) then
+         if ( ifrom == 0 .or.  ito == 0 ) cycle
+         if ( ifrom > 0 ) then
             if ( .not. btest(iknmrk(ifrom),0) ) cycle       ! identified dry at start and end of timestep
          endif                                              ! aggregated time step can be wet in between
-         if ( ito   .gt. 0 ) then                           ! start and end, that is why a check on 1 cm3/s
+         if ( ito   > 0 ) then                           ! start and end, that is why a check on 1 cm3/s
             if ( .not. btest(iknmrk(ito  ),0) ) cycle       ! life is not easy
          endif
 
-         if ( ifrom .gt. 0 ) then
+         if ( ifrom > 0 ) then
             cio = conc  ( isys,  ifrom )
             cin = concvt(        ifrom )
          else
@@ -150,7 +150,7 @@
             cin = bound ( isys, -ifrom )
          endif
 
-         if ( ito   .gt. 0 ) then
+         if ( ito   > 0 ) then
             cjo = conc  ( isys,  ito   )
             cjn = concvt(        ito   )
          else
@@ -160,15 +160,15 @@
 
          if ( theta(iq) < 1.0E-25 ) then ! Lax-Wendroff flux correction at `explicit' edges (theta = 0)
             length = aleng(1,iq)+aleng(2,iq)
-            if ( length .gt. 1.0E-25 ) then
-               if ( flowtot(iq) .gt. 0 ) then          ! flow from i to j
+            if ( length > 1.0E-25 ) then
+               if ( flowtot(iq) > 0 ) then          ! flow from i to j
                   flux(iq) = (  aleng(1,iq)/length - ( flowtot(iq)*real(idt))/(2*area(iq)*length) )*flowtot(iq)*(cjo-cio)
                else                                    ! flow from j to i
                   flux(iq) = ( -aleng(2,iq)/length - ( flowtot(iq)*real(idt))/(2*area(iq)*length) )*flowtot(iq)*(cjo-cio)
                endif
             endif
          else                          ! central flux correction at implicit edges (theta > 0)
-            if ( flowtot(iq) .gt. 0 ) then ! flow from i to j
+            if ( flowtot(iq) > 0 ) then ! flow from i to j
                 flux(iq) = ( 1.0 - theta(iq) )*( flowtot(iq)*(cio+cjo)/2.0 - flowtot(iq)*cio ) & 
                                 + theta(iq)  *( flowtot(iq)*(cin+cjn)/2.0 - flowtot(iq)*cin )
             else ! flow from j to i
@@ -187,16 +187,16 @@
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
 
-         if ( ifrom .eq. 0 .or.  ito .eq. 0 ) cycle
-         if ( ifrom .gt. 0 ) then
+         if ( ifrom == 0 .or.  ito == 0 ) cycle
+         if ( ifrom > 0 ) then
             if ( .not. btest(iknmrk(ifrom),0) ) cycle       ! identified dry at start and end of timestep
          endif                                              ! aggregated time step can be wet in between
-         if ( ito   .gt. 0 ) then                           ! start and end, that is why a check on 1 cm3/s
+         if ( ito   > 0 ) then                           ! start and end, that is why a check on 1 cm3/s
             if ( .not. btest(iknmrk(ito  ),0) ) cycle       ! life is not easy
          endif
 
-         if ( ifrom .gt. 0 ) then
-            if ( ito  .gt. 0 ) then
+         if ( ifrom > 0 ) then
+            if ( ito  > 0 ) then
                maxi(ifrom) = max(maxi(ifrom),concvt(      ito  ))
                mini(ifrom) = min(mini(ifrom),concvt(      ito  ))
             else
@@ -208,8 +208,8 @@
             l2(ifrom) = l2(ifrom) + real(idt)*max(0.0, flux(iq))
          endif
 
-         if ( ito   .gt. 0 ) then
-            if ( ifrom .gt. 0 ) then
+         if ( ito   > 0 ) then
+            if ( ifrom > 0 ) then
                maxi(ito  ) = max(maxi(ito  ),concvt(      ifrom))
                mini(ito  ) = min(mini(ito  ),concvt(      ifrom))
             else
@@ -225,15 +225,15 @@
       do iseg = 1, noseg
          m1(iseg) = volnew(iseg) * (maxi(iseg)-concvt(iseg))
          m2(iseg) = volnew(iseg) * (concvt(iseg)-mini(iseg))
-         if ( l1(iseg) .gt. 1.0E-25 ) n1(iseg) = min(1.0,m1(iseg)/l1(iseg))
-         if ( l2(iseg) .gt. 1.0E-25 ) n2(iseg) = min(1.0,m2(iseg)/l2(iseg))
+         if ( l1(iseg) > 1.0E-25 ) n1(iseg) = min(1.0,m1(iseg)/l1(iseg))
+         if ( l2(iseg) > 1.0E-25 ) n2(iseg) = min(1.0,m2(iseg)/l2(iseg))
       enddo
 
       do iq = 1, noq
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ifrom .gt. 0 .and.  ito .gt. 0 ) then
-            if ( flux(iq) .lt. 0 ) then
+         if ( ifrom > 0 .and.  ito > 0 ) then
+            if ( flux(iq) < 0 ) then
                lim(iq) = min(n1(ifrom),n2(ito  ))
             else
                lim(iq) = min(n1(ito  ),n2(ifrom))
@@ -257,19 +257,19 @@
       do iq = 1, noq
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ifrom .le. 0 .and.  ito .le. 0 ) cycle
-         if ( ifrom .gt. 0 ) then
+         if ( ifrom <= 0 .and.  ito <= 0 ) cycle
+         if ( ifrom > 0 ) then
             if ( .not. btest(iknmrk(ifrom),0) ) cycle       ! identified dry at start and end of timestep
          endif                                              ! aggregated time step can be wet in between
-         if ( ito   .gt. 0 ) then                           ! start and end. Life is not easy
+         if ( ito   > 0 ) then                           ! start and end. Life is not easy
             if ( .not. btest(iknmrk(ito  ),0) ) cycle
          endif
-         if ( ifrom .gt. 0 .and.  ito .gt. 0 ) then
-            if ( volnew(ifrom) .gt. 1.0e-25 .and. volnew(ito) .gt. 1.0e-25 ) then
+         if ( ifrom > 0 .and.  ito > 0 ) then
+            if ( volnew(ifrom) > 1.0e-25 .and. volnew(ito) > 1.0e-25 ) then
                conc(isys,ifrom)=conc(isys,ifrom) - lim(iq)*real(idt)*flux(iq)/volnew(ifrom)
                conc(isys, ito )=conc(isys, ito ) + lim(iq)*real(idt)*flux(iq)/volnew( ito )
-               if ( iqdmp(iq) .gt. 0 ) then
-                  if ( flux(iq) .gt. 0 ) then
+               if ( iqdmp(iq) > 0 ) then
+                  if ( flux(iq) > 0 ) then
                      dmpq(isys,iqdmp(iq),1) = dmpq(isys,iqdmp(iq),1) + real(idt)*lim(iq)*flux(iq)
                   else
                      dmpq(isys,iqdmp(iq),2) = dmpq(isys,iqdmp(iq),2) - real(idt)*lim(iq)*flux(iq)

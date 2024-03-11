@@ -103,7 +103,7 @@
 
 !.....Exchangeloop over de horizontale richtingen om 0 te zetten
 !.....en over de vertical richting om te initialiseren
-      DO 8000 IQ=1,NOQ1+NOQ2+NOQ3
+      DO IQ=1,NOQ1+NOQ2+NOQ3
          PMSA(IP11) = 0.0
          PMSA(IP12) = 0.0
          IP5  = IP5  + IN5
@@ -114,22 +114,22 @@
          IP10 = IP10 + IN10
          IP11 = IP11 + IN11
          IP12 = IP12 + IN12
- 8000 CONTINUE
+      end do
 
 !.....Exchangeloop over de verticale richting
 
-      DO 7000 IQ = NOQ1+NOQ2+NOQ3+1 , NOQ1+NOQ2+NOQ3+NOQ4
+      DO IQ = NOQ1+NOQ2+NOQ3+1 , NOQ1+NOQ2+NOQ3+NOQ4
 
          IVAN  = IEXPNT(1,IQ)
          INAAR = IEXPNT(2,IQ)
 
 !        Zoek eerste kenmerk van- en naar-segmenten
-         IF ( IVAN .GT. 0 ) THEN
+         IF ( IVAN > 0 ) THEN
              CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
          ELSE
              IKMRKV = -1
          ENDIF
-         IF ( INAAR .GT. 0 ) THEN
+         IF ( INAAR > 0 ) THEN
              CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
          ELSE
              IKMRKN = -1
@@ -138,17 +138,17 @@
 !        extra diffusion during emersion
 
          XTRDIF = 1.0
-         IF ( IVAN .GT. 0 ) THEN
+         IF ( IVAN > 0 ) THEN
             SWEMERSION = NINT(PMSA(IP3+(IVAN -1)*IN3))
-            IF ( SWEMERSION .EQ. 1 ) THEN
+            IF ( SWEMERSION == 1 ) THEN
                XTRDIF = PMSA(IP4+(IVAN -1)*IN4)
             ENDIF
          ENDIF
 
          NEWBOT = .FALSE.
 
-         IF ( (IKMRKV.EQ.1 .AND. IKMRKN.EQ.3)  .OR. & 
-             (IKMRKV.EQ.0 .AND. IKMRKN.EQ.3) ) THEN
+         IF ( (IKMRKV==1 .AND. IKMRKN==3)  .OR. &
+             (IKMRKV==0 .AND. IKMRKN==3) ) THEN
 
 !.....WATER-SEDIMENT INTERFACE
 
@@ -161,7 +161,7 @@
 
          ENDIF
 
-         IF ( (IKMRKV.EQ.3 .AND. IKMRKN.EQ.3) ) THEN
+         IF ( (IKMRKV==3 .AND. IKMRKN==3) ) THEN
 
 !.....SEDIMENT-SEDIMENT INTERFACE
 
@@ -174,7 +174,7 @@
 
          ENDIF
 
-         IF (IKMRKV.EQ.3 .AND. IKMRKN.EQ.-1) THEN
+         IF (IKMRKV==3 .AND. IKMRKN==-1) THEN
 
 !.....DEEP SEDIMENT BOUNDARY
 
@@ -224,7 +224,7 @@
          IP11 = IP11 + IN11
          IP12 = IP12 + IN12
 
- 7000 CONTINUE
+      end do
 
       RETURN
       END

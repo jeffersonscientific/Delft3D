@@ -98,8 +98,8 @@
 
          ! if harmonics then deal with the phase
 
-         if ( functype .eq. FUNCTYPE_HARMONIC .or. & 
-             functype .eq. FUNCTYPE_FOURIER       ) then
+         if ( functype == FUNCTYPE_HARMONIC .or. &
+             functype == FUNCTYPE_FOURIER       ) then
 !           phase = phase(ibrk)
          endif
 
@@ -114,8 +114,8 @@
 
                ! normal processing
 
-               if ( ip .gt. -900000 ) then
-                  if ( ip .gt. 0 ) then
+               if ( ip > -900000 ) then
+                  if ( ip > 0 ) then
                      accum = fdata%values(ip2,iloc,ibrk)
                   else
                      accum = data_param%constant(ipar)
@@ -127,99 +127,99 @@
 
                ! ignore value
 
-               if ( ip .le. -1300000000 ) then
+               if ( ip <= -1300000000 ) then
                   ip = 0
                endif
 
                ! a maximum value need to be applied
 
-               if ( ip .le. -1190000000 ) then
+               if ( ip <= -1190000000 ) then
                   ip = ip +  1200000000
-                  if ( wdata%values(ipar_out,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( wdata%values(ipar_out,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                      wdata%values(ipar_out,iloc,ibrk) = wdata%values(ipar_out,iloc,ibrk) + accum
                   else
                      wdata%values(ipar_out,iloc,ibrk) = amiss
                   endif
                   accum = 0.0
                   maxiem = .true.
-                  if ( ip .eq. 0 ) then
+                  if ( ip == 0 ) then
                      amaxv = fdata%values(ip2,iloc,ibrk)
                   endif
-                  if ( ip .lt. 0 ) amaxv = data_param%constant(ipar)
-                  if ( ip .gt. 0 ) amaxv = wdata%values(ip,iloc,ibrk)
+                  if ( ip < 0 ) amaxv = data_param%constant(ipar)
+                  if ( ip > 0 ) amaxv = wdata%values(ip,iloc,ibrk)
                endif
 
                ! a minimum value need to be applied
 
-               if ( ip .le. -1090000000 ) then
+               if ( ip <= -1090000000 ) then
                   ip = ip +  1100000000
-                  if ( wdata%values(ipar_out,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( wdata%values(ipar_out,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                      wdata%values(ipar_out,iloc,ibrk) = wdata%values(ipar_out,iloc,ibrk) + accum
                   else
                      wdata%values(ipar_out,iloc,ibrk) = amiss
                   endif
                   accum = 0.0
                   miniem = .true.
-                  if ( ip .eq. 0 ) then
+                  if ( ip == 0 ) then
                      aminv = fdata%values(ip2,iloc,ibrk)
                   endif
-                  if ( ip .lt. 0 ) aminv = data_param%constant(ipar)
-                  if ( ip .gt. 0 ) aminv = wdata%values(ip,iloc,ibrk)
+                  if ( ip < 0 ) aminv = data_param%constant(ipar)
+                  if ( ip > 0 ) aminv = wdata%values(ip,iloc,ibrk)
                endif
 
                ! a minus sign need to be applied
 
-               if ( ip .le. -900000000 ) then
+               if ( ip <= -900000000 ) then
                   ip = ip + 1000000000
-                  if ( wdata%values(ipar_out,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( wdata%values(ipar_out,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                      wdata%values(ipar_out,iloc,ibrk) = wdata%values(ipar_out,iloc,ibrk) + accum
                   else
                      wdata%values(ipar_out,iloc,ibrk) = amiss
                   endif
-                  if ( ip .eq. 0 ) then
+                  if ( ip == 0 ) then
                      accum = -fdata%values(ip2,iloc,ibrk)
                   endif
-                  if ( ip .lt. 0 ) accum = -data_param%constant(ipar)
-                  if ( ip .gt. 0 ) accum = -wdata%values(ip,iloc,ibrk)
-                  if ( accum .eq. -amiss ) accum = amiss
+                  if ( ip < 0 ) accum = -data_param%constant(ipar)
+                  if ( ip > 0 ) accum = -wdata%values(ip,iloc,ibrk)
+                  if ( accum == -amiss ) accum = amiss
                endif
 
                ! a plus sign need to be applied
 
-               if ( ip .le. -90000000  ) then
+               if ( ip <= -90000000  ) then
                   ip = ip + 100000000
-                  if ( wdata%values(ipar_out,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( wdata%values(ipar_out,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                      wdata%values(ipar_out,iloc,ibrk) = wdata%values(ipar_out,iloc,ibrk) + accum
                   else
                      wdata%values(ipar_out,iloc,ibrk) = amiss
                   endif
-                  if ( ip .eq. 0 ) then
+                  if ( ip == 0 ) then
                      accum =  fdata%values(ip2,iloc,ibrk)
                   endif
-                  if ( ip .lt. 0 ) accum =  data_param%constant(ipar)
-                  if ( ip .gt. 0 ) accum =  wdata%values(ip,iloc,ibrk)
+                  if ( ip < 0 ) accum =  data_param%constant(ipar)
+                  if ( ip > 0 ) accum =  wdata%values(ip,iloc,ibrk)
                endif
 
                ! a division need to be applied
 
-               if ( ip .le. -9000000   ) then
+               if ( ip <= -9000000   ) then
                   ip = ip + 10000000
-                  if ( ip .eq. 0 ) then
-                     if ( fdata%values(ipar,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( ip == 0 ) then
+                     if ( fdata%values(ipar,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                         accum = accum / fdata%values(ip2,iloc,ibrk)
                      else
                         accum = amiss
                      endif
                   endif
-                  if ( ip .lt. 0 ) then
-                     if ( data_param%constant(ipar) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( ip < 0 ) then
+                     if ( data_param%constant(ipar) /= amiss .and. accum /= amiss ) then
                         accum = accum / data_param%constant(ipar)
                      else
                         accum = amiss
                      endif
                   endif
-                  if ( ip .gt. 0 ) then
-                     if ( wdata%values(ip,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( ip > 0 ) then
+                     if ( wdata%values(ip,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                         accum = accum / wdata%values(ip,iloc,ibrk)
                      else
                         accum = amiss
@@ -229,24 +229,24 @@
 
                ! a multiplication need to be applied
 
-               if ( ip .le. -900000    ) then
+               if ( ip <= -900000    ) then
                   ip = ip + 1000000
-                  if ( ip .eq. 0 ) then
-                     if ( fdata%values(ipar,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( ip == 0 ) then
+                     if ( fdata%values(ipar,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                         accum = accum * fdata%values(ip2,iloc,ibrk)
                      else
                         accum = amiss
                      endif
                   endif
-                  if ( ip .lt. 0 ) then
-                     if ( data_param%constant(ipar) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( ip < 0 ) then
+                     if ( data_param%constant(ipar) /= amiss .and. accum /= amiss ) then
                         accum = accum * data_param%constant(ipar)
                      else
                         accum = amiss
                      endif
                   endif
-                  if ( ip .gt. 0 ) then
-                     if ( wdata%values(ip,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( ip > 0 ) then
+                     if ( wdata%values(ip,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                         accum = accum * wdata%values(ip,iloc,ibrk)
                      else
                         accum = amiss
@@ -256,10 +256,10 @@
 
                ! close accumulation if last parameter or next one is normal
 
-               if ( ipar .eq. data_param%no_item ) then
+               if ( ipar == data_param%no_item ) then
                   close_accum = .true.
                else
-                  if ( data_param%ipnt(ipar+1) .gt. -900000 ) then
+                  if ( data_param%ipnt(ipar+1) > -900000 ) then
                      close_accum = .true.
                   else
                      close_accum = .false.
@@ -267,22 +267,22 @@
                endif
 
                if ( close_accum ) then
-                  if ( wdata%values(ipar_out,iloc,ibrk) .ne. amiss .and. accum .ne. amiss ) then
+                  if ( wdata%values(ipar_out,iloc,ibrk) /= amiss .and. accum /= amiss ) then
                      wdata%values(ipar_out,iloc,ibrk) = wdata%values(ipar_out,iloc,ibrk) + accum
                   else
                      wdata%values(ipar_out,iloc,ibrk) = amiss
                   endif
                   if ( maxiem ) then
-                     if ( wdata%values(ipar_out,iloc,ibrk) .gt. amaxv .and. & 
-                         wdata%values(ipar_out,iloc,ibrk) .ne. amiss       ) then
+                     if ( wdata%values(ipar_out,iloc,ibrk) > amaxv .and. &
+                         wdata%values(ipar_out,iloc,ibrk) /= amiss       ) then
                         write ( lunut , 1000 ) ibrk, iparo, iloc
                         write ( lunut , 1010 ) wdata%values(ipar_out,iloc,ibrk), amaxv
                         wdata%values(ipar_out,iloc,ibrk) = amaxv
                      endif
                   endif
                   if ( miniem ) then
-                     if ( wdata%values(ipar_out,iloc,ibrk) .lt. aminv .and. & 
-                         wdata%values(ipar_out,iloc,ibrk) .ne. amiss       ) then
+                     if ( wdata%values(ipar_out,iloc,ibrk) < aminv .and. &
+                         wdata%values(ipar_out,iloc,ibrk) /= amiss       ) then
                         write ( lunut , 1000 ) ibrk, iparo, iloc
                         write ( lunut , 1020 ) wdata%values(ipar_out,iloc,ibrk), aminv
                         wdata%values(ipar_out,iloc,ibrk) = aminv

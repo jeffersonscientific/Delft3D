@@ -103,11 +103,11 @@
       IP36 = IPOINT(36)
 
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
 
       SURF      = PMSA(IP26)
@@ -142,7 +142,7 @@
       NH4KR     = PMSA(IP30)
 
 !     DIATOMS IN SEDIMENT - IF PPMAX -1 ONLY MORTALITY
-      IF (PPMAX.LT.0.0) THEN
+      IF (PPMAX<0.0) THEN
         PRODD = 0.0
         RESP = 0.0
         FL ( 1 + IFLUX ) =  0.0
@@ -211,7 +211,7 @@
 
 !       Find actual production and compute 'nutrient efficiency'
 
-        IF (PRODD.GT.1E-30) THEN
+        IF (PRODD>1E-30) THEN
           EFNMFB = AMIN1 (UPTAKC, UPTAKN/NCRAT, UPTAKP/PCRAT, & 
                          UPTAKS/SICRAT) / PRODD
           EFNMFB = AMAX1(EFNMFB,0.0)
@@ -226,8 +226,8 @@
         FL ( 1 + IFLUX ) =  PRODD / DEPTH
 
 !       Division of nitrogen uptake over NH4 and NO3 and mineralization
-        IF ((PRODD*NCRAT).LE.(MINN+SWMINN)) THEN
-          IF (SWMINN.GT.0.0) THEN
+        IF ((PRODD*NCRAT)<=(MINN+SWMINN)) THEN
+          IF (SWMINN>0.0) THEN
             FL (10 + IFLUX ) =  PRODD * NCRAT/ DEPTH
             FL ( 7 + IFLUX ) =  0.0
           ELSE
@@ -238,8 +238,8 @@
           FL ( 4 + IFLUX ) =  0.0
         ELSE
           XNTOT = (PRODD * NCRAT - (MINN+SWMINN)*FRNBAC) * DELTAT/DEPTH
-          IF (CNH4.GT.NH4KR) THEN
-             IF (XNTOT.LE.(CNH4 - NH4KR)) THEN
+          IF (CNH4>NH4KR) THEN
+             IF (XNTOT<=(CNH4 - NH4KR)) THEN
                  NH4D = 1.
                  NO3D = 0.
              ELSE
@@ -252,7 +252,7 @@
               NH4D = CNH4 / (CNO3 + CNH4)
               NO3D = 1. - NH4D
           ENDIF
-          IF (SWMINN.GT.0.0) THEN
+          IF (SWMINN>0.0) THEN
             FL (10 + IFLUX ) =  SWMINN*FRNBAC / DEPTH
             FL ( 7 + IFLUX ) =  0.0
           ELSE
@@ -264,9 +264,9 @@
         ENDIF
 
 !       Division of phosphorus dissolved and from mineralization
-        IF ((PRODD*PCRAT).LE.(MINP+SWMINP)) THEN
+        IF ((PRODD*PCRAT)<=(MINP+SWMINP)) THEN
           FL ( 5 + IFLUX ) =  0.0
-          IF (SWMINP.GT.0.0) THEN
+          IF (SWMINP>0.0) THEN
             FL ( 8 + IFLUX ) =  0.0
             FL ( 11+ IFLUX ) =  PRODD * PCRAT/ DEPTH
           ELSE
@@ -274,7 +274,7 @@
             FL ( 11+ IFLUX ) =  0.0
           ENDIF
         ELSE
-          IF (SWMINP.GT.0.0) THEN
+          IF (SWMINP>0.0) THEN
             FL ( 8 + IFLUX ) =  0.0
             FL ( 11+ IFLUX ) =  SWMINP/ DEPTH
           ELSE
@@ -285,9 +285,9 @@
         ENDIF
 
 !       Division of silicium dissolved and from mineralization
-        IF ((PRODD*SICRAT).LE.(MINS+SWMINS)) THEN
+        IF ((PRODD*SICRAT)<=(MINS+SWMINS)) THEN
           FL ( 6 + IFLUX ) =  0.0
-          IF (SWMINS.GT.0.0) THEN
+          IF (SWMINS>0.0) THEN
             FL ( 9 + IFLUX ) =  0.0
             FL ( 12+ IFLUX ) =  PRODD * SICRAT/ DEPTH
           ELSE
@@ -295,7 +295,7 @@
             FL ( 12+ IFLUX ) =  0.0
           ENDIF
         ELSE
-          IF (SWMINS.GT.0.0) THEN
+          IF (SWMINS>0.0) THEN
             FL ( 9 + IFLUX ) =  0.0
             FL ( 12+ IFLUX ) =  SWMINS/ DEPTH
           ELSE
@@ -358,7 +358,7 @@
       IP35  = IP35  + INCREM ( 35 )
       IP36  = IP36  + INCREM ( 36 )
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END
@@ -375,7 +375,7 @@
 !
       AVAFLX = (CONC/(KM+CONC)) * CONC / DELTAT * DEPTH
       AVAFLX = AMAX1 ( AVAFLX, 0.0 )
-      IF (AVAFLX .LT. REQFLX) REQFLX = AVAFLX
+      IF (AVAFLX < REQFLX) REQFLX = AVAFLX
       RETURN
       END
 

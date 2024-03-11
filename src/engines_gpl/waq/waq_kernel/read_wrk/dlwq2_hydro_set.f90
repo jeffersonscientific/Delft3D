@@ -141,7 +141,7 @@
 !
          iret = 0
          do i = 1 , aFilePropColl%cursize         ! search by name
-            if ( aFilePropColl%FilePropPnts(i)%pnt%name .eq. aFileProp%name ) then
+            if ( aFilePropColl%FilePropPnts(i)%pnt%name == aFileProp%name ) then
                iret = i
                return
             endif
@@ -159,12 +159,12 @@
          type(FilePropPnt), pointer       :: aFilePropPnts(:)   ! should be a pointer for the resize operation
          integer(kind=int_wp) ::nrftot, cursize
 !                                                   ! this is the standard procedure to enlarge collections
-         if ( aFilePropColl%cursize .eq. aFilePropColl%maxsize ) then
+         if ( aFilePropColl%cursize == aFilePropColl%maxsize ) then
             allocate ( aFilePropPnts ( aFilePropColl%maxsize + MAX_NUM ) )
             do i = 1 , aFilePropColl%maxsize
                aFilePropPnts(i) = aFilePropColl%FilePropPnts ( i )        ! copies the pointers
             enddo
-            if ( aFilePropColl%maxsize .ne. 0 ) deallocate ( aFilePropColl%FilePropPnts )
+            if ( aFilePropColl%maxsize /= 0 ) deallocate ( aFilePropColl%FilePropPnts )
             aFilePropColl%FilePropPnts => aFilePropPnts                   ! attaches this new array of pointers
             aFilePropColl%maxsize = aFilePropColl%maxsize + MAX_NUM
          endif
@@ -192,7 +192,7 @@
 
          aPropPnt%istart = aPropPnt%itime1
          aPropPnt%istep  = aPropPnt%itime2 - aPropPnt%itime1
-         if ( aPropPnt%istop .eq. 0 ) aPropPnt%istop  = aPropPnt%itime2  ! This is the convention if stop time is unknown !
+         if ( aPropPnt%istop == 0 ) aPropPnt%istop  = aPropPnt%itime2  ! This is the convention if stop time is unknown !
          cursize = aFilePropColl%cursize
 
          if ( aPropPnt%istart == aPropPnt%istop ) then
@@ -218,12 +218,12 @@
          type(FileUseDef), pointer        :: aFileUseDefs(:) ! should be a pointer for the resize operation
          integer(kind=int_wp) ::cursize
 !                                                   ! this is the standard procedure to enlarge collections
-         if ( aFileUseDefColl%cursize .eq. aFileUseDefColl%maxsize ) then
+         if ( aFileUseDefColl%cursize == aFileUseDefColl%maxsize ) then
             allocate ( aFileUseDefs ( aFileUseDefColl%maxsize + MAX_NUM ) )
             do i = 1 , aFileUseDefColl%maxsize
                aFileUseDefs(i) = aFileUseDefColl%FileUseDefs ( i )
             enddo
-            if ( aFileUseDefColl%maxsize .ne. 0 ) deallocate ( aFileUseDefColl%FileUseDefs )
+            if ( aFileUseDefColl%maxsize /= 0 ) deallocate ( aFileUseDefColl%FileUseDefs )
             aFileUseDefColl%FileUseDefs => aFileUseDefs
             aFileUseDefColl%maxsize = aFileUseDefColl%maxsize + MAX_NUM
          endif
@@ -243,12 +243,12 @@
          type(FileUseDefColl), pointer    :: aFileUseDefColls(:)  ! should be a pointer for the resize operation
          integer(kind=int_wp) ::cursize
 !                                                   ! this is the standard procedure to enlarge collections
-         if ( aFileUseDefCollColl%cursize .eq. aFileUseDefCollColl%maxsize ) then
+         if ( aFileUseDefCollColl%cursize == aFileUseDefCollColl%maxsize ) then
             allocate ( aFileUseDefColls ( aFileUseDefCollColl%maxsize + MAX_NUM ) )
             do i = 1 , aFileUseDefCollColl%maxsize
                aFileUseDefColls(i) = aFileUseDefCollColl%FileUseDefColls ( i )
             enddo
-            if ( aFileUseDefCollColl%maxsize .ne. 0 ) deallocate ( aFileUseDefCollColl%FileUseDefColls )
+            if ( aFileUseDefCollColl%maxsize /= 0 ) deallocate ( aFileUseDefCollColl%FileUseDefColls )
             aFileUseDefCollColl%FileUseDefColls => aFileUseDefColls
             aFileUseDefCollColl%maxsize = aFileUseDefCollColl%maxsize + MAX_NUM
          endif
@@ -271,7 +271,7 @@
 !
          found = 0
          do i = 1 , aFileUseDefCollColl%cursize          ! search by unitc number for this phisics
-            if ( aFileUseDefCollColl%FileUseDefColls( i )%unitnr .eq. ilun ) then
+            if ( aFileUseDefCollColl%FileUseDefColls( i )%unitnr == ilun ) then
                found = i
                return
             endif
@@ -313,29 +313,29 @@
 
          call lock_this_file( aProp%ilun )
 !
-         if ( itLocal .lt. aUseDef%istart ) then              ! if earlier than start of this definition
+         if ( itLocal < aUseDef%istart ) then              ! if earlier than start of this definition
             found = -aUseDef%istart                           !      return minus start of this definition
             aUseDef%active = .false.
             call unlock_this_file( aProp%ilun )
             return
          endif
 !
-         if (   aUseDef%istop .eq. 0             .or.          & ! if stop of the definition is not defined
-               itLocal .lt. aUseDef%istop       .or.          & ! or local time before stop
-             ( itLocal .eq. aUseDef%istop .and.               & ! or local time is stop,
-               itLocal .eq. aUseDefColl%istop   )    ) then  !    but also end of collection then
+         if (   aUseDef%istop == 0             .or.          & ! if stop of the definition is not defined
+               itLocal < aUseDef%istop       .or.          & ! or local time before stop
+             ( itLocal == aUseDef%istop .and.               & ! or local time is stop,
+               itLocal == aUseDefColl%istop   )    ) then  !    but also end of collection then
 !
             found = 0                                         ! we are in business
             aUseDef%active = .true.
 !
-            if ( itFile .lt. aProp%istart ) then              ! before physical start of file (strange)
+            if ( itFile < aProp%istart ) then              ! before physical start of file (strange)
                found = -aProp%istart                          !      probably an uncaught error in the input
                aUseDef%active = .false.                       !      it implies that aProp%istart > aProp%istop
                call unlock_this_file( aProp%ilun )
                return
             endif
 !
-            if ( itFile .lt. aProp%itime1 ) then              ! aparently a remnant from earlier invokation
+            if ( itFile < aProp%itime1 ) then              ! aparently a remnant from earlier invokation
                UPDATE = .TRUE.                                ! reset everything in this file property
                if (aProp%stream_access ) then
                   read ( aProp%ilun, iostat = ierr, pos = 1 )
@@ -353,15 +353,15 @@
                aUseDef%active = .false.
             endif
 !
-            if ( aProp%istop .ne. aProp%itime2 .and.           & ! if file-stoptime is known (otherwise it increases with itime2)
-                aProp%istop .lt. itFile ) then               ! and time in the file is after file-stoptime
+            if ( aProp%istop /= aProp%itime2 .and.           & ! if file-stoptime is known (otherwise it increases with itime2)
+                aProp%istop < itFile ) then               ! and time in the file is after file-stoptime
                idt = ( (itFile-aProp%istop)/(aProp%istop-aProp%istart) + 1 ) * (aProp%istop-aProp%istart)
                aProp%ioffset = aProp%ioffset + idt            ! this prevents many readings to initialise
                itFile        = itFile        - idt            ! the timers at start of simulation, note that idt is always
                aUseDef%active = .false.                       ! a whole number times aProp%istop-aProp%istart
             endif
 !
-            do while ( itFile .ge. aProp%itime2 )             ! after or at time of second record ?
+            do while ( itFile >= aProp%itime2 )             ! after or at time of second record ?
                UPDATE = .TRUE.                                ! update takes place
 
                !
@@ -383,7 +383,7 @@
 
                goto 20                                        ! go to the optional detection of end time of the file
 !
-   10          if ( itFile .eq. aProp%itime2 ) then        ! only accept timings exactly on breakpoints
+   10          if ( itFile == aProp%itime2 ) then        ! only accept timings exactly on breakpoints
                   call Flinterpol ( aProp, aUseDefColl%array1, aUseDefColl%nrftot, & 
                                    aUseDefColl%intopt, aUseDef, itLocal, itFile, UPDATE )
                   LrLocal = .true.                         ! this file has been saved
@@ -406,7 +406,7 @@
                   inquire( aProp%ilun, pos = aProp%position )
                endif
 !
-   20          if ( aProp%istop .eq. aProp%itime1 ) aProp%istop = aProp%itime2  ! update file stop
+   20          if ( aProp%istop == aProp%itime1 ) aProp%istop = aProp%itime2  ! update file stop
             end do                                            ! if all is alright, this should be it
 !
             if ( .not. LrLocal .and. .not. LREWIN ) then    ! also sum in the saved system jtest also not when a previous rewind
@@ -419,7 +419,7 @@
          else                                                 ! we exceeded the stop time of the UseDef
 !
             if ( aUseDef%active ) then                        ! it was apparently previously active
-               if ( itFile .le. aProp%itime2 )                 & ! only accept timings exactly on breakpoints
+               if ( itFile <= aProp%itime2 )                 & ! only accept timings exactly on breakpoints
                  call Flinterpol ( aProp, aUseDefColl%array1, aUseDefColl%nrftot, & 
                                    aUseDefColl%intopt, aUseDef, itLocal, itFile, UPDATE )
                if (aProp%stream_access ) then
@@ -496,18 +496,18 @@
          logical          UPDATE
 !
       weight = aDef%weight
-      if ( abs(aDef%weight    ) .lt. 1.0E-30 ) weight = float(( itLocal - aDef%istart )) / ( aDef%istop - aDef%istart )
-      if ( abs(aDef%weight+1.0) .lt. 1.0E-30 ) weight = float(( aDef%istop - itLocal  )) / ( aDef%istop - aDef%istart )
+      if ( abs(aDef%weight    ) < 1.0E-30 ) weight = float(( itLocal - aDef%istart )) / ( aDef%istop - aDef%istart )
+      if ( abs(aDef%weight+1.0) < 1.0E-30 ) weight = float(( aDef%istop - itLocal  )) / ( aDef%istop - aDef%istart )
 !
-      if ( intopt .eq. 0 ) then
+      if ( intopt == 0 ) then
          do i = 1 , nrftot
-            if ( itLocal .eq. aDef%istart ) UPDATE = .true.
+            if ( itLocal == aDef%istart ) UPDATE = .true.
             array3(i) = array3(i) + weight*aProp%array1(i) ! no interpolation
          enddo
       endif
-      if ( intopt .eq. 1 ) then                                      ! linear interpolation
+      if ( intopt == 1 ) then                                      ! linear interpolation
          UPDATE = .true.
-         if ( aProp%itime1 .eq. aProp%itime2 ) then
+         if ( aProp%itime1 == aProp%itime2 ) then
             fact = 1.0
          else
             fact = float( itFile - aProp%itime1 ) / ( aProp%itime2 - aProp%itime1 )
@@ -516,15 +516,15 @@
             array3(i) = array3(i) + weight*(fact*aProp%array2(i) + (1.0-fact)*aProp%array1(i))
          enddo
       endif                                                ! logarithmic interpolation between files
-      if ( intopt .eq. 2 ) then
+      if ( intopt == 2 ) then
          UPDATE = .true.
          do i = 1 , nrftot
             array3(i) = array3(i) + weight*alog( max(aProp%array1(i),1.0E-25) )
          enddo
       endif
-      if ( intopt .eq. 3 ) then                            ! logarithmic interpolation between files and times
+      if ( intopt == 3 ) then                            ! logarithmic interpolation between files and times
          UPDATE = .true.
-         if ( aProp%itime1 .eq. aProp%itime2 ) then
+         if ( aProp%itime1 == aProp%itime2 ) then
             fact = 1.0
          else
             fact = float( itFile - aProp%itime1 ) / ( aProp%itime2 - aProp%itime1 )

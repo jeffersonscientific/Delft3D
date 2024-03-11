@@ -87,13 +87,13 @@
 !         Open the DELWAQ .HIS file if needed
 !
       CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
-      IF ( IERROR .NE. 0 ) RETURN
+      IF ( IERROR /= 0 ) RETURN
 
       ! map or his
 
       call extract_file_extension(fname(1), ext, extpos, extlen)
       call upper_case(ext, ext, extlen)
-      if ( ext .eq. 'MAP' ) then
+      if ( ext == 'MAP' ) then
          mapfil = .true.
       else
          mapfil = .false.
@@ -102,10 +102,10 @@
 !         Read primary system characteristics
 !
       READ ( lun , ERR=100 )   FNAME(3)(1:160)
-      IF ( FNAME(3)(121:123) .NE. 'T0: ' .AND. & 
-          FNAME(3)(121:123) .NE. 't0: ' .AND. & 
-          FNAME(3)(121:123) .NE. 'T0= ' .AND. & 
-          FNAME(3)(121:123) .NE. 't0= '       ) THEN
+      IF ( FNAME(3)(121:123) /= 'T0: ' .AND. &
+          FNAME(3)(121:123) /= 't0: ' .AND. &
+          FNAME(3)(121:123) /= 'T0= ' .AND. &
+          FNAME(3)(121:123) /= 't0= '       ) THEN
          GOTO 140
       ENDIF
       READ ( FNAME(3)(125:128) , '(I4)' ) IYEAR
@@ -133,12 +133,12 @@
       I2 = (LOC(2)-LOC(1))/LOC(3)
       I3 =  LOC(3)*NOTOT - 1
       I4 =  NTT - I1 - ( 1 + I3 ) * I2 - 1
-      IF ( ISET+I2+1 .GT. MAXDIM ) GOTO 150
+      IF ( ISET+I2+1 > MAXDIM ) GOTO 150
       READ ( lun , ERR=150 , END=200 ) IDUMMY , ( ADUMMY , K=1,I1 ) , & 
                ( DATA(ISET+K)    , ( ADUMMY , L=1,I3 ) , K=1,I2 ) , & 
                  DATA(ISET+I2+1) , ( ADUMMY , L=1,I4 )
       ATIME = OTIME + IDUMMY*SECOND
-      IF ( ATIME .GT. TIM(1) .AND. ATIME .LT. TIM(2) ) THEN
+      IF ( ATIME > TIM(1) .AND. ATIME < TIM(2) ) THEN
          ISET = ISET + I2 + 1
       ENDIF
       GOTO 10
@@ -217,13 +217,13 @@
 !         Open the DELWAQ .HIS file if needed
 !
       CALL open_waq_files ( lun , FNAME(1) , 24 , 2 , IERROR )
-      IF ( IERROR .NE. 0 ) RETURN
+      IF ( IERROR /= 0 ) RETURN
 
       ! map or his
 
       call extract_file_extension(fname(1), ext, extpos, extlen)
       call upper_case(ext, ext, extlen)
-      if ( ext .eq. 'MAP' ) then
+      if ( ext == 'MAP' ) then
          mapfil = .true.
       else
          mapfil = .false.
@@ -232,10 +232,10 @@
 !         Read primary system characteristics
 !
       READ ( lun , ERR=100 )   FNAME(3)(1:160)
-      IF ( FNAME(3)(121:123) .NE. 'T0: ' .AND. & 
-          FNAME(3)(121:123) .NE. 't0: ' .AND. & 
-          FNAME(3)(121:123) .NE. 'T0= ' .AND. & 
-          FNAME(3)(121:123) .NE. 't0= '       ) THEN
+      IF ( FNAME(3)(121:123) /= 'T0: ' .AND. &
+          FNAME(3)(121:123) /= 't0: ' .AND. &
+          FNAME(3)(121:123) /= 'T0= ' .AND. &
+          FNAME(3)(121:123) /= 't0= '       ) THEN
          GOTO 140
       ENDIF
       READ ( FNAME(3)(125:128) , '(I4)' ) IYEAR
@@ -260,10 +260,10 @@
       NTT   = NODUMP*NOTOT
       ISET  = 0
       DO
-         IF ( ISET+NTT .GT. MAXDIM ) GOTO 150
+         IF ( ISET+NTT > MAXDIM ) GOTO 150
          READ ( lun , ERR=150 , END=200 ) IDUMMY , ( DATA(ISET+K) , K=1,NTT)
          ATIME = OTIME + IDUMMY*SECOND
-         IF ( ATIME .GT. TIM(1) .AND. ATIME .LT. TIM(2) ) THEN
+         IF ( ATIME > TIM(1) .AND. ATIME < TIM(2) ) THEN
             ISET = ISET + NTT
          ENDIF
       ENDDO

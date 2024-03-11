@@ -103,11 +103,11 @@
       IP11 = IPOINT(11)
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.1)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
 !
 !
 !     Map PMSA on local variables
@@ -124,11 +124,11 @@
 !
 !
 !     Error messages
-      IF (H0TREF .LT. 1E-30)  CALL write_error_message ('H0TREF in VERVLU =<0')
-      IF ( TEMP .LE. -KELVIN) CALL & 
+      IF (H0TREF < 1E-30)  CALL write_error_message ('H0TREF in VERVLU =<0')
+      IF ( TEMP <= -KELVIN) CALL &
                       write_error_message ('TEMP in VERVLU < 0 DEG KELVIN')
-      IF (KL .LT. 1E-30) CALL write_error_message ('KL in VERVLU zero')
-      IF (KG .LT. 1E-30) CALL write_error_message ('KG in VERVLU zero')
+      IF (KL < 1E-30) CALL write_error_message ('KL in VERVLU zero')
+      IF (KG < 1E-30) CALL write_error_message ('KG in VERVLU zero')
 !
 !     Calculation of temperarure dependence of Henry
       H2TREF = H0TREF * NL / P
@@ -167,7 +167,7 @@
       IP10  = IP10  + INCREM ( 10 )
       IP11  = IP11  + INCREM ( 11 )
 !
- 9000 CONTINUE
+      end do
 !
 !
       RETURN

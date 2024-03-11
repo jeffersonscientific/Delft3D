@@ -111,19 +111,19 @@
 
          case ( -1 )                      !    External ASCII file
             do ifil = 1 , lstack
-               if ( ilun(ifil) .ne. 0 ) ifl = ifil
+               if ( ilun(ifil) /= 0 ) ifl = ifil
             enddo
-            if ( ifl .eq. lstack ) then   !    No space on the stack
+            if ( ifl == lstack ) then   !    No space on the stack
                write ( lunut , 2010 ) lstack
                ierr2 = 1
                goto 30
             endif
-            if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 30     !   Get file name
+            if ( gettoken( cdummy, ierr2 ) > 0 ) goto 30     !   Get file name
             write ( lunut , 2020 )  cdummy
             ifl       = ifl + 1
             lunin     = 800 + ifl
             call open_waq_files  ( lunin , cdummy , 33 , 1 , ierr2 )    !   Open the file
-            if ( ierr2 .gt. 0 ) then
+            if ( ierr2 > 0 ) then
                ifl = ifl - 1
                write ( lunut , 2030 )
             else
@@ -135,13 +135,13 @@
             if ( dont_read ) then
                cdummy = lchar(is)
             else
-   10          if ( gettoken( cdummy, ierr2 ) .gt. 0 ) goto 30     !   Get file name
-               if ( cdummy .eq. 'UNFORMATTED' ) then
+   10          if ( gettoken( cdummy, ierr2 ) > 0 ) goto 30     !   Get file name
+               if ( cdummy == 'UNFORMATTED' ) then
                   filtype(is) = filtype(is) + 10
                   write ( lunut, * ) 'UNFORMATTED file detected'
                   goto 10
                endif
-               if ( cdummy .eq. 'BIG_ENDIAN' ) then
+               if ( cdummy == 'BIG_ENDIAN' ) then
                   filtype(is) = filtype(is) + 20
                   write ( lunut, * ) 'BIG_ENDIAN  file detected'
                   goto 10
@@ -151,26 +151,26 @@
             write ( lunut , 2040 ) cdummy
 !                   Check if file exists
             call open_waq_files  ( lun(33), cdummy, 33, 2, ierr2 )
-            if ( ierr2 .gt. 0 ) then
+            if ( ierr2 > 0 ) then
                ierr2 = -2
             else
                close ( lun(33) )
             endif
 
          case ( -4 )                      !    ASCII steering file taylored to read .hyd files
-            if ( nitem .eq. 0 ) then
+            if ( nitem == 0 ) then
                write ( lunut , 2000 )
                ierr2 = 1
                goto 30
             endif
             itype = 1
-            do while ( itype .eq. 1 )
-               if ( gettoken( cdummy , nfil  , itype, ierr2 ) .gt. 0 ) goto 30  !   Get number of files
-               if ( itype .eq. 1 ) then
-                  if ( cdummy .eq. 'UNFORMATTED' ) then
+            do while ( itype == 1 )
+               if ( gettoken( cdummy , nfil  , itype, ierr2 ) > 0 ) goto 30  !   Get number of files
+               if ( itype == 1 ) then
+                  if ( cdummy == 'UNFORMATTED' ) then
                      filtype(is) = filtype(is) + 10
                      write ( lunut, * ) 'UNFORMATTED file detected'
-                  else if ( cdummy .eq. 'BIG_ENDIAN' ) then
+                  else if ( cdummy == 'BIG_ENDIAN' ) then
                      filtype(is) = filtype(is) + 20
                      write ( lunut, * ) 'BIG_ENDIAN  file detected'
                   else
@@ -180,15 +180,15 @@
                   endif
                endif
             enddo
-            if ( gettoken( intopt , ierr2 ) .gt. 0 ) goto 30     !   Get interpolation option
-            if ( gettoken( sstring, ierr2 ) .gt. 0 ) goto 30     !   Get file string
+            if ( gettoken( intopt , ierr2 ) > 0 ) goto 30     !   Get interpolation option
+            if ( gettoken( sstring, ierr2 ) > 0 ) goto 30     !   Get file string
 !                 Open the binary intermediate file for output
             call extract_file_extension(lchar(27),filext,extpos,extlen)
             lchar(is) = lchar(27)(1:max(1,(extpos-1)))//'-'//sstring
             call extract_file_extension(lchar(is),filext,extpos,extlen)
             lchar(is)(extpos:) = '.wrk'
             call open_waq_files  ( lun(is), lchar(is),  1 , 1   , ierr2 )
-            if ( ierr2 .gt. 0 ) then
+            if ( ierr2 > 0 ) then
                ierr2 = -2
                goto 30
             endif
@@ -196,16 +196,16 @@
             write(lun(is)   )  'Steering file '
             write(lun(is)   )   nfil,intopt
             write ( lunut , 2080 )
-            do  20 ifil = 1,nfil
-               if ( gettoken( fact   , ierr2 ) .gt. 0 ) goto 30  !   Get multiplication factor
-               if ( gettoken( cdummy , it1   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'from' time
-               if ( itype .eq. 1 ) then
+            do  ifil = 1,nfil
+               if ( gettoken( fact   , ierr2 ) > 0 ) goto 30  !   Get multiplication factor
+               if ( gettoken( cdummy , it1   , itype, ierr2 ) > 0 ) goto 30    ! 'from' time
+               if ( itype == 1 ) then
                   call convert_string_to_time_offset(cdummy, it1    , .false., .false., ierr2  )
-                  if ( ierr2 .gt. 0 ) then
+                  if ( ierr2 > 0 ) then
                      write ( lunut , 2130 ) trim(cdummy)
                      goto 30
                   endif
-                  if ( it1   .eq. -999 ) then
+                  if ( it1   == -999 ) then
                      write ( lunut , 2140 ) trim(cdummy)
                      ierr2 = 1
                      goto 30
@@ -213,14 +213,14 @@
                else
                   call convert_relative_time ( it1    , 1, dtflg1 , dtflg3)
                endif
-               if ( gettoken( cdummy , it2   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'to' time
-               if ( itype .eq. 1 ) then
+               if ( gettoken( cdummy , it2   , itype, ierr2 ) > 0 ) goto 30    ! 'to' time
+               if ( itype == 1 ) then
                   call convert_string_to_time_offset(cdummy, it2    , .false., .false., ierr2  )
-                  if ( ierr2 .gt. 0 ) then
+                  if ( ierr2 > 0 ) then
                      write ( lunut , 2130 ) trim(cdummy)
                      goto 30
                   endif
-                  if ( it2   .eq. -999 ) then
+                  if ( it2   == -999 ) then
                      write ( lunut , 2140 ) trim(cdummy)
                      ierr2 = 1
                      goto 30
@@ -228,14 +228,14 @@
                else
                   call convert_relative_time ( it2    , 1 , dtflg1 , dtflg3 )
                endif
-               if ( gettoken( cdummy , it3   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'step'
-               if ( itype .eq. 1 ) then
+               if ( gettoken( cdummy , it3   , itype, ierr2 ) > 0 ) goto 30    ! 'step'
+               if ( itype == 1 ) then
                   call convert_string_to_time_offset(cdummy, it3    , .false., .false., ierr2  )
-                  if ( ierr2 .gt. 0 ) then
+                  if ( ierr2 > 0 ) then
                      write ( lunut , 2130 ) trim(cdummy)
                      goto 30
                   endif
-                  if ( it3   .eq. -999 ) then
+                  if ( it3   == -999 ) then
                      write ( lunut , 2140 ) trim(cdummy)
                      ierr2 = 1
                      goto 30
@@ -243,7 +243,7 @@
                else
                   call convert_relative_time ( it3    , 1, dtflg1 , dtflg3 )
                endif
-               if ( gettoken( sfile , ierr2 ) .gt. 0 ) then       !     Get file string
+               if ( gettoken( sfile , ierr2 ) > 0 ) then       !     Get file string
                   ierr2 = -1
                   goto 30
                endif
@@ -255,7 +255,7 @@
                   cdummy = sfile
                   it2a   = 0
                   call open_waq_files  ( lun(33), cdummy, 33, 2, ierr2 )
-                  if ( ierr2 .gt. 0 ) then
+                  if ( ierr2 > 0 ) then
                      ierr2 = -2
                      goto 30
                   endif
@@ -275,11 +275,11 @@
                                    it3/31536000       , mod(it3,31536000)/86400, & 
                                    mod(it3,86400)/3600, mod(it3,3600)/60       , & 
                                    mod(it3,60), cdummy
-               if ( ierr .ne. 0 ) then
+               if ( ierr /= 0 ) then
                   ierr2 = -1
                   exit
                endif
-   20       continue
+            end do
             close ( lun(is) )
 
          case ( 1 )            !   continue reading from current file
@@ -334,7 +334,6 @@
                 I2,'Y-',I3,'D-',I2,'H-',I2,'M-',I2,'S. ', & 
                 I2,'Y-',I3,'D-',I2,'H-',I2,'M-',I2,'S. ',A )
  2100 format (/' ERROR: Reading ASCII description file ',A)
- 2110 format (/' ERROR: This option is not supported here !')
  2120 format ( ' Work file = ',A,' Interpolation option:',I2)
  2130 format (/' ERROR: String is not a valid absolute timer:',A)
  2140 format (/' ERROR: Absolute timer does not fit in timer format :',A,/ & 

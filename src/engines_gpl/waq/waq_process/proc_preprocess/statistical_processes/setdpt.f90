@@ -87,7 +87,7 @@
 !     init
 !
       ALLOCATE(ISUSED(NOKEY),STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDPT_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
@@ -96,7 +96,7 @@
       ISUSED = 0
 
       IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
-      IF ( IKEY .GT. 0 ) THEN
+      IF ( IKEY > 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
 !
@@ -117,7 +117,7 @@
       ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), & 
               aProcesProp%output_item(aProcesProp%no_output), & 
               STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDPT_1, array length:',aProcesProp%no_input,aProcesProp%no_output
          WRITE(*,*) 'ERROR allocating array:',IERR_ALLOC
@@ -127,7 +127,7 @@
 !     input on segments
 !
       IKEY = index_in_array('SUBSTANCE',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          call status%increase_error_count()
       ELSE
@@ -139,7 +139,7 @@
          aProcesProp%input_item(1)%ip_val= 0
          aItemProp%name = KEYVAL(IKEY)
          iret = ItemPropCollFind( AllItems, aItemProp )
-         if ( iret .le. 0 ) then
+         if ( iret <= 0 ) then
             aItemProp%text    = 'input parameter for statistics'
             aItemProp%default = -999.
             aItemProp%waqtype = WAQTYPE_NONE
@@ -150,7 +150,7 @@
 !
       aItemProp%name    = 'VOLUME'
       iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
+      if ( iret <= 0 ) then
          aItemProp%default = -999.
          aItemProp%text    = 'volume of segment'
          aItemProp%waqtype = WAQTYPE_DEFAULT
@@ -164,7 +164,7 @@
       aProcesProp%input_item(2)%ip_val  = 0
 !
       IKEY = index_in_array('SUFFIX',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          SUFFIX = ' '
       ELSE
          SUFFIX = KEYVAL(IKEY)
@@ -172,7 +172,7 @@
       ENDIF
       CALL get_trimmed_length(SUFFIX,ISLEN)
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = 'DPTAVG_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'DPTAVG_'//aProcesProp%input_item(1)%name
@@ -189,7 +189,7 @@
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
                         '] created with depth average from [',aProcesProp%input_item(1)%name,']'
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = 'DPTMAX_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'DPTMAX_'//aProcesProp%input_item(1)%name
@@ -206,7 +206,7 @@
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
                         '] created with maximum over depth from [',aProcesProp%input_item(1)%name,']'
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = 'DPTMIN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'DPTMIN_'//aProcesProp%input_item(1)%name
@@ -226,7 +226,7 @@
 !     check the use of the key words
 !
       DO IKEY = 1 , NOKEY
-         IF ( ISUSED(IKEY) .EQ. 0 ) THEN
+         IF ( ISUSED(IKEY) == 0 ) THEN
             call status%increase_warning_count()
             WRITE(LUNREP,*) 'WARNING: keyword not used'
             WRITE(LUNREP,*) 'key   :',KEYNAM(IKEY)

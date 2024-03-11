@@ -96,35 +96,36 @@
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outdmp", ithandl )
 !
-      IF ( NX*NY .EQ. 0 ) goto 9999  !   RETURN
+      IF ( NX*NY == 0 ) goto 9999  !   RETURN
 !
 !         initialise the paging
 !
-      IF ( IP(3) .EQ. 0 ) THEN
+      IF ( IP(3) == 0 ) THEN
            IP(3) = MAX(1,IP(1)/(7+(NY+5)*((NX+IP(2)-1)/IP(2))))
            IP(4) = 0
       ENDIF
 !
 !      repeat output for every substance
 !
-      DO 50 ITOT =  1 , NOTOT
+      DO ITOT =  1 , NOTOT
 !
 !      Calculate maximum concentration of displayed segments
 !
       CMAX = 0.0
-      DO 10 I1 = 1, NY
-      DO 10 I2 = 1, NX
+      DO I1 = 1, NY
+      DO I2 = 1, NX
       I3 = LGRID ( (I1-1)*NX+I2 )
-      IF ( I3 .GT. 0 ) CMAX = AMAX1 ( CMAX, CONC (ITOT, I3) )
-      IF ( I3 .LT. 0 .AND. ITOT .LE. NOSYS ) & 
+      IF ( I3 > 0 ) CMAX = AMAX1 ( CMAX, CONC (ITOT, I3) )
+      IF ( I3 < 0 .AND. ITOT <= NOSYS ) &
                       CMAX = AMAX1 ( CMAX, BOUND(ITOT,-I3) )
-   10 CONTINUE
+          end do
+      end do
 !
 !      Calculate scale factor
 !
-      IF ( CMAX .LE. 0.0 ) THEN
+      IF ( CMAX <= 0.0 ) THEN
            ISCALE = 0
-      ELSE IF ( CMAX .GE. 0.5 ) THEN
+      ELSE IF ( CMAX >= 0.5 ) THEN
               ISCALE =  AINT( ALOG10(CMAX) + 2.2E-5 )
            ELSE
               ISCALE = -AINT(-ALOG10(CMAX) - 2.2E-5 ) - 1
@@ -132,7 +133,7 @@
 !
 !         start printing
 !
-      IF ( MOD(IP(4),IP(3)) .EQ. 0 ) THEN
+      IF ( MOD(IP(4),IP(3)) == 0 ) THEN
            WRITE (IOUT,'('' '')')
            WRITE (IOUT,2040 ) ( MNAME(K),K=1,4)
       ENDIF
@@ -143,46 +144,47 @@
 !      Put concentration values in grid layout
 !
       FACTOR = 10.0**ISCALE
-      DO 40 I = 1, NX, IP(2)
-         DO 30 J = 1, NY
+      DO I = 1, NX, IP(2)
+         DO J = 1, NY
             NEND = MIN ( NX, I+IP(2)-1 )
-            DO 20 K = I, NEND
+            DO K = I, NEND
             CGRID ( K-I+1,J ) = POINT
             I3 = LGRID ( (J-1)*NX+K )
-            IF ( I3 .GT. 0 ) THEN
+            IF ( I3 > 0 ) THEN
                  WRITE ( PADDER, '(F6.3)')   CONC (ITOT, I3 )/FACTOR
                  CGRID(K-I+1,J) = PADDER
             ENDIF
-            IF ( I3 .LT. 0 .AND. ITOT .LE. NOSYS ) THEN
+            IF ( I3 < 0 .AND. ITOT <= NOSYS ) THEN
 
                  WRITE ( PADDER, '(F6.3)')   BOUND(ITOT,-I3 )/FACTOR
                  CGRID(K-I+1,J) = PADDER
             ENDIF
-   20       CONTINUE
+            end do
             WRITE ( IOUT, 2030 ) ( CGRID ( K-I+1, J ) , K=I, NEND )
-   30   CONTINUE
+          end do
         WRITE ( IOUT, '('' '')' )
-   40 CONTINUE
+      end do
 !
-   50 CONTINUE
+      end do
 !
 !      repeat output for extra substance
 !
-      DO 100 ITOT =  1 , NOTOT2
+      DO ITOT =  1 , NOTOT2
 !
 !      Calculate maximum concentration of displayed segments
 !
       CMAX = 0.0
-      DO 60 I1 = 1, NY
-      DO 60 I2 = 1, NX
+      DO I1 = 1, NY
+      DO I2 = 1, NX
          CMAX = AMAX1 ( CMAX, CONC2(ITOT+(I2*I1-1)*NOTOT2) )
-   60 CONTINUE
+          end do
+      end do
 !
 !      Calculate scale factor
 !
-      IF ( CMAX .LE. 0.0 ) THEN
+      IF ( CMAX <= 0.0 ) THEN
            ISCALE = 0
-      ELSE IF ( CMAX .GE. 0.5 ) THEN
+      ELSE IF ( CMAX >= 0.5 ) THEN
               ISCALE =  AINT( ALOG10(CMAX) + 2.2E-5 )
            ELSE
               ISCALE = -AINT(-ALOG10(CMAX) - 2.2E-5 ) - 1
@@ -190,7 +192,7 @@
 !
 !         start printing
 !
-      IF ( MOD(IP(4),IP(3)) .EQ. 0 ) THEN
+      IF ( MOD(IP(4),IP(3)) == 0 ) THEN
            WRITE (IOUT,'('' '')')
            WRITE (IOUT,2040 ) ( MNAME(K),K=1,4)
       ENDIF
@@ -201,23 +203,23 @@
 !      Put concentration values in grid layout
 !
       FACTOR = 10.0**ISCALE
-      DO 90 I = 1, NX, IP(2)
-         DO 80 J = 1, NY
+      DO I = 1, NX, IP(2)
+         DO J = 1, NY
             NEND = MIN ( NX, I+IP(2)-1 )
-            DO 70 K = I, NEND
+            DO K = I, NEND
                CGRID ( K-I+1,J ) = POINT
                C = CONC2( ITOT + ( (J-1)*NX+K - 1 ) * NOTOT2 )
-               IF ( C .NE. RMISS ) THEN
+               IF ( C /= RMISS ) THEN
                   WRITE ( PADDER, '(F6.3)')   C/FACTOR
                   CGRID(K-I+1,J) = PADDER
                ENDIF
-   70       CONTINUE
+            end do
             WRITE ( IOUT, 2030 ) ( CGRID ( K-I+1, J ) , K=I, NEND )
-   80   CONTINUE
+          end do
         WRITE ( IOUT, '('' '')' )
-   90 CONTINUE
+      end do
 !
-  100 CONTINUE
+      end do
 !
  9999 if ( timon ) call timstop ( ithandl )
       RETURN

@@ -78,22 +78,22 @@
 
       nproc = procesdef%cursize
 
-      do 300 iou = 1 , outputs%cursize
+      do iou = 1 , outputs%cursize
 
          ! check of deze al eerder aan de beurt is geweest
 
          iou2 = index_in_array( outputs%names(iou)(:10), outputs%names(:iou-1))
-         if ( iou2 .gt. 0 ) then
+         if ( iou2 > 0 ) then
 
             ! if pointer the same get out ( can they be different except for -1 ?? )
 
-            if ( outputs%pointers(iou) .eq. outputs%pointers(iou2) ) then
+            if ( outputs%pointers(iou) == outputs%pointers(iou2) ) then
                goto 300
             endif
 
             ! if pointer -1  set pointer equal to iou2 and get out
 
-            if ( outputs%pointers(iou) .eq. -1 ) then
+            if ( outputs%pointers(iou) == -1 ) then
                outputs%pointers(iou) = outputs%pointers(iou2)
                goto 300
             endif
@@ -101,16 +101,16 @@
 
          ! if this comes from proloc
 
-         if ( outputs%pointers(iou) .gt. iloc ) then
+         if ( outputs%pointers(iou) > iloc ) then
             do iproc = 1, nproc
                proc => procesdef%procesprops(iproc)
                if ( proc%active ) then
                   call zoekio ( outputs%names(iou), proc%no_output, proc%output_item, 20, ioutput, IOTYPE_SEGMENT_OUTPUT)
-                  if ( ioutput .gt. 0 ) then
+                  if ( ioutput > 0 ) then
 
                      ! is this the one which is being used ?
 
-                     if ( proc%output_item(ioutput)%ip_val .eq. outputs%pointers(iou) ) then
+                     if ( proc%output_item(ioutput)%ip_val == outputs%pointers(iou) ) then
                         write ( line , '(5a)' ) ' output [',outputs%names (iou)(1:20),'] from proces [',proc%name(1:10),']'
                         call monsys( line , 4 )
                         goto 300
@@ -120,24 +120,24 @@
                endif
 
             enddo
-         elseif ( outputs%pointers(iou) .eq. -1 ) then
+         elseif ( outputs%pointers(iou) == -1 ) then
 
             ! predefined ?
 
             indx = index_in_array(outputs%names(iou), predef)
-            if ( indx .eq. 1 ) then
+            if ( indx == 1 ) then
                write(line,'(3a)') ' output [',outputs%names (iou)(1:20),'] using delwaq volume'
                call monsys( line , 4 )
                outputs%pointers(iou) = 1
                goto 300
             endif
-            if ( indx .eq. 2 ) then
+            if ( indx == 2 ) then
                write(line,'(3a)') ' output [',outputs%names (iou)(1:20),'] using delwaq itime'
                call monsys( line , 4 )
                outputs%pointers(iou) = 2
                goto 300
             endif
-            if ( indx .eq. 3 ) then
+            if ( indx == 3 ) then
                write(line,'(3a)') ' output [',outputs%names (iou)(1:20),'] using delwaq idt'
                call monsys( line , 4 )
                outputs%pointers(iou) = 3
@@ -150,12 +150,12 @@
                proc => procesdef%procesprops(iproc)
                if ( proc%active ) then
                   call zoekio ( outputs%names(iou), proc%no_input, proc%input_item, 20, i_input, IOTYPE_SEGMENT_INPUT)
-                  if ( i_input .gt. 0 ) then
+                  if ( i_input > 0 ) then
 
                      ! is it a default ?
 
-                     if ( proc%input_item(i_input)%ip_val .gt. idef .and. & 
-                         proc%input_item(i_input)%ip_val .le. iflx) then
+                     if ( proc%input_item(i_input)%ip_val > idef .and. &
+                         proc%input_item(i_input)%ip_val <= iflx) then
                         outputs%pointers(iou) = proc%input_item(i_input)%ip_val
                         write ( line , '(5a)' ) ' output [',outputs%names (iou)(1:20),'] default from [',proc%name,']'
                         call monsys( line , 4 )
@@ -171,6 +171,7 @@
             call monsys( line , 4 )
          endif
   300 continue
+      end do
 
       line = ' '
       call monsys( line , 4 )

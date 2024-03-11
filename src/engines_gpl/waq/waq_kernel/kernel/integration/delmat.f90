@@ -88,7 +88,7 @@
       NMLC = N - NLC
       NDM1 = NUC + NLC
       ND   = NDM1 + 1
-      IF (IOPT.EQ.2) GOTO 1000
+      IF (IOPT==2) GOTO 1000
 !
 !           THE LU-DECOMPOSITION
 !
@@ -102,7 +102,7 @@
       K1 = NLC + 1
       L1 = K1 + NMLC*ND
   100 P  = A(K1)
-      IF ( ABS(P) .LT. 1.0E-35 ) THEN
+      IF ( ABS(P) < 1.0E-35 ) THEN
           WRITE(6, '('' Matrix for DELMAT singular at element:'',I5)') & 
                K1/ND + 1
           CALL SRSTOP(1)
@@ -136,11 +136,11 @@
 !
 !           BOOKKEEPING OF THE LOOP VARIABLES
 !
-      IF (K4.LT.L4) GOTO 300
-      IF (K2.LT.L2) GOTO 200
+      IF (K4<L4) GOTO 300
+      IF (K2<L2) GOTO 200
       K1 = K1 + ND
-      IF (K1.LT.L1) GOTO 100
-      IF (NLC.EQ.1) GOTO 700
+      IF (K1<L1) GOTO 100
+      IF (NLC==1) GOTO 700
 !
 !           THE COLLUMNS BECOME SHORTER, THE REST IS THE SAME
 !
@@ -148,7 +148,7 @@
       L1 = (N-1) * ND
   400 N1 = N1 - 1
       P  = A(K1)
-      IF ( ABS(P) .LT. 1.0E-35 ) THEN
+      IF ( ABS(P) < 1.0E-35 ) THEN
          WRITE(6,'('' Matrix for DELMAT singular at element:'',I5)') & 
               K1/ND + 1
          CALL SRSTOP(1)
@@ -164,14 +164,14 @@
   600 K3 = K3 + 1
       K4 = K4 + 1
       A(K4) = A(K4) - F * A(K3)
-      IF (K4.LT.L4) GOTO 600
-      IF (K2.LT.L2) GOTO 500
+      IF (K4<L4) GOTO 600
+      IF (K2<L2) GOTO 500
       K1 = K1 + ND
-      IF (K1.LT.L1) GOTO 400
+      IF (K1<L1) GOTO 400
 !
 !           ENTRY FOR SUBSTITUTION OPTION
 !
-  700 IF(IOPT.EQ.1) goto 9999  !   RETURN
+  700 IF(IOPT==1) goto 9999  !   RETURN
  1000 CONTINUE
 !
 !           THE FORWARD SUBSTITUTION HAS ESSENTIALLY THE SAME
@@ -202,10 +202,10 @@
  1300 K3 = K3 + 1
       K4 = K4 + 1
       B(K3) = B(K3) - F * B(K4)
-      IF (K3.LT.L3) GOTO 1300
-      IF (K2.LT.L2) GOTO 1200
-      IF (K1.LT.L1) GOTO 1100
-      IF (NLC.EQ.1) GOTO 2000
+      IF (K3<L3) GOTO 1300
+      IF (K2<L2) GOTO 1200
+      IF (K1<L1) GOTO 1100
+      IF (NLC==1) GOTO 2000
 !
 !           THE COLLUMNS BECOME SHORTER, THE REST IS THE SAME
 !
@@ -225,9 +225,9 @@
  1600 K3 = K3 + 1
       K4 = K4 + 1
       B(K3) = B(K3) - F * B(K4)
-      IF (K3.LT.L3) GOTO 1600
-      IF (K2.LT.L2) GOTO 1500
-      IF (K1.LT.L1) GOTO 1400
+      IF (K3<L3) GOTO 1600
+      IF (K2<L2) GOTO 1500
+      IF (K1<L1) GOTO 1400
 !
 !
 !         BACKWARD SUBSTITUTION
@@ -240,7 +240,7 @@
       F  = A(K1)
  2200 K5 = K5 - 1
       B(K5) = B(K5)/F
-      IF (K5.GT.L5) GOTO 2200
+      IF (K5>L5) GOTO 2200
       K2 = K1
       L2 = K1 - NUC * NDM1
       K3 = K5
@@ -253,10 +253,10 @@
  2400 K3 = K3 - 1
       K4 = K4 - 1
       B(K3) = B(K3) - F * B(K4)
-      IF (K3.GT.L3) GOTO 2400
-      IF (K2.GT.L2) GOTO 2300
-      IF (K1.GT.L1) GOTO 2100
-      IF (NUC.EQ.1) GOTO 2850
+      IF (K3>L3) GOTO 2400
+      IF (K2>L2) GOTO 2300
+      IF (K1>L1) GOTO 2100
+      IF (NUC==1) GOTO 2850
       N1 = NUC
       L1 = 2*ND
  2500 K1 = K1 - ND
@@ -265,7 +265,7 @@
       N1 = N1 - 1
  2600 K5 = K5 - 1
       B(K5) = B(K5)/F
-      IF (K5.GT.L5) GOTO 2600
+      IF (K5>L5) GOTO 2600
       K2 = K1
       L2 = K1 - N1 * NDM1
       K3 = K5
@@ -278,15 +278,15 @@
  2800 K3 = K3 - 1
       K4 = K4 - 1
       B(K3) = B(K3) - F * B(K4)
-      IF (K3.GT.L3) GOTO 2800
-      IF (K2.GT.L2) GOTO 2700
-      IF (K1.GT.L1) GOTO 2500
+      IF (K3>L3) GOTO 2800
+      IF (K2>L2) GOTO 2700
+      IF (K1>L1) GOTO 2500
  2850 K1 = K1 - ND
       L5 = K5 - M
       F  = A(K1)
  2900 K5 = K5 - 1
       B(K5) = B(K5)/F
-      IF (K5.GT.L5) GOTO 2900
+      IF (K5>L5) GOTO 2900
 
  9999 if ( timon ) call timstop ( ithandl )
       RETURN

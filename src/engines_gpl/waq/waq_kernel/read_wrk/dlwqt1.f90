@@ -143,19 +143,19 @@
 !
       ONLINE = .FALSE.
       IF ( OLCFWQ .OR. SRWACT ) & 
-     ONLINE = ( IS.EQ.11 .OR. IS.EQ.7 .OR. IS.EQ.10 )
+     ONLINE = ( IS==11 .OR. IS==7 .OR. IS==10 )
 !
 !         If NRHARM =  0 and NRFTOT= 0, one record per time step,
 !                                       no harmonics and interpolation.
       UPDATE = .FALSE.
       NTOTAL = NOSUB*NTOT
       IERR   = 0
-      IF ( NRHARM+NRFTOT .GT.  0 ) GOTO 10
-      IF ( NTOTAL .GT. 0 ) THEN
-         IF ( IFFLAG .EQ. 1 ) THEN
+      IF ( NRHARM+NRFTOT >  0 ) GOTO 10
+      IF ( NTOTAL > 0 ) THEN
+         IF ( IFFLAG == 1 ) THEN
             IF ( .NOT. NEWSET ) THEN
                CALL open_waq_files ( LUN(IS) , LUNTXT(IS) , IS , 2+ftype(is), IERR )
-               IF ( IERR .NE. 0 ) THEN
+               IF ( IERR /= 0 ) THEN
                   WRITE(LUN(19),*) 'ERROR in DLWQT1, opening file'
                   WRITE(LUN(19),*) 'number  :',IS
                   WRITE(LUN(19),*) 'file    :',LUNTXT(IS)
@@ -163,7 +163,7 @@
                   CALL SRSTOP(1)
                ENDIF
                READ ( LUN(IS) , IOSTAT = IOERR ) CHLP
-               IF ( IOERR.EQ.0 .AND. CHLP(1:6) .EQ. ' 4.900' ) THEN
+               IF ( IOERR==0 .AND. CHLP(1:6) == ' 4.900' ) THEN
                   NEWSET = .TRUE.
                   goto 9999        !  RETURN
                ELSE
@@ -179,7 +179,7 @@
                IPA = IPSI
                IPH = IPSA
                CLOSE ( LUN(IS) )
-               IF ( IERR .NE. 0 ) THEN
+               IF ( IERR /= 0 ) THEN
                   WRITE(LUN(19),*) 'ERROR in DLWQT1'
                   WRITE(LUN(19),*) 'after call to DLWQIB'
                   CALL SRSTOP(1)
@@ -194,7 +194,7 @@
             CALL DLWQTB ( LUN(19), IOFF   , HARMAT , IHARM  , IPA    , & 
                          IPH    , IPI    , ITIME  , IPOINT , RESULT , & 
                                                     IWORK  , IERR   )
-            IF ( IERR .NE. 0 ) THEN
+            IF ( IERR /= 0 ) THEN
                WRITE(LUN(19),*) 'ERROR in DLWQT1'
                WRITE(LUN(19),*) 'after call to DLWQTB'
                CALL SRSTOP(1)
@@ -204,7 +204,7 @@
 
          CALL DLWQT2 ( LUN(IS)    , LUN(19) , ITIME  , RESULT , NTOTAL, & 
                       LUNTXT(IS) , ISFLAG  , IFFLAG , ONLINE )
-         IF ( IFFLAG .EQ. -1 ) THEN
+         IF ( IFFLAG == -1 ) THEN
             NRHARM = -1
             IFFLAG =  1
             CLOSE ( LUN(IS) )
@@ -217,12 +217,12 @@
 !
 !         first set result zero and evaluate the harmonic components
 !
-   10 IF ( IFFLAG .EQ. 1 ) THEN
+   10 IF ( IFFLAG == 1 ) THEN
          READ ( LUN(4) ) ( IPOINT(K),K=1,NTOT+3 )
       ENDIF
-      DO 20 I = 1 , NTOTAL
+      DO I = 1 , NTOTAL
          RESULT(I) = 0.0
-   20 CONTINUE
+      end do
 !
       I2 =  NRHARM+1
       CALL DLWQT3 ( ITIME  , IHARM  , HARMAT   , HARMAT(I2) , NRHARM , & 

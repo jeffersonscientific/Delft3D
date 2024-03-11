@@ -133,8 +133,8 @@
 
             do i_input = 1 , proc1%no_input
 
-               if ( proc1%input_item(i_input)%type .eq. IOTYPE_SEGMENT_INPUT .or. & 
-                   proc1%input_item(i_input)%type .eq. IOTYPE_SEGMENT_WORK  ) then
+               if ( proc1%input_item(i_input)%type == IOTYPE_SEGMENT_INPUT .or. &
+                   proc1%input_item(i_input)%type == IOTYPE_SEGMENT_WORK  ) then
 
                   valnam = proc1%input_item(i_input)%name
                   valtxt = proc1%input_item(i_input)%item%text
@@ -150,7 +150,7 @@
 
                   ! output earlier in process ? , is this switched on , switch this on
 
-                  if ( ivalip .eq. -1 ) then
+                  if ( ivalip == -1 ) then
 
                      do iproc2 = 1 , iproc
 
@@ -159,7 +159,7 @@
                         ! flux van proces
 
                         call zoekio ( valnam, proc2%no_fluxoutput, proc2%fluxoutput, 20, iflux)
-                        if ( iflux .gt. 0 ) then
+                        if ( iflux > 0 ) then
                            if ( proc2%linvok ) then
                               write ( line1, '(3a)' ) '       Using flux from proces [',proc2%name,']'
                               if ( .not. proc2%active ) then
@@ -179,7 +179,7 @@
                         ! output variable van proces
 
                         call zoekio ( valnam, proc2%no_output, proc2%output_item, 20, ioutput, IOTYPE_SEGMENT_OUTPUT)
-                        if ( ioutput .gt. 0 ) then
+                        if ( ioutput > 0 ) then
                            if ( proc2%linvok ) then
                               write ( line1, '(3a)' ) '       Using output from proces [',proc2%name,']'
                               if ( .not. proc2%active ) then
@@ -189,7 +189,7 @@
 
                               ! is output already present in ssa?
 
-                              if ( proc2%output_item(ioutput)%ip_val .ne. 0 ) then
+                              if ( proc2%output_item(ioutput)%ip_val /= 0 ) then
                                  ivalip = proc2%output_item(ioutput)%ip_val
                               else
 
@@ -212,14 +212,14 @@
 
                   ! work array from this process only
 
-                  if ( ivalip .eq. -1 .and. proc1%input_item(i_input)%type .eq. IOTYPE_SEGMENT_WORK ) then
+                  if ( ivalip == -1 .and. proc1%input_item(i_input)%type == IOTYPE_SEGMENT_WORK ) then
                      call zoekio ( valnam, proc1%no_output, proc1%output_item, 20, ioutput, IOTYPE_SEGMENT_WORK)
-                     if ( ioutput .gt. 0 ) then
+                     if ( ioutput > 0 ) then
                         write ( line1, '(3a)' ) '       Using output from proces [',proc1%name,']'
 
                         ! is output already present in ssa?
 
-                        if ( proc1%output_item(ioutput)%ip_val .ne. 0 ) then
+                        if ( proc1%output_item(ioutput)%ip_val /= 0 ) then
                            ivalip = proc1%output_item(ioutput)%ip_val
                         else
 
@@ -233,12 +233,12 @@
                      endif
                   endif
 
-                  if ( ivalip .eq. -1 ) then
+                  if ( ivalip == -1 ) then
 
                      ! if this is a fraction input then first look for the generic name
 
                      i_star = index(valnam,'*')
-                     if ( i_star .gt. 1 ) then
+                     if ( i_star > 1 ) then
                         valnam(i_star:) = ' '
                         write(line,'(4a)') '       [',valnam,'] ',valtxt
                         goto 10
@@ -246,7 +246,7 @@
 
                   endif
 
-                  if ( ivalip .eq. -1 ) then
+                  if ( ivalip == -1 ) then
                      if ( is_missing(proc1%input_item(i_input)%actdef) )then
                         nmis        = nmis + 1
                         write ( line1, '(a)' )  'error: not in input'
@@ -258,7 +258,7 @@
                            defaul(nodef) = real(refday)
                            write(line1,'(a,g13.6)') '       based on T0-string:',real(refday)
                         else
-                           if ( abs(proc1%input_item(i_input)%actdef-rmis0) .lt. 1.e-20 )then
+                           if ( abs(proc1%input_item(i_input)%actdef-rmis0) < 1.e-20 )then
                               line = ' '
                               defaul(nodef) = 0.0
                            else
@@ -269,9 +269,9 @@
                      endif
                   endif
                   proc1%input_item(i_input)%ip_val = ivalip
-                  if ( line  .ne. ' ' ) call monsys( line  , 4 )
-                  if ( line1 .ne. ' ' ) call monsys( line1 , 4 )
-                  if ( line2 .ne. ' ' ) call monsys( line2 , 4 )
+                  if ( line  /= ' ' ) call monsys( line  , 4 )
+                  if ( line1 /= ' ' ) call monsys( line1 , 4 )
+                  if ( line2 /= ' ' ) call monsys( line2 , 4 )
                   line  = ' '
                   line1 = ' '
                   line2 = ' '
@@ -284,7 +284,7 @@
 
             do i_input = 1 , proc1%no_input
 
-               if ( proc1%input_item(i_input)%type .eq. IOTYPE_EXCHANG_INPUT ) then
+               if ( proc1%input_item(i_input)%type == IOTYPE_EXCHANG_INPUT ) then
 
                   valnam = proc1%input_item(i_input)%name
                   valtxt = proc1%input_item(i_input)%item%text
@@ -300,7 +300,7 @@
 
                   ! output earlier in process ? , is this switched on , switch this on
 
-                  if ( ivalip .eq. -1 ) then
+                  if ( ivalip == -1 ) then
 
                      do iproc2 = 1 , iproc
 
@@ -309,7 +309,7 @@
                         ! xoutput variable of process
 
                         call zoekio ( valnam, proc2%no_output, proc2%output_item, 20, ioutput, IOTYPE_EXCHANG_OUTPUT)
-                        if ( ioutput .gt. 0 ) then
+                        if ( ioutput > 0 ) then
                            if ( proc2%linvok ) then
                               write ( line1, '(3a)' ) '       Using output from proces [',proc2%name,']'
                               if ( .not. proc2%active ) then
@@ -319,7 +319,7 @@
 
                               ! is output already present in ssa?
 
-                              if ( proc2%output_item(ioutput)%ip_val .ne. 0 ) then
+                              if ( proc2%output_item(ioutput)%ip_val /= 0 ) then
                                  ivalip = proc2%output_item(ioutput)%ip_val
                               else
 
@@ -338,12 +338,12 @@
                      enddo
                   endif
 
-                  if ( ivalip .eq. -1 ) then
+                  if ( ivalip == -1 ) then
 
                      ! if this is a fraction input then first look for the generic name
 
                      i_star = index(valnam,'*')
-                     if ( i_star .gt. 1 ) then
+                     if ( i_star > 1 ) then
                         valnam(i_star:) = ' '
                         write(line,'(4a)') '       [',valnam,'] ',valtxt
                         goto 20
@@ -351,7 +351,7 @@
 
                   endif
 
-                  if ( ivalip .eq. -1 ) then
+                  if ( ivalip == -1 ) then
                      if ( is_missing(proc1%input_item(i_input)%actdef) )then
                         nmis        = nmis + 1
                         write ( line1, '(a)' )  'error: not in input'
@@ -359,7 +359,7 @@
                         nodef   = nodef + 1
                         dename(nodef) = valnam
                         ivalip = -3
-                        if ( abs(proc1%input_item(i_input)%actdef-rmis0) .lt. 1.e-20 )then
+                        if ( abs(proc1%input_item(i_input)%actdef-rmis0) < 1.e-20 )then
                            line = ' '
                            defaul(nodef) = 0.0
                         else
@@ -369,9 +369,9 @@
                      endif
                   endif
                   proc1%input_item(i_input)%ip_val = ivalip
-                  if ( line  .ne. ' ' ) call monsys( line  , 4 )
-                  if ( line1 .ne. ' ' ) call monsys( line1 , 4 )
-                  if ( line2 .ne. ' ' ) call monsys( line2 , 4 )
+                  if ( line  /= ' ' ) call monsys( line  , 4 )
+                  if ( line1 /= ' ' ) call monsys( line1 , 4 )
+                  if ( line2 /= ' ' ) call monsys( line2 , 4 )
                   line  = ' '
                   line1 = ' '
                   line2 = ' '
@@ -382,16 +382,16 @@
             ! set output variables used in output system in the local array
 
             do ioutput = 1 , proc1%no_output
-               if ( proc1%output_item(ioutput)%type .eq. IOTYPE_SEGMENT_OUTPUT ) then
+               if ( proc1%output_item(ioutput)%type == IOTYPE_SEGMENT_OUTPUT ) then
                   valnam = proc1%output_item(ioutput)%name
                   ioux  = 0
   350             continue
                   nrout = outputs%cursize - ioux
                   iou = index_in_array(valnam, outputs%names(ioux+1:nrout))
-                  if ( iou .gt. 0 ) then
+                  if ( iou > 0 ) then
                      iou = iou + ioux
-                     if ( outputs%pointers(iou) .eq. -1 ) then
-                        if ( proc1%output_item(ioutput)%ip_val .ne. 0 ) then
+                     if ( outputs%pointers(iou) == -1 ) then
+                        if ( proc1%output_item(ioutput)%ip_val /= 0 ) then
 
                            ! already present in local array, set pointer
 
@@ -408,7 +408,7 @@
                         endif
                      endif
                      ioux = iou
-                     if ( ioux .lt. outputs%cursize ) goto 350
+                     if ( ioux < outputs%cursize ) goto 350
                   endif
                endif
             enddo
@@ -429,8 +429,8 @@
          if ( proc1%active ) then
 
             do i_input = 1 , proc1%no_input
-               if ( proc1%input_item(i_input)%type .eq. IOTYPE_SEGMENT_INPUT ) then
-                  if ( proc1%input_item(i_input)%ip_val .eq. -2 ) then
+               if ( proc1%input_item(i_input)%type == IOTYPE_SEGMENT_INPUT ) then
+                  if ( proc1%input_item(i_input)%ip_val == -2 ) then
                      valnam = proc1%input_item(i_input)%name
                      nfl    = 0
                      do iproc2 = 1 , iproc - 1
@@ -438,7 +438,7 @@
                         proc2 => procesdef%procesprops(iproc2)
                         if ( proc2%active ) then
                            call zoekio ( valnam, proc2%no_fluxoutput, proc2%fluxoutput, 20, iflux)
-                           if ( iflux .gt. 0 ) then
+                           if ( iflux > 0 ) then
                               ivalip = ioff + noloc + nodef + nfl + iflux
                               exit
                            endif
@@ -446,7 +446,7 @@
                         endif
                      enddo
                      proc1%input_item(i_input)%ip_val = ivalip
-                  elseif ( proc1%input_item(i_input)%ip_val .eq. -3 ) then
+                  elseif ( proc1%input_item(i_input)%ip_val == -3 ) then
                      idef = idef + 1
                      ivalip = ioff + noloc + idef
                      proc1%input_item(i_input)%ip_val = ivalip
@@ -455,8 +455,8 @@
             enddo
 
             do i_input = 1 , proc1%no_input
-               if ( proc1%input_item(i_input)%type .eq. IOTYPE_EXCHANG_INPUT ) then
-                  if ( proc1%input_item(i_input)%ip_val .eq. -3 ) then
+               if ( proc1%input_item(i_input)%type == IOTYPE_EXCHANG_INPUT ) then
+                  if ( proc1%input_item(i_input)%ip_val == -3 ) then
                      idef = idef + 1
                      ivalip = ioffx + nlocx + idef
                      proc1%input_item(i_input)%ip_val = ivalip

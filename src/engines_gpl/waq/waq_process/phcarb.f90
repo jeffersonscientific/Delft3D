@@ -156,7 +156,7 @@
 !
 !     Loop over de segmenten
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 !
 !     Eerste kenmerk actief of inactief segment
 !
@@ -176,69 +176,69 @@
 !     Try to get the old value, this is a good initial value for our solvers.
       PH_OLD  = PMSA(IP7 )
 !     Because the value might not exist, if it is outside the range start neutral with pH = 7.0
-      IF (PH_OLD.LT.PH_MIN .OR. PH_OLD.GT.PH_MAX) THEN
+      IF (PH_OLD<PH_MIN .OR. PH_OLD>PH_MAX) THEN
           PH_OLD = 7.0e0
       ENDIF
 !
 !     Error messages
 
-      IF ( TIC .LT. 1E-30 ) THEN
+      IF ( TIC < 1E-30 ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NR_MES .LT. 10 ) THEN
+         IF ( NR_MES < 10 ) THEN
             NR_MES = NR_MES + 1
             WRITE ( ILUMON , * ) 'WARNING :total carbonate <= 0', & 
                                 ' segment=',ISEG,' conc=',TIC
          ENDIF
-         IF ( NR_MES .EQ. 10 ) THEN
+         IF ( NR_MES == 10 ) THEN
             NR_MES = NR_MES + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on total carbonate'
             WRITE(ILUMON,*) ' No further messages on total carbonate'
          ENDIF
          TIC = 1E-30
       ENDIF
-      IF ( SAL .LT. 1E-30 ) THEN
+      IF ( SAL < 1E-30 ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NRMES2 .LT. 10 ) THEN
+         IF ( NRMES2 < 10 ) THEN
             NRMES2 = NRMES2 + 1
             WRITE ( ILUMON , * ) 'WARNING :salinity <= 0', & 
                                 ' segment=',ISEG,' conc=',SAL
          ENDIF
-         IF ( NRMES2 .EQ. 10 ) THEN
+         IF ( NRMES2 == 10 ) THEN
             NRMES2 = NRMES2 + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on salinity'
             WRITE(ILUMON,*) ' No further messages on salinity'
          ENDIF
          SAL = 1E-30
       ENDIF
-      IF ( SAL .GT. 50. ) THEN
+      IF ( SAL > 50. ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NRMES4 .LT. 10 ) THEN
+         IF ( NRMES4 < 10 ) THEN
             NRMES4 = NRMES4 + 1
             WRITE ( ILUMON , * ) 'WARNING :salinity => 50.', & 
                                 ' segment=',ISEG,' conc=',SAL
          ENDIF
-         IF ( NRMES4 .EQ. 10 ) THEN
+         IF ( NRMES4 == 10 ) THEN
             NRMES4 = NRMES4 + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on salinity'
             WRITE(ILUMON,*) ' No further messages on salinity'
          ENDIF
          SAL = 50.
       ENDIF
-      IF ( ALKA .LT. 1E-30 ) THEN
+      IF ( ALKA < 1E-30 ) THEN
          CALL GETMLU(ILUMON)
-         IF ( NRMES3 .LT. 10 ) THEN
+         IF ( NRMES3 < 10 ) THEN
             NRMES3 = NRMES3 + 1
             WRITE ( ILUMON , * ) 'WARNING: alkalinity <= 0', & 
                                 ' segment=',ISEG,' conc=',ALKA
          ENDIF
-         IF ( NRMES3 .EQ. 10 ) THEN
+         IF ( NRMES3 == 10 ) THEN
             NRMES3 = NRMES3 + 1
             WRITE(ILUMON,*) ' 10 WARNINGS on alkalinity'
             WRITE(ILUMON,*) ' No further messages on alkalinity'
          ENDIF
          ALKA = 1E-30
       ENDIF
-      IF (TEMP .LE. -KELVIN) THEN
+      IF (TEMP <= -KELVIN) THEN
         WRITE (ILUMON,*) ' WARNING: Temperature drops below 0 Kelvin', & 
         ' segment=',ISEG,' Temp set to 15 oC (288.15 K)'
         TEMP = 15.0E0
@@ -256,7 +256,7 @@
 
       KW  = exp (LNKW)
 
-      IF (SAL .LT. 5.0e0) THEN
+      IF (SAL < 5.0e0) THEN
 ! Dissociation constant of carbonic acid. Roy et al (1993). Total pH scale. [mol/kg H2O] (Molality)
 ! Roy et al (1993). Salinities below 5 (freshwater). Total pH scale.
          LNK1 = 290.9097 - 14554.21/TEMPK - 45.0575*log(TEMPK) + & 
@@ -363,10 +363,10 @@
       CALL SETUP_API4PHTOT(DBLE(TEMPK), DBLE(SAL), 1.0D0)
 ! First try the fast poly solver
       AHPLUS = SNGL(SOLVE_ACBW_POLYFAST(DBLE(ALK), DBLE(TICM), DBLE(BT)))
-      IF (AHPLUS .LT. 0.0d0) THEN
+      IF (AHPLUS < 0.0d0) THEN
 ! If not succesfull try the normal poly solver
           AHPLUS = SNGL(SOLVE_ACBW_POLY(DBLE(ALK), DBLE(TICM), DBLE(BT)))
-          IF (AHPLUS .LT. 0.0d0) THEN
+          IF (AHPLUS < 0.0d0) THEN
 ! If still not succesfull use the robust solver
               AHPLUS = SNGL(SOLVE_ACBW_GENERAL(DBLE(ALK), DBLE(TICM), DBLE(BT)))
           ENDIF
@@ -450,7 +450,7 @@
       IP13   = IP13   + INCREM (  13 )
       IP14   = IP14   + INCREM (  14 )
 !
- 9000 CONTINUE
+      end do
 !
 !
       RETURN

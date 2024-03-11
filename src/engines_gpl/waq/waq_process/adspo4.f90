@@ -162,11 +162,11 @@
 !
 !     Use the old version when IVERSN=0
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
-      IF (IVERSN .EQ. 0) THEN
+      IF (IVERSN == 0) THEN
 !
         dPAds = 0.0
         EQAAP = 0.0
@@ -188,7 +188,7 @@
         QIM1 = 0.0
         QIM2 = 0.0
         QIM3 = 0.0
-        IF ( TIM .LT. 1E-10) THEN
+        IF ( TIM < 1E-10) THEN
            FIM1 = 0.0
            FIM2 = 0.0
            FIM3 = 0.0
@@ -196,23 +196,23 @@
            FIM1 = IM1 / TIM
            FIM2 = IM2 / TIM
            FIM3 = IM3 / TIM
-           IF ( IM1 .GT. 1E-10 ) QIM1 = AAP*FIM1/IM1
-           IF ( IM2 .GT. 1E-10 ) QIM2 = AAP*FIM2/IM2
-           IF ( IM3 .GT. 1E-10 ) QIM3 = AAP*FIM3/IM3
+           IF ( IM1 > 1E-10 ) QIM1 = AAP*FIM1/IM1
+           IF ( IM2 > 1E-10 ) QIM2 = AAP*FIM2/IM2
+           IF ( IM3 > 1E-10 ) QIM3 = AAP*FIM3/IM3
         ENDIF
 !
 !------ Error messages
 !
-        IF (KD.LT.0.0) CALL write_error_message ('KD in ADSPO4 lower then zero')
-        IF (((ABS(KD) .LT. 1E-20) .OR. (ABS(PO4).LT.1E-20)) & 
-           .AND. (ABS(MAXADS) .LT. 1E-20) ) & 
+        IF (KD<0.0) CALL write_error_message ('KD in ADSPO4 lower then zero')
+        IF (((ABS(KD) < 1E-20) .OR. (ABS(PO4)<1E-20)) &
+           .AND. (ABS(MAXADS) < 1E-20) ) &
           CALL write_error_message & 
                    ('(KD or PO4) and MAXADS equal zero in ADSPO4')
 !
 !------ (1) Instantanaeous equilibrium partitioning
 !           SWAdsP = 0
 !
-        IF (NINT(SWAdsP) .EQ. 0) THEN
+        IF (NINT(SWAdsP) == 0) THEN
             dPAds =(((AAP + PO4) / (1.+ KD)) - AAP) /  DELT
             EQAAP = -1.0
         ENDIF
@@ -220,8 +220,8 @@
 !------ (2) Kinetic Langmuir sorption
 !           SWAdsP = 1
 !
-        IF (NINT(SWAdsP) .EQ. 1) THEN
-          IF ( (MAXADS .LT. 1.E-10) .OR. (KD .LT. 1.E-10)) THEN
+        IF (NINT(SWAdsP) == 1) THEN
+          IF ( (MAXADS < 1.E-10) .OR. (KD < 1.E-10)) THEN
              EQAAP = 0.0
              dPAds = 0.0
           ELSE
@@ -233,7 +233,7 @@
 !------ (3) GEM formulation for sorption
 !           SWAdsP = 2
 !
-        IF (NINT(SWAdsP) .EQ. 2) THEN
+        IF (NINT(SWAdsP) == 2) THEN
            KAds20   = PMSA(IP10)
            TCKAds   = PMSA(IP11)
            RCadsP   = PMSA(IP25)
@@ -248,7 +248,7 @@
 !
 !--------- (3a) Eqs 6.38, 6.37 of GEM report
            OH = 10.0**(pH-14.0)
-           IF (OXY .GE. CrOXY*POROS) THEN
+           IF (OXY >= CrOXY*POROS) THEN
               fOxSor = 1.0
            ELSE
               fOxSor = frFeox
@@ -313,7 +313,7 @@
         QIM1 = 0.0
         QIM2 = 0.0
         QIM3 = 0.0
-        IF ( TFE .LT. 1E-10) THEN
+        IF ( TFE < 1E-10) THEN
            FIM1 = 0.0
            FIM2 = 0.0
            FIM3 = 0.0
@@ -321,16 +321,16 @@
            FIM1 = FRFE1 * IM1 / TFE
            FIM2 = FRFE2 * IM2 / TFE
            FIM3 = FRFE3 * IM3 / TFE
-           IF ( IM1 .GT. 1E-10 ) QIM1 = AAP*FIM1/IM1
-           IF ( IM2 .GT. 1E-10 ) QIM2 = AAP*FIM2/IM2
-           IF ( IM3 .GT. 1E-10 ) QIM3 = AAP*FIM3/IM3
+           IF ( IM1 > 1E-10 ) QIM1 = AAP*FIM1/IM1
+           IF ( IM2 > 1E-10 ) QIM2 = AAP*FIM2/IM2
+           IF ( IM3 > 1E-10 ) QIM3 = AAP*FIM3/IM3
         ENDIF
 !
 !     Error messages
 !
-        IF (KDADS .LT. 0.0) CALL write_error_message ('KDADS in ADSPO4 negative')
-        IF (((ABS(KDADS) .LT. 1E-20) .OR. (ABS(PO4) .LT. 1E-20)) & 
-          .AND. (ABS(FCAP) .LT. 1E-20) ) & 
+        IF (KDADS < 0.0) CALL write_error_message ('KDADS in ADSPO4 negative')
+        IF (((ABS(KDADS) < 1E-20) .OR. (ABS(PO4) < 1E-20)) &
+          .AND. (ABS(FCAP) < 1E-20) ) &
           CALL write_error_message & 
           ('(KDADS or PO4) and FCAP equal zero in ADSPO4')
 !
@@ -345,15 +345,15 @@
 !
 !     SWADSP = 0 : Instantaneous equilibrium partitioning
 !
-        IF (NINT(SWADSP) .EQ. 0) THEN
+        IF (NINT(SWADSP) == 0) THEN
             FADS  =(((AAP + PO4) / (1.0 + KDADS)) - AAP) / DELT
             EQAAP = -1.0
         ENDIF
 !
 !     SWADSP = 1 : Langmuir sorption
 !
-        IF (NINT(SWADSP) .EQ. 1) THEN
-          IF ( (FCAP .LT. 1E-10) .OR. (KDADS .LT. 1E-10)) THEN
+        IF (NINT(SWADSP) == 1) THEN
+          IF ( (FCAP < 1E-10) .OR. (KDADS < 1E-10)) THEN
              EQAAP = 0.0
              FADS  = 0.0
           ELSE
@@ -365,7 +365,7 @@
 !
 !     SWADSP = 2 : pH dependent Langmuir sorption
 !
-        IF (NINT(SWADSP) .EQ. 2) THEN
+        IF (NINT(SWADSP) == 2) THEN
            KADS20   = PMSA(IP10)
            TC       = PMSA(IP11)
            AOH      = PMSA(IP13)
@@ -376,16 +376,16 @@
            TEMP     = PMSA(IP21)
            POROS    = PMSA(IP22)
 
-           IF (POROS .LT. 1E-10) CALL write_error_message & 
+           IF (POROS < 1E-10) CALL write_error_message &
              ('POROS in ADSPO4 equals zero')
-           IF ( TFE .LT. 1.E-10 ) THEN
-              IF ( NR_MES .LT. 25 ) THEN
+           IF ( TFE < 1.E-10 ) THEN
+              IF ( NR_MES < 25 ) THEN
                  CALL GETMLU(ILUMON)
                  NR_MES = NR_MES + 1
                  WRITE ( ILUMON , * ) 'WARNING :zero TFE in ADSPO4', & 
                                      ' segment=',ISEG,' TFE=',TFE
               ENDIF
-              IF ( NR_MES .EQ. 25 ) THEN
+              IF ( NR_MES == 25 ) THEN
                  CALL GETMLU(ILUMON)
                  NR_MES = NR_MES + 1
                  WRITE(ILUMON,*) ' 25 WARNINGS on zero TFE'
@@ -396,7 +396,7 @@
 !     Calculate pH dependency (hydroxyl) and factor for redox potential
 !
            OH = 10.0**(PH-14.0)
-           IF (OXY .GE. (CROXY*POROS) ) THEN
+           IF (OXY >= (CROXY*POROS) ) THEN
               FRA = 1.0
            ELSE
               FRA = FRFEOX
@@ -416,7 +416,7 @@
 !
 !     Calculate equilibrium concentration of adsorbed P (gP/m3)
 !
-           IF ( ABS(CADS) .LT. 1.E-20 ) THEN
+           IF ( ABS(CADS) < 1.E-20 ) THEN
               EQAAP = 0.0
            ELSE
               EQAAP = (AAP + PO4)/(1.0 + OH**AOH/(KADS*CADS))
@@ -424,7 +424,7 @@
 !
 !     Maximize EQAAP on equivalent CADST
 !
-           IF ( CADS .LT. 0.0 ) THEN
+           IF ( CADS < 0.0 ) THEN
               EQAAPM = 0.9 * CADST * (31000.0 * POROS)
               EQAAP = EQAAPM
            ENDIF
@@ -490,7 +490,7 @@
       IP33  = IP33  + INCREM ( 33 )
       IP34  = IP34  + INCREM ( 34 )
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

@@ -89,14 +89,14 @@
 !
 !     Initial calculations
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       CL     = PMSA(IP1 )
       TEMP   = PMSA(IP2 )
       SWITCH = NINT(PMSA(IP3 ))
       SAL    = PMSA(IP4 )
 
-      IF ( SWITCH .EQ. 1 ) THEN
+      IF ( SWITCH == 1 ) THEN
 !
 !        Weiss volgens Gils (WL)
 !
@@ -105,7 +105,7 @@
                    +  (0.089392 * TEMP)**2 & 
                    -  (0.042685 * TEMP)**3 ) & 
                    *  (1. - CL/1E+5 )
-      ELSEIF ( SWITCH .EQ. 2 ) THEN
+      ELSEIF ( SWITCH == 2 ) THEN
 !
 !        Weiss volgen Monteiro (CISR)
 !        1.428571 = 32.*1000./22400.
@@ -138,7 +138,7 @@
       IP4   = IP4   + INCREM (  4 )
       IP5   = IP5   + INCREM (  5 )
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

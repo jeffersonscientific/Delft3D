@@ -95,7 +95,7 @@
          l_expand = .false.
          l_frac   = .false.
          do i_item = 1, proc%no_input
-            if ( proc%input_item(i_item)%name(1:1) .eq. '*' ) then
+            if ( proc%input_item(i_item)%name(1:1) == '*' ) then
                do isfrac = 1, sfracs%nsfrac
                   basnam = sfracs%name(isfrac)
                   if (string_equals( basnam(1:19), proc%input_item(i_item)%name(2:))) then
@@ -128,7 +128,7 @@
                ! check for input which needs to be expanded
 
                i_star = index(proc%input_item(i_item)%name,'*')
-               if ( i_star .gt. 1 ) then
+               if ( i_star > 1 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
                      if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%input_item(i_item)%name(i_star+1:))) then
@@ -143,7 +143,7 @@
             no_output_new = proc%no_output
             do i_item = 1, proc%no_output
                i_star = index(proc%output_item(i_item)%name,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
                      if (string_equals( sfracs%name(isfrac)(1:nzoek), proc%output_item(i_item)%name(i_star+1:))) then
@@ -157,7 +157,7 @@
             no_fluxoutput_new   = proc%no_fluxoutput
             do i_flux = 1, proc%no_fluxoutput
                i_star = index(proc%fluxoutput(i_flux)%name,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
                      if (string_equals( sfracs%name(isfrac)(1:nzoek), proc%fluxoutput(i_flux)%name(i_star+1:))) then
@@ -171,7 +171,7 @@
             no_fluxstochi_new = proc%no_fluxstochi
             do i_stochi = 1, proc%no_fluxstochi
                i_star = index(proc%fluxstochi(i_stochi)%ioitem,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
@@ -187,7 +187,7 @@
             no_velostochi_new = proc%no_velostochi
             do i_item = 1, proc%no_velostochi
                i_star = index(proc%velostochi(i_item)%ioitem,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
                      if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%velostochi(i_item)%ioitem(i_star+1:))) then
@@ -201,7 +201,7 @@
             no_dispstochi_new = proc%no_dispstochi
             do i_item = 1, proc%no_dispstochi
                i_star = index(proc%dispstochi(i_item)%ioitem,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
                      if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%dispstochi(i_item)%ioitem(i_star+1:))) then
@@ -234,25 +234,25 @@
                   endif
                enddo
 
-               if ( i_star .eq. 1 ) then
+               if ( i_star == 1 ) then
 
                   ! number of fractions
 
                   i_new = i_new + 1
                   new_item(i_new) = proc%input_item(i_item)
                   new_item(i_new)%indx = i_new
-                  if ( isfrac_found .gt. 0 ) then
+                  if ( isfrac_found > 0 ) then
                      new_item(i_new)%actdef = sfracs%nfrac(isfrac_found)
                   endif
 
-               elseif ( isfrac_found .gt. 0 ) then
+               elseif ( isfrac_found > 0 ) then
 
                   ! expand input
 
                   nfrac  = sfracs%nfrac(isfrac_found)
                   basnam = sfracs%name(isfrac_found)
                   do ifrac = 1, nfrac
-                     if ( ifrac .lt. 100 ) then
+                     if ( ifrac < 100 ) then
                         write(suffix,'(i2.2)') ifrac
                      else
                         write(suffix,'(i3.3)') ifrac
@@ -262,14 +262,14 @@
                      i_new = i_new + 1
                      new_item(i_new) = proc%input_item(i_item)
                      new_item(i_new)%indx = i_new
-                     if ( i_star .eq. 0 ) then
+                     if ( i_star == 0 ) then
                         new_item(i_new)%name = fracnam
                      else
                         new_item(i_new)%name = trim(proc%input_item(i_item)%name(1:i_star))//fracnam
                      endif
                      item%name = new_item(i_new)%name
                      iret      = itempropcollfind( allitems, item )
-                     if ( iret .le. 0 ) then
+                     if ( iret <= 0 ) then
                         item%text    = proc%input_item(i_item)%item%text
                         item%default = proc%input_item(i_item)%item%default
                         item%waqtype = proc%input_item(i_item)%item%waqtype
@@ -288,7 +288,7 @@
                endif
 
             enddo
-            if (proc%no_input .gt. 0) deallocate(proc%input_item)
+            if (proc%no_input > 0) deallocate(proc%input_item)
             proc%input_item => new_item
             proc%no_input   =  no_input_new
 
@@ -299,7 +299,7 @@
             do i_item = 1, proc%no_output
                isfrac_found = 0
                i_star = index(proc%output_item(i_item)%name,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
                      if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%output_item(i_item)%name(i_star+1:))) then
@@ -308,11 +308,11 @@
                      endif
                   enddo
                endif
-               if ( isfrac_found .gt. 0 ) then
+               if ( isfrac_found > 0 ) then
                   nfrac  = sfracs%nfrac(isfrac_found)
                   basnam = sfracs%name(isfrac_found)
                   do ifrac = 1, nfrac
-                     if ( ifrac .lt. 100 ) then
+                     if ( ifrac < 100 ) then
                         write(suffix,'(i2.2)') ifrac
                      else
                         write(suffix,'(i3.3)') ifrac
@@ -324,7 +324,7 @@
                      new_item(i_new)%name = trim(proc%output_item(i_item)%name(1:i_star))//fracnam
                      item%name = new_item(i_new)%name
                      iret      = itempropcollfind( allitems, item )
-                     if ( iret .le. 0 ) then
+                     if ( iret <= 0 ) then
                         item%text    = proc%output_item(i_item)%item%text
                         item%default = proc%output_item(i_item)%item%default
                         item%waqtype = proc%output_item(i_item)%item%waqtype
@@ -338,7 +338,7 @@
                   new_item(i_new)%indx = i_new
                endif
             enddo
-            if (proc%no_output .gt. 0) deallocate(proc%output_item)
+            if (proc%no_output > 0) deallocate(proc%output_item)
             proc%output_item    => new_item
             proc%no_output = no_output_new
 
@@ -349,7 +349,7 @@
             do i_item = 1, proc%no_fluxoutput
                isfrac_found = 0
                i_star = index(proc%fluxoutput(i_item)%name,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nzoek = 20-i_star
                      if (string_equals(sfracs%name(isfrac)(1:nzoek), proc%fluxoutput(i_item)%name(i_star+1:))) then
@@ -358,11 +358,11 @@
                      endif
                   enddo
                endif
-               if ( isfrac_found .gt. 0 ) then
+               if ( isfrac_found > 0 ) then
                   nfrac  = sfracs%nfrac(isfrac_found)
                   basnam = sfracs%name(isfrac_found)
                   do ifrac = 1, nfrac
-                     if ( ifrac .lt. 100 ) then
+                     if ( ifrac < 100 ) then
                         write(suffix,'(i2.2)') ifrac
                      else
                         write(suffix,'(i3.3)') ifrac
@@ -374,7 +374,7 @@
                      new_item(i_new)%name = trim(proc%fluxoutput(i_item)%name(1:i_star))//fracnam
                      item%name = new_item(i_new)%name
                      iret      = itempropcollfind( allitems, item )
-                     if ( iret .le. 0 ) then
+                     if ( iret <= 0 ) then
                         item%text    = proc%fluxoutput(i_item)%item%text
                         item%default = proc%fluxoutput(i_item)%item%default
                         item%waqtype = proc%fluxoutput(i_item)%item%waqtype
@@ -388,7 +388,7 @@
                   new_item(i_new)%indx = i_new
                endif
             enddo
-            if (proc%no_fluxoutput .gt. 0) deallocate(proc%fluxoutput)
+            if (proc%no_fluxoutput > 0) deallocate(proc%fluxoutput)
             proc%fluxoutput    => new_item
             proc%no_fluxoutput = no_fluxoutput_new
 
@@ -398,7 +398,7 @@
             allocate(new_stochi(no_fluxstochi_new))
             do i_stochi = 1, proc%no_fluxstochi
                i_star = index(proc%fluxstochi(i_stochi)%ioitem,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
@@ -408,9 +408,9 @@
                         exit
                      endif
                   enddo
-                  if ( isfrac_found .gt. 0 ) then
+                  if ( isfrac_found > 0 ) then
                      do ifrac = 1, nfrac
-                        if ( ifrac .lt. 100 ) then
+                        if ( ifrac < 100 ) then
                            write(suffix,'(i2.2)') ifrac
                         else
                            write(suffix,'(i3.3)') ifrac
@@ -425,7 +425,7 @@
                            ! look for linked substance (if not found the substance name stays the same
                            do isfrac2 = 1, nfrac
                               if (string_equals(sfracs%name(isfrac2),proc%fluxstochi(i_stochi)%substance) & 
-                                .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
+                                .and. sfracs%linklist(isfrac,isfrac2) == 1 ) then
                                  new_stochi(i_new)%substance = trim(sfracs%name(isfrac2))//suffix
                                  exit
                               endif
@@ -442,7 +442,7 @@
                   new_stochi(i_new) = proc%fluxstochi(i_stochi)
                endif
             enddo
-            if (proc%no_fluxstochi .gt. 0) deallocate(proc%fluxstochi)
+            if (proc%no_fluxstochi > 0) deallocate(proc%fluxstochi)
             proc%fluxstochi    => new_stochi
             proc%no_fluxstochi = no_fluxstochi_new
 
@@ -452,7 +452,7 @@
             allocate(new_stochi(no_dispstochi_new))
             do i_stochi = 1, proc%no_dispstochi
                i_star = index(proc%dispstochi(i_stochi)%ioitem,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
@@ -462,9 +462,9 @@
                         exit
                      endif
                   enddo
-                  if ( isfrac_found .gt. 0 ) then
+                  if ( isfrac_found > 0 ) then
                      do ifrac = 1, nfrac
-                        if ( ifrac .lt. 100 ) then
+                        if ( ifrac < 100 ) then
                            write(suffix,'(i2.2)') ifrac
                         else
                            write(suffix,'(i3.3)') ifrac
@@ -479,7 +479,7 @@
                            ! look for linked substance (if not found the substance name stays the same
                            do isfrac2 = 1, nfrac
                               if (string_equals(sfracs%name(isfrac2),proc%dispstochi(i_stochi)%substance) & 
-                                .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
+                                .and. sfracs%linklist(isfrac,isfrac2) == 1 ) then
                                  new_stochi(i_new)%substance = trim(sfracs%name(isfrac2))//suffix
                                  exit
                               endif
@@ -496,7 +496,7 @@
                   new_stochi(i_new) = proc%dispstochi(i_stochi)
                endif
             enddo
-            if (proc%no_dispstochi .gt. 0) deallocate(proc%dispstochi)
+            if (proc%no_dispstochi > 0) deallocate(proc%dispstochi)
             proc%dispstochi    => new_stochi
             proc%no_dispstochi = no_dispstochi_new
 
@@ -506,7 +506,7 @@
             allocate(new_stochi(no_velostochi_new))
             do i_stochi = 1, proc%no_velostochi
                i_star = index(proc%velostochi(i_stochi)%ioitem,'*')
-               if ( i_star .gt. 0 ) then
+               if ( i_star > 0 ) then
                   do isfrac = 1, sfracs%nsfrac
                      nfrac  = sfracs%nfrac(isfrac)
                      basnam = sfracs%name(isfrac)
@@ -516,9 +516,9 @@
                         exit
                      endif
                   enddo
-                  if ( isfrac_found .gt. 0 ) then
+                  if ( isfrac_found > 0 ) then
                      do ifrac = 1, nfrac
-                        if ( ifrac .lt. 100 ) then
+                        if ( ifrac < 100 ) then
                            write(suffix,'(i2.2)') ifrac
                         else
                            write(suffix,'(i3.3)') ifrac
@@ -533,7 +533,7 @@
                            ! look for linked substance (if not found the substance name stays the same
                            do isfrac2 = 1, nfrac
                               if (string_equals(sfracs%name(isfrac2),proc%velostochi(i_stochi)%substance) & 
-                                 .and. sfracs%linklist(isfrac,isfrac2) .eq. 1 ) then
+                                 .and. sfracs%linklist(isfrac,isfrac2) == 1 ) then
                                  new_stochi(i_new)%substance = trim(sfracs%name(isfrac2))//suffix
                                  exit
                               endif
@@ -550,7 +550,7 @@
                   new_stochi(i_new) = proc%velostochi(i_stochi)
                endif
             enddo
-            if (proc%no_velostochi .gt. 0) deallocate(proc%velostochi)
+            if (proc%no_velostochi > 0) deallocate(proc%velostochi)
             proc%velostochi    => new_stochi
             proc%no_velostochi = no_velostochi_new
 

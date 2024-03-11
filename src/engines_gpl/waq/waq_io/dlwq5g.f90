@@ -113,11 +113,11 @@
 !
       offset_i_array = count_items_assign + count_items_comp_rule + & 
                       count_subs_assign  + count_subs_comp_rule
-      if ( index_first .eq. 1 ) then ! items first
+      if ( index_first == 1 ) then ! items first
          offset_names  = count_items_assign + count_items_comp_rule + count_subs_assign
          offset_common = count_items_assign + count_items_comp_rule
          count_names   = count_subs_comp_rule
-      else if ( index_first .eq. 2 ) then !substances first
+      else if ( index_first == 2 ) then !substances first
          offset_names  = count_items_assign + count_subs_comp_rule + count_subs_assign
          offset_common = count_subs_comp_rule + count_subs_assign
          count_names   = count_items_comp_rule
@@ -133,15 +133,15 @@
                    start_in_line, npos, chulp, ihulp, rhulp, & 
                    itype  , error_idx)
 
-          if ( error_idx  .ne. 0 ) then ! error occurred when reading
+          if ( error_idx  /= 0 ) then ! error occurred when reading
               if (timon) call timstop( ithndl )
               return !exit subroutine
           end if
 
 !         no error
-          if ( itype .eq. 1 ) then ! a string has arrived
+          if ( itype == 1 ) then ! a string has arrived
              call convert_string_to_time_offset (chulp , ihulp, .false., .false., error_idx )
-             if ( error_idx .eq. 0 ) then
+             if ( error_idx == 0 ) then
                 error_idx = -2
                 if ( first ) then
                    if (timon) call timstop( ithndl )
@@ -168,7 +168,7 @@
              end do
              write ( lunut , 1000 ) nocol, chulp, strng
           else
-             if ( itype .eq. 2 ) then ! an integer has arrived
+             if ( itype == 2 ) then ! an integer has arrived
                 call convert_relative_time ( ihulp  , itfact, dtflg1 , dtflg3 )
              endif
              error_idx = -1

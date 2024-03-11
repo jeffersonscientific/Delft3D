@@ -173,13 +173,13 @@
       READ ( IIN    , END=40, ERR=40)  MODID (1  ), MODID(2)
       READ ( IIN    , END=40, ERR=40)  MODID (3  ), MODID(4)
       READ ( IIN    , END=40, ERR=40) (SYSID (  K), K=1,NOTOT )
-      IF ( NODUMP .GT. 0 ) & 
+      IF ( NODUMP > 0 ) &
         READ ( IIN , END=40, ERR=40) (IDUMP(K), DUMPID(K), K=1,NODUMP)
-      IF ( NDMPAR .GT. 0 ) & 
+      IF ( NDMPAR > 0 ) &
         READ ( IIN , END=40, ERR=40) (DANAM(K), K=1,NDMPAR)
-      IF ( NDMPAR .GT. 0 ) & 
+      IF ( NDMPAR > 0 ) &
         READ ( IIN , END=40, ERR=40) (DMPBAL(K), K=1,NDMPAR)
-      IF ( NORAAI .GT. 0 ) & 
+      IF ( NORAAI > 0 ) &
         READ ( IIN , END=40, ERR=40) (RANAM(K), K=1,NORAAI)
 !
 !     sub-grid
@@ -191,69 +191,69 @@
 !     the grid structures
       DO IGRID = 1 , NOGRID
          ierror = GridRead( iin, aGrid, nosss )
-         if ( ierror .ne. 0 ) goto 40
+         if ( ierror /= 0 ) goto 40
          i_grid = GridPointerCollAdd(GridPs,aGrid)
       ENDDO
       READ ( IIN , END=40, ERR=40) (IDUMMY,ISYS=1,NOTOT)
       READ ( IIN , END=40, ERR=40) (IDUMMY,ISYS=1,NOTOT)
       READ ( IIN    , END=40, ERR=40) (IKNMRK(  K), K=1,NOSSS  )
-      IF ( NODISP .GT. 0 ) & 
+      IF ( NODISP > 0 ) &
         READ ( IIN , END=40, ERR=40) (DINAME(K)  , K=1,NODISP)
-      IF ( NOVELO .GT. 0 ) & 
+      IF ( NOVELO > 0 ) &
         READ ( IIN , END=40, ERR=40) (VENAME(K)  , K=1,NOVELO)
       READ ( IIN    , END=40, ERR=40) (IDPNT (  K), K=1,NOSYS  )
       READ ( IIN    , END=40, ERR=40) (IVPNT (  K), K=1,NOSYS  )
-      IF ( NOBND  .GT. 0 ) THEN
+      IF ( NOBND  > 0 ) THEN
          READ ( IIN , END=40, ERR=40) (IBPNT (2,K), K=1,NOBND  )
          READ ( IIN , END=40, ERR=40) (IBPNT (3,K), K=1,NOBND  )
       ENDIF
-      IF ( NDMPAR .GT. 0 ) THEN
+      IF ( NDMPAR > 0 ) THEN
          READ (IIN, END=40, ERR=40)  (IPDMP(K),K=1,NDMPAR+NTDMPQ)
          IX = NDMPAR+NTDMPQ
          READ (IIN, END=40, ERR=40)  (IPDMP(IX+K),K=1,NDMPAR+NTDMPS)
       ENDIF
-      IF ( NORAAI .GT. 0 ) THEN
+      IF ( NORAAI > 0 ) THEN
          READ (IIN, END=40, ERR=40)  (IORAAI(K),K=1,NORAAI)
          READ (IIN, END=40, ERR=40)  (NQRAAI(K),K=1,NORAAI)
          READ (IIN, END=40, ERR=40)  (IQRAAI(K),K=1,NTRAAQ)
       ENDIF
-      IF ( NORAAI .GT. 0 .OR. NDMPAR .GT. 0 ) THEN
+      IF ( NORAAI > 0 .OR. NDMPAR > 0 ) THEN
          READ (IIN, END=40, ERR=40)  (IQDMP(K),K=1,NOQTT)
       ENDIF
-      IF ( NDMPAR .GT. 0 ) THEN
+      IF ( NDMPAR > 0 ) THEN
          READ (IIN, END=40, ERR=40)  (ISDMP(K),K=1,NOSSS)
       ENDIF
       READ ( IIN    , END=40, ERR=40) IDUMMY , (DISP  (K), K=1,3)
       READ ( IIN    , END=40, ERR=40) IDUMMY , (ALENG (K), K=1,3)
-      IF ( NOBND  .GT. 0 ) THEN
-         DO 10 I = 1 , NOBND
+      IF ( NOBND  > 0 ) THEN
+         DO I = 1 , NOBND
             READ ( IIN , END=40, ERR=40) BNDID(I),BNDNAM(I)
-   10    CONTINUE
+          end do
          READ ( IIN , END=40, ERR=40) ( BNDTYP(K)   , K=1,NOBTYP )
          READ ( IIN , END=40, ERR=40) ( INWTYP(K+IT), K=1,NOBND  )
          IT = IT + NOBND
 !          read time lags
          READ ( IIN , END=40, ERR=40) ( IBPNT(1,K), K=1,NOBND  )
       ENDIF
-      IF ( NOWST  .GT. 0 ) THEN
-         DO 20 I = 1 , NOWST
+      IF ( NOWST  > 0 ) THEN
+         DO I = 1 , NOWST
             READ ( IIN , END=40, ERR=40) IWASTE(I), iwsknd(i), & 
                                         WASTID(I), WSTNAM(I)
-   20    CONTINUE
+          end do
          READ ( IIN , END=40, ERR=40) ( WSTTYP(K)    , K=1,NOWTYP )
          READ ( IIN , END=40, ERR=40) ( INWTYP(K+IT) , K=1,NOWST  )
          IT = IT + NOWST
       ENDIF
-      IF ( NOCONS .GT. 0 ) THEN
+      IF ( NOCONS > 0 ) THEN
          READ ( IIN , END=40, ERR=40) (CONAME(K),K=1,NOCONS )
       ENDIF
-      IF ( NOPA   .GT. 0 ) THEN
+      IF ( NOPA   > 0 ) THEN
          READ ( IIN , END=40, ERR=40) (PANAME(K),K=1,NOPA)
       ENDIF
-      IF ( NOFUN  .GT. 0 ) THEN
+      IF ( NOFUN  > 0 ) THEN
          READ ( IIN , END=40, ERR=40) (FUNAME(K),K=1,NOFUN)
       ENDIF
-      IF ( NOSFUN .GT. 0 ) THEN
+      IF ( NOSFUN > 0 ) THEN
          READ ( IIN , END=40, ERR=40) (SFNAME(K),K=1,NOSFUN)
       ENDIF
 !
@@ -264,9 +264,9 @@
 !
 !         boundary timings greater then timelag
 !
-      DO 30 I=1,NOBND
+      DO I=1,NOBND
       IBPNT(4,I)  = IBPNT(1,I) + 1
-   30 CONTINUE
+      end do
 !
 !         extract reference date and time
 !

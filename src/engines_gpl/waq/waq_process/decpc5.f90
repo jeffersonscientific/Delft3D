@@ -176,13 +176,13 @@
 
       IFLUX = 0
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 !
 !       In all active dry or wet segments
 !
         CALL evaluate_waq_attribute(3,IKNMRK(ISEG),IKMRK3)
 
-        IF (IKMRK3.EQ.1 .OR. IKMRK3.EQ.3) THEN
+        IF (IKMRK3==1 .OR. IKMRK3==3) THEN
 !
 !          INPUT of subroutine
 !
@@ -217,24 +217,24 @@
 !
 !          Errors if certain vars =< 0
 !
-           IF (ANR .LT. 1E-30) CALL write_error_message ('DECPC5: a_dNpr =< 0')
-           IF (APR .LT. 1E-30) CALL write_error_message ('DECPC5: a_dPpr =< 0')
-           IF (ASR .LT. 1E-30) CALL write_error_message ('DECPC5: a_dSpr =< 0')
-           IF (ALN .LT. 1E-30) CALL write_error_message ('DECPC5: al_dNs =< 0')
-           IF (ALP .LT. 1E-30) CALL write_error_message ('DECPC5: al_dPs =< 0')
-           IF (AUN .LT. 1E-30) CALL write_error_message ('DECPC5: au_dNs =< 0')
-           IF (AUP .LT. 1E-30) CALL write_error_message ('DECPC5: au_dPs =< 0')
+           IF (ANR < 1E-30) CALL write_error_message ('DECPC5: a_dNpr =< 0')
+           IF (APR < 1E-30) CALL write_error_message ('DECPC5: a_dPpr =< 0')
+           IF (ASR < 1E-30) CALL write_error_message ('DECPC5: a_dSpr =< 0')
+           IF (ALN < 1E-30) CALL write_error_message ('DECPC5: al_dNs =< 0')
+           IF (ALP < 1E-30) CALL write_error_message ('DECPC5: al_dPs =< 0')
+           IF (AUN < 1E-30) CALL write_error_message ('DECPC5: au_dNs =< 0')
+           IF (AUP < 1E-30) CALL write_error_message ('DECPC5: au_dPs =< 0')
 !
 !          Errors if upper limits =< lower limits
 !
-           IF (AUN .LE. ALN) CALL write_error_message ('DECPC5: au_dNs =< al_dNs ')
-           IF (AUP .LE. ALP) CALL write_error_message ('DECPC5: au_dPs =< al_dPs ')
-           IF (RC20UP .LT. RC20LO) & 
+           IF (AUN <= ALN) CALL write_error_message ('DECPC5: au_dNs =< al_dNs ')
+           IF (AUP <= ALP) CALL write_error_message ('DECPC5: au_dPs =< al_dPs ')
+           IF (RC20UP < RC20LO) &
           CALL write_error_message ('DECPC5: ku_dSdec20 < kl_dSdec20 ')
 !
 !          If  detritus = 0 : set fluxes to zero and skip algorithm
 !
-           IF (POC .LT. 1E-10 .OR. PON .LT. 1E-10 .OR. POP .LT. 1E-10) & 
+           IF (POC < 1E-10 .OR. PON < 1E-10 .OR. POP < 1E-10) &
              THEN
 
               DECOC = 0.0
@@ -261,13 +261,13 @@
 !
 !             Calculate degrad. rate at 20oC for current stochiometry
 !
-              IF ((PON/POC) .GT. AUN .AND. (POP/POC) .GT. AUP) THEN
+              IF ((PON/POC) > AUN .AND. (POP/POC) > AUP) THEN
 !
 !                -- both stoch's above upper limit
 !
                  RC20 = RC20UP
 
-              ELSE IF ((PON/POC) .LT. ALN .OR. (POP/POC) .LT. ALP) & 
+              ELSE IF ((PON/POC) < ALN .OR. (POP/POC) < ALP) &
                      THEN
 !
 !                -- one or both stoch's < lower limit
@@ -287,19 +287,19 @@
 !             Calculate correction factors
 !             for temperature
 !
-              IF ( IKMRK3 .EQ. 1 .AND. SWEMRS .EQ. 1 ) THEN
+              IF ( IKMRK3 == 1 .AND. SWEMRS == 1 ) THEN
                  TEMP = NATTEM
               ENDIF
               TEMPC = TC**(TEMP-20)
 !
 !             for electron acceptor (aerobic, denitr., sulfate red.)
 !
-              IF ( IKMRK3 .EQ. 1 .AND. SWEMRS .EQ. 1 ) THEN
+              IF ( IKMRK3 == 1 .AND. SWEMRS == 1 ) THEN
                  ELFACT = 1.0
               ELSE
-                 IF (OXY .GT. 0.0) THEN
+                 IF (OXY > 0.0) THEN
                     ELFACT = 1.0
-                 ELSE IF (NO3 .GT. 0.0) THEN
+                 ELSE IF (NO3 > 0.0) THEN
                     ELFACT = B_NO3
                  ELSE
                     ELFACT = B_SULF
@@ -335,7 +335,7 @@
 
            ENDIF
 
-           IF ( IKMRK3 .EQ. 1 .AND. SWEMRS .EQ. 1 ) THEN
+           IF ( IKMRK3 == 1 .AND. SWEMRS == 1 ) THEN
 
               ! emersion
 
@@ -407,7 +407,7 @@
         IP28  = IP28  + IN28
         IP29  = IP29  + IN29
 
-9000  CONTINUE
+      end do
 
       RETURN
       END

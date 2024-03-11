@@ -157,12 +157,12 @@
 !     open binary system files for new input processing, if any
 !
       CALL open_waq_files ( LUN(41) , LCHAR(41) , 41   ,  1   , IERRD  )
-      IF ( IERRD .EQ. 0 ) THEN
+      IF ( IERRD == 0 ) THEN
          DO I = 1 , NUFIL
             READ ( LUN(41) , * ) iftyp, FINAM
             new_lun =  800+I
             CALL open_waq_files ( new_lun , FINAM , 3 , 2+iftyp , IOERR )
-            IF ( IOERR .NE. 0 ) THEN
+            IF ( IOERR /= 0 ) THEN
                WRITE ( LUN(19) , '(A,I3,A,A)' ) & 
               ' ERROR opening file on unit: ',800+I,' filename: ',FINAM
                CALL SRSTOP(1)
@@ -177,7 +177,7 @@
 !
 !     initialisation of PROCES subsytem
 !
-      IF ( NPROC .GT. 0 ) THEN
+      IF ( NPROC > 0 ) THEN
          CALL open_waq_files (LUN(24)  , LCHAR(24), 24       , 2      , IERRD   )
          CALL DLWQIP (LUN(24)  , LCHAR(24), LUN(19)  , NOTOT     , NIPMSA  , & 
                      NPROC    , NOLOC    , NFLUX    , NODEF     , J(INSVA:), & 
@@ -202,7 +202,7 @@
 !     initialisation of OUTPUT subsytem
 !
 
-      IF ( NOUTP .GT. 0 ) THEN
+      IF ( NOUTP > 0 ) THEN
          CALL open_waq_files ( LUN(25) , LCHAR(25), 25       , 2     , IERRD   )
          CALL DLWQIO ( LUN(25) , LCHAR(25), LUN(19)  , NOUTP   , NRVART  , & 
                       NBUFMX  , J(IIOUT:), J(IIOPO:), C(IONAM), C(IOSNM), & 
@@ -213,7 +213,7 @@
 !
 !         initialisation of the grid layout
 !
-      IF ( NX*NY .GT. 0 ) THEN
+      IF ( NX*NY > 0 ) THEN
          CALL open_waq_files ( LUN(6) , LCHAR(6) , 6    , 2    , IERRD  )
          READ  ( LUN( 6) ) (J(K),K=IGRID,IGRID+NX*NY-1)
          CLOSE ( LUN( 6) )
@@ -223,7 +223,7 @@
 !
       CALL open_waq_files ( LUN(8) , LCHAR(8) , 8    , 2+ftype(8), IERRD)
 
-      if ( nmax*mmax .gt. 0 ) then
+      if ( nmax*mmax > 0 ) then
 
 !        read grid, make pointer table
 
@@ -257,7 +257,7 @@
 
 
       IBFLAG = 0
-      IF ( MOD(INTOPT,16) .GE. 8 ) IBFLAG = 1
+      IF ( MOD(INTOPT,16) >= 8 ) IBFLAG = 1
 
 !
 !     locally/per processor adapt the feature array:
@@ -281,21 +281,21 @@
       ig = scan ( lchar(18), '.', back = .true. )                ! look for the file type
       cext = lchar(18)(ig:ig+3)
       call str_lower(cext)
-      if ( cext .eq. '.map' .or. cext .eq. '.rmp' .or. & 
-          cext .eq. '.rm2' ) then                               ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
+      if ( cext == '.map' .or. cext == '.rmp' .or. &
+          cext == '.rm2' ) then                               ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
          read ( lun(18), iostat=ierrio ) finam(1:160)            ! read title of simulation
-         if ( ierrio .ne. 0 ) goto 50
-         if ( finam(114:120) .eq. 'mass/m2' .or. & 
-             finam(114:120) .eq. 'MASS/M2' ) propor = .true.    !  at end of third line ...
+         if ( ierrio /= 0 ) goto 50
+         if ( finam(114:120) == 'mass/m2' .or. &
+             finam(114:120) == 'MASS/M2' ) propor = .true.    !  at end of third line ...
          read ( lun(18) ) idummy                                 ! should be nr. of substance
-         if ( idummy .ne. notot ) then
+         if ( idummy /= notot ) then
             write ( lun(19), '(a,a,/,a,i10)' ) & 
              ' ERROR reading initial conditions - filename: ', lchar(18), & 
              ' Number of substances does not match : ', idummy
             call srstop(1)
          endif
          read ( lun(18) ) idummy                                 ! should be nr. of comp. volumes
-         if ( idummy .ne. nosss ) then
+         if ( idummy /= nosss ) then
             write ( lun(19), '(a,a,/,a,i10)' ) & 
              ' ERROR reading initial conditions - filename: ', lchar(18), & 
              ' Number of computational volumes does not match : ', idummy
@@ -307,7 +307,7 @@
       endif
       read  ( lun(18) , iostat = ierrio )                   & ! like the .ini, the .res and .wrk file
             idummy , ( a(k) , k=iconc,iconc+notot*nosss-1 )
-   50 if ( ierrio .ne. 0 ) then
+   50 if ( ierrio /= 0 ) then
           write ( lun(19) , '(a,a)' ) & 
              ' ERROR reading initial conditions - filename: ', & 
              lchar(18), & 
@@ -316,7 +316,7 @@
           call srstop(1)
       else
           read  ( lun(18) , iostat = ierrio ) idummy
-          if ( ierrio .eq. 0 ) then
+          if ( ierrio == 0 ) then
               write ( lun(19) , '(a,a)' ) & 
                  ' ERROR reading initial conditions - filename: ', & 
                  lchar(18), & 
@@ -349,7 +349,7 @@
 !
 !     New bottomlayer processing
 !
-         IF ( NOQ4 .GT. 0 ) & 
+         IF ( NOQ4 > 0 ) &
              CALL DLWQTD ( LUN     , NOSEG   , NSEG2   , NOLAY   , NOGRID  , & 
                            NOQ     , NOQ4    , J(IGREF:), J(IGSEG:), NOCONS  , & 
                            NOPA    , NOFUN   , NOSFUN  , A(ICONS:), C(ICNAM:), & 
@@ -358,7 +358,7 @@
                            A(ILENG:))
 !
 
-      IF ( INTSRT .EQ. 6 .OR. INTSRT .EQ. 7 ) THEN
+      IF ( INTSRT == 6 .OR. INTSRT == 7 ) THEN
          NOSUBz = NOTOT
       ELSE
          NOSUBz = NOSYS
@@ -368,7 +368,7 @@
       call initialize_real_array   ( A(IDERV:), NOTOT*NOSSS )
       call initialize_real_array   ( A(IMAS2:), NOTOT*5     )
       call initialize_real_array   ( A(IWDMP:), NOTOT*NOWST*2  )
-      IF ( MOD(INTOPT,16) .GT. 7 ) THEN
+      IF ( MOD(INTOPT,16) > 7 ) THEN
          call initialize_real_array( A(IDMPQ:), NOSYS*NDMPQ*2  )
          call initialize_real_array( A(IDMPS:), NOTOT*NDMPS*3  )
          call initialize_real_array( A(ISMAS:), NOTOT*NDMPAR*6 )
@@ -379,8 +379,8 @@
 
 !         make start masses for dynamic and iterative computation
 
-      if ( intsrt .eq.  6 .or. intsrt .eq.  7 .or. & 
-          intsrt .eq. 17 .or. intsrt .eq. 18 ) goto 40
+      if ( intsrt ==  6 .or. intsrt ==  7 .or. &
+          intsrt == 17 .or. intsrt == 18 ) goto 40
 
 !         initial conditions coflowing substances
 
@@ -393,15 +393,15 @@
 
 !         initial conditions passive substances
 
-      if ( nosys .ne. notot ) then                         ! if there are bed-substances
+      if ( nosys /= notot ) then                         ! if there are bed-substances
          indx = index_in_array( 'SURF      ',buffer%create_strings_20_array(ipnam, nopa))
-         if ( indx .gt. 0 ) then                           ! and if SURF is found
+         if ( indx > 0 ) then                           ! and if SURF is found
             call inact ( nosss   , nosys   , notot    , a(iconc:)   , a(imass:), & 
                         nopa    , indx    , a(iparm:), c(imnam+113), propor   , & 
                         .true.  )
          else                                     ! routine inact is at end of this file !
             indx = index_in_array( 'SURF      ', buffer%create_strings_20_array(isfna, nosfun))
-            if ( indx .gt. 0 ) then                        ! and if SURF is found
+            if ( indx > 0 ) then                        ! and if SURF is found
                call inact ( nosss   , nosys   , notot    , a(iconc:)   , a(imass:), & 
                            nosfun  , indx    , a(isfun:), c(imnam+113), propor   , & 
                            .false. )
@@ -425,7 +425,7 @@
 !     temporary for closure error
 
    40 INDX = index_in_array( 'CLOSE_ERR ', buffer%create_strings_20_array(ICNAM, NOCONS))
-      IF ( INDX .GT. 0 ) THEN
+      IF ( INDX > 0 ) THEN
          ICFLAG = 1
          WRITE(LUN(19),*) ' Closure error correction enabled'
       ELSE

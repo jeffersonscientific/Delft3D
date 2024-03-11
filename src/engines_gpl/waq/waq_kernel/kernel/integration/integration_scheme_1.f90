@@ -169,21 +169,21 @@
           NOQT   = NOQ + NOQ4
           inwtyp = intyp + nobnd
 
-          IF ( MOD(INTOPT,16) .GE. 8 ) IBFLAG = 1
+          IF ( MOD(INTOPT,16) >= 8 ) IBFLAG = 1
           LDUMMY = .FALSE.
-          IF ( NDSPN .EQ. 0 ) THEN
+          IF ( NDSPN == 0 ) THEN
              NDDIM = NODISP
           ELSE
              NDDIM = NDSPN
           ENDIF
-          IF ( NVELN .EQ. 0 ) THEN
+          IF ( NVELN == 0 ) THEN
              NVDIM = NOVELO
           ELSE
              NVDIM = NVELN
           ENDIF
-          LSTREC = ICFLAG .EQ. 1
+          LSTREC = ICFLAG == 1
           NOWARN   = 0
-          IF ( ILFLAG .EQ. 0 ) LLENG = ILENG+2
+          IF ( ILFLAG == 0 ) LLENG = ILENG+2
 
 !          Initialize second volume array with the first one
 
@@ -276,7 +276,7 @@
 
 
 
-         if ( itime .ge. 0   ) then
+         if ( itime >= 0   ) then
              ! first: adjust boundaries by OpenDA
              if ( dlwqd%inopenda ) then
                  do ibnd = 1,nobnd
@@ -319,7 +319,7 @@
 
 !          zero cummulative array's
 
-         if ( imflag .or. ( ihflag .and. noraai .gt. 0 ) ) then
+         if ( imflag .or. ( ihflag .and. noraai > 0 ) ) then
             call zercum ( notot   , nosys   , nflux   , ndmpar  , ndmpq   , & 
                          ndmps   , a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), & 
                          a(idmpq:), a(idmps:), noraai  , imflag  , ihflag  , & 
@@ -328,8 +328,8 @@
 
 !          simulation done ?
 
-         if ( itime .lt. 0      ) goto 9999
-         if ( itime .ge. itstop ) goto 20
+         if ( itime < 0      ) goto 9999
+         if ( itime >= itstop ) goto 20
 
 !        add processes
 
@@ -424,7 +424,7 @@
 
 !          integrate the fluxes at dump segments fill ASMASS with mass
 
-         if ( ibflag .gt. 0 ) then
+         if ( ibflag > 0 ) then
             call proint ( nflux   , ndmpar  , idtold  , itfact  , a(iflxd:), & 
                          a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq  )
          endif

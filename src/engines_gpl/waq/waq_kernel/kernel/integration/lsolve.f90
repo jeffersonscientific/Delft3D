@@ -91,16 +91,16 @@
          do ilay = 1 , nolay
 
             iseg = isegl + (ilay-1)*nsegl
-            if ( iexseg(iseg) .eq. 0 ) cycle
+            if ( iexseg(iseg) == 0 ) cycle
             ilow  = idiag(iseg-1) + 1
             ihigh = idiag(iseg)
             do jcol = ilow+iadd, ihigh
-               if ( imat(jcol) .gt. 0 .and. ( imat(jcol) .lt. iseg .or. imat(jcol) .gt. noseg ) ) & 
+               if ( imat(jcol) > 0 .and. ( imat(jcol) < iseg .or. imat(jcol) > noseg ) ) &
                               x(iseg) = x(iseg) - amat(jcol) * x( imat(jcol) )
             enddo
          enddo
 
-         if ( nolay .eq. 1 ) then
+         if ( nolay == 1 ) then
 
             x(isegl) = x(isegl) / diag(isegl)
 

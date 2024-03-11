@@ -128,27 +128,27 @@
 
             l_exchange = .false.
             do i_input = 1, proc%no_input
-               if ( proc%input_item(i_input)%type .eq. IOTYPE_EXCHANG_INPUT ) then
+               if ( proc%input_item(i_input)%type == IOTYPE_EXCHANG_INPUT ) then
                   l_exchange = .true.
                endif
             enddo
             do ioutput = 1, proc%no_output
-               if ( proc%output_item(ioutput)%type .eq. IOTYPE_EXCHANG_OUTPUT ) then
+               if ( proc%output_item(ioutput)%type == IOTYPE_EXCHANG_OUTPUT ) then
                   l_exchange = .true.
                endif
             enddo
 
             imnoag = index_in_array(proc%routine(:10), monoag(:nmnoag))
-            if ( imnoag .le. 0 ) then
+            if ( imnoag <= 0 ) then
                imnoag = index_in_array(proc%name(:10), monoag(:nmnoag))
             endif
-            if ( imnoag .gt. 0 ) then
+            if ( imnoag > 0 ) then
                proc%grid = 1
             elseif ( l_exchange ) then
                proc%grid = 1
             else
                nototg = proc%no_fluxstochi
-               if ( nototg .gt. 0 ) then
+               if ( nototg > 0 ) then
                   allocate(isysto(nototg))
                   do i=1, nototg
                      isysto(i)=proc%fluxstochi(i)%subindx
@@ -156,7 +156,7 @@
                   call setgrd( nogrid, notot , nototg, grdref, sysgrd, & 
                               isysto, grpath, ipgrid)
                   deallocate(isysto)
-                  if ( ipgrid .lt. 1 ) then
+                  if ( ipgrid < 1 ) then
 
                      ipgrid = 1
 
@@ -176,7 +176,7 @@
          proc => procesdef%procesprops(iproc)
          if ( proc%active ) then
             ipgrid = proc%grid
-            if ( ipgrid .ne. 1 ) then
+            if ( ipgrid /= 1 ) then
                nototg    = 1
                grdwrk(1) = ipgrid
                do ioutput = 1 , proc%no_output
@@ -188,9 +188,9 @@
                      proc2 => procesdef%procesprops(iproc2)
                      if ( proc2%active ) then
                         call zoekio ( valnam, proc2%no_input, proc2%input_item, 20, i_input)
-                        if ( i_input .gt. 0 ) then
+                        if ( i_input > 0 ) then
                            nototg = nototg + 1
-                           if ( nototg .gt. maxwrk ) then
+                           if ( nototg > maxwrk ) then
                               maxwrk = maxwrk*2
                               call resize_integer_array(grdwrk,maxwrk,nototg-1)
                            endif
@@ -201,7 +201,7 @@
                enddo
                call setgr2( nogrid, nototg, grdref, grdwrk, grpath, & 
                            ipgrid)
-               if ( ipgrid .lt. 1 ) then
+               if ( ipgrid < 1 ) then
 !     jvb              afhandelen exception? of error
                   ipgrid = 1
                endif
@@ -226,24 +226,24 @@
          proc => procesdef%procesprops(iproc)
          if ( proc%active ) then
             imnoag = index_in_array( proc%routine(:10), monoag(:nmnoag))
-            if ( imnoag .le. 0 ) then
+            if ( imnoag <= 0 ) then
                imnoag = index_in_array( proc%name(:10), monoag(:nmnoag))
             endif
-            if ( imnoag .gt. 0 ) then
+            if ( imnoag > 0 ) then
                proc%ndt = 1
             else
                nndt = 0
                do istochi = 1 , proc%no_fluxstochi
-                  if ( proc%fluxstochi(istochi)%subindx .gt. 0 ) then
+                  if ( proc%fluxstochi(istochi)%subindx > 0 ) then
                      nndt = nndt + 1
-                     if ( nndt .gt. maxwrk ) then
+                     if ( nndt > maxwrk ) then
                         maxwrk = maxwrk*2
                         call resize_integer_array(grdwrk,maxwrk,nndt-1)
                      endif
                      grdwrk(nndt) = sysndt(proc%fluxstochi(istochi)%subindx)
                   endif
                enddo
-               if ( nndt .gt. 0 ) then
+               if ( nndt > 0 ) then
                   call greatest_common_divisor ( nndt  , grdwrk, ndt   )
                   proc%ndt = ndt
                else
@@ -263,7 +263,7 @@
          proc => procesdef%procesprops(iproc)
          if ( proc%active ) then
             ndt = proc%ndt
-            if ( ndt .ne. 1 ) then
+            if ( ndt /= 1 ) then
                nndt = 1
                grdwrk(nndt) = ndt
                do ioutput = 1 , proc%no_output
@@ -275,9 +275,9 @@
                      proc2 => procesdef%procesprops(iproc2)
                      if ( proc2%active ) then
                         call zoekio ( valnam, proc2%no_input, proc2%input_item, 20, i_input)
-                        if ( i_input .gt. 0 ) then
+                        if ( i_input > 0 ) then
                            nndt = nndt + 1
-                           if ( nndt .gt. maxwrk ) then
+                           if ( nndt > maxwrk ) then
                               maxwrk = maxwrk*2
                               call resize_integer_array(grdwrk,maxwrk,nndt-1)
                            endif

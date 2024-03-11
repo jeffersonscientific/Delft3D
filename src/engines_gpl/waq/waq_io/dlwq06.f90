@@ -144,16 +144,16 @@
 
 !        Read number of waste loads
 
-      if ( gettoken( nowst, ierr2 ) .gt. 0 ) goto 20
-      if ( nowst .lt. 0 ) then       !   it says that info comes from auxiliary file
+      if ( gettoken( nowst, ierr2 ) > 0 ) goto 20
+      if ( nowst < 0 ) then       !   it says that info comes from auxiliary file
          write ( lunut , 2000 ) nowst
          call opt1   ( -1     , lun    , 15     , lchar  , filtype, & 
                       dtflg1 , dtflg3 , 0      , ierr2  , status   , & 
                       .false.)
-         if ( ierr2 .gt. 0 ) goto 20
-         if ( gettoken( nowst, ierr2 ) .gt. 0 ) goto 20
+         if ( ierr2 > 0 ) goto 20
+         if ( gettoken( nowst, ierr2 ) > 0 ) goto 20
       endif
-      if ( nowst .eq. 0 ) then
+      if ( nowst == 0 ) then
          write ( lunut, 2010 )
          goto 20
       endif
@@ -164,16 +164,16 @@
       allocate ( wstid     (nowst), wsttype     (nowst), wstname(nowst), & 
                 wstid_long(nowst), wsttype_long(nowst), iwstseg(nowst), & 
                 iwsttype  (nowst), iwstkind    (nowst), stat = ierr_alloc )
-      if ( ierr_alloc .ne. 0 ) then
+      if ( ierr_alloc /= 0 ) then
          write ( lunut , 2160 ) ierr_alloc
          write ( lunut , 2040 ) nowst
          call SRSTOP(1)
       endif
       write ( lunut , 2040 ) nowst
-      if ( ioutpt .lt. 3 ) then
+      if ( ioutpt < 3 ) then
          write ( lunut , 2045 )
       else
-         if ( iwidth .eq. 5 ) then
+         if ( iwidth == 5 ) then
             write ( lunut , 2050 )
          else
             write ( lunut , 2060 )
@@ -182,17 +182,17 @@
 
 !       read wasteload identification
 
-      do 10 i = 1 , nowst
+      do i = 1 , nowst
 
          iwsttype(i)     =  0
          iwstkind(i)     =  0
-         if ( gettoken( chulp(1), iwstseg(i), itype, ierr2 ) .gt. 0 ) goto 20
-         if ( itype .eq. 1 ) then                  !    character, either SURFACE, BANK or BOTTOM
+         if ( gettoken( chulp(1), iwstseg(i), itype, ierr2 ) > 0 ) goto 20
+         if ( itype == 1 ) then                  !    character, either SURFACE, BANK or BOTTOM
             iwstseg(i) = 0
-            if ( chulp(1) .eq. "SURFACE" ) iwstseg(i) = -1; iwstkind(i) = 2 ! e.g. atmospheric deposition
-            if ( chulp(1) .eq. "BANK"    ) iwstseg(i) = -2; iwstkind(i) = 2 ! e.g. bank infiltration, 1D river systems
-            if ( chulp(1) .eq. "BED"     ) iwstseg(i) = -3; iwstkind(i) = 2 ! e.g. well and sink
-            if ( iwstseg(i) .eq. 0 ) then
+            if ( chulp(1) == "SURFACE" ) iwstseg(i) = -1; iwstkind(i) = 2 ! e.g. atmospheric deposition
+            if ( chulp(1) == "BANK"    ) iwstseg(i) = -2; iwstkind(i) = 2 ! e.g. bank infiltration, 1D river systems
+            if ( chulp(1) == "BED"     ) iwstseg(i) = -3; iwstkind(i) = 2 ! e.g. well and sink
+            if ( iwstseg(i) == 0 ) then
                ierr2 = 1
                goto 20
             endif
@@ -204,51 +204,51 @@
                 chkpar(2) = .true.
             endif
          endif
-         if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
+         if ( gettoken( wstid_long(i), ierr2 ) > 0 ) goto 20
          select case ( wstid_long(i) )
             case ( "MASS" )
                iwstkind(i) = 1
-               if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
+               if ( gettoken( wstid_long(i), ierr2 ) > 0 ) goto 20
             case ( "CONC" )
                iwstkind(i) = 2
-               if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
+               if ( gettoken( wstid_long(i), ierr2 ) > 0 ) goto 20
             case ( "RAIN" )
                iwstkind(i) = 3
-               if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
+               if ( gettoken( wstid_long(i), ierr2 ) > 0 ) goto 20
             case ( "WELL" )
                iwstkind(i) = 4
-               if ( gettoken( wstid_long(i), ierr2 ) .gt. 0 ) goto 20
+               if ( gettoken( wstid_long(i), ierr2 ) > 0 ) goto 20
          end select
 
-         if ( gettoken( wstname     (i), ierr2 ) .gt. 0 ) goto 20
-         if ( gettoken( wsttype_long(i), ierr2 ) .gt. 0 ) goto 20
+         if ( gettoken( wstname     (i), ierr2 ) > 0 ) goto 20
+         if ( gettoken( wsttype_long(i), ierr2 ) > 0 ) goto 20
 
 
-         if ( wstid_long(i)  .eq. ' ' ) write ( wstid_long(i), '(''waste-load id'',i7)' ) i
-         if ( wstname(i)     .eq. ' ' ) write ( wstname(i), '(''waste-load name '',i7)' ) i
-         if ( wsttype_long(i).eq. ' ' ) wsttype_long(i) = 'waste-load type 1'
+         if ( wstid_long(i)  == ' ' ) write ( wstid_long(i), '(''waste-load id'',i7)' ) i
+         if ( wstname(i)     == ' ' ) write ( wstname(i), '(''waste-load name '',i7)' ) i
+         if ( wsttype_long(i)== ' ' ) wsttype_long(i) = 'waste-load type 1'
 
          wstid(i)   = wstid_long(i)
          wsttype(i) = wsttype_long(i)
 
-         if ( ioutpt .ge. 3 ) then
-            if ( iwidth .eq. 5 ) then
-               if ( iwstseg(i) .gt. 0 ) & 
+         if ( ioutpt >= 3 ) then
+            if ( iwidth == 5 ) then
+               if ( iwstseg(i) > 0 ) &
                  write ( lunut , 2070 ) i, iwstseg(i), iwstkind(i), wstid(i), wstname(i), wsttype(i)
-               if ( iwstseg(i) .eq. -1 ) & 
+               if ( iwstseg(i) == -1 ) &
                  write ( lunut , 2075 ) i, "SURFACE" , iwstkind(i), wstid(i), wstname(i), wsttype(i)
-               if ( iwstseg(i) .eq. -2 ) & 
+               if ( iwstseg(i) == -2 ) &
                  write ( lunut , 2075 ) i, "BANK   " , iwstkind(i), wstid(i), wstname(i), wsttype(i)
-               if ( iwstseg(i) .eq. -3 ) & 
+               if ( iwstseg(i) == -3 ) &
                  write ( lunut , 2075 ) i, "BED    " , iwstkind(i), wstid(i), wstname(i), wsttype(i)
             else
-               if ( iwstseg(i) .gt. 0 ) & 
+               if ( iwstseg(i) > 0 ) &
                  write ( lunut , 2080 ) i, iwstseg(i), iwstkind(i), wstid(i), wstname(i), wsttype(i)
-               if ( iwstseg(i) .eq. -1 ) & 
+               if ( iwstseg(i) == -1 ) &
                  write ( lunut , 2085 ) i, "SURFACE" , iwstkind(i), wstid(i), wstname(i), wsttype(i)
-               if ( iwstseg(i) .eq. -2 ) & 
+               if ( iwstseg(i) == -2 ) &
                  write ( lunut , 2085 ) i, "BANK   " , iwstkind(i), wstid(i), wstname(i), wsttype(i)
-               if ( iwstseg(i) .eq. -3 ) & 
+               if ( iwstseg(i) == -3 ) &
                  write ( lunut , 2085 ) i, "BED    " , iwstkind(i), wstid(i), wstname(i), wsttype(i)
             endif
          endif
@@ -256,9 +256,9 @@
 !          check for unique ID, error if non-truncated ID is unique otherwise warning
 
          ifound = index_in_array( wstid(i), wstid(:i-1))
-         if ( ifound .gt. 0 ) then
+         if ( ifound > 0 ) then
             ifound2 = index_in_array( wstid_long(i), wstid_long(:i-1))
-            if ( ifound .eq. ifound2 ) then
+            if ( ifound == ifound2 ) then
                write(lunut,2130) wstid(i)
                call status%increase_warning_count()
             else
@@ -271,14 +271,14 @@
 
          ifound =  index_in_array( wsttype(i)     , wsttype(:nowtyp))
          ifound2 = index_in_array( wsttype_long(i), wsttype_long(:nowtyp))
-         if ( ifound .ne. ifound2 ) then
+         if ( ifound /= ifound2 ) then
             write(lunut,2150) trim(wsttype_long(i))
             call status%increase_error_count()
          endif
 
 !          if type found set type, otherwise add type
 
-         if ( ifound .gt. 0 ) then
+         if ( ifound > 0 ) then
             iwsttype(i) = ifound
          else
             nowtyp = nowtyp + 1
@@ -289,8 +289,8 @@
 
 !          check segment number
 
-         if ( iwstseg(i) .lt. -3 .or.  iwstseg(i) .gt. noseg .or. & 
-             iwstseg(i) .eq.  0                                     ) then
+         if ( iwstseg(i) < -3 .or.  iwstseg(i) > noseg .or. &
+             iwstseg(i) ==  0                                     ) then
             write ( lunut , 2090 ) iwstseg(i)
             call status%increase_error_count()
          endif
@@ -299,7 +299,7 @@
 
          write ( lunwr )  iwstseg(i), iwstkind(i), wstid(i), wstname(i)
 
-   10 continue
+      end do
 
 !          provide information about the special parameters
 
@@ -315,7 +315,7 @@
 
       write ( lunut ,   *  )
       write ( lunut , 2110 ) nowtyp
-      if ( ioutpt .lt. 2 ) then
+      if ( ioutpt < 2 ) then
          write ( lunut , 2115 )
       else
          write ( lunut , 2112 )
@@ -341,7 +341,7 @@
                    nowtyp , drar   , dtflg1 , dtflg3 , & 
                    ioutpt , ierr2  , status )
       deallocate( drar )
-      if ( ierr2 .eq.  0 ) then
+      if ( ierr2 ==  0 ) then
          deallocate( wstid, wsttype )
          goto 30
       endif
@@ -351,8 +351,8 @@
 
 !     error processing
 
-   20 if ( ierr2 .gt. 0 ) call status%increase_error_count()      !   if 2, end of block reached
-      if ( ierr2 .eq. 3 ) call SRSTOP(1)        !   end of file reached
+   20 if ( ierr2 > 0 ) call status%increase_error_count()      !   if 2, end of block reached
+      if ( ierr2 == 3 ) call SRSTOP(1)        !   end of file reached
       call check  ( cdummy , iwidth , 6      , ierr2  , status)
    30 if ( timon ) call timstop( ithndl )
       return
@@ -361,16 +361,6 @@
 
  2000 format (  /,' First  selected option   : ',I7 )
  2010 format (  /,' No waste loads ' )
- 2020 format ( /,' ERROR the number of wasteloads (',I5,') exceeds', & 
-                ' the maximum (',I5,').', & 
-               /' The maximum is limited by CHARACTER array space', & 
-               /' Consult your system manager to obtain ',I5,' words', & 
-                ' of additional storage.' )
- 2030 format ( /,' ERROR the number of wasteloads (',I5,') exceeds', & 
-                ' the maximum (',I5,').', & 
-               /' The maximum is limited by INTEGER array space', & 
-               /' Consult your system manager to obtain ',I5,' words', & 
-                ' of additional storage.' )
  2040 format (  /,' Number of waste loads: ',I4// )
  2045 format (  /,' Names of waste loads are printed for', & 
                  ' output option 3 and higher !' )
@@ -383,7 +373,6 @@
  2080 format (  I6,2X,I7,2X,I1,2X,A20, 2X,A40,2X,A20 )
  2085 format (  I6,2X,A7,2X,I1,2X,A20, 2X,A40,2X,A20 )
  2090 format (    ' ERROR invalid segment number:',I8 )
- 2100 format (    ' ERROR: Character array space insufficient' )
  2110 format (    ' Number of different wasteload types: ', I4 )
  2112 format (    ' Type:  Type-string' )
  2115 format (    ' Waste load types are printed for output option', & 

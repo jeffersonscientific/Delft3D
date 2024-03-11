@@ -98,7 +98,7 @@
       DO ISEG = 1,NOSEG
          PMSA( IPNT( 21) ) = -1
          CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-         IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+         IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
             PMSA( IPNT( 21) ) = ISEG
          ENDIF
          IPNT(21) = IPNT(21) + INCREM(21)
@@ -107,9 +107,9 @@
       DO IQ = NOQ1+NOQ2+NOQ3, NOQ1 + NOQ2 +1, -1
          Ifrom  = IEXPNT(1,IQ)
          Ito       = IEXPNT(2,IQ)
-         if (ifrom.gt.0.and.ito.gt.0) then
+         if (ifrom>0.and.ito>0) then
             IBOTSEG = nint(PMSA(IPOINT(21)+(ITO-1)*INCREM(21)))
-            IF ( IBOTSEG .GT.0 ) THEN
+            IF ( IBOTSEG >0 ) THEN
                PMSA(IPOINT(21)+(IFROM-1)*INCREM(21)) = real(IBOTSEG)
             ENDIF
          endif
@@ -118,9 +118,9 @@
       do iq = noq1+noq2+noq3+1, noq1+noq2+noq3+noq4
          ifrom  = iexpnt(1,iq)
          ito    = iexpnt(2,iq)
-         if (ifrom.gt.0.and.ito.gt.0) then
+         if (ifrom>0.and.ito>0) then
             ibotseg = nint(pmsa(ipoint(21)+(ifrom-1)*increm(21)))
-            if ( ibotseg .gt.0 ) then
+            if ( ibotseg >0 ) then
                pmsa(ipoint(21)+(ito-1)*increm(21)) = real(ibotseg)
             endif
          endif
@@ -133,13 +133,13 @@
 !
       IPNT        = IPOINT
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
          CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
 
-         IF (IKMRK1.EQ.1) THEN
+         IF (IKMRK1==1) THEN
             CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-            IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.1)) THEN
+            IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
 
 !           Calculation of fcover for top layer only
 
@@ -150,7 +150,7 @@
                MaxEM04    = PMSA( IPNT( 10) )
                MaxEM05    = PMSA( IPNT( 12) )
                IBotSeg    = nint(PMSA( IPNT( 13) ))
-               IF (IBotSeg .le. 0) & 
+               IF (IBotSeg <= 0) &
                  CALL write_error_message_with_values('IBotSeg',PMSA( IPNT( 13) ),ISEG,'COVMAC')
 
                RadIn      = PMSA( IPNT( 14) )
@@ -167,31 +167,31 @@
 
                ! coverage per species
 
-               IF ( MaxEM01 .GT. 1E-20 ) THEN
+               IF ( MaxEM01 > 1E-20 ) THEN
                   CoverEM01  = EM01/MaxEM01
                ELSE
                   CoverEM01  = 0.0
                ENDIF
 
-               IF ( MaxEM02 .GT. 1E-20 ) THEN
+               IF ( MaxEM02 > 1E-20 ) THEN
                   CoverEM02  = EM02/MaxEM02
                ELSE
                   CoverEM02  = 0.0
                ENDIF
 
-               IF ( MaxEM03 .GT. 1E-20 ) THEN
+               IF ( MaxEM03 > 1E-20 ) THEN
                   CoverEM03  = EM03/MaxEM03
                ELSE
                   CoverEM03  = 0.0
                ENDIF
 
-               IF ( MaxEM04 .GT. 1E-20 ) THEN
+               IF ( MaxEM04 > 1E-20 ) THEN
                   CoverEM04  = EM04/MaxEM04
                ELSE
                   CoverEM04  = 0.0
                ENDIF
 
-               IF ( MaxEM05 .GT. 1E-20 ) THEN
+               IF ( MaxEM05 > 1E-20 ) THEN
                   CoverEM05  = EM05/MaxEM05
                ELSE
                   CoverEM05  = 0.0
@@ -228,7 +228,7 @@
 !
          IPNT        = IPNT        + INCREM
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END

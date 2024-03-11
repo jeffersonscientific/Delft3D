@@ -173,20 +173,20 @@
             itel0 = itel
             do i_input = 1 , proc%no_input
                itel = itel + 1
-               if ( proc%input_item(i_input)%indx .gt. 0 ) then
+               if ( proc%input_item(i_input)%indx > 0 ) then
                   itel1 = itel0 + proc%input_item(i_input)%indx
                else
                   itel1 = itel
                   write(*,*) 'geen volgorde voor proces:',proc%name
                endif
-               if ( proc%input_item(i_input)%type .eq. IOTYPE_SEGMENT_INPUT .or. & 
-                   proc%input_item(i_input)%type .eq. IOTYPE_SEGMENT_WORK  ) then
-                  if ( proc%input_item(i_input)%ip_val .eq. 3 ) then
+               if ( proc%input_item(i_input)%type == IOTYPE_SEGMENT_INPUT .or. &
+                   proc%input_item(i_input)%type == IOTYPE_SEGMENT_WORK  ) then
+                  if ( proc%input_item(i_input)%ip_val == 3 ) then
                      ! idt, voor fractional step aparte ingang in default array
                      ioff   = nopred + nocons + nopa + nofun + nosfun + notot + noloc
                      proc%input_item(i_input)%ip_val = ioff + nodef - 2*nproc + iproc_act
                   endif
-                  if ( proc%input_item(i_input)%ip_val .eq. 4 ) then
+                  if ( proc%input_item(i_input)%ip_val == 4 ) then
                      ! delt, voor fractional step aparte ingang in default array
                      ioff   = nopred + nocons + nopa + nofun + nosfun + notot + noloc
                      proc%input_item(i_input)%ip_val = ioff + nodef - nproc + iproc_act
@@ -194,7 +194,7 @@
                   ipmsa(itel1) = proc%input_item(i_input)%ip_val
                   prvtyp(itel1) = 1
                else
-                  if ( proc%input_item(i_input)%ip_val .ne. 0 ) then
+                  if ( proc%input_item(i_input)%ip_val /= 0 ) then
                      ipmsa(itel1) = ioffx2 + proc%input_item(i_input)%ip_val
                   else
                      ipmsa(itel1) = 0
@@ -212,19 +212,19 @@
             itel0 = itel
             do ioutput = 1 , proc%no_output
                itel = itel + 1
-               if ( proc%output_item(ioutput)%indx .gt. 0 ) then
+               if ( proc%output_item(ioutput)%indx > 0 ) then
                   itel1 = itel0 + proc%output_item(ioutput)%indx
                else
                   itel1 = itel
                   write(*,*) 'geen volgorde voor proces:',proc%name
                endif
                ipmsa(itel1) = 0
-               if ( proc%output_item(ioutput)%type .eq. IOTYPE_SEGMENT_OUTPUT .or. & 
-                   proc%output_item(ioutput)%type .eq. IOTYPE_SEGMENT_WORK   ) then
+               if ( proc%output_item(ioutput)%type == IOTYPE_SEGMENT_OUTPUT .or. &
+                   proc%output_item(ioutput)%type == IOTYPE_SEGMENT_WORK   ) then
                   ipssa(itel1) = proc%output_item(ioutput)%ip_val
                   prvtyp(itel1) = 3
                else
-                  if ( proc%output_item(ioutput)%ip_val .ne. 0 ) then
+                  if ( proc%output_item(ioutput)%ip_val /= 0 ) then
                      ipssa(itel1) = ioffx2 + proc%output_item(ioutput)%ip_val
                   else
                      ipssa(itel1) = 0
@@ -298,23 +298,23 @@
       ivflx = ivlcx + nlocx
 
       ip = ipin
-      if ( ip .eq. 1 ) then
+      if ( ip == 1 ) then
 
          ! volume
 
          ivar = ivvol
          goto 65
       endif
-      if ( ip .le. nopred      ) then
+      if ( ip <= nopred      ) then
 
          ! default, pre-defined
 
-         if ( ip .eq. 0 ) ip = 1
+         if ( ip == 0 ) ip = 1
          ivar = ivdef + ip - 1
          goto 65
       endif
       ioff =        nopred
-      if ( ip .le. nocons+ioff ) then
+      if ( ip <= nocons+ioff ) then
 
          ! constant
 
@@ -322,7 +322,7 @@
          goto 65
       endif
       ioff = ioff + nocons
-      if ( ip .le. nopa  +ioff ) then
+      if ( ip <= nopa  +ioff ) then
 
          ! parameter
 
@@ -330,7 +330,7 @@
          goto 65
       endif
       ioff = ioff + nopa
-      if ( ip .le. nofun +ioff ) then
+      if ( ip <= nofun +ioff ) then
 
          ! function
 
@@ -338,7 +338,7 @@
          goto 65
       endif
       ioff = ioff + nofun
-      if ( ip .le. nosfun+ioff ) then
+      if ( ip <= nosfun+ioff ) then
 
          ! segment function
 
@@ -346,7 +346,7 @@
          goto 65
       endif
       ioff = ioff + nosfun
-      if ( ip .le. notot+ioff ) then
+      if ( ip <= notot+ioff ) then
 
          ! concentration
 
@@ -354,7 +354,7 @@
          goto 65
       endif
       ioff = ioff + notot
-      if ( ip .le. noloc+ioff ) then
+      if ( ip <= noloc+ioff ) then
 
          ! local
 
@@ -362,7 +362,7 @@
          goto 65
       endif
       ioff = ioff + noloc
-      if ( ip .le. nodef+ioff ) then
+      if ( ip <= nodef+ioff ) then
 
          ! default
 
@@ -370,7 +370,7 @@
          goto 65
       endif
       ioff = ioff + nodef
-      if ( ip .le. nflux+ioff ) then
+      if ( ip <= nflux+ioff ) then
 
          ! flux
 
@@ -378,7 +378,7 @@
          goto 65
       endif
       ioff = ioff + nflux
-      if ( ip .le. 1    +ioff ) then
+      if ( ip <= 1    +ioff ) then
 
          ! flow
 
@@ -386,7 +386,7 @@
          goto 65
       endif
       ioff = ioff + 1
-      if ( ip .le. 1    +ioff ) then
+      if ( ip <= 1    +ioff ) then
 
          ! area
 
@@ -394,7 +394,7 @@
          goto 65
       endif
       ioff = ioff + 1
-      if ( ip .le. 2    +ioff ) then
+      if ( ip <= 2    +ioff ) then
 
          ! length
 
@@ -402,7 +402,7 @@
          goto 65
       endif
       ioff = ioff + 2
-      if ( ip .le. nodisp +ioff ) then
+      if ( ip <= nodisp +ioff ) then
 
          ! dispersion
 
@@ -410,7 +410,7 @@
          goto 65
       endif
       ioff = ioff + nodisp
-      if ( ip .le. novelo +ioff ) then
+      if ( ip <= novelo +ioff ) then
 
          ! velocity
 
@@ -418,7 +418,7 @@
          goto 65
       endif
       ioff = ioff + novelo
-      if ( ip .le. nofun +ioff ) then
+      if ( ip <= nofun +ioff ) then
 
          ! function
 
@@ -426,7 +426,7 @@
          goto 65
       endif
       ioff = ioff + nofun
-      if ( ip .le. nocons +ioff ) then
+      if ( ip <= nocons +ioff ) then
 
          ! constant
 
@@ -434,7 +434,7 @@
          goto 65
       endif
       ioff = ioff + nocons
-      if ( ip .le. ndspx +ioff ) then
+      if ( ip <= ndspx +ioff ) then
 
          ! extra dispersion
 
@@ -442,7 +442,7 @@
          goto 65
       endif
       ioff = ioff + ndspx
-      if ( ip .le. nvelx +ioff ) then
+      if ( ip <= nvelx +ioff ) then
 
          ! extra velocity
 
@@ -450,7 +450,7 @@
          goto 65
       endif
       ioff = ioff + nvelx
-      if ( ip .le. nlocx +ioff ) then
+      if ( ip <= nlocx +ioff ) then
 
          ! local on exchange
 
@@ -458,7 +458,7 @@
          goto 65
       endif
       ioff = ioff + nlocx
-      if ( ip .gt. ioff ) then
+      if ( ip > ioff ) then
 
          ! local on exchange
 

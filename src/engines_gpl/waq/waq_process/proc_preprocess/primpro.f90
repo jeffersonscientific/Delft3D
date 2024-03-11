@@ -115,7 +115,7 @@
 
                ! skip dummy rules, factor equal zero
 
-               if ( abs(proc%fluxstochi(istochi)%scale) .gt. 1e-10 ) then
+               if ( abs(proc%fluxstochi(istochi)%scale) > 1e-10 ) then
 
                   if (string_equals(gen, proc%fluxstochi(istochi)%substance)) then
 
@@ -123,7 +123,7 @@
 
                      ifl = ifl + 1
                      call zoekio ( proc%fluxstochi(istochi)%ioitem, proc%no_fluxoutput, proc%fluxoutput, 20, iflux)
-                     if ( iflux .le. 0 ) then
+                     if ( iflux <= 0 ) then
                         call write_error_message('error in primpro: unknown flux pdef')
                      endif
                      write (line,'(4a)') ' found flux  [',proc%fluxstochi(istochi)%ioitem(1:20),'] ', & 
@@ -153,7 +153,7 @@
                endif
             enddo
          enddo
-         if ( ifl .eq. 0 ) then
+         if ( ifl == 0 ) then
              write (line,'(a)') ' no fluxes found'
              call monsys( line , 4 )
          endif
@@ -170,14 +170,14 @@
 
                ! skip dummy rules, factor equal zero
 
-               if ( abs(proc%dispstochi(istochi)%scale) .gt. 1e-10 ) then
+               if ( abs(proc%dispstochi(istochi)%scale) > 1e-10 ) then
                   ! If the stochi substance name is ALLACTIVE, apply to all -active- substances
-                  if ((trim(proc%dispstochi(istochi)%substance).eq.'ALLACTIVE' .and. isys.le.nosys) & 
+                  if ((trim(proc%dispstochi(istochi)%substance)=='ALLACTIVE' .and. isys<=nosys) &
                     .or. string_equals(gen, proc%dispstochi(istochi)%substance)) then
                      idsp = idsp + 1
                      call zoekio ( proc%dispstochi(istochi)%ioitem, proc%no_output, proc%output_item, & 
                                   20, ioutput, IOTYPE_EXCHANG_OUTPUT)
-                     if ( ioutput .eq. -1 ) then
+                     if ( ioutput == -1 ) then
                         call write_error_message('error in primpro: unknown disp pdef')
                      endif
                      write (line,'(4a)') ' found dispersion[',proc%dispstochi(istochi)%ioitem,'] ', & 
@@ -185,7 +185,7 @@
                      call monsys( line , 4 )
                      write (line,'(4a)') '   from proces [',proc%name,'] ',proc%text(1:50)
                      call monsys( line , 4 )
-                     if ( isys .gt. nosys ) then
+                     if ( isys > nosys ) then
                         call status%increase_info_count()
                         write (line,'(2a)') '   info : inactive substance not using dispersion.'
                         call monsys( line , 4 )
@@ -204,13 +204,13 @@
                            call monsys( line , 4 )
                         endif
 
-                        if ( proc%output_item(ioutput)%ip_val .eq. 0 ) then
+                        if ( proc%output_item(ioutput)%ip_val == 0 ) then
                            ndspx = ndspx + 1
                            proc%output_item(ioutput)%ip_val = ioffx + ndspx
                         endif
                         iidspx = proc%output_item(ioutput)%ip_val - ioffx
                         dsto(isys,iidspx) = proc%dispstochi(istochi)%scale
-                        if ( idpnw(isys) .eq. 0 ) then
+                        if ( idpnw(isys) == 0 ) then
                            ndspn       = ndspn + 1
                            idpnw(isys) = ndspn
                         endif
@@ -223,7 +223,7 @@
                endif
             enddo
          enddo
-         if ( idsp .eq. 0 ) then
+         if ( idsp == 0 ) then
             write (line,'(a)') ' no dispersions found'
             call monsys( line , 4 )
          endif
@@ -240,14 +240,14 @@
 
                ! skip dummy rules, factor equal zero
 
-               if ( abs(proc%velostochi(istochi)%scale) .gt. 1e-10 ) then
+               if ( abs(proc%velostochi(istochi)%scale) > 1e-10 ) then
                   ! If the stochi substance name is ALLACTIVE, apply to all -active- substances
-                  if ((trim(proc%velostochi(istochi)%substance).eq.'ALLACTIVE' .and. isys.le.nosys) & 
+                  if ((trim(proc%velostochi(istochi)%substance)=='ALLACTIVE' .and. isys<=nosys) &
                     .or. string_equals(gen, proc%velostochi(istochi)%substance)) then
                      ivel = ivel + 1
                      call zoekio ( proc%velostochi(istochi)%ioitem, proc%no_output, proc%output_item, & 
                                   20, ioutput, IOTYPE_EXCHANG_OUTPUT)
-                     if ( ioutput .eq. -1 ) then
+                     if ( ioutput == -1 ) then
                         call write_error_message('error in primpro: unknown velo pdef')
                      endif
                      write (line,'(4a)') ' found velocity [',proc%velostochi(istochi)%ioitem,'] ', & 
@@ -255,7 +255,7 @@
                      call monsys( line , 4 )
                      write (line,'(4a)') '   from proces [',proc%name,'] ',proc%text(1:50)
                      call monsys( line , 4 )
-                     if ( isys .gt. nosys ) then
+                     if ( isys > nosys ) then
                         call status%increase_info_count()
                         write (line,'(2a)') '   info : inactive substance not using velocity.'
                         call monsys( line , 4 )
@@ -274,13 +274,13 @@
                            call monsys( line , 4 )
                         endif
 
-                        if ( proc%output_item(ioutput)%ip_val .eq. 0 ) then
+                        if ( proc%output_item(ioutput)%ip_val == 0 ) then
                            nvelx = nvelx + 1
                            proc%output_item(ioutput)%ip_val = -nvelx
                         endif
                         iivelx = -proc%output_item(ioutput)%ip_val
                         vsto(isys,iivelx) = proc%velostochi(istochi)%scale
-                        if ( ivpnw(isys) .eq. 0 ) then
+                        if ( ivpnw(isys) == 0 ) then
                            nveln       = nveln + 1
                            ivpnw(isys) = nveln
                         endif
@@ -293,7 +293,7 @@
                endif
             enddo
          enddo
-         if ( ivel .eq. 0 ) then
+         if ( ivel == 0 ) then
             write (line,'(a)') ' no velocity found'
             call monsys( line , 4 )
          endif
@@ -308,7 +308,7 @@
       do iproc = 1 , nproc
          proc => procesdef%procesprops(iproc)
          do ioutput = 1, proc%no_output
-            if ( proc%output_item(ioutput)%ip_val .lt. 0 ) then
+            if ( proc%output_item(ioutput)%ip_val < 0 ) then
                proc%output_item(ioutput)%ip_val = ioffx + ndspx - proc%output_item(ioutput)%ip_val
             endif
          enddo

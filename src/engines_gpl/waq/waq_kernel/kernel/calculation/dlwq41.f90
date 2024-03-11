@@ -112,14 +112,14 @@
 
 !         integration step size IDT
 
-      if ( nrftot( 1) .gt. 0 ) then
+      if ( nrftot( 1) > 0 ) then
          ipa = ipa + 2
          ipi = ipi + 4
       endif
 
 !         volumes
 
-      if ( nrharm( 2) .ge. 0 ) then
+      if ( nrharm( 2) >= 0 ) then
          call dlwqt1 ( lun       , itime      , itimel, iharm(ipf), harmat(iph), & 
                          array(ipa), ipoint(ipi), volume, 1         , nrharm( 2) , & 
                          noseg     , nrftot( 2) , ipa   , iph       , ipf        , & 

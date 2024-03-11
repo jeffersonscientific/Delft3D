@@ -134,8 +134,8 @@
 
 !        is there a bottom direction ?
 
-      if ( noq4 .eq. 0 ) then
-         if ( nobnd .gt. 0 ) then
+      if ( noq4 == 0 ) then
+         if ( nobnd > 0 ) then
             write ( lun(2) ) ( ibnd (k,1), k=1,nobnd  )
             write ( lun(2) ) ( ibnd (k,2), k=1,nobnd  )
          endif
@@ -145,7 +145,7 @@
 !        is there a bottom grid ?
 
       JBott = GridPs%bottom_grid
-      if ( JBott .eq. 0 ) then
+      if ( JBott == 0 ) then
          write ( lunut , 1050 )
          call status%increase_error_count()
          goto 9999
@@ -174,7 +174,7 @@
       do ilay = 1, nolaymax
          do ib = 1, nsegb
             if ( space_var_nolay ) then
-               if ( ilay .le. GridPs%Pointers(JBott)%nolay_var(ib) ) then
+               if ( ilay <= GridPs%Pointers(JBott)%nolay_var(ib) ) then
                   isegb = isegb + 1
                   botmatrix(ib,ilay) = isegb
                endif
@@ -187,24 +187,24 @@
 
 !        sorted after bottom segment number !!
 
-      if ( ioutpt .lt. 4 ) write ( lunut , 1000 )
+      if ( ioutpt < 4 ) write ( lunut , 1000 )
       ioff1 =      (nlay-1)*nsegl
       ioff2 = max( (nlay-2)*nsegl,0 )
       iqt   =  noq
       write ( lunut , * ) ' nsegb: ', nsegb
-      do 40 isegb = 1, nsegb
+      do isegb = 1, nsegb
 
          if ( space_var_nolay ) nlayb = GridPs%Pointers(JBott)%nolay_var(isegb)
          ib    = botmatrix(isegb,1)
 
 !              header for water-bottom
 
-         if ( ioutpt .ge. 4 ) then
+         if ( ioutpt >= 4 ) then
             write ( lunut , 1010 ) ib, noseg+ib
             write ( lunut , 1030 )
          endif
 
-         if ( nlayb .gt. 1 ) then
+         if ( nlayb > 1 ) then
             inaarplus = botmatrix(isegb,2) + noseg
          else
             inaarplus = -nobnd -ib
@@ -213,23 +213,23 @@
 !              get every pointer for this bottom cell
 
          iq = 0
-         do 10 i = 1, nsegl          ! from water towards the bottom
-            if ( GridPs%Pointers(JBott)%iarray(i) .eq. ib ) then
+         do i = 1, nsegl          ! from water towards the bottom
+            if ( GridPs%Pointers(JBott)%iarray(i) == ib ) then
                iq = iq+1
                ipoint(1,iq+iqt) = ioff1+i
                ipoint(2,iq+iqt) = ib + noseg
                ipoint(3,iq+iqt) = ioff2+i
                ipoint(4,iq+iqt) = inaarplus
-               if ( ioutpt .ge. 4 ) write(lunut,1040)iq+iqt,(ipoint(k,iq+iqt),k=1,4)
+               if ( ioutpt >= 4 ) write(lunut,1040)iq+iqt,(ipoint(k,iq+iqt),k=1,4)
             endif
-   10    continue
+         end do
 !              header within the bottom
-         if ( ioutpt .ge. 4 ) then
+         if ( ioutpt >= 4 ) then
             write ( lunut , 1020 )
             write ( lunut , 1030 )
          endif
 
-         do 20 ilay = 1, nlayb     ! from bottom to next bottom layer
+         do ilay = 1, nlayb     ! from bottom to next bottom layer
             iq = iq + 1            ! the number of the pointer
 
 !           from pointer
@@ -238,7 +238,7 @@
 
 !           to pointer
 
-            if ( ilay  .lt. nlayb ) then   ! 'to'  can be boundary
+            if ( ilay  < nlayb ) then   ! 'to'  can be boundary
                ipoint(2,iq+iqt) = botmatrix(isegb,ilay+1) + noseg
             else
                ipoint(2,iq+iqt)  = -ib - nobnd
@@ -248,7 +248,7 @@
 
 !           from-1
 
-            if ( ilay .eq. 1 ) then
+            if ( ilay == 1 ) then
                ipoint(3,iq+iqt) = ipoint(1,iq+iqt)
             else
                ipoint(3,iq+iqt) = botmatrix(isegb,ilay-1) + noseg
@@ -256,35 +256,35 @@
 
 !           to+1
 
-            if ( ilay .lt. nlayb - 1 ) then ! 'to+1'  can be boundary
+            if ( ilay < nlayb - 1 ) then ! 'to+1'  can be boundary
                ipoint(4,iq+iqt) = botmatrix(isegb,ilay+2) + noseg
             else
                ipoint(4,iq+iqt) = -ib - nobnd
             endif
-            if ( ioutpt .ge. 4 ) write(lunut,1040)iq+iqt,(ipoint(k,iq+iqt),k=1,4)
+            if ( ioutpt >= 4 ) write(lunut,1040)iq+iqt,(ipoint(k,iq+iqt),k=1,4)
 
-   20    continue
+         end do
 !              copy the column
-         do 30 i = 1 , iq
+         do i = 1 , iq
             ipoint(1,iq+iqt+i) = ipoint(1,iqt+i)
             ipoint(2,iq+iqt+i) = ipoint(2,iqt+i)
             ipoint(3,iq+iqt+i) = ipoint(3,iqt+i)
             ipoint(4,iq+iqt+i) = ipoint(4,iqt+i)
-   30    continue
+         end do
          iqt = iqt + 2*iq
-   40 continue
-      if ( noqt .ne. iqt ) then
+      end do
+      if ( noqt /= iqt ) then
          write ( lunut , 1110 ) noq4, iqt-noq
          call status%increase_error_count()
          goto 9999
       endif
       write ( lunut , 1060 ) nsegb
       odd = .true.
-      if ( ioutpt .ge. 3 ) then
+      if ( ioutpt >= 3 ) then
          write ( lunut , 1070 )
          do iq = noq+1, noq+noq4
-            if ( ipoint(1,iq) .lt. 0 .or. & 
-                ipoint(2,iq) .lt. 0      ) then
+            if ( ipoint(1,iq) < 0 .or. &
+                ipoint(2,iq) < 0      ) then
                ib = min (ipoint(1,iq),ipoint(2,iq))
                if ( odd ) then
                   write ( lunut , 1080 ) ib,iq,(ipoint(k,iq),k=1,2)
@@ -302,7 +302,7 @@
 
 !     Write boundary pointers to work file
 
-      if ( nobnd .gt. 0 .or. nsegb .gt. 0 ) then
+      if ( nobnd > 0 .or. nsegb > 0 ) then
          write ( lun(2) ) ( ibnd (k,1), k=1,nobnd  ), ( iabnd(k,1), k=1,nsegb )
          write ( lun(2) ) ( ibnd (k,2), k=1,nobnd  ), ( iabnd(k,2), k=1,nsegb )
       endif

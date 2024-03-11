@@ -83,17 +83,17 @@
       integer(kind=int_wp) ::icalcsw, inear
       real(kind=real_wp) ::scale, nostat, xseg, yseg, sum, sum2, min
 
-      DO 10 I=1, (MAXSTA + 1)  * MAXVAR +  MAXSTA*2 + NP
+      DO I=1, (MAXSTA + 1)  * MAXVAR +  MAXSTA*2 + NP
         IP(I) = IPOINT(I)
-   10 CONTINUE
+      end do
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !     waarden per station
 !
-      DO 20 I   = 1,MAXSTA
+      DO I   = 1,MAXSTA
         RAD(I)  = PMSA(IP((I-1)*MAXVAR+1))
         VWIND(I)= PMSA(IP((I-1)*MAXVAR+2))
         DIR(I)  = PMSA(IP((I-1)*MAXVAR+3))
@@ -101,14 +101,14 @@
         TEMP(I) = PMSA(IP((I-1)*MAXVAR+5))
         PRES(I) = PMSA(IP((I-1)*MAXVAR+6))
         SUN(I) =  PMSA(IP((I-1)*MAXVAR+7))
-   20 CONTINUE
+          end do
 !
 !     coordinaten van de stations
 
-      DO 21 I = 1, MAXSTA
+      DO I = 1, MAXSTA
           X(I) = PMSA(IP(MAXSTA*MAXVAR+(I-1)*2+1))
           Y(I) = PMSA(IP(MAXSTA*MAXVAR+(I-1)*2+2))
-   21 CONTINUE
+      end do
 !
 !     overige parameters
 !
@@ -129,16 +129,16 @@
       MIN = -1.0
       SUM = 0.0
       SUM2 = 0.0
-      IF ( NOSTAT .GT. MAXSTA ) THEN
+      IF ( NOSTAT > MAXSTA ) THEN
           NOSTAT = MAXSTA
       ENDIF
 
-      IF ( NOSTAT .LT. 1) THEN
+      IF ( NOSTAT < 1) THEN
           NOSTAT = 1
       ENDIF
 
 !
-      DO 30 I = 1, NOSTAT
+      DO I = 1, NOSTAT
           DIST(I) = SQRT ( (XSEG - X(I)*SCALE)*(XSEG - X(I)*SCALE) + & 
                           (YSEG - Y(I)*SCALE)*(YSEG - Y(I)*SCALE) )
 !
@@ -147,21 +147,21 @@
         SUM2 = SUM2 + DIST(I) * DIST(I)
 
 !
-      IF (MIN .LT. 0.0) THEN
+      IF (MIN < 0.0) THEN
            MIN = DIST(I)
            INEAR = I
-      ELSEIF (DIST(I) .LT. MIN) THEN
+      ELSEIF (DIST(I) < MIN) THEN
            MIN = DIST(I)
            INEAR = I
       ENDIF
 !
-   30 CONTINUE
+      end do
 
 
 !
 !     optie 1:  nearest station
 !
-      IF  ( ICALCSW .EQ. 1 ) THEN
+      IF  ( ICALCSW == 1 ) THEN
           PMSA(IP(MAXSTA*(MAXVAR+2)+NP +1)) = RAD(INEAR)
           PMSA(IP(MAXSTA*(MAXVAR+2)+NP +2)) = VWIND(INEAR)
           PMSA(IP(MAXSTA*(MAXVAR+2)+NP +3)) = DIR(INEAR)
@@ -174,16 +174,16 @@
 !
       ELSE
 !         optie 2 lineair inv dist
-          IF ( ICALCSW .EQ. 2 ) THEN
-              DO 41 I = 1 ,  NOSTAT
+          IF ( ICALCSW == 2 ) THEN
+              DO I = 1 ,  NOSTAT
                                 WFAC(I) = DIST(I) / SUM
-   41         CONTINUE
+              end do
 !
 !         optie 2b: inv dist kwadratisch
-          ELSEIF ( ICALCSW .EQ. 3 ) THEN
-              DO 42 I = 1 ,  NOSTAT
+          ELSEIF ( ICALCSW == 3 ) THEN
+              DO I = 1 ,  NOSTAT
                   WFAC(I) = DIST(I)*DIST(I) / SUM2
-   42         CONTINUE
+              end do
 
           ENDIF
 
@@ -193,7 +193,7 @@
           PMSA(IP(MAXSTA*(MAXVAR+2)+NP + 5)) = 0.0
           PMSA(IP(MAXSTA*(MAXVAR+2)+NP + 6)) = 0.0
           PMSA(IP(MAXSTA*(MAXVAR+2)+NP + 7)) = 0.0
-          DO 50 I = 1, NOSTAT
+          DO I = 1, NOSTAT
               PMSA(IP(MAXSTA*(MAXVAR+2)+NP + 1)) = & 
              PMSA(IP(MAXSTA*(MAXVAR+2)+NP + 1)) + WFAC(I) * RAD(I)
 
@@ -212,7 +212,7 @@
               PMSA(IP(MAXSTA*(MAXVAR+2)+NP + 7)) = & 
              PMSA(IP(MAXSTA*(MAXVAR+2)+NP + 7)) + WFAC(I) * SUN(I)
 
-   50     CONTINUE
+          end do
 !
 !         wind ricthing niet middelen
 !
@@ -223,12 +223,12 @@
       ENDIF
 
 !
-      DO 60 I=1, (MAXSTA + 1) * MAXVAR + MAXSTA*2 + NP
+      DO I=1, (MAXSTA + 1) * MAXVAR + MAXSTA*2 + NP
           IP(I) = IP(I) + INCREM (I)
-   60 CONTINUE
+      end do
 
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

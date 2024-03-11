@@ -114,9 +114,9 @@
 
       do
 
-         if ( gettoken(ctoken,idummy,rdummy,itype,ierr2) .ne. 0 ) exit
+         if ( gettoken(ctoken,idummy,rdummy,itype,ierr2) /= 0 ) exit
 
-         if ( ctoken .eq. 'INITIALS' ) then
+         if ( ctoken == 'INITIALS' ) then
 
             ! new file strucure
 
@@ -125,10 +125,10 @@
                              iwidth    , substances, constants, parameters, functions, & 
                              segfuncs  , segments  , gridps    , dlwqdata , ierr2    , & 
                              status)
-            if ( ierr2 .gt. 0 ) goto 30
+            if ( ierr2 > 0 ) goto 30
             if ( dlwqdata%extern ) then
                ierr = dlwqdataReadExtern(lunut,dlwqdata)
-               if ( ierr .ne. 0 ) goto 30
+               if ( ierr /= 0 ) goto 30
                dlwqdata%extern = .false.
             endif
             idata = dlwqdatacolladd( initials, dlwqdata )
@@ -137,7 +137,7 @@
 
             ! unrecognised keyword
 
-            if ( ctoken(1:1) .ne. '#' ) then
+            if ( ctoken(1:1) /= '#' ) then
                write ( lunut , 2050 ) trim(ctoken)
                ierr = ierr + 1
                goto 30
@@ -159,7 +159,7 @@
 
       do idata = 1 , initials%cursize
          ierr3 = dlwqdataevaluate(initials%dlwqdata(idata),gridps,itime,notot,noseg,conc)
-         if ( ierr3 .ne. 0 ) then
+         if ( ierr3 /= 0 ) then
             write(lunut,2060)
             call srstop(1)
          endif
@@ -174,8 +174,8 @@
       ierr3 = dlwq_cleanup(segments)
 
    30 continue
-      if ( ierr2 .gt. 0 .and. ierr2 .ne. 2 ) ierr = ierr + 1
-      if ( ierr2 .eq. 3 ) call srstop(1)
+      if ( ierr2 > 0 .and. ierr2 /= 2 ) ierr = ierr + 1
+      if ( ierr2 == 3 ) call srstop(1)
       call check( ctoken, iwidth, 8     , ierr2  , status)
       if (timon) call timstop( ithndl )
       return

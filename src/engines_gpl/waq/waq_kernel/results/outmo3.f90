@@ -93,20 +93,20 @@
 !
 !         initialise the paging, accumulation arrays and acumul flag
 !
-      IF ( IP(3) .EQ. 0 ) THEN
+      IF ( IP(3) == 0 ) THEN
          IP(3) = MAX(1,IP(1)/(7+(NDMPAR+7)*((NOTOT+IP(2)-1)/IP(2))))
          IP(4) = 0
       ENDIF
 !
 !         start printing
 !
-      IF ( MOD(IP(4),IP(3)) .EQ. 0 ) THEN
+      IF ( MOD(IP(4),IP(3)) == 0 ) THEN
          WRITE (IOUT,'('' '')')
          WRITE (IOUT,2100 ) ( MNAME(K),K=1,4)
       ENDIF
       IP(4) = IP(4) + 1
 !
-      IF ( ITSTOP - ITSTRT .GT. 0 ) THEN
+      IF ( ITSTOP - ITSTRT > 0 ) THEN
          PERCIT = 100.*(ITIME-ITSTRT)/(ITSTOP-ITSTRT)
       ELSE
          PERCIT = 100.
@@ -117,7 +117,7 @@
       CALL report_time ( IOUT  , ITIME , ISFLAG, -999.)
       WRITE ( IOUT, *    )
 !
-      DO 50 ID = 1 , NOTOT , IP(2)
+      DO ID = 1 , NOTOT , IP(2)
          NEND = MIN ( NOTOT , ID+IP(2)-1 )
          WRITE (IOUT,2030) (AMASS2(K,1)    ,K=ID,NEND)
          WRITE (IOUT,2040) (AMASS2(K,2)    ,K=ID,NEND)
@@ -130,7 +130,7 @@
          VNAME = 'CONCENTRATION'
          CALL OUTMO2 ( IOUT  , CONC2 , VNAME , DANAM , NDMPAR, & 
                       ID    , NEND  , NOTOT+NOTOT2)
-         IF ( IBFLAG .EQ. 1 ) THEN
+         IF ( IBFLAG == 1 ) THEN
             VNAME = 'MASS'
             CALL OUTMO2 ( IOUT  , ASMASS(1,1,1), VNAME , DANAM , NDMPAR, & 
                          ID    , NEND         , NOTOT )
@@ -152,11 +152,11 @@
          ENDIF
 !
          WRITE (IOUT,'('' '')')
-   50 CONTINUE
+      end do
 !
 !     extra vars
 !
-      DO 60 ID = 1 , NOTOT2, IP(2)
+      DO ID = 1 , NOTOT2, IP(2)
          NEND = MIN ( NOTOT2, ID+IP(2)-1 )
          ID2   = ID + NOTOT
          NEND2 = NEND + NOTOT
@@ -168,7 +168,7 @@
                       ID2   , NEND2 , NOTOT+NOTOT2)
 !
          WRITE (IOUT,'('' '')')
-   60 CONTINUE
+      end do
 !
       if ( timon ) call timstop ( ithandl )
       RETURN

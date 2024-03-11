@@ -162,7 +162,7 @@
       IN32 = INCREM(32)
       IN33 = INCREM(33)
 
-      IF (IN6.EQ.0 .AND. IN7.EQ.0) THEN
+      IF (IN6==0 .AND. IN7==0) THEN
         TCSOD = PMSA(IP6)
         TEMP  = PMSA(IP7)
 
@@ -173,7 +173,7 @@
       ELSE
         TFACT  = .TRUE.
       ENDIF
-      IF (IN15.EQ.0 .AND. IN22.EQ.0 .AND. IN23.EQ.0 ) THEN
+      IF (IN15==0 .AND. IN22==0 .AND. IN23==0 ) THEN
 
         OXY    = PMSA(IP15)
         COXSOD = PMSA(IP22)
@@ -181,10 +181,10 @@
 
 !       Zuurstoffunctie
 
-        IF ( COXSOD .LT. OOXSOD-0.01 ) THEN
-            IF ( OXY .LE. COXSOD ) THEN
+        IF ( COXSOD < OOXSOD-0.01 ) THEN
+            IF ( OXY <= COXSOD ) THEN
                 O2FUNC = 0.0
-            ELSEIF ( OXY .GE. OOXSOD ) THEN
+            ELSEIF ( OXY >= OOXSOD ) THEN
                 O2FUNC = 1.0
             ELSE
                 O2FUNC = (OXY-COXSOD)/(OOXSOD-COXSOD)
@@ -200,7 +200,7 @@
       ENDIF
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
          PMSA (IP24)  = 0.0
          PMSA (IP25)  = 0.0
          PMSA (IP26)  = 0.0
@@ -217,7 +217,7 @@
 
 !           Alleen bij vaktype met een bodem...
             BODEM = .FALSE.
-            IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
+            IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                BODEM = .TRUE.
             ENDIF
 
@@ -230,8 +230,8 @@
 
 !           Indien diepte of volume bijna of < 0, bereken dan niks.
 !           Dit is tevens beveiliging tegen delen door 0.
-            IF (DEPTH.LT.1.E-15) BODEM = .FALSE.
-            IF (VOL.LT.1.E-15)   BODEM = .FALSE.
+            IF (DEPTH<1.E-15) BODEM = .FALSE.
+            IF (VOL<1.E-15)   BODEM = .FALSE.
 
             IF (BODEM) THEN
 
@@ -251,7 +251,7 @@
                DOXSOD = (ZFL+ZFLAUT)/DEPTH + SOD*RCSOD*TFSOD/DEPTH
 
 !              beveiliging(en) tegen deling door nul in sodch4
-               IF (DOXSOD.LT.1.E-15) DOXSOD = 1.E-15
+               IF (DOXSOD<1.E-15) DOXSOD = 1.E-15
                DMINER   = 2.67 * ( PMSA(IP17)+PMSA(IP18)+ & 
                                   PMSA(IP19)+PMSA(IP20) )
 
@@ -260,7 +260,7 @@
 !              als er methaan bubbels ontsnappen.
 
                GASBEL = .FALSE.
-               IF (INT(PMSA(IP9)) .EQ. 1) GASBEL = .TRUE.
+               IF (INT(PMSA(IP9)) == 1) GASBEL = .TRUE.
 
                IF (GASBEL) THEN
 
@@ -296,7 +296,7 @@
 !                  gelaagde schematisatie...
 
                    dep      = PMSA(IP21)
-                   IF (dep .LT. DEPTH) THEN
+                   IF (dep < DEPTH) THEN
                       dep = DEPTH
                    ENDIF
 
@@ -334,10 +334,10 @@
                    COXSOD = PMSA(IP22)
                    OOXSOD = PMSA(IP23)
 
-                   IF ( COXSOD .LT. OOXSOD-0.01 ) THEN
-                       IF ( OXY .LE. COXSOD ) THEN
+                   IF ( COXSOD < OOXSOD-0.01 ) THEN
+                       IF ( OXY <= COXSOD ) THEN
                            O2FUNC = 0.0
-                       ELSEIF ( OXY .GE. OOXSOD ) THEN
+                       ELSEIF ( OXY >= OOXSOD ) THEN
                            O2FUNC = 1.0
                        ELSE
                            O2FUNC = (OXY-COXSOD)/(OOXSOD-COXSOD)
@@ -398,7 +398,7 @@
          IP32  = IP32  + IN32
          IP33  = IP33  + IN33
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END
@@ -453,7 +453,7 @@
       ch4ssd = 99.*(1.+(dep+hsed/2.)/10.)*0.9759**stp20
       dowc = xox
 !        to prevent numerical difficulty with diagenesis computation
-      if(dowc.lt.1.e-3)  dowc = 1.e-3
+      if(dowc<1.e-3)  dowc = 1.e-3
 !        initial sod estimate
       sodi = 1.
       delsod = 0.01
@@ -464,7 +464,7 @@
 !     *******************************************************
 !     write(not,1330)  csodmx,edwcsd,ch4ssd,diagv
 !1330 format(' csodmx,edwcsd,ch4ssd,diagv',4e11.4)
-      if(csodmx.gt.diagen)  csodmx = diagen
+      if(csodmx>diagen)  csodmx = diagen
 !
 !        iterate on total sod
   110 continue
@@ -478,7 +478,7 @@
       delta = csod - sodi
 !     write(not,1333)  nsod,csodmx,csod,tsod,delta
 !1333 format(' nosd,effjt,csod,tsod,delta'/5e10.3)
-      if(abs(delta).le.delsod)  go to 120
+      if(abs(delta)<=delsod)  go to 120
 !        did not converge - new estimate and try again
       sodi = sodi + delta/2.
       go to 110
@@ -492,7 +492,7 @@
 !        methane gas diffusive flux (g o2/m**2-day)
       jch4d = dsqrt(2.*kappad*ch4ssd*diagen)*sechxc
 !        ch4 production only if saturation depth < sediment depth
-      if(lch4s.le.hsed)  then
+      if(lch4s<=hsed)  then
 !          methane saturation therefore methane gas (l/m**2-day)
 !          (gm c/5.33 gm o2 * 22.4 l/12 gm c ==> 0.3502)
         jch4g = 0.3502*diagv*(hsed-lch4s)
@@ -503,7 +503,7 @@
         jbtf = 0.3502*jbt/jch4g
 !          if bubble transfer > ch4(gas) then
 !          set bubble transfer equal to total ch4(gas)
-        if(jbtf.gt.1.) then
+        if(jbtf>1.) then
           jbtf = 1.
           jbt = jch4g/0.3502
         endif

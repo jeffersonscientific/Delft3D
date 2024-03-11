@@ -214,7 +214,7 @@
 !
       IFLUX = 0
 !
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 !
 !       In all "active" segments
 !
@@ -231,7 +231,7 @@
 !          all rates are equal for ID=2 (POC4 and DOC)
 !
            RC20UPC = PMSA(IP6)
-           IF (NINT(ID) .EQ. 2) THEN
+           IF (NINT(ID) == 2) THEN
            RC20LOC = PMSA(IP6)
            RC20UPN = PMSA(IP6)
            RC20LON = PMSA(IP6)
@@ -264,35 +264,35 @@
 !
 !          Errors if certain vars =< 0
 !
-           IF (ANR .LT. 1E-30) CALL write_error_message ('DECDET: a_dNpr =< 0')
-           IF (APR .LT. 1E-30) CALL write_error_message ('DECDET: a_dPpr =< 0')
-           IF (ASR .LT. 1E-30) CALL write_error_message ('DECDET: a_dSpr =< 0')
-           IF (ALN .LT. 1E-30) & 
+           IF (ANR < 1E-30) CALL write_error_message ('DECDET: a_dNpr =< 0')
+           IF (APR < 1E-30) CALL write_error_message ('DECDET: a_dPpr =< 0')
+           IF (ASR < 1E-30) CALL write_error_message ('DECDET: a_dSpr =< 0')
+           IF (ALN < 1E-30) &
           CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
-           IF (ALP .LT. 1E-30) & 
+           IF (ALP < 1E-30) &
           CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
-           IF (AUN .LT. 1E-30) & 
+           IF (AUN < 1E-30) &
           CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
-           IF (AUP .LT. 1E-30) & 
+           IF (AUP < 1E-30) &
           CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
 !
 !          Errors if upper limits =< lower limits
 !
-           IF (AUN .LT. ALN) & 
+           IF (AUN < ALN) &
           CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
-           IF (AUP .LT. ALP) & 
+           IF (AUP < ALP) &
           CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
 !
-           IF (RC20UPC .LT. RC20LOC) & 
+           IF (RC20UPC < RC20LOC) &
           CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
-           IF (RC20UPN .LT. RC20LON) & 
+           IF (RC20UPN < RC20LON) &
           CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
-           IF (RC20UPP .LT. RC20LOP) & 
+           IF (RC20UPP < RC20LOP) &
           CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
 !
 !          If  detritus = 0 : set fluxes to zero and skip algorithm
 !
-           IF (POC .LT. 1E-10) & 
+           IF (POC < 1E-10) &
              THEN
 !
               DECOC = 0.0
@@ -321,7 +321,7 @@
 !
 !             Calculate degrad. rate at 20oC for current stochiometry
 !
-              IF ((PON/POC) .GT. AUN .AND. (POP/POC) .GT. AUP) THEN
+              IF ((PON/POC) > AUN .AND. (POP/POC) > AUP) THEN
 !
 !                -- both stoch's above upper limit
 !
@@ -329,7 +329,7 @@
                  RC20N = RC20UPN
                  RC20P = RC20UPP
 !
-              ELSE IF ((PON/POC) .LT. ALN .OR. (POP/POC) .LT. ALP) & 
+              ELSE IF ((PON/POC) < ALN .OR. (POP/POC) < ALP) &
                      THEN
 !
 !                -- one or both stoch's below lower limit
@@ -343,7 +343,7 @@
 !                -- both stoch's between upper and lower limit
 !                   or one stoch above ul and one between ul and ll
 !
-                 IF (AUN .EQ. ALN .OR. AUP .EQ. ALP) THEN
+                 IF (AUN == ALN .OR. AUP == ALP) THEN
                     FNUT = 0.5
                  ELSE
                     FNUT = MIN( ((PON/POC)-ALN) / (AUN-ALN) , & 
@@ -365,9 +365,9 @@
 !
 !             for dominant electron acceptor
 !
-              IF (OXY .GT. 0.1) THEN
+              IF (OXY > 0.1) THEN
                  ELFACT = 1.0
-              ELSE IF (NO3 .GT. 0.1) THEN
+              ELSE IF (NO3 > 0.1) THEN
                  ELFACT = B_NO3
               ELSE
                  ELFACT = B_SULF
@@ -375,7 +375,7 @@
 !
 !             for nutrient stripping
 !
-              IF (NINT(SWOMDEC) .EQ. 0 ) THEN
+              IF (NINT(SWOMDEC) == 0 ) THEN
                  N_FACT = 1.0 + ((PON/POC) - ANR) / ANR
                  P_FACT = 1.0 + ((POP/POC) - APR) / APR
                  S_FACT = 1.0 + ((POS/POC) - ASR) / ASR
@@ -474,7 +474,7 @@
         IP33  = IP33  + IN33
         IP34  = IP34  + IN34
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END

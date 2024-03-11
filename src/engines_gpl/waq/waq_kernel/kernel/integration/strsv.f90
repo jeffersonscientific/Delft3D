@@ -164,14 +164,14 @@
       ELSE IF( .NOT.LSAME( DIAG , 'U' ).AND. & 
               .NOT.LSAME( DIAG , 'N' )      )THEN
          INFO = 3
-      ELSE IF( N.LT.0 )THEN
+      ELSE IF( N<0 )THEN
          INFO = 4
-      ELSE IF( LDA.LT.MAX( 1, N ) )THEN
+      ELSE IF( LDA<MAX( 1, N ) )THEN
          INFO = 6
-      ELSE IF( INCX.EQ.0 )THEN
+      ELSE IF( INCX==0 )THEN
          INFO = 8
       END IF
-      IF( INFO.NE.0 )THEN
+      IF( INFO/=0 )THEN
          CALL XERBLA( 'STRSV ', INFO )
          if ( timon ) call timstop ( ithandl )
          RETURN
@@ -179,7 +179,7 @@
 !     
 !          Quick return if possible.
 !     
-      IF( N.EQ.0 ) THEN
+      IF( N==0 ) THEN
          if ( timon ) call timstop ( ithandl )
          RETURN
       ENDIF
@@ -189,9 +189,9 @@
 !          Set up the start point in X if the increment is not unity. This
 !          will be  ( N - 1 )*INCX  too small for descending loops.
 !     
-      IF( INCX.LE.0 )THEN
+      IF( INCX<=0 )THEN
          KX = 1 - ( N - 1 )*INCX
-      ELSE IF( INCX.NE.1 )THEN
+      ELSE IF( INCX/=1 )THEN
          KX = 1
       END IF
 !     
@@ -203,60 +203,60 @@
 !             Form  x := inv( A )*x.
 !     
          IF( LSAME( UPLO, 'U' ) )THEN
-            IF( INCX.EQ.1 )THEN
-               DO 20, J = N, 1, -1
-                  IF( X( J ).NE.ZERO )THEN
+            IF( INCX==1 )THEN
+               DO , J = N, 1, -1
+                  IF( X( J )/=ZERO )THEN
                      IF( NOUNIT ) & 
                        X( J ) = X( J )/A( J, J )
                      TEMP = X( J )
-                     DO 10, I = J - 1, 1, -1
+                     DO , I = J - 1, 1, -1
                         X( I ) = X( I ) - TEMP*A( I, J )
-   10                CONTINUE
+                     end do
                   END IF
-   20          CONTINUE
+                end do
             ELSE
                JX = KX + ( N - 1 )*INCX
-               DO 40, J = N, 1, -1
-                  IF( X( JX ).NE.ZERO )THEN
+               DO , J = N, 1, -1
+                  IF( X( JX )/=ZERO )THEN
                      IF( NOUNIT ) & 
                        X( JX ) = X( JX )/A( J, J )
                      TEMP = X( JX )
                      IX   = JX
-                     DO 30, I = J - 1, 1, -1
+                     DO , I = J - 1, 1, -1
                         IX      = IX      - INCX
                         X( IX ) = X( IX ) - TEMP*A( I, J )
-   30                CONTINUE
+                     end do
                   END IF
                   JX = JX - INCX
-   40          CONTINUE
+               end do
             END IF
          ELSE
-            IF( INCX.EQ.1 )THEN
-               DO 60, J = 1, N
-                  IF( X( J ).NE.ZERO )THEN
+            IF( INCX==1 )THEN
+               DO , J = 1, N
+                  IF( X( J )/=ZERO )THEN
                      IF( NOUNIT ) & 
                        X( J ) = X( J )/A( J, J )
                      TEMP = X( J )
-                     DO 50, I = J + 1, N
+                     DO , I = J + 1, N
                         X( I ) = X( I ) - TEMP*A( I, J )
-   50                CONTINUE
+                     end do
                   END IF
-   60          CONTINUE
+                end do
             ELSE
                JX = KX
-               DO 80, J = 1, N
-                  IF( X( JX ).NE.ZERO )THEN
+               DO , J = 1, N
+                  IF( X( JX )/=ZERO )THEN
                      IF( NOUNIT ) & 
                        X( JX ) = X( JX )/A( J, J )
                      TEMP = X( JX )
                      IX   = JX
-                     DO 70, I = J + 1, N
+                     DO , I = J + 1, N
                         IX      = IX      + INCX
                         X( IX ) = X( IX ) - TEMP*A( I, J )
-   70                CONTINUE
+                     end do
                   END IF
                   JX = JX + INCX
-   80          CONTINUE
+               end do
             END IF
          END IF
       ELSE
@@ -264,57 +264,57 @@
 !             Form  x := inv( A' )*x.
 !     
          IF( LSAME( UPLO, 'U' ) )THEN
-            IF( INCX.EQ.1 )THEN
-               DO 100, J = 1, N
+            IF( INCX==1 )THEN
+               DO , J = 1, N
                   TEMP = X( J )
-                  DO 90, I = 1, J - 1
+                  DO , I = 1, J - 1
                      TEMP = TEMP - A( I, J )*X( I )
-   90             CONTINUE
+                  end do
                   IF( NOUNIT ) & 
                     TEMP = TEMP/A( J, J )
                   X( J ) = TEMP
-  100          CONTINUE
+                end do
             ELSE
                JX = KX
-               DO 120, J = 1, N
+               DO , J = 1, N
                   TEMP = X( JX )
                   IX   = KX
-                  DO 110, I = 1, J - 1
+                  DO , I = 1, J - 1
                      TEMP = TEMP - A( I, J )*X( IX )
                      IX   = IX   + INCX
-  110             CONTINUE
+                  end do
                   IF( NOUNIT ) & 
                     TEMP = TEMP/A( J, J )
                   X( JX ) = TEMP
                   JX      = JX   + INCX
-  120          CONTINUE
+               end do
             END IF
          ELSE
-            IF( INCX.EQ.1 )THEN
-               DO 140, J = N, 1, -1
+            IF( INCX==1 )THEN
+               DO , J = N, 1, -1
                   TEMP = X( J )
-                  DO 130, I = N, J + 1, -1
+                  DO , I = N, J + 1, -1
                      TEMP = TEMP - A( I, J )*X( I )
-  130             CONTINUE
+                  end do
                   IF( NOUNIT ) & 
                     TEMP = TEMP/A( J, J )
                   X( J ) = TEMP
-  140          CONTINUE
+                end do
             ELSE
                KX = KX + ( N - 1 )*INCX
                JX = KX
-               DO 160, J = N, 1, -1
+               DO , J = N, 1, -1
                   TEMP = X( JX )
                   IX   = KX
-                  DO 150, I = N, J + 1, -1
+                  DO , I = N, J + 1, -1
                      TEMP = TEMP - A( I, J )*X( IX )
                      IX   = IX   - INCX
-  150             CONTINUE
+                  end do
                   IF( NOUNIT ) & 
                     TEMP = TEMP/A( J, J )
                   X( JX ) = TEMP
                   JX      = JX   - INCX
-  160          CONTINUE
+               end do
             END IF
          END IF
       END IF

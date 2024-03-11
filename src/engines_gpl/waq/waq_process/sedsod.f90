@@ -100,7 +100,7 @@
 
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
@@ -115,14 +115,14 @@
       DCODCR = PMSA(IP9 )
       DCODMN = PMSA(IP10)
       DEPTH  = PMSA(IP11)
-      IF (ISW.EQ.0) THEN
+      IF (ISW==0) THEN
 !       BOD
         FSEDOD = DBOD5 + DBOD52 + DBOD53 + DBODU + DBODU2 + DNBOD5 + & 
                 DNBODU
-      ELSEIF (ISW.EQ.1) THEN
+      ELSEIF (ISW==1) THEN
 !       COD
         FSEDOD = DCODCR + DCODMN
-      ELSEIF (ISW.EQ.2) THEN
+      ELSEIF (ISW==2) THEN
 !       BOD + COD
         FSEDOD = DBOD5 + DBOD52 + DBOD53 + DBODU + DBODU2 + DNBOD5 + & 
                 DNBODU + DCODCR + DCODMN
@@ -134,7 +134,7 @@
       ENDIF
 
       DSEDOD = 0.0
-      IF ( DEPTH .GT. 0.0 ) THEN
+      IF ( DEPTH > 0.0 ) THEN
           DSEDOD = FSEDOD / DEPTH
       ENDIF
 
@@ -158,7 +158,7 @@
       IP11  = IP11  + IN11
       IP12  = IP12  + IN12
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

@@ -169,12 +169,12 @@
 
 !          No wasteloads, then no glory
 
-      if ( nowst .eq. 0 ) goto 9999
+      if ( nowst == 0 ) goto 9999
 
 !     in steady state mode this subroutine is called substance by substance
 !     preparations only in the call for the first substance
 
-      if ( isys .eq. 1 ) then
+      if ( isys == 1 ) then
 
 !          Create and dimension a backpointering array for load detection
 !          Dimension a work array for surface and bottom loads
@@ -185,7 +185,7 @@
             allocate( wflow  (noseg), stat=ierr_alloc )
             allocate( surf   (noseg), stat=ierr_alloc )
             allocate( length (noseg), stat=ierr_alloc )
-            if ( ierr_alloc .ne. 0 ) then
+            if ( ierr_alloc /= 0 ) then
                write(*,*) 'ERROR: allocating work array in DLWQ15'
                write(*,*) 'ierr_alloc :',ierr_alloc
                write(*,*) 'noseg,nowst:',noseg,nowst
@@ -201,13 +201,13 @@
          surfbed = .false.
          do i = 1 , nowst
             iwst = iwaste(i)
-            if ( iwst .lt. 0 ) then
+            if ( iwst < 0 ) then
                surfbed = .true.
                cycle
             endif
-            if ( abs(waste(0,i)+999.0) .lt. 0.001 ) then      ! flow not known yet
+            if ( abs(waste(0,i)+999.0) < 0.001 ) then      ! flow not known yet
                NrDetec = NrDetec + 1                          ! fill array with cells
-               if ( NrDetec .gt. MaxDetec ) then              ! to detect flow in
+               if ( NrDetec > MaxDetec ) then              ! to detect flow in
                   allocate ( Itemp(MaxDetec+10) )             ! resize if needed
                   do i1 = 1, MaxDetec
                      Itemp(i1)%icell = IDetec(i1)%icell
@@ -228,21 +228,21 @@
 
 !        Make wasteflows if missings have been detected
 
-         if ( NrDetec .gt. 0 ) then
+         if ( NrDetec > 0 ) then
             do i = 1 , noq
                ip = ipoint(1,i)
-               if ( ip .gt. 0 ) then
-                  if ( IBpoint(ip) .gt. 0 ) then    ! this is a cell with unknown loads
+               if ( ip > 0 ) then
+                  if ( IBpoint(ip) > 0 ) then    ! this is a cell with unknown loads
                      do i1 = 1 , NrDetec            ! accumulate in all unknown loads in this cell
-                        if ( IDetec(i1)%icell .eq. ip ) IDetec(i1)%flow = IDetec(i1)%flow + Flow(i)
+                        if ( IDetec(i1)%icell == ip ) IDetec(i1)%flow = IDetec(i1)%flow + Flow(i)
                      enddo
                   endif
                endif
                ip = ipoint(2,i)                    ! same for outflow
-               if ( ip .gt. 0 ) then
-                  if ( IBpoint(ip) .gt. 0 ) then
+               if ( ip > 0 ) then
+                  if ( IBpoint(ip) > 0 ) then
                      do i1 = 1 , NrDetec
-                        if ( IDetec(i1)%icell .eq. ip ) IDetec(i1)%flow = IDetec(i1)%flow - Flow(i)
+                        if ( IDetec(i1)%icell == ip ) IDetec(i1)%flow = IDetec(i1)%flow - Flow(i)
                      enddo
                   endif
                endif
@@ -266,20 +266,20 @@
             surf   = 0.0
             length = 0.0
             indx = index_in_array( 'SURF      ', paname)
-            if ( indx .gt. 0 ) then
+            if ( indx > 0 ) then
                surf = param(indx,:)
             else
                indx = index_in_array( 'SURF      ', sfname)
-               if ( indx .gt. 0 ) then
+               if ( indx > 0 ) then
                   surf = segfun(:,indx)
                endif
             endif
             indx = index_in_array( 'LENGTH    ', paname)
-            if ( indx .gt. 0 ) then
+            if ( indx > 0 ) then
                length = param(indx,:)
             else
                indx = index_in_array( 'LENGTH    ', sfname)
-               if ( indx .gt. 0 ) then
+               if ( indx > 0 ) then
                   length = segfun(:,indx)
                endif
             endif
@@ -292,26 +292,26 @@
 !         Normal processing
 !         accumulation?
 
-      massbal = iaflag .eq. 1
+      massbal = iaflag == 1
       fluxes  = btest(intopt,3)
 
-      do 10 i = 1 , nowst
+      do i = 1 , nowst
 
         iwst = iwaste(i)
 
         select case ( iwstkind(i) )
 
            case ( 0 )                               ! old situation
-              if ( iwst .le. 0 ) cycle
+              if ( iwst <= 0 ) cycle
 
               WasteFlow = waste(0,i)
               ipb  = isdmp(iwst)
-              if ( abs(WasteFlow) .le. 1.0E-30 ) then       ! just load of mass
+              if ( abs(WasteFlow) <= 1.0E-30 ) then       ! just load of mass
                  do i1 = isys,isys+nsys-1
                     deriv (i1,iwst) = deriv (i1,iwst) + waste(i1,i)
                     if ( massbal ) amass2(i1, 3  ) = amass2(i1, 3  ) + waste(i1,i)*idt
-                    if ( ipb .gt. 0 .and. fluxes ) then
-                       if ( waste(i1,i) .lt. 0.0 ) then     ! withdrawal
+                    if ( ipb > 0 .and. fluxes ) then
+                       if ( waste(i1,i) < 0.0 ) then     ! withdrawal
                           dmps(i1,ipb,3) = dmps(i1,ipb,3) - waste(i1,i)*idt
                           wstdmp(i1,i,2) = wstdmp(i1,i,2) - waste(i1,i)*idt
                        else                                 ! load
@@ -322,27 +322,27 @@
                  enddo
               endif
 
-              if ( WasteFlow .gt.  1.0E-30 ) then           ! mass = flow * conc
+              if ( WasteFlow >  1.0E-30 ) then           ! mass = flow * conc
                  do i1 = isys,isys+nsys-1
                     deriv (i1,iwst) = deriv (i1,iwst) + waste(i1,i)*WasteFlow
                     if (  massbal   ) amass2(i1,  3) = amass2(i1,  3) + waste(i1,i)*WasteFlow*idt
-                    if ( ipb .gt. 0  .and. fluxes ) & 
+                    if ( ipb > 0  .and. fluxes ) &
                                      dmps(i1,ipb,2) = dmps(i1,ipb,2) + waste(i1,i)*WasteFlow*idt
                     if ( fluxes     ) wstdmp(i1,i,1) = wstdmp(i1,i,1) + waste(i1,i)*WasteFlow*idt
                  enddo
               endif
 
-              if ( WasteFlow .LT. -1.0E-30 ) then           ! withdrawal
+              if ( WasteFlow < -1.0E-30 ) then           ! withdrawal
                  do i1 = isys,isys+nsys-1
                     ahelp = 0.0
-                    if ( abs(waste(i1,i)) .lt. 1.0E-30 ) then      !  with model concentration
-                       if ( i1 .le. nosys ) ahelp = conc(i1,iwst)*WasteFlow  ! transported substances
+                    if ( abs(waste(i1,i)) < 1.0E-30 ) then      !  with model concentration
+                       if ( i1 <= nosys ) ahelp = conc(i1,iwst)*WasteFlow  ! transported substances
                     else                                           !  with prescribed concentration
                        ahelp = waste(i1,i)*WasteFlow
                     endif
                     deriv (i1,iwst) = deriv (i1,iwst) + ahelp
                     if (  massbal   ) amass2(i1,  3) = amass2(i1,  3) + ahelp*idt
-                    if ( ipb .gt. 0  .and. fluxes ) & 
+                    if ( ipb > 0  .and. fluxes ) &
                                      dmps(i1,ipb,3) = dmps(i1,ipb,3) - ahelp*idt
                     if ( fluxes     ) wstdmp(i1,i,2) = wstdmp(i1,i,2) - ahelp*idt
                  enddo
@@ -350,7 +350,7 @@
 
            case ( 1 )         ! always MASS
               wflow = 0.0
-              if ( iwst .gt. 0 ) then               ! normal processing
+              if ( iwst > 0 ) then               ! normal processing
                  wflow(iwst) = 1.0
                  istrt = iwst
                  istop = iwst
@@ -360,12 +360,12 @@
                        select case ( iwst )
                           case ( -1 )               ! surface processing
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 0 .or. ikmrk2 .eq. 1 ) wflow(i1) = surf(i1)
+                             if ( ikmrk2 == 0 .or. ikmrk2 == 1 ) wflow(i1) = surf(i1)
                           case ( -2 )               ! bank processing
                              wflow(i1) = length(i1)
                           case ( -3 )               ! bed processing
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 3 .or. ikmrk2 .eq. 0 ) wflow(i1) = surf(i1)
+                             if ( ikmrk2 == 3 .or. ikmrk2 == 0 ) wflow(i1) = surf(i1)
                        end select
                     endif
                  enddo
@@ -379,14 +379,14 @@
                     deriv (i1,icel) = deriv (i1,icel) + waste(i1,i)*WasteFlow
                     if (  massbal   ) amass2(i1,  3) = amass2(i1,  3) + waste(i1,i)*WasteFlow*idt
                     if (  fluxes    ) then
-                       if ( waste(i1,i) .lt. 0.0 ) then     ! withdrawal
+                       if ( waste(i1,i) < 0.0 ) then     ! withdrawal
                           wstdmp(i1,i,1) = wstdmp(i1,i,2) - waste(i1,2)*WasteFlow*idt
                        else                                 ! load
                           wstdmp(i1,i,1) = wstdmp(i1,i,1) + waste(i1,i)*WasteFlow*idt
                        endif
                     endif
-                    if ( ipb .gt. 0  .and. fluxes ) then
-                       if ( waste(i1,i) .lt. 0.0 ) then     ! withdrawal
+                    if ( ipb > 0  .and. fluxes ) then
+                       if ( waste(i1,i) < 0.0 ) then     ! withdrawal
                           dmps(i1,ipb,3) = dmps(i1,ipb,3) - waste(i1,i)*WasteFlow*idt
                        else                                 ! load
                           dmps(i1,ipb,2) = dmps(i1,ipb,2) + waste(i1,i)*WasteFlow*idt
@@ -397,7 +397,7 @@
 
            case ( 2 )         ! always CONC
               wflow = 0.0
-              if ( iwst .gt. 0 ) then               ! normal processing
+              if ( iwst > 0 ) then               ! normal processing
                  wflow(iwst) = waste(0,i)
                  istrt = iwst
                  istop = iwst
@@ -407,12 +407,12 @@
                        select case ( iwst )
                           case ( -1 )
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 0 .or. ikmrk2 .eq. 1 ) wflow(i1) = waste(0,i)*surf(i1)
+                             if ( ikmrk2 == 0 .or. ikmrk2 == 1 ) wflow(i1) = waste(0,i)*surf(i1)
                           case ( -2 )
                              wflow(i1) = waste(0,i)*length(i1)
                           case ( -3 )
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 3 .or. ikmrk2 .eq. 0 ) wflow(i1) = waste(0,i)*surf(i1)
+                             if ( ikmrk2 == 3 .or. ikmrk2 == 0 ) wflow(i1) = waste(0,i)*surf(i1)
                        end select
                     endif
                  enddo
@@ -426,14 +426,14 @@
                     deriv (i1,icel) = deriv (i1,icel) + waste(i1,i)*WasteFlow
                     if (  massbal   ) amass2(i1,  3) = amass2(i1,  3) + waste(i1,i)*WasteFlow*idt
                     if (  fluxes    ) then
-                       if ( waste(i1,i)*WasteFlow .lt. 0.0 ) then     ! withdrawal
+                       if ( waste(i1,i)*WasteFlow < 0.0 ) then     ! withdrawal
                           wstdmp(i1,i,1) = wstdmp(i1,i,2) - waste(i1,2)*WasteFlow*idt
                        else                                 ! load
                           wstdmp(i1,i,1) = wstdmp(i1,i,1) + waste(i1,i)*WasteFlow*idt
                        endif
                     endif
-                    if ( ipb .gt. 0 .and. fluxes ) then
-                       if ( waste(i1,i)*WasteFlow .lt. 0.0 ) then     ! withdrawal
+                    if ( ipb > 0 .and. fluxes ) then
+                       if ( waste(i1,i)*WasteFlow < 0.0 ) then     ! withdrawal
                           dmps(i1,ipb,3) = dmps(i1,ipb,3) - waste(i1,i)*WasteFlow*idt
                        else                                 ! load
                           dmps(i1,ipb,2) = dmps(i1,ipb,2) + waste(i1,i)*WasteFlow*idt
@@ -444,7 +444,7 @@
 
            case ( 3 )         ! RAIN ( load is CONC, withdrawal is zero )
               wflow = 0.0
-              if ( iwst .gt. 0 ) then               ! normal processing
+              if ( iwst > 0 ) then               ! normal processing
                  wflow(iwst) = waste(0,i)
                  istrt = iwst
                  istop = iwst
@@ -454,12 +454,12 @@
                        select case ( iwst )
                           case ( -1 )
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 0 .or. ikmrk2 .eq. 1 ) wflow(i1) = waste(0,i)*surf(i1)
+                             if ( ikmrk2 == 0 .or. ikmrk2 == 1 ) wflow(i1) = waste(0,i)*surf(i1)
                           case ( -2 )
                              wflow(i1) = waste(0,i)*length(i1)
                           case ( -3 )
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 3 .or. ikmrk2 .eq. 0 ) wflow(i1) = waste(0,i)*surf(i1)
+                             if ( ikmrk2 == 3 .or. ikmrk2 == 0 ) wflow(i1) = waste(0,i)*surf(i1)
                        end select
                     endif
                  enddo
@@ -469,11 +469,11 @@
               do icel = istrt,istop
                  WasteFlow = wflow(icel)
                  ipb = isdmp(icel)
-                 if ( WasteFlow .gt.  1.0E-30 ) then           ! mass = flow * conc
+                 if ( WasteFlow >  1.0E-30 ) then           ! mass = flow * conc
                     do i1 = isys,isys+nsys-1
                        deriv (i1,icel) = deriv (i1,icel) + waste(i1,i)*WasteFlow
                        if (  massbal   ) amass2(i1,  3) = amass2(i1,  3) + waste(i1,i)*WasteFlow*idt
-                       if ( ipb .gt. 0 .and. fluxes ) & 
+                       if ( ipb > 0 .and. fluxes ) &
                                         dmps(i1,ipb,2) = dmps(i1,ipb,2) + waste(i1,i)*WasteFlow*idt
                        if ( fluxes     ) wstdmp(i1,i,1) = wstdmp(i1,i,1) + waste(i1,i)*WasteFlow*idt
                     enddo
@@ -482,7 +482,7 @@
 
            case ( 4 )         ! WELL ( load is CONC, withdrawal is with model conc
               wflow = 0.0
-              if ( iwst .gt. 0 ) then               ! normal processing
+              if ( iwst > 0 ) then               ! normal processing
                  wflow(iwst) = waste(0,i)
                  istrt = iwst
                  istop = iwst
@@ -492,12 +492,12 @@
                        select case ( iwst )
                           case ( -1 )
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 0 .or. ikmrk2 .eq. 1 ) wflow(i1) = waste(0,i)*surf(i1)
+                             if ( ikmrk2 == 0 .or. ikmrk2 == 1 ) wflow(i1) = waste(0,i)*surf(i1)
                           case ( -2 )
                              wflow(i1) = waste(0,i)*length(i1)
                           case ( -3 )
                              call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
-                             if ( ikmrk2 .eq. 3 .or. ikmrk2 .eq. 0 ) wflow(i1) = waste(0,i)*surf(i1)
+                             if ( ikmrk2 == 3 .or. ikmrk2 == 0 ) wflow(i1) = waste(0,i)*surf(i1)
                        end select
                     endif
                  enddo
@@ -507,11 +507,11 @@
               do icel = istrt,istop
                  WasteFlow = wflow(icel)
                  ipb = isdmp(icel)
-                 if ( WasteFlow .gt.  1.0E-30 ) then           ! mass = flow * conc
+                 if ( WasteFlow >  1.0E-30 ) then           ! mass = flow * conc
                     do i1 = isys,isys+nsys-1
                        deriv (i1,icel) = deriv (i1,icel) + waste(i1,i)*WasteFlow
                        if (  massbal   ) amass2(i1,  3) = amass2(i1,  3) + waste(i1,i)*WasteFlow*idt
-                       if ( ipb .gt. 0 .and. fluxes ) & 
+                       if ( ipb > 0 .and. fluxes ) &
                                         dmps(i1,ipb,2) = dmps(i1,ipb,2) + waste(i1,i)*WasteFlow*idt
                        if ( fluxes     ) wstdmp(i1,i,1) = wstdmp(i1,i,1) + waste(i1,i)*WasteFlow*idt
                     enddo
@@ -519,7 +519,7 @@
                     do i1 = isys,isys+nsys-1
                        deriv (i1,iwst) = deriv (i1,iwst) + conc(i1,iwst)*WasteFlow
                        if (  massbal   ) amass2(i1,  3) = amass2(i1,  3) + conc(i1,iwst)*WasteFlow*idt
-                       if ( ipb .gt. 0 .and. fluxes ) & 
+                       if ( ipb > 0 .and. fluxes ) &
                                         dmps(i1,ipb,3) = dmps(i1,ipb,3) - conc(i1,iwst)*WasteFlow*idt
                        if ( fluxes     ) wstdmp(i1,i,2) = wstdmp(i1,i,2) - conc(i1,iwst)*WasteFlow*idt
                     enddo
@@ -528,7 +528,7 @@
 
         end select
 
-   10 continue
+      end do
 
  9999 if ( timon ) call timstop ( ithandl )
 

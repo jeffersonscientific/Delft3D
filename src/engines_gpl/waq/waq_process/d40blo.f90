@@ -203,7 +203,7 @@
       data     init   / 1 /
       data     nset   / 0 /
 !
-      if ( init .eq. 1 ) then
+      if ( init == 1 ) then
          init = 0
 
 !        Open autonomous I/O files Bloom
@@ -216,32 +216,32 @@
          rdcnt  = - blstep
          id = 0
          swclim = nint(pmsa(ipoint(28)))
-         if (increm(28).ne.0) call blstopinit(lunrep, 'SWCLim')
+         if (increm(28)/=0) call blstopinit(lunrep, 'SWCLim')
          lcarb = .false.
-         if (swclim.gt.0) lcarb = .true.
+         if (swclim>0) lcarb = .true.
          swblsa = pmsa(ipoint(29))
-         if (increm(29).ne.0) call blstopinit(lunrep, 'SWBlSA')
+         if (increm(29)/=0) call blstopinit(lunrep, 'SWBlSA')
 
 !        Former D09 input
          SWBlSolInt = nint(pmsa(ipoint(33)))
-         if (increm(33).ne.0) call blstopinit(lunrep, 'SWBlSolInt')
+         if (increm(33)/=0) call blstopinit(lunrep, 'SWBlSolInt')
          SWBlObject = nint(pmsa(ipoint(34)))
-         if (increm(34).ne.0) call blstopinit(lunrep, 'SWBlObject')
+         if (increm(34)/=0) call blstopinit(lunrep, 'SWBlObject')
          BlTemLim   = pmsa(ipoint(35))
-         if (increm(35).ne.0) call blstopinit(lunrep, 'BlTemLim')
+         if (increm(35)/=0) call blstopinit(lunrep, 'BlTemLim')
          BlBasMor   = pmsa(ipoint(36))
-         if (increm(36).ne.0) call blstopinit(lunrep, 'BlBasMor')
+         if (increm(36)/=0) call blstopinit(lunrep, 'BlBasMor')
          SWBlGroChk = nint(pmsa(ipoint(37)))
-         if (increm(37).ne.0) call blstopinit(lunrep, 'SWBlGroChk')
+         if (increm(37)/=0) call blstopinit(lunrep, 'SWBlGroChk')
          BlBioBas   = pmsa(ipoint(38))
-         if (increm(38).ne.0) call blstopinit(lunrep, 'BlBioBas')
+         if (increm(38)/=0) call blstopinit(lunrep, 'BlBioBas')
          SWBlMorChk = nint(pmsa(ipoint(39)))
-         if (increm(39).ne.0) call blstopinit(lunrep, 'SWBlMorChk')
+         if (increm(39)/=0) call blstopinit(lunrep, 'SWBlMorChk')
          BlTopLev   = pmsa(ipoint(40))
-         if (increm(40).ne.0) call blstopinit(lunrep, 'BlTopLev')
+         if (increm(40)/=0) call blstopinit(lunrep, 'BlTopLev')
 
 !        Copy algae type properties for input
-         DO 40 IALG=1,NTYP_M
+         DO IALG=1,NTYP_M
 !          BLOOMALG
            IP = NIPFIX + IALG
            IP = IPOINT(IP)
@@ -252,92 +252,92 @@
            ALGTYP(0,IALG) = PMSA(IP)
 !          SPECALG
            IP = NIPFIX + 1*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('SpecAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('SpecAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(1,IALG) = NINT(PMSA(IP))
 !          FAUTALG
            IP = NIPFIX + 2*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('FrAutAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('FrAutAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(15,IALG) = PMSA(IP)
 !          EXTVLALG
            IP = NIPFIX + 4*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('ExtVlAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('ExtVlAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(2,IALG) = PMSA(IP)
 !          DMCFALG
            IP = NIPFIX + 5*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('DMCFAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('DMCFAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(3,IALG) = PMSA(IP)
 !          NCRALG
            IP = NIPFIX + 6*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('NCRAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('NCRAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(4,IALG) = PMSA(IP)
 !          PCRALG
            IP = NIPFIX + 7*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('PCRAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('PCRAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(5,IALG) = PMSA(IP)
 !          SCRALG
            IP = NIPFIX + 8*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('SCRAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('SCRAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(6,IALG) = PMSA(IP)
 !          XNCRALG
            IP = NIPFIX + 9*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('XNCRAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('XNCRAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(16,IALG) = PMSA(IP)
 !          XPCRALG
            IP = NIPFIX +10*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('XPCRAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('XPCRAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(17,IALG) = PMSA(IP)
 !          FNCRALG
            IP = NIPFIX +11*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('FNCRAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('FNCRAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(18,IALG) = PMSA(IP)
 !          CHLACALG
            IP = NIPFIX +12*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('ChlaCAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('ChlaCAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(7,IALG) = PMSA(IP)
 !          PPMAXALG
            IP = NIPFIX + 13*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('PPMaxAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('PPMaxAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(8,IALG) = PMSA(IP)
 !          TCPMXALG
            IP = NIPFIX + 14*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('TcPMxAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('TcPMxAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(9,IALG) = PMSA(IP)
 !          TFPMXALG
            IP = NIPFIX + 15*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('TFPMxAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('TFPMxAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(10,IALG) = PMSA(IP)
 !          MORT0ALG
            IP = NIPFIX + 16*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('Mort0Alg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('Mort0Alg',IALG)
            IP = IPOINT(IP)
            ALGTYP(11,IALG) = PMSA(IP)
 !          TCMRTALG
            IP = NIPFIX + 17*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('TcMrtAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('TcMrtAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(12,IALG) = PMSA(IP)
 !          MRESPALG
            IP = NIPFIX + 18*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('MRespAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('MRespAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(13,IALG) = PMSA(IP)
 !          TCRSPALG
            IP = NIPFIX + 19*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('TcRspAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('TcRspAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(14,IALG) = PMSA(IP)
 !          SDMIXALG
@@ -346,22 +346,22 @@
            ALGTYP(19,IALG) = PMSA(IP)
 !          MRTEXALG
            IP = NIPFIX + 21*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('MrtExAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('MrtExAlg',IALG)
            IP = IPOINT(IP)
            ALGTYP(20,IALG) = PMSA(IP)
 !          FIXALG
            IP = NIPFIX + 25*NTYP_M + IALG
-           IF (INCREM(IP).NE.0) CALL BLSTOP('FixAlg',IALG)
+           IF (INCREM(IP)/=0) CALL BLSTOP('FixAlg',IALG)
            IP = IPOINT(IP)
            IFIX(IALG) = NINT(PMSA(IP))
-   40    CONTINUE
+         end do
 
 !     Read BLOOM-input and set some parameters
 !     JvG 11102013 set NUNUCO dependent of LCARB
 
          call blinpu (ntyp_m, ntyp_a, ngro_a, algtyp, lmixo , lfixn ,lcarb , nunucom, nutcon, flxcon, con2out, & 
                      swblsolint, swblobject, bltemlim, blbasmor, swblgrochk, blbiobas, swblmorchk, bltoplev)
-         IF (NTYP_A.GT.NTYP_M) GOTO 901
+         IF (NTYP_A>NTYP_M) GOTO 901
 
 !     set common CBLBAL communication with balance routines
 
@@ -374,18 +374,18 @@
          IOFF = NIPFIX + 26*NTYP_M
          IP = IPOINT(IOFF+1) + (ISEG-1)*INCREM(IOFF+1)
          EFFIN = PMSA(IP+1)
-         ACTIVE_EFFT = EFFIN .GE. 0.0
+         ACTIVE_EFFT = EFFIN >= 0.0
 
          IF (ACTIVE_EFFT) THEN
             ACTIVE_3DL = .FALSE.
          ELSE
-            IF ( NOQ3 .GT. 0 ) THEN
+            IF ( NOQ3 > 0 ) THEN
                CALL DHNOSEG(NOSEGW)
                CALL DHNOLAY(NOLAY)
                NOLAY = MAX (1, NOLAY)
                NOSEGW = MAX (1, NOSEGW)
                NOSEGL = NOSEGW/NOLAY
-               IF ( NOSEGL*NOLAY .NE. NOSEG .AND. .NOT. FM_VTRANS) THEN
+               IF ( NOSEGL*NOLAY /= NOSEG .AND. .NOT. FM_VTRANS) THEN
                   CALL GETMLU(LUNREP)
                   WRITE(LUNREP,*) ' WARNING unstructured 3D application'
                   WRITE(LUNREP,*) ' BLOOM 3D light approach not possible'
@@ -463,7 +463,7 @@
 !
       ISWVTR = NINT(PMSA(IPOINT(24)))
 ! 3DL
-      IF ( ACTIVE_3DL .AND. ISWVTR .EQ. 0 ) THEN
+      IF ( ACTIVE_3DL .AND. ISWVTR == 0 ) THEN
          CALL GETMLU(LUNREP)
          WRITE(LUNREP,*) ' WARNING vertical distribution not active'
          WRITE(LUNREP,*) ' BLOOM 3D light approach not possible'
@@ -475,9 +475,9 @@
       DELTAT = PMSA(IP19)
       BLSTEP = TIMMUL * DELTAT
       RDCNT  = RDCNT + BLSTEP
-      IF ((AINT(RDCNT / 7.) + 1).NE.ID) THEN
+      IF ((AINT(RDCNT / 7.) + 1)/=ID) THEN
         ID = AINT(RDCNT / 7.) + 1
-        IF (ID.GT.52) THEN
+        IF (ID>52) THEN
           ID = ID - 52
           RDCNT = RDCNT - 52. * 7.
         ENDIF
@@ -498,7 +498,7 @@
                EXTALG = PMSA(IP3 )
                TEMPER = PMSA(IP4 )
                RADIAT = PMSA(IP5 ) * 60.48
-               IF ( IKMRK1 .EQ. 3 ) THEN
+               IF ( IKMRK1 == 3 ) THEN
                   RADIAT = 0.0                    ! WAQ-G bodem geen groei
                   CALL BL_NO_AUTOLYSE(ORG_AVAILN) ! WAQ-G bodem geen autolyse
                ENDIF
@@ -506,7 +506,7 @@
                BLDEP  = PMSA(IP7 )
                DAYLEN = PMSA(IP8 ) * 24.
                DEPTHW = DEPTH
-               IF (BLDEP.GT.0.) DEPTHW = BLDEP
+               IF (BLDEP>0.) DEPTHW = BLDEP
                CL     = PMSA(IP22)
 
                DO IALG = 1,NTYP_A
@@ -517,15 +517,15 @@
                   SDMIXN = PMSA(IP)
                   CALL BLSSDM(IALG,SDMIXN)
 !jvb
-                  IF (IFIX(IALG).LT.0) THEN
+                  IF (IFIX(IALG)<0) THEN
 !
 !                    No PP for fixed ulva in non bottom segment, unless sdmix is set positive for this segment
 !
-                     IF ( SDMIXN .LT. -1.E-10 ) THEN
-                        IF ((IKMRK2.EQ.1).OR.(IKMRK2.EQ.2)) THEN
+                     IF ( SDMIXN < -1.E-10 ) THEN
+                        IF ((IKMRK2==1).OR.(IKMRK2==2)) THEN
                            CALL BLSPPM(IALG,0.0)
                         ENDIF
-                     ELSEIF ( SDMIXN .LT. 1.E-10 ) THEN
+                     ELSEIF ( SDMIXN < 1.E-10 ) THEN
                         CALL BLSPPM(IALG,0.0)
                      ENDIF
                   ENDIF
@@ -545,7 +545,7 @@
                CALL SET_EFFI( TEMPER, RADIAT, EXTTOT, DEPTHW, DAYLEN, & 
                              ID    )
 
-               IF ( IKMRK1 .EQ. 3 ) THEN
+               IF ( IKMRK1 == 3 ) THEN
                   CALL BL_RESTORE_AUTOLYSE(ORG_AVAILN) ! WAQ-G restore autolyse
                ENDIF
                CALL BLCLRS (MRTM1,NTYP_A)
@@ -591,9 +591,9 @@
 !     Second segment loop, actual bloom call
 
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
       CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
-      IF (IKMRK1.EQ.1 .OR. IKMRK1.EQ.3) THEN
+      IF (IKMRK1==1 .OR. IKMRK1==3) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
 !
 ! 3DL
@@ -611,7 +611,7 @@
 !     Conversion from standard Delwaq 4.0 [W/m2] to [J/cm2/week] for Bloom
 
       RADIAT = PMSA(IP5 ) * 60.48
-      IF ( IKMRK1 .EQ. 3 ) THEN
+      IF ( IKMRK1 == 3 ) THEN
          RADIAT = 0.0                    ! WAQ-G bodem geen groei
          CALL BL_NO_AUTOLYSE(ORG_AVAILN) ! WAQ-G bodem no autolyse
       ENDIF
@@ -619,12 +619,12 @@
       BLDEP  = PMSA(IP7 )
 !     Replace DEPTHW with BLDEP if BLDEP > 0.0
       DEPTHW = DEPTH
-      IF (BLDEP.GT.0.) DEPTHW = BLDEP
+      IF (BLDEP>0.) DEPTHW = BLDEP
 
 !     Conversion from standard Delwaq 4.0 [d] to [h] for Bloom
 
       DAYLEN = PMSA(IP8 ) * 24.
-      IF (DAYLEN.GT.24.) GOTO 903
+      IF (DAYLEN>24.) GOTO 903
       TotNin = PMSA(IP30)
       TotPin = PMSA(IP31)
       TotSIin = PMSA(IP32)
@@ -653,7 +653,7 @@
       PHOSPH = MAX(MIN(PHOSPH,0.0),PHOSPH - THRPO4)
       SILICA = MAX(MIN(SILICA,0.0),SILICA - THRSI )
 
-      DO 20 IALG = 1,NTYP_A
+      DO IALG = 1,NTYP_A
 
 !jvb     set SDMIX for all types, time/space dependent
 !        SDMIXALG
@@ -666,16 +666,16 @@
 !
           IOFF = NIPFIX
           IP = IPOINT(IOFF+IALG) + (ISEG-1)*INCREM(IOFF+IALG)
-          IF (IFIX(IALG).LT.0) THEN
+          IF (IFIX(IALG)<0) THEN
              BIOMAS(IALG) = PMSA(IP)/DEPTH
 !
 !            No PP for fixed ulva in non bottom segment, unless sdmix is set positive for this segment
 !
-             IF ( SDMIXN .LT. -1.E-10 ) THEN
-                IF ((IKMRK2.EQ.1).OR.(IKMRK2.EQ.2)) THEN
+             IF ( SDMIXN < -1.E-10 ) THEN
+                IF ((IKMRK2==1).OR.(IKMRK2==2)) THEN
                    CALL BLSPPM(IALG,0.0)
                 ENDIF
-             ELSEIF ( SDMIXN .LT. 1.E-10 ) THEN
+             ELSEIF ( SDMIXN < 1.E-10 ) THEN
                 CALL BLSPPM(IALG,0.0)
              ENDIF
           ELSE
@@ -698,12 +698,12 @@
           IP = IPOINT(IOFF+IALG) + (ISEG-1)*INCREM(IOFF+IALG)
           MRTB2 (IALG) = PMSA(IP)
 
-          IF ( IKMRK1 .EQ. 3 ) THEN ! WAQG bodem no autolyses
+          IF ( IKMRK1 == 3 ) THEN ! WAQG bodem no autolyses
              FDET(IALG) = FDET(IALG)+FAUT(IALG)
              FAUT(IALG) = 0.0
           ENDIF
 
-   20 CONTINUE
+      end do
 
       IOFF = NIPFIX + 26*NTYP_M
       DO IGRO = 1, NGRO_A
@@ -754,7 +754,7 @@
 
 !     Copy C-uptake flux to seperate flux for Oxygen
 
-      IF ( NINT(PMSA(IP21)).EQ.0 ) & 
+      IF ( NINT(PMSA(IP21))==0 ) &
      FL(IFUPTA+9) = FL(IFUPTA)
 
 !     Salinity dependend mortality
@@ -767,7 +767,7 @@
          CALL BLSPPM(IALG,ALGTYP(8,IALG))
       ENDDO
 
-      IF ( IKMRK1 .EQ. 3 ) THEN
+      IF ( IKMRK1 == 3 ) THEN
          CALL BL_RESTORE_AUTOLYSE(ORG_AVAILN) ! WAQ-G restore autolyse
       ENDIF
 
@@ -880,7 +880,7 @@
           IO(IP) = IO(IP) + INCREM(NIPFIX+NIPVAR*NTYP_M+IP)
       ENDDO
 !
- 9000 CONTINUE
+      end do
 
       ! cummulate output per square metre over the depth towards lowest layer
 
@@ -894,7 +894,7 @@
       do iq = noq1+noq2+1 , noq1+noq2+noq3
          ifrom = iexpnt(1,iq)
          ito   = iexpnt(2,iq)
-         if ( ifrom.gt.0 .and. ito.gt.0 ) then
+         if ( ifrom>0 .and. ito>0 ) then
             pmsa(ipo17+(ito-1)*ino17) = pmsa(ipo17+(ifrom-1)*ino17) + pmsa(ipo17+(ito-1)*ino17)
             pmsa(ipo18+(ito-1)*ino18) = pmsa(ipo18+(ifrom-1)*ino18) + pmsa(ipo18+(ito-1)*ino18)
             pmsa(ipo19+(ito-1)*ino19) = pmsa(ipo19+(ifrom-1)*ino19) + pmsa(ipo19+(ito-1)*ino19)
@@ -906,7 +906,7 @@
       do iq = noq1+noq2+noq3, noq1+noq2+1,-1
          ifrom = iexpnt(1,iq)
          ito   = iexpnt(2,iq)
-         if ( ifrom.gt.0 .and. ito.gt.0 ) then
+         if ( ifrom>0 .and. ito>0 ) then
             pmsa(ipo17+(ifrom-1)*ino17) = pmsa(ipo17+(ito-1)*ino17)
             pmsa(ipo18+(ifrom-1)*ino18) = pmsa(ipo18+(ito-1)*ino18)
             pmsa(ipo19+(ifrom-1)*ino19) = pmsa(ipo19+(ito-1)*ino19)

@@ -169,11 +169,11 @@
       bound  = .false.
       waste  = .false.
       funcs  = .false.
-      if ( ierr .eq. -1 ) bound = .true.
-      if ( ierr .eq. -2 ) waste = .true.
-      if ( ierr .eq. -3 ) funcs = .true.
+      if ( ierr == -1 ) bound = .true.
+      if ( ierr == -2 ) waste = .true.
+      if ( ierr == -3 ) funcs = .true.
       nval1  = nvals
-      if ( funcs .and. nvals .eq. 0 ) nval1 = 1
+      if ( funcs .and. nvals == 0 ) nval1 = 1
       ierr   = 0
       ifilsz = 0
       jfilsz = 0
@@ -208,13 +208,13 @@
       endif
       if ( bound .or. waste .or. funcs ) lunuit  = lun(is)
 
-      do while ( ntotal-1 .lt. nitem )     ! loop over blocks till completion
+      do while ( ntotal-1 < nitem )     ! loop over blocks till completion
 
 !           read the type of block that comes
 
-         if ( gettoken( iopt3, ierr2 ) .gt. 0 ) goto 100
+         if ( gettoken( iopt3, ierr2 ) > 0 ) goto 100
          write ( lunut , 2010 ) iopt3
-         if ( iopt3 .lt. 1 .or. iopt3 .gt. 4 ) then
+         if ( iopt3 < 1 .or. iopt3 > 4 ) then
             write ( lunut , 2020 )
             goto 100
          endif
@@ -238,11 +238,11 @@
          select case ( iopt3 )
 
             case ( 1, 2 )             !         Read time-dependent items on breakpoints
-               if ( gettoken( nobrk2, ierr2 ) .gt. 0 ) goto 100
+               if ( gettoken( nobrk2, ierr2 ) > 0 ) goto 100
                write ( lunut, 2030 ) nobrk2
                allocate ( break2(nobrk2), value2(nvarnw*nval1,nobrk2) )
                do iscal = 1, nscal
-                  if ( gettoken( factor(iscal), ierr2 ) .gt. 0 ) goto 100
+                  if ( gettoken( factor(iscal), ierr2 ) > 0 ) goto 100
                enddo
                call fmread ( nvarnw , itemId(ntotal), nval1  , nscal  , factor , & 
                             nobrk2 , break2        , value2 , dtflg  , dtflg3 , & 
@@ -259,7 +259,7 @@
                else                                             ! other are merged into
                   newbrk = nobrkt + nobrk2                      ! one big matrix that is
                   allocate ( break3(newbrk), value3(ntot,newbrk) )  ! written at the end
-                  if ( nobrkt .gt. 0 ) then
+                  if ( nobrkt > 0 ) then
                      break3(  1:nobrkt) = breaks(  1:nobrkt)
                      value3(:,1:nobrkt) = values(:,1:nobrkt)    ! expand the matrix to allow
                      deallocate( breaks, values )               ! for the new values to enter
@@ -299,7 +299,7 @@
 
       enddo
 
-      if ( ntotal-1 .gt. nitem ) then
+      if ( ntotal-1 > nitem ) then
          write ( lunut , 2060 ) ntotal-1 , nitem
          ierr = ierr + 1
       endif
@@ -309,7 +309,7 @@
       do i1 = 1, nitem
          found = .false.
          do i2 = 1, nitem
-            if ( iabs(itemid(i2)) .eq. i1 ) then
+            if ( iabs(itemid(i2)) == i1 ) then
                if ( found ) then
                   write ( lunut , 2070 ) i1
                   ierr = ierr+1
@@ -354,16 +354,11 @@
  2000 format (    ' Time variable data.')
  2010 format (  /,' Option selected : ',I2 )
  2020 format (  /,' ERROR, option not implemented')
- 2040 format (    ' Block with data at breakpoints.')
  2030 format (    ' Number of breakpoints:',I7 )
  2050 format (    ' Block with periodic functions.')
  2060 format (    ' ERROR, too many (',I5,') items, ',I5,' expected!')
  2070 format (    ' ERROR, duplicate item:',I5)
  2080 format (    ' ERROR, non-initialised item:',I5)
- 2090 format (    ' ERROR end of file on unit:',I3, & 
-               /,' Filename is: ',A )
- 2100 format (    ' ERROR reading file on unit:',I3, & 
-               /,' Filename is: ',A )
 
       end
 

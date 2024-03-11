@@ -316,7 +316,7 @@
 
 !  Print a warning message if potential non-unique solutions have been
 !  determined by subroutine SOLVLP.
-      if (idump .eq. 0 .or. numun .eq. 0 .or.bio(2) .le. 0.0) go to 460
+      if (idump == 0 .or. numun == 0 .or.bio(2) <= 0.0) go to 460
       write (outdbg,450) (nonun(i),i=1,numun)
   450 format ('  The following species have minimum reduced cost = 0.0 and might replace',/ & 
              '  one of the species in the bloom:',1x,20i3)

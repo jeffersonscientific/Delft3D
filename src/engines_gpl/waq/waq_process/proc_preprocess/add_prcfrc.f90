@@ -91,7 +91,7 @@
 
          ! only for processes which need to be copied
 
-         if ( procesdef%procesprops(iproc)%sfrac_type .eq. SFRAC_DUPLICATE) then
+         if ( procesdef%procesprops(iproc)%sfrac_type == SFRAC_DUPLICATE) then
 
             ! check for fluxes on substances with fractions
 
@@ -101,10 +101,10 @@
                nfrac  = sfracs%nfrac(isfrac)
                basnam = sfracs%name(isfrac)
                nlink  = 0
-               if ( sfracs%linked(isfrac) .ne. 0 ) then
+               if ( sfracs%linked(isfrac) /= 0 ) then
                   do isfrac_2 = 1, sfracs%nsfrac
-                     if ( isfrac_2 .ne. isfrac ) then
-                        if ( sfracs%linked(isfrac_2) .eq. sfracs%linked(isfrac) ) then
+                     if ( isfrac_2 /= isfrac ) then
+                        if ( sfracs%linked(isfrac_2) == sfracs%linked(isfrac) ) then
                            nlink = nlink + 1
                            linklst(nlink) = isfrac_2
                         endif
@@ -120,7 +120,7 @@
                         ! construct copy processes
 
                         do ifrac = 1, nfrac
-                           if ( ifrac .lt. 100 ) then
+                           if ( ifrac < 100 ) then
                               write(suffix,'(i2.2)') ifrac
                            else
                               write(suffix,'(i3.3)') ifrac
@@ -146,7 +146,7 @@
                                    procn%dispstochi(procn%no_dispstochi), & 
                                    procn%velostochi(procn%no_velostochi), & 
                                    stat=ierr_alloc)
-                           if ( ierr_alloc .ne. 0 ) then
+                           if ( ierr_alloc /= 0 ) then
                               write(lunrep,*) 'error allocating work array in routine add_prcfrc:',ierr_alloc
                               write(lunrep,*) 'routine            :',trim(procn%name)
                               write(lunrep,*) 'procn%no_input     :',procn%no_input
@@ -170,7 +170,7 @@
                                  procn%input_item(i_input)%name = fracnam
                                  item%name                      = procn%input_item(i_input)%name
                                  iret                           = itempropcollfind( allitems, item )
-                                 if ( iret .le. 0 ) then
+                                 if ( iret <= 0 ) then
                                     item%text    = proc%input_item(i_input)%item%text
                                     item%default = proc%input_item(i_input)%item%default
                                     item%waqtype = proc%input_item(i_input)%item%waqtype
@@ -182,13 +182,13 @@
                                 ! is it a fraction specific input ?
 
                                  i_star = index(procn%input_item(i_input)%name,'*')
-                                 if ( i_star .gt. 0 ) then
+                                 if ( i_star > 0 ) then
                                     nzoek = 20-i_star
                                     if (string_equals(basnam(1:nzoek), procn%input_item(i_input)%name(i_star+1:))) then
                                        procn%input_item(i_input)%name = procn%input_item(i_input)%name(1:i_star)//fracnam
                                        item%name                      = procn%input_item(i_input)%name
                                        iret                           = itempropcollfind( allitems, item )
-                                       if ( iret .le. 0 ) then
+                                       if ( iret <= 0 ) then
                                           item%text    = proc%input_item(i_input)%item%text
                                           item%default = proc%input_item(i_input)%item%default
                                           item%waqtype = proc%input_item(i_input)%item%waqtype
@@ -215,7 +215,7 @@
                               procn%output_item(i_output)      = proc%output_item(i_output)
                               !
                               i_star = index(procn%output_item(i_output)%name,'*')
-                              if ( i_star .gt. 0 ) then
+                              if ( i_star > 0 ) then
                                  nzoek = 20-i_star
                                  if (string_equals(basnam(1:nzoek), procn%output_item(i_output)%name(i_star+1:))) then
                                     procn%output_item(i_output)%name = procn%output_item(i_output)%name(1:i_star)//fracnam
@@ -228,7 +228,7 @@
                               !
                               item%name                   = procn%output_item(i_output)%name
                               iret                        = itempropcollfind( allitems, item )
-                              if ( iret .le. 0 ) then
+                              if ( iret <= 0 ) then
                                  item%text    = proc%output_item(i_output)%item%text
                                  item%default = proc%output_item(i_output)%item%default
                                  item%waqtype = proc%output_item(i_output)%item%waqtype
@@ -242,7 +242,7 @@
                            do i_flux = 1, procn%no_fluxoutput
                               !
                               i_star = index(proc%fluxoutput(i_flux)%name,'*')
-                              if ( i_star .gt. 0 ) then
+                              if ( i_star > 0 ) then
                                  nzoek = 20-i_star
                                  if (string_equals(basnam(1:nzoek), proc%fluxoutput(i_flux)%name(i_star+1:))) then
                                     procn%fluxoutput(i_flux)%name = proc%fluxoutput(i_flux)%name(1:i_star)//fracnam
@@ -259,7 +259,7 @@
                               procn%fluxoutput(i_flux)%ip_val = proc%fluxoutput(i_flux)%ip_val
                               item%name                       = procn%fluxoutput(i_flux)%name
                               iret                            = itempropcollfind( allitems, item )
-                              if ( iret .le. 0 ) then
+                              if ( iret <= 0 ) then
                                  item%text    = proc%fluxoutput(i_flux)%item%text
                                  item%default = proc%fluxoutput(i_flux)%item%default
                                  item%waqtype = proc%fluxoutput(i_flux)%item%waqtype

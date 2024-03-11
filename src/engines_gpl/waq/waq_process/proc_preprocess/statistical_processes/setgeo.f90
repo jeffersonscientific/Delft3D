@@ -93,7 +93,7 @@
 !     init
 !
       ALLOCATE(ISUSED(NOKEY),STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETGEO_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
@@ -102,7 +102,7 @@
       ISUSED = 0
 
       IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
-      IF ( IKEY .GT. 0 ) THEN
+      IF ( IKEY > 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
 !
@@ -123,7 +123,7 @@
       ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), & 
               aProcesProp%output_item(aProcesProp%no_output), & 
               STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_1, array length:',aProcesProp%no_input,aProcesProp%no_output
          WRITE(*,*) 'ERROR allocating array:',IERR_ALLOC
@@ -133,7 +133,7 @@
 !     input on segments
 !
       IKEY = index_in_array('SUBSTANCE',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          call status%increase_error_count()
       ELSE
@@ -145,7 +145,7 @@
          aProcesProp%input_item(1)%ip_val= 0
          aItemProp%name = KEYVAL(IKEY)
          iret = ItemPropCollFind( AllItems, aItemProp )
-         if ( iret .le. 0 ) then
+         if ( iret <= 0 ) then
             aItemProp%text    = 'input parameter for statistics'
             aItemProp%default = -999.
             aItemProp%waqtype = WAQTYPE_NONE
@@ -180,7 +180,7 @@
 !
       aItemProp%name    = 'ITIME'
       iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
+      if ( iret <= 0 ) then
          aItemProp%default = -999.
          aItemProp%text    = 'time in calculation'
          aItemProp%waqtype = WAQTYPE_DEFAULT
@@ -195,7 +195,7 @@
 !
       aItemProp%name    = 'IDT'
       iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
+      if ( iret <= 0 ) then
          aItemProp%default = -999.
          aItemProp%text    = 'time step'
          aItemProp%waqtype = WAQTYPE_DEFAULT
@@ -209,12 +209,12 @@
       aProcesProp%input_item(5)%ip_val  = 0
 !
       IKEY = index_in_array('THRESH',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          THRESH = 1.0
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(E20.0)',IOSTAT=IERR2) THRESH
-         IF ( IERR2 .NE. 0 ) THEN
+         IF ( IERR2 /= 0 ) THEN
             WRITE(LUNREP,*)'ERROR interpreting threshold:',KEYVAL(IKEY)
             call status%increase_error_count()
          ENDIF
@@ -246,14 +246,14 @@
 !     output
 !
       IKEY = index_in_array('SUFFIX',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          SUFFIX = ' '
       ELSE
          SUFFIX = KEYVAL(IKEY)
          ISUSED(IKEY) = 1
       ENDIF
       CALL get_trimmed_length(SUFFIX,ISLEN)
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          SUFFIX =SUFFIX(1:ISLEN)//'_'//PERSFX
       ELSE
          SUFFIX ='GEO_'//PERSFX
@@ -315,7 +315,7 @@
 !     check the use of the key words
 !
       DO IKEY = 1 , NOKEY
-         IF ( ISUSED(IKEY) .EQ. 0 ) THEN
+         IF ( ISUSED(IKEY) == 0 ) THEN
             call status%increase_warning_count()
             WRITE(LUNREP,*) 'WARNING: keyword not used'
             WRITE(LUNREP,*) 'key   :',KEYNAM(IKEY)

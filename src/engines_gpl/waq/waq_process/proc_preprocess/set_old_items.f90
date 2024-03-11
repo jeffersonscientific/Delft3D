@@ -86,13 +86,13 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_ADDPROC ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_ADDPROC ) then
             name20 = 'active_'//old_items%old_items(i)%old_name
             ifound = dlwq_find(constants,name20)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                nocons = constants%no_item + 1
                ierr2 = dlwq_resize(constants,nocons)
-               if ( ierr2 .gt. 0 ) then
+               if ( ierr2 > 0 ) then
                   write(lurep,'(a,i10)') ' ERROR: set_old_items resize error constants size:',nocons
                   call srstop(1)
                endif
@@ -109,10 +109,10 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_PROCDEF ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_PROCDEF ) then
             name20 = 'active_'//old_items%old_items(i)%old_name
             ifound = dlwq_find(constants,name20)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(5a)') ' Replaced default [',old_items%old_items(i)%new_name, & 
                                   '] based on activated process [',old_items%old_items(i)%old_name,']'
                old_items%old_items(i)%old_name    = old_items%old_items(i)%new_name
@@ -126,10 +126,10 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_PROCNAM ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_PROCNAM ) then
             name20 = 'active_'//old_items%old_items(i)%old_name
             ifound = dlwq_find(constants,name20)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                constants%name(ifound) = 'active_'//old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Process [',old_items%old_items(i)%new_name, & 
                                   '] activated based on old name [',old_items%old_items(i)%old_name,']'
@@ -141,13 +141,13 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_RANGECHECK ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_RANGECHECK ) then
 
             name20 = old_items%old_items(i)%old_name
             range  = old_items%old_items(i)%old_default
 
             ifound = index_in_array(name20, syname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                syname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Substance name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
@@ -155,8 +155,8 @@
             endif
 
             ifound = dlwq_find(constants,name20)
-            if ( ifound .gt. 0 ) then
-               if ( constants%constant(ifound) .ge. range ) then
+            if ( ifound > 0 ) then
+               if ( constants%constant(ifound) >= range ) then
                   constants%name(ifound) = old_items%old_items(i)%new_name
                   write(lurep,'(5a)') ' Constant name [',old_items%old_items(i)%old_name, & 
                                      '] replace by new name [',old_items%old_items(i)%new_name,'] within range'
@@ -167,7 +167,7 @@
             endif
 
             ifound = index_in_array(name20, paname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                paname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Parameter name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
@@ -175,7 +175,7 @@
             endif
 
             ifound = index_in_array(name20, funame)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                funame(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Function name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
@@ -183,7 +183,7 @@
             endif
 
             ifound = index_in_array(name20, sfname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                sfname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Segment function name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
@@ -191,7 +191,7 @@
             endif
 
             ifound = index_in_array(name20, diname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                diname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Dispersion name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
@@ -199,7 +199,7 @@
             endif
 
             ifound = index_in_array(name20, vename)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                vename(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Velocity name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
@@ -213,54 +213,54 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_PROCPAR ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_PROCPAR ) then
 
             name20 = old_items%old_items(i)%old_name
 
             ifound = index_in_array(name20, syname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                syname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Substance name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
             ifound = dlwq_find(constants,name20)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                constants%name(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Constant name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
             ifound = index_in_array(name20, paname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                paname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Parameter name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
             ifound = index_in_array(name20, funame)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                funame(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Function name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
             ifound = index_in_array(name20, sfname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                sfname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Segment function name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
             ifound = index_in_array(name20, diname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                diname(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Dispersion name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
             endif
 
             ifound = index_in_array(name20, vename)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                vename(ifound) = old_items%old_items(i)%new_name
                write(lurep,'(5a)') ' Velocity name [',old_items%old_items(i)%old_name, & 
                                   '] replace by new name [',old_items%old_items(i)%new_name,']'
@@ -273,35 +273,35 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_PPEQUAL ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_PPEQUAL ) then
 
             name20 = old_items%old_items(i)%new_name
 
             ifound = index_in_array(name20, syname)
-            if ( ifound .le. 0 ) ifound = dlwq_find(constants,name20)
-            if ( ifound .le. 0 ) ifound = index_in_array(name20, paname)
-            if ( ifound .le. 0 ) ifound = index_in_array(name20, funame)
-            if ( ifound .le. 0 ) ifound = index_in_array(name20, sfname)
-            if ( ifound .le. 0 ) ifound = index_in_array(name20, diname)
-            if ( ifound .le. 0 ) ifound = index_in_array(name20, vename)
+            if ( ifound <= 0 ) ifound = dlwq_find(constants,name20)
+            if ( ifound <= 0 ) ifound = index_in_array(name20, paname)
+            if ( ifound <= 0 ) ifound = index_in_array(name20, funame)
+            if ( ifound <= 0 ) ifound = index_in_array(name20, sfname)
+            if ( ifound <= 0 ) ifound = index_in_array(name20, diname)
+            if ( ifound <= 0 ) ifound = index_in_array(name20, vename)
 
-            if ( ifound .le. 0 ) then
+            if ( ifound <= 0 ) then
 
                ! check if old name is in input
 
                name20 = old_items%old_items(i)%old_name
 
                ifound = index_in_array(name20, syname)
-               if ( ifound .le. 0 ) ifound = dlwq_find(constants,name20)
-               if ( ifound .le. 0 ) ifound = index_in_array(name20, paname)
-               if ( ifound .le. 0 ) ifound = index_in_array(name20, funame)
-               if ( ifound .le. 0 ) ifound = index_in_array(name20, sfname)
-               if ( ifound .le. 0 ) ifound = index_in_array(name20, diname)
-               if ( ifound .le. 0 ) ifound = index_in_array(name20, vename)
+               if ( ifound <= 0 ) ifound = dlwq_find(constants,name20)
+               if ( ifound <= 0 ) ifound = index_in_array(name20, paname)
+               if ( ifound <= 0 ) ifound = index_in_array(name20, funame)
+               if ( ifound <= 0 ) ifound = index_in_array(name20, sfname)
+               if ( ifound <= 0 ) ifound = index_in_array(name20, diname)
+               if ( ifound <= 0 ) ifound = index_in_array(name20, vename)
 
                ! set action to ITEM_ACTION_PPEQUAL2, the action itself is handled elsewhere
 
-               if ( ifound .gt. 0 ) then
+               if ( ifound > 0 ) then
                   old_items%old_items(i)%action_type = ITEM_ACTION_PPEQUAL2
                endif
 
@@ -314,11 +314,11 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_REMARKPROC ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_REMARKPROC ) then
 
             name20 = 'active_'//old_items%old_items(i)%old_name
             ifound = dlwq_find(constants,name20)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(3a,i10)') ' Activated process [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
@@ -330,48 +330,48 @@
 
       n_old_items = old_items%cursize
       do i = 1, n_old_items
-         if ( old_items%old_items(i)%action_type .eq. ITEM_ACTION_REMARKPAR ) then
+         if ( old_items%old_items(i)%action_type == ITEM_ACTION_REMARKPAR ) then
 
             name20 = old_items%old_items(i)%old_name
 
             ifound = index_in_array(name20, syname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(3a,i10)') ' Substance name [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
             ifound = dlwq_find(constants,name20)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(5a)') ' Constant name [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
             ifound = index_in_array(name20, paname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(5a)') ' Parameter name [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
             ifound = index_in_array(name20, funame)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(5a)') ' Function name [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
             ifound = index_in_array(name20, sfname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(5a)') ' Segment function name [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
             ifound = index_in_array(name20, diname)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(5a)') ' Dispersion name [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif
 
             ifound = index_in_array(name20, vename)
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write(lurep,'(5a)') ' Velocity name [',old_items%old_items(i)%old_name, & 
                                   '] obsolete, see documentation remark no:',nint(old_items%old_items(i)%old_default)
             endif

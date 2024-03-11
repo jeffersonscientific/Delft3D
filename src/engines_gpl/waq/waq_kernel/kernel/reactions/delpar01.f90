@@ -121,8 +121,8 @@
       lunut = lunitp(2)
 
 !           this replaces the call to rdhydr
-      if ( modtyp .eq.model_abm ) then
-        if(idp_file .ne. ' ' .and. itime .eq. nint(const(8))*86400 ) then ! release at day iniday - specific for ABM module (modtyp=model_abm) FMK 13-2-2017
+      if ( modtyp ==model_abm ) then
+        if(idp_file /= ' ' .and. itime == nint(const(8))*86400 ) then ! release at day iniday - specific for ABM module (modtyp=model_abm) FMK 13-2-2017
             call partini( nopart, nosubs, idp_file, wpart  , xpart , & 
                          ypart , zpart , npart   , mpart  , kpart , & 
                          iptime, lunpr )
@@ -135,8 +135,8 @@
 
       flow = 0.0
       do i = 1, noqp
-         if ( flowpntp(i,1) .gt. 0 ) flow(flowpntp(i,1)) = flow(flowpntp(i,1)) + dwqflo(i)
-         if ( flowpntp(i,2) .gt. 0 ) flow(flowpntp(i,2)) = flow(flowpntp(i,2)) + dwqflo(i)
+         if ( flowpntp(i,1) > 0 ) flow(flowpntp(i,1)) = flow(flowpntp(i,1)) + dwqflo(i)
+         if ( flowpntp(i,2) > 0 ) flow(flowpntp(i,2)) = flow(flowpntp(i,2)) + dwqflo(i)
       enddo
       depmin = (0.05*nmaxp*mmaxp)/mnmaxk
       depmin = max(depmin,0.001)
@@ -149,30 +149,30 @@
       else
           ifflag = 0
       endif
-      if ( lsettl .or. layt .gt. 1 ) then
+      if ( lsettl .or. layt > 1 ) then
          indx = index_in_array( 'TAU       ', sfname)
-         if ( indx .gt. 0 ) then
+         if ( indx > 0 ) then
             do i=1, noseg
                tau(cellpntp(i)) = segfun(i,indx)
             enddo
-         else if ( lunitp(21) .gt. 0 ) then
+         else if ( lunitp(21) > 0 ) then
             call dlwqbl ( lunitp(21), lunut   , itime     , idtimt  , itimt1  , & 
                          itimt2    , ihdel   , noseg     , mnmaxk  , tau1    , & 
                          tau       , cellpntp, fnamep(21), isflag  , ifflag  , & 
                          updatd    )
          endif
-         if ( layt .gt. 1 ) then
+         if ( layt > 1 ) then
             indx = index_in_array( 'VERTDISP  ', sfname)
-            if ( indx .gt. 0 ) then
+            if ( indx > 0 ) then
                do i=1, noseg
                   vdiff(cellpntp(i)) = segfun(i,indx)
                enddo
-            else if ( lunitp(20) .gt. 0 ) then
+            else if ( lunitp(20) > 0 ) then
                call dlwqbl ( lunitp(20), lunut   , itime     , idtimd  , itimd1  , & 
                             itimd2    , ihdel   , noseg     , mnmaxk  , vdiff1  , & 
                             vdiff     , cellpntp, fnamep(20), isflag  , ifflag  , & 
                             updatd    )
-               if ( layt .gt. 1 ) then                              ! fill the zero last layer with the
+               if ( layt > 1 ) then                              ! fill the zero last layer with the
                   vdiff(mnmaxk-  nmaxp*mmaxp+1:mnmaxk           ) =    & ! values above
                  vdiff(mnmaxk-2*nmaxp*mmaxp+1:mnmaxk-nmaxp*mmaxp )
                endif
@@ -185,11 +185,11 @@
          !.. salinity
 
          indx = index_in_array( 'SALINITY  ', sfname)
-         if ( indx .gt. 0 ) then
+         if ( indx > 0 ) then
             do i=1, noseg
               salin(cellpntp(i)) = segfun(i,indx)
             enddo
-         else if ( lunitp(22) .gt. 0 ) then
+         else if ( lunitp(22) > 0 ) then
          call dlwqbl ( lunitp(22), lunut   , itime    , idtims , itims1 , & 
                       itims2   , ihdel   , noseg    , mnmaxk , salin1 , & 
                       salin    , cellpntp , fnamep(22), isflag , ifflag , & 
@@ -200,11 +200,11 @@
 !.. temperature
 
          indx = index_in_array( 'TEMP      ', sfname)
-         if ( indx .gt. 0 ) then
+         if ( indx > 0 ) then
             do i=1, noseg
               temper(cellpntp(i)) = segfun(i,indx)
             enddo
-         else if ( lunitp(23) .gt. 0 ) then
+         else if ( lunitp(23) > 0 ) then
          call dlwqbl ( lunitp(23), lunut   , itime    , idtimtm , itimtm1 , & 
                       itimtm2   , ihdel   , noseg    , mnmaxk , temper1, & 
                       temper   , cellpntp , fnamep(23), isflag , ifflag , & 
@@ -212,7 +212,7 @@
         endif
       endif
       first = .false.
-      if ( lunitp(22) .gt. 0 .and. lunitp(23) .gt. 0 ) then
+      if ( lunitp(22) > 0 .and. lunitp(23) > 0 ) then
           do i = 1, noseg
             rhowatc(i) = densty(max(0.0e0,salin1(i)), temper1(i))
           enddo
@@ -224,7 +224,7 @@
 
 !     Taking over of aged particles by Delwaq
 ! first for oil model
-      if (modtyp.eq.model_oil) then
+      if (modtyp==model_oil) then
         call oil2waq( nopart , nosys    , notot    , nosubs   , noseg    , & 
                    nolay    , dwqvol   , surface  , nmaxp    , mmaxp    , & 
                    lgrid3   , syname   , itime    , iddtim   , npwndw   , & 
@@ -308,7 +308,7 @@
                    zpart    , za       , locdep   , dpsp     , tcktot   , & 
                    lgrid3   )
 
-      if ( itime .ge. itstopp ) then
+      if ( itime >= itstopp ) then
 
 !       Write the restart files when needed
         if (write_restart_file) then
@@ -361,7 +361,7 @@
                          iptime)
 
          case ( 7 )     ! = abm model
-              if ( mod(itime,86400) .eq. 0 ) then !jvb for output within abm module this is a temporary hack
+              if ( mod(itime,86400) == 0 ) then !jvb for output within abm module this is a temporary hack
                  call part11 ( lgrid , xb       , yb       , nmaxp    , npart, & 
                               mpart  , xpart    , ypart    , xa       , ya   , & 
                               nopart , npwndw   , lgrid2   , kpart    , zpart, & 
@@ -382,7 +382,7 @@
 
 !     two-layer system with stratification
 
-      if ( modtyp .eq. model_two_layer_temp ) & 
+      if ( modtyp == model_two_layer_temp ) &
         call part18 ( lgrid    , velo     , concp    , flres    , volumep  , & 
                       area     , mnmaxk   , npart    , mpart    , wpart    , & 
                       zpart    , nopart   , idelt    , nolayp   , npwndw   , & 
@@ -392,7 +392,7 @@
 
 !      add dye release
 
-      if ( nodye .gt. 0 ) & 
+      if ( nodye > 0 ) &
         call part09 ( lunut    , itime    , nodye    , nwaste   , mwaste   , & 
                       xwaste   , ywaste   , iwtime   , amassd   , aconc    , & 
                       npart    , mpart    , xpart    , ypart    , zpart    , & 
@@ -408,7 +408,7 @@
 
 !      add continuous release
 
-       if ( nocont .gt. 0 ) & 
+       if ( nocont > 0 ) &
          call part14 ( itime    , idelt    , nodye    , nocont   , ictime   , & 
                       ictmax   , nwaste   , mwaste   , xwaste   , ywaste   , & 
                       zwaste   , aconc    , rem      , npart    , ndprt    , & 
@@ -425,7 +425,7 @@
 
 !     write particle tracks
 
-      if (ltrack.and.itime.eq.(itstrtp+idelt*itrakc-idelt)) then
+      if (ltrack.and.itime==(itstrtp+idelt*itrakc-idelt)) then
          ! get the absolute x,y,z's of the particles
          call part11 ( lgrid    , xb       , yb       , nmaxp    , npart    , & 
                       mpart    , xpart    , ypart    , xa       , ya       , & 
@@ -433,7 +433,7 @@
                       za       , locdep   , dpsp     , nolayp   , mmaxp    , & 
                       tcktot   )
 !           write actual particle tracks (file #16)
-         if (itime.eq.(itstrtp+idelt*itrakc-idelt)) then
+         if (itime==(itstrtp+idelt*itrakc-idelt)) then
             call wrttrk ( lunut   , fout     , fnamep(16), itrakc   , nopart  , & 
                          npmax    , xa       , ya       , za       , xyztrk  , & 
                          nosubs , wpart  , track                    )
@@ -441,7 +441,7 @@
          endif
       endif
 
-      if ( noudef .gt. 0 )  then
+      if ( noudef > 0 )  then
 
 !       add release in a way defined by the user
 !       array isub contains references to substances
@@ -459,7 +459,7 @@
 
 !     calculate the settling velocities on a refined grid
 !                        (NB: this routine is NOT part of any test in the testbench)
-      if ( anfac .ne. 0.0 ) then
+      if ( anfac /= 0.0 ) then
          call part21 ( lunut    , lgrid    , lgrid2   , xb       , yb       , & 
                       area     , volumep  , nmaxp    , mmaxp    , noslay   , & 
                       nosubs   , nopart   , npart    , mpart    , kpart    , & 
@@ -470,10 +470,10 @@
                       tcktot   , dpsp     )
       else
 ! jvb removed this line (commented, so execute if not modtyp=model_abm?
-           if (modtyp.ne.model_abm) wsettl = 1.0  ! whole array assignment
+           if (modtyp/=model_abm) wsettl = 1.0  ! whole array assignment
          endif
 ! jvb removed call to partvs (commented, so execute if not modtyp=model_abm?
-         if (modtyp.ne.model_abm) call partvs ( lunut   , itime    , nosubs   , nopart   , ivtset   , & 
+         if (modtyp/=model_abm) call partvs ( lunut   , itime    , nosubs   , nopart   , ivtset   , &
                    ivtime   , vsfour   , vsfact   , wpart    , wsettl   , & 
                    modtyp   , nmaxp    , mmaxp    , lgrid3   , noslay   , & 
                    npart    , mpart    , kpart    , nosegp   , noseglp  , & 
@@ -481,7 +481,7 @@
 
 !      calculate actual decaycoefficient
 
-      if ( idtset .gt. 0 ) & 
+      if ( idtset > 0 ) &
      call part17 ( itime    , nosubs   , idtset   , idtime   , decay    , & 
                    decays   )
 
@@ -491,9 +491,6 @@
       return
 
 !     formats
-
- 1010 format( '  Start  time :', i4.4 ,'D-', i2.2 ,'H-', i2.2 , 'M-', i2.2 ,'S.'/ & 
-             '  Stop   time :', i4.4 ,'D-', i2.2 ,'H-', i2.2 , 'M-', i2.2 ,'S.'// )
  1020 format( '  Time ', i4.4 ,'D-', i2.2 ,'H-', i2.2 ,'M-', i2.2 ,'S.',' Stop time ', & 
                i4.4 ,'D-', i2.2 ,'H-', i2.2 ,'M-', i2.2 ,'S.', i11,' part. (of',i11,')')
       end

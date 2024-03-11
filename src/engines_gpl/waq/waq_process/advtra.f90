@@ -169,7 +169,7 @@
 !     Zero output quantities on segment level
 
          CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
-         IF (IKMRK1.EQ.3) THEN
+         IF (IKMRK1==3) THEN
             PMSA ( IPCFLX ) =  0.0
             PMSA ( IPRFLX ) =  0.0
             PMSA ( IPPRES ) =  0.0
@@ -221,7 +221,7 @@
       IPDVOL = IPOINT(32)
 
 !.....Loop over kolommen
-      DO 7000 IK = 1 , Coll%cursize
+      DO IK = 1 , Coll%cursize
 
 !         Select first column of exchanges for DOWNWARD advection
 
@@ -267,7 +267,7 @@
 
           DO IQ = IWA1,IBOT
 
-              IF ( SEEP .LT. 0.0 ) THEN
+              IF ( SEEP < 0.0 ) THEN
 !                 Find upwind porosity!
                   ISEG = IEXPNT(1,IQ)
                   PORACT = PMSA (IPPORA+(ISEG-1)*INPORA)
@@ -299,9 +299,9 @@
 
           DO IQ = IWA1,IBOT
 
-              IF ( SEEP .GT. 0.0 ) THEN
+              IF ( SEEP > 0.0 ) THEN
 !                 Find upwind porosity!
-                  IF ( IQ .EQ. IBOT ) THEN
+                  IF ( IQ == IBOT ) THEN
                       ISEG = IEXPNT(1,IQ)
                   ELSE
                       ISEG = IEXPNT(2,IQ)
@@ -312,7 +312,7 @@
               ENDIF
           ENDDO
 
- 7000 CONTINUE
+      end do
 
       RETURN
 !
@@ -380,7 +380,7 @@
 !JVB  PARAMETER (MXRCOR = 0.5)
 
       CORBUR = 0.0
-      DO 10 IQ = ITOP,IBOT
+      DO IQ = ITOP,IBOT
 
 !         SW and VBUR are fixed per column
           IBODEM = IEXPNT(1,IQ)
@@ -393,7 +393,7 @@
 
 !         Compute burial
 
-          IF ( SW .LT. 0.5 ) THEN
+          IF ( SW < 0.5 ) THEN
 
 ! ---     First option (fixed layer thickness)
 !         burial flux equals sedimentation flux
@@ -404,10 +404,10 @@
 ! ---     Second option (variable layer maximum thickness)
 !         burial flux if layer is too thick, velocity in m/d bulk
               TOTBUR = 0.0
-              IF ( ACTH .GT. MINTH ) THEN
+              IF ( ACTH > MINTH ) THEN
                   TOTBUR = VBUR*DM
               ENDIF
-              IF ( ACTH .GT. MAXTH ) THEN
+              IF ( ACTH > MAXTH ) THEN
                   TOTBUR = TOTBUR + MAX ( 0.0 , (ACTH-MAXTH)*DM/DELT )
               ENDIF
           ENDIF
@@ -418,8 +418,8 @@
 !         the inverse case is treated as DIGGING (see RESKOL)
 !         numerical parameter determines max.rel.corr. per time step
 
-          IF ( PORINP .GT. 0.0001 ) then
-          IF ( PORACT .LT. PORINP ) THEN
+          IF ( PORINP > 0.0001 ) then
+          IF ( PORACT < PORINP ) THEN
               CORBUR = CORBUR + ACTH/DELT*DM*(PORINP-PORACT)/(1.0-PORACT)*MXRCOR
           ENDIF
           ENDIF
@@ -430,17 +430,17 @@
 
 !         Velocity for use in TRASE2
 
-          IF ( DM .GT. 1E-20 ) & 
+          IF ( DM > 1E-20 ) &
          PMSA(IPBVEL+(IQ-1)*INBVEL) = (TOTBUR+CORBUR)/DM/86400.
 
 !         Velocity for volume change, variable thickness ONLY,
 !         correction flux for porosity EXCLUDED
-          IF ( SW .GE. 0.5 ) THEN
-              IF ( DM .GT. 1E-20 ) & 
+          IF ( SW >= 0.5 ) THEN
+              IF ( DM > 1E-20 ) &
              PMSA(IPBVOL+(IQ-1)*INBVOL) = TOTBUR/DM/86400.
           ENDIF
 
-   10 CONTINUE
+      end do
 
       RETURN
       END
@@ -533,7 +533,7 @@
 !     note: more than 1 sediment water exchange may exist on top of
 !           one colun of sediment layers
 
-      DO 20 IQ = IWA1,IWA2
+      DO IQ = IWA1,IWA2
 
 !         Water-sediment interface, set physical parameters
 
@@ -549,7 +549,7 @@
           DMTOP   = PMSA(IPDM  +(IBODEM-1)*INDM  )
 
 !         No resuspensie if depth is below minimum value
-          IF ( DEPTH .LT. MINDEP ) GOTO 20
+          IF ( DEPTH < MINDEP ) GOTO 20
 
 !         Underlying sediment-sediment interfaces: ITOP,IBOT
 !         Compute actual resuspension per layer
@@ -559,7 +559,7 @@
 
           TIME_LEFT = 1.0
           GONE   = .TRUE.
-          DO 10 IQ2 = ITOP,IBOT
+          DO IQ2 = ITOP,IBOT
 
               IBODEM  = IEXPNT(1,IQ2)
               DM      = PMSA(IPDM  +(IBODEM-1)*INDM  )
@@ -568,22 +568,22 @@
               ACTH    = PMSA(IPACTH+(IBODEM-1)*INACTH)
               MINTH   = PMSA(IPMNTH+(IBODEM-1)*INMNTH)
               ZRES    = PMSA(IPZRES+(IBODEM-1)*INZRES)
-              SW_PARTHENIADES = NINT(PMSA(IPSWRE+(IBODEM-1)*INSWRE)) .EQ. 0
+              SW_PARTHENIADES = NINT(PMSA(IPSWRE+(IBODEM-1)*INSWRE)) == 0
               ALPHA   = PMSA(IPALPH+(IBODEM-1)*INALPH)
 
-              IF ( ACTH .LE. MINTH ) THEN
+              IF ( ACTH <= MINTH ) THEN
 !                 Layer was already gone
                   FLRES  = 0.0
                   GONE = .TRUE.
               ELSE
 !                 Layer (still) exists, compute resuspension probability
-                  IF (TAU .EQ. -1.0) THEN
+                  IF (TAU == -1.0) THEN
                       PRES = 1.0
                   ELSE
                       IF ( SW_PARTHENIADES ) THEN
                           PRES = MAX ( 0.0, (TAU/TCRR - 1.0) )
                       ELSE
-                          IF ( TAU .LT. 1.E-10 ) THEN
+                          IF ( TAU < 1.E-10 ) THEN
                               PRES = 0.0
                           ELSE
                               PRES = EXP(-ALPHA*(TCRR/TAU)**2)
@@ -592,7 +592,7 @@
                   ENDIF
                   RESTH = PRES * ZRES * TIME_LEFT
                   RESMX = MAX (0.0, DM*(ACTH-MINTH)*TIME_LEFT/DELT )
-                  IF ( RESTH .GT. 1E-20 .AND. RESTH .GE. RESMX ) THEN
+                  IF ( RESTH > 1E-20 .AND. RESTH >= RESMX ) THEN
                       FLRES = RESMX
                       GONE = .TRUE.
                       TIME_LEFT = TIME_LEFT*(1.-RESMX/RESTH)
@@ -607,7 +607,7 @@
               PMSA(IPPRES+(IBODEM-1)*INPRES) = & 
              PMSA(IPPRES+(IBODEM-1)*INPRES) + PRES*SURFW/SURFB
 
-              IF ( FLRES .GT. 1E-20 ) THEN
+              IF ( FLRES > 1E-20 ) THEN
 
 !                 Net resuspension flux (average for sediment column)
                   PMSA(IPRFLX+(IBODEM-1)*INRFLX) = & 
@@ -619,7 +619,7 @@
                   VELRES = FLRES/DMTOP
                   PMSA(IPRVEL+(IQ-1)*INRVEL) = & 
                  PMSA(IPRVEL+(IQ-1)*INRVEL) - VELRES/86400.
-                  IF ( SW .GE. 0.5 ) THEN
+                  IF ( SW >= 0.5 ) THEN
                       PMSA(IPRVOL+(IQ-1)*INRVOL) = & 
                      PMSA(IPRVOL+(IQ-1)*INRVOL) - VELRES/86400.
                   ENDIF
@@ -628,7 +628,7 @@
 !                 set associated velocities in sediment column
 !                 Depends on fixed (SW = 0) or variable (SW = 1) layers
 
-                  IF ( SW .GE. 0.5 ) THEN
+                  IF ( SW >= 0.5 ) THEN
 
 !                     Variable layer thicknes: only layers on top are affected
 
@@ -667,7 +667,7 @@
 !                     Resuspension velocity, relate to density of lower layer,
 !                     except at the deep sediment boundary!
                       DO IQ3 = ITOP,IBOT
-                          IF ( IQ3 .EQ. IBOT ) THEN
+                          IF ( IQ3 == IBOT ) THEN
                               IBODE2  = IEXPNT(1,IQ3)
                           ELSE
                               IBODE2  = IEXPNT(2,IQ3)
@@ -684,8 +684,9 @@
 !             Stop als huidige laag niet helemaal weg is!
               IF ( .NOT. GONE ) GOTO 20
 
-   10     CONTINUE
+          end do
    20 CONTINUE
+      end do
 
       RETURN
       END
@@ -743,15 +744,15 @@
 !         Massa in upwind segment
           DM     = PMSA(IPDM+(IVAN-1)*INDM)
           DVOL   = 0.0
-          IF (DM .GT. 0.0) DVOL = SEDFLX/DM/86400.
+          IF (DM > 0.0) DVOL = SEDFLX/DM/86400.
           PMSA (IPSVEL+(IQ-1)*INSVEL) = DVOL
 
-          IF ( SW .GE. 0.5 ) THEN
+          IF ( SW >= 0.5 ) THEN
 !             Compute volume change velocity
 !             Massa in DOWNwind segment!!!!!!!!!!!!!!!!!!!!!!
               DM     = PMSA(IPDM+(INAAR-1)*INDM)
               DVOL   = 0.0
-              IF (DM .GT. 0.0) DVOL = SEDFLX/DM/86400.
+              IF (DM > 0.0) DVOL = SEDFLX/DM/86400.
               PMSA (IPSVOL+(IQ-1)*INSVOL) = DVOL
           ENDIF
       enddo
@@ -825,7 +826,7 @@
       errorcode = 0
 
 !     Check for bottom collumns anyway
-      if ( NOQ4 .eq. 0 ) return
+      if ( NOQ4 == 0 ) return
 
 !     Check for first call
       if ( .NOT. FIRST ) return
@@ -836,26 +837,26 @@
 !.....Exchangeloop over de verticale richting
 
       KOLOM = .FALSE.
-      DO 10 IQ = NOQ1+NOQ2+NOQ3+1 , NOQ1+NOQ2+NOQ3+NOQ4
+      DO IQ = NOQ1+NOQ2+NOQ3+1 , NOQ1+NOQ2+NOQ3+NOQ4
 
          IVAN  = IEXPNT(1,IQ)
          INAAR = IEXPNT(2,IQ)
 
 !        Illegal boundary
 
-         IF ( IVAN  .LT. 0 ) GOTO 9004
+         IF ( IVAN  < 0 ) GOTO 9004
 
 !        Zoek eerste kenmerk van- en naar-segmenten
 
          IKMRKV = -1
-         IF ( IVAN  .GT. 0 ) CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
+         IF ( IVAN  > 0 ) CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
          IKMRKN = -1
-         IF ( INAAR .GT. 0 ) CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
+         IF ( INAAR > 0 ) CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
 
 !        Bottom-water exchange, the collumn starts
 
-         if (( IKMRKV.EQ.1 .AND. IKMRKN.EQ.3 )  .or. & 
-            ( IKMRKV.EQ.0 .AND. IKMRKN.EQ.3 )) then
+         if (( IKMRKV==1 .AND. IKMRKN==3 )  .or. &
+            ( IKMRKV==0 .AND. IKMRKN==3 )) then
             if ( .NOT. KOLOM ) then   !  first detected
                KOLOM = .TRUE.
                IW1   = IQ
@@ -865,10 +866,10 @@
 
 !        Bottom-bottom exchange, the collumn continues
 
-         if ( IKMRKV.EQ.3 .AND. IKMRKN.EQ.3 ) then
+         if ( IKMRKV==3 .AND. IKMRKN==3 ) then
             if ( .NOT. KOLOM ) goto 9002
-            if (  IW1 .LE. 0 ) goto 9003
-            if (  IST .EQ. 0 ) then
+            if (  IW1 <= 0 ) goto 9003
+            if (  IST == 0 ) then
                IW2 = IQ-1           !  previous was last water exch
                IST = IQ             !  this is the first bottom exch
             endif
@@ -876,11 +877,11 @@
 
 !        Deep sediment boundary
 
-         if ( INAAR .LT. 0 ) then
+         if ( INAAR < 0 ) then
              if ( .NOT. KOLOM ) goto 9000
              KOLOM = .false.
-             if ( IW1 .LT. 0 ) goto 9001
-             if ( IST .LT. 0 ) then   ! this is true
+             if ( IW1 < 0 ) goto 9001
+             if ( IST < 0 ) then   ! this is true
                  IW2 = IQ-1           ! for 1 bottom layer
                  IST = IQ
              endif
@@ -888,17 +889,17 @@
              nkolom = BotColmnCollAdd ( Coll , IW1 , IW2 , IST , ISB )
          endif
 
-   10 CONTINUE
+      end do
 
 !     Check and remove copies
 
-      if ( mod(nkolom,2) .ne. 0 ) goto 9005
+      if ( mod(nkolom,2) /= 0 ) goto 9005
       do ik = 1,nkolom,2
           set = Coll%set(ik)
           lenkol = set%botsedsed - (set%fstwatsed-1)
           do iq = set%fstwatsed , set%botsedsed
-              if ( iexpnt(1,iq) .ne. iexpnt(1,iq+lenkol) ) goto 9006
-              if ( iexpnt(2,iq) .ne. iexpnt(2,iq+lenkol) ) goto 9006
+              if ( iexpnt(1,iq) /= iexpnt(1,iq+lenkol) ) goto 9006
+              if ( iexpnt(2,iq) /= iexpnt(2,iq+lenkol) ) goto 9006
           enddo
           Coll%set((ik+1)/2) = set
       enddo
@@ -953,8 +954,8 @@
 !         digging if layer is not dense enough (porosity too HIGH)
 !         numerical parameter determines max.rel.corr. per time step
 
-          IF ( PORINP .GT. 0.0001 ) THEN
-              IF ( PORACT .GT. PORINP ) THEN
+          IF ( PORINP > 0.0001 ) THEN
+              IF ( PORACT > PORINP ) THEN
                   CORDIG = CORDIG+ACTH/DELT*DM*(PORINP-PORACT)/(1.0-PORACT)*MXRCOR
               ENDIF
           ENDIF
@@ -965,7 +966,7 @@
 
 !         Velocity for use in TRASE2
 
-          IF ( DM .GT. 1E-20 ) PMSA(IPBVEL+(IQ-1)*INBVEL) = PMSA(IPBVEL+(IQ-1)*INBVEL) + CORDIG/DM/86400.
+          IF ( DM > 1E-20 ) PMSA(IPBVEL+(IQ-1)*INBVEL) = PMSA(IPBVEL+(IQ-1)*INBVEL) + CORDIG/DM/86400.
 
       ENDDO
 

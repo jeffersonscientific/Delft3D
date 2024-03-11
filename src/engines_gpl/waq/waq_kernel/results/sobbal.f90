@@ -214,12 +214,12 @@
       integer(kind=int_wp) ::ithandl = 0
 
 !     Skip this routine when there are no balance area's
-      IF (NDMPAR.EQ.0) RETURN
+      IF (NDMPAR==0) RETURN
 
       if ( timon ) call timstrt ( "sobbal", ithandl )
 !**************** INITIALIZATION **************************************
 
-      IF ( INIOUT .EQ. 1 ) THEN
+      IF ( INIOUT == 1 ) THEN
           IFIRST = .TRUE.
           CALL GETMLU(LUNREP)
 
@@ -240,7 +240,7 @@
           call retrieve_command_argument ( '-i'  , 3    , lfound, idummy, rdummy, & 
                        inifil, ierr2)
           if ( lfound ) then
-             if ( ierr2.ne. 0 ) then
+             if ( ierr2/= 0 ) then
                 inifil = ' '
              endif
           else
@@ -248,17 +248,17 @@
           endif
           open ( newunit = lunini, file=inifil , status='old' , err=123 )
           call extract_value_from_group ( lunini ,'Balance Options','LumpProcessesContributions' , c2 )
-          if ( c2 .eq. '-1' ) lumppr = .true.
-          if ( c2 .eq. '0' ) lumppr = .false.
+          if ( c2 == '-1' ) lumppr = .true.
+          if ( c2 == '0' ) lumppr = .false.
           call extract_value_from_group ( lunini ,'Balance Options','LumpBoundaryContributions' , c2 )
-          if ( c2 .eq. '-1' ) lumpem = .true.
-          if ( c2 .eq. '0' ) lumpem = .false.
+          if ( c2 == '-1' ) lumpem = .true.
+          if ( c2 == '0' ) lumpem = .false.
           call extract_value_from_group ( lunini ,'Balance Options','SumOfMonitoringAreas' , c2 )
-          if ( c2 .eq. '-1' ) onlysm = .true.
-          if ( c2 .eq. '0' ) onlysm = .false.
+          if ( c2 == '-1' ) onlysm = .true.
+          if ( c2 == '0' ) onlysm = .false.
           call extract_value_from_group ( lunini ,'Balance Options','SuppressTimeDependentOutput' , c2 )
-          if ( c2 .eq. '-1' ) suppft = .true.
-          if ( c2 .eq. '0' ) suppft = .false.
+          if ( c2 == '-1' ) suppft = .true.
+          if ( c2 == '0' ) suppft = .false.
           close ( lunini )
   123     continue
 
@@ -266,7 +266,7 @@
 
           ndmpar_out = 0
           do idump = 1, ndmpar
-             if ( dmpbal(idump) .eq. 1 ) then
+             if ( dmpbal(idump) == 1 ) then
                 ndmpar_out = ndmpar_out + 1
              endif
           enddo
@@ -302,7 +302,7 @@
                     STOCHL(NOSUM,NOFLUX), & 
                     FL2BAL(NOTOT+NOSUM,NOFLUX), & 
                     STAT = IERR )
-          IF ( IERR .GT. 0 ) GOTO 9000
+          IF ( IERR > 0 ) GOTO 9000
           IF ( .NOT. LUMPTR ) THEN
 
 !             allocate and set SEGDMP, first dump number for each segment (if any)
@@ -311,19 +311,19 @@
               endif
               allocate ( SEGDMP(NOSEG), & 
                         STAT = IERR )
-              IF ( IERR .GT. 0 ) GOTO 9000
+              IF ( IERR > 0 ) GOTO 9000
               SEGDMP = 0
               ITEL   = 0
               IDUMP_OUT = 0
               DO IDUMP = 1 , NDMPAR
                   NSC = IPDMP(NDMPAR+NTDMPQ+IDUMP)
-                  IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+                  IF ( DMPBAL(IDUMP) == 1 ) THEN
                      IDUMP_OUT = IDUMP_OUT + 1
                      DO ISC = 1 , NSC
                          ITEL  = ITEL + 1
                          ISEG  = IPDMP(NDMPAR+NTDMPQ+NDMPAR+ITEL)
-                         IF ( ISEG .GT. 0 ) THEN
-                             IF ( SEGDMP(ISEG) .EQ. 0 ) THEN
+                         IF ( ISEG > 0 ) THEN
+                             IF ( SEGDMP(ISEG) == 0 ) THEN
                                  SEGDMP(ISEG) = IDUMP_OUT
                              ENDIF
                          ENDIF
@@ -341,20 +341,20 @@
                   deallocate( iwdmp )
               endif
               allocate ( IWDMP(NOWST, NDMPAR),STAT = IERR )
-              IF ( IERR .GT. 0 ) GOTO 9000
+              IF ( IERR > 0 ) GOTO 9000
               IWDMP  = .FALSE.
               ITEL   = 0
               IDUMP_OUT = 0
               DO IDUMP = 1 , NDMPAR
                   NSC = IPDMP(NDMPAR+NTDMPQ+IDUMP)
-                  IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+                  IF ( DMPBAL(IDUMP) == 1 ) THEN
                      IDUMP_OUT = IDUMP_OUT + 1
                      DO ISC = 1 , NSC
                          ITEL  = ITEL + 1
                          ISEG  = IPDMP(NDMPAR+NTDMPQ+NDMPAR+ITEL)
-                         IF ( ISEG .GT. 0 ) THEN
+                         IF ( ISEG > 0 ) THEN
                              DO IW = 1, NOWST
-                                IF ( IWASTE(IW) .EQ. ISEG) THEN
+                                IF ( IWASTE(IW) == ISEG) THEN
                                    IWDMP(IW,IDUMP_OUT) = .TRUE.
                                 ENDIF
                              ENDDO
@@ -411,8 +411,8 @@
 
           NOOUT  = 0
           DO ISYS = 1,NOTOT+NOSUM
-              IF ( ISYS .GT. NOTOT ) THEN
-                  IF ( TFACTO(ISYS-NOTOT) .GT. 0.0001 ) THEN
+              IF ( ISYS > NOTOT ) THEN
+                  IF ( TFACTO(ISYS-NOTOT) > 0.0001 ) THEN
                       INCLUD = .TRUE.
                   ELSE
                       INCLUD = .FALSE.
@@ -433,7 +433,7 @@
                       NPROCS(ISYS) = 1
                   ELSE
 !                     Find sum STOCHI coefficients for sum parameters
-                      IF ( ISYS .GT. NOTOT ) THEN
+                      IF ( ISYS > NOTOT ) THEN
                           ISUM = ISYS - NOTOT
                           DO IFLUX = 1,NOFLUX
                               STOCHL(ISUM,IFLUX) = 0.0
@@ -449,12 +449,12 @@
 !                     Make sure that irrelevant fluxes are not included
                       NPROCS(ISYS) = 0
                       DO IFLUX = 1,NOFLUX
-                          IF ( ISYS .LE. NOTOT ) THEN
+                          IF ( ISYS <= NOTOT ) THEN
                               ST = STOCHI(ISYS,IFLUX)
                           ELSE
                               ST = STOCHL(ISYS-NOTOT,IFLUX)
                           ENDIF
-                          IF ( ABS(ST) .GT. 1.E-20 ) THEN
+                          IF ( ABS(ST) > 1.E-20 ) THEN
                               NPROCS(ISYS) = NPROCS(ISYS) + 1
                               FL2BAL(ISYS,NPROCS(ISYS)) = IFLUX
                           ENDIF
@@ -474,12 +474,12 @@
                     BALTOT(NOOUT,NDMPAR_OUT+1), & 
                     OUNAME(NOOUT), & 
                     stat = ierr )
-          if ( ierr .gt. 0 ) goto 9000
+          if ( ierr > 0 ) goto 9000
 
 !         Set balance term names
 
           DO ISYS = 1,NOTOT+NOSUM
-              IF ( IMASSA(ISYS) .GT. 0 ) THEN
+              IF ( IMASSA(ISYS) > 0 ) THEN
                   C20 = SYNAMP(ISYS)
                   OUNAME(IMASSA(ISYS)) = C20(1:6)//'_Storage'
                   IF ( LUMPEM ) THEN
@@ -514,7 +514,7 @@
                       ITEL2 = ITEL2 + 1
                       OUNAME(ITEL2) = C20(1:6)//'_'//'Other    '//'_Out'
                       DO IDUMP = 1,NDMPAR
-                          IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+                          IF ( DMPBAL(IDUMP) == 1 ) THEN
                              ITEL2 = ITEL2 + 1
                              OUNAME(ITEL2) = C20(1:6)//'_'//DANAM(IDUMP)(1:9)//'_In'
                              ITEL2 = ITEL2 + 1
@@ -536,7 +536,7 @@
 
           idump_out = 0
           DO IDUMP = 1,NDMPAR
-             if ( dmpbal(idump) .eq. 1 ) then
+             if ( dmpbal(idump) == 1 ) then
                 idump_out = idump_out + 1
                 DANAMP(IDUMP_out) = DANAM(IDUMP)
                 JDUMP(IDUMP_out)  = IDUMP_OUT
@@ -572,7 +572,7 @@
 !         ONLY second and following calls !!!!!!
           IF ( .NOT.IFIRST ) THEN
 
-          IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+          IF ( DMPBAL(IDUMP) == 1 ) THEN
              IDUMP_OUT = IDUMP_OUT + 1
 
 !            Mass / accumulation term, previous mass already here
@@ -594,11 +594,11 @@
                  IPOIN = ABS(IQ)
                  IVAN  = IPOINT(1,IPOIN)
                  INAAR = IPOINT(2,IPOIN)
-                 IF ( IVAN .LT. 0 .OR. & 
-                     INAAR .LT. 0 ) THEN
+                 IF ( IVAN < 0 .OR. &
+                     INAAR < 0 ) THEN
 !                    BOUNDARY!!!
                      BOUNDA = .TRUE.
-                     IF ( IVAN .LT. 0 ) THEN
+                     IF ( IVAN < 0 ) THEN
 !                        -I TO +J BOUNDARY!!!
                          IBOUN = -IVAN
                      ELSE
@@ -611,16 +611,16 @@
                      BOUNDA = .FALSE.
                      IFRAC = 1
                      IF ( .NOT. LUMPTR ) THEN
-                        IF ( IQ .LT. 0 ) THEN
-                           IF ( IVAN .GT. 0 ) IFRAC = SEGDMP(IVAN) + 1
+                        IF ( IQ < 0 ) THEN
+                           IF ( IVAN > 0 ) IFRAC = SEGDMP(IVAN) + 1
                         ELSE
-                           IF ( INAAR .GT. 0 ) IFRAC = SEGDMP(INAAR) + 1
+                           IF ( INAAR > 0 ) IFRAC = SEGDMP(INAAR) + 1
                         ENDIF
                      ENDIF
                  ENDIF
 
 !                Find fluxes
-                 IF ( IQ .GT. 0 ) THEN
+                 IF ( IQ > 0 ) THEN
                     IPQ  = IQDMP(IQ)
                     DO ISYS = 1 , NOSYS
                        FLTRAN(1,ISYS) = DMPQ(ISYS,IPQ,2)
@@ -691,7 +691,7 @@
 
 !                Loop over substances, including sum parameters
                  DO ISYS = 1,NOTOT+NOSUM
-                     IF ( IMASSA(ISYS) .GT. 0 ) THEN
+                     IF ( IMASSA(ISYS) > 0 ) THEN
 !                        Substance (sum parameter) is active
 !                        Loop over relevant processes
                          DO ITEL = 1,NPROCS(ISYS)
@@ -699,7 +699,7 @@
                              IOUT = IPROCS(ISYS)+ITEL-1
                              IFLUX = FL2BAL(ISYS,ITEL)
 !                            Find stoichiometry constant
-                             IF ( ISYS .LE. NOTOT ) THEN
+                             IF ( ISYS <= NOTOT ) THEN
                                  ST = STOCHI(ISYS,IFLUX)
                              ELSE
                                  ST = STOCHL(ISYS-NOTOT,IFLUX)
@@ -728,7 +728,7 @@
 !     zero accumulation term of sum segment first
       DO ISYS = 1,NOTOT+NOSUM
           IOUT = IMASSA(ISYS)
-          IF (IOUT.GT.0) & 
+          IF (IOUT>0) &
          BALANS(IOUT,NDMPAR_OUT+1) = 0.0
       ENDDO
       DO IDUMP_OUT = 1,NDMPAR_OUT
@@ -741,7 +741,7 @@
 !     Update integrated balance matrix FOR ALL TERMS EXCEPT ACCUMULATION
       DO IDUMP_OUT = 1,NDMPAR_OUT+1
           DO ISYS = 1,NOTOT+NOSUM
-              IF ( IMASSA(ISYS) .GT. 0 ) THEN
+              IF ( IMASSA(ISYS) > 0 ) THEN
                   ITEL1 = IMASSA(ISYS)+1
                   ITEL2 = IPROCS(ISYS)+NPROCS(ISYS)-1
                   DO IOUT = ITEL1,ITEL2
@@ -757,14 +757,14 @@
       IF ( B_AREA ) THEN
 
           ALLOCATE(DMP_SURF(NDMPAR), STAT = IERR )
-          IF ( IERR .GT. 0 ) GOTO 9000
+          IF ( IERR > 0 ) GOTO 9000
           CALL DMPSURF(NOSEG, NDMPAR, IPDMP(NDMPAR+NTDMPQ+1), ISEGCOL, SURF, DMP_SURF)
           IDUMP_OUT = 0
           DO IDUMP = 1 , NDMPAR
-             IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+             IF ( DMPBAL(IDUMP) == 1 ) THEN
                 IDUMP_OUT = IDUMP_OUT + 1
                 DO IOUT  = 1,NOOUT
-                   IF (DMP_SURF(IDUMP).GT.1.0E-20) THEN
+                   IF (DMP_SURF(IDUMP)>1.0E-20) THEN
                       BALANS(IOUT,IDUMP_OUT) = BALANS(IOUT,IDUMP_OUT)/DMP_SURF(IDUMP)
                    ELSE
                       BALANS(IOUT,IDUMP_OUT) = -999.0
@@ -774,7 +774,7 @@
              ENDIF
           ENDDO
           DO IOUT  = 1,NOOUT
-             IF (TOT_SURF.GT.1.0E-20) THEN
+             IF (TOT_SURF>1.0E-20) THEN
                 BALANS(IOUT,NDMPAR_OUT+1) = BALANS(IOUT,NDMPAR_OUT+1)/TOT_SURF
              ELSE
                 BALANS(IOUT,NDMPAR_OUT+1) = -999.0
@@ -785,11 +785,11 @@
       ELSEIF ( B_VOLU ) THEN
 
           ALLOCATE(DMP_VOLU(NDMPAR), STAT = IERR )
-          IF ( IERR .GT. 0 ) GOTO 9000
+          IF ( IERR > 0 ) GOTO 9000
           CALL DMPVAL(NDMPAR,IPDMP(NDMPAR+NTDMPQ+1),VOLUME,DMP_VOLU)
           IDUMP_OUT = 0
           DO IDUMP = 1 , NDMPAR
-             IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+             IF ( DMPBAL(IDUMP) == 1 ) THEN
                 IDUMP_OUT = IDUMP_OUT + 1
                 DO IOUT  = 1,NOOUT
                   BALANS(IOUT,IDUMP_OUT) = BALANS(IOUT,IDUMP_OUT)/DMP_VOLU(IDUMP)
@@ -834,7 +834,7 @@
 !     Store current mass in Mass term as a starting point for next step
       IDUMP_OUT = 0
       DO IDUMP = 1 , NDMPAR
-         IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+         IF ( DMPBAL(IDUMP) == 1 ) THEN
             IDUMP_OUT = IDUMP_OUT + 1
             CALL UPDBAL ( IDUMP_OUT, NOTOT , IMASSA, IMASSA, 0     , & 
                          BALANS   , NOSUM , ASMASS(1,IDUMP,1)     , & 
@@ -842,7 +842,7 @@
 !           Sum segment (OBSOLETE??)
             DO ISYS = 1,NOTOT+NOSUM
                 IOUT = IMASSA(ISYS)
-                IF ( IOUT .GT. 0 ) THEN
+                IF ( IOUT > 0 ) THEN
                     BALANS(IOUT,NDMPAR_OUT+1) = BALANS(IOUT,NDMPAR_OUT+1) & 
                                          + BALANS(IOUT,IDUMP_OUT)
                 ENDIF
@@ -855,7 +855,7 @@
       IF ( IFIRST ) THEN
           DO ISYS = 1,NOTOT+NOSUM
               IOUT = IMASSA(ISYS)
-              IF ( IOUT .GT. 0 ) THEN
+              IF ( IOUT > 0 ) THEN
                   DO IDUMP = 1,NDMPAR_OUT+1
                       BALTOT(IOUT,IDUMP) = BALANS(IOUT,IDUMP)
                   ENDDO
@@ -865,7 +865,7 @@
 
 !     This is an incorrect statement in case ITIME never reaches
 !     one of the two time levels
-      IF ( ITIME .GE. ITSTOP-IMSTEP+1 .OR. ITIME .GE. IMSTOP ) THEN
+      IF ( ITIME >= ITSTOP-IMSTEP+1 .OR. ITIME >= IMSTOP ) THEN
 
           IBSTRT = MAX( ITSTRT, IMSTRT )
           IBSTOP = MIN( ITIME , IMSTOP )
@@ -873,7 +873,7 @@
           IF ( .NOT. SUPPFT ) CLOSE ( LUNOUT )
           DO ISYS = 1,NOTOT+NOSUM
               IOUT = IMASSA(ISYS)
-              IF ( IOUT .GT. 0 ) THEN
+              IF ( IOUT > 0 ) THEN
                   DO IDUMP = 1,NDMPAR_OUT+1
                       BALTOT(IOUT,IDUMP) = BALTOT(IOUT,IDUMP) & 
                                         - BALANS(IOUT,IDUMP)
@@ -883,7 +883,7 @@
 
           FILNAM=LCHOUT
           INDX = INDEX(FILNAM,'-bal.his')
-          IF ( INDX .GT. 0 ) THEN
+          IF ( INDX > 0 ) THEN
              FILNAM(INDX:)='-bal.prn'
           ELSE
              FILNAM = 'sobwqbal.prn'
@@ -899,14 +899,14 @@
 
 !         In mass/m2
           ALLOCATE(DMP_SURF(NDMPAR), STAT = IERR )
-          IF ( IERR .GT. 0 ) GOTO 9000
+          IF ( IERR > 0 ) GOTO 9000
           CALL DMPSURF(NOSEG, NDMPAR, IPDMP(NDMPAR+NTDMPQ+1), ISEGCOL, SURF, DMP_SURF)
           IDUMP_OUT = 0
           DO IDUMP = 1 , NDMPAR
-             IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+             IF ( DMPBAL(IDUMP) == 1 ) THEN
                 IDUMP_OUT = IDUMP_OUT + 1
                 DO IOUT  = 1,NOOUT
-                   IF (DMP_SURF(IDUMP).GT.1.0E-20) THEN
+                   IF (DMP_SURF(IDUMP)>1.0E-20) THEN
                       BALTOT(IOUT,IDUMP_OUT) = BALTOT(IOUT,IDUMP_OUT)/DMP_SURF(IDUMP)
                    ELSE
                       BALTOT(IOUT,IDUMP_OUT) = -999.0
@@ -916,7 +916,7 @@
              ENDIF
           ENDDO
           DO IOUT  = 1,NOOUT
-             IF (TOT_SURF.GT.1.0E-20) THEN
+             IF (TOT_SURF>1.0E-20) THEN
                 BALTOT(IOUT,NDMPAR_OUT+1) = BALTOT(IOUT,NDMPAR_OUT+1)/TOT_SURF
              ELSE
                 BALTOT(IOUT,NDMPAR_OUT+1) = -999.0
@@ -930,11 +930,11 @@
 
 !         In mass/m3
           ALLOCATE(DMP_VOLU(NDMPAR), STAT = IERR )
-          IF ( IERR .GT. 0 ) GOTO 9000
+          IF ( IERR > 0 ) GOTO 9000
           CALL DMPVAL(NDMPAR,IPDMP(NDMPAR+NTDMPQ+1),VOLUME,DMP_VOLU)
           IDUMP_OUT = 0
           DO IDUMP = 1 , NDMPAR
-             IF ( DMPBAL(IDUMP) .EQ. 1 ) THEN
+             IF ( DMPBAL(IDUMP) == 1 ) THEN
                 IDUMP_OUT = IDUMP_OUT + 1
                 DO IOUT  = 1,NOOUT
                   BALTOT(IOUT,IDUMP_OUT) = BALTOT(IOUT,IDUMP_OUT)*DMP_SURF(IDUMP)/DMP_VOLU(IDUMP)
@@ -963,9 +963,6 @@
  9000 write (lunrep,*) 'Error allocating memory'
       write (*,*) 'Error allocating memory'
       call srstop(1)
- 9010 write (lunrep,*) 'Error deallocating memory'
-      write (*,*) 'Error deallocating memory'
-      call srstop(1)
       end
       SUBROUTINE OUTBAI (IOBALI, MONAME, IBSTRT, IBSTOP, NOOUT , & 
                         NOTOT , NDMPAR, DANAMP, OUNAME, SYNAME, & 
@@ -988,7 +985,7 @@
       if ( timon ) call timstrt ( "outbai", ithandl )
 
 
-      IF ( INIT .EQ. 1 ) THEN
+      IF ( INIT == 1 ) THEN
 !         Write header
           WRITE (IOBALI,1000) MONAME(1), MONAME(2), MONAME(3), MONAME(4)
 
@@ -997,10 +994,10 @@
 
 !         Write sum parameters
           DO ISUM = 1,NOSUM
-              IF ( IMASSA(NOTOT+ISUM) .GT. 0 ) THEN
+              IF ( IMASSA(NOTOT+ISUM) > 0 ) THEN
                   WRITE (IOBALI,1020) SYNAME(NOTOT+ISUM)
                   DO ISYS = 1,NOTOT
-                      IF ( SFACTO(ISUM,ISYS) .GE. 0.0001 ) THEN
+                      IF ( SFACTO(ISUM,ISYS) >= 0.0001 ) THEN
                           WRITE (IOBALI,1030) SYNAME(ISYS),SFACTO(ISUM,ISYS)
                       ENDIF
                   ENDDO
@@ -1009,29 +1006,29 @@
       ENDIF
 
 !     Write the unit of the balance
-      IF ( IUNIT .EQ. 0 ) THEN
+      IF ( IUNIT == 0 ) THEN
           WRITE (IOBALI,1040)
-      ELSEIF ( IUNIT .EQ. 1 ) THEN
+      ELSEIF ( IUNIT == 1 ) THEN
           WRITE (IOBALI,1050)
-      ELSEIF ( IUNIT .EQ. 2 ) THEN
+      ELSEIF ( IUNIT == 2 ) THEN
           WRITE (IOBALI,1060)
       ENDIF
 
 
 !     The balance per area
       DO IDUMP = 1,NDMPAR
-          IF ( .NOT. ONLYSM .OR. IDUMP .EQ. NDMPAR ) THEN
+          IF ( .NOT. ONLYSM .OR. IDUMP == NDMPAR ) THEN
               WRITE (IOBALI,1100) DANAMP(IDUMP)
               DO ISYS = 1,NOTOT+NOSUM
                   ITEL = IMASSA(ISYS)
-                  IF ( ITEL .GT. 0 ) THEN
+                  IF ( ITEL > 0 ) THEN
                       WRITE (IOBALI,1110) SYNAME(ISYS)
                       SUMPOS = 0.0
                       SUMNEG = 0.0
 
 !                     Mass term
                       VALUE = BALTOT(ITEL,IDUMP)
-                      IF ( VALUE .GT. 0.0 ) THEN
+                      IF ( VALUE > 0.0 ) THEN
                           VALUE1 = VALUE
                           VALUE2 = 0.0
                       ELSE
@@ -1055,7 +1052,7 @@
                       ENDDO
 
 !                     Internal transport
-                      IF ( NTRANS .EQ. 2 ) THEN
+                      IF ( NTRANS == 2 ) THEN
                           VALUE1 = BALTOT(ITRANS(ISYS)  ,IDUMP)
                           VALUE2 = BALTOT(ITRANS(ISYS)+1,IDUMP)
                           WRITE (IOBALI,1140) SYNAME(ISYS)(1:6), & 
@@ -1078,7 +1075,7 @@
                       DO I = 1,NPROCS(ISYS)
                           ITEL2 = IPROCS(ISYS)-1+I
                           VALUE = BALTOT(ITEL2,IDUMP)
-                          IF ( VALUE .GE. 0.0 ) THEN
+                          IF ( VALUE >= 0.0 ) THEN
                               VALUE1 = VALUE
                               VALUE2 = 0.0
                           ELSE
@@ -1215,7 +1212,7 @@
 !     Compose sum parameters
 !     local functionality nosum = 2, check!!!!!!!!!!!!!
 
-      if ( nosum .ne. 2 ) then
+      if ( nosum /= 2 ) then
          call getmlu(lunrep)
          write (lunrep,*) 'BUG IN COMSUM!'
          write (*,*) 'BUG IN COMSUM!'
@@ -1236,7 +1233,7 @@
 
 !         Reserved substance names, FIXED scale factor
           ires = index_in_array(syname(isys),resna1)
-          if ( ires .gt. 0 ) then
+          if ( ires > 0 ) then
               do isum = 1,nosum
                   tfacto(isum) = tfacto(isum) + facres(isum,ires)
                   sfacto(isum,isys) = facres(isum,ires)
@@ -1245,10 +1242,10 @@
 
 !         Reserved substance names, scale factors from CONS with default
           ires = index_in_array(syname(isys),resna2)
-          if ( ires .gt. 0 ) then
+          if ( ires > 0 ) then
               do isum = 1,nosum
                   icons = index_in_array(ratna2(isum,ires), coname)
-                  if ( icons .gt. 0 ) then
+                  if ( icons > 0 ) then
                       factor = cons(icons)
                   else
                       factor = ratdef(isum,ires)
@@ -1261,7 +1258,7 @@
 
 !     BLOOM algae
 
-      if ( ntypa2 .gt. 0 ) then
+      if ( ntypa2 > 0 ) then
 
 !         BLOOM active!
 
@@ -1324,9 +1321,9 @@
 !              ISYSS = NOTOT+ISUM
               ISYSS = NOLAST+ISUM
               ITEST = IMASSA(ISYSS)
-              IF ( ITEST .GT. 0 ) THEN
+              IF ( ITEST > 0 ) THEN
 !                 Sum parameter is active
-                  IF ( SFACTO(ISUM,ISYS) .GE. 0.0001 ) THEN
+                  IF ( SFACTO(ISUM,ISYS) >= 0.0001 ) THEN
 !                     Current substance contributes
                       IOUT2 = ITERMS(ISYSS) + IOFFSE
                       DO ITEL = 1,NTEL

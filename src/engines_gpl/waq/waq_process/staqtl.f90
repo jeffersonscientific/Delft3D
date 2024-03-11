@@ -127,7 +127,7 @@
       BMIN  = PMSA(IP7)
       BMAX  = PMSA(IP8)
 
-      IF ( NOBUCK .GT. MAXBCK ) THEN
+      IF ( NOBUCK > MAXBCK ) THEN
          CALL GETMLU( LUNREP )
          WRITE( LUNREP, * ) 'ERROR in STAQTL'
          WRITE( LUNREP, * ) & 
@@ -188,13 +188,13 @@
          ENDIF
       ENDIF
 
-      IF ( TIME .GE. TSTOP-0.5*DELT .AND. TIME .LE. TSTOP+0.5*DELT ) THEN
+      IF ( TIME >= TSTOP-0.5*DELT .AND. TIME <= TSTOP+0.5*DELT ) THEN
          IACTION = 3
       ENDIF
 
-      IF ( IACTION .EQ. 0 ) RETURN
+      IF ( IACTION == 0 ) RETURN
 
-      DO 9000 ISEG=1,NOSEG
+      DO ISEG=1,NOSEG
          IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !           Keep track of the time within the current quantile specification
@@ -204,7 +204,7 @@
             PMSA(IPTCNT) = TCOUNT
 
             DO IB = 1,NOBUCK
-               IF ( PMSA(IP1) .LE. BCKLIM(IB) ) THEN
+               IF ( PMSA(IP1) <= BCKLIM(IB) ) THEN
                   PMSA(IBUCK(IB)) = PMSA(IBUCK(IB)) + DELT
                   EXIT
                ENDIF
@@ -215,7 +215,7 @@
 !        Always do the final processing whether the segment is active at this moment or not
 !
 
-         IF ( IACTION .EQ. 3 ) THEN
+         IF ( IACTION == 3 ) THEN
 !
 !           Determine the length of the period for the quantile
 !
@@ -232,10 +232,10 @@
 !
             PMSA(IP11) = -999.0
             BSUM   = PMSA(IBUCK(1))
-            IF ( BSUM .LT. PQUANT ) THEN
+            IF ( BSUM < PQUANT ) THEN
                DO IB = 2,NOBUCK
                   BSUM = BSUM + PMSA(IBUCK(IB))
-                  IF ( BSUM .GE. PQUANT ) THEN
+                  IF ( BSUM >= PQUANT ) THEN
                      PMSA(IP11) = BCKLIM(IB) - & 
                                     (BSUM-PQUANT)*BDIFF/PMSA(IBUCK(IB))
                      EXIT
@@ -260,7 +260,7 @@
 
                IF ( NOWARN < MAXWARN ) THEN
                   CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB )
-                  IF ( ATTRIB .NE. 0 ) THEN
+                  IF ( ATTRIB /= 0 ) THEN
                      NOWARN = NOWARN + 1
                      WRITE(*,'(a,i0)')    'Quantile could not be determined for segment ', ISEG
                      WRITE(*,'(a,e12.4)') '    - too many values below ', BMIN, ' (assuming this value)'
@@ -281,7 +281,7 @@
             IBUCK(IB)  = IBUCK(IB) + INCBCK(IB)
          ENDDO
 
- 9000 CONTINUE
+      end do
 
       RETURN
       END

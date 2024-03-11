@@ -109,7 +109,7 @@
 
 !     Read file option
 
-      if ( gettoken( iropt1, ierr2 ) .gt. 0 ) goto 20
+      if ( gettoken( iropt1, ierr2 ) > 0 ) goto 20
       select case ( iropt1 )
          case ( :-2 )
             write ( lunut, 2000 )  iropt1
@@ -120,27 +120,27 @@
             call opt1   ( iropt1  , lun     , 0       , lchar   , filtype , & 
                          ldummy  , ldummy  , 0       , ierr2   , status , & 
                          .false. )
-            if ( ierr2 .gt. 0 ) goto 20
-            if ( gettoken( noraai, ierr2 ) .gt. 0 ) goto 20
+            if ( ierr2 > 0 ) goto 20
+            if ( gettoken( noraai, ierr2 ) > 0 ) goto 20
          case ( 0 )                      ! new style (October 2012) no dump transects
             write ( lunut , 2020 )       ! old style would have produced an error
             noraai = 0
             ntraaq = 0
             goto 30
          case ( 1 )                      ! old style <this input file> or new style 1 transect
-            if ( gettoken( option, noraai, itype, ierr2 ) .gt. 0 ) goto 20
-            if ( itype .eq. 1 ) then     ! character so: new style, 1 transect
+            if ( gettoken( option, noraai, itype, ierr2 ) > 0 ) goto 20
+            if ( itype == 1 ) then     ! character so: new style, 1 transect
                push = .true.
                noraai = iropt1
             else
                write ( lunut, 2000 )  iropt1
             endif
          case ( 2 )                      ! old style <no dump transects> or new style 2 transects
-            if ( gettoken( option, noraai, itype, ierr2 ) .gt. 0 ) goto 20
+            if ( gettoken( option, noraai, itype, ierr2 ) > 0 ) goto 20
             push = .true.                ! look to see what will be next
-            if ( itype .eq. 1 ) then     ! a string, so first dump-ID from 2 areas
+            if ( itype == 1 ) then     ! a string, so first dump-ID from 2 areas
                call convert_string_to_time_offset ( option, noraai, .false., .false., ierr2 )
-               if ( ierr2 .ne. 0 ) then
+               if ( ierr2 /= 0 ) then
                   noraai = iropt1
                else
                   write ( lunut, 2000 )  iropt1
@@ -165,13 +165,13 @@
       write( lunut   , 2030            ) noraai
       ntraaq = 0
       allocate ( raname  (noraai), stat=ierr_alloc )
-      if ( ierr_alloc .ne. 0 ) then
+      if ( ierr_alloc /= 0 ) then
          write ( lunut , 2380 ) ierr_alloc
          goto 20
       endif
       allocate ( nexcraai(noraai  ), ioptraai(noraai), & 
                 iexcraai(noraai*2), stat=ierr_alloc )
-      if ( ierr_alloc .ne. 0 ) then
+      if ( ierr_alloc /= 0 ) then
          write ( lunut , 2390 ) ierr_alloc
          goto 20
       endif
@@ -179,16 +179,16 @@
 
 !        Read specification of the transects
 
-      if ( ioutpt .lt. 2 ) write ( lunut , 2040 )
-      if ( ioutpt .eq. 2 ) write ( lunut , 2050 )
-      do 10 ir = 1 , noraai
-         if ( gettoken( raname  (ir), ierr2 ) .gt. 0 ) goto 20
-         if ( gettoken( ioptraai(ir), ierr2 ) .gt. 0 ) goto 20
-         if ( gettoken( nq          , ierr2 ) .gt. 0 ) goto 20
-         if ( ntraaq + nq .gt. max_ntraaq ) then
+      if ( ioutpt < 2 ) write ( lunut , 2040 )
+      if ( ioutpt == 2 ) write ( lunut , 2050 )
+      do ir = 1 , noraai
+         if ( gettoken( raname  (ir), ierr2 ) > 0 ) goto 20
+         if ( gettoken( ioptraai(ir), ierr2 ) > 0 ) goto 20
+         if ( gettoken( nq          , ierr2 ) > 0 ) goto 20
+         if ( ntraaq + nq > max_ntraaq ) then
             max_ntraaq = 2*(ntraaq+nq)
             allocate ( iexcraai_2(max_ntraaq),stat=ierr_alloc)
-            if ( ierr_alloc .ne. 0 ) then
+            if ( ierr_alloc /= 0 ) then
                write ( lunut , 2400 ) ierr_alloc
                goto 20
             endif
@@ -197,9 +197,9 @@
             iexcraai => iexcraai_2
          endif
          do k = 1, nq
-            if ( gettoken( iexcraai(ntraaq+k), ierr2 ) .gt. 0 ) goto 20
+            if ( gettoken( iexcraai(ntraaq+k), ierr2 ) > 0 ) goto 20
          enddo
-         if ( raname(ir) .eq. ' ' ) write(raname(ir), '(''Transect-id'',i6)' ) ir
+         if ( raname(ir) == ' ' ) write(raname(ir), '(''Transect-id'',i6)' ) ir
 
       ! check if name is unique
 
@@ -210,9 +210,9 @@
             endif
          enddo
 
-         if ( ioutpt .ge. 2 ) then
+         if ( ioutpt >= 2 ) then
             write( lunut, 2060 ) ir , raname(ir), ioptraai(ir), nq
-            if ( ioutpt .ge. 3 ) then
+            if ( ioutpt >= 3 ) then
                write( lunut, 2070 )
                write( lunut, 2080 ) ( k, iexcraai(ntraaq+k), k=1,nq )
             endif
@@ -221,7 +221,7 @@
          ntraaq       = ntraaq + nq
          nexcraai(ir) = nq
 
-   10 continue
+      end do
       goto 30
 
 !     Error handling

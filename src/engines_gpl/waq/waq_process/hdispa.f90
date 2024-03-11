@@ -70,14 +70,14 @@
 
          ! set output
 
-         if ( iseg1 .gt. 0 .and. iseg2 .gt. 0 ) then
+         if ( iseg1 > 0 .and. iseg2 > 0 ) then
          ! if both are internal segments use the minimum value of both segments
             pmsa(ipnt(2)) = min(pmsa(ipnt(1)+(iseg1-1)*increm(1)), & 
                                pmsa(ipnt(1)+(iseg2-1)*increm(1)))
-         else if ( iseg1 .gt. 0) then
+         else if ( iseg1 > 0) then
          ! if only 'from' is an internal segment, use this one
             pmsa(ipnt(2)) = pmsa(ipnt(1)+(iseg1-1)*increm(1))
-         else if ( iseg2 .gt. 0) then
+         else if ( iseg2 > 0) then
          ! if only 'to' is an internal segment, use this one
             pmsa(ipnt(2)) = pmsa(ipnt(1)+(iseg2-1)*increm(1))
          else

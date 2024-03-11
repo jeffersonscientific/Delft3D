@@ -118,7 +118,7 @@
                    NOFUN  , NOSFUN , CONST  , CONAME , PARAM  , & 
                    PANAME , FUNCS  , FUNAME , SFUNCS , SFNAME , & 
                    LGET   , IERR   )
-      IF ( IERR .NE. 0 ) THEN
+      IF ( IERR /= 0 ) THEN
          write ( lun(19) , * ) ' ERROR: Variabele SURF not found !'
          call srstop(1)
       endif
@@ -129,13 +129,13 @@
       first_q_column = .true.
       do iq = 1 , noq4
          if ( first_q_column ) then
-            if ( ipoint(1,noq+iq) .le. noseg ) then
-               if ( ipoint(2,noq+iq) .gt. 0 ) then
+            if ( ipoint(1,noq+iq) <= noseg ) then
+               if ( ipoint(2,noq+iq) > 0 ) then
                   horsurf(ipoint(2,noq+iq)) = horsurf(ipoint(2,noq+iq)) + horsurf(ipoint(1,noq+iq))
                endif
             endif
          endif
-         if ( ipoint(2,noq+iq) .lt. 0 ) then
+         if ( ipoint(2,noq+iq) < 0 ) then
             first_q_column = .not. first_q_column
          endif
       enddo
@@ -145,13 +145,13 @@
       first_q_column = .true.
       do iq = 1 , noq4
          if ( first_q_column ) then
-            if ( ipoint(1,noq+iq) .gt. noseg ) then
-               if ( ipoint(2,noq+iq) .gt. 0 ) then
+            if ( ipoint(1,noq+iq) > noseg ) then
+               if ( ipoint(2,noq+iq) > 0 ) then
                   horsurf(ipoint(2,noq+iq)) = horsurf(ipoint(2,noq+iq)) + horsurf(ipoint(1,noq+iq))
                endif
             endif
          endif
-         if ( ipoint(2,noq+iq) .lt. 0 ) then
+         if ( ipoint(2,noq+iq) < 0 ) then
             first_q_column = .not. first_q_column
          endif
       enddo
@@ -173,7 +173,7 @@
                    NOFUN  , NOSFUN , CONST  , CONAME , PARAM  , & 
                    PANAME , FUNCS  , FUNAME , SFUNCS , SFNAME , & 
                    LGET   , IERR   )
-      IF ( IERR .NE. 0 ) THEN
+      IF ( IERR /= 0 ) THEN
          write ( lun(19) , * ) ' ERROR: Variabele FIXTH not found !'
          call srstop(1)
       endif

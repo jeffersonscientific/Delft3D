@@ -86,33 +86,33 @@
 !
 !     If time variable then get variable kenmerk array
 !
-      IF ( IFIOPK .GT. 0 ) THEN
+      IF ( IFIOPK > 0 ) THEN
          LUNOUT = LUN(19)
 !
 !        if first time open intermediate file and
 !        move original kenmerk array (column 1) to constant kenmerk array
 !        (column 2)
 !
-         IF ( IFFLAG .EQ. 1 ) THEN
+         IF ( IFFLAG == 1 ) THEN
             CALL open_waq_files ( LUN(IS) , LUNTXT(IS) , IS    , 2     , IERR )
             CALL copy_integer_array_elements ( IKNMRK(1,1), IKNMRK(1,2), NOSEG )
          ENDIF
 !
 !        evaluate file option; read time-dependent kenmerk array into column 3
 !
-         IF ( IFIOPK .EQ. 1 ) THEN
+         IF ( IFIOPK == 1 ) THEN
 !
 !           one record per time step
 !
             CALL DLWQKV(LUN(IS)   , LUNOUT, ITIME , IKNMRK(1,3), NOSEG , & 
                        LUNTXT(IS), ISFLAG, IFFLAG)
-            IF ( IFFLAG .EQ. -1 ) THEN
+            IF ( IFFLAG == -1 ) THEN
                IFIOPK =  0
                IFFLAG =  1
                CLOSE ( LUN(IS) )
             ENDIF
 !
-         ELSEIF ( IFIOPK .EQ. 2 ) THEN
+         ELSEIF ( IFIOPK == 2 ) THEN
 !
 !           Block function
 !
@@ -134,9 +134,9 @@
 !
 !        (column 2)
 !
-         DO 100 ISEG = 1 , NOSEG
+         DO ISEG = 1 , NOSEG
             CALL evaluate_waq_attribute(4,IKNMRK(ISEG,2),IKMRK4)
-  100    CONTINUE
+         end do
 !
 !        Change the time-variable kenmerk-array (column 3) such that it
 !
@@ -145,9 +145,9 @@
 !
 !        OR the constant and the time variable array's
 !
-         DO 200 ISEG = 1 , NOSEG
+         DO ISEG = 1 , NOSEG
             IKNMRK(ISEG,1) = IKNMRK(ISEG,2) + IKNMRK(ISEG,3)
-  200    CONTINUE
+         end do
 !
       ENDIF
 

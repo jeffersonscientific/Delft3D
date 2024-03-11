@@ -227,7 +227,7 @@
 !     Check sediment switch for first segment
 !
       SEDIME = .FALSE.
-      IF ( PMSA(IP30) .GT. 0.5 ) SEDIME = .TRUE.
+      IF ( PMSA(IP30) > 0.5 ) SEDIME = .TRUE.
 !
 !     Find metal group for first segment
 !     1 = GENERAL (ZN, CU, CD, PB, HG, NI)
@@ -242,7 +242,7 @@
 !
 !        inorganic matter 1
 !
-      IF ( IN4 .EQ. 0 .AND. IN11 .EQ. 0 ) THEN
+      IF ( IN4 == 0 .AND. IN11 == 0 ) THEN
          AIM1   = PMSA( IP4 )
          KDIM1  = PMSA( IP11 ) / 1000.
          FAC1   = AIM1*KDIM1
@@ -251,7 +251,7 @@
          IM1OPT = .FALSE.
       ENDIF
 !        inorganic matter 2
-      IF ( IN5 .EQ. 0 .AND. IN12 .EQ. 0 ) THEN
+      IF ( IN5 == 0 .AND. IN12 == 0 ) THEN
          AIM2   = PMSA( IP5 )
          KDIM2  = PMSA( IP12 ) / 1000.
          FAC2   = AIM2*KDIM2
@@ -260,7 +260,7 @@
          IM2OPT = .FALSE.
       ENDIF
 !        inorganic matter 3
-      IF ( IN6 .EQ. 0 .AND. IN13 .EQ. 0 ) THEN
+      IF ( IN6 == 0 .AND. IN13 == 0 ) THEN
          AIM3   = PMSA( IP6 )
          KDIM3  = PMSA( IP13 ) / 1000.
          FAC3   = AIM3*KDIM3
@@ -269,9 +269,9 @@
          IM3OPT = .FALSE.
       ENDIF
 !        POC
-      IF ( IN9 .EQ. 0 .AND. IN14 .EQ. 0 ) THEN
+      IF ( IN9 == 0 .AND. IN14 == 0 ) THEN
          POC    = PMSA( IP9 )
-         IF ( IGROUP .EQ. 4 ) THEN
+         IF ( IGROUP == 4 ) THEN
              KPOC   = 10**PMSA(IP14 ) / 1.E+6
          ELSE
              KPOC   = PMSA( IP14 ) / 1000.
@@ -282,9 +282,9 @@
          IM4OPT = .FALSE.
       ENDIF
 !        Phytoplankton
-      IF ( IN10.EQ. 0 .AND. IN15 .EQ. 0 ) THEN
+      IF ( IN10== 0 .AND. IN15 == 0 ) THEN
          PHYT   = PMSA( IP10)
-         IF ( IGROUP .EQ. 4 ) THEN
+         IF ( IGROUP == 4 ) THEN
              KPHYT  = 10**PMSA(IP15 ) / 1.E+6
          ELSE
              KPHYT  = PMSA( IP15 ) / 1000.
@@ -295,11 +295,11 @@
          IM5OPT = .FALSE.
       ENDIF
 !        DOC and XDOC
-      IF ( IN7 .EQ. 0 .AND. IN8 .EQ. 0 .AND. & 
-          IN14 .EQ. 0                               ) THEN
+      IF ( IN7 == 0 .AND. IN8 == 0 .AND. &
+          IN14 == 0                               ) THEN
          DOC    = PMSA( IP7 )
          XDOC   = PMSA( IP8 )
-         IF ( IGROUP .EQ. 4 ) THEN
+         IF ( IGROUP == 4 ) THEN
              KDOC   = 10**PMSA(IP14 ) / 1.E+6
          ELSE
              KDOC   = PMSA( IP14 ) / 1000.
@@ -312,7 +312,7 @@
 !
 !        Kinetic sorption
 !
-      IF ( IN20 .EQ. 0 .AND. IN21 .EQ. 0 ) THEN
+      IF ( IN20 == 0 .AND. IN21 == 0 ) THEN
          HVTADS = PMSA( IP20 )
          HVTDES = PMSA( IP21 )
          HVTOPT = .TRUE.
@@ -322,14 +322,14 @@
 !
 !     Check for modelling of total or dis/par
 !
-      IF (IN2.EQ.0.AND.IN3.EQ.0) THEN
+      IF (IN2==0.AND.IN3==0) THEN
         TWOFRC = .FALSE.
       ELSE
         TWOFRC = .TRUE.
       ENDIF
 
       IF (TWOFRC) THEN
-        IF (IN1.EQ.0) THEN
+        IF (IN1==0) THEN
           CALL GETMLU(LUNREP)
           WRITE(LUNREP,*) & 
            'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
@@ -337,14 +337,14 @@
            'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
           CALL SRSTOP(1)
         ENDIF
-        IF (IN2.EQ.0) THEN
+        IF (IN2==0) THEN
           CALL GETMLU(LUNREP)
           WRITE(LUNREP,*) & 
            'PARTMP: No value for MPDIS in dis/par modelling'
           WRITE(*,*) 'PARTMP: No value for MPDIS in dis/par modelling'
           CALL SRSTOP(1)
         ENDIF
-        IF (IN3.EQ.0) THEN
+        IF (IN3==0) THEN
           CALL GETMLU(LUNREP)
           WRITE(LUNREP,*) & 
            'PARTMP: No value for MPPAR in dis/par modelling'
@@ -352,14 +352,14 @@
           CALL SRSTOP(1)
         ENDIF
       ELSE
-        IF (IN2.GT.0) THEN
+        IF (IN2>0) THEN
           CALL GETMLU(LUNREP)
           WRITE(LUNREP,*) & 
            'PARTMP: Values for MPDIS and MP!'
           WRITE(*,*) 'PARTMP: Values for MPDIS and MP!'
           CALL SRSTOP(1)
         ENDIF
-        IF (IN3.GT.0) THEN
+        IF (IN3>0) THEN
           CALL GETMLU(LUNREP)
           WRITE(LUNREP,*) & 
            'PARTMP: Values for MPPAR and MP!'
@@ -368,49 +368,49 @@
         ENDIF
       ENDIF
 !        Compute F-values or not
-      IF ( IN34 .EQ. 0 .AND. IN35 .EQ. 0 .AND. & 
-          IN36 .EQ. 0 .AND. IN37 .EQ. 0 .AND. & 
-          IN38 .EQ. 0 .AND. IN39 .EQ. 0 .AND. & 
-          IN49 .EQ. 0 .AND. IN50 .EQ. 0       ) THEN
+      IF ( IN34 == 0 .AND. IN35 == 0 .AND. &
+          IN36 == 0 .AND. IN37 == 0 .AND. &
+          IN38 == 0 .AND. IN39 == 0 .AND. &
+          IN49 == 0 .AND. IN50 == 0       ) THEN
          FFFOPT = .TRUE.
       ELSE
          FFFOPT = .FALSE.
       ENDIF
 !        Compute Q-values or not
-      IF ( IN43 .EQ. 0 .AND. IN44 .EQ. 0 .AND. & 
-          IN45 .EQ. 0 .AND. IN46 .EQ. 0 .AND. & 
-          IN47 .EQ. 0                         ) THEN
+      IF ( IN43 == 0 .AND. IN44 == 0 .AND. &
+          IN45 == 0 .AND. IN46 == 0 .AND. &
+          IN47 == 0                         ) THEN
          QQQOPT = .TRUE.
       ELSE
          QQQOPT = .FALSE.
       ENDIF
 !        Compute Waterphase-values or not
-      IF ( IN33 .EQ. 0 .AND. IN41 .EQ. 0 .AND. & 
-          IN42 .EQ. 0 .AND. IN49 .EQ. 0 .AND. & 
-          IN50 .EQ. 0                         ) THEN
+      IF ( IN33 == 0 .AND. IN41 == 0 .AND. &
+          IN42 == 0 .AND. IN49 == 0 .AND. &
+          IN50 == 0                         ) THEN
          WATOPT = .TRUE.
       ELSE
          WATOPT = .FALSE.
       ENDIF
 !        Compute qual or not
-      IF ( IN49 .EQ. 0 .AND. IN50 .EQ. 0       ) THEN
+      IF ( IN49 == 0 .AND. IN50 == 0       ) THEN
          QUALOPT = .TRUE.
       ELSE
          QUALOPT = .FALSE.
       ENDIF
       DELT = PMSA(IP22)
-      IF (DELT  .LT. 1E-20 )  CALL write_error_message ('DELT in PARTMP zero')
+      IF (DELT  < 1E-20 )  CALL write_error_message ('DELT in PARTMP zero')
 !
 !----------------------------------------------------------------------C
 !     SEGMENT LOOP
 !----------------------------------------------------------------------C
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0.OR.IKMRK2.EQ.3).OR..NOT.SEDIME) THEN
+      IF ((IKMRK2==0.OR.IKMRK2==3).OR..NOT.SEDIME) THEN
 
       MP    = PMSA(IP1 )
       MPDIS = PMSA(IP2 )
@@ -418,7 +418,7 @@
       ISWOX = NINT(PMSA(IP23))
 
       IF (TWOFRC) THEN
-          IF (IGROUP.EQ.2) THEN
+          IF (IGROUP==2) THEN
               CALL GETMLU(LUNREP)
               WRITE(LUNREP,*) & 
                     'PARTMP: Kinetic sorption for Chromium not ', & 
@@ -442,11 +442,11 @@
 !     OR CR (GROUP 2) OR VA/AS (GROUP 3) or OMP's (GROUP 4)
 !     OR viruses (group 5)
 !
-      IF ( ( ISWOX.EQ.1 .AND. IGROUP .EQ. 1 ) .OR. & 
-                             IGROUP .EQ. 2   .OR. & 
-                             IGROUP .EQ. 3   .OR. & 
-                             IGROUP .EQ. 4   .OR. & 
-                             IGROUP .EQ. 5         ) THEN
+      IF ( ( ISWOX==1 .AND. IGROUP == 1 ) .OR. &
+                             IGROUP == 2   .OR. &
+                             IGROUP == 3   .OR. &
+                             IGROUP == 4   .OR. &
+                             IGROUP == 5         ) THEN
         FPREC = 0.0
 
 !          inorganic matter 1
@@ -470,7 +470,7 @@
 !          POC
         IF ( .NOT. IM4OPT ) THEN
            POC   = PMSA( IP9  )
-           IF ( IGROUP .EQ. 4 ) THEN
+           IF ( IGROUP == 4 ) THEN
                KPOC   = 10**PMSA(IP14 ) / 1.E+6
            ELSE
                KPOC   = PMSA( IP14 ) / 1000.
@@ -480,7 +480,7 @@
 !          Phytoplankton
         IF ( .NOT. IM5OPT ) THEN
            PHYT  = PMSA( IP10 )
-           IF ( IGROUP .EQ. 4 ) THEN
+           IF ( IGROUP == 4 ) THEN
                KPHYT  = 10**PMSA(IP15 ) / 1.E+6
            ELSE
                KPHYT  = PMSA( IP15 ) / 1000.
@@ -491,7 +491,7 @@
         IF ( .NOT. IM6OPT ) THEN
            DOC   = PMSA( IP7  )
            XDOC  = PMSA( IP8  )
-           IF ( IGROUP .EQ. 4 ) THEN
+           IF ( IGROUP == 4 ) THEN
                KDOC   = 10**PMSA(IP14 ) / 1.E+6
            ELSE
                KDOC   = PMSA( IP14 ) / 1000.
@@ -499,7 +499,7 @@
            FAC6  = DOC *XDOC *KDOC
         ENDIF
 !
-        IF (.NOT.SEDIME .AND. POR.LT.1E-20 ) & 
+        IF (.NOT.SEDIME .AND. POR<1E-20 ) &
              CALL write_error_message ('POR in PARTMP zero')
 !
 !***********************************************************************
@@ -515,9 +515,9 @@
 !
         SUMKD = FAC1 + FAC2 + FAC3 + FAC4 + FAC5 + FAC6C
 
-        IF ( SUMKD .GT. 1.E-20) THEN
+        IF ( SUMKD > 1.E-20) THEN
            IF ( SEDIME ) THEN
-              IF ( THICK .GT. 1.E-20 ) THEN
+              IF ( THICK > 1.E-20 ) THEN
                  FDIS  = POR   / ( POR   + SUMKD / THICK )
               ELSE
                  FDIS = 1.0
@@ -543,7 +543,7 @@
            HVTADS = PMSA( IP20 )
            HVTDES = PMSA( IP21 )
         ENDIF
-        IF ( HVTADS .GT. 1E-20 .OR. HVTDES .GT. 1E-20 ) THEN
+        IF ( HVTADS > 1E-20 .OR. HVTDES > 1E-20 ) THEN
             IF (.NOT.TWOFRC) THEN
               CALL GETMLU(LUNREP)
               WRITE(LUNREP,*) & 
@@ -561,19 +561,19 @@
             ENDIF
 !           Let op: PART is in dit verband POC + IMx + PHYT !!!
 !           Actual fraction PART
-            IF ( MP .GT. 1E-20 ) THEN
+            IF ( MP > 1E-20 ) THEN
                 FPARTO = MPPAR / MP
             ELSE
                 FPARTO = 0.0
             ENDIF
             RATE = -1.0
-            IF ( FPARTO .GT. FPARTE .AND. HVTDES .GT. 1E-20 ) & 
+            IF ( FPARTO > FPARTE .AND. HVTDES > 1E-20 ) &
            RATE = LOG(2.) / HVTDES
-            IF ( FPARTO .LT. FPARTE .AND. HVTADS .GT. 1E-20 ) & 
+            IF ( FPARTO < FPARTE .AND. HVTADS > 1E-20 ) &
            RATE = LOG(2.) / HVTADS
 !           Fraction part at end of present time step
-            IF ( RATE .GT. 0.0 .AND. FPARTE .GT. 1E-20 & 
-                              .AND. FPARTE .LT. 1.0 ) THEN
+            IF ( RATE > 0.0 .AND. FPARTE > 1E-20 &
+                              .AND. FPARTE < 1.0 ) THEN
                 FPART = FPARTE - ( FPARTE - FPARTO ) * EXP (-RATE*DELT)
                 FPCOR = FPART/FPARTE
                 FDCOR = ( 1.0 - FPART ) / ( 1.0 - FPARTE )
@@ -602,7 +602,7 @@
 !
 !       CHROMIUM
 !
-        IF (IGROUP.EQ.2) THEN
+        IF (IGROUP==2) THEN
           PH     = PMSA(IP24)
           KCROHS = PMSA(IP25)
           MOLWT  = PMSA(IP26)
@@ -622,11 +622,11 @@
 !       CDIS (mg/m3) corresponds with CRTOT (mol/l).
 !       conversion = ug/l * 1.e-6 g/ug / (M  g/mol)
 !
-          IF (POR .LE. 1E-10 ) THEN
+          IF (POR <= 1E-10 ) THEN
               CDIS = 0.0
           ELSE
               IF ( SEDIME ) THEN
-                  IF ( THICK .GT. 1.E-20 ) THEN
+                  IF ( THICK > 1.E-20 ) THEN
                       CDIS = FDIS * MP / (POR * THICK )
                   ELSE
                       CDIS = 0.0
@@ -653,7 +653,7 @@
 !       If IAP < Ksol no precipitation will take place and the under
 !       (2.1) calculated fdis is correct.
 !
-          IF (IAP .GE. KSOL) THEN
+          IF (IAP >= KSOL) THEN
 !
 !------ 2.3a Calculate Cr3+ and Crtot at present OH- concentration,
 !            (mol/l) and convert to concentration in mg/m3 (= ug/l).
@@ -698,12 +698,12 @@
            QIM3  = 0.0
            QPOC  = 0.0
            QPHYT = 0.0
-           IF ( MPHUM .GT. 1E-20 ) THEN
-           IF (AIM1.GT.1E-20) QIM1  = MPHUM * KDIM1 * FPCOR * (1.-FPREC)
-           IF (AIM2.GT.1E-20) QIM2  = MPHUM * KDIM2 * FPCOR * (1.-FPREC)
-           IF (AIM3.GT.1E-20) QIM3  = MPHUM * KDIM3 * FPCOR * (1.-FPREC)
-           IF (POC .GT.1E-20) QPOC  = MPHUM * KPOC  * FPCOR * (1.-FPREC)
-           IF (PHYT.GT.1E-20) QPHYT = MPHUM * KPHYT * FPCOR * (1.-FPREC)
+           IF ( MPHUM > 1E-20 ) THEN
+           IF (AIM1>1E-20) QIM1  = MPHUM * KDIM1 * FPCOR * (1.-FPREC)
+           IF (AIM2>1E-20) QIM2  = MPHUM * KDIM2 * FPCOR * (1.-FPREC)
+           IF (AIM3>1E-20) QIM3  = MPHUM * KDIM3 * FPCOR * (1.-FPREC)
+           IF (POC >1E-20) QPOC  = MPHUM * KPOC  * FPCOR * (1.-FPREC)
+           IF (PHYT>1E-20) QPHYT = MPHUM * KPHYT * FPCOR * (1.-FPREC)
            ENDIF
            PMSA(IP43) = QIM1
            PMSA(IP44) = QIM2
@@ -716,12 +716,12 @@
 !@      Concentration free dissolved MP and DOC waterphase
            FDIS  = FDIS * (1.-FPREC)
            FDIS2 = FDIS * FDCOR
-           IF (POR .LE. 1.E-10) THEN
+           IF (POR <= 1.E-10) THEN
              CDIS = 0.0
              CDOC = 0.0
            ELSE
              IF ( SEDIME ) THEN
-               IF ( THICK .GT. 1.E-20 ) THEN
+               IF ( THICK > 1.E-20 ) THEN
                   CDIS  = FDIS * MP * FDCOR / (THICK * POR )
                   CDOC  = (1.0 - FPREC) * AFACT * FAC6C * MP * FDCOR / & 
                          (THICK * POR)
@@ -743,7 +743,7 @@
 !
 !     SULFIDIC PARTITIONING (ISWOX = 0) FOR GENERAL METALS
 !
-      ELSEIF (  ISWOX.EQ.0 .AND. IGROUP .EQ. 1   ) THEN
+      ELSEIF (  ISWOX==0 .AND. IGROUP == 1   ) THEN
         PMSA(IP34) = 0.0
         PMSA(IP35) = 0.0
         PMSA(IP36) = 0.0
@@ -759,7 +759,7 @@
 
         DISS    = PMSA(IP24)
         DISHS   = PMSA(IP25)
-        IF (DISS .LE. 1E-20) THEN
+        IF (DISS <= 1E-20) THEN
         WRITE(*,*) 'SwPoreChWK = ',ISWOX,' 1- oxic, 0 - sulfidic, or'
         WRITE(*,*) 'DisSWK or DisSSx  = ',DISS ,'should not equal zero'
         CALL write_error_message ('Fatal error in PARTMP')
@@ -769,10 +769,10 @@
         LKMES   = PMSA(IP28)
         LKMEHS  = PMSA(IP29)
 
-        IF ( DMS1 .LT. 1E-03 )  THEN
+        IF ( DMS1 < 1E-03 )  THEN
           FDIS = 1.0
           IF (SEDIME) THEN
-            IF ( THICK .GT. 1.E-20 ) THEN
+            IF ( THICK > 1.E-20 ) THEN
               CDIS  = MP / ( THICK * POR )
             ELSE
               CDIS  = 0.0
@@ -781,7 +781,7 @@
             CDIS  = MP / POR
           ENDIF
           FSULF = 0.0
-        ELSEIF ( POR .LT. 1E-10) THEN
+        ELSEIF ( POR < 1E-10) THEN
           FSULF = 1.0
           FDIS  = 0.0
           CDIS  = 0.0
@@ -823,7 +823,7 @@
       QUAL  = 0.0
       KDALL = 0.0
       IF ( .NOT. QUALOPT ) THEN
-         IF ( DMS1 .GE. 1E-20 )  THEN
+         IF ( DMS1 >= 1E-20 )  THEN
 !
 !           Compute in g/g
 !
@@ -831,7 +831,7 @@
 !
 !           Overall partitioning coefficient
 !
-            IF ( (CDIS + CDOC) .GE. 1E-20 ) THEN
+            IF ( (CDIS + CDOC) >= 1E-20 ) THEN
 !                        g/g     g/m3         = m3/g
                KDALL = QUAL / (CDIS + CDOC)
             ELSE
@@ -907,7 +907,7 @@
       IFLUX = IFLUX + NOFLUX
 !
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
       END

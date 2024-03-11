@@ -105,7 +105,7 @@
 !     -----Warnings-----
 !
       IF (FIRST) THEN
-      IF (PMSA(IP4) .LE. 0.0) THEN
+      IF (PMSA(IP4) <= 0.0) THEN
               WRITE (ILUMON, *) 'WARNING : Poros', & 
                                ' should be greater than zero'
           ENDIF
@@ -113,7 +113,7 @@
       ENDIF
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
@@ -132,7 +132,7 @@
 !
 !           Calculate the ebullition flux
 !
-            IF ( DCH4 .LT. 0.0 ) THEN
+            IF ( DCH4 < 0.0 ) THEN
                   FL( 1+IFLUX ) = 0.0
             ELSE
                   FL( 1+IFLUX ) = ( FSCALE * DCH4 ) / DELT
@@ -153,7 +153,7 @@
       IP6   = IP6   + IN6
       IP7   = IP7   + IN7
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

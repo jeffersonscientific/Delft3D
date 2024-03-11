@@ -110,7 +110,7 @@
 
       if ( timon ) call timstrt ( "oil2waq", ithandl )
 
-      massbal = iaflag .eq. 1
+      massbal = iaflag == 1
       fluxes  = btest(intopt,3)
 
       if ( .not. allocated( iwaqsub ) ) then
@@ -119,26 +119,26 @@
          do isub = 1, nosubs
             partsub = syname( ioff+isub ) ( 1 : len_trim(syname(ioff+isub))-1 ) ! cut the 'p' off
             iwaqsub(isub) = index_in_array( partsub, syname(:ioff))
-            if ( iwaqsub(isub) .lt. 0 ) iwaqsub(isub) = 0 ! not found!
-            if ( iwaqsub(isub) .gt. nosys ) iwaqsub(isub) = -iwaqsub(isub)      ! not dissolved
+            if ( iwaqsub(isub) < 0 ) iwaqsub(isub) = 0 ! not found!
+            if ( iwaqsub(isub) > nosys ) iwaqsub(isub) = -iwaqsub(isub)      ! not dissolved
          enddo
       endif
          nosegl = noseg / nolay
 
       do ipart = npwndw, nopart
          ic = lgrida( npart(ipart), mpart(ipart) )
-         if ( ic .gt.  0 ) then
+         if ( ic >  0 ) then
             ilay = kpart(ipart)
             iseg = (ilay-1)*nosegl + ic
             ipb  = isdmp(iseg)
             do isub = 1, nosubs
                isys = iwaqsub(isub)
-               if ( isys .eq. 0 ) cycle
-                if (isub.eq.2.and.wpart(isub,ipart).gt.0) then
+               if ( isys == 0 ) cycle
+                if (isub==2.and.wpart(isub,ipart)>0) then
                   amass( isys,iseg) = amass( isys,iseg) + wpart(isub,ipart)
                   conc ( isys,iseg) = amass( isys,iseg) / volume (iseg)
                   if ( massbal ) amass2(isys,    3) = amass2(isys,    3) + wpart(isub,ipart)
-                  if ( ipb .gt. 0 .and. fluxes ) & 
+                  if ( ipb > 0 .and. fluxes ) &
                              dmps  (isys,ipb,2) = dmps  (isys,ipb,2) + wpart(isub,ipart)
                   npart (ipart) = 1
                   mpart (ipart) = 1

@@ -172,9 +172,9 @@
 
 !
       IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
       CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
-      IF (IKMRK1.EQ.1) THEN
+      IF (IKMRK1==1) THEN
 
 !         Compute saturation percentage for all layers
 
@@ -184,7 +184,7 @@
       PMSA (IP27) = SATPERC
 
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.1)) THEN
+      IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
 !
       DEPTH  = PMSA(IP2 )
       TEMP   = PMSA(IP3 )
@@ -211,7 +211,7 @@
       D4     = PMSA(IP25 )
 
 
-      IF (DEPTH   .LT. 1E-30) CALL ZEROME ('DEPTH in REAR')
+      IF (DEPTH   < 1E-30) CALL ZEROME ('DEPTH in REAR')
 
 !     JvG, 1 May 2002
 !     Current formulation was not valid for layered schematisations
@@ -220,70 +220,70 @@
 !     b) compute flux by multiplying with (surface) deficit
 !     c) convert to volumetric flux by using the (surface) layer thickness
 
-      IF (IFREAR .EQ. 0) THEN
+      IF (IFREAR == 0) THEN
 !
 !         0. Unscaled user input coefficient in 1/day
 !
           REARRC = REARKL * TOTDEP
 
-      ELSEIF (IFREAR .EQ. 1) THEN
+      ELSEIF (IFREAR == 1) THEN
 !
 !         1. User input coefficient in m/day
 !
           REARRC = REARKL
 
-      ELSEIF (IFREAR .EQ. 2) THEN
+      ELSEIF (IFREAR == 2) THEN
 !
 !         2. Churchill [1962]
 !
           REARRC = 0.0
-          IF (VELOC  .GT. 1E-30) & 
+          IF (VELOC  > 1E-30) &
          REARRC = 5.026 * (VELOC**0.969) / (TOTDEP**0.673)
 
-      ELSEIF (IFREAR .EQ. 3) THEN
+      ELSEIF (IFREAR == 3) THEN
 !
 !         3. O'Connor - Dobbins [1958]
 !
           REARRC = 0.0
-          IF (VELOC  .GT. 1E-30) & 
+          IF (VELOC  > 1E-30) &
          REARRC = 3.863 * (VELOC**0.5) / (TOTDEP**0.5)
 
-      ELSEIF (IFREAR .EQ. 4) THEN
+      ELSEIF (IFREAR == 4) THEN
 !
 !         4. Scaled version of O'Connor - Dobbins [1958]
 !
           REARRC = 0.0
-          IF (VELOC  .GT. 1E-30) & 
+          IF (VELOC  > 1E-30) &
          REARRC = 3.863 * (VELOC**0.5) / (TOTDEP**0.5) * REARKL
 
-      ELSEIF (IFREAR .EQ. 5) THEN
+      ELSEIF (IFREAR == 5) THEN
 !
 !         5. Owens - Edwards - Gibb [1964]
 !
           REARRC = 0.0
-          IF (VELOC  .GT. 1E-30) & 
+          IF (VELOC  > 1E-30) &
          REARRC = 5.322 * (VELOC**0.67) / (TOTDEP**0.85)
 
-      ELSEIF (IFREAR .EQ. 6) THEN
+      ELSEIF (IFREAR == 6) THEN
 !
 !         6. Langbien - Durum [1967]
 !
           REARRC = 0.0
-          IF (VELOC  .GT. 1E-30) & 
+          IF (VELOC  > 1E-30) &
          REARRC = 11.23 * VELOC / (TOTDEP**0.333)
 
-      ELSEIF (IFREAR .EQ. 7) THEN
+      ELSEIF (IFREAR == 7) THEN
 !
 !         7. Van Pagee[1978] and Delvigne [1980]
 !
-          IF (VELOC  .GT. 1E-30) THEN
+          IF (VELOC  > 1E-30) THEN
               REARRC = ( REARKL * 0.065 * VWIND**2 + & 
                     3.86  * SQRT( VELOC/TOTDEP ) )
           ELSE
               REARRC = REARKL* 0.065 * VWIND**2
           ENDIF
 
-      ELSEIF (IFREAR .EQ. 8) THEN
+      ELSEIF (IFREAR == 8) THEN
 !
 !         8. Thackston - Krenkel [1966]
 !
@@ -293,17 +293,17 @@
           WRITE (*,*) ' Reaeration formula 8 has not been implemented'
           CALL SRSTOP(1)
 
-      ELSEIF (IFREAR .EQ. 9) THEN
+      ELSEIF (IFREAR == 9) THEN
 !
 !         9. DBS
 !
           REARRC = ( 0.30 + REARKL * 0.028 * VWIND**2 )
 
-      ELSEIF (IFREAR .EQ. 10) THEN
+      ELSEIF (IFREAR == 10) THEN
 !
 !        10. Wanninkhof Oxygen
 !
-          IF ( SAL .GT. 5.0 ) THEN
+          IF ( SAL > 5.0 ) THEN
              SC   = D1Os - D2Os*TEMP + D3Os*TEMP**2 - D4Os*TEMP**3
              SC20 = D1Os - D2Os*20.0 + D3Os*20.0**2 - D4Os*20.0**3
           ELSE
@@ -313,11 +313,11 @@
           KLREAR = 0.31*VWIND**2*(SC/SC20)**(-0.5)*24./100.
           REARRC = KLREAR
 
-      ELSEIF (IFREAR .EQ. 11) THEN
+      ELSEIF (IFREAR == 11) THEN
 !
 !        10. Wanninkhof CO2
 !
-          IF ( SAL .GT. 5.0 ) THEN
+          IF ( SAL > 5.0 ) THEN
              SC   = D1Cs - D2Cs*TEMP + D3Cs*TEMP**2 - D4Cs*TEMP**3
              SC20 = D1Cs - D2Cs*20.0 + D3Cs*20.0**2 - D4Cs*20.0**3
           ELSE
@@ -328,7 +328,7 @@
           KLREAR = (B_ENHA + 0.31*VWIND**2)*(SC/SC20)**(-0.5)*24./100.
           REARRC = KLREAR
 
-      ELSEIF (IFREAR .EQ. 12) THEN
+      ELSEIF (IFREAR == 12) THEN
 
 !     Note this option is not included in the process documentation!
 !
@@ -337,8 +337,8 @@
 !
           REARRC = 0.0
           HCRT = 3.93/5.32*TOTDEP**0.35
-          IF (VELOC  .GT. 1E-30) THEN
-             IF (VELOC .LT. HCRT**6) THEN
+          IF (VELOC  > 1E-30) THEN
+             IF (VELOC < HCRT**6) THEN
                 REARRC = 3.93 * (VELOC**0.5) / (TOTDEP**0.5)
              ELSE
                 REARRC = 5.32 * (VELOC**0.67) / (TOTDEP**0.85)
@@ -346,7 +346,7 @@
           ENDIF
           REARRC = MAX(MINRRC,REARRC)
 
-      ELSEIF ( IFREAR .EQ. 13) THEN
+      ELSEIF ( IFREAR == 13) THEN
 !
 !        13. Guerin O2  - only fresh water
 !            Guerin CO2 - only fresh water
@@ -374,19 +374,19 @@
 !     Wanninkhof, don't use temperature dependency
 
       O2 = MAX (O2, 0.0)
-      IF ( IFREAR .EQ. 10 .OR. IFREAR .EQ. 11 ) THEN
+      IF ( IFREAR == 10 .OR. IFREAR == 11 ) THEN
          FL1 = REARRC * ( OXSAT - O2 ) / DEPTH
       ELSE
          TEMP20 = TEMP - 20.0
          TMPCF  = REARTC ** TEMP20
-         IF (REARRC.LE.MAXRRC) THEN
+         IF (REARRC<=MAXRRC) THEN
             REARRC = REARRC * TMPCF
          ENDIF
          FL1 = MIN( 1.0 / DELT, REARRC * (1-FCOVER)/DEPTH ) * (OXSAT-O2)
       ENDIF
 
 !     Limitation of FL(1) to amount of oxygen present
-      IF (FL1 .LT. 0.0 ) THEN
+      IF (FL1 < 0.0 ) THEN
           FL1 = MAX (-1.*O2/DELT,  FL1 )
       ENDIF
       FL( 1+IFLUX) = FL1
@@ -423,7 +423,7 @@
       IP26  = IP26  + INCREM ( 26 )
       IP27  = IP27  + INCREM ( 27 )
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

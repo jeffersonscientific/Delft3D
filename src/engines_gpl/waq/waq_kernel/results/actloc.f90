@@ -112,7 +112,7 @@
 !
 !     If no locals get out of here
 !
-      IF ( NOLOC .EQ. 0 ) RETURN
+      IF ( NOLOC == 0 ) RETURN
 !
 !     Pointer offsets
 !
@@ -138,7 +138,7 @@
 !
 !        Is it a local value
 !
-         IF ( IP .LT. IODEF .AND. IP .GE. IOLOC ) THEN
+         IF ( IP < IODEF .AND. IP >= IOLOC ) THEN
 !
 !           Get variable number
 !
@@ -147,7 +147,7 @@
 !
 !           Check is variable is active for base grid
 !
-            IF ( VGRSET(IVAR,1) .EQ. 0 ) THEN
+            IF ( VGRSET(IVAR,1) == 0 ) THEN
 !
                IARR   = IA_LOC
                IV_IDX = VARIDX(IVAR)
@@ -159,7 +159,7 @@
 !              Set variable
 !
                DO IGRID = 2 , NOGRID
-                  IF ( VGRSET(IVAR,IGRID) .EQ. 1 ) THEN
+                  IF ( VGRSET(IVAR,IGRID) == 1 ) THEN
                      NOSEG2 = GRDNOS(IGRID)
 !
 !                    Determine characteristics of variable
@@ -181,11 +181,11 @@
 !                    ( Don't mind if this one is actuel ? )
 !
                      IDATYP = VARTDA(IVAR)
-                     IF ( IDATYP .EQ. 2 ) THEN
+                     IF ( IDATYP == 2 ) THEN
                         IV_DA  = VARDAG(IVAR)
                         IA_DA  = VARARR(IV_DA)
                         IK_DA  = ARRKND(IA_DA)
-                        IF ( IK_DA .EQ. 1 ) THEN
+                        IF ( IK_DA == 1 ) THEN
 !
 !                          Not variable in space use help var
 !
@@ -210,7 +210,7 @@
                                     IP_HLP, IGRID , & 
                                     ISYSH , NOTOTH, & 
                                     IP_ARH)
-                     ELSEIF ( IDATYP .EQ. 3 ) THEN
+                     ELSEIF ( IDATYP == 3 ) THEN
                         IV_DA  = IV_HLP
                         IA_DA  = VARARR(IV_DA)
                         IK_DA  = ARRKND(IA_DA)

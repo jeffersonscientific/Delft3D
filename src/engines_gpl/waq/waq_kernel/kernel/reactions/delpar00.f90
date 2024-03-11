@@ -94,7 +94,7 @@
       if ( timon ) call timstrt ( "delpar00", ithandl )
 
       alone = .true.
-      if ( mdpfile .ne. ' ' ) then
+      if ( mdpfile /= ' ' ) then
          call norm_init()
          alone = .false.
          call rdfnam ( lunitp    , mdpfile   , fnamep    , nfilesp  , 2       , & 
@@ -110,18 +110,18 @@
 
 !           this replaces the call to rdhydr
 
-         if ( lsettl .or. layt .gt. 1 ) then
+         if ( lsettl .or. layt > 1 ) then
             indx = index_in_array( 'TAU       ', sfname)
-            if ( indx .gt. 0 ) then
+            if ( indx > 0 ) then
                do i=1, nosegp
                     tau(cellpntp(i)) = segfun(i,indx)
                enddo
                caltau = .false.
-            else if ( lunitp(21) .gt. 0 ) then
-               if (  fnamep(21)(1:4) .ne. 'none' ) then
+            else if ( lunitp(21) > 0 ) then
+               if (  fnamep(21)(1:4) /= 'none' ) then
                   write ( lunut, * ) ' Opening the tau    file:', fnamep(21)(1:len_trim(fnamep(21)))
                   open ( lunitp(21), file = fnamep(21), form = 'unformatted', access='stream', status = 'old', iostat = ierr )
-                  if ( ierr .ne. 0 ) then
+                  if ( ierr /= 0 ) then
                      write ( lunut, * ) ' Warning: could not open the tau file! Tau will be computed.'
                      lunitp(21) = 0
                   endif
@@ -129,18 +129,18 @@
                   lunitp(21) = 0
                endif
                caltau = .false.
-               if ( lunitp(21) .eq. 0 ) caltau = .true.
+               if ( lunitp(21) == 0 ) caltau = .true.
             endif
             indx = index_in_array( 'VERTDISP  ', sfname)
-            if ( indx .gt. 0 ) then
+            if ( indx > 0 ) then
                do i=1, nosegp
                   vdiff(cellpntp(i)) = segfun(i,indx)
                enddo
-            else if ( lunitp(20) .gt. 0 ) then
-               if ( fnamep(20)(1:4) .ne. 'none' ) then
+            else if ( lunitp(20) > 0 ) then
+               if ( fnamep(20)(1:4) /= 'none' ) then
                   write ( lunut, * ) ' Opening the vdf    file:', fnamep(20)(1:len_trim(fnamep(20)))
                   open ( lunitp(20), file = fnamep(20), form = 'unformatted', access='stream', status = 'old', iostat = ierr )
-                  if ( ierr .ne. 0 ) then
+                  if ( ierr /= 0 ) then
                      write ( lunut, * ) ' Warning: could not open the vdf file! vdf will be set to zero!'
                      lunitp(20) = 0
                   endif
@@ -149,14 +149,14 @@
                endif
             endif
          indx = index_in_array( 'SALINITY  ', sfname)
-         if ( indx .gt. 0 ) then
+         if ( indx > 0 ) then
                do i=1, nosegp
                     salin(cellpntp(i)) = segfun(i,indx)
                enddo
-         else if ( lunitp(22) .gt. 0 ) then
+         else if ( lunitp(22) > 0 ) then
                  write ( lunut, * ) ' Opening the salinity file:', fnamep(22)(1:len_trim(fnamep(22)))
                  open ( lunitp(22), file = fnamep(22), form = 'unformatted', access='stream', status = 'old', iostat = ierr )
-                 if ( ierr .ne. 0 ) then
+                 if ( ierr /= 0 ) then
                     write ( lunut, * ) ' Warning: could not open the sal file! sal will be set to zero!'
                     lunitp(22) = 0
                  endif
@@ -167,14 +167,14 @@
 !.. temperature
 
          indx = index_in_array( 'TEMP      ', sfname)
-         if ( indx .gt. 0 ) then
+         if ( indx > 0 ) then
             do i=1, nosegp
                temper(cellpntp(i)) = segfun(i,indx)
             enddo
-         else if ( lunitp(23) .gt. 0 ) then
+         else if ( lunitp(23) > 0 ) then
                  write ( lunut, * ) ' Opening the temperature file:', fnamep(23)(1:len_trim(fnamep(23)))
                  open ( lunitp(23), file = fnamep(23), form = 'unformatted', access='stream', status = 'old', iostat = ierr )
-                 if ( ierr .ne. 0 ) then
+                 if ( ierr /= 0 ) then
                      write ( lunut, * ) ' Warning: could not open the tem file! temp will be set to zero!'
                      lunitp(23) = 0
                  endif
@@ -189,8 +189,8 @@
 
       flow = 0.0
       do i = 1, noqp
-        if ( flowpntp(i,1) .gt. 0 ) flow(flowpntp(i,1)) = flow(flowpntp(i,1)) + dwqflo(i)
-        if ( flowpntp(i,2) .gt. 0 ) flow(flowpntp(i,2)) = flow(flowpntp(i,2)) + dwqflo(i)
+        if ( flowpntp(i,1) > 0 ) flow(flowpntp(i,1)) = flow(flowpntp(i,1)) + dwqflo(i)
+        if ( flowpntp(i,2) > 0 ) flow(flowpntp(i,2)) = flow(flowpntp(i,2)) + dwqflo(i)
       enddo
       depmin = (0.05*nmaxp*mmaxp)/mnmaxk
       depmin = max(depmin,0.001)
@@ -237,25 +237,25 @@
                      nosubs , wpart  , track                    )
       endif
       oil    = modtyp == model_oil
-      if ( ini_opt .eq. 1 .and. oil ) then
+      if ( ini_opt == 1 .and. oil ) then
          call inipart( lgrid   , lgrid2  , nmaxp   , mmaxp   , xb      , & 
                        yb      , nopart  , nosubs  , substi(1)  , ini_file, & 
                        xpol    , ypol    , npolmax , wpart   , xpart   , & 
                        ypart   , zpart   , npart   , mpart   , kpart   , & 
                        iptime  , npmax   , nrowsmax, lunut   )
-      elseif ( ini_opt .eq. 2 .and. oil ) then
+      elseif ( ini_opt == 2 .and. oil ) then
           call inipart_asc( lgrid   , lgrid2  , nmaxp   , mmaxp   , xb  , & 
                        yb      , nopart  , nosubs  , substi(1)  , ini_file, & 
                        xpol    , ypol    , wpart   , xpart   , conc2 , & 
                        ypart   , zpart   , npart   , mpart   , kpart   , & 
                        iptime  , npmax   , nrowsmax, lunut   )
       endif
-      if ( modtyp .ne. model_abm .and. idp_file .ne. ' ' ) then
-         if (modtyp .ne. model_prob_dens_settling) then
+      if ( modtyp /= model_abm .and. idp_file /= ' ' ) then
+         if (modtyp /= model_prob_dens_settling) then
             write ( lunut, * ) ' Opening initial particles file:', idp_file(1:len_trim(idp_file))
             call openfl ( luini, idp_file, 0 )
             read ( 50 ) ilp, nopart, nosubs_idp
-            if (nosubs_idp.ne.nosubs) then
+            if (nosubs_idp/=nosubs) then
                write ( lunut, * ) ' Error: number of substances in the ini-file   : ',nosubs_idp
                write ( lunut, * ) '        number of substances in the model setup: ',nosubs
                write ( *    , * ) ' Error: number of substances in the ini-file   : ',nosubs_idp
@@ -271,7 +271,7 @@
             write ( lunut, * ) ' Opening initial particles file:', idp_file(1:len_trim(idp_file))
             call openfl ( luini, idp_file, 0 )
             read ( luini ) ilp, nopart, nosubs_idp
-            if (nosubs_idp.ne.nosubs) then
+            if (nosubs_idp/=nosubs) then
                write ( lunut, * ) ' Error: number of substances in the ini-file   : ',nosubs_idp
                write ( lunut, * ) '        number of substances in the model setup: ',nosubs
                write ( *    , * ) ' Error: number of substances in the ini-file   : ',nosubs_idp
@@ -284,14 +284,14 @@
             enddo
             do ilp = 1, nopart
                do isp = 1, nosubs
-                  if (modtyp .eq. model_prob_dens_settling) then
+                  if (modtyp == model_prob_dens_settling) then
                      rhopart(isp, ilp) = pldensity(isp)
                   endif
                enddo
             enddo
             close ( luini )
          end if
-      elseif (idp_file .ne. ' ') then
+      elseif (idp_file /= ' ') then
             write ( lunut, * ) ' Opening initial particles file:', idp_file(1:len_trim(idp_file))
             open( newunit = luini, file = idp_file,form = 'FORMATTED', status ='old')
             read ( luini , *) nopart_res, nosubs_idp
@@ -299,10 +299,10 @@
             npmax = nopart_res
       endif
       !     Draw random log normal distributed particle sizes for non-restart particles
-      if (modtyp .eq. model_prob_dens_settling) then
+      if (modtyp == model_prob_dens_settling) then
          do ilp = 1, npmax
             rnorm = normal(rseed)
-            if (ilp .gt. nopart_res) then
+            if (ilp > nopart_res) then
                do isp = 1, nosubs
                    spart(isp,ilp) = exp(plmusize(isp) + plsigmasize(isp) * rnorm)
                enddo
