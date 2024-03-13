@@ -25,7 +25,7 @@ module inputs_block_3
     use m_read_hydfile
     use m_opt1
     use m_opt0
-    use m_waq_grid, only : read_multiple_grids
+    use grid_utils, only : read_multiple_grids
 
     implicit none
 
