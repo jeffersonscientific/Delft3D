@@ -653,7 +653,7 @@ contains
         !!      lun( 4) = unit binary intermediate file for pointers
         !!      lun(is) = unit binary intermediate file for function
 
-        use m_rdodef, only : read_item_num
+        use input_utils, only : read_item_num
         use matrix_utils, only : dmatrix
         use m_fmread
         use m_open_waq_files

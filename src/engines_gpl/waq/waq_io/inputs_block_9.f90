@@ -22,7 +22,7 @@
 !!  rights reserved.
 module inputs_block_9
     use m_waq_precision
-    use m_rdodef
+    use input_utils, only : read_ascii_definition_file
     use simulation_input_options, only : process_simulation_input_options
     use output_utils, only : get_output_pointers, set_output_boot_variables
     use m_error_status
