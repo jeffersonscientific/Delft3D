@@ -30,20 +30,12 @@ contains
 
     subroutine read_data(data_block, itfact, dtflg1, dtflg3, ierr)
 
-        !     Deltares Software Centre
-
-        !     function : read a (time dependent) data matrix from input
-
-        !     global declarations
+        !! read a (time dependent) data matrix from input
 
         use dlwq_hyd_data
         use rd_token
         use timers       !   performance timers
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
-
-        implicit none
-
-        !     declaration of the arguments
 
         type(t_dlwqdata), intent(inout) :: data_block   ! data block
         integer(kind = int_wp), intent(in) :: itfact        ! factor between clocks
@@ -51,8 +43,7 @@ contains
         logical, intent(in) :: dtflg3       ! true if yyetc instead of ddetc
         integer(kind = int_wp), intent(inout) :: ierr          ! cummulative error count
 
-        !     local declarations
-
+        ! local declarations
         integer(kind = int_wp) :: ftype          ! function type (constant,block,linear,harmonic,fourier)
         integer(kind = int_wp) :: mxbrk          ! allocate dimension of third dimension
         integer(kind = int_wp) :: ndim1          ! first dimension
@@ -103,11 +94,9 @@ contains
                     data_block%values(i1, i2, nobrk) = rtoken
                 enddo
             enddo
-
         else
 
             ! read breakpoints in loop till next token is no longer a valid time
-
             mxbrk = 10
             allocate(data_block%times(mxbrk), data_block%values(ndim1, ndim2, mxbrk))
             if (ftype == FUNCTYPE_HARMONIC .or. ftype == FUNCTYPE_FOURIER) then
@@ -126,7 +115,6 @@ contains
                 endif
 
                 ! check if character is a time string and convert
-
                 if (t_token == TYPE_CHAR) then
                     call convert_string_to_time_offset (ctoken, itoken, .false., .false., ierr)
                     if (ierr /= 0) then
@@ -170,14 +158,12 @@ contains
                 data_block%times(nobrk) = itoken
 
                 ! for harmonics and fourier get phase
-
                 if (ftype == FUNCTYPE_HARMONIC .or. ftype == FUNCTYPE_FOURIER) then
                     if (gettoken(rtoken, ierr) /= 0) exit
                     data_block%phase(nobrk) = rtoken
                 endif
 
                 ! get the data_block%values for this time
-
                 do i2 = 1, ndim2
                     do i1 = 1, ndim1
                         if (gettoken(rtoken, ierr) /= 0) goto 9999
@@ -187,8 +173,7 @@ contains
 
             enddo breakpoints
 
-            !        input ready, resize back the arrays
-
+            ! input ready, resize back the arrays
             if (nobrk /= mxbrk) then
                 allocate(times2(nobrk), values2(ndim1, ndim2, nobrk))
                 do ibrk = 1, nobrk
@@ -224,4 +209,5 @@ contains
         9999 if (timon) call timstop(ithndl)
 
     end subroutine read_data
+
 end module m_read_data

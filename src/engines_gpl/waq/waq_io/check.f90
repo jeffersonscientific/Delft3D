@@ -28,7 +28,6 @@ module m_check
 
 contains
 
-
     subroutine check(cdummy, iwidth, iblock, ierr2, status)
 
         !< Handles delimiter lines and errors during read of the DELWAQ input file

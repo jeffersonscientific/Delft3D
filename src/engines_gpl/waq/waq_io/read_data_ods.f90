@@ -26,17 +26,15 @@ module m_read_data_ods
 
     implicit none
 
+    private
+    public :: read_data_ods
+
 contains
 
 
-    subroutine read_data_ods(lunut, fname, data_param, data_loc, amiss, &
-            data_block, ierr)
+    subroutine read_data_ods(lunut, fname, data_param, data_loc, amiss, data_block, ierr)
 
-        !     Deltares Software Centre
-
-        !     function : read a block of data from ODS file
-
-        !     Global declarations
+        !! read a block of data from ODS file
 
         use m_gettme
         use m_getpar
@@ -48,10 +46,6 @@ contains
         use m_sysi          ! Timer characteristics
         use time_module
 
-        implicit none
-
-        !     declaration of arguments
-
         integer(kind = int_wp), intent(in) :: lunut         ! report file
         character(len = *), intent(in) :: fname        ! filename ODS file
         type(t_dlwq_item), intent(inout) :: data_param   ! list of param items in the data
@@ -59,8 +53,6 @@ contains
         real(kind = real_wp), intent(in) :: amiss         ! missing value
         type(t_dlwqdata), intent(inout) :: data_block   ! data block
         integer(kind = int_wp), intent(inout) :: ierr          ! cummulative error count
-
-        !     local declarations
 
         integer(kind = int_wp) :: iorder        ! order of the parameters and locations in the data array
         integer(kind = int_wp) :: loc(3)        ! to pass the locations to ODS
@@ -174,7 +166,6 @@ contains
                 partyp, parnr, nopar, ierror, cfile(3))
 
         ! fill an array with wanted parameters
-
         do ipar = 1, data_param%no_item
             if (data_param%name(ipar) == '&$&$SYSTEM_NAME&$&$!') then
                 ipar_ods(ipar) = 0
@@ -237,8 +228,7 @@ contains
         write (lunut, 1050) nobrk
         if (nobrk == 1)    write (lunut, 1060)
 
-        !      times are converted to delwaq times
-
+        ! times are converted to delwaq times
         data_block%no_brk = nobrk
         allocate(data_block%times(nobrk))
         do ibrk = i1, i2
@@ -262,15 +252,12 @@ contains
         data_block%values = amiss
 
         ! set the time margins for retrieval
-
         timdef(1) = times(1) - afact / 2.0
         timdef(2) = times(nobrk) + afact / 2.0
         deallocate(times, timetyp)
 
         ! get the data themselves
-
         ! try the read the data in one time
-
         allocate(buffer2(nsubs, nlocs, nobrk), stat = ierr_alloc)
         if (ierr_alloc == 0) then
             maxdim = nsubs * nlocs * nobrk
@@ -334,8 +321,6 @@ contains
         if (timon) call timstop(ithndl)
         return
 
-        ! formats
-
         1000 FORMAT (' DATA will be retrieved from ODS-file: ', A)
         1020 FORMAT (' This block consists of a time function.')
         1030 FORMAT (' WARNING: file start time   : ', &
@@ -351,7 +336,6 @@ contains
         1070 FORMAT (' WARNING: location : ', I8, ' not found. Name is: ', A)
         1080 FORMAT (' ERROR  : location is used in a computation', &
                 ' that will become corrupted !')
-        !
-    END
+    END SUBROUTINE read_data_ods
 
 end module m_read_data_ods
