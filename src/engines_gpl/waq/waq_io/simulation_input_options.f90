@@ -933,7 +933,6 @@ contains
         !!                  lun( 4) = unit intermediate file (pointers)
         !!                  lun(is) = unit intermediate file (items)
 
-        use simulation_input_options
         use m_open_waq_files
         use timers       !   performance timers
         use rd_token
