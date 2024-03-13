@@ -23,7 +23,6 @@
 
 module exchange_pointers
     use m_waq_precision
-    use m_bound
     use m_array_manipulation, only : create_pointer_table
     use m_open_waq_files
 
