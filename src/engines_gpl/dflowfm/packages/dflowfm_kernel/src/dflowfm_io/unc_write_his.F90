@@ -541,7 +541,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
         if(dad_included) then  ! Output for dredging and dumping
             ierr = nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim)
-            ierr = nf90_def_dim(ihisfile, 'ndred', dredge_dimension_length, id_dreddim)
+            ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%dredge_dimension_length, id_dreddim)
             ierr = nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim)
             ierr = nf90_def_var(ihisfile, 'dredge_area_name',         nf90_char,   (/ id_strlendim, id_dreddim /), id_dred_name)
             ierr = nf90_put_att(ihisfile, id_dred_name,  'long_name'    , 'dredge area identifier')
@@ -944,7 +944,7 @@ subroutine unc_write_his(tim)            ! wrihis
         end if
 
         if (dad_included) then
-           do i=1,(dredge_dimension_length)
+           do i=1,(dadpar%dredge_dimension_length)
               ierr = nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /))
            enddo
            !
@@ -1968,12 +1968,12 @@ subroutine unc_write_his(tim)            ! wrihis
 
     if ( dad_included ) then  ! Output for dredging and dumping
        ierr = nf90_put_var(ihisfile, id_dredlink_dis, dadpar%link_sum  , start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_dred_dis    , dadpar%totvoldred, start = (/ 1, it_his /), count = (/ dredge_dimension_length, 1 /))
+       ierr = nf90_put_var(ihisfile, id_dred_dis    , dadpar%totvoldred, start = (/ 1, it_his /), count = (/ dadpar%dredge_dimension_length, 1 /))
        ierr = nf90_put_var(ihisfile, id_dump_dis    , dadpar%totvoldump, start = (/ 1, it_his /), count = (/ dadpar%nadump, 1 /))
 
        cof0 = 1d0 ; if( time_his > 0d0 ) cof0 = time_his
-       ierr = nf90_put_var(ihisfile, id_dred_tfrac  , dadpar%tim_dredged/cof0  , start = (/ 1, it_his /), count = (/ dredge_dimension_length, 1 /))
-       ierr = nf90_put_var(ihisfile, id_plough_tfrac, dadpar%tim_ploughed/cof0 , start = (/ 1, it_his /), count = (/ dredge_dimension_length, 1 /))
+       ierr = nf90_put_var(ihisfile, id_dred_tfrac  , dadpar%tim_dredged/cof0  , start = (/ 1, it_his /), count = (/ dadpar%dredge_dimension_length, 1 /))
+       ierr = nf90_put_var(ihisfile, id_plough_tfrac, dadpar%tim_ploughed/cof0 , start = (/ 1, it_his /), count = (/ dadpar%dredge_dimension_length, 1 /))
     endif
     if (timon) call timstop(handle_extra(66))
     endif ! (.false.)

@@ -43,7 +43,6 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
     use dredge_data_module
     use morphology_data_module
     use message_module
-    use m_dad, only: dredge_dimension_length
 
     implicit none
 
@@ -117,7 +116,7 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
        !
        ! Communicate dredged volumes with other domains
        !
-       call comm(dadpar%voldred, (dredge_dimension_length)*(lsedtot+1), error, msgstr)
+       call comm(dadpar%voldred, (dadpar%dredge_dimension_length)*(lsedtot+1), error, msgstr)
        if (msgstr /= '') call write_error(msgstr, unit=lundia)
 	   return
     end if

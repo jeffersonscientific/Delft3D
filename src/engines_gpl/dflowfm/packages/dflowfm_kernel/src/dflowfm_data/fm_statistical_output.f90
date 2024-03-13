@@ -81,7 +81,7 @@ private
    integer :: num_dredges
    double precision :: cof0
    
-   call allocate_and_associate(source_input,dredge_dimension_length,time_dredged,time_ploughed)
+   call allocate_and_associate(source_input,dadpar%dredge_dimension_length,time_dredged,time_ploughed)
    
    cof0 = 1d0 ; if( time1 > 0d0 ) cof0 = time1
    time_dredged = dadpar%tim_dredged/cof0
@@ -1830,7 +1830,7 @@ private
       use m_longculverts, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug, rug
-      use m_dad, only: dad_included, dadpar, dredge_dimension_length
+      use m_dad, only: dad_included, dadpar
       use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       USE, INTRINSIC :: ISO_C_BINDING
 

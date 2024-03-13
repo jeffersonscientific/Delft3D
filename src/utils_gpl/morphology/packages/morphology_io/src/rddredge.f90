@@ -55,7 +55,6 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     use morphology_data_module, only: sedpar_type, morpar_type
     use dredge_data_module
     use grid_dimens_module, only: griddimtype
-    use m_dad, only: dredge_dimension_length
     !
     implicit none
     !
@@ -617,18 +616,18 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     !
     ! Allocate arrays used during computation
     !
-    dredge_dimension_length = nadump+nasupl
+    dredgepar%dredge_dimension_length = nadump+nasupl
                   allocate (dredgepar%link_def        (nalink               ,2        ), stat = istat)
-    if (istat==0) allocate (dredgepar%tim_dredged     (dredge_dimension_length                  ), stat = istat)
-    if (istat==0) allocate (dredgepar%tim_ploughed    (dredge_dimension_length                  ), stat = istat)
+    if (istat==0) allocate (dredgepar%tim_dredged     (dredgepar%dredge_dimension_length                  ), stat = istat)
+    if (istat==0) allocate (dredgepar%tim_ploughed    (dredgepar%dredge_dimension_length                  ), stat = istat)
     !
     if (istat==0) allocate (dredgepar%link_percentage (nalink               ,lsedtot  ), stat = istat)
     if (istat==0) allocate (dredgepar%link_distance   (nalink                         ), stat = istat)
     if (istat==0) allocate (dredgepar%link_sum        (nalink               ,lsedtot  ), stat = istat)
     if (istat==0) allocate (dredgepar%dzdred          (nmlb:nmub                      ), stat = istat)
-    if (istat==0) allocate (dredgepar%voldred         (dredge_dimension_length        ,lsedtot+1), stat = istat)
-    if (istat==0) allocate (dredgepar%totvoldred      (dredge_dimension_length                  ), stat = istat)
-    if (istat==0) allocate (dredgepar%globalareadred  (dredge_dimension_length                  ), stat = istat)
+    if (istat==0) allocate (dredgepar%voldred         (dredgepar%dredge_dimension_length        ,lsedtot+1), stat = istat)
+    if (istat==0) allocate (dredgepar%totvoldred      (dredgepar%dredge_dimension_length                  ), stat = istat)
+    if (istat==0) allocate (dredgepar%globalareadred  (dredgepar%dredge_dimension_length                  ), stat = istat)
     if (istat==0) allocate (dredgepar%voldune         (nmlb:nmub                      ), stat = istat)
     if (istat==0) allocate (dredgepar%percsupl        (nasupl               ,lsedtot  ), stat = istat)
     if (istat==0) allocate (dredgepar%totvoldump      (nadump                         ), stat = istat)
@@ -637,10 +636,10 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     if (istat==0) allocate (dredgepar%globaldumpcap   (nadump                         ), stat = istat)
     if (istat==0) allocate (dredgepar%voldump         (nadump               ,lsedtot  ), stat = istat)
     !
-    if (istat==0) allocate (dredgepar%dredge_areas    (dredge_dimension_length                  ), stat = istat)
+    if (istat==0) allocate (dredgepar%dredge_areas    (dredgepar%dredge_dimension_length                  ), stat = istat)
     if (istat==0) allocate (dredgepar%dump_areas      (nadump                         ), stat = istat)
     !
-    if (istat==0) allocate (dredgepar%dredge_prop     (dredge_dimension_length                  ), stat = istat)
+    if (istat==0) allocate (dredgepar%dredge_prop     (dredgepar%dredge_dimension_length                  ), stat = istat)
     if (istat==0) allocate (dredgepar%dump_prop       (nadump                         ), stat = istat)
     if (istat/=0) then
        errmsg = 'rddredge: memory alloc error'
@@ -1519,7 +1518,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
        enddo
     endif
     !
-    do i = 1, dredge_dimension_length
+    do i = 1, dredgepar%dredge_dimension_length
        pdredge => dredge_prop(i)
        !
        if (.not. pdredge%dumplimited) cycle
@@ -1550,7 +1549,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     enddo
     !
     noutletlinks = 0
-    do i = 1, dredge_dimension_length
+    do i = 1, dredgepar%dredge_dimension_length
        pdredge => dredge_prop(i)
        !
        select case (pdredge%dumpdistr)
@@ -1702,7 +1701,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
        nalink = nalink + noutletlinks
        nadump = nadump + 1
        !
-       do i = 1, dredge_dimension_length
+       do i = 1, dredgepar%dredge_dimension_length
           pdredge => dredge_prop(i)
           !
           if (pdredge%outletlink>0) then
@@ -1739,7 +1738,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     ! assign points to dredging and dumping areas,
     ! compute areas of grid cells and total areas dumping locations
     !
-    do i = 1, dredge_dimension_length
+    do i = 1, dredgepar%dredge_dimension_length
        if (dredge_prop(i)%itype == DREDGETYPE_NOURISHMENT) cycle
        cntdred        = dredge_prop(i)%idx_type
        !

@@ -37,5 +37,4 @@ module m_dad
 !
    logical                           :: dad_included  !< Include dredging and dumping
    type(dredge_type), target         :: dadpar        !< Dredging related parameters
-   integer                           :: dredge_dimension_length
 end module m_dad

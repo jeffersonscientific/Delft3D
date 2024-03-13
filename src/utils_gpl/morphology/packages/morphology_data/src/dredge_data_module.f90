@@ -38,6 +38,7 @@ implicit none
 
 public dredtype
 public dumptype
+
 !
 ! Definition of depth enumeration
 !
@@ -233,6 +234,7 @@ type dredge_type
     integer                                 :: nadump          ! number of dump areas
     integer                                 :: nasupl          ! number of nourishment areas
     integer                                 :: nalink          ! number of links
+    integer                                 :: dredge_dimension_length ! nadred + nasupl
     !
     integer       , dimension(:,:), pointer :: link_def        ! (nalink,2) actual transports from dredge (1st column)
                                                                !            to dump (2nd column) areas
