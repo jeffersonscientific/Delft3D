@@ -34,7 +34,6 @@ module inputs_block_3
 
 contains
 
-
     subroutine read_block_3_grid_layout (lun, lchar, filtype, nrftot, nrharm, &
             ivflag, dtflg1, iwidth, dtflg3, &
             ioutpt, gridps, syname, status, &
@@ -93,18 +92,16 @@ contains
         type(GridPointerColl)           GridPs            !< Collection of grid pointers
         type(error_status), intent(inout) :: status
 
-        !     local decalations
-
         character*255           cdummy            !  workspace to read a string
         integer(kind = int_wp) :: idummy             !  location to read an integer
         logical                 disper            !  is opt0 called for dispersions ?
         integer(kind = int_wp) :: volume             !  is 1 if opt0 is called for volumes ?
         integer(kind = int_wp) :: ifact              !  needed for call to opt0
         integer(kind = int_wp) :: itype              !  type of token that is returned
-        integer(kind = int_wp), allocatable :: ikmerge(:)         !  array with indicators whether attributes are already set
-        integer(kind = int_wp), allocatable :: iamerge(:)         !  composite attribute array
-        integer(kind = int_wp), allocatable :: ikenm  (:)         !  array with attributes of an input block
-        integer(kind = int_wp), allocatable :: iread  (:)         !  array to read attributes
+        integer(kind = int_wp), allocatable :: ikmerge(:) !! array with indicators whether attributes are already set
+        integer(kind = int_wp), allocatable :: iamerge(:) !! composite attribute array
+        integer(kind = int_wp), allocatable :: ikenm  (:) !! array with attributes of an input block
+        integer(kind = int_wp), allocatable :: iread  (:) !!  array to read attributes
         integer(kind = int_wp), allocatable :: pgrid  (:, :)       !  workspace for matrix with printed grids
         integer(kind = int_wp) :: imopt1             !  first option for grid layout
         integer(kind = int_wp) :: i, j, k            !  loop counters
@@ -146,7 +143,7 @@ contains
 
         call local_status%initialize(0, 0, 0)
 
-        !     Check if there is a keyword for the grid or the hyd-file
+        ! Check if there is a keyword for the grid or the hyd-file
         lncout = .false.
         lchar (46) = ' '
         if (gettoken(cdummy, idummy, itype, local_status%ierr) > 0) goto 240
@@ -243,16 +240,14 @@ contains
                 ! Everything seems to be fine for now, switch on netcdf output
             endif
 
-            !       Read number of computational volumes - if required
+            ! Read number of computational volumes - if required
             if (.not. has_hydfile) then
                 if (gettoken(noseg, local_status%ierr) > 0) goto 240
             endif
 
             ! TODO: check the number of segments with the information in the waqgeom-file
-
         else
-            !       Or the number of computational volumes was already read
-
+            ! Or the number of computational volumes was already read
             if (.not. has_hydfile) then
                 noseg = idummy
             endif
@@ -299,7 +294,7 @@ contains
                 nx = 0
                 ny = 0
             case default
-                !                   call with record length 0 => IMOPT1 of -4 not allowed
+                ! call with record length 0 => IMOPT1 of -4 not allowed
                 call opt1 (imopt1, lun, 6, lchar, filtype, &
                         dtflg1, dtflg3, 0, local_status%ierr, local_status, &
                         .false.)
@@ -343,8 +338,7 @@ contains
 
         endif
 
-        !     Attribute array
-
+        ! Attribute array
         ikerr = 0
         allocate (iamerge(noseg + nseg2))                        !   composite attribute array
         allocate (ikmerge(10))                        !   flags of filles attributes
@@ -429,18 +423,15 @@ contains
                 case default
                     write (lunut, 2250)
                     call status%increase_error_count()
-
                 end select
 
             endif
 
-            !        Merge file buffer with attributes array in memory
-
+            ! Merge file buffer with attributes array in memory
             do iknm2 = 1, nopt
                 iknm1 = ikenm(iknm2)
 
-                !                 see if merged already
-
+                ! see if merged already
                 if (ikmerge(iknm1) /= 0) then
                     write (lunut, 2260) iknm2, iknm1
                     call status%increase_error_count()
@@ -448,8 +439,7 @@ contains
                     exit
                 endif
 
-                !                 see if valid
-
+                ! see if valid
                 if (iknm1 <= 0 .or. iknm1 > 10) then
                     if (iknm1 == 0) then
                         write (lunut, 2270) iknm2
@@ -461,8 +451,7 @@ contains
                     cycle                    !  skip
                 endif
 
-                !              Merge for this attribute
-
+                ! Merge for this attribute
                 write (lunut, 2290) iknm2, iknm1
                 ikmerge(iknm1) = 1
                 iknmrk = 10**(iknm1 - 1)
@@ -474,8 +463,7 @@ contains
             deallocate (ikenm)
         end do
 
-        !     Time dependent attributes
-
+        ! Time dependent attributes
         if (gettoken(ikopt2, local_status%ierr) > 0) goto 240
         write (lunut, 2300) ikopt2
 
@@ -496,8 +484,7 @@ contains
                     cycle
                 endif
 
-                !              Merge for this attribute is performed in DELWAQ2
-
+                ! Merge for this attribute is performed in DELWAQ2
                 if (ikmerge(iknm1) == 0) then
                     write (lunut, 2290) iknm2, iknm1
                     ikmerge(iknm1) = 1
@@ -525,15 +512,11 @@ contains
                 write (lunut, 2340)
                 call status%increase_error_count()
             endif
-
         else
-
             write (lunut, 2350)
-
         endif
 
-        !     Set default behaviour if not specified
-
+        ! Set default behaviour if not specified
         if (ikmerge(1) == 0  .and. ikerr == 0) then
             write (lunut, 2360)
             iamerge = iamerge + 1
@@ -544,13 +527,11 @@ contains
             iamerge(i) = (iamerge(i) / 10) * 10 + 3
         enddo
 
-        !     Write to file
-
+        ! Write to file
         if (ikerr == 0) write(lun(2)) iamerge
         deallocate (ikmerge, iamerge)
 
-        !       read segment volumes
-
+        ! read segment volumes
         write (lunut, 2390)
         local_status%ierr = 0
 
@@ -577,8 +558,7 @@ contains
         if (local_status%ierr == 3) call srstop(1)
         goto 270
 
-        !     error processing
-
+        ! error processing
         250 write (lunut, 2400) lun(40), lchar(40)
         call status%increase_error_count()
         goto 270
@@ -590,8 +570,6 @@ contains
         call status%increase_warning_count_with(local_status%iwar)
         if (timon) call timstop(ithndl)
         return
-
-        !       Output formats
 
         2000 format (//' Number of segments :', I15)
         2010 format (/ ' ERROR, invalid number of segments:', I10)
@@ -678,29 +656,23 @@ contains
         open(newunit = luvol, file = filvol, access = 'stream', &
                 status = 'old', iostat = ierr)
 
-        !
         ! The existence has already been checked, if the file does
         ! not exist, skip the check
-        !
         if (ierr /= 0) then
             return
         endif
 
-        !
         ! For "steering files", we need an extra check
         ! - skip the check on the times though
         !
         ! Ignore the error condition - it might occur with
         ! very small models (one or two segments, for instance)
-        !
         read(luvol, iostat = ierr) string
         if (string == 'Steering file ') then
             return
         endif
 
-        !
         ! Regular volume files
-        !
         read(luvol, iostat = ierr, pos = 1) time1, (dummy, i = 1, noseg)
         if (ierr /= 0) then
             ierr2 = ierr2 + 1
@@ -718,9 +690,7 @@ contains
             return
         endif
 
-        !
         ! The times must be increasing and the intervals must be the same
-        !
         if (time1 >= time2 .or. time2 >= time3) then
             ierr2 = ierr2 + 1
             write (lunut, 140) time1, time2, time3
