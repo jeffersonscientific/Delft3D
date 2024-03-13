@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module output_pointers
+module output_utils
     use m_waq_precision
 
     implicit none
@@ -423,4 +423,4 @@ contains
 
     end subroutine set_output_boot_variables
 
-end module output_pointers
+end module output_utils
