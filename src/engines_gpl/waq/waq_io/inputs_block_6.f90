@@ -46,7 +46,7 @@ contains
         !!      - the number of wasteloads and withdrawals
         !!      - the wasteloads ID's and volume numbers (and names and types for modern files)
         !!      - the wasteload concentration/mass values
-        !! Subroutines called : opt0     : previous versions input processing (one matrix does all)
+        !! Subroutines called : read_constants_time_variables     : previous versions input processing (one matrix does all)
         !!                      gettoken : tokenized data input
         !!                      srstop   : stop after error with return code
         !!                      zoek     : search for presence of a string

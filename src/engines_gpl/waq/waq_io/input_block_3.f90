@@ -51,7 +51,7 @@ contains
         !>      - information on the time series of volumes
 
         ! Subroutines called: grid    read grid structures
-        !                     opt0    read constant/time-variable block
+        !                     read_constants_time_variables    read constant/time-variable block
         !                     opt1    get & open ( include ) file
         !                     open_waq_files  open file
         !                     evaluate_waq_attribute  get an attribute from an attribute integer
@@ -94,9 +94,9 @@ contains
 
         character*255           cdummy            !  workspace to read a string
         integer(kind = int_wp) :: idummy             !  location to read an integer
-        logical                 disper            !  is opt0 called for dispersions ?
-        integer(kind = int_wp) :: volume             !  is 1 if opt0 is called for volumes ?
-        integer(kind = int_wp) :: ifact              !  needed for call to opt0
+        logical                 disper            !  is read_constants_time_variables called for dispersions ?
+        integer(kind = int_wp) :: volume             !  is 1 if read_constants_time_variables is called for volumes ?
+        integer(kind = int_wp) :: ifact              !  needed for call to read_constants_time_variables
         integer(kind = int_wp) :: itype              !  type of token that is returned
         integer(kind = int_wp), allocatable :: ikmerge(:) !! array with indicators whether attributes are already set
         integer(kind = int_wp), allocatable :: iamerge(:) !! composite attribute array
@@ -535,7 +535,7 @@ contains
         write (lunut, 2390)
         local_status%ierr = 0
 
-        call opt0   (lun, 7, 0, 0, noseg, &
+        call read_constants_time_variables   (lun, 7, 0, 0, noseg, &
                 1, 1, nrftot(2), nrharm(2), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
                 filtype, dtflg3, ioutpt, local_status%ierr, &

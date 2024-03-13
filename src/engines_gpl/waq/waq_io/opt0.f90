@@ -31,59 +31,41 @@ module m_opt0
 contains
 
 
-    subroutine opt0   (lun, is, noql1, noql2, noql3, &
+    subroutine read_constants_time_variables   (lun, is, noql1, noql2, noql3, &
             ndim2, ndim3, nrftot, nrharm, ifact, &
             dtflg1, disper, volume, iwidth, lchar, &
             filtype, dtflg3, ioutpt, ierr, &
             status, dont_read)
 
-        !       Deltares Software Centre
+        !!  Reads a block with constant or time variable data
+        !>      This is a main data aquisition sub system, it is
+        !>      the only call to read:
+        !>          - volumes ( in read_block_3_grid_layout )
+        !>          - additional dispersions ( in read_block_4_flow_dims_pointers )
+        !>          - additional velocities ( in read_block_4_flow_dims_pointers )
+        !>          - areas ( in read_block_4_flow_dims_pointers )
+        !>          - flows ( in read_block_4_flow_dims_pointers )
+        !>          - mixing lengthes ( in read_block_4_flow_dims_pointers )
+        !>          - old style open boundaries ( in read_block_5_boundary_conditions )
+        !>          - old style waste loads ( in read_block_6_waste_loads_withdrawals )
+        !>          read_block_7_process_parameters is a sort of dedicated verion of this routine
+        !>          to read parameters and functions and segment functions\n
+        !>          read_block_8_initial_conditions is a sort of dedicated verion of this routine
+        !>          to read initial conditions
 
-        !>\file
-        !>                          Reads a block with constant or time variable data
-        !>\par  Description:
-        !>                          This is a main data aquisition sub system, it is
-        !>                          the only call to read:
-        !>                          - volumes ( in read_block_3_grid_layout )
-        !>                          - additional dispersions ( in read_block_4_flow_dims_pointers )
-        !>                          - additional velocities ( in read_block_4_flow_dims_pointers )
-        !>                          - areas ( in read_block_4_flow_dims_pointers )
-        !>                          - flows ( in read_block_4_flow_dims_pointers )
-        !>                          - mixing lengthes ( in read_block_4_flow_dims_pointers )
-        !>                          - old style open boundaries ( in read_block_5_boundary_conditions )
-        !>                          - old style waste loads ( in read_block_6_waste_loads_withdrawals )
-        !>                          read_block_7_process_parameters is a sort of dedicated verion of this routine
-        !>                          to read parameters and functions and segment functions\n
-        !>                          read_block_8_initial_conditions is a sort of dedicated verion of this routine
-        !>                          to read initial conditions
-
-
-        !     Subroutines called : opt1    get & open include file
-        !                          opt2    read constants ( << (include) file)
-        !                          opt3    read time dep  ( << (include) file)
-        !                          open_waq_files  open file
-
-        !     Functions called   : gettok  tokenized data file reading
-
-        !     Logical units      : lun(27) = unit stripped DELWAQ input file
-        !                          lun(28) = stripped workfile
-        !                          lun(29) = unit formatted output file
-        !                          lun( 2) = unit intermediate file (system)
-        !                          lun( 3) = unit intermediate file (harmos)
-        !                          lun( 4) = unit intermediate file (pointers)
-        !                          lun(is) = unit intermediate file (items)
+        !!  Logical units: lun(27) = unit stripped DELWAQ input file
+        !!                  lun(28) = stripped workfile
+        !!                  lun(29) = unit formatted output file
+        !!                  lun( 2) = unit intermediate file (system)
+        !!                  lun( 3) = unit intermediate file (harmos)
+        !!                  lun( 4) = unit intermediate file (pointers)
+        !!                  lun(is) = unit intermediate file (items)
 
         use m_opt1
         use m_open_waq_files
         use timers       !   performance timers
         use rd_token
         use m_sysn          ! System characteristics
-
-        implicit none
-
-        !     Parameters
-
-        !     kind           function         name           Descriptipon
 
         integer(kind = int_wp), intent(inout) :: lun    (*)     !< array with unit numbers
         integer(kind = int_wp), intent(in) :: is             !< entry in lun for this call
@@ -124,7 +106,7 @@ contains
         real(kind = real_wp) :: disp(3, 1)    !  dispersions in 3 directions
         real(kind = real_wp), allocatable :: values(:, :)  ! read buffer for the values
         integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("opt0", ithndl)
+        if (timon) call timstrt("read_constants_time_variables", ithndl)
 
         idummy = 0
         adummy = 0.0
@@ -282,6 +264,6 @@ contains
         2080 format (' Keyword FRAUD found for fraudulent computations.')
         2090 format (/, ' ERROR. This keyword is not allowed here: ', A)
 
-    end
+    end subroutine read_constants_time_variables
 
 end module m_opt0

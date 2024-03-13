@@ -61,7 +61,7 @@ contains
         !>               - information on the time series of from- and to lengthes
 
 
-        ! Subroutines called : BOUND, OPT0, OPT1, OPT2, SCALE, CHECK, open_waq_files, RDTOK1 tokenized data reading
+        ! Subroutines called : BOUND, read_constants_time_variables, OPT1, OPT2, SCALE, CHECK, open_waq_files, RDTOK1 tokenized data reading
 
         !   Logical units      : LUN(27) = unit stripped DELWAQ input file
         !                        LUN(29) = unit formatted output file
@@ -411,7 +411,7 @@ contains
         write (lunut, 2200)
         disper = .true.
         ierr2 = 0
-        call opt0   (lun, 9, noq1, noq2, noq3, &
+        call read_constants_time_variables   (lun, 9, noq1, noq2, noq3, &
                 nodisp, 1, nrftot(3), nrharm(3), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
                 filtype, dtflg3, ioutpt, ierr2, &
@@ -423,7 +423,7 @@ contains
 
         write (lunut, 2210)
         ierr2 = 0
-        call opt0   (lun, 10, noq1, noq2, noq3, &
+        call read_constants_time_variables   (lun, 10, noq1, noq2, noq3, &
                 1, 1, nrftot(4), nrharm(4), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
                 filtype, dtflg3, ioutpt, ierr2, &
@@ -434,7 +434,7 @@ contains
 
         write (lunut, 2220)
         ierr2 = 0
-        call opt0   (lun, 11, noq1, noq2, noq3, &
+        call read_constants_time_variables   (lun, 11, noq1, noq2, noq3, &
                 1, 1, nrftot(5), nrharm(5), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
                 filtype, dtflg3, ioutpt, ierr2, &
@@ -452,7 +452,7 @@ contains
         if (novelo > 0) then
             write (lunut, 2230)
             ierr2 = 0
-            call opt0   (lun, 12, noq1, noq2, noq3, &
+            call read_constants_time_variables   (lun, 12, noq1, noq2, noq3, &
                     novelo, 1, nrftot(6), nrharm(6), ifact, &
                     dtflg1, disper, volume, iwidth, lchar, &
                     filtype, dtflg3, ioutpt, ierr2, &
@@ -482,7 +482,7 @@ contains
             write (lunut, 2270)
             write (lun(2)) idummy, (adummy, k = 1, 3)
             ierr2 = 0
-            call opt0   (lun, 13, noq1, noq2, noq3, &
+            call read_constants_time_variables   (lun, 13, noq1, noq2, noq3, &
                     2, 1, nrftot(7), nrharm(7), ifact, &
                     dtflg1, disper, volume, iwidth, lchar, &
                     filtype, dtflg3, ioutpt, ierr2, &

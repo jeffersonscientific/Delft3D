@@ -45,7 +45,7 @@ contains
         !!      - the Tatcher-Harleman time lags
         !!      - the Open boundary concentrations
         !!
-        !! Subroutines called : CONVER, OPT0, CHECK, CNVTIM, RDTOK1 tokenized data reading
+        !! Subroutines called : CONVER, read_constants_time_variables, CHECK, CNVTIM, RDTOK1 tokenized data reading
         !! Logical units : LUN(27) = unit stripped DELWAQ input file
         !                  LUN(29) = unit formatted output file
         !                  LUN( 2) = unit intermediate file (system)
@@ -447,9 +447,9 @@ contains
         ELSE
             NOSUBS = NOSYS
         ENDIF
-        ! IERRH = -1 signals OPT0 that it is boundaries to deal with
+        ! IERRH = -1 signals read_constants_time_variables that it is boundaries to deal with
         IERRH = -1
-        call opt0   (lun, 14, 0, 0, nobnd, &
+        call read_constants_time_variables   (lun, 14, 0, 0, nobnd, &
                 nosubs, nosubs, nrftot(8), nrharm(8), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
                 filtype, dtflg3, ioutpt, ierrh, &
