@@ -24,7 +24,7 @@ module inputs_block_4
     use m_waq_precision
     use m_string_utils, only : string_equals
     use m_scale
-    use exchange_pointers, only : read_exchange_pointers_irregular_grid
+    use exchange_pointers, only : read_exchange_pointers_irregular_grid, create_boundary_pointers
     use simulation_input_options, only : process_simulation_input_options, validate_simulation_time_steps, &
             read_constant_data, read_constants_time_variables
     use m_dmpare
@@ -76,7 +76,6 @@ contains
         !                        LUN(13) = unit intermediate file (lengths)
 
         use m_check
-        use m_bound
         use m_srstop
         use m_open_waq_files
         use dlwqgrid_mod        !   for the storage of contraction grids
