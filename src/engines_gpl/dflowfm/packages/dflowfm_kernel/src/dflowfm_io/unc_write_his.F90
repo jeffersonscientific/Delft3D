@@ -2415,8 +2415,13 @@ function build_nc_dimension_id_count_array(nc_dim_ids) result(counts)
    type(t_nc_dim_ids), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
    integer, allocatable           :: counts(:)  !< NetCDF dimension counts
 
-   counts = pack([get_dimid_len(id_laydim),get_dimid_len(id_laydimw), get_dimid_len(id_nlyrdim), get_dimid_len(id_statdim), get_dimid_len(id_sedsusdim), get_dimid_len(id_sedtotdim), 1], &
-              make_mask_from_dim_ids(nc_dim_ids))
+   integer, allocatable           :: dim_ids(:)
+
+   dim_ids = build_nc_dimension_id_list(nc_dim_ids)
+   counts = [(get_dimid_len(dim_ids(i)), integer :: i = 1, size(dim_ids))]
+   if (nc_dim_ids%timedim) then
+      counts(size(counts)) = 1 ! Only write one element for time dimension, which comes last
+   end if
 end function build_nc_dimension_id_count_array
 
 !> Build mask of which dimensions to include in netcdf variable, based on nc_dim_ids
@@ -2437,7 +2442,7 @@ end function make_mask_from_dim_ids
 integer function get_dimid_len(id)
    integer, intent(in) :: id !< NetCDF id obtained from nf90_def_dim
 
-   ierr =  nf90_inquire_dimension(ihisfile, id, len = get_dimid_len)
+   ierr = nf90_inquire_dimension(ihisfile, id, len = get_dimid_len)
 end function get_dimid_len
 
 end subroutine unc_write_his

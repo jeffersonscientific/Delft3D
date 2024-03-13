@@ -385,25 +385,25 @@ private
    end subroutine add_station_tracer_configs
 
    !> Add output items for all tracers on stations to output set.
-   subroutine add_station_tracer_output_items(output_set, idx_tracers_stations)
+   subroutine add_station_tracer_output_items(output_set, output_config_set, idx_tracers_stations)
    use m_transportdata, only: ITRA1, ITRAN
    use m_flow, only: kmx
    use m_observations, only: numobs, nummovobs
-   type(t_output_variable_set), intent(inout) :: output_set              !< Output set that item will be added to
-   integer,                     intent(in   ) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config set array
+   type(t_output_variable_set),        intent(inout) :: output_set              !< Output set that item will be added to
+   type(t_output_quantity_config_set), intent(in   ) :: output_config_set       !< Read config items out of config set
+   integer,                            intent(in   ) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config set array
 
    integer :: num_tracers, num_layers, ntot, variable_index
 
-   num_layers = max(1,kmx)
+   num_layers = max(1, kmx)
    ntot = numobs + nummovobs
    num_tracers = ITRAN - ITRA1 + 1
 
-   allocate(station_tracer_data(kmx*ntot,num_tracers)) !TODO deallocate in reset flow_model or something-   
-  hn
+   allocate(station_tracer_data(num_layers * ntot, num_tracers))
 
-   call add_stat_output_items(output_set, output_config%statout(idx_tracers_stations(variable_index)), station_tracer_data(:,1), transform_station_tracer_inputs)
+   call add_stat_output_items(output_set, output_config_set%statout(idx_tracers_stations(1)), station_tracer_data(:, 1), transform_station_tracer_inputs)
    do variable_index = 2, num_tracers
-      call add_stat_output_items(output_set, output_config%statout(idx_tracers_stations(variable_index)), station_tracer_data(:,variable_index))
+      call add_stat_output_items(output_set, output_config_set%statout(idx_tracers_stations(variable_index)), station_tracer_data(:, variable_index))
    end do
 
    end subroutine add_station_tracer_output_items
@@ -1868,7 +1868,7 @@ private
    !> Initializes the output variable set for history files, based on
    !! the quantity configuration set and the active model settings.
    !! Must be called as part of flow_modelinit.
-   subroutine flow_init_statistical_output_his(output_config,output_set)
+   subroutine flow_init_statistical_output_his(output_config_set, output_set)
       use m_ug_nc_attribute
       use string_module, only: replace_char
       use m_flow
@@ -1884,7 +1884,7 @@ private
       use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       USE, INTRINSIC :: ISO_C_BINDING
 
-      type(t_output_quantity_config_set), intent(inout) :: output_config !< output config for which an output set is needed.
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
       type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
 
       double precision, pointer, dimension(:) :: temp_pointer
@@ -1894,72 +1894,70 @@ private
       integer :: i, ntot, num_const_items, nlyrs
       integer, allocatable, dimension(:) :: idx_constituents_crs, idx_tracers_stations
 
-      call process_output_quantity_configs(output_config)
-
       ntot = numobs + nummovobs
       !
       ! Mass balance variables
       !
       if (jahisbal > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VOLTOT                     ),voltot(IDX_VOLTOT                      :IDX_VOLTOT                         )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_STOR                       ),voltot(IDX_HIS_STOR                    :IDX_HIS_STOR                       )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VOLERR                     ),voltot(IDX_HIS_VOLERR                  :IDX_HIS_VOLERR                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BNDIN                      ),voltot(IDX_HIS_BNDIN                   :IDX_HIS_BNDIN                      )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BNDOUT                     ),voltot(IDX_HIS_BNDOUT                  :IDX_HIS_BNDOUT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BNDTOT                     ),voltot(IDX_HIS_BNDTOT                  :IDX_HIS_BNDTOT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXCHIN                     ),voltot(IDX_HIS_EXCHIN                  :IDX_HIS_EXCHIN                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXCHOUT                    ),voltot(IDX_HIS_EXCHOUT                 :IDX_HIS_EXCHOUT                    )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXCHTOT                    ),voltot(IDX_HIS_EXCHTOT                 :IDX_HIS_EXCHTOT                    )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PRECIP_TOTAL               ),voltot(IDX_HIS_PRECIP_TOTAL            :IDX_HIS_PRECIP_TOTAL               )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EVAP                       ),voltot(IDX_HIS_EVAP                    :IDX_HIS_EVAP                       )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOUR                       ),voltot(IDX_HIS_SOUR                    :IDX_HIS_SOUR                       )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GRWIN                      ),voltot(IDX_HIS_GRWIN                   :IDX_HIS_GRWIN                      )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GRWOUT                     ),voltot(IDX_HIS_GRWOUT                  :IDX_HIS_GRWOUT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GRWTOT                     ),voltot(IDX_HIS_GRWTOT                  :IDX_HIS_GRWTOT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATIN                      ),voltot(IDX_HIS_LATIN                   :IDX_HIS_LATIN                      )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATOUT                     ),voltot(IDX_HIS_LATOUT                  :IDX_HIS_LATOUT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATTOT                     ),voltot(IDX_HIS_LATTOT                  :IDX_HIS_LATTOT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATIN1D                    ),voltot(IDX_HIS_LATIN1D                 :IDX_HIS_LATIN1D                    )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATOUT1D                   ),voltot(IDX_HIS_LATOUT1D                :IDX_HIS_LATOUT1D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATTOT1D                   ),voltot(IDX_HIS_LATTOT1D                :IDX_HIS_LATTOT1D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATIN2D                    ),voltot(IDX_HIS_LATIN2D                 :IDX_HIS_LATIN2D                    )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATOUT2D                   ),voltot(IDX_HIS_LATOUT2D                :IDX_HIS_LATOUT2D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATTOT2D                   ),voltot(IDX_HIS_LATTOT2D                :IDX_HIS_LATTOT2D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTIN                      ),voltot(IDX_HIS_EXTIN                   :IDX_HIS_EXTIN                      )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTOUT                     ),voltot(IDX_HIS_EXTOUT                  :IDX_HIS_EXTOUT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTTOT                     ),voltot(IDX_HIS_EXTTOT                  :IDX_HIS_EXTTOT                     )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTIN1D                    ),voltot(IDX_HIS_EXTIN1D                 :IDX_HIS_EXTIN1D                    )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTOUT1D                   ),voltot(IDX_HIS_EXTOUT1D                :IDX_HIS_EXTOUT1D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTTOT1D                   ),voltot(IDX_HIS_EXTTOT1D                :IDX_HIS_EXTTOT1D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTIN2D                    ),voltot(IDX_HIS_EXTIN2D                 :IDX_HIS_EXTIN2D                    )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTOUT2D                   ),voltot(IDX_HIS_EXTOUT2D                :IDX_HIS_EXTOUT2D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EXTTOT2D                   ),voltot(IDX_HIS_EXTTOT2D                :IDX_HIS_EXTTOT2D                   )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ICEPT                      ),voltot(IDX_HIS_ICEPT                   :IDX_HIS_ICEPT                      )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EVAP_ICEPT                 ),voltot(IDX_HIS_EVAP_ICEPT              :IDX_HIS_EVAP_ICEPT                 )                                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PRECIP_GROUND              ),voltot(IDX_HIS_PRECIP_GROUND           :IDX_HIS_PRECIP_GROUND              )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VOLTOT                     ),voltot(IDX_VOLTOT                      :IDX_VOLTOT                         )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_STOR                       ),voltot(IDX_HIS_STOR                    :IDX_HIS_STOR                       )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VOLERR                     ),voltot(IDX_HIS_VOLERR                  :IDX_HIS_VOLERR                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BNDIN                      ),voltot(IDX_HIS_BNDIN                   :IDX_HIS_BNDIN                      )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BNDOUT                     ),voltot(IDX_HIS_BNDOUT                  :IDX_HIS_BNDOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BNDTOT                     ),voltot(IDX_HIS_BNDTOT                  :IDX_HIS_BNDTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXCHIN                     ),voltot(IDX_HIS_EXCHIN                  :IDX_HIS_EXCHIN                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXCHOUT                    ),voltot(IDX_HIS_EXCHOUT                 :IDX_HIS_EXCHOUT                    )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXCHTOT                    ),voltot(IDX_HIS_EXCHTOT                 :IDX_HIS_EXCHTOT                    )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PRECIP_TOTAL               ),voltot(IDX_HIS_PRECIP_TOTAL            :IDX_HIS_PRECIP_TOTAL               )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EVAP                       ),voltot(IDX_HIS_EVAP                    :IDX_HIS_EVAP                       )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SOUR                       ),voltot(IDX_HIS_SOUR                    :IDX_HIS_SOUR                       )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GRWIN                      ),voltot(IDX_HIS_GRWIN                   :IDX_HIS_GRWIN                      )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GRWOUT                     ),voltot(IDX_HIS_GRWOUT                  :IDX_HIS_GRWOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GRWTOT                     ),voltot(IDX_HIS_GRWTOT                  :IDX_HIS_GRWTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATIN                      ),voltot(IDX_HIS_LATIN                   :IDX_HIS_LATIN                      )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATOUT                     ),voltot(IDX_HIS_LATOUT                  :IDX_HIS_LATOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATTOT                     ),voltot(IDX_HIS_LATTOT                  :IDX_HIS_LATTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATIN1D                    ),voltot(IDX_HIS_LATIN1D                 :IDX_HIS_LATIN1D                    )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATOUT1D                   ),voltot(IDX_HIS_LATOUT1D                :IDX_HIS_LATOUT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATTOT1D                   ),voltot(IDX_HIS_LATTOT1D                :IDX_HIS_LATTOT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATIN2D                    ),voltot(IDX_HIS_LATIN2D                 :IDX_HIS_LATIN2D                    )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATOUT2D                   ),voltot(IDX_HIS_LATOUT2D                :IDX_HIS_LATOUT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATTOT2D                   ),voltot(IDX_HIS_LATTOT2D                :IDX_HIS_LATTOT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTIN                      ),voltot(IDX_HIS_EXTIN                   :IDX_HIS_EXTIN                      )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTOUT                     ),voltot(IDX_HIS_EXTOUT                  :IDX_HIS_EXTOUT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTTOT                     ),voltot(IDX_HIS_EXTTOT                  :IDX_HIS_EXTTOT                     )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTIN1D                    ),voltot(IDX_HIS_EXTIN1D                 :IDX_HIS_EXTIN1D                    )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTOUT1D                   ),voltot(IDX_HIS_EXTOUT1D                :IDX_HIS_EXTOUT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTTOT1D                   ),voltot(IDX_HIS_EXTTOT1D                :IDX_HIS_EXTTOT1D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTIN2D                    ),voltot(IDX_HIS_EXTIN2D                 :IDX_HIS_EXTIN2D                    )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTOUT2D                   ),voltot(IDX_HIS_EXTOUT2D                :IDX_HIS_EXTOUT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EXTTOT2D                   ),voltot(IDX_HIS_EXTTOT2D                :IDX_HIS_EXTTOT2D                   )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ICEPT                      ),voltot(IDX_HIS_ICEPT                   :IDX_HIS_ICEPT                      )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EVAP_ICEPT                 ),voltot(IDX_HIS_EVAP_ICEPT              :IDX_HIS_EVAP_ICEPT                 )                                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PRECIP_GROUND              ),voltot(IDX_HIS_PRECIP_GROUND           :IDX_HIS_PRECIP_GROUND              )                                  )
       endif
 
       !
       ! Source-sink variables
       !
       if (jahissourcesink > 0 .and. numsrc > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE),               qstss(1:(numconst+1)*numsrc:(numconst+1)))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE),               qstss(1:(numconst+1)*numsrc:(numconst+1)))
          i = 1
          if (isalt > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT),   qstss(i:(numconst+1)*numsrc:(numconst+i)))
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT),   qstss(i:(numconst+1)*numsrc:(numconst+i)))
          endif
          if (itemp > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT),qstss(i:(numconst+1)*numsrc:(numconst+i)))
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT),qstss(i:(numconst+1)*numsrc:(numconst+i)))
          endif
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE),qsrc)
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME),vsrccum)
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE),qsrcavg)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE),qsrc)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME),vsrccum)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE),qsrcavg)
       endif
 
       !
@@ -1967,164 +1965,164 @@ private
       !
       if (nrug > 0) then
          temp_pointer => rug%maxruh
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RUG_RUHEIGHT), temp_pointer)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_RUG_RUHEIGHT), temp_pointer)
       endif
 
       !
       ! Hydraulic structures variables
       !
       if (jahiscgen > 0 .and. ngenstru > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE            ),valgenstru(IVAL_DIS   ,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL          ),valgenstru(IVAL_CRESTL,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL),valgenstru(IVAL_EDGEL ,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_WIDTH   ),valgenstru(IVAL_OPENW ,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1UP                 ),valgenstru(IVAL_S1UP  ,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1DN                 ),valgenstru(IVAL_S1DN  ,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_HEAD                 ),valgenstru(IVAL_HEAD  ,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA            ),valgenstru(IVAL_AREA  ,1:ngenstru))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY             ),valgenstru(IVAL_VEL   ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE            ),valgenstru(IVAL_DIS   ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL          ),valgenstru(IVAL_CRESTL,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL),valgenstru(IVAL_EDGEL ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_WIDTH   ),valgenstru(IVAL_OPENW ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_S1UP                 ),valgenstru(IVAL_S1UP  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_S1DN                 ),valgenstru(IVAL_S1DN  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_HEAD                 ),valgenstru(IVAL_HEAD  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA            ),valgenstru(IVAL_AREA  ,1:ngenstru))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY             ),valgenstru(IVAL_VEL   ,1:ngenstru))
       endif
       if (network%sts%numGeneralStructures > 0) then ! write extra fields for new general structure
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_WIDTH                   ),valgenstru(IVAL_CRESTW   ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_THROUGH_GATE_OPENING),valgenstru(IVAL_DIS_OPEN ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_OVER_GATE           ),valgenstru(IVAL_DIS_OVER ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_UNDER_GATE          ),valgenstru(IVAL_DIS_UNDER,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_HEIGHT           ),valgenstru(IVAL_OPENH    ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_UPPER_EDGE_LEVEL         ),valgenstru(IVAL_UPPL     ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_THROUGH_GATE_OPENING ),valgenstru(IVAL_VEL_OPEN ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_OVER_GATE            ),valgenstru(IVAL_VEL_OVER ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_UNDER_GATE           ),valgenstru(IVAL_VEL_UNDER,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_IN_GATE_OPENING     ),valgenstru(IVAL_AREA_OPEN ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_OVER_GATE           ),valgenstru(IVAL_AREA_OVER ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_UNDER_GATE          ),valgenstru(IVAL_AREA_UNDER,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_STATE                         ),valgenstru(IVAL_STATE     ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST                   ),valgenstru(IVAL_S1ONCREST ,1:network%sts%numGeneralStructures))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GENERAL_STRUCTURE_FORCE_DIFFERENCE              ),valgenstru(IVAL_FORCEDIF  ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_CREST_WIDTH                   ),valgenstru(IVAL_CRESTW   ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_THROUGH_GATE_OPENING),valgenstru(IVAL_DIS_OPEN ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_OVER_GATE           ),valgenstru(IVAL_DIS_OVER ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_UNDER_GATE          ),valgenstru(IVAL_DIS_UNDER,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_OPENING_HEIGHT           ),valgenstru(IVAL_OPENH    ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_GATE_UPPER_EDGE_LEVEL         ),valgenstru(IVAL_UPPL     ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_THROUGH_GATE_OPENING ),valgenstru(IVAL_VEL_OPEN ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_OVER_GATE            ),valgenstru(IVAL_VEL_OVER ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_VELOCITY_UNDER_GATE           ),valgenstru(IVAL_VEL_UNDER,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_IN_GATE_OPENING     ),valgenstru(IVAL_AREA_OPEN ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_OVER_GATE           ),valgenstru(IVAL_AREA_OVER ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA_UNDER_GATE          ),valgenstru(IVAL_AREA_UNDER,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_STATE                         ),valgenstru(IVAL_STATE     ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST                   ),valgenstru(IVAL_S1ONCREST ,1:network%sts%numGeneralStructures))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GENERAL_STRUCTURE_FORCE_DIFFERENCE              ),valgenstru(IVAL_FORCEDIF  ,1:network%sts%numGeneralStructures))
       endif
       if (jahiscdam > 0 .and. ncdamsg > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_DISCHARGE           ), valcdam(2,:)                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_CREST_LEVEL         ), zcdam                      )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_S1UP                ), valcdam(3,:)                  )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CDAM_S1DN                ), valcdam(4,:)                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CDAM_DISCHARGE           ), valcdam(2,:)                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CDAM_CREST_LEVEL         ), zcdam                      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CDAM_S1UP                ), valcdam(3,:)                  )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CDAM_S1DN                ), valcdam(4,:)                  )
       endif
       if (jahispump > 0 .and. npumpsg > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_DISCHARGE),valpump(IVAL_DIS       ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_CAPACITY           ),valpump(IVAL_PP_CAP    ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valpump(IVAL_PP_DISDIR ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1UP               ),valpump(IVAL_S1UP      ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1DN               ),valpump(IVAL_S1DN      ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valpump(IVAL_PP_STAG   ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_HEAD               ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valpump(IVAL_PP_RED    ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_DELIVERY_SIDE   ),valpump(IVAL_PP_S1DEL  ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PUMP_S1_SUCTION_SIDE    ),valpump(IVAL_PP_S1SUC  ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_STRUCTURE_DISCHARGE),valpump(IVAL_DIS       ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_CAPACITY           ),valpump(IVAL_PP_CAP    ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valpump(IVAL_PP_DISDIR ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1UP               ),valpump(IVAL_S1UP      ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1DN               ),valpump(IVAL_S1DN      ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valpump(IVAL_PP_STAG   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_HEAD               ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valpump(IVAL_PP_RED    ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1_DELIVERY_SIDE   ),valpump(IVAL_PP_S1DEL  ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1_SUCTION_SIDE    ),valpump(IVAL_PP_S1SUC  ,1:npumpsg))
       endif
       if (jahisgate > 0 .and. ngatesg > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_DISCHARGE       ),valgate(2,:)                                   )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_LOWER_EDGE_LEVEL),zgate                                          )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_S1UP            ),valgate(3,:)                                   )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATE_S1DN            ),valgate(4,:)                                   )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATE_DISCHARGE       ),valgate(2,:)                                   )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATE_LOWER_EDGE_LEVEL),zgate                                          )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATE_S1UP            ),valgate(3,:)                                   )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATE_S1DN            ),valgate(4,:)                                   )
       endif
       if (jahisgate > 0 .and. ngategen > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_DISCHARGE            ),valgategen(IVAL_DIS,:)                                 )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_CREST_LEVEL          ),valgategen(IVAL_GATE_SILLH,:)                           )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_CREST_WIDTH          ),valgategen(IVAL_WIDTH,:)                           )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL),valgategen(IVAL_GATE_EDGEL,:)                           )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT  ),valgategen(IVAL_GATE_FLOWH,:)                           )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_GATE_OPENING_WIDTH   ),valgategen(IVAL_GATE_OPENW,:)                                )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_S1UP                 ),valgategen(IVAL_S1UP,:)                                )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_GATEGEN_S1DN                 ),valgategen(IVAL_S1DN,:)    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_DISCHARGE            ),valgategen(IVAL_DIS,:)                                 )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_CREST_LEVEL          ),valgategen(IVAL_GATE_SILLH,:)                           )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_CREST_WIDTH          ),valgategen(IVAL_WIDTH,:)                           )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL),valgategen(IVAL_GATE_EDGEL,:)                           )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT  ),valgategen(IVAL_GATE_FLOWH,:)                           )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_GATE_OPENING_WIDTH   ),valgategen(IVAL_GATE_OPENW,:)                                )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_S1UP                 ),valgategen(IVAL_S1UP,:)                                )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_GATEGEN_S1DN                 ),valgategen(IVAL_S1DN,:)    )
       endif
       if (jahisweir > 0 .and. nweirgen > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_DISCHARGE       ),valweirgen(IVAL_DIS       ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_CREST_LEVEL     ),valweirgen(IVAL_CRESTL    ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_CREST_WIDTH     ),valweirgen(IVAL_CRESTW    ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1UP            ),valweirgen(IVAL_S1UP      ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1DN            ),valweirgen(IVAL_S1DN      ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_STRUCTURE_HEAD  ),valweirgen(IVAL_HEAD      ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_VELOCITY        ),valweirgen(IVAL_VEL       ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_FLOW_AREA       ),valweirgen(IVAL_AREA      ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_STATE           ),valweirgen(IVAL_STATE     ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_FORCE_DIFFERENCE),valweirgen(IVAL_FORCEDIF  ,1:nweirgen))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WEIRGEN_S1_ON_CREST     ),valweirgen(IVAL_S1ONCREST ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_DISCHARGE       ),valweirgen(IVAL_DIS       ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_CREST_LEVEL     ),valweirgen(IVAL_CRESTL    ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_CREST_WIDTH     ),valweirgen(IVAL_CRESTW    ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_S1UP            ),valweirgen(IVAL_S1UP      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_S1DN            ),valweirgen(IVAL_S1DN      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_STRUCTURE_HEAD  ),valweirgen(IVAL_HEAD      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_VELOCITY        ),valweirgen(IVAL_VEL       ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_FLOW_AREA       ),valweirgen(IVAL_AREA      ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_STATE           ),valweirgen(IVAL_STATE     ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_FORCE_DIFFERENCE),valweirgen(IVAL_FORCEDIF  ,1:nweirgen))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WEIRGEN_S1_ON_CREST     ),valweirgen(IVAL_S1ONCREST ,1:nweirgen))
       endif
       if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_DISCHARGE            ),valorifgen(IVAL_DIS       ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_CREST_LEVEL          ),valorifgen(IVAL_CRESTL    ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_CREST_WIDTH          ),valorifgen(IVAL_CRESTW    ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_GATE_LOWER_EDGE_LEVEL),valorifgen(IVAL_S1UP      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_S1UP                 ),valorifgen(IVAL_S1DN      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_S1DN                 ),valorifgen(IVAL_HEAD      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_GATE_OPENING_HEIGHT  ),valorifgen(IVAL_VEL       ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_HEAD                 ),valorifgen(IVAL_AREA      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_FLOW_AREA            ),valorifgen(IVAL_STATE     ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_STATE                ),valorifgen(IVAL_FORCEDIF  ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_S1_ON_CREST          ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_VELOCITY             ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_ORIFICE_FORCE_DIFFERENCE     ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_DISCHARGE            ),valorifgen(IVAL_DIS       ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_CREST_LEVEL          ),valorifgen(IVAL_CRESTL    ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_CREST_WIDTH          ),valorifgen(IVAL_CRESTW    ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_GATE_LOWER_EDGE_LEVEL),valorifgen(IVAL_S1UP      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1UP                 ),valorifgen(IVAL_S1DN      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1DN                 ),valorifgen(IVAL_HEAD      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_GATE_OPENING_HEIGHT  ),valorifgen(IVAL_VEL       ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_HEAD                 ),valorifgen(IVAL_AREA      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_FLOW_AREA            ),valorifgen(IVAL_STATE     ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_STATE                ),valorifgen(IVAL_FORCEDIF  ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1_ON_CREST          ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_VELOCITY             ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_FORCE_DIFFERENCE     ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
       endif
       if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_DISCHARGE ),valbridge(IVAL_DIS,     1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_S1UP      ),valbridge(IVAL_S1UP,    1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_S1DN      ),valbridge(IVAL_S1DN,    1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_HEAD      ),valbridge(IVAL_HEAD,    1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_FLOW_AREA ),valbridge(IVAL_AREA,    1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_VELOCITY  ),valbridge(IVAL_VEL,     1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_BLUP      ),valbridge(IVAL_BLUP,    1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_BLDN      ),valbridge(IVAL_BLDN,    1:network%sts%numBridges)        )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRIDGE_BL_ACTUAL ),valbridge(IVAL_BLACTUAL,1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_DISCHARGE ),valbridge(IVAL_DIS,     1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_S1UP      ),valbridge(IVAL_S1UP,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_S1DN      ),valbridge(IVAL_S1DN,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_HEAD      ),valbridge(IVAL_HEAD,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_FLOW_AREA ),valbridge(IVAL_AREA,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_VELOCITY  ),valbridge(IVAL_VEL,     1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_BLUP      ),valbridge(IVAL_BLUP,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_BLDN      ),valbridge(IVAL_BLDN,    1:network%sts%numBridges)        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_BL_ACTUAL ),valbridge(IVAL_BLACTUAL,1:network%sts%numBridges)        )
       endif
       if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_DISCHARGE            ),valculvert(IVAL_DIS        ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_CREST_LEVEL          ),valculvert(IVAL_CL_CRESTL  ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_GATE_LOWER_EDGE_LEVEL),valculvert(IVAL_CL_EDGEL   ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_S1UP                 ),valculvert(IVAL_S1UP       ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_S1DN                 ),valculvert(IVAL_S1DN       ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_GATE_OPENING_HEIGHT  ),valculvert(IVAL_CL_OPENH   ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_HEAD                 ),valculvert(IVAL_HEAD       ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_FLOW_AREA            ),valculvert(IVAL_AREA       ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_VELOCITY             ),valculvert(IVAL_VEL        ,1:network%sts%numCulverts)            )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CULVERT_STATE                ),valculvert(IVAL_CL_STATE   ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_DISCHARGE            ),valculvert(IVAL_DIS        ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_CREST_LEVEL          ),valculvert(IVAL_CL_CRESTL  ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_GATE_LOWER_EDGE_LEVEL),valculvert(IVAL_CL_EDGEL   ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_S1UP                 ),valculvert(IVAL_S1UP       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_S1DN                 ),valculvert(IVAL_S1DN       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_GATE_OPENING_HEIGHT  ),valculvert(IVAL_CL_OPENH   ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_HEAD                 ),valculvert(IVAL_HEAD       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_FLOW_AREA            ),valculvert(IVAL_AREA       ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_VELOCITY             ),valculvert(IVAL_VEL        ,1:network%sts%numCulverts)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_STATE                ),valculvert(IVAL_CL_STATE   ,1:network%sts%numCulverts)            )
       endif
       if (jahisdambreak > 0 .and. ndambreak > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_S1UP                        ),valdambreak(IVAL_S1UP,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_S1DN                        ),valdambreak(IVAL_S1DN,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_DISCHARGE                   ),valdambreak(IVAL_DIS,1:ndambreak)       )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE        ),valdambreak(IVAL_DB_DISCUM,1:ndambreak) )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_VELOCITY                    ),valdambreak(IVAL_VEL,1:ndambreak)       )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_HEAD                        ),valdambreak(IVAL_HEAD,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_FLOW_AREA                   ),valdambreak(IVAL_AREA,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_CREST_LEVEL                 ),valdambreak(IVAL_DB_CRESTH,1:ndambreak) )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_CREST_WIDTH                 ),valdambreak(IVAL_DB_CRESTW,1:ndambreak) )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE),valdambreak(IVAL_DB_TIMEDIV,1:ndambreak))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP            ),valdambreak(IVAL_DB_JUMP,1:ndambreak)   )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_S1UP                        ),valdambreak(IVAL_S1UP,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_S1DN                        ),valdambreak(IVAL_S1DN,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_DISCHARGE                   ),valdambreak(IVAL_DIS,1:ndambreak)       )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE        ),valdambreak(IVAL_DB_DISCUM,1:ndambreak) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_VELOCITY                    ),valdambreak(IVAL_VEL,1:ndambreak)       )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_HEAD                        ),valdambreak(IVAL_HEAD,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_FLOW_AREA                   ),valdambreak(IVAL_AREA,1:ndambreak)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CREST_LEVEL                 ),valdambreak(IVAL_DB_CRESTH,1:ndambreak) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CREST_WIDTH                 ),valdambreak(IVAL_DB_CRESTW,1:ndambreak) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE),valdambreak(IVAL_DB_TIMEDIV,1:ndambreak))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP            ),valdambreak(IVAL_DB_JUMP,1:ndambreak)   )
       endif
       if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_DISCHARGE  ),valuniweir(IVAL_DIS,1:network%sts%numuniweirs)      )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_CREST_LEVEL),valuniweir(IVAL_UW_CRESTL,1:network%sts%numuniweirs))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_S1UP       ),valuniweir(IVAL_S1UP,1:network%sts%numuniweirs)    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_S1DN       ),valuniweir(IVAL_S1DN,1:network%sts%numuniweirs)     )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_HEAD       ),valuniweir(IVAL_HEAD,1:network%sts%numuniweirs)     )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_FLOW_AREA  ),valuniweir(IVAL_AREA,1:network%sts%numuniweirs)     )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UNIWEIR_VELOCITY   ),valuniweir(IVAL_VEL,1:network%sts%numuniweirs)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_DISCHARGE  ),valuniweir(IVAL_DIS,1:network%sts%numuniweirs)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_CREST_LEVEL),valuniweir(IVAL_UW_CRESTL,1:network%sts%numuniweirs))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_S1UP       ),valuniweir(IVAL_S1UP,1:network%sts%numuniweirs)    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_S1DN       ),valuniweir(IVAL_S1DN,1:network%sts%numuniweirs)     )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_HEAD       ),valuniweir(IVAL_HEAD,1:network%sts%numuniweirs)     )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_FLOW_AREA  ),valuniweir(IVAL_AREA,1:network%sts%numuniweirs)     )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_VELOCITY   ),valuniweir(IVAL_VEL,1:network%sts%numuniweirs)      )
       endif
       if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_DISCHARGE),valcmpstru(IVAL_DIS,1:network%cmps%count) )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_S1UP     ),valcmpstru(IVAL_S1UP,1:network%cmps%count))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_S1DN     ),valcmpstru(IVAL_S1DN,1:network%cmps%count))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_HEAD     ),valcmpstru(IVAL_HEAD,1:network%cmps%count))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_FLOW_AREA),valcmpstru(IVAL_AREA,1:network%cmps%count))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CMPSTRU_VELOCITY ),valcmpstru(IVAL_VEL,1:network%cmps%count) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CMPSTRU_DISCHARGE),valcmpstru(IVAL_DIS,1:network%cmps%count) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CMPSTRU_S1UP     ),valcmpstru(IVAL_S1UP,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CMPSTRU_S1DN     ),valcmpstru(IVAL_S1DN,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CMPSTRU_HEAD     ),valcmpstru(IVAL_HEAD,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CMPSTRU_FLOW_AREA),valcmpstru(IVAL_AREA,1:network%cmps%count))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CMPSTRU_VELOCITY ),valcmpstru(IVAL_VEL,1:network%cmps%count) )
       endif
       if (jahislongculv > 0 .and. nlongculverts > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_DISCHARGE             ),vallongculvert(IVAL_DIS,1:nlongculverts)     )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_S1UP                  ),vallongculvert(IVAL_S1UP,1:nlongculverts)    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_S1DN                  ),vallongculvert(IVAL_S1DN,1:nlongculverts)    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_HEAD                  ),vallongculvert(IVAL_HEAD,1:nlongculverts)    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_FLOW_AREA             ),vallongculvert(IVAL_AREA,1:nlongculverts)    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VELOCITY              ),vallongculvert(IVAL_VEL,1:nlongculverts)     )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING),vallongculvert(IVAL_LC_VALVE,1:nlongculverts))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LONGCULVERT_DISCHARGE             ),vallongculvert(IVAL_DIS,1:nlongculverts)     )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LONGCULVERT_S1UP                  ),vallongculvert(IVAL_S1UP,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LONGCULVERT_S1DN                  ),vallongculvert(IVAL_S1DN,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LONGCULVERT_HEAD                  ),vallongculvert(IVAL_HEAD,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LONGCULVERT_FLOW_AREA             ),vallongculvert(IVAL_AREA,1:nlongculverts)    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LONGCULVERT_VELOCITY              ),vallongculvert(IVAL_VEL,1:nlongculverts)     )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING),vallongculvert(IVAL_LC_VALVE,1:nlongculverts))
       endif
 
       !
@@ -2133,29 +2131,29 @@ private
 
       ! Basic flow quantities
       if (ntot > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERLEVEL),valobs(:,IPNT_S1)                               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WATERLEVEL),valobs(:,IPNT_S1)                               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
          if (jahiswatdep > 0) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS)                               )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS)                               )
          endif
       endif
       if (jahisvelvec > 0) then
          if (numobs+nummovobs > 0) then
             if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCX:IPNT_UCX+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_X_VELOCITY),temp_pointer)
 
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCY:IPNT_UCY+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
 
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCZ:IPNT_UCZ+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY), temp_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_Z_VELOCITY), temp_pointer)
 
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY), valobs(:, IPNT_UCXQ))
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY), valobs(:, IPNT_UCYQ))
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY), valobs(:, IPNT_UCXQ))
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY), valobs(:, IPNT_UCYQ))
             else
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY), valobs(:, IPNT_UCX))
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY), valobs(:, IPNT_UCY))
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_X_VELOCITY), valobs(:, IPNT_UCX))
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_Y_VELOCITY), valobs(:, IPNT_UCY))
             endif
          endif
       endif
@@ -2163,25 +2161,25 @@ private
          if (jaeulervel==0) then
             if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UMAG:IPNT_UMAG+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),temp_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VELOCITY_MAGNITUDE),temp_pointer)
             else
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE),valobs(:,IPNT_UMAG)                                        )
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VELOCITY_MAGNITUDE),valobs(:,IPNT_UMAG)                                        )
             endif
          else
             if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UMAG:IPNT_UMAG+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),temp_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),temp_pointer)
             else
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),valobs(:,IPNT_UMAG)                                        )
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN),valobs(:,IPNT_UMAG)                                        )
             endif
          endif
       endif
       if (jahisdischarge > 0) then
          if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_QMAG:IPNT_QMAG+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DISCHARGE_MAGNITUDE),temp_pointer)
          else
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DISCHARGE_MAGNITUDE),valobs(:,IPNT_QMAG)                                       )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DISCHARGE_MAGNITUDE),valobs(:,IPNT_QMAG)                                       )
          endif
       endif
 
@@ -2189,136 +2187,136 @@ private
       if (model_is_3D()) then
          if (iturbulencemodel >= 3 .and. jahistur > 0) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_TKIN:IPNT_TKIN+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TKE      ),temp_pointer                            )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TKE      ),temp_pointer                            )
          endif
          if (iturbulencemodel == 3 .and. jahistur >0) then
             call c_f_pointer (c_loc(valobs(1:ntot,IDX_HIS_EPS:IDX_HIS_EPS+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_EPS      ),temp_pointer                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EPS      ),temp_pointer                     )
          endif
          if (iturbulencemodel > 1) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_VICWW:IPNT_VICWW+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VICWW    ),temp_pointer                         )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VICWW    ),temp_pointer                         )
          endif
          if (iturbulencemodel == 4 .and. jahistur > 0) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_TEPS:IPNT_TEPS+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAU     ),temp_pointer                      )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TAU     ),temp_pointer                      )
          endif
       endif
       if (idensform > 0 .and. jaRichardsononoutput > 0 .and. model_is_3D()) then
          call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RICH:IPNT_RICH+kmx)), temp_pointer, [kmx*ntot])
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RICH),temp_pointer)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_RICH),temp_pointer)
       endif
 
       ! Gravity + buoyancy
       if (jasal > 0 .and. jahissal > 0) then
          if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_SA1:IPNT_SA1+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SALINITY   ),temp_pointer                                )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SALINITY   ),temp_pointer                                )
          else
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SALINITY   ),valobs(:,IPNT_SA1)                                )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SALINITY   ),valobs(:,IPNT_SA1)                                )
          endif
       endif
 
       if (jatem > 0 .and. jahistem > 0) then
          if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_TEM1:IPNT_TEM1+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TEMPERATURE),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TEMPERATURE),temp_pointer)
          else
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TEMPERATURE),valobs(:,IPNT_TEM1))
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TEMPERATURE),valobs(:,IPNT_TEM1))
          endif
       end if
 
       if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
          if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RHOP:IPNT_RHOP+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
 
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_BRUV:IPNT_BRUV+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
             if (idensform > 10) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RHO:IPNT_RHO+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DENSITY),temp_pointer                                )
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DENSITY),temp_pointer                                )
             endif
          else
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY),valobs(:,IPNT_RHOP)                              )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_POTENTIAL_DENSITY),valobs(:,IPNT_RHOP)                              )
          endif
       endif
 
       ! Wave model
       if (jawave>0 .and. jahiswav > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_HWAV    ),valobs(:,IPNT_WAVEH)                                    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_HWAV    ),valobs(:,IPNT_WAVEH)                                    )
          !call add_stat_output_items(output_set, output_config%statout(IDX_HIS_HWAV_SIG),valobs(:,IPNT_HS)                                    )
          ! TODO: hwav sig vs. rms
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TWAV    ),valobs(:,IPNT_WAVET)                                    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PHIWAV  ),valobs(:,IPNT_WAVED)                                    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RLABDA  ),valobs(:,IPNT_WAVEL)                                    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TWAV    ),valobs(:,IPNT_WAVET)                                    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PHIWAV  ),valobs(:,IPNT_WAVED)                                    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_RLABDA  ),valobs(:,IPNT_WAVEL)                                    )
          if (jawave .eq. 4) then
-           call add_stat_output_items(output_set, output_config%statout(IDX_HIS_R     ),valobs(:,IPNT_WAVER)                              )
+           call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_R     ),valobs(:,IPNT_WAVER)                              )
          end if
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UORB    ),valobs(:,IPNT_WAVEU)                              )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UORB    ),valobs(:,IPNT_WAVEU)                              )
          if (model_is_3D() .and. .not. flowwithoutwaves) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCXST:IPNT_UCXST+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_USTOKES),temp_pointer)
 
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCYST:IPNT_UCYST+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VSTOKES),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VSTOKES),temp_pointer)
          else
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),valobs(:,IPNT_UCXST)                                 )
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_VSTOKES),valobs(:,IPNT_UCYST)                                 )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_USTOKES),valobs(:,IPNT_UCXST)                                 )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VSTOKES),valobs(:,IPNT_UCYST)                                 )
          endif
       endif
       if (jahistaucurrent>0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAUSX),valobs(:,IPNT_TAUX)                                                    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAUSY),valobs(:,IPNT_TAUY)                                                    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TAUSX),valobs(:,IPNT_TAUX)                                                    )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TAUSY),valobs(:,IPNT_TAUY)                                                    )
       endif
 
       ! Meteo
       if (japatm > 0 .and. jahiswind > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PATM), valobs(:,IPNT_PATM))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PATM), valobs(:,IPNT_PATM))
       end if
 
       if (jawind > 0 .and. jahiswind > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDX         ),valobs(:,IPNT_wx)                )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDX_SFERIC  ),valobs(:,IPNT_wx)                )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDY         ),valobs(:,IPNT_wy)                )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WINDY_SFERIC  ),valobs(:,IPNT_wy)                )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WINDX         ),valobs(:,IPNT_wx)                )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WINDX_SFERIC  ),valobs(:,IPNT_wx)                )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WINDY         ),valobs(:,IPNT_wy)                )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WINDY_SFERIC  ),valobs(:,IPNT_wy)                )
       endif
 
       if (jarain > 0 .and. jahisrain > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RAIN            ),valobs(:,IPNT_rain)                      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_RAIN            ),valobs(:,IPNT_rain)                      )
       endif
 
       if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_INFILTRATION_CAP)                 ,valobs(:,IPNT_infiltcap)                                          )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL) ,valobs(:,IPNT_infiltact)            )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_INFILTRATION_CAP)                 ,valobs(:,IPNT_infiltcap)                                          )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL) ,valobs(:,IPNT_infiltact)            )
       endif
 
       ! Heat flux model
       if (jatem > 1 .and. jahisheatflux > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WIND),valobs(:,IPNT_WIND)                               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAIR),valobs(:,IPNT_TAIR)                               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WIND),valobs(:,IPNT_WIND)                               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TAIR),valobs(:,IPNT_TAIR)                               )
          if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou) ) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RHUM),valobs(:,IPNT_RHUM)                                    )
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_CLOU),valobs(:,IPNT_CLOU)                                    )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_RHUM),valobs(:,IPNT_RHUM)                                    )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CLOU),valobs(:,IPNT_CLOU)                                    )
          endif
          if (jatem == 5 ) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QSUN  ),valobs(:,IPNT_QSUN)                                     )
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QEVA  ),valobs(:,IPNT_QEVA)                                     )
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QCON  ),valobs(:,IPNT_QCON)                                     )
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QLONG ),valobs(:,IPNT_QLON)                                     )
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QFREVA),valobs(:,IPNT_QFRE)                                     )
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QFRCON),valobs(:,IPNT_QFRC)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QSUN  ),valobs(:,IPNT_QSUN)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QEVA  ),valobs(:,IPNT_QEVA)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QCON  ),valobs(:,IPNT_QCON)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QLONG ),valobs(:,IPNT_QLON)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QFREVA),valobs(:,IPNT_QFRE)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QFRCON),valobs(:,IPNT_QFRC)                                     )
             endif
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_QTOT  ),valobs(:,IPNT_RHUM)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QTOT  ),valobs(:,IPNT_RHUM)                                     )
       endif
 
       ! Sediment model
       if (jased > 0 .and. .not. stm_included) then
          if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_SED:IPNT_SED+kmx)), temp_pointer, [kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SED),temp_pointer)
          else
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),valobs(:,IPNT_SED)                                  )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SED),valobs(:,IPNT_SED)                                  )
          endif
       else if (stm_included .and. ISED1 > 0 .and. jahissed > 0 .and. IVAL_SF1 > 0) then
          if (model_is_3D()) then
@@ -2326,7 +2324,7 @@ private
          else
             temp_pointer(1:(IVAL_SFN-IPNT_SF1+1)*ntot) => valobs(:,IPNT_SF1:IVAL_SFN)
          end if
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SED),temp_pointer)
       endif
       if (IVAL_WS1 > 0) then
          if (model_is_3D()) then
@@ -2334,37 +2332,37 @@ private
          else
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_WS1:IVAL_WSN)), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*ntot])
          endif
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WS),temp_pointer                                                        )
       endif
       if (IVAL_SEDDIF1 > 0) then
          call c_f_pointer (c_loc(valobs(1:ntot,IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx))), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*kmx*ntot])
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
       endif
 
       if (jahissed>0 .and. jased>0 .and. stm_included) then
          if (stmpar%morpar%moroutput%taub) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAUB),valobs(IPNT_TAUB,:))
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TAUB),valobs(IPNT_TAUB,:))
          endif
          if (stmpar%lsedtot>0) then
             if (stmpar%morpar%moroutput%sbcuv) then
                function_pointer => calculate_sediment_SBC
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBCX),null(),function_pointer)
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBCY),SBCY)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SBCX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SBCY),SBCY)
             endif
             if (stmpar%morpar%moroutput%sbwuv) then
                function_pointer => calculate_sediment_SBW
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBWX),null(),function_pointer)
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SBWY),SBWY)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SBWX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SBWY),SBWY)
             endif
             if (stmpar%morpar%moroutput%sscuv .and. jawave>0 .and. .not. flowWithoutWaves) then
                function_pointer => calculate_sediment_SSC
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSCX),null(),function_pointer)
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSCY),SSCY)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SSCX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SSCY),SSCY)
             endif
             if (stmpar%morpar%moroutput%sswuv .and. jawave>0 .and. .not. flowWithoutWaves) then
                function_pointer => calculate_sediment_SSW
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSWX),null(),function_pointer)
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SSWY),SSWY)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SSWX),null(),function_pointer)
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SSWY),SSWY)
             endif
          endif
       endif
@@ -2372,52 +2370,52 @@ private
       if (jahissed>0 .and. jased>0 .and. stm_included) then
          select case (stmpar%morlyr%settings%iunderlyr)
          case (1)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DPSED),valobs(:,IPNT_DPSED))
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DPSED),valobs(:,IPNT_DPSED))
             temp_pointer(1:(IVAL_BODSEDN-IVAL_BODSED1+1)*ntot) => valobs(:,IVAL_BODSED1:IVAL_BODSEDN)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_BODSED),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BODSED),temp_pointer)
          case (2)
             nlyrs = stmpar%morlyr%settings%nlyr
 
             temp_pointer(1:(IVAL_MSEDN-IVAL_MSED1+1)*ntot*nlyrs) => valobs(:,IVAL_MSED1:IVAL_MSED1+(IVAL_MSEDN-IVAL_MSED1+1)*nlyrs)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MSED),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_MSED),temp_pointer)
 
             temp_pointer(1:(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*ntot*nlyrs) => valobs(:,IVAL_LYRFRAC1:IVAL_LYRFRAC1+(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*nlyrs)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LYRFRAC),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LYRFRAC),temp_pointer)
 
             temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_THLYR:IPNT_THLYR+(nlyrs-1))
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_THLYR),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_THLYR),temp_pointer)
 
             temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_POROS:IPNT_POROS+(nlyrs-1))
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POROS),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_POROS),temp_pointer)
          end select
          !
          if (stmpar%morpar%moroutput%frac) then
             temp_pointer(1:ntot*(IPNT_FRACN-IPNT_FRAC1)) => valobs(:,IPNT_FRAC1:IPNT_FRACN)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_FRAC),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_FRAC),temp_pointer)
          endif
          if (stmpar%morpar%moroutput%mudfrac) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MUDFRAC),valobs(:,IPNT_MUDFRAC))
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_MUDFRAC),valobs(:,IPNT_MUDFRAC))
          endif
          if (stmpar%morpar%moroutput%sandfrac) then
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SANDFRAC),valobs(:,IPNT_SANDFRAC))
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SANDFRAC),valobs(:,IPNT_SANDFRAC))
          endif
          if (stmpar%morpar%moroutput%fixfac) then
             temp_pointer(1:ntot*(IVAL_FIXFACN-IVAL_FIXFAC1)) => valobs(:,IVAL_FIXFAC1:IVAL_FIXFACN)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_FIXFRAC),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_FIXFRAC),temp_pointer)
          endif
          if (stmpar%morpar%moroutput%hidexp) then
             temp_pointer(1:ntot*(IVAL_HIDEXPN-IVAL_HIDEXP1)) => valobs(:,IVAL_HIDEXP1:IVAL_HIDEXPN)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_HIDEXP),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_HIDEXP),temp_pointer)
          endif
          if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
             temp_pointer(1:ntot*(IVAL_MFLUFFN-IVAL_MFLUFF1)) => valobs(:,IVAL_MFLUFF1:IVAL_MFLUFFN)
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_MFLUFF),temp_pointer)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_MFLUFF),temp_pointer)
          end if
       endif
 
       ! Transported constituents
-      call add_station_tracer_configs(output_config, idx_tracers_stations)
-      call add_station_tracer_output_items()
+      call add_station_tracer_configs(output_config_set, idx_tracers_stations)
+      call add_station_tracer_output_items(output_set, output_config_set, idx_tracers_stations)
       !testcase: UNST-7713
 
       !
@@ -2428,22 +2426,22 @@ private
          ! Prepare data array
          ! Add configuration items for constituents and sediment output (During reading of MDU file this data was not available)
          !
-         call init_obscrs_data_and_config(num_const_items, output_config, idx_constituents_crs)
+         call init_obscrs_data_and_config(num_const_items, output_config_set, idx_constituents_crs)
 
          !
          ! Basic flow quantities
          !
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),       obscrs_data(:,1), aggregate_obscrs_data)
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUMUL), obscrs_data(:,2))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),            obscrs_data(:,3))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),        obscrs_data(:,4))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_OBSCRS_DISCHARGE),       obscrs_data(:,1), aggregate_obscrs_data)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_OBSCRS_DISCHARGE_CUMUL), obscrs_data(:,2))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_OBSCRS_AREA),            obscrs_data(:,3))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_OBSCRS_VELOCITY),        obscrs_data(:,4))
 
          !
          ! Transported constituents
          !
          do i = 1, num_const_items
             if (idx_constituents_crs(i) > 0) then
-               call add_stat_output_items(output_set, output_config%statout(idx_constituents_crs(i)), obscrs_data(:,5 + i))
+               call add_stat_output_items(output_set, output_config_set%statout(idx_constituents_crs(i)), obscrs_data(:,5 + i))
             endif
          enddo
       endif
@@ -2451,10 +2449,10 @@ private
       ! Variables on lateral discharges
       !
       if (jahislateral > 0 .and. numlatsg > 0) then
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
       endif
 
       ! TODO: UNST-7239: runup gauges
@@ -2611,7 +2609,7 @@ private
       !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_UCDIR                                                     )
       !call add_stat_output_items(output_set, output_config%statout(IDX_CLS_UCDIR_EULER                                               )
       !
-
+      call process_output_quantity_configs(output_config_set)
       call initialize_statistical_output(output_set)
 
    end subroutine flow_init_statistical_output_his
