@@ -28,7 +28,7 @@ module m_opt3
 
 contains
 
-    subroutine read_time_dependent_variables (lun, lchar, is, nitem, nvals, &
+    subroutine read_time_dependent_variables(lun, lchar, is, nitem, nvals, &
             nscal, ifact, dtflg, dtflg3, nrfunc, &
             nrharm, iwidth, ioutpt, ierr)
 

@@ -56,7 +56,7 @@ contains
         !!          purposes any more.
 
         !!  Subroutines called : opt1    ( which file is it ? )
-        !!                       opt2    ( read the data from an ASCII file )
+        !!                       read_constant_data    ( read the data from an ASCII file )
         !!                       rdtok1  ( tokenized data reading )
         !!                       open_waq_files  ( to open the binary intermediate file )
         !!                       check   ( to see of the group was read correctly )
@@ -248,12 +248,12 @@ contains
             write (lun(18)) 0
             if (transp) then
                 allocate (values(noseg, notot))
-                call opt2  (icopt2, values, notot, noseg, 1, &
+                call read_constant_data  (icopt2, values, notot, noseg, 1, &
                         iwidth, 0, ioutpt, ierr2)
                 write (lun(18)) (values(i, :), i = 1, noseg)
             else
                 allocate (values(notot, noseg))
-                call opt2  (icopt2, values, noseg, notot, notot, &
+                call read_constant_data  (icopt2, values, noseg, notot, notot, &
                         iwidth, 0, ioutpt, ierr2)
                 write (lun(18)) values
             endif

@@ -29,7 +29,7 @@ module m_opt2
 contains
 
 
-    subroutine opt2 (iopt2, array, nitem, nvals, nscale, &
+    subroutine read_constant_data(iopt2, array, nitem, nvals, nscale, &
             iwidth, lun1, ioutpt, ierr)
 
         !! Reads a block with constant data with and without defaults
@@ -196,6 +196,6 @@ contains
         2130 format (I10, 2X, 1P, 10E12.4, /(12X, 10E12.4))
         2140 format (' ERROR reading input!')
 
-    end subroutine opt2
+    end subroutine read_constant_data
 
 end module m_opt2

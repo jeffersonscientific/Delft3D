@@ -190,7 +190,7 @@ contains
                 write (lun(2)) idummy, (adummy, k = 1, 3)     ! no fixed dispersions
             else
                 write (lun(2)) idummy
-                call opt2 (1, disp, 1, 3, 3, &
+                call read_constant_data (1, disp, 1, 3, 3, &
                         iwidth, lun(2), ioutpt, ierr2)
                 if (ierr2 > 0) goto 50
                 if (ndim2 == 0) goto 9999
@@ -216,17 +216,17 @@ contains
             call open_waq_files (lun(is), lchar(is), is, 1, ierr2)
             write (lun(is)) idummy
             if (noql1 > 0) write (lunut, 2030)
-            call opt2 (iopt2, values, noql1, ndim2, ndim3, &
+            call read_constant_data (iopt2, values, noql1, ndim2, ndim3, &
                     iwidth, lun(is), ioutpt, ierr2)
             if (ierr2 > 0) goto 50
 
             if (noql2 > 0) write (lunut, 2040)
-            call opt2 (iopt2, values, noql2, ndim2, ndim3, &
+            call read_constant_data (iopt2, values, noql2, ndim2, ndim3, &
                     iwidth, lun(is), ioutpt, ierr2)
             if (ierr2 > 0) goto 50
 
             if (noql3 > 0 .and. noql3 /= ndim1) write (lunut, 2050)
-            call opt2 (iopt2, values, noql3, ndim2, ndim3, &
+            call read_constant_data (iopt2, values, noql3, ndim2, ndim3, &
                     iwidth, lun(is), ioutpt, ierr2)
             close (lun(is))
             if (ierr2 > 0) goto 50

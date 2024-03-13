@@ -61,7 +61,7 @@ contains
         !>               - information on the time series of from- and to lengthes
 
 
-        ! Subroutines called : BOUND, read_constants_time_variables, OPT1, OPT2, SCALE, CHECK, open_waq_files, RDTOK1 tokenized data reading
+        ! Subroutines called : BOUND, read_constants_time_variables, OPT1, read_constant_data, SCALE, CHECK, open_waq_files, RDTOK1 tokenized data reading
 
         !   Logical units      : LUN(27) = unit stripped DELWAQ input file
         !                        LUN(29) = unit formatted output file
@@ -475,7 +475,7 @@ contains
             write (lunut, 2260)
             idum = 4
             write (lun(2)) idummy
-            call opt2 (1, length, 1, 3, 1, &
+            call read_constant_data (1, length, 1, 3, 1, &
                     iwidth, lun(2), idum, ierr2)
 
         case (1)
