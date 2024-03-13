@@ -27,7 +27,7 @@ module inputs_block_4
     use exchange_pointers, only : read_exchange_pointers_irregular_grid, create_boundary_pointers
     use simulation_input_options, only : process_simulation_input_options, validate_simulation_time_steps, &
             read_constant_data, read_constants_time_variables
-    use m_dmpare
+    use monitoring_areas, only : create_write_monitoring_area_array
     use matrix_utils, only : compute_matrix_size
 
     implicit none
@@ -386,7 +386,7 @@ contains
 
         !        set dump area structure
 
-        call dmpare (lun, ndmpar, ntdmps, noqt, nosss, &
+        call create_write_monitoring_area_array (lun, ndmpar, ntdmps, noqt, nosss, &
                 nobnd, ipnt, ntdmpq, ndmpq, ndmps, &
                 noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
@@ -556,7 +556,7 @@ contains
 
         !        set dump area structure
 
-        call dmpare (lun, ndmpar, ntdmps, noq, noseg, &
+        call create_write_monitoring_area_array (lun, ndmpar, ntdmps, noq, noseg, &
                 nobnd, ipnt, ntdmpq, ndmpq, ndmps, &
                 noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)

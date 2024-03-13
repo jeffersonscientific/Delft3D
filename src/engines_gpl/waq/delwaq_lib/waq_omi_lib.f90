@@ -32,7 +32,7 @@
 !> Utilities for the routines here (effectively a private module)
 module waq_omi_utils
     use m_waq_precision
-    use m_dmpare
+    use monitoring_areas, only : create_write_monitoring_area_array
     use m_dlwq0i
     !    use matrix_utils
     use inputs_block_9
@@ -1890,7 +1890,7 @@ contains
             ntraaq = 0      ! For now
             lun(2) = 10
 
-            call dmpare(lun, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
+            call create_write_monitoring_area_array(lun, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
                     noraai, ntraaq, nsegdmp, isegdmp, nexcraai, iexcraai, ioptraai, &
                     status)
 
