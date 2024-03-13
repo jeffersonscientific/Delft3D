@@ -39,7 +39,7 @@ contains
             icmax, iimax, iwidth, &
             ioutpt, ioutps, outputs, status)
 
-        use m_defout
+        use output_pointers, only : set_default_output
         use m_check
         use m_read_working_file_4
         use m_open_waq_files
@@ -141,7 +141,7 @@ contains
 
         !     Set default action
 
-        call defout (noutp, nrvar, iostrt, iostop, iostep, isrtou, igrdou)
+        call set_default_output (noutp, nrvar, iostrt, iostop, iostep, isrtou, igrdou)
 
         !     Handle file option
 
@@ -260,8 +260,6 @@ contains
         endif
         if (timon) call timstop(ithndl)
         return
-
-        !       Output formats
 
         2000 format (//, ' Option selected for output specification :', I4)
         2010 format (/, ' ERROR, option not implemented')
