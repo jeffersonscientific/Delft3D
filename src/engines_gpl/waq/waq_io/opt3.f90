@@ -28,68 +28,51 @@ module m_opt3
 
 contains
 
-
     subroutine opt3 (lun, lchar, is, nitem, nvals, &
             nscal, ifact, dtflg, dtflg3, nrfunc, &
             nrharm, iwidth, ioutpt, ierr)
 
-        !       Deltares Software Centre
+        !!  Read time dependent variables
+        !!
+        !! Time depending data can come in 2 ways
+        !>      - a table with values at breakpoints
+        !>      - a table with harmonic or Fourier values
+        !>          The values at breakpoints require following input:
+        !>       - iopt, should be 1 (no defaults) or 2 (defaults and overridings)
+        !>       - number of items in this block    (nvarnw, read in rdpoin)
+        !>       - that many ID values of the items (itemId, read in rdpoin)
+        !>       - number of breakpoints (nobrk2, this in the number of time steps)
+        !>       - scale values to be applied for this block ( 1 or nval1 )
+        !>       - table of values in (nval1,nitem) order.
+        !>       The function option requires the following input
+        !>       - iopt, should be 3 (harmonics) or 4 (Fouriers)
+        !>       - number of items in this block    (nvarnw, read in rdpoin)
+        !>       - that many ID values of the items (itemId, read in rdpoin)
+        !>       - number of harmonics or Fourier components (nhar  , read in rwfunc)
+        !>       - nval1 values for the zero-th harmonic  (the mean , read in rwfunc)
+        !>       - nhar times:
+        !>          - a period of the harmonic    ( NOT for the Fouriers )
+        !>          - the phase of the harmonic, or Fourier
+        !>          - nval1 amplitudes of this component
+        !>       A number of these blocks are read, untill all items got a value for all nval1
+        !>       For the new processing of Bounds, Wastes and Funcs, the file is
+        !>       - initialised with a specific header
+        !>       - written per block with:
+        !>          - heading block information
+        !>          - breakpoint + matrix at the breakpoint for each breakpoint.
+        !>          For the old processing the blocks are merged to one big matrix. The
+        !>          information on the items is written in the system file. The big matrix
+        !>          of size (nval1,nitem,nobrkt) is written to the binary file. Because
+        !>          the size of this total matrix is not clear in advance, the matrix is
+        !>          reallocated for every new block. Previous versions that used a swap file
+        !>          for the matrix have been phased out, because memory is likely not a
+        !>          problem at the moment any more.
 
-        !>\file
-        !>             Read time dependent variables
-        !>
-        !>             Time depending data can come in 2 ways
-        !>             - a table with values at breakpoints
-        !>             - a table with harmonic or Fourier values
-        !>             The values at breakpoints require following input:
-        !>             - iopt, should be 1 (no defaults) or 2 (defaults and overridings)
-        !>             - number of items in this block    (nvarnw, read in rdpoin)
-        !>             - that many ID values of the items (itemId, read in rdpoin)
-        !>             - number of breakpoints (nobrk2, this in the number of time steps)
-        !>             - scale values to be applied for this block ( 1 or nval1 )
-        !>             - table of values in (nval1,nitem) order.
-        !>             The function option requires the following input
-        !>             - iopt, should be 3 (harmonics) or 4 (Fouriers)
-        !>             - number of items in this block    (nvarnw, read in rdpoin)
-        !>             - that many ID values of the items (itemId, read in rdpoin)
-        !>             - number of harmonics or Fourier components (nhar  , read in rwfunc)
-        !>             - nval1 values for the zero-th harmonic  (the mean , read in rwfunc)
-        !>             - nhar times:
-        !>               - a period of the harmonic    ( NOT for the Fouriers )
-        !>               - the phase of the harmonic, or Fourier
-        !>               - nval1 amplitudes of this component
-        !>             A number of these blocks are read, untill all items got a value for
-        !>             all nval1/n
-        !>             For the new processing of Bounds, Wastes and Funcs, the file is
-        !>             - initialised with a specific header
-        !>             - written per block with:
-        !>               - heading block information
-        !>               - breakpoint + matrix at the breakpoint for each breakpoint.
-        !>             For the old processing the blocks are merged to one big matrix. The
-        !>             information on the items is written in the system file. The big matrix
-        !>             of size (nval1,nitem,nobrkt) is written to the binary file. Because
-        !>             the size of this total matrix is not clear in advance, the matrix is
-        !>             reallocated for every new block. Previous versions that used a swap file
-        !>             for the matrix have been phased out, because memory is likely not a
-        !>             problem at the moment any more.
-
-        !     Created            : April 1988 by M.E. Sileon / Leo Postma
-
-        !     Modified           : April 1997 by R. Bruinsma : Tokenized input data file reading added
-        !                          May   2011 by Leo Postma  : Fortran90 look and feel, own memory
-
-        !     Subroutines called : rdpoin   - pointers of input variable to model items
-        !                          fmread   - read of a breakpoint series of matrices
-        !                          dmatrix  - merge of 2 matrices
-        !                          rwfunc   - read of a block of harmonics or Fourier series
-        !                          open_waq_files   - open a file
-
-        !     Functions called   : gettok   - tokenized input data file reading
-
-        !     Logical units      : lunut   = unit formatted output file
-        !                          lun( 3) = unit binary intermediate file for harmonics
-        !                          lun( 4) = unit binary intermediate file for pointers
-        !                          lun(is) = unit binary intermediate file for function
+        !! Logical units:
+        !!      lunut   = unit formatted output file
+        !!      lun( 3) = unit binary intermediate file for harmonics
+        !!      lun( 4) = unit binary intermediate file for pointers
+        !!      lun(is) = unit binary intermediate file for function
 
         use m_rdpoin
         use m_matrix
@@ -98,12 +81,6 @@ contains
         use timers       !   performance timers
         use rd_token
         use m_sysn          ! System characteristics
-
-        implicit none
-
-        !     Parameters
-
-        !     kind           function         name                Descriptipon
 
         integer(kind = int_wp), intent(inout) :: lun   (*)          !< array with unit numbers
         character(*), intent(in) :: lchar (*)         !< array with file names of the files
@@ -119,10 +96,6 @@ contains
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
         integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
         integer(kind = int_wp), intent(inout) :: ierr               !< error count / switch
-
-
-
-        !     local decalations
 
         integer(kind = int_wp), pointer :: breaks(:)         !  breakpoints
         integer(kind = int_wp), allocatable :: break2(:)         !  breakpoints of a block
@@ -157,7 +130,6 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("opt3", ithndl)
 
-        !          Initialisations
 
         breaks => null()
         break3 => null()
@@ -180,8 +152,7 @@ contains
         nobrkt = 0
         nrec = 0
 
-        !         write headers for new style time series files
-
+        ! write headers for new style time series files
         write (lunut, 2000)
         !        open the output work file
         !        write nr of items and nr of substances
@@ -208,8 +179,7 @@ contains
 
         do while (ntotal - 1 < nitem)     ! loop over blocks till completion
 
-            !           read the type of block that comes
-
+            ! read the type of block that comes
             if (gettoken(iopt3, ierr2) > 0) goto 100
             write (lunut, 2010) iopt3
             if (iopt3 < 1 .or. iopt3 > 4) then
@@ -217,13 +187,11 @@ contains
                 goto 100
             endif
 
-            !           the items in this block by itemnumber
-
+            ! the items in this block by itemnumber
             call rdpoin (nitem, iopt3, ioutpt, itemId(ntotal), nvarnw, &
                     ierr)
 
-            !           new style for boundaries and wastes
-
+            ! new style for boundaries and wastes
             if (bound .or. funcs) &
                     write (lun(is)) 1, nvarnw, (iabs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
                             nvals, (k, k = 1, nvals), iopt3, 1
@@ -302,8 +270,7 @@ contains
             ierr = ierr + 1
         endif
 
-        !      Check complete pointer structure
-
+        ! Check complete pointer structure
         do i1 = 1, nitem
             found = .false.
             do i2 = 1, nitem
@@ -322,8 +289,7 @@ contains
             endif
         enddo
 
-        !      Finalize this input section
-
+        ! Finalize this input section
         if (bound .or. waste .or. funcs) then
             newrsp = newrsp + jfilsz
             newisp = newisp + ifilsz
@@ -347,8 +313,6 @@ contains
         100 ierr = ierr + 1
         return
 
-        !       Output formats
-
         2000 format (' Time variable data.')
         2010 format (/, ' Option selected : ', I2)
         2020 format (/, ' ERROR, option not implemented')
@@ -358,6 +322,6 @@ contains
         2070 format (' ERROR, duplicate item:', I5)
         2080 format (' ERROR, non-initialised item:', I5)
 
-    end
+    end subroutine opt3
 
 end module m_opt3

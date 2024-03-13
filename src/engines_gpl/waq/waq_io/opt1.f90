@@ -29,31 +29,16 @@ module m_opt1
 
 contains
 
-
     subroutine opt1 (iopt1, lun, is, lchar, filtype, &
             dtflg1, dtflg3, nitem, ierr, status, &
             dont_read)
 
-        !     Deltares Software Centre
-
-        !>\File
-        !>        Processing of first input file option
-        !>
-        !>        - Get the file name
-        !>        - Open the file
-        !>        - If ASCII, push file-info on include stack
-
-        !     CREATED            : April '88  BY M.E. Sileon / L. Postma
-
-        !     MODIFIED           : July     2002 by Leo Postma  : File option -4 allowed for ASCII description
-        !                                                         Subroutine FFFIND added
-        !                          February 2011 by Leo Postma  : Fortran-95 look and feel, streamlining,
-        !                                                         addition of filtype array for big endian files
-
-        !     SUBROUTINES CALLED : STRIP   user input file
-        !                          open_waq_files  open file
-
-        !     LOGICAL UNITS      : LUN(33) = working unit for opening binary files
+        !!  Processing of first input file option
+        !!      - Get the file name
+        !!      - Open the file
+        !!      - If ASCII, push file-info on include stack
+        !! LOGICAL UNITS:
+        !!      - LUN(33) = working unit for opening binary files
 
         use m_fffind
         use m_open_waq_files
@@ -61,11 +46,6 @@ contains
         use rd_token
         use m_file_path_utils, only : extract_file_extension
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
-
-        implicit none
-
-        !     Parameters    :
-        !     type     kind  function         name             description
 
         integer(kind = int_wp), intent(in) :: iopt1           !< Input option
         integer(kind = int_wp), intent(inout) :: lun  (*)        !< DELWAQ Unit number array
@@ -76,10 +56,8 @@ contains
         integer(kind = int_wp), intent(in) :: nitem           !< nr of input items expected
         integer(kind = int_wp), intent(inout) :: filtype(*)      !< type of binary file
         integer(kind = int_wp), intent(inout) :: ierr            !< Local error flag
-        logical, intent(in) :: dont_read      !< do not actually read tokens, if true, the information is already provided
+        logical, intent(in) :: dont_read   !! do not actually read tokens, if true, the information is already provided
         type(error_status), intent(inout) :: status !< current error status
-
-        !     local
 
         integer(kind = int_wp) :: extpos, extlen
         character(255)  cdummy   ! Work string
@@ -182,7 +160,7 @@ contains
             enddo
             if (gettoken(intopt, ierr2) > 0) goto 30     !   Get interpolation option
             if (gettoken(sstring, ierr2) > 0) goto 30     !   Get file string
-            !                 Open the binary intermediate file for output
+            ! Open the binary intermediate file for output
             call extract_file_extension(lchar(27), filext, extpos, extlen)
             lchar(is) = lchar(27)(1:max(1, (extpos - 1))) // '-' // sstring
             call extract_file_extension(lchar(is), filext, extpos, extlen)
@@ -315,8 +293,6 @@ contains
         if (timon) call timstop(ithndl)
         return
 
-        !       output formats
-
         2000 format (/' ERROR: option not implemented !!!')
         2010 format (/' ERROR: nr of include stack levels (', I2, ') exceeded !')
         2020 format (/' Including file: ', A)
@@ -341,6 +317,6 @@ contains
                 ' Allowed difference with T0 is usually ca. 68 years.')
         2150 format (/' ERROR: Not a valid token at this position: ', A)
 
-    end
+    end subroutine opt1
 
 end module m_opt1

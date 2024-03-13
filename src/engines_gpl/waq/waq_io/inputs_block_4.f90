@@ -38,7 +38,6 @@ module inputs_block_4
 
 contains
 
-
     subroutine read_block_4_flow_dims_pointers (lun, lchar, filtype, nrftot, nrharm, &
             ilflag, dtflg1, iwidth, intsrt, dtflg3, &
             ioutpt, nsegdmp, isegdmp, nexcraai, &
@@ -709,6 +708,6 @@ contains
                 , //, '          MULTIGRID ZMODEL NOLAY ... END_MULTIGRID')
         3010 format (//, ' Number of layers in the model:', I5)
 
-    end
+    end subroutine read_block_4_flow_dims_pointers
 
 end module inputs_block_4

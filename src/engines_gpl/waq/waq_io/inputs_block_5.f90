@@ -34,23 +34,18 @@ module inputs_block_5
 
 contains
 
-
     SUBROUTINE read_block_5_boundary_conditions (LUN, LCHAR, filtype, CAR, IAR, &
             RAR, NRFTOT, NRHARM, NOBND, NOSYS, &
             NOTOT, NOBTYP, IRMAX, IIMAX, DTFLG1, &
             IWIDTH, INTSRT, DTFLG3, SNAME, &
             ICMAX, IOUTPT, status)
-
-
         !! Reads all inputs associated with open boundaries
         !! This routine reads:
         !!      - the boundary ID's (and names and types for modern files)
         !!      - the Tatcher-Harleman time lags
         !!      - the Open boundary concentrations
-
-
+        !!
         !! Subroutines called : CONVER, OPT0, CHECK, CNVTIM, RDTOK1 tokenized data reading
-
         !! Logical units : LUN(27) = unit stripped DELWAQ input file
         !                  LUN(29) = unit formatted output file
         !                  LUN( 2) = unit intermediate file (system)
@@ -122,7 +117,7 @@ contains
         IPOSR = 0
         IERR2 = 0
         Iwar2 = 0
-        !
+
         IF (NOBND == 0) THEN
             WRITE (LUNUT, 2000)
             IFOUND = GETTOKEN (CHULP, IDUMMY, RDUMMY, ITYPE, IERR2)
@@ -164,7 +159,6 @@ contains
             BNDTYPE_LONG(I) = ' '
 
             ! read ID, do not truncate yet
-
             ITYPE = 1
             CALL RDTOK1 (LUNUT, ILUN, LCH, LSTACK, CCHAR, &
                     IPOSR, NPOS, BNDID_LONG(I), IHULP, RHULP, &
@@ -173,7 +167,6 @@ contains
 
 
             ! read also name and type
-
             ITYPE = 1
             CALL RDTOK1 (LUNUT, ILUN, LCH, LSTACK, CCHAR, &
                     IPOSR, NPOS, BNDNAME(I), IHULP, RHULP, &
@@ -201,7 +194,6 @@ contains
             ENDIF
 
             ! check for unique ID, error if non-truncated ID is unique otherwise warning, can be skipped if input is generated
-
             call retrieve_command_argument ('-no_id_check', 0, no_id_check, idummy, rdummy, cdummy, ierr2)
             if (.not. no_id_check) then
                 IFOUND = index_in_array(BNDID(I), BNDID(:I - 1))
@@ -218,7 +210,6 @@ contains
             endif
 
             ! check if truncated type and non truncated type give the same number
-
             ITYPE = index_in_array(BNDTYPE(I), BNDTYPE(:nobtyp))
             ITYP2 = index_in_array(BNDTYPE_LONG(I), BNDTYPE_LONG(:nobtyp))
             IF (ITYPE /= ITYP2) THEN
@@ -227,7 +218,6 @@ contains
             ENDIF
 
             ! if type found set type, otherwise add type
-
             IF (ITYPE > 0) THEN
                 IBNDTYPE(I) = ITYPE
             ELSE
@@ -238,7 +228,6 @@ contains
             ENDIF
 
             ! write ID and name to system file
-
             WRITE (LUNWR)  BNDID(I), BNDNAME(I)
 
         end do
@@ -257,9 +246,8 @@ contains
         WRITE (LUNWR)  (BNDTYPE(I), I = 1, NOBTYP)
         WRITE (LUNWR)  (IBNDTYPE(I), I = 1, NOBND)
         DEALLOCATE(BNDNAME, BNDID_LONG, BNDTYPE_LONG, IBNDTYPE)
-        !
-        !     dummy time lags
-        !
+
+        ! dummy time lags
         IF (NOSYS == 0) THEN
             WRITE (LUNWR) (0, I = 1, NOBND)
             WRITE (LUNUT, 2090)
@@ -294,15 +282,13 @@ contains
         WRITE (LUNUT, 2110)
         call status%increase_error_count()
         GOTO 160
-        !
-        !        no time lags
-        !
+
+        ! no time lags
         60 WRITE (LUNUT, 2120)
         WRITE (LUNWR) (0, I = 1, NOBND)
         GOTO 160
-        !
-        !       time lags constant without defaults
-        !
+
+        ! time lags constant without defaults
         70 WRITE (LUNUT, 2130)
         IF (IIMAX < NOBND) THEN
             WRITE (LUNUT, 2140) NOBND, IIMAX, NOBND - IIMAX
@@ -346,9 +332,8 @@ contains
         end do
         WRITE (LUNWR) (IAR(K), K = 1, NOBND)
         GOTO 160
-        !
-        !       time lags constant with defaults
-        !
+
+        ! time lags constant with defaults
         110 WRITE (LUNUT, 2190)
         ITYPE = 2
         CALL RDTOK1 (LUNUT, ILUN, LCH, LSTACK, CCHAR, &
@@ -359,11 +344,11 @@ contains
             WRITE (LUNUT, 2180) IDEF
             call status%increase_error_count()
         ENDIF
-        !            fill the array with the default
+        ! fill the array with the default
         DO I = 1, MIN(IIMAX, NOBND)
             IAR(I) = IDEF
         end do
-        !            nr of overridings
+        ! nr of overridings
         ITYPE = 2
         CALL RDTOK1 (LUNUT, ILUN, LCH, LSTACK, CCHAR, &
                 IPOSR, NPOS, CDUMMY, NOVER, RHULP, &
@@ -379,7 +364,7 @@ contains
             WRITE (LUNUT, 2220) IDEF, NOVER
         ENDIF
         MXOVER = IIMAX - NOBND
-        !            overridings
+        ! overridings
         DO K = 1, MIN(NOVER, MXOVER)
             ITYPE = 2
             CALL RDTOK1 (LUNUT, ILUN, LCH, LSTACK, CCHAR, &
@@ -393,7 +378,7 @@ contains
                     ITYPE, IERR2)
             IF (IERR2 > 0) GOTO 170
         end do
-        !
+
         DO K = 1, NOVER - MXOVER
             ITYPE = 2
             CALL RDTOK1 (LUNUT, ILUN, LCH, LSTACK, CCHAR, &
@@ -462,7 +447,7 @@ contains
         ELSE
             NOSUBS = NOSYS
         ENDIF
-        !          IERRH = -1 signals OPT0 that it is boundaries to deal with
+        ! IERRH = -1 signals OPT0 that it is boundaries to deal with
         IERRH = -1
         call opt0   (lun, 14, 0, 0, nobnd, &
                 nosubs, nosubs, nrftot(8), nrharm(8), ifact, &
@@ -470,7 +455,7 @@ contains
                 filtype, dtflg3, ioutpt, ierrh, &
                 status, .false.)
         call status%increase_error_count_with(ierrh)
-        !
+
         IERR2 = 0
         170 CONTINUE
         IF (ALLOCATED(BNDID)) DEALLOCATE(BNDID)
@@ -480,9 +465,8 @@ contains
         175 call check  (chulp, iwidth, 5, ierr2, status)
         180 if (timon) call timstop(ithndl)
         RETURN
-        !
-        !       Output formats
-        !
+
+        ! Output formats
         2000 FORMAT (//, ' No boundary conditions')
         2001 FORMAT (//, ' ERROR: Without boundary conditions only optional specification of zero time lags allowed!')
         2005 FORMAT (/, ' Names of open boundaries are printed for', &
@@ -537,6 +521,6 @@ contains
         2300 FORMAT (' ERROR: allocating boundary arrays:', I7)
         2310 FORMAT (' number of boundaries             :', I7)
         !
-    END
+    END SUBROUTINE read_block_5_boundary_conditions
 
 end module inputs_block_5

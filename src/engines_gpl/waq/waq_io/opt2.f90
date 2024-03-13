@@ -32,43 +32,25 @@ contains
     subroutine opt2 (iopt2, array, nitem, nvals, nscale, &
             iwidth, lun1, ioutpt, ierr)
 
-        !       Deltares Software Centre
+        !! Reads a block with constant data with and without defaults
+        !!
+        !! Function depends on value of iopt2
+        !!      - if 1:
+        !>          - nscale scale values
+        !>          - nitem sets of nvals values
+        !>      - if 2:
+        !>          - nscale scale values
+        !>          - nvals dfault values
+        !>          - number of overridings
+        !>          - that many integers + sets of nvals values
+        !>      If lun1 is positive the array are written
 
-        !>\file
-        !>                          Reads a block with constant data with and without defaults
-        !>\par  Description:
-        !>                          Function depends on value of iopt2
-        !>                          - if 1:
-        !>                            - nscale scale values
-        !>                            - nitem sets of nvals values
-        !>                          - if 2:
-        !>                            - nscale scale values
-        !>                            - nvals dfault values
-        !>                            - number of overridings
-        !>                            - that many integers + sets of nvals values
-        !>                          If lun1 is positive the array are written
-
-        !     Created            : April 1988   BY  M.E.Sileon
-
-        !     Modified           : April 1997 by R. Bruinsma : Tokenized input data file reading added
-        !                          May   2011 by Leo Postma  : Fortran90 look and feel
-        !                                                      Removed workspace from parameter list
-
-        !     Subroutines called : scale  : to scale the matrix with the sacle factors
-
-        !     Functions            gettok : tokenized input data file reading
-
-        !     Logical units      : LUNIN = unit input file
-        !                          LUNUT = unit formatted output file
-        !                          LUN1  = unit intermediate file ( system )
+        !!     Subroutines called : scale  : to scale the matrix with the sacle factors
+        !!     Logical units      : LUNIN = unit input file
+        !!                          LUNUT = unit formatted output file
+        !!                          LUN1  = unit intermediate file ( system )
         use timers       !   performance timers
         use rd_token
-
-        implicit none
-
-        !     Parameters
-
-        !     kind           function         name         Descriptipon
 
         integer(kind = int_wp), intent(in) :: iopt2       !< input option
         real(kind = real_wp), intent(out) :: array(nvals, nitem)  !< array for the values
@@ -79,8 +61,6 @@ contains
         integer(kind = int_wp), intent(in) :: lun1        !< output unit number
         integer(kind = int_wp), intent(in) :: ioutpt      !< how extensive the output ?
         integer(kind = int_wp), intent(inout) :: ierr        !< cumulative rror counter
-
-        !     local decalations
 
         real(kind = real_wp), allocatable :: factor(:)        !  array for scale factors
         real(kind = real_wp) :: value              !  help variable values
@@ -216,6 +196,6 @@ contains
         2130 format (I10, 2X, 1P, 10E12.4, /(12X, 10E12.4))
         2140 format (' ERROR reading input!')
 
-    end
+    end subroutine opt2
 
 end module m_opt2
