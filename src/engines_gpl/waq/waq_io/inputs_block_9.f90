@@ -23,9 +23,8 @@
 module inputs_block_9
     use m_waq_precision
     use m_rdodef
-    use m_outboo
     use simulation_input_options, only : process_simulation_input_options
-    use output_pointers, only : get_output_pointers
+    use output_pointers, only : get_output_pointers, set_output_boot_variables
     use m_error_status
 
     implicit none
@@ -177,7 +176,7 @@ contains
 
         !     Calculate OUTPUT boot variables NVART, NBUFMX
 
-        call outboo (noutp, nrvar, igrdou, isrtou, nosss, &
+        call set_output_boot_variables (noutp, nrvar, igrdou, isrtou, nosss, &
                 nodump, nx, ny, nrvart, nbufmx, &
                 ndmpar, notot, ncbufm, noraai)
 
