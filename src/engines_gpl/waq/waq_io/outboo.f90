@@ -27,29 +27,13 @@ module m_outboo
 
 contains
 
-
-    subroutine outboo (noutp, nrvar, igrdou, isrtou, noseg, &
+    subroutine outboo(noutp, nrvar, igrdou, isrtou, noseg, &
             nodump, nx, ny, nrvart, nbufmx, &
             ndmpar, notot, ncbufm, noraai)
-        !>\file
-        !>                Sets the boot variables for OUTPUT system
-
-        !     Deltares Software Centre
-
-        !     CREATED: May -1993 by Jan van Beek
-
-        !     LOGICAL UNITNUMBERS : -
-
-        !     SUBROUTINES CALLED  : -
+        !! Sets the boot variables for OUTPUT system
 
         use timers       !   performance timers
         use results
-
-        implicit none
-
-        !     Parameters         :
-
-        !     kind           function         name            Descriptipon
 
         integer(kind = int_wp), intent(in) :: noutp          !< Number of output files
         integer(kind = int_wp), intent(in) :: nrvar (noutp)  !< Number variables per output file
@@ -66,8 +50,6 @@ contains
         integer(kind = int_wp), intent(out) :: ncbufm         !< Length of character buffer needed
         integer(kind = int_wp), intent(in) :: noraai         !< Number of transects
 
-        !     Local
-
         integer(kind = int_wp), parameter :: igseg = 1, igmon = 2, iggrd = 3, igsub = 4
         integer(kind = int_wp) :: nocel        !  size of the NEFIS cell
         integer(kind = int_wp) :: nbufou       !  help variable for length output buffer
@@ -76,15 +58,13 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("outboo", ithndl)
 
-        !     Loop over the output files
-
+        ! Loop over the output files
         nrvart = 0
         nbufmx = 0
         do iout = 1, noutp
             nrvart = nrvart + nrvar(iout)
 
-            !        Grid
-
+            ! Grid
             select case (igrdou(iout))
             case (igseg)
                 nocel = noseg
@@ -96,71 +76,61 @@ contains
                 nocel = ndmpar
             end select
 
-            !        Calculate outputbuffer size for this file, for some (NEFIS,SUB)
-            !        also a character buffer size
-
+            ! Calculate outputbuffer size for this file, for some (NEFIS,SUB)
+            ! also a character buffer size
             ncbufo = 0
-            select case (isrtou(iout))
 
+            select case (isrtou(iout))
             case (ihnf, imnf)
-                !  NEFIS file, extra array with length NOCEL needed
-                !  substance names and output names in char buffer.
+                ! NEFIS file, extra array with length NOCEL needed
+                ! substance names and output names in char buffer.
                 nbufou = nocel * (nrvar(iout) + 1)
                 ncbufo = notot + nrvar(iout)
-
             case (ihn2, imn2)
-                !  NEFIS file, extra array with length NOCEL needed
+                ! NEFIS file, extra array with length NOCEL needed
                 nbufou = nocel * (nrvar(iout) + 1)
-
             case (imo3)
-                !  On subarea's substances also in buffer, only the
-                !  first half of the nrvar are real output vars.
-                !  substance names and output names in char buffer.
+                ! On subarea's substances also in buffer, only the
+                ! first half of the nrvar are real output vars.
+                ! substance names and output names in char buffer.
                 nbufou = nocel * (notot + nrvar(iout) / 2)
                 ncbufo = notot + nrvar(iout) / 2
-
             case (ihi3)
-                !  On subarea's substances also in buffer, only the
-                !  first half of the nrvar are real output vars.
-                !  substance names and output names in char buffer.
-                !  also output for raaien
+                ! On subarea's substances also in buffer, only the
+                ! first half of the nrvar are real output vars.
+                ! substance names and output names in char buffer.
+                ! also output for raaien
                 nbufou = (nocel + noraai) * (notot + nrvar(iout) / 2)
                 ncbufo = notot + nrvar(iout) / 2
-
             case (ihn3)
-                !  NEFIS file, extra array with length NOCEL needed
-                !  On subarea's substances also in buffer, only the
-                !  first half of the nrvar are real output vars.
-                !  substance names and output names in char buffer.
-                !  also output for raaien
+                ! NEFIS file, extra array with length NOCEL needed
+                ! On subarea's substances also in buffer, only the
+                ! first half of the nrvar are real output vars.
+                ! substance names and output names in char buffer.
+                ! also output for raaien
                 nbufou = (nocel + noraai) * (notot + nrvar(iout) / 2 + 1)
                 ncbufo = notot + nrvar(iout) / 2
-
             case (imo4, ihi4)
-                !  On subarea's only the first half of the nrvar are
-                !  real output vars.
+                ! On subarea's only the first half of the nrvar are
+                ! real output vars.
                 nbufou = nocel * (nrvar(iout) / 2)
-
             case (ihn4)
-                !  NEFIS file, extra array with length NOCEL needed
-                !  On subarea's only the first half of the nrvar are
-                !  real output vars.
+                ! NEFIS file, extra array with length NOCEL needed
+                ! On subarea's only the first half of the nrvar are
+                ! real output vars.
                 nbufou = nocel * (nrvar(iout) / 2 + 1)
-
             case default
-                !  Rest, normal
+                ! Rest, normal
                 nbufou = nocel * nrvar(iout)
             end select
 
-            !        Buffer is as big as the largest needed
-
+            ! Buffer is as big as the largest needed
             nbufmx = max (nbufmx, nbufou)
             ncbufm = max (ncbufm, ncbufo)
-
         end do
 
         if (timon) call timstop(ithndl)
         return
-    end
+    end subroutine outboo
 
 end module m_outboo
