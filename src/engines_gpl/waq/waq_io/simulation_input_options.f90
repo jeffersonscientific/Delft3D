@@ -627,8 +627,8 @@ contains
         !>       - iopt, should be 3 (harmonics) or 4 (Fouriers)
         !>       - number of items in this block    (nvarnw, read in read_item_num)
         !>       - that many ID values of the items (itemId, read in read_item_num)
-        !>       - number of harmonics or Fourier components (nhar  , read in rwfunc)
-        !>       - nval1 values for the zero-th harmonic  (the mean , read in rwfunc)
+        !>       - number of harmonics or Fourier components (nhar  , read in read_fourier_harmoic_func_values)
+        !>       - nval1 values for the zero-th harmonic  (the mean , read in read_fourier_harmoic_func_values)
         !>       - nhar times:
         !>          - a period of the harmonic    ( NOT for the Fouriers )
         !>          - the phase of the harmonic, or Fourier
@@ -660,7 +660,6 @@ contains
         use timers       !   performance timers
         use rd_token
         use m_sysn          ! System characteristics
-        use m_rwfunc
 
         integer(kind = int_wp), intent(inout) :: lun   (*)          !< array with unit numbers
         character(*), intent(in) :: lchar (*)         !< array with file names of the files
@@ -827,7 +826,7 @@ contains
                 if (waste) then                                ! and to lunuit = lun(3), the
                     ierr2 = -2                                    ! system file, for others
                 endif
-                call rwfunc (iopt3, nvarnw, nval1, itemId(ntotal), nrec2, &
+                call read_fourier_harmoic_func_values(iopt3, nvarnw, nval1, itemId(ntotal), nrec2, &
                         nharms, ifact, dtflg, dtflg3, lunuit, &
                         iwidth, ioutpt, ierr2)
                 ierr = ierr + ierr2
@@ -1136,5 +1135,177 @@ contains
         2090 format (/, ' ERROR. This keyword is not allowed here: ', A)
 
     end subroutine read_constants_time_variables
+
+    subroutine read_fourier_harmoic_func_values(iopt, nitem, nvals, item, nrec, &
+            nhtot, ifact, dtflg, dtflg3, lununf, &
+            iwidth, ioutpt, ierr)
+
+        !! Reads function values (Fourier and Harmonic components)
+        !!
+        !!           Harmonic components for iopt = 3 and Fouriers for iopt = 4/n
+        !!           Reads:
+        !!           - number of frequencies exclusive of average value
+        !!           - matrix(nvals*nitem) of average values
+        !!           - the base frequency (Fourrier series only)
+        !!           Per frequency:
+        !!           - period (only for Harmonics)
+        !!           - a phase of the component
+        !!           - matrix(nvals*nitem) of values for the component
+        !!           Notes:
+        !!           - because there is an average value, there are nharm+1 matrices
+        !!           - because there is a phase, there are 1+nvals*nitem values per component
+        !!           - the periods are filled in for the Fouriers, so they look further more the same
+        !!           - the zero'th period contains the value nvals*nitem
+        !!           - the zero'th phase contains the number of harmoncs
+        !!           The routine is entered with ierr = -1  for boundaries and -2 for wastes
+        !     Subroutines called : conver
+        !!                          cnvtim
+        !!
+        !!     Functions called   : gettok tokenized input data file reading
+        !!
+        !!     Logical units      : lunut  = unit formatted output file
+        !!                          lununf = unit unformatted output file
+
+        use m_conver
+        use rd_token       ! for the reading of tokens
+        use timers       !   performance timers
+        use date_time_utils, only : convert_relative_time
+
+        integer(kind = int_wp), intent(in) :: iopt           !< 3 Harmonics, 4 Fourier
+        integer(kind = int_wp), intent(in) :: nitem          !< number of input items
+        integer(kind = int_wp), intent(in) :: nvals          !< number of values per item
+        integer(kind = int_wp), intent(in) :: item (nitem)   !< item numbers
+        integer(kind = int_wp), intent(inout) :: nrec           !< number of harmonic records
+        integer(kind = int_wp), intent(inout) :: nhtot          !< total harmonic array space
+        integer(kind = int_wp), intent(in) :: ifact          !< factor between clocks
+        logical, intent(in) :: dtflg         !< "date"-format
+        logical, intent(in) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
+        integer(kind = int_wp), intent(in) :: lununf         !< unit nr unformatted file
+        integer(kind = int_wp), intent(in) :: iwidth         !< width of theoutput file
+        integer(kind = int_wp), intent(in) :: ioutpt         !< how extensive output ?
+        integer(kind = int_wp), intent(inout) :: ierr           !< error count
+
+        integer(kind = int_wp) :: ndim           ! total size of the matrix
+        integer(kind = int_wp) :: nhar           ! number of harmonics
+        integer(kind = int_wp) :: ibase          ! base period of Fouriers
+        integer(kind = int_wp) :: ierr2          ! error hlp variable
+        integer(kind = int_wp) :: i, k           ! loop variables
+        integer(kind = int_wp) :: ib, ie         ! limits for printed output
+        integer(kind = int_wp) :: i1, i2         ! print loop counters
+        logical                      bound         ! true if boundary processing
+        logical                      waste         ! true if waste processing
+        integer(kind = int_wp), allocatable :: iperio(:)      ! workspace for frequencies
+        real(kind = real_wp), allocatable :: value (:, :)    ! workspace for values
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("read_fourier_harmoic_func_values", ithndl)
+
+        bound = .false.
+        waste = .false.
+        if (ierr == -1) bound = .true.
+        if (ierr == -2) waste = .true.
+        ierr = 0
+        ndim = nitem * nvals
+
+        if (gettoken(nhar, ierr2) > 0) goto 100
+        allocate (iperio(nhar + 1), value(ndim + 1, nhar + 1))
+
+        select case (iopt)
+
+        case (3)        !      read values if IOPT = 3 ( harmonic function )
+
+            do k = 2, ndim + 1
+                if (gettoken(value(k, 1), ierr2) > 0) goto 100
+            enddo
+            do i = 2, nhar + 1
+                if (gettoken(iperio(i), ierr2) > 0) goto 100
+                do k = 1, ndim + 1
+                    if (gettoken(value(k, i), ierr2) > 0) goto 100
+                enddo
+            enddo
+            call conver (iperio(2), nhar, ifact, dtflg, dtflg3)
+            value(1, 1) = float(nhar)
+
+        case (4)        !      read values if IOPT = 4 ( fourier function )
+
+            if (gettoken(ibase, ierr2) > 0) goto 100
+            do k = 2, ndim + 1
+                if (gettoken(value(k, 1), ierr2) > 0) goto 100
+            enddo
+            do i = 2, nhar + 1
+                do k = 1, ndim + 1
+                    if (gettoken(value(k, i), ierr2) > 0) goto 100
+                enddo
+            enddo
+            call convert_relative_time (ibase, ifact, dtflg, dtflg3)
+            value(1, 1) = float(nhar)
+            do i = 2, nhar + 1
+                iperio(i) = ibase / (i - 1)
+            enddo
+
+        end select
+
+        !        control writing
+
+        if (ioutpt < 4) then
+            write (lunut, 2070)
+        else
+            if (iopt == 3) then
+                write (lunut, 2000) nhar
+            else
+                write (lunut, 2010) nhar, ibase
+            endif
+            write (lunut, 2020)
+            do i1 = 1, nvals, iwidth
+                write (lunut, 2030) (k, k = i1, min(i1 + iwidth - 1, nvals))
+                do i2 = 1, nitem
+                    ib = (i2 - 1) * nvals + 1 + i1
+                    ie = (i2 - 1) * nvals + 1 + min(i1 + iwidth - 1, nvals)
+                    write (lunut, 2040) item(i2), (value(k, 1), k = ib, ie)
+                enddo
+            enddo
+            do i = 2, nhar + 1
+                write (lunut, 2050) iperio(i), value(1, i)
+                if (iperio(i) <= 0) then
+                    write (lunut, 2060)
+                    ierr = ierr + 1
+                endif
+                do i1 = 1, nvals, iwidth
+                    write (lunut, 2030) (k, k = i1, min(i1 + iwidth - 1, nvals))
+                    do i2 = 1, nitem
+                        ib = (i2 - 1) * nvals + 1 + i1
+                        ie = (i2 - 1) * nvals + 1 + min(i1 + iwidth - 1, nvals)
+                        write (lunut, 2040) item(i2), (value(k, i), k = ib, ie)
+                    enddo
+                enddo
+            enddo
+        endif
+
+        ! calculate new settings
+        iperio(1) = ndim
+        if (bound .or. waste) write (lununf) nhar + 1
+        do i = 1, nhar + 1
+            write (lununf) iperio(i), (value(k, i), k = 1, ndim + 1)
+        enddo
+        nrec = nrec + nhar + 1
+        nhtot = nhtot + (ndim + 1) * (nhar + 1)
+        if (timon) call timstop(ithndl)
+        return
+
+        100 ierr = ierr + 1
+        if (timon) call timstop(ithndl)
+        return
+
+        ! output formats
+
+        2000 format(/, ' Number of harmonics:', I4)
+        2010 format(/, ' Number of Fouriers:', I4, ' base period:', I10)
+        2020 format(' Mean values :')
+        2030 format('      Item', I8, 9I12)
+        2040 format(I10, 2X, 1P, 10E12.4)
+        2050 format(' Period:', I10, '   Phase:', 1P, E12.4)
+        2060 format(' ERROR, PERIOD is less or equal to zero!')
+        2070 format(' Printed output for output option 4 and higher !')
+
+    end subroutine read_fourier_harmoic_func_values
 
 end module simulation_input_options
