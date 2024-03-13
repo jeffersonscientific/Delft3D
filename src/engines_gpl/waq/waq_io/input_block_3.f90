@@ -25,7 +25,7 @@ module inputs_block_3
     use m_read_hydfile
     use m_opt1
     use m_opt0
-    use m_waq_grid
+    use m_waq_grid, only : read_multiple_grids
 
     implicit none
 
@@ -272,14 +272,12 @@ contains
             endif
         endif
 
-        !       Read optional multiple grids
-
-        call grid (lun, noseg, notot, nototp, nolay, &
+        ! Read optional multiple grids
+        call read_multiple_grids(lun, noseg, notot, nototp, nolay, &
                 gridps, nseg2, nogrid, syname, local_status)
         if (local_status%ierr > 0) goto 240
 
-        !       Read grid-layout for visually printed output
-
+        ! Read grid-layout for visually printed output
         if (gettoken(cdummy, imopt1, itype, local_status%ierr) > 0) goto 240
         if (itype == 1) then
             if (cdummy == 'NONE') then
