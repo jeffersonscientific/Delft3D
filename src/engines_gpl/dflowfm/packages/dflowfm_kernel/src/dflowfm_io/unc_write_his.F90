@@ -92,7 +92,7 @@ subroutine unc_write_his(tim)            ! wrihis
                id_infiltcap, id_infiltact, &
                id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
                id_turkin, id_tureps , id_vicwwu, id_rich, id_zcs, id_zws, id_zwu, &
-               id_wind, id_tair, id_rhum, id_clou, id_airdensity, &
+               id_wind, id_tair, id_rhum, id_clou, &
                id_R, id_WH, id_WD, id_WL, id_WT, id_WU, id_hs, &
                id_pumpdim,    id_pump_id,     id_pump_dis,     id_pump_cap,      id_pump_s1up,      id_pump_s1dn,     id_pump_head,      &
                id_pump_xmid,  id_pump_ymid,   id_pump_struhead,id_pump_stage,    id_pump_redufact,  id_pump_s1del,    id_pump_s1suc,     id_pump_disdir, &
