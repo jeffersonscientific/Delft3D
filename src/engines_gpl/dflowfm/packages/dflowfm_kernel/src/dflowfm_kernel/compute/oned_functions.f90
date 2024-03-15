@@ -709,8 +709,8 @@ module m_oned_functions
           if (abs(qp) > 0.9d0*vp/dts) then
             qp = sign(0.9d0*vp/dts, qp)
             call setmessage(LEVEL_WARN, 'Discharge through pump ' &
-                & //trim(struct%id)//' is lower than the capacity due to '//&
-                & 'limited volume of water on suction side.')
+                & //trim(struct%id)//' is limited below capacity '//&
+                & 'by water volume on suction side.')
          endif
 
          do L0  = 1, struct%numlinks
