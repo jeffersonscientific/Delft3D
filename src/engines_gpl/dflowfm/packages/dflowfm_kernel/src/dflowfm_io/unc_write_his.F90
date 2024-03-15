@@ -59,7 +59,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_flowexternalforcings, only: numtracers, trnames
     use m_transport, only: NUMCONST_MDU, ITRA1, ITRAN, ISED1, ISEDN, const_names, const_units, NUMCONST, itemp, isalt
     use m_structures
-    use m_fm_wq_processes
+    use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
     use string_module
     use m_dad
     use m_filter, only: checkmonitor
@@ -76,6 +76,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use fm_statistical_output
     use m_output_config
     use MessageHandling, only: err
+    use io_netcdf, only: IONC_NOERR
 
     implicit none
 
@@ -153,7 +154,6 @@ subroutine unc_write_his(tim)            ! wrihis
     integer, allocatable, save :: id_hwq(:)
     integer, allocatable, save :: id_hwqb(:)
     integer, allocatable, save :: id_hwqb3d(:)
-    integer, allocatable, save :: id_const(:), id_const_cum(:), id_voltot(:)
     integer, allocatable, save :: id_sedbtransfrac(:)
     integer, allocatable, save :: id_sedstransfrac(:)
     integer :: maxlocT, maxvalT !< row+column count of valobs
@@ -245,10 +245,6 @@ subroutine unc_write_his(tim)            ! wrihis
         if (timon) call timstrt ( "unc_write_his INIT/DEF", handle_extra(61))
 
         call realloc(id_tra, ITRAN-ITRA1+1, keepExisting = .false.)
-        call realloc(id_const, NUMCONST_MDU, keepExisting = .false.)
-        call realloc(id_const_cum, NUMCONST_MDU, keepExisting = .false.)
-
-        call realloc(id_voltot, MAX_IDX, keepExisting = .false.)
 
         ! Possibly a different model, so make valobs transpose at correct size again.
         maxlocT = max(size(valobs, 2), npumpsg, network%sts%numPumps, ngatesg, ncdamsg, ncgensg, ngategen, &
@@ -576,6 +572,8 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
         endif
 
+        ! WAQ statistic outputs are kept outside of the statistical output framework
+        ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)
 
          do ivar = 1,out_variable_set_his%count
             config => out_variable_set_his%statout(ivar)%output_config
@@ -973,8 +971,13 @@ subroutine unc_write_his(tim)            ! wrihis
 
     ntot = numobs + nummovobs
     if (it_his == 1) then !Fill average source-sink discharge with different array on first timestep
-       qsrc(i) = qstss((numconst+1)*(i-1)+1)
+       do i = 1, numsrc
+          qsrc(i) = qstss((numconst+1)*(i-1)+1)
+       end do
     endif
+
+   ! WAQ statistic outputs are kept outside of the statistical output framework
+   ierr = unc_put_his_station_waq_statistic_outputs(id_hwq)
 
    do ivar = 1,out_variable_set_his%count
       config => out_variable_set_his%statout(ivar)%output_config
@@ -1197,7 +1200,7 @@ subroutine unc_write_his(tim)            ! wrihis
        if (IVAL_HWQ1 > 0) then
           do j = IVAL_HWQ1,IVAL_HWQN   ! enumerators of extra waq output in valobs array (not the pointer)
             i = j - IVAL_HWQ1 + 1
-            ierr = nf90_put_var(ihisfile, id_hwq(i), valobs(:,IPNT_HWQ1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
+            !ierr = nf90_put_var(ihisfile, id_hwq(i), valobs(:,IPNT_HWQ1 + i-1), start = (/ 1, it_his /), count = (/ ntot, 1/))
           end do
        end if
        if (IVAL_WQB3D1 > 0) then
@@ -2385,6 +2388,94 @@ contains
 
    end function unc_put_his_station_coord_vars_z
 
+   !> Define variables for WAQ statistic outputs (not to be confused with the general statistical output framework).
+   !! They are not part of the statistical output framework, because it is useless to allow statistics about statistics,
+   !! because writing output only in the final time step is currently not supported in statistical output,
+   !! and because statistic outputs may be redundant in the future when the statistical output framework is feature complete.
+   function unc_def_his_station_waq_statistic_outputs(waq_statistics_ids) result(nc_error)
+      integer, allocatable, intent(  out) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
+      integer                             :: nc_error              !< NetCDF error code
+
+      character(len = 255)  :: variable_name, description
+      character(len = 1024) :: station_coordinate_string
+      integer               :: statistics_index
+      integer, allocatable  :: nc_dimensions(:), specific_nc_dimensions(:)
+
+      nc_error = IONC_NOERR
+      if (jawaqproc <= 0) then
+         return
+      end if
+
+      allocate(waq_statistics_ids(noout_statt + noout_state))
+
+      if (model_is_3D()) then
+         nc_dimensions = [id_laydim, id_statdim, id_timedim]
+         station_coordinate_string = trim(statcoordstring) // ' zcoordinate_c'
+      else
+         nc_dimensions = [id_statdim, id_timedim]
+         station_coordinate_string = statcoordstring
+      end if
+
+      do statistics_index = 1, noout_statt + noout_state
+         if (statistics_index > noout_statt) then
+            specific_nc_dimensions = nc_dimensions(1 : size(nc_dimensions) - 1) ! Drop time dimension for end statistics (stat-e) variables
+         else
+            specific_nc_dimensions = nc_dimensions
+         end if
+         variable_name = ' '
+         write (variable_name, "('water_quality_stat_',I0)") statistics_index
+         call definencvar(ihisfile, waq_statistics_ids(statistics_index), nc_precision, specific_nc_dimensions, &
+                          trim(variable_name), trim(wq_user_outputs%names(statistics_index)), &
+                          trim(wq_user_outputs%units(statistics_index)), trim(station_coordinate_string), 'station_geom', fillVal = dmiss)
+         description = trim(wq_user_outputs%names(statistics_index))//' - '//trim(wq_user_outputs%description(statistics_index))//' in flow element'
+         call replace_multiple_spaces_by_single_spaces(description)
+         nc_error = nf90_put_att(ihisfile, waq_statistics_ids(statistics_index), 'description', description)
+      enddo
+   end function unc_def_his_station_waq_statistic_outputs
+
+   !> Write data to WAQ statistic output variables (not to be confused with the general statistical output framework).
+   function unc_put_his_station_waq_statistic_outputs(waq_statistics_ids) result(nc_error)
+      integer, intent(in) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
+      integer             :: nc_error              !< NetCDF error code
+
+      integer, allocatable  :: nc_start(:), nc_count(:)
+      integer :: start_index_valobs, statistics_index, num_layers
+
+      nc_error = IONC_NOERR
+      if (ntot <= 0 .or. jawaqproc <= 0) then
+         return
+      end if
+
+      ! Default start and count for stat-t variables
+      if (model_is_3D()) then
+         nc_start = [1, 1, it_his]
+         nc_count = [kmx, ntot, 1]
+      else
+         nc_start = [1, it_his]
+         nc_count = [ntot, 1]
+      end if
+
+      do statistics_index = 1, noout_statt + noout_state
+         if (statistics_index == noout_statt + 1 ) then
+            if (comparereal(tim, ti_hise, eps10) < 0) then
+               return ! The end statistic outputs (stat-e) are only written in the last his time step
+            end if
+            if (model_is_3D()) then
+               nc_start = [1, 1]
+               nc_count = [kmx, ntot]
+            else
+               nc_start = [1]
+               nc_count = [ntot]
+            end if
+         end if
+
+         num_layers = max(kmx, 1)
+
+         start_index_valobs = IPNT_HWQ1 - 1 + (noout_user + statistics_index - 1) * num_layers + 1
+         nc_error = nf90_put_var(ihisfile, waq_statistics_ids(statistics_index), transpose(valobs(:, start_index_valobs : start_index_valobs + num_layers - 1)), start = nc_start, count = nc_count)
+      end do
+   end function unc_put_his_station_waq_statistic_outputs
+
 !> Convert t_nc_dim_ids to integer array of NetCDF dimension ids
 function build_nc_dimension_id_list(nc_dim_ids) result(res)
    type(t_nc_dim_ids), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
@@ -2408,8 +2499,13 @@ function build_nc_dimension_id_count_array(nc_dim_ids) result(counts)
    type(t_nc_dim_ids), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
    integer, allocatable           :: counts(:)  !< NetCDF dimension counts
 
-   counts = pack([get_dimid_len(id_laydim),get_dimid_len(id_laydimw), get_dimid_len(id_nlyrdim), get_dimid_len(id_statdim), get_dimid_len(id_sedsusdim), get_dimid_len(id_sedtotdim), 1], &
-              make_mask_from_dim_ids(nc_dim_ids))
+   integer, allocatable           :: dim_ids(:)
+
+   dim_ids = build_nc_dimension_id_list(nc_dim_ids)
+   counts = [(get_dimid_len(dim_ids(i)), integer :: i = 1, size(dim_ids))]
+   if (nc_dim_ids%timedim) then
+      counts(size(counts)) = 1 ! Only write one element for time dimension, which comes last
+   end if
 end function build_nc_dimension_id_count_array
 
 !> Build mask of which dimensions to include in netcdf variable, based on nc_dim_ids
@@ -2430,9 +2526,7 @@ end function make_mask_from_dim_ids
 integer function get_dimid_len(id)
    integer, intent(in) :: id !< NetCDF id obtained from nf90_def_dim
 
-   ierr =  nf90_inquire_dimension(ihisfile, id, len = get_dimid_len)
+   ierr = nf90_inquire_dimension(ihisfile, id, len = get_dimid_len)
 end function get_dimid_len
 
 end subroutine unc_write_his
-
-

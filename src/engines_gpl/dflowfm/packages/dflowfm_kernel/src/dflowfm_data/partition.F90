@@ -3769,7 +3769,7 @@ end subroutine partition_make_globalnumbers
    end subroutine reduce_kobs
    
 !> reduce outputted values at observation stations
-   subroutine reduce_valobs( numobs, valobs, valobs_all,numvals)
+   subroutine reduce_valobs(numvals, numobs, valobs, valobs_all)
       use m_missing
 #ifdef HAVE_MPI
       use mpi
@@ -3779,8 +3779,8 @@ end subroutine partition_make_globalnumbers
       
       integer,                                     intent(in)    :: numvals      !< number of values
       integer,                                     intent(in)    :: numobs       !< number of observation stations
-      double precision, dimension(numvals,numobs), intent(inout) :: valobs       !< values at obervations stations to be outputted
-      double precision, dimension(numvals,numobs), intent(inout) :: valobs_all   !< work array
+      double precision, dimension(numobs,numvals), intent(inout) :: valobs       !< values at obervations stations to be outputted
+      double precision, dimension(numobs,numvals), intent(inout) :: valobs_all   !< work array
       
       
 !      double precision, dimension(:,:), allocatable              :: valobs_all
