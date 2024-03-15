@@ -460,6 +460,10 @@ private
 
    integer :: num_tracers, num_layers, ntot, variable_index
 
+   if (.not. model_has_tracers()) then
+      return
+   end if
+
    num_layers = max(1, kmx)
    ntot = numobs + nummovobs
    num_tracers = ITRAN - ITRA1 + 1
