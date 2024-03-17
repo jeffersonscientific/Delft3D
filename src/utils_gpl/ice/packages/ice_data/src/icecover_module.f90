@@ -201,9 +201,9 @@ function select_icecover_model(icecover, modeltype) result(istat)
     icecover%ice_thickness_forcing_available  = 0
     
     if (modeltype == ICECOVER_NONE) then
-       icecover%apply_pressure            = .false.
+       icecover%apply_pressure         = .false.
     else
-       icecover%apply_pressure            = .true.
+       icecover%apply_pressure         = .true.
     endif
     icecover%apply_friction            = .false.
     icecover%reduce_surface_exchange   = .false.
