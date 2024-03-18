@@ -261,7 +261,7 @@ integer :: i
 
 if (new_size > 0 .and. new_size > size(dump_prop) .and. allocated(dump_prop)) then
    allocate(dump_prop_new(new_size))
-   dump_prop_new(1:new_size) = dump_prop)
+   dump_prop_new(1:new_size) = dump_prop
    deallocate(dump_prop)
    dump_prop = dump_prop_new
 endif
