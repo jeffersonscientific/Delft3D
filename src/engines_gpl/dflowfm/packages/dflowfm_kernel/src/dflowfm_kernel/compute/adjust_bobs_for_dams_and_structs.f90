@@ -152,7 +152,7 @@
 
 
    ! Adjust bobs for dambreak
-   if (ndambreak > 0) then ! needed, because ndambreaksg may be > 0, but ndambreak==0, and then arrays are not available.
+   if (ndambreaklinks > 0) then ! needed, because ndambreaksg may be > 0, but ndambreaklinks==0, and then arrays are not available.
       do n = 1, ndambreaksg
          istru = dambreaks(n)
          if (istru /= 0 .and. L1dambreaksg(n) <= L2dambreaksg(n)) then

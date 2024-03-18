@@ -372,7 +372,7 @@
  integer        , parameter              :: DBW_SYMM_ASYMM = 3                    !< symmetrical dambreak widening until left/right runs out of space then continues one sided
  integer                                 :: dambreakWidening = DBW_SYMM_ASYMM     !< method for dambreak widening
  character(len=128)                      :: dambreakWideningString = 'symmetric-asymmetric'  !< method for dambreak widening (string for input processing)
- integer                                 :: ndambreak                             !< nr of dambreak links
+ integer                                 :: ndambreaklinks                             !< nr of dambreak links
  integer                                 :: ndambreaksg                           !< nr of dambreak signals
  integer         , allocatable           :: L1dambreaksg(:)                       !< first dambreak link for each signal
  integer         , allocatable           :: L2dambreaksg(:)                       !< second dambreak link for each signal
@@ -513,7 +513,7 @@ subroutine default_flowexternalforcings()
     ngenstru = 0      ! nr of real general structures in the generalstructure set
     npump   = 0       ! npump dimension
     npumpsg = 0       ! nr of pump signals
-    ndambreak = 0     ! nr of dambreak links
+    ndambreaklinks = 0     ! nr of dambreak links
     ndambreaksg = 0   ! nr of dambreak signals
     nklep   = 0       ! nr of kleps
     nvalv   = 0       ! nr of valves

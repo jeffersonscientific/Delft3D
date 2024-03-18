@@ -249,7 +249,7 @@ subroutine unc_write_his(tim)            ! wrihis
         ! Possibly a different model, so make valobs transpose at correct size again.
         maxlocT = max(size(valobs, 2), npumpsg, network%sts%numPumps, ngatesg, ncdamsg, ncgensg, ngategen, &
                       nweirgen, network%sts%numWeirs, ngenstru,  network%sts%numGeneralStructures, &
-                      ndambreak, network%sts%numOrifices, network%sts%numBridges, network%sts%numculverts, &
+                      ndambreaklinks, network%sts%numOrifices, network%sts%numBridges, network%sts%numculverts, &
                       network%sts%numuniweirs, network%cmps%count, nlongculverts)
         maxvalT = max(size(valobs, 1), NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, NUMVALS_GATEGEN, &
                       NUMVALS_WEIRGEN, NUMVALS_GENSTRU, &
@@ -925,7 +925,7 @@ subroutine unc_write_his(tim)            ! wrihis
            end if
         end if
 
-        if (jahisdambreak > 0 .and. ndambreak > 0) then
+        if (jahisdambreak > 0 .and. ndambreaklinks > 0) then
             do i = 1,ndambreaksg
                ierr = nf90_put_var(ihisfile, id_dambreak_id, trimexact(dambreak_ids(i), strlen_netcdf),(/ 1, i /))
             end do
@@ -1864,7 +1864,7 @@ subroutine unc_write_his(tim)            ! wrihis
          end if
       end if
 
-      if (jahisdambreak > 0 .and. ndambreak > 0) then
+      if (jahisdambreak > 0 .and. ndambreaklinks > 0) then
          do i = 1,ndambreaksg
             ierr = nf90_put_var(ihisfile, id_dambreak_discharge,                    valdambreak(IVAL_DIS,i),        (/ i, it_his /))
             ierr = nf90_put_var(ihisfile, id_dambreak_s1up,                         valdambreak(IVAL_S1UP,i),       (/ i, it_his /))

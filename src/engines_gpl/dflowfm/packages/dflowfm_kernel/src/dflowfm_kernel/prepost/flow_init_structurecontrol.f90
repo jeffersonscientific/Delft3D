@@ -154,8 +154,8 @@ allocate(dambreakPolygons(nstr))
 !initialize the index
 dambridx = -1
 
-! UNST-3308: early counting of ndambreak is needed here, because of lftopol array
-ndambreak = 0
+! UNST-3308: early counting of ndambreaklinks is needed here, because of lftopol array
+ndambreaklinks = 0
 
 ! NOTE: readStructures(network, md_structurefile) has already been called.
 do i=1,network%sts%count
@@ -175,8 +175,8 @@ do i=1,network%sts%count
                                        loc_spec_type, nump = pstru%numCoordinates, xpin = pstru%xCoordinates, ypin = pstru%yCoordinates, &
                                        branchindex = pstru%ibran, chainage = pstru%chainage, &
                                        xps = dambreakPolygons(i)%xp, yps = dambreakPolygons(i)%yp, nps = dambreakPolygons(i)%np, &
-                                       lftopol = lftopol(ndambreak+1:numl), sortLinks = 1)
-      ndambreak = ndambreak + numgen ! UNST-3308: early counting of ndambreak is needed here, because of lftopol array
+                                       lftopol = lftopol(ndambreaklinks+1:numl), sortLinks = 1)
+      ndambreaklinks = ndambreaklinks + numgen ! UNST-3308: early counting of ndambreaklinks is needed here, because of lftopol array
    case default
       call selectelset_internal_links( xz, yz, ndx, ln, lnx, kegen(1:numl), numgen, &
                                        loc_spec_type, nump = pstru%numCoordinates, xpin = pstru%xCoordinates, ypin = pstru%yCoordinates, &
@@ -200,8 +200,8 @@ end do
 
 call update_lin2str_admin(network)
 
-! UNST-3308: early counting of ndambreak was needed here, because of lftopol array, but must be redone later below as well.
-ndambreak = 0
+! UNST-3308: early counting of ndambreaklinks was needed here, because of lftopol array, but must be redone later below as well.
+ndambreaklinks = 0
 
 if (network%cmps%Count > 0) then
     istat = max(istat, initialize_compounds(network%cmps, network%sts))
@@ -353,12 +353,12 @@ do i=1,nstr
       if (loc_spec_type /= LOCTP_POLYLINE_FILE) then
          ndambr = pstru%numlinks
          if (pstru%numlinks > 0) then
-            kedb(ndambreak+1:ndambreak+ndambr) = pstru%linknumbers(1:ndambr)
+            kedb(ndambreaklinks+1:ndambreaklinks+ndambr) = pstru%linknumbers(1:ndambr)
          end if
       else
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kedb(ndambreak+1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
+         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kedb(ndambreaklinks+1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
                                          xps = dambreakPolygons(i)%xp, yps = dambreakPolygons(i)%yp, nps = dambreakPolygons(i)%np, &
-                                         lftopol = lftopol(ndambreak+1:numl), sortLinks = 1)
+                                         lftopol = lftopol(ndambreaklinks+1:numl), sortLinks = 1)
       end if
 
       success = .true.
@@ -366,10 +366,10 @@ do i=1,nstr
 
       ndambreaksg = ndambreaksg + 1
       dambridx(ndambreaksg) = i
-      call realloc(L1dambreaksg,ndambreaksg) ; L1dambreaksg(ndambreaksg) = ndambreak + 1
-      call realloc(L2dambreaksg,ndambreaksg) ; L2dambreaksg(ndambreaksg) = ndambreak + ndambr
+      call realloc(L1dambreaksg,ndambreaksg) ; L1dambreaksg(ndambreaksg) = ndambreaklinks + 1
+      call realloc(L2dambreaksg,ndambreaksg) ; L2dambreaksg(ndambreaksg) = ndambreaklinks + ndambr
 
-      ndambreak   = ndambreak   + ndambr
+      ndambreaklinks   = ndambreaklinks   + ndambr
 
 
    case ('gate', 'weir', 'generalstructure') !< The various generalstructure-based structures
@@ -1151,7 +1151,7 @@ if (ndambreaksg > 0) then
    maximumDambreakWidths = 0d0;
 
    if (allocated(kdambreak)) deallocate(kdambreak)
-   allocate(kdambreak(3,ndambreak), stat=ierr) ! the last row stores the actual
+   allocate(kdambreak(3,ndambreaklinks), stat=ierr) ! the last row stores the actual
    kdambreak = 0d0;
 
    if (allocated(dambreaks)) deallocate(dambreaks)
@@ -1182,7 +1182,7 @@ if (ndambreaksg > 0) then
    allocate(dambreak_ids(ndambreaksg))
 
    if(allocated(activeDambreakLinks)) deallocate(activeDambreakLinks)
-   allocate(activeDambreakLinks(ndambreak))
+   allocate(activeDambreakLinks(ndambreaklinks))
    activeDambreakLinks = 0
 
    if(allocated(normalVelocityDambreak)) deallocate(normalVelocityDambreak)
