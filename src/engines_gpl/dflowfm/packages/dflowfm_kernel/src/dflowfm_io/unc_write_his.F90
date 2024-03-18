@@ -577,6 +577,13 @@ subroutine unc_write_his(tim)            ! wrihis
           ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)
         endif
 
+        if ( jahisbedlev > 0 .and. .not. stm_included ) then
+           ierr = nf90_def_var(ihisfile, 'bedlevel', nc_precision, (/ id_statdim /), id_varb)
+           ierr = nf90_put_att(ihisfile, id_varb, 'long_name', 'bottom level')
+           ierr = nf90_put_att(ihisfile, id_varb, 'units', 'm')
+           ierr = nf90_put_att(ihisfile, id_varb, 'coordinates', statcoordstring)
+        endif
+        
          do ivar = 1,out_variable_set_his%count
             config => out_variable_set_his%statout(ivar)%output_config
             id_var => out_variable_set_his%statout(ivar)%id_var
@@ -977,6 +984,10 @@ subroutine unc_write_his(tim)            ! wrihis
           qsrc(i) = qstss((numconst+1)*(i-1)+1)
        end do
     endif
+   !Bottom level is written separately from statout if it is static
+   if (ntot > 0 .and. .not. stm_included .and. jahisbedlev > 0) then
+      ierr = nf90_put_var(ihisfile,    id_varb,   valobs(:,IPNT_BL),    start = (/ 1 /) )
+   endif
 
    ! WAQ statistic outputs are kept outside of the statistical output framework
    if (ntot <= 0 .or. jawaqproc <= 0) then

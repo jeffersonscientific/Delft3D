@@ -2250,7 +2250,9 @@ private
       ! Basic flow quantities
       if (ntot > 0) then
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WATERLEVEL),valobs(:,IPNT_S1)                               )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
+         if( stm_included ) then
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
+         endif
          if (jahiswatdep > 0) then
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS)                               )
          endif
