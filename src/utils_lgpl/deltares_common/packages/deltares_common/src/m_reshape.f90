@@ -47,7 +47,7 @@ module m_reshape
       double precision, intent(in) :: source(:)         !< Rank-1 array interpreted as flattened rank-2 array
       integer,          intent(in) :: implicit_shape(:) !< Shape of the unflattened rank-2 array after reordering
       integer,          intent(in) :: order(:)          !< New order of the ranks, permutation of [1, 2, ..., size(implicit_shape)]
-      integer                      :: res(size(source)) !< Reshaped and reordered source, flattened to rank 1
+      double precision             :: res(size(source)) !< Reshaped and reordered source, flattened to rank 1
 
       if (product(implicit_shape) /= size(source) .or. size(order) /= size(implicit_shape)) then
          res = error_value
