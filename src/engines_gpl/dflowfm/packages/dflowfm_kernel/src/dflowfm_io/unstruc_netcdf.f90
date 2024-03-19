@@ -5088,7 +5088,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    use m_missing
    use m_CrossSections
    use unstruc_channel_flow, only: network
-   use string_module, only: replace_multiple_spaces_by_single_spaces
+   use string_module, only: replace_multiple_spaces_by_single_spaces, str_lower
    use m_save_ugrid_state, only: mesh1dname, mesh2dname
    use m_hydrology_data, only : jadhyd, ActEvap, PotEvap, interceptionmodel, DFM_HYD_NOINTERCEPT, InterceptHs
    use m_subsidence, only: jasubsupl, subsout, subsupl, subsupl_t0
@@ -5156,10 +5156,15 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    integer, parameter :: FIRST_ARRAY = 1
    integer, parameter :: SECOND_ARRAY = 2
 
-   nc_precision = nf90_double
-   if ( md_nc_map_precision == SINGLE_PRECISION ) then
+   call str_lower(md_nc_map_precision)
+   select case (trim(md_nc_map_precision))
+   case ('double')
+       nc_precision = nf90_double
+   case ('float', 'single')
        nc_precision = nf90_float
-   endif
+   case default
+       call mess(LEVEL_ERROR, 'Did not recognise NcMapDataPrecision value. It must be double, single or float.')
+   end select
 
    if (ndxi <= 0) then
       call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
