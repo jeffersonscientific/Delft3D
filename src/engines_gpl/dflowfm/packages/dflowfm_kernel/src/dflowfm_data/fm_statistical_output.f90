@@ -376,7 +376,6 @@ private
    !! because the tracers are only known during model initialization.
    !! Returns config indices for these variables such that they can be added to the output items for the same tracers
    subroutine add_station_tracer_configs(output_config_set, idx_tracers_stations)
-      use m_alloc, only: realloc
       use netcdf_utils, only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use m_transportdata, only: const_names, const_units, ITRA1, ITRAN
@@ -391,7 +390,7 @@ private
 
       num_tracers = ITRAN - ITRA1 + 1
 
-      call realloc(idx_tracers_stations, num_tracers, keepExisting = .false., fill = 0)
+      allocate(idx_tracers_stations(num_tracers), source = 0)
 
       do tracer_index = 1, num_tracers
          constituent_index = tracer_index + ITRA1 - 1
@@ -445,7 +444,6 @@ private
    subroutine add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
    
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits
-      use m_alloc,           only: realloc
       use netcdf_utils,      only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils,      only: ncu_set_att
@@ -489,7 +487,6 @@ private
    subroutine add_station_wqbot3D_configs(output_config_set, idx_wqbot3D_stations)
    
       use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits
-      use m_alloc,           only: realloc
       use netcdf_utils,      only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils,      only: ncu_set_att
