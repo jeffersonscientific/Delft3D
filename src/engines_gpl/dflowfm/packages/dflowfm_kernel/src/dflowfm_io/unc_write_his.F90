@@ -226,7 +226,7 @@ subroutine unc_write_his(tim)            ! wrihis
     end if
 
     ! When no crs/obs present, return immediately.
-    if (model_has_any_obs_stations() == .false. .and. ncrs <= 0 .and. jahisbal <= 0 .and. jahiscgen <= 0 .and. nrug <= 0) then
+    if (model_has_obs_stations() == .false. .and. ncrs <= 0 .and. jahisbal <= 0 .and. jahiscgen <= 0 .and. nrug <= 0) then
         if (ihisfile == 0) then
             call mess(LEVEL_WARN, 'No observations nor cross sections defined. Will not produce a history file.')
         end if
@@ -314,7 +314,7 @@ subroutine unc_write_his(tim)            ! wrihis
         !
         ! Observation stations
         !
-        if (model_has_any_obs_stations()) then
+        if (model_has_obs_stations()) then
             ierr = unc_addcoordmapping(ihisfile, jsferic)
 
             nNodeTot = numobs+nummovobs
@@ -1094,7 +1094,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
 !    if (timon) call timstrt('unc_write_his obs/crs data 2', handle_extra(57))
 
-    if (model_has_any_obs_stations()) then
+    if (model_has_obs_stations()) then
       if ( model_is_3D() ) then
 !      3D
        ierr = nf90_put_var(ihisfile,    id_varucxq, valobs(:,IPNT_UCXQ),  start = (/ 1, it_his /), count = (/ ntot, 1 /)) ! depth-averaged velocity
@@ -2270,7 +2270,7 @@ contains
 
       ierr = NF90_NOERR
 
-      if (.not. model_has_any_obs_stations()) then
+      if (.not. model_has_obs_stations()) then
          return
       end if
 

@@ -16,7 +16,7 @@ private
    type(t_output_variable_set), public :: out_variable_set_clm
    
    public default_fm_statistical_output, flow_init_statistical_output_his, model_is_3D, &
-          model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_any_obs_stations
+          model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations
 
    type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
@@ -2801,13 +2801,13 @@ private
       res = (nummovobs > 0)
    end function model_has_moving_obs_stations
    
-   !> Check if model has any observation stations
-   pure function model_has_any_obs_stations() result(res)
+   !> Check if model has any observation stations, fixed or moving
+   pure function model_has_obs_stations() result(res)
       use m_observations, only: numobs, nummovobs
       logical :: res !< Return value
 
       res = (numobs + nummovobs > 0)
-   end function model_has_any_obs_stations
+   end function model_has_obs_stations
    
 
    !> Check if model contains tracers.
