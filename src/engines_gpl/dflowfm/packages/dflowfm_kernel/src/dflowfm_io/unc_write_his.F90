@@ -326,7 +326,7 @@ subroutine unc_write_his(tim)            ! wrihis
             ierr = nf90_put_att(ihisfile, id_statname,  'long_name'    , 'observation station name') ! REF
 
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
-            ierr = unc_def_his_station_coord_vars(ihisfile, nNodeTot, id_laydim, id_laydimw, id_statdim, id_timedim, &
+            ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
                                                   add_latlon, jawrizc, jawrizw, &
                                                   id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
                                                   id_zcs, id_zws, id_zwu)
@@ -2076,14 +2076,13 @@ contains
    end function unc_def_his_structure_static_vars
 
    !> Define the x/y, lat/lon, and z coordinate variables for the station type.
-   function unc_def_his_station_coord_vars(ihisfile, nummovobs, id_laydim, id_laydimw, id_statdim, id_timedim, &
+   function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
                                            add_latlon, jawrizc, jawrizw, &
                                            id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
                                            id_zcs, id_zws, id_zwu) result(ierr)
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-      integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
       integer,             intent(in   ) :: id_laydim       !< NetCDF dimension id for the vertical layers
       integer,             intent(in   ) :: id_laydimw      !< NetCDF dimension id for the staggered vertical layers
       integer,             intent(in   ) :: id_statdim      !< NetCDF dimension id for the station type
@@ -2105,7 +2104,7 @@ contains
       ierr = NF90_NOERR
 
       ! Define the x,y-coordinate variables
-      ierr = unc_def_his_station_coord_vars_xy(ihisfile, nummovobs, id_statdim, id_timedim, id_statx, id_staty)
+      ierr = unc_def_his_station_coord_vars_xy(ihisfile, id_statdim, id_timedim, id_statx, id_staty)
       if (ierr /= nf90_noerr) then
          call mess( LEVEL_ERROR,'Internal error, please report: unc_def_his_station_coord_vars_xy' // &
             'returned NetCDF error "' // trim(nf90_strerror( ierr)) // '"!')
@@ -2134,12 +2133,11 @@ contains
    end function unc_def_his_station_coord_vars
 
    !> Define the x/y-coordinate variables for the station type.
-   function unc_def_his_station_coord_vars_xy(ihisfile, nummovobs, id_statdim, id_timedim, &
+   function unc_def_his_station_coord_vars_xy(ihisfile, id_statdim, id_timedim, &
                                               id_statx, id_staty) result(ierr)
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-      integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
       integer,             intent(in   ) :: id_statdim      !< NetCDF dimension id for the station type
       integer,             intent(in   ) :: id_timedim      !< NetCDF dimension id for the time dimension
       integer,             intent(  out) :: id_statx        !< NetCDF variable id created for the station x-coordinate
@@ -2152,12 +2150,12 @@ contains
       ierr = NF90_NOERR
 
       ! If there are moving observation stations, include a time dimension for the x/y-coordinates
-      if (nummovobs > 0) then
+      if (model_has_moving_obs_stations()) then
          allocate( dim_ids( 2))
          dim_ids = [id_statdim, id_timedim] ! TODO: AvD: decide on UNST-1606 (trajectory_id vs. timeseries_id)
       else
          allocate( dim_ids( 1))
-         dim_ids = [id_statdim ]
+         dim_ids = [id_statdim]
       end if
 
       ierr = nf90_def_var(ihisfile, 'station_x_coordinate', nf90_double, dim_ids, id_statx)
