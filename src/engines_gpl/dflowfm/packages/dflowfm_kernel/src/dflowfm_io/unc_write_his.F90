@@ -231,7 +231,7 @@ subroutine unc_write_his(tim)            ! wrihis
     end if
 
     ! When no crs/obs present, return immediately.
-    if (numobs+nummovobs <= 0 .and. ncrs <= 0 .and. jahisbal <= 0 .and. jahiscgen <= 0 .and. nrug <= 0) then
+    if (model_has_obs_stations() == .false. .and. ncrs <= 0 .and. jahisbal <= 0 .and. jahiscgen <= 0 .and. nrug <= 0) then
         if (ihisfile == 0) then
             call mess(LEVEL_WARN, 'No observations nor cross sections defined. Will not produce a history file.')
         end if
@@ -319,18 +319,19 @@ subroutine unc_write_his(tim)            ! wrihis
         !
         ! Observation stations
         !
-        if (numobs+nummovobs > 0) then
+        if (model_has_obs_stations()) then
             ierr = unc_addcoordmapping(ihisfile, jsferic)
 
             nNodeTot = numobs+nummovobs
             ierr = unc_def_his_structure_static_vars(ihisfile, 'station', 'observation station', 1, numobs+nummovobs, 'point', nNodeTot, id_strlendim, &
-                                                     id_statdim, id_stat_id, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy)
+                                                     id_statdim, id_stat_id, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
+                                                     add_latlon, id_statgeom_node_lon, id_statgeom_node_lat)
             ierr = nf90_def_var(ihisfile, 'station_name',         nf90_char,   (/ id_strlendim, id_statdim /), id_statname)
             ! ierr = nf90_put_att(ihisfile, id_statname,  'cf_role', 'timeseries_id') ! UNST-6901: only one cf_role var allowed, is now "station_id". Backwards incompatible for some postprocessors?
             ierr = nf90_put_att(ihisfile, id_statname,  'long_name'    , 'observation station name') ! REF
 
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
-            ierr = unc_def_his_station_coord_vars(ihisfile, nummovobs, id_laydim, id_laydimw, id_statdim, id_timedim, &
+            ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
                                                   add_latlon, jawrizc, jawrizw, &
                                                   id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
                                                   id_zcs, id_zws, id_zwu)
@@ -1066,26 +1067,14 @@ subroutine unc_write_his(tim)            ! wrihis
           ierr = nf90_put_var(ihisfile,    id_varb,   valobs(:,IPNT_BL),    start = (/ 1 /) )
        endif
 
-       ! write geometry variables at the first time of history output
-       if (it_his == 1) then
-          call realloc(node_count, numobs)
-          node_count = 1
-          ierr = nf90_put_var(ihisfile,    id_statgeom_node_count, node_count)
-          ierr = nf90_put_var(ihisfile,    id_statgeom_node_coordx,  xobs(:), start = (/ 1 /), count = (/ numobs /))
-          ierr = nf90_put_var(ihisfile,    id_statgeom_node_coordy,  yobs(:), start = (/ 1 /), count = (/ numobs /))
-#ifdef HAVE_PROJ
-          if (add_latlon) then
-             call transform_and_put_latlon_coordinates(ihisfile, id_statgeom_node_lon, id_statgeom_node_lat, nccrs%proj_string, xobs, yobs)
-       end if
-#endif
-       end if
-
     endif
 
     ! Write x/y-, lat/lon- and z-coordinates for the observation stations every time (needed for moving observation stations)
-    ierr = unc_put_his_station_coord_vars(ihisfile, nummovobs, add_latlon, jawrizc, jawrizw, &
+    ierr = unc_put_his_station_coord_vars(ihisfile, numobs, nummovobs, add_latlon, jawrizc, jawrizw, &
                                           id_statx, id_staty, id_statlat, id_statlon, &
-                                          id_zcs, id_zws, id_zwu, it_his, ntot)
+                                          id_zcs, id_zws, id_zwu, it_his, &
+                                          id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
+                                          id_statgeom_node_lon, id_statgeom_node_lat)
 
     if (ntot > 0 .and. .false.) then
     if (timon) call timstrt('unc_write_his obs data 1', handle_extra(56))
@@ -1110,8 +1099,8 @@ subroutine unc_write_his(tim)            ! wrihis
 
 !    if (timon) call timstrt('unc_write_his obs/crs data 2', handle_extra(57))
 
-    if (numobs+nummovobs > 0) then
-      if ( kmx>0 ) then
+    if (model_has_obs_stations()) then
+      if ( model_is_3D() ) then
 !      3D
        ierr = nf90_put_var(ihisfile,    id_varucxq, valobs(:,IPNT_UCXQ),  start = (/ 1, it_his /), count = (/ ntot, 1 /)) ! depth-averaged velocity
        ierr = nf90_put_var(ihisfile,    id_varucyq, valobs(:,IPNT_UCYQ),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
@@ -2049,23 +2038,29 @@ contains
    !! This includes: NetCDF dimension ids, character Id variable and simple geometry container variables.
    !! Note: the writing ('putting') of data is done by another subroutine: unc_put_his_structure_static_vars.
    function unc_def_his_structure_static_vars(ncid, prefix, name, output_enabled, count, geom_type, ngeom_node, id_strlendim, &
-                                             id_strdim, id_strid, id_geom_node_count, id_geom_coordx, id_geom_coordy) result(ierr)
+                                             id_strdim, id_strid, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
+                                             add_latlon, id_geom_coordlon, id_geom_coordlat) result(ierr)
    use string_module, only: strcmpi
-      integer,           intent(in   ) :: ncid       !< NetCDF id of already open dataset
-      character(len=*),  intent(in   ) :: prefix     !< Base name of this structure type, e.g., 'uniweir'
-      character(len=*),  intent(in   ) :: name       !< Human readable name of this structure type, e.g., 'universal weir'
-      integer,           intent(in   ) :: output_enabled !< Whether or not (1/0) this structure's output must be written.
-      integer,           intent(in   ) :: count      !< Number of structures for this structure_type
-      character(len=*),  intent(in   ) :: geom_type  !< Geometry type, one of: 'point', 'line', 'polygon' (or 'none')
-      integer,           intent(in   ) :: ngeom_node !< Total number of geometry nodes for this structure_type
-      integer,           intent(in   ) :: id_strlendim !< Already created NetCDF dimension id for max string length of the character Ids.
-      integer,           intent(  out) :: id_strdim  !< NetCDF dimension id created for this structure type
-      integer,           intent(  out) :: id_strid   !< NetCDF variable id created for the character Ids of the structures of this type
-      integer, optional, intent(  out) :: id_geom_node_count !< NetCDF variable id created for the node count of the structures of this type
-      integer, optional, intent(  out) :: id_geom_coordx     !< NetCDF variable id created for the node x coordinates for all structures of this type
-      integer, optional, intent(  out) :: id_geom_coordy     !< NetCDF variable id created for the node y coordinates for all structures of this type
+      integer,           intent(in   ) :: ncid                 !< NetCDF id of already open dataset
+      character(len=*),  intent(in   ) :: prefix               !< Base name of this structure type, e.g., 'uniweir'
+      character(len=*),  intent(in   ) :: name                 !< Human readable name of this structure type, e.g., 'universal weir'
+      integer,           intent(in   ) :: output_enabled       !< Whether or not (1/0) this structure's output must be written.
+      integer,           intent(in   ) :: count                !< Number of structures for this structure_type
+      character(len=*),  intent(in   ) :: geom_type            !< Geometry type, one of: 'point', 'line', 'polygon' (or 'none')
+      integer,           intent(in   ) :: ngeom_node           !< Total number of geometry nodes for this structure_type
+      integer,           intent(in   ) :: id_strlendim         !< Already created NetCDF dimension id for max string length of the character Ids.
+      integer,           intent(  out) :: id_strdim            !< NetCDF dimension id created for this structure type
+      integer,           intent(  out) :: id_strid             !< NetCDF variable id created for the character Ids of the structures of this type
+      integer, optional, intent(  out) :: id_geom_node_count   !< NetCDF variable id created for the node count of the structures of this type
+      integer, optional, intent(  out) :: id_geom_coordx       !< NetCDF variable id created for the node x coordinates for all structures of this type
+      integer, optional, intent(  out) :: id_geom_coordy       !< NetCDF variable id created for the node y coordinates for all structures of this type
+      logical, optional, intent(in   ) :: add_latlon           !< Whether or not to add extra lon/lat coordinates for the nodes
+                                                               !< (only applicable when the coordx/y variables contain projected coordinates,
+                                                               !< and requires id_node_lon/lat to be passed as well).
+      integer, optional, intent(  out) :: id_geom_coordlon     !< NetCDF variable id created for the node longitude coordinates for all structures of this type
+      integer, optional, intent(  out) :: id_geom_coordlat     !< NetCDF variable id created for the node latitude  coordinates for all structures of this type
 
-      integer                         :: ierr       !< Result status (NF90_NOERR if successful)
+      integer                          :: ierr                 !< Result status (NF90_NOERR if successful)
 
       ierr = NF90_NOERR
 
@@ -2078,7 +2073,7 @@ contains
          if (.not. strcmpi(geom_type, 'none') .and. len_trim(geom_type) > 0) then
             ! Define geometry related variables
             ierr = sgeom_def_geometry_variables(ihisfile, prefix//'_geom', name, geom_type, ngeom_node, id_strdim, &
-                                                id_geom_node_count, id_geom_coordx, id_geom_coordy)
+                                                id_geom_node_count, id_geom_coordx, id_geom_coordy, add_latlon, id_geom_coordlon, id_geom_coordlat)
          end if
 
       end if
@@ -2086,14 +2081,13 @@ contains
    end function unc_def_his_structure_static_vars
 
    !> Define the x/y, lat/lon, and z coordinate variables for the station type.
-   function unc_def_his_station_coord_vars(ihisfile, nummovobs, id_laydim, id_laydimw, id_statdim, id_timedim, &
+   function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
                                            add_latlon, jawrizc, jawrizw, &
                                            id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
                                            id_zcs, id_zws, id_zwu) result(ierr)
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-      integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
       integer,             intent(in   ) :: id_laydim       !< NetCDF dimension id for the vertical layers
       integer,             intent(in   ) :: id_laydimw      !< NetCDF dimension id for the staggered vertical layers
       integer,             intent(in   ) :: id_statdim      !< NetCDF dimension id for the station type
@@ -2115,7 +2109,7 @@ contains
       ierr = NF90_NOERR
 
       ! Define the x,y-coordinate variables
-      ierr = unc_def_his_station_coord_vars_xy(ihisfile, nummovobs, id_statdim, id_timedim, id_statx, id_staty)
+      ierr = unc_def_his_station_coord_vars_xy(ihisfile, id_statdim, id_timedim, id_statx, id_staty)
       if (ierr /= nf90_noerr) then
          call mess( LEVEL_ERROR,'Internal error, please report: unc_def_his_station_coord_vars_xy' // &
             'returned NetCDF error "' // trim(nf90_strerror( ierr)) // '"!')
@@ -2144,12 +2138,11 @@ contains
    end function unc_def_his_station_coord_vars
 
    !> Define the x/y-coordinate variables for the station type.
-   function unc_def_his_station_coord_vars_xy(ihisfile, nummovobs, id_statdim, id_timedim, &
+   function unc_def_his_station_coord_vars_xy(ihisfile, id_statdim, id_timedim, &
                                               id_statx, id_staty) result(ierr)
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-      integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
       integer,             intent(in   ) :: id_statdim      !< NetCDF dimension id for the station type
       integer,             intent(in   ) :: id_timedim      !< NetCDF dimension id for the time dimension
       integer,             intent(  out) :: id_statx        !< NetCDF variable id created for the station x-coordinate
@@ -2162,12 +2155,12 @@ contains
       ierr = NF90_NOERR
 
       ! If there are moving observation stations, include a time dimension for the x/y-coordinates
-      if (nummovobs > 0) then
+      if (model_has_moving_obs_stations()) then
          allocate( dim_ids( 2))
          dim_ids = [id_statdim, id_timedim] ! TODO: AvD: decide on UNST-1606 (trajectory_id vs. timeseries_id)
       else
          allocate( dim_ids( 1))
-         dim_ids = [id_statdim ]
+         dim_ids = [id_statdim]
       end if
 
       ierr = nf90_def_var(ihisfile, 'station_x_coordinate', nf90_double, dim_ids, id_statx)
@@ -2251,56 +2244,66 @@ contains
    end function unc_def_his_station_coord_vars_z
 
    !> Write (put) the x/y-, lat/lon- and z-coordinate variables for the station type.
-   function unc_put_his_station_coord_vars(ihisfile, nummovobs, add_latlon, jawrizc, jawrizw, &
+   function unc_put_his_station_coord_vars(ihisfile, numobs, nummovobs, add_latlon, jawrizc, jawrizw, &
                                            id_statx, id_staty, id_statlat, id_statlon, &
-                                           id_zcs, id_zws, id_zwu, it_his, ntot) result(ierr)
+                                           id_zcs, id_zws, id_zwu, it_his, &
+                                           id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
+                                           id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
       implicit none
 
-      integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-      integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
-      logical,             intent(in   ) :: add_latlon      !< Whether or not to include station lat/lon coordinates in the his file
-      integer,             intent(in   ) :: jawrizc         !< Whether or not to write observation station zcoordinate_c to the his file
-      integer,             intent(in   ) :: jawrizw         !< Whether or not to write observation station zcoordinate_w + zcoordinate_wu to the his file
-      integer,             intent(in   ) :: id_statx        !< NetCDF variable id created for the station x-coordinate
-      integer,             intent(in   ) :: id_staty        !< NetCDF variable id created for the station y-coordinate
-      integer,             intent(in   ) :: id_statlat      !< NetCDF variable id created for the station lat-coordinate
-      integer,             intent(in   ) :: id_statlon      !< NetCDF variable id created for the station lon-coordinate
-      integer,             intent(in   ) :: id_zcs          !< NetCDF variable id for the station zcoordinate_c
-      integer,             intent(in   ) :: id_zws          !< NetCDF variable id for the station zcoordinate_w
-      integer,             intent(in   ) :: id_zwu          !< NetCDF variable id for the station zcoordinate_wu
-      integer,             intent(in   ) :: it_his          !< Timeframe to write to in the his file
-      integer,             intent(in   ) :: ntot            !< Total number of observation points
+      integer,             intent(in   ) :: ihisfile                 !< NetCDF id of already open dataset
+      integer,             intent(in   ) :: numobs                   !< Number of fixed observation stations
+      integer,             intent(in   ) :: nummovobs                !< Number of moving observation stations
+      logical,             intent(in   ) :: add_latlon               !< Whether or not to include station lat/lon coordinates in the his file
+      integer,             intent(in   ) :: jawrizc                  !< Whether or not to write observation station zcoordinate_c to the his file
+      integer,             intent(in   ) :: jawrizw                  !< Whether or not to write observation station zcoordinate_w + zcoordinate_wu to the his file
+      integer,             intent(in   ) :: id_statx                 !< NetCDF variable id created for the station x-coordinate
+      integer,             intent(in   ) :: id_staty                 !< NetCDF variable id created for the station y-coordinate
+      integer,             intent(in   ) :: id_statlat               !< NetCDF variable id created for the station lat-coordinate
+      integer,             intent(in   ) :: id_statlon               !< NetCDF variable id created for the station lon-coordinate
+      integer,             intent(in   ) :: id_zcs                   !< NetCDF variable id for the station zcoordinate_c
+      integer,             intent(in   ) :: id_zws                   !< NetCDF variable id for the station zcoordinate_w
+      integer,             intent(in   ) :: id_zwu                   !< NetCDF variable id for the station zcoordinate_wu
+      integer,             intent(in   ) :: it_his                   !< Timeframe to write to in the his file
+      integer,             intent(in   ) :: id_geom_node_count       !< NetCDF variable id created for the node count of the structures of this type
+      integer,             intent(in   ) :: id_geom_node_coordx      !< NetCDF variable id created for the station geometry node x-coordinate
+      integer,             intent(in   ) :: id_geom_node_coordy      !< NetCDF variable id created for the station geometry node y-coordinate
+      integer,             intent(in   ) :: id_geom_node_coordlon    !< NetCDF variable id created for the station geometry node longitude coordinate
+      integer,             intent(in   ) :: id_geom_node_coordlat    !< NetCDF variable id created for the station geometry node latitude coordinate
 
       integer                            :: ierr            !< Result status (NF90_NOERR if successful)
 
       ierr = NF90_NOERR
 
-      if (ntot == 0) then
+      if (.not. model_has_obs_stations()) then
          return
       end if
 
-      ierr = unc_put_his_station_coord_vars_xy(ihisfile, nummovobs, id_statx, id_staty, it_his, ntot)
+      ierr = unc_put_his_station_coord_vars_xy(ihisfile, numobs, nummovobs, id_statx, id_staty, it_his)
 
 #ifdef HAVE_PROJ
       if (add_latlon) then
-         ierr = unc_put_his_station_coord_vars_latlon(ihisfile, nummovobs, id_statlat, id_statlon, it_his, ntot)
+         ierr = unc_put_his_station_coord_vars_latlon(ihisfile, numobs, nummovobs, id_statlat, id_statlon, it_his)
       end if
 #endif
 
-      ierr = unc_put_his_station_coord_vars_z(ihisfile, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his, ntot)
+      ierr = unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his)
+      
+      ierr = unc_put_his_station_geom_coord_vars_xy(ihisfile, numobs, it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
+                                                    add_latlon, id_geom_node_coordlon, id_geom_node_coordlat)
 
    end function unc_put_his_station_coord_vars
 
    !> Write (put) the x/y-coordinate variables for the station type.
-   function unc_put_his_station_coord_vars_xy(ihisfile, nummovobs, id_statx, id_staty, it_his, ntot) result(ierr)
+   function unc_put_his_station_coord_vars_xy(ihisfile, numobs, nummovobs, id_statx, id_staty, it_his) result(ierr)
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
+      integer,             intent(in   ) :: numobs          !< Number of fixed observation stations
       integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
       integer,             intent(in   ) :: id_statx        !< NetCDF variable id created for the station x-coordinate
       integer,             intent(in   ) :: id_staty        !< NetCDF variable id created for the station y-coordinate
       integer,             intent(in   ) :: it_his          !< Timeframe to write to in the his file
-      integer,             intent(in   ) :: ntot            !< Total number of observation points
 
       integer                            :: ierr            !< Result status (NF90_NOERR if successful)
 
@@ -2309,12 +2312,12 @@ contains
       ierr = NF90_NOERR
 
       ! If there are moving observation stations, include a time dimension for the x/y-coordinates
-      if ( nummovobs > 0 ) then
+      if (model_has_moving_obs_stations()) then
          start = [1, it_his]
-         count = [ntot, 1]
+         count = [numobs + nummovobs, 1]
       else
          start = [1]
-         count = [ntot]
+         count = [numobs + nummovobs]
       end if
 
       ierr = nf90_put_var(ihisfile, id_statx, xobs(:), start = start, count = count)
@@ -2326,15 +2329,16 @@ contains
    end function unc_put_his_station_coord_vars_xy
 
    !> Write (put) the lat/lon-coordinate variables for the station type.
-   function unc_put_his_station_coord_vars_latlon(ihisfile, nummovobs, id_statlat, id_statlon, it_his, ntot) result(ierr)
+   function unc_put_his_station_coord_vars_latlon(ihisfile, numobs, nummovobs, id_statlat, id_statlon, it_his) result(ierr)
+      use m_observations, only: xobs, yobs
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
+      integer,             intent(in   ) :: numobs          !< Number of fixed observation stations
       integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
       integer,             intent(in   ) :: id_statlat      !< NetCDF variable id created for the station lat-coordinate
       integer,             intent(in   ) :: id_statlon      !< NetCDF variable id created for the station lon-coordinate
       integer,             intent(in   ) :: it_his          !< Timeframe to write to in the his file
-      integer,             intent(in   ) :: ntot            !< Total number of observation points
 
       integer                            :: ierr            !< Result status (NF90_NOERR if successful)
 
@@ -2343,12 +2347,12 @@ contains
       ierr = NF90_NOERR
 
       ! If there are moving observation stations, include a time dimension for the lat/lon-coordinates
-      if ( nummovobs > 0 ) then
+      if (model_has_moving_obs_stations()) then
          start = [1, it_his]
-         count = [ntot, 1]
+         count = [numobs + nummovobs, 1]
       else
          start = [1]
-         count = [ntot]
+         count = [numobs + nummovobs]
       end if
 
       call transform_and_put_latlon_coordinates(ihisfile, id_statlon, id_statlat, &
@@ -2360,17 +2364,18 @@ contains
    end function unc_put_his_station_coord_vars_latlon
 
    !> Write (put) the z-coordinate variables for the station type.
-   function unc_put_his_station_coord_vars_z(ihisfile, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his, ntot) result(ierr)
+   function unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his) result(ierr)
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
+      integer,             intent(in   ) :: numobs          !< Number of fixed observation stations
+      integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
       integer,             intent(in   ) :: jawrizc         !< Whether or not to write observation station zcoordinate_c to the his file
       integer,             intent(in   ) :: jawrizw         !< Whether or not to write observation station zcoordinate_w + zcoordinate_wu to the his file
       integer,             intent(in   ) :: id_zcs          !< NetCDF variable id for the station zcoordinate_c
       integer,             intent(in   ) :: id_zws          !< NetCDF variable id for the station zcoordinate_w
       integer,             intent(in   ) :: id_zwu          !< NetCDF variable id for the station zcoordinate_wu
       integer,             intent(in   ) :: it_his          !< Timeframe to write to in the his file
-      integer,             intent(in   ) :: ntot            !< Total number of observation points
 
       integer                            :: ierr            !< Result status (NF90_NOERR if successful)
 
@@ -2384,14 +2389,14 @@ contains
 
       if (jawrizc == 1) then
          do layer = 1, kmx
-            ierr = nf90_put_var(ihisfile, id_zcs, valobs(:, IPNT_ZCS + layer - 1), start = [layer, 1, it_his], count = [1, ntot, 1])
+            ierr = nf90_put_var(ihisfile, id_zcs, valobs(:, IPNT_ZCS + layer - 1), start = [layer, 1, it_his], count = [1, numobs + nummovobs, 1])
          end do
       end if
 
       if (jawrizw == 1) then
          do layer = 1, kmx+1
-            ierr = nf90_put_var(ihisfile, id_zws, valobs(:, IPNT_ZWS + layer - 1), start = [layer, 1, it_his], count = [1, ntot, 1])
-            ierr = nf90_put_var(ihisfile, id_zwu, valobs(:, IPNT_ZWU + layer - 1), start = [layer, 1, it_his], count = [1, ntot, 1])
+            ierr = nf90_put_var(ihisfile, id_zws, valobs(:, IPNT_ZWS + layer - 1), start = [layer, 1, it_his], count = [1, numobs + nummovobs, 1])
+            ierr = nf90_put_var(ihisfile, id_zwu, valobs(:, IPNT_ZWU + layer - 1), start = [layer, 1, it_his], count = [1, numobs + nummovobs, 1])
          end do
       end if
 
@@ -2478,6 +2483,50 @@ contains
          nc_error = nf90_put_var(ihisfile, waq_statistics_ids(statistics_index), transpose(valobs(:, start_index_valobs : start_index_valobs + num_layers - 1)), start = nc_start, count = nc_count)
       end do
    end function unc_put_his_station_waq_statistic_outputs
+
+   !> Write (put) the geometry x/y-coordinate variables for the station type.
+   function unc_put_his_station_geom_coord_vars_xy(ihisfile, numobs, it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
+                                                   add_latlon, id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
+      use m_observations, only: xobs, yobs
+      implicit none
+
+      integer,             intent(in   ) :: ihisfile                 !< NetCDF id of already open dataset
+      integer,             intent(in   ) :: numobs                   !< Number of fixed observation stations
+      integer,             intent(in   ) :: it_his                   !< Timeframe to write to in the his file
+      integer,             intent(in   ) :: id_geom_node_count       !< NetCDF variable id created for the node count of the structures of this type
+      integer,             intent(in   ) :: id_geom_node_coordx      !< NetCDF variable id created for the station geometry node x-coordinate
+      integer,             intent(in   ) :: id_geom_node_coordy      !< NetCDF variable id created for the station geometry node y-coordinate
+      logical,             intent(in   ) :: add_latlon               !< Whether or not to add extra lon/lat coordinates for the nodes
+                                                                     !< (only applicable when the coordx/y variables contain projected coordinates,
+                                                                     !< and requires id_node_lon/lat to be passed as well).
+      integer,             intent(in   ) :: id_geom_node_coordlon    !< NetCDF variable id created for the station geometry node longitude coordinate
+      integer,             intent(in   ) :: id_geom_node_coordlat    !< NetCDF variable id created for the station geometry node latitude coordinate
+
+      integer                            :: ierr                     !< Result status (NF90_NOERR if successful)
+      
+      integer, dimension( numobs)        :: node_count
+
+      ierr = NF90_NOERR
+      
+      ! Write geometry variables only at the first time of history output
+      if (it_his /= 1) then
+         return
+      end if
+         
+      node_count = 1
+      
+      ierr = nf90_put_var(ihisfile, id_geom_node_count, node_count)
+      ierr = nf90_put_var(ihisfile, id_geom_node_coordx, xobs(:), start = [1], count = [numobs])
+      ierr = nf90_put_var(ihisfile, id_geom_node_coordy, yobs(:), start = [1], count = [numobs])
+      
+#ifdef HAVE_PROJ
+      if (add_latlon) then
+         call transform_and_put_latlon_coordinates(ihisfile, id_geom_node_coordlon, id_geom_node_coordlat, &
+                                                   nccrs%proj_string, xobs, yobs)
+      end if
+#endif
+
+   end function unc_put_his_station_geom_coord_vars_xy
 
 !> Convert t_nc_dim_ids to integer array of NetCDF dimension ids
 function build_nc_dimension_id_list(nc_dim_ids) result(res)
