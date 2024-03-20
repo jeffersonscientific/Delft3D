@@ -17888,6 +17888,7 @@ use m_transport, only: ISED1, ISEDN, const_names
 use unstruc_messages, only: mess, LEVEL_WARN
 use m_alloc, only: realloc
 use m_partitioninfo, only: um
+use m_output_config, only: UNC_LOC_S3D, UNC_LOC_S
 
 !input/output
 integer, intent(in) :: imapfile, kstart, ndx_own, it_read
