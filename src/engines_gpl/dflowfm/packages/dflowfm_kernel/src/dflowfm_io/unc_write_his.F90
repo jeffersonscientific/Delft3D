@@ -538,34 +538,13 @@ subroutine unc_write_his(tim)            ! wrihis
 
         if(dad_included) then  ! Output for dredging and dumping
             ierr = nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim)
-            ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%nadred+dadpar%nasupl, id_dreddim)
+            ierr = nf90_def_dim(ihisfile, 'ndred', dadpar%dredge_dimension_length, id_dreddim)
             ierr = nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim)
-
             ierr = nf90_def_var(ihisfile, 'dredge_area_name',         nf90_char,   (/ id_strlendim, id_dreddim /), id_dred_name)
             ierr = nf90_put_att(ihisfile, id_dred_name,  'long_name'    , 'dredge area identifier')
 
             ierr = nf90_def_var(ihisfile, 'dump_area_name',         nf90_char,   (/ id_strlendim, id_dumpdim /), id_dump_name)
             ierr = nf90_put_att(ihisfile, id_dump_name,  'long_name'    , 'dump area identifier')
-
-            ierr = nf90_def_var(ihisfile, 'dred_link_discharge', nc_precision, (/ id_dredlinkdim, id_sedtotdim, id_timedim /), id_dredlink_dis)
-            ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'long_name', 'Cumulative dredged material transported via links per fraction')
-            ierr = nf90_put_att(ihisfile, id_dredlink_dis, 'units', 'm3') !link_sum
-
-            ierr = nf90_def_var(ihisfile, 'dred_discharge', nc_precision, (/ id_dreddim, id_timedim /), id_dred_dis)
-            ierr = nf90_put_att(ihisfile, id_dred_dis, 'long_name', 'Cumulative dredged material for dredge areas')
-            ierr = nf90_put_att(ihisfile, id_dred_dis, 'units', 'm3') !totvoldred
-
-            ierr = nf90_def_var(ihisfile, 'dump_discharge', nc_precision, (/ id_dumpdim, id_timedim /), id_dump_dis)
-            ierr = nf90_put_att(ihisfile, id_dump_dis, 'long_name', 'Cumulative dredged material for dump areas')
-            ierr = nf90_put_att(ihisfile, id_dump_dis, 'units', 'm3') !totvoldump
-
-            ierr = nf90_def_var(ihisfile, 'dred_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_dred_tfrac)
-            ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'long_name', 'Time fraction spent dredging')
-            ierr = nf90_put_att(ihisfile, id_dred_tfrac, 'units', '-') !ndredged
-
-            ierr = nf90_def_var(ihisfile, 'plough_time_frac', nc_precision, (/ id_dreddim, id_timedim /), id_plough_tfrac)
-            ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'long_name', 'Time fraction spent ploughing')
-            ierr = nf90_put_att(ihisfile, id_plough_tfrac, 'units', '-') !nploughed
         endif
 
         if ( jacheckmonitor.eq.1 ) then
@@ -589,16 +568,21 @@ subroutine unc_write_his(tim)            ! wrihis
            do ivar = IDX_HIS_SBCX,IDX_HIS_SSCY ! set sediment transport unit just in time
               out_quan_conf_his%statout(ivar)%unit = transpunit
            enddo
+           
+           ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
+           ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
         endif
 
         ! WAQ statistic outputs are kept outside of the statistical output framework
-        ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)
+        if (jawaqproc <= 0) then
+          ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)
+        endif
 
          do ivar = 1,out_variable_set_his%count
             config => out_variable_set_his%statout(ivar)%output_config
             id_var => out_variable_set_his%statout(ivar)%id_var
-
-            if (config%location_specifier /= UNC_LOC_STATION &
+               
+            if (config%location_specifier         /= UNC_LOC_STATION &
                   .and. config%location_specifier /= UNC_LOC_OBSCRS &
                   .and. config%location_specifier /= UNC_LOC_GLOBAL &
                   .and. config%location_specifier /= UNC_LOC_SOSI &
@@ -616,6 +600,10 @@ subroutine unc_write_his(tim)            ! wrihis
                   .and. config%location_specifier /= UNC_LOC_CMPSTRU &
                   .and. config%location_specifier /= UNC_LOC_LONGCULVERT &
                   .and. config%location_specifier /= UNC_LOC_LATERAL &
+                  .and. config%location_specifier /= UNC_LOC_DREDGE &
+                  .and. config%location_specifier /= UNC_LOC_DUMP &
+                  .and. config%location_specifier /= UNC_LOC_DRED_LINK &
+
             ) then
                call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known output location.')
                cycle
@@ -685,6 +673,12 @@ subroutine unc_write_his(tim)            ! wrihis
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_LATERAL)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, attset=config%additional_attributes)
+            case (UNC_LOC_DREDGE)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dreddim,        id_timedim /), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, attset=config%additional_attributes)
+             case (UNC_LOC_DUMP)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, attset=config%additional_attributes)
+             case (UNC_LOC_DRED_LINK)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dredlinkdim, id_sedtotdim, id_timedim /), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_STATION)
                if (allocated(config%nc_dim_ids)) then
                   if (config%nc_dim_ids%laydim) then
@@ -951,13 +945,7 @@ subroutine unc_write_his(tim)            ! wrihis
         end if
 
         if (dad_included) then
-           !
-           !do i=1,stmpar%lsedtot
-           !   ierr = nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), (/ 1, i /))
-           !enddo
-           !ierr = nf90_put_var(ihisfile, id_frac_name, 'subsoil sediment', (/ 1, stmpar%lsedtot+1 /))        ! rest category
-           !
-           do i=1,(dadpar%nadred+dadpar%nasupl)
+           do i=1,(dadpar%dredge_dimension_length)
               ierr = nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /))
            enddo
            !
@@ -992,8 +980,10 @@ subroutine unc_write_his(tim)            ! wrihis
     endif
 
    ! WAQ statistic outputs are kept outside of the statistical output framework
-   ierr = unc_put_his_station_waq_statistic_outputs(id_hwq)
-
+   if (ntot <= 0 .or. jawaqproc <= 0) then
+      ierr = unc_put_his_station_waq_statistic_outputs(id_hwq)
+   endif
+     
    do ivar = 1,out_variable_set_his%count
       config => out_variable_set_his%statout(ivar)%output_config
       id_var => out_variable_set_his%statout(ivar)%id_var
@@ -1016,6 +1006,9 @@ subroutine unc_write_his(tim)            ! wrihis
             .and. config%location_specifier /= UNC_LOC_CMPSTRU &
             .and. config%location_specifier /= UNC_LOC_LONGCULVERT &
             .and. config%location_specifier /= UNC_LOC_LATERAL &
+            .and. config%location_specifier /= UNC_LOC_DREDGE &
+            .and. config%location_specifier /= UNC_LOC_DUMP &
+            .and. config%location_specifier /= UNC_LOC_DRED_LINK &
             ) then
          call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known statistical output location.')
          cycle
@@ -1037,11 +1030,15 @@ subroutine unc_write_his(tim)            ! wrihis
          UNC_LOC_UNIWEIR, &
          UNC_LOC_CMPSTRU, &
          UNC_LOC_LONGCULVERT, &
-         UNC_LOC_LATERAL &
+         UNC_LOC_LATERAL, &
+         UNC_LOC_DREDGE, &
+         UNC_LOC_DUMP &
          )
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, it_his /))
       case (UNC_LOC_STATION)
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, count = build_nc_dimension_id_count_array(config%nc_dim_ids), start = build_nc_dimension_id_start_array(config%nc_dim_ids))
+      case (UNC_LOC_DRED_LINK)
+         ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /))
       case (UNC_LOC_GLOBAL)
          if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /))
@@ -1967,12 +1964,12 @@ subroutine unc_write_his(tim)            ! wrihis
 
     if ( dad_included ) then  ! Output for dredging and dumping
        ierr = nf90_put_var(ihisfile, id_dredlink_dis, dadpar%link_sum  , start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /))
-       ierr = nf90_put_var(ihisfile, id_dred_dis    , dadpar%totvoldred, start = (/ 1, it_his /), count = (/ dadpar%nadred+dadpar%nasupl, 1 /))
+       ierr = nf90_put_var(ihisfile, id_dred_dis    , dadpar%totvoldred, start = (/ 1, it_his /), count = (/ dadpar%dredge_dimension_length, 1 /))
        ierr = nf90_put_var(ihisfile, id_dump_dis    , dadpar%totvoldump, start = (/ 1, it_his /), count = (/ dadpar%nadump, 1 /))
 
        cof0 = 1d0 ; if( time_his > 0d0 ) cof0 = time_his
-       ierr = nf90_put_var(ihisfile, id_dred_tfrac  , dadpar%tim_dredged/cof0  , start = (/ 1, it_his /), count = (/ dadpar%nadred+dadpar%nasupl, 1 /))
-       ierr = nf90_put_var(ihisfile, id_plough_tfrac, dadpar%tim_ploughed/cof0 , start = (/ 1, it_his /), count = (/ dadpar%nadred+dadpar%nasupl, 1 /))
+       ierr = nf90_put_var(ihisfile, id_dred_tfrac  , dadpar%tim_dredged/cof0  , start = (/ 1, it_his /), count = (/ dadpar%dredge_dimension_length, 1 /))
+       ierr = nf90_put_var(ihisfile, id_plough_tfrac, dadpar%tim_ploughed/cof0 , start = (/ 1, it_his /), count = (/ dadpar%dredge_dimension_length, 1 /))
     endif
     if (timon) call timstop(handle_extra(66))
     endif ! (.false.)
@@ -2416,9 +2413,6 @@ contains
       integer, allocatable  :: nc_dimensions(:), specific_nc_dimensions(:)
 
       nc_error = IONC_NOERR
-      if (jawaqproc <= 0) then
-         return
-      end if
 
       allocate(waq_statistics_ids(noout_statt + noout_state))
 
@@ -2456,9 +2450,6 @@ contains
       integer :: start_index_valobs, statistics_index, num_layers
 
       nc_error = IONC_NOERR
-      if (ntot <= 0 .or. jawaqproc <= 0) then
-         return
-      end if
 
       ! Default start and count for stat-t variables
       if (model_is_3D()) then
