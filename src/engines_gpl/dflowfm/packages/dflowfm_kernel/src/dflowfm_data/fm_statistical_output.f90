@@ -2130,7 +2130,7 @@ private
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valpump(IVAL_PP_DISDIR ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1UP               ),valpump(IVAL_S1UP      ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1DN               ),valpump(IVAL_S1DN      ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_HEAD      ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valpump(IVAL_PP_STAG   ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_HEAD               ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valpump(IVAL_PP_RED    ,1:npumpsg))
@@ -2170,16 +2170,16 @@ private
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_DISCHARGE            ),valorifgen(IVAL_DIS       ,1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_CREST_LEVEL          ),valorifgen(IVAL_CRESTL    ,1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_CREST_WIDTH          ),valorifgen(IVAL_CRESTW    ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_GATE_LOWER_EDGE_LEVEL),valorifgen(IVAL_S1UP      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1UP                 ),valorifgen(IVAL_S1DN      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1DN                 ),valorifgen(IVAL_HEAD      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_GATE_OPENING_HEIGHT  ),valorifgen(IVAL_VEL       ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_HEAD                 ),valorifgen(IVAL_AREA      ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_FLOW_AREA            ),valorifgen(IVAL_STATE     ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_STATE                ),valorifgen(IVAL_FORCEDIF  ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_GATE_LOWER_EDGE_LEVEL),valorifgen(IVAL_EDGEL     ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1UP                 ),valorifgen(IVAL_S1UP      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1DN                 ),valorifgen(IVAL_S1DN      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_GATE_OPENING_HEIGHT  ),valorifgen(IVAL_OPENH     ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_HEAD                 ),valorifgen(IVAL_HEAD      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_FLOW_AREA            ),valorifgen(IVAL_AREA      ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_STATE                ),valorifgen(IVAL_STATE     ,1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_S1_ON_CREST          ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_VELOCITY             ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_FORCE_DIFFERENCE     ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_VELOCITY             ),valorifgen(IVAL_VEL       ,1:network%sts%numOrifices))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_ORIFICE_FORCE_DIFFERENCE     ),valorifgen(IVAL_FORCEDIF  ,1:network%sts%numOrifices))
       endif
       if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRIDGE_DISCHARGE ),valbridge(IVAL_DIS,     1:network%sts%numBridges)        )
@@ -2204,18 +2204,18 @@ private
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_VELOCITY             ),valculvert(IVAL_VEL        ,1:network%sts%numCulverts)            )
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_CULVERT_STATE                ),valculvert(IVAL_CL_STATE   ,1:network%sts%numCulverts)            )
       endif
-      if (jahisdambreak > 0 .and. ndambreak > 0) then
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_S1UP                        ),valdambreak(IVAL_S1UP,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_S1DN                        ),valdambreak(IVAL_S1DN,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_DISCHARGE                   ),valdambreak(IVAL_DIS,1:ndambreak)       )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE        ),valdambreak(IVAL_DB_DISCUM,1:ndambreak) )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_VELOCITY                    ),valdambreak(IVAL_VEL,1:ndambreak)       )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_HEAD                        ),valdambreak(IVAL_HEAD,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_FLOW_AREA                   ),valdambreak(IVAL_AREA,1:ndambreak)      )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CREST_LEVEL                 ),valdambreak(IVAL_DB_CRESTH,1:ndambreak) )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CREST_WIDTH                 ),valdambreak(IVAL_DB_CRESTW,1:ndambreak) )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE),valdambreak(IVAL_DB_TIMEDIV,1:ndambreak))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP            ),valdambreak(IVAL_DB_JUMP,1:ndambreak)   )
+      if (jahisdambreak > 0 .and. ndambreaksignals > 0) then
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_S1UP                        ),valdambreak(IVAL_S1UP,1:ndambreaksignals)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_S1DN                        ),valdambreak(IVAL_S1DN,1:ndambreaksignals)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_DISCHARGE                   ),valdambreak(IVAL_DIS,1:ndambreaksignals)       )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CUMULATIVE_DISCHARGE        ),valdambreak(IVAL_DB_DISCUM,1:ndambreaksignals) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_VELOCITY                    ),valdambreak(IVAL_VEL,1:ndambreaksignals)       )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_HEAD                        ),valdambreak(IVAL_HEAD,1:ndambreaksignals)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_FLOW_AREA                   ),valdambreak(IVAL_AREA,1:ndambreaksignals)      )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CREST_LEVEL                 ),valdambreak(IVAL_DB_CRESTH,1:ndambreaksignals) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_CREST_WIDTH                 ),valdambreak(IVAL_DB_CRESTW,1:ndambreaksignals) )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE),valdambreak(IVAL_DB_TIMEDIV,1:ndambreaksignals))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP            ),valdambreak(IVAL_DB_JUMP,1:ndambreaksignals)   )
       endif
       if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_UNIWEIR_DISCHARGE  ),valuniweir(IVAL_DIS,1:network%sts%numuniweirs)      )
@@ -2251,7 +2251,9 @@ private
       ! Basic flow quantities
       if (ntot > 0) then
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WATERLEVEL),valobs(:,IPNT_S1)                               )
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
+         if(stm_included) then
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
+         endif
          if (jahiswatdep > 0) then
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS)                               )
          endif
