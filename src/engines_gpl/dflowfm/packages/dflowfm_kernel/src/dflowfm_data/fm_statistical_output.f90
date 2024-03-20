@@ -489,6 +489,7 @@ private
    !> Add output configs for the waq bottom substances on observation stations just in time,
    !! because these substances are only known during model initialization.
    !! Return config indices for these variables such that they can be added to the output items for the same substances
+   !! NOTE (TB): apparently, these are the 'inactive' substances defined in the waq substance file
    subroutine add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
    
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits
@@ -507,7 +508,7 @@ private
       type(ug_nc_attribute)                             :: atts(1)
       integer                                           :: i
 
-      call realloc(idx_wqbot_stations, numwqbots, keepExisting = .false., fill = 0)
+      allocate(idx_wqbot_stations(numwqbots), source = 0)
       
       call ncu_set_att(atts(1), 'geometry', 'station_geom')
 
@@ -551,7 +552,7 @@ private
       type(ug_nc_attribute)                             :: atts(1)
       integer                                           :: i
 
-      call realloc(idx_wqbot3D_stations, numwqbots, keepExisting = .false., fill = 0)
+      allocate(idx_wqbot3D_stations(numwqbots), source = 0)
       
       call ncu_set_att(atts(1), 'geometry', 'station_geom')
 
