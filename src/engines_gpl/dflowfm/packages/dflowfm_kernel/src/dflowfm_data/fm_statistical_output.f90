@@ -2389,7 +2389,7 @@ private
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QFREVA),valobs(:,IPNT_QFRE)                                     )
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QFRCON),valobs(:,IPNT_QFRC)                                     )
             endif
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QTOT  ),valobs(:,IPNT_RHUM)                                     )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_QTOT  ),valobs(:,IPNT_QTOT)                                     )
       endif
 
       ! Sediment model
