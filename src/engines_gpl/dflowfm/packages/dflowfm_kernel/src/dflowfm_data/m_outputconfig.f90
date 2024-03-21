@@ -270,6 +270,8 @@ private
    integer, public :: IDX_HIS_INFILTRATION_CAP
    integer, public :: IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL
 
+   integer, public :: IDX_HIS_AIR_DENSITY
+
    integer, public :: IDX_HIS_WIND
    integer, public :: IDX_HIS_TAIR
    integer, public :: IDX_HIS_RHUM

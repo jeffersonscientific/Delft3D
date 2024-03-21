@@ -1194,6 +1194,12 @@ private
                      'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
                      'mm hr-1', UNC_LOC_STATION, nc_atts = atts(1:1),                              &
                      nc_dim_ids = nc_dims_2D)
+      
+      ! Variable (computed) air density
+      call addoutval(out_quan_conf_his, IDX_HIS_AIR_DENSITY,                  &
+                     'Wrihis_airdensity', 'rhoair', 'air density', '', &
+                     'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1),                              &
+                     nc_dim_ids = nc_dims_2D)
 
       ! Heat flux model
       call addoutval(out_quan_conf_his, IDX_HIS_WIND,                                                            &
@@ -2362,6 +2368,10 @@ private
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_INFILTRATION_CAP)                 ,valobs(:,IPNT_infiltcap)                                          )
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL) ,valobs(:,IPNT_infiltact)            )
       endif
+      
+      if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity > 0) then
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_AIR_DENSITY),valobs(:,IPNT_AIRDENSITY))
+      end if
 
       ! Heat flux model
       if (jatem > 1 .and. jahisheatflux > 0) then
