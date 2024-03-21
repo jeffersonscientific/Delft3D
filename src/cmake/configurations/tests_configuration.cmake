@@ -1,4 +1,7 @@
 # Specify the modules to be included
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/windows_postbuild_configuration.cmake)
+
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
@@ -13,6 +16,15 @@ endif()
 
 if(NOT TARGET ftnunit)
     add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
+endif()
+
+# Ice
+if(NOT TARGET ice_data)
+    add_subdirectory(${checkout_src_root}/${ice_data_module} ice_data)
+endif()
+
+if(NOT TARGET ice_io)
+    add_subdirectory(${checkout_src_root}/${ice_io_module} ice_io)
 endif()
 
 # Trachytopes
@@ -125,9 +137,12 @@ if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
-if(NOT TARGET proj)
-    add_subdirectory(${checkout_src_root}/${proj_module} proj)
-endif()
+# proj
+if(WIN32)
+    if(NOT TARGET proj)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+    endif()
+endif(WIN32)
 
 # netcdf
 if(NOT TARGET netcdff)
@@ -171,9 +186,11 @@ endif()
 
 # Test binaries
 add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
-add_subdirectory(${checkout_src_root}/${test_ec_module}              test_ec_module)
-add_subdirectory(${checkout_src_root}/${test_waq_utils_f}            test_waq_utils_f)
-add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel}         test_dflowfm_kernel)
+add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
+add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
+add_subdirectory(${delwaq_tests_module} tests_delwaq)
+add_subdirectory(${checkout_src_root}/${test_io_netcdf} test_io_netcdf)
+add_subdirectory(${utils_lgpl_tests_module} tests_utils_lgpl)
 
 if(UNIX)
     # install

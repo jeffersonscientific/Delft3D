@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -71,7 +71,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_structures
     use m_GlobalParameters
     use m_longculverts
-    use odugrid
+    use m_lateral, only : numlatsg, nNodesLat, lat_ids, qplat, qplatAve, qLatRealAve, geomXLat, geomYLat, nlatnd, qLatReal, nodeCountLat
 
     implicit none
 
@@ -186,11 +186,8 @@ subroutine unc_write_his(tim)            ! wrihis
        jawrizc = 1
        jawrizw = 1
     endif
-    
-    nc_precision = nf90_double
-    if ( md_nc_his_precision == SINGLE_PRECISION ) then
-       nc_precision = nf90_float
-    endif
+
+    nc_precision = netcdf_data_type(md_nc_his_precision)
 
     if (timon) call timstrt ( "unc_write_his", handle_extra(54))
 
@@ -253,7 +250,7 @@ subroutine unc_write_his(tim)            ! wrihis
             filename = defaultFilename('his')
         end if
 
-        ierr = unc_create(filename, 0, ihisfile, .false.)
+        ierr = unc_create(filename, 0, ihisfile)
         if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'Could not create history file.')
         end if
@@ -651,7 +648,7 @@ subroutine unc_write_his(tim)            ! wrihis
                endif
             endif
 
-            if (ja_airdensity + ja_varying_airdensity > 0 .and. jahis_airdensity > 0) then
+            if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity > 0) then
                call definencvar(ihisfile,id_airdensity, nc_precision,(/ id_statdim, id_timedim /),2, 'rhoair'  , 'air density', 'kg m-3 ', statcoordstring, station_geom_container_name)
             endif
 
@@ -748,7 +745,7 @@ subroutine unc_write_his(tim)            ! wrihis
                         ierr = nf90_def_var(ihisfile, trim(tmpstr), nc_precision, (/ id_statdim, id_timedim /), id_hwq(j))
                         ierr = nf90_put_att(ihisfile, id_hwq(j), 'coordinates', statcoordstring)
                      end if
-                     tmpstr = trim(outputs%names(j))//' - '//trim(outputs%descrs(j))//' in flow element'
+                     tmpstr = trim(outputs%names(j))//' - '//trim(outputs%description(j))//' in flow element'
                      call replace_multiple_spaces_by_single_spaces(tmpstr)
                      ierr = write_real_fill_value(id_hwq(j))
                      ierr = nf90_put_att(ihisfile, id_hwq(j), 'long_name', trim(outputs%names(j)))
@@ -770,7 +767,7 @@ subroutine unc_write_his(tim)            ! wrihis
                         ierr = nf90_def_var(ihisfile, trim(tmpstr), nc_precision, (/ id_statdim, id_timedim /), id_hwq(jj))
                         ierr = nf90_put_att(ihisfile, id_hwq(jj), 'coordinates', statcoordstring)
                      end if
-                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                      call replace_multiple_spaces_by_single_spaces(tmpstr)
                      ierr = write_real_fill_value(id_hwq(jj))
                      ierr = nf90_put_att(ihisfile, id_hwq(jj), 'long_name', trim(outputs%names(jj)))
@@ -792,7 +789,7 @@ subroutine unc_write_his(tim)            ! wrihis
                         ierr = nf90_def_var(ihisfile, trim(tmpstr), nc_precision, (/ id_statdim /), id_hwq(jj))
                         ierr = nf90_put_att(ihisfile, id_hwq(jj), 'coordinates', statcoordstring)
                      end if
-                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                      call replace_multiple_spaces_by_single_spaces(tmpstr)
                      ierr = write_real_fill_value(id_hwq(jj))
                      ierr = nf90_put_att(ihisfile, id_hwq(jj), 'long_name', trim(outputs%names(jj)))
@@ -2971,7 +2968,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
     end if ! jamapheatflux > 0! jatem > 0
 
-    if (ja_airdensity + ja_varying_airdensity > 0 .and. jahis_airdensity> 0) then
+    if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity> 0) then
        ierr = nf90_put_var(ihisfile, id_airdensity   , valobsT(:,IPNT_AIRDENSITY),  start = (/ 1, it_his /), count = (/ ntot, 1 /))
     end if
 

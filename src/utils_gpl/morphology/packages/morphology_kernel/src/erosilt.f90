@@ -10,7 +10,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
                  & sourf    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -162,8 +162,9 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
        if (tcrdep > 0.0_fp) then
           sink = max(0.0_fp , 1.0_fp-taub/tcrdep)
        else
-          sink = 0.0
+          sink = 0.0_fp
        endif
+       sour_fluff = 0.0_fp
     else
        if (iform == -3 .or. iform == -5) then
           eropar = eropar_bed * par(11)
@@ -266,11 +267,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
           write (errmsg,'(a,i0,a)') 'Invalid transport formula ',iform,' for mud fraction.'
           call write_error(errmsg, unit=lundia)
        endif
-    endif
-    !
-    wstau         = ws(kmax) * sink ! used for flmd2l
-    !
-    if (.not.flmd2l) then
+       !
        if (oldmudfrac) then
           sour       = fixfac * sour
           sour_fluff = 0.0_fp
@@ -279,6 +276,8 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
           sour_fluff =          fracf * sour_fluff
        endif
     endif
+    !
+    wstau         = ws(kmax) * sink ! used for flmd2l
     !
     sour    = min(sour, srcmax)
     !

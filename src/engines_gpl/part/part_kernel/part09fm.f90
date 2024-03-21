@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -258,9 +258,9 @@ contains
 
 !    for one layer models (2dh), the release will be in the user-defined location
             if ( modtyp .eq. model_oil .and. laypart(i) .eq. 1 ) then
-               hpart(i) = zwasth
+               hpart(i) = 0.0_dp
             elseif ( nolay .eq. 1 ) then
-               hpart(i) = zwasth/100.0
+               hpart(i) = (ipart-0.5)/nplay(1)
             else
 
 !        for 3d models, the release will be distributed uniformly over the layer depth

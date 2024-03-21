@@ -12,19 +12,19 @@
         <locations>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="reference_engines">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin</root>
+                <root>{server_base_url}/references/bin</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="local">
                 <root>./data/engines</root>
@@ -79,6 +79,27 @@
             </programs>
             <location ref="reference_results" type="reference">
                 <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="dflowfm_restart">
+            <programs>
+                <program ref="dimr" seq="1">
+                    <arguments>
+                        <argument>dimr.xml</argument>
+                    </arguments>
+                </program>
+                <program ref="dimr" seq="2">
+                    <arguments>
+                        <argument>dimr_restart.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>

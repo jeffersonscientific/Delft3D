@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -123,7 +123,7 @@ contains
       write (lunit(2), *)
       write ( lunit(2), * ) ' Opening the active grid file file:', fname(3)(1:len_trim(fname(3)))
       call openfl ( lunit(3), fname(3), 0 )
-
+      
       read ( lunit(3), end = 10, err = 10 ) nmaxp, mmaxp, noseglp, layt2, noq1 , noq2 , noq3
       write( lunit(2),*) '   '
       write( lunit(2),*) ' Exchanges read from active grid file (*.lga) '

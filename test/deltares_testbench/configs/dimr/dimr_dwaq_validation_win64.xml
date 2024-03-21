@@ -15,19 +15,19 @@
         <locations>
             <location name="reference_engines">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="local">
                 <root>./data/engines</root>
@@ -54,7 +54,7 @@
             <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
@@ -63,7 +63,7 @@
                 <from>teamcity_artifacts/x64</from>
             </location>
             <environments>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
             </environments>
         </program>
         <program name="vs">

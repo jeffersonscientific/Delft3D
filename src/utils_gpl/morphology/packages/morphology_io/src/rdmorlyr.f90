@@ -1,7 +1,7 @@
 module m_rdmorlyr
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -98,6 +98,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     character(MAXTABLECLENGTH), dimension(:), allocatable         :: parnames
     !
     logical                             , pointer :: exchlyr
+    logical                             , pointer :: track_shortage
     real(fp)                            , pointer :: bed
     real(fp)                            , pointer :: minmass
     real(fp)                            , pointer :: theulyr
@@ -182,8 +183,9 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'ThLaLyr'             , thlalyr)
     if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'UpdTopLyr'           , updtoplyr)
     if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'UpdBaseLyr'          , updbaselyr)
-    if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'MinMassShortWarning' , minmass)
-    if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'MaxNumShortWarning'  , maxwarn)
+    if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'track_mass_shortage'      , track_shortage)
+    if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'mass_shortage_thresh'     , minmass)
+    if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'max_num_shortage_warnings', maxwarn)
     if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IConsolidate'        , iconsolidate)
     if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IPorosity'           , iporosity)
     if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'Ndiff'               , ndiff)
@@ -478,11 +480,6 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        end select
        write(lundia,'(3a)') txtput1, ':', txtput2
        !
-       ! Numerical settings
-       !
-       call prop_get(mor_ptr, 'Numerics', 'MinMassShortWarning', minmass)
-       call prop_get(mor_ptr, 'Numerics', 'MaxNumShortWarning' , maxwarn)
-       !
        ! Mixing between layers
        !
        call prop_get_integer(mor_ptr, 'Underlayer', 'IDiffusion', idiffusion)       
@@ -507,6 +504,15 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        !
     case default
     endselect
+    !
+    ! Numerical settings
+    !
+    track_shortage = iunderlyr > 1 ! default off for standard bed composition
+    call prop_get(mor_ptr, 'Numerics', 'TrackMassShortage'  , track_shortage)
+    if (track_shortage) then
+       call prop_get(mor_ptr, 'Numerics', 'MinMassShortWarning', minmass)
+       call prop_get(mor_ptr, 'Numerics', 'MaxNumShortWarning' , maxwarn)
+    endif
     !
     if (allocmorlyr(morlyr) /= 0) then
        errmsg = 'RDMORLYR: memory alloc error'
@@ -1261,13 +1267,13 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
 !
 ! Global variables
 !
-    type(griddimtype)                        , target   , intent(in)  :: griddim
-    integer                                             , intent(in)  :: lundia  !< Diagnostic output file
-    character(*)                                        , intent(in)  :: fildiff !< Name of the diffusion coefficients file
-    integer                                             , intent(in)  :: ndiff   !< (Maximum) number of diffusion coefficients
-    real(fp), dimension(ndiff)                          , intent(out) :: zdiff   !< Vertical position of the diffusion coefficient
-    real(fp), dimension(ndiff,griddim%nmlb:griddim%nmub), intent(out) :: kdiff   !< Diffusion coefficient
-    logical                                             , intent(out) :: error   !< Error flag
+    type(griddimtype)                        , target   , intent(in)  :: griddim !< grid dimensions structure
+    integer                                             , intent(in)  :: lundia  !< unit number for diagnostic file
+    character(*)                                        , intent(in)  :: fildiff !< name of diffusion file
+    integer                                             , intent(in)  :: ndiff   !< number of diffusion coefficients in vertical direction
+    real(fp), dimension(ndiff,griddim%nmlb:griddim%nmub), intent(out) :: kdiff   !< diffusion coefficients for mixing between layers, units : m2/s
+    real(fp), dimension(ndiff)                          , intent(out) :: zdiff   !< depth below bed level for which diffusion coefficients are defined, units : m
+    logical                                             , intent(out) :: error   !< error flag
 !
 ! Local variables
 !

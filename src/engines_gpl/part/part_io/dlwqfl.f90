@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -147,7 +147,7 @@ contains
          if ( ipnt(i,1) .gt. 0 ) result2(ipnt(i,1)) = result2(ipnt(i,1)) + array2(i)
          if ( ipnt(i,2) .gt. 0 ) result2(ipnt(i,2)) = result2(ipnt(i,2)) + array2(i)
       enddo
-
+         
       goto 100
 
 !         normal rewind.

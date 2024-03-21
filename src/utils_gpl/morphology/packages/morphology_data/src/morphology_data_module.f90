@@ -1,7 +1,7 @@
 module morphology_data_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -39,6 +39,9 @@ use flocculation, only: FLOC_NONE
 use handles, only:handletype
 use properties, only:tree_data
 use m_tables, only:t_table
+
+implicit none
+
 private
 
 !
@@ -50,6 +53,7 @@ public mornumericstype
 public bedbndtype
 public cmpbndtype
 public sedpar_type
+public parfile_type
 public trapar_type
 public sedtra_type
 public fluffy_type
@@ -71,11 +75,17 @@ public allocsedtra
 public clrsedtra
 public allocfluffy
 public initmoroutput
+public get_transport_parameters
+public get_one_transport_parameter
 
 ! define a missing value consistent with netCDF _fillvalue
 real(fp), parameter, public :: missing_value = 9.9692099683868690e+36_fp
 
 integer, parameter, public :: CHARLEN = 40
+
+integer, parameter, public :: PARSOURCE_UNKNOWN = 0
+integer, parameter, public :: PARSOURCE_FIELD   = 1
+integer, parameter, public :: PARSOURCE_TIME    = 2
 
 integer, parameter, public :: RP_TIME  =  1     ! time since reference date [s]
 integer, parameter, public :: RP_EFUMN =  2     ! U component of effective depth averaged velocity [m/s]
@@ -131,9 +141,10 @@ integer, parameter, public :: RP_POROS = 51     ! porosity of particle size mix 
 integer, parameter, public :: RP_DZDX  = 52     ! U component of bed slope [-]
 integer, parameter, public :: RP_DZDY  = 53     ! V component of bed slope [-]
 integer, parameter, public :: RP_DM    = 54     ! median sediment diameter of particle size mix of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_DBG   = 55     ! debug array value from eqtran [-]
+integer, parameter, public :: RP_ZB    = 55     ! bed level (positive up) [m]
 integer, parameter, public :: RP_TAUCR = 56     ! critical shear stress of bed material [N/m2]
-integer, parameter, public :: MAX_RP   = 56     ! mmaximum number of real parameters
+integer, parameter, public :: RP_DBG   = 57     ! debug array value from eqtran [-]
+integer, parameter, public :: MAX_RP   = 57     ! maximum number of real parameters
 !
 integer, parameter, public :: IP_NM    =  1     ! local (i.e. within partition) cell index
 integer, parameter, public :: IP_N     =  2     ! local (i.e. within partition) fastest dimension index -- only for structured mesh models
@@ -419,6 +430,7 @@ type morpar_type
     real(fp):: pangle     !  phase lead angle acc. to Nielsen (1992) for TR2004 expression
     real(fp):: fpco       !  coefficient for phase llag effects
     real(fp):: factcr     !  calibration factor on Shields' critical shear stress   
+    real(fp):: ti_sedtrans!  time where calculation for sediment transport computation start (tunit relative to ITDATE,00:00:00)
     real(fp):: tmor       !  time where calculation for morphological changes start (tunit relative to ITDATE,00:00:00)
     real(fp):: tcmp       !  time where calculation for bed composition changes start (tunit relative to ITDATE,00:00:00)
     real(fp):: thetsduni  !  uniform value for dry cell erosion factor
@@ -470,6 +482,7 @@ type morpar_type
                            !  5: Wu, Wang, Jia (2000)
     integer :: itmor       !  time step where calculation for bed level updating starts
     integer :: itcmp       !  time step where calculation for bed composition updating starts
+    integer :: iti_sedtrans!  Sediment transport computation start time step
     integer :: iopkcw
     integer :: iopsus
     integer :: islope      !  switch for bed slope effect, according
@@ -657,6 +670,21 @@ type sedpar_type
     character(256) :: flspmc     ! critical mud fraction for non-cohesive behaviour file
 end type sedpar_type
 
+type parfile_type
+    integer                                   :: source     !< data source for the parameter: time-series or spatial field
+    !
+    integer                                   :: ipar_ts    !< parameter number within the time series object
+    integer                                   :: irec_ts    !< most recently used time series record
+    integer                                   :: itable_ts  !< table nunber within the time series object
+    integer                                   :: npar_ts    !< number of parameter values within time series object (should be 1)
+    integer                                   :: refjulday  !< Julian reference date
+    real(fp)                                  :: timhr      !< time of previous value
+    real(fp)                                  :: par        !< previous parameter value
+    !
+    real(fp), allocatable                     :: parfld(:)  !< spatial field
+    type(handletype)                          :: ts         !< time series object
+end type parfile_type
+
 type trapar_type
     !
     ! doubles
@@ -673,41 +701,42 @@ type trapar_type
     integer                                    :: max_reals           !  Maximum number of reals which can be delivered to shared library
     integer                                    :: max_strings         !  Maximum number of character strings which can be delivered to shared library
     integer                                    :: npar                !  Maximum number of sediment transport formula parameters
-    integer                                    :: nparfld             !  Number of sediment transport formula 2D field parameters
+    integer                                    :: nparfile            !  Number of sediment transport formula parameters specified by file
     integer                                    :: nouttot             !  Total number of output parameters (sum of noutpar)
     !
     ! pointers
     !
-    integer          , dimension(:)  , pointer :: noutpar             !  (lsedtot) Number of output parameters per sediment fraction i1
-    integer          , dimension(:,:), pointer :: ioutpar             !  (max, lsedtot) Index of output parameter i2 of sediment fraction i1 into XX array
-    real(fp)         , dimension(:,:), pointer :: outpar              !  (noutpar,nmmax) Sediment transport parameters spatially varying
-    character(256)   , dimension(:,:), pointer :: outpar_name         !  (max, lsedtot) Name of sediment transport parameter i2 of sediment fraction i1
-    character(256)   , dimension(:,:), pointer :: outpar_longname     !  (max, lsedtot) Long name of sediment transport parameter i2 of sediment fraction i1
+    integer          , dimension(:)  , pointer :: noutpar             !< (lsedtot) Number of output parameters per sediment fraction i1
+    integer          , dimension(:,:), pointer :: ioutpar             !< (max, lsedtot) Index of output parameter i2 of sediment fraction i1 into XX array
+    real(fp)         , dimension(:,:), pointer :: outpar              !< (noutpar,nmmax) Sediment transport parameters spatially varying
+    character(256)   , dimension(:,:), pointer :: outpar_name         !< (max, lsedtot) Name of sediment transport parameter i2 of sediment fraction i1
+    character(256)   , dimension(:,:), pointer :: outpar_longname     !< (max, lsedtot) Long name of sediment transport parameter i2 of sediment fraction i1
     !
-    character(256)   , dimension(:)  , pointer :: dll_function_settle !  Name of subroutine in DLL that calculates the Settling velocity
-    character(256)   , dimension(:)  , pointer :: dll_name_settle     !  Name of DLL that contains the Settling velocity subroutine
-    integer(pntrsize), dimension(:)  , pointer :: dll_handle_settle   !  Handle of DLL that contains the Settling velocity subroutine
-    integer          , dimension(:)  , pointer :: dll_integers_settle !  Input integer array to shared library
-    real(hp)         , dimension(:)  , pointer :: dll_reals_settle    !  Input real array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_strings_settle  !  Input character string array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_usrfil_settle   !  Name of input file to be passed to subroutine in DLL
-    integer          , dimension(:)  , pointer :: iform_settle        !  Number of sediment settling velocity formula
-    real(fp)         , dimension(:,:), pointer :: par_settle          !  Settling velocity formula parameters
+    character(256)   , dimension(:)  , pointer :: dll_function_settle !< Name of subroutine in DLL that calculates the Settling velocity
+    character(256)   , dimension(:)  , pointer :: dll_name_settle     !< Name of DLL that contains the Settling velocity subroutine
+    integer(pntrsize), dimension(:)  , pointer :: dll_handle_settle   !< Handle of DLL that contains the Settling velocity subroutine
+    integer          , dimension(:)  , pointer :: dll_integers_settle !< Input integer array to shared library
+    real(hp)         , dimension(:)  , pointer :: dll_reals_settle    !< Input real array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_strings_settle  !< Input character string array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_usrfil_settle   !< Name of input file to be passed to subroutine in DLL
+    integer          , dimension(:)  , pointer :: iform_settle        !< Number of sediment settling velocity formula
+    real(fp)         , dimension(:,:), pointer :: par_settle          !< Settling velocity formula parameters
     !
-    character(256)   , dimension(:)  , pointer :: dll_function        !  Name of subroutine in DLL that calculates the Sediment transport formula
-    character(256)   , dimension(:)  , pointer :: dll_name            !  Name of DLL that calculates the Sediment transport formula
-    integer(pntrsize), dimension(:)  , pointer :: dll_handle          !  DLL containing Sediment transport formula
-    integer          , dimension(:)  , pointer :: dll_integers        !  Input integer array to shared library
-    real(hp)         , dimension(:)  , pointer :: dll_reals           !  Input real array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_strings         !  Input character string array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_usrfil          !  Name of input file to be passed to subroutine in DLL
-    character(256)   , dimension(:)  , pointer :: flstrn              !  Sediment transport formula file names
-    integer          , dimension(:)  , pointer :: iform               !  Sediment transport formula number
-    character(256)   , dimension(:)  , pointer :: name                !  Sediment transport formula names
-    real(fp)         , dimension(:,:), pointer :: par                 !  Sediment transport formula parameters
-    integer          , dimension(:,:), pointer :: iparfld             !  Index of parameter in parfld array (0 if constant)
-    real(fp)         , dimension(:,:), pointer :: parfld              !  Sediment transport formula 2D field parameters
-    character(256)   , dimension(:,:), pointer :: parfil              !  Sediment transport formula file names
+    character(256)   , dimension(:)  , pointer :: dll_function        !< Name of subroutine in DLL that calculates the Sediment transport formula
+    character(256)   , dimension(:)  , pointer :: dll_name            !< Name of DLL that calculates the Sediment transport formula
+    integer(pntrsize), dimension(:)  , pointer :: dll_handle          !< DLL containing Sediment transport formula
+    integer          , dimension(:)  , pointer :: dll_integers        !< Input integer array to shared library
+    real(hp)         , dimension(:)  , pointer :: dll_reals           !< Input real array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_strings         !< Input character string array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_usrfil          !< Name of input file to be passed to subroutine in DLL
+    character(256)   , dimension(:)  , pointer :: flstrn              !< Sediment transport formula file names
+    integer          , dimension(:)  , pointer :: iform               !< Sediment transport formula number
+    character(256)   , dimension(:)  , pointer :: name                !< Sediment transport formula names
+    real(fp)         , dimension(:,:), pointer :: par                 !< Sediment transport formula parameter values
+    character(25)    , dimension(:,:), pointer :: parname             !< Sediment transport formula parameter names
+    character(256)   , dimension(:,:), pointer :: parfilename         !< Sediment transport formula file names
+    integer          , dimension(:,:), pointer :: iparfile            !< Index of parameter in parfile array (0 if parameter is a constant)
+    type(parfile_type), dimension(:)  , pointer :: parfile(:)         !< Sediment transport parameter read from file - time- or space-varying data
     ! 
     ! logicals
     !
@@ -804,9 +833,6 @@ end type sedtra_type
 !> Nullify/initialize a sedtra_type data structure.
 subroutine nullsedtra(sedtra)
 !!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -905,9 +931,6 @@ end subroutine nullsedtra
 !> Allocate the arrays of sedtra_type data structure.
 subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
 !!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1128,9 +1151,6 @@ end subroutine allocsedtra
 !> Clear the arrays of sedtra_type data structure.
 subroutine clrsedtra(istat, sedtra)
 !!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1230,9 +1250,6 @@ end subroutine clrsedtra
 !> Nullify/initialize a sedpar_type data structure.
 subroutine nullsedpar(sedpar)
 !!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1318,7 +1335,6 @@ end subroutine nullsedpar
 !> Clean up a sedpar_type data structure.
 subroutine clrsedpar(istat     ,sedpar  )
 !!--declarations----------------------------------------------------------------
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1372,9 +1388,6 @@ end subroutine clrsedpar
 !> Nullify/initialize a morpar_type data structure.
 subroutine nullmorpar(morpar)
 !!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1383,6 +1396,7 @@ subroutine nullmorpar(morpar)
     ! Local variables
     !
     integer                              , pointer :: ihidexp
+    integer                              , pointer :: iti_sedtrans
     integer                              , pointer :: itmor
     integer                              , pointer :: itcmp
     integer                              , pointer :: iopkcw
@@ -1410,6 +1424,7 @@ subroutine nullmorpar(morpar)
     real(fp)                             , pointer :: sus
     real(fp)                             , pointer :: suscorfac
     real(fp)                             , pointer :: bed
+    real(fp)                             , pointer :: ti_sedtrans
     real(fp)                             , pointer :: tmor
     real(fp)                             , pointer :: tcmp
     real(fp)              , dimension(:) , pointer :: thetsd
@@ -1498,6 +1513,7 @@ subroutine nullmorpar(morpar)
     sus                 => morpar%sus
     suscorfac           => morpar%suscorfac
     bed                 => morpar%bed
+    ti_sedtrans         => morpar%ti_sedtrans
     tmor                => morpar%tmor
     tcmp                => morpar%tcmp
     thetsd              => morpar%thetsd
@@ -1537,6 +1553,7 @@ subroutine nullmorpar(morpar)
     bermslopedepth      => morpar%bermslopedepth
     !
     ihidexp             => morpar%ihidexp
+    iti_sedtrans        => morpar%iti_sedtrans
     itmor               => morpar%itmor
     itcmp               => morpar%itcmp
     iopkcw              => morpar%iopkcw
@@ -1619,6 +1636,7 @@ subroutine nullmorpar(morpar)
     dzmax              = 0.05_fp
     sus                = 1.0_fp
     bed                = 1.0_fp
+    ti_sedtrans        = 0.0_fp
     tmor               = 0.0_fp
     tcmp               = 0.0_fp
     thetsduni          = 0.0_fp
@@ -1661,6 +1679,7 @@ subroutine nullmorpar(morpar)
     bermslopedepth     = 1d0
     !
     ihidexp            = 1
+    iti_sedtrans       = 0
     itmor              = 0
     itcmp              = 0
     iopkcw             = 1
@@ -1788,7 +1807,6 @@ end subroutine initmoroutput
 !> Initialize a fluff layer data structure
 subroutine initfluffy(flufflyr)
 !!--declarations----------------------------------------------------------------
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1826,7 +1844,6 @@ end subroutine initfluffy
 !> Allocate a fluff layer data structure.
 function allocfluffy(flufflyr, lsed, nmlb, nmub) result(istat)
 !!--declarations----------------------------------------------------------------
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1863,7 +1880,6 @@ end function allocfluffy
 !> Clean up a fluff layer data structure.
 subroutine clrfluffy(istat, flufflyr)
 !!--declarations----------------------------------------------------------------
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1895,8 +1911,6 @@ end subroutine clrfluffy
 subroutine clrmorpar(istat, morpar)
 !!--declarations----------------------------------------------------------------
     use table_handles
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1942,9 +1956,6 @@ end subroutine clrmorpar
 !> Nullify/initialize a trapar_type data structure.
 subroutine nulltrapar(trapar  )
 !!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -1960,7 +1971,7 @@ subroutine nulltrapar(trapar  )
     ! Note: 30 is hardcoded in sediment transport formulae
     !
     trapar%npar    = 30
-    trapar%nparfld = 0
+    trapar%nparfile = 0
     !
     nullify(trapar%dll_function_settle)
     nullify(trapar%dll_name_settle)
@@ -1983,18 +1994,15 @@ subroutine nulltrapar(trapar  )
     nullify(trapar%iform)
     nullify(trapar%name)
     nullify(trapar%par)
-    nullify(trapar%parfil)
-    nullify(trapar%iparfld)
-    nullify(trapar%parfld)
+    nullify(trapar%parname)
+    nullify(trapar%parfilename)
+    nullify(trapar%iparfile)
 end subroutine nulltrapar
 
 
 !> Clean up a trapar_type data structure.
 subroutine clrtrapar(istat     ,trapar  )
 !!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -2041,9 +2049,74 @@ subroutine clrtrapar(istat     ,trapar  )
     if (associated(trapar%iform       )) deallocate(trapar%iform       , STAT = istat)
     if (associated(trapar%name        )) deallocate(trapar%name        , STAT = istat)
     if (associated(trapar%par         )) deallocate(trapar%par         , STAT = istat)
-    if (associated(trapar%parfil      )) deallocate(trapar%parfil      , STAT = istat)
-    if (associated(trapar%iparfld     )) deallocate(trapar%iparfld     , STAT = istat)
-    if (associated(trapar%parfld      )) deallocate(trapar%parfld      , STAT = istat)
+    if (associated(trapar%parname     )) deallocate(trapar%parname     , STAT = istat)
+    if (associated(trapar%parfilename )) deallocate(trapar%parfilename , STAT = istat)
+    if (associated(trapar%iparfile    )) deallocate(trapar%iparfile    , STAT = istat)
 end subroutine clrtrapar
+
+!> return values for all transport formula parameters
+subroutine get_transport_parameters(trapar, l, nm, timhr, localpar)
+    use table_handles, only: gettabledata
+    !
+    type(trapar_type)     , intent(in)  :: trapar       !< transport settings
+    integer               , intent(in)  :: l            !< sediment fraction
+    integer               , intent(in)  :: nm           !< cell index
+    real(fp)              , intent(in)  :: timhr        !< time since reference date [h]
+    real(fp)              , intent(out) :: localpar(:)  !< collection of sediment parameters
+    
+    integer                    :: i            !< parameter index
+
+    do i = 1, trapar%npar
+       call get_one_transport_parameter(localpar(i:i), trapar, l, i, timhr, nm)
+    end do
+end subroutine get_transport_parameters
+
+
+!> return a value for one transport formula parameter
+subroutine get_one_transport_parameter(val, trapar, l, i, timhr, nm)
+    use table_handles, only: gettabledata
+    !
+    real(fp)              , intent(inout) :: val(:)     !< the parameter value at all nm
+    type(trapar_type)     , intent(in)    :: trapar     !< transport settings
+    integer               , intent(in)    :: l          !< sediment fraction
+    integer               , intent(in)    :: i          !< parameter index
+    real(fp)    , optional, intent(in)    :: timhr      !< time since reference date [h]
+    integer     , optional, intent(in)    :: nm         !< spatial index for which value is requested
+    
+    integer                     :: j           !< sediment parameter source file index
+    real(fp)                    :: par         !< scalar to store the value
+    real(fp)                    :: parvec(1)   !< array to receive the value
+    character(256)              :: message     !< error message
+    type(parfile_type), pointer :: parfile     !< temporary to one trapar%parfile field
+    
+    j = trapar%iparfile(i,l)
+    if (j == 0) then
+        val(:) = trapar%par(i,l)
+        
+    else
+        select case (trapar%parfile(j)%source)
+        case (PARSOURCE_FIELD)
+            if (present(nm)) then
+                val(:) = trapar%parfile(j)%parfld(nm)
+            else
+                val(:) = trapar%parfile(j)%parfld(:)
+            endif
+            
+        case (PARSOURCE_TIME)
+            parfile => trapar%parfile(j)
+            if (present(timhr)) then
+                if (timhr > parfile%timhr) then
+                    message = ' '
+                    call gettabledata(parfile%ts ,parfile%itable_ts, parfile%ipar_ts, parfile%npar_ts, parfile%irec_ts, parvec, timhr, parfile%refjulday, message)
+                    if (message /= ' ') return ! TODO
+                    parfile%par = parvec(1)
+                    parfile%timhr = timhr
+                end if
+            end if
+            val(:) = parfile%par
+            
+        end select
+    end if
+end subroutine get_one_transport_parameter
 
 end module morphology_data_module

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -411,7 +411,7 @@ contains
 70                  continue
 ! also count number of particles
                     amap(nosubs + 1, ilay, iy, ix) = amap(nosubs + 1, ilay, iy, ix) + 1
-
+                    
                   endif
                 endif
               endif

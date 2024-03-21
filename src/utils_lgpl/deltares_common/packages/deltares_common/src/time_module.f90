@@ -1,7 +1,7 @@
 module time_module
    !----- LGPL --------------------------------------------------------------------
    !                                                                               
-   !  Copyright (C)  Stichting Deltares, 2011-2023.                                
+   !  Copyright (C)  Stichting Deltares, 2011-2024.                                
    !                                                                               
    !  This library is free software; you can redistribute it and/or                
    !  modify it under the terms of the GNU Lesser General Public                   
@@ -797,7 +797,8 @@ module time_module
                    endif
                 endif
             end select
-            datetimestr = datetime2string(iyear, imonth, iday, ihour, imin, isec, ioffsethour=ioffsethour, ioffsetmin=ioffsetmin, ierr=ierr_)
+            datetimestr = datetime2string(iyear, imonth, iday, ihour, imin, isec, &
+                        ioffsethour=ioffsethour, ioffsetmin=ioffsetmin, ierr=ierr_)
          else
             ierr_ = -1
             datetimestr = ' '

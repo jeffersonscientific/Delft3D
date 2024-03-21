@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -26,10 +26,10 @@
 !! The routines are accessible from C/C++
 !!<
 
-
 !> Implementation of the routines that interface to DELWAQ
 module waq_omi_priv
 
+    use m_waq_precision
     use waq_omi_utils
     use delwaq2_global_data
 
@@ -37,855 +37,843 @@ module waq_omi_priv
 
     ! // here: all ei-enumerations!!!!
 
-
 contains
 
-!> Set a value
-logical function SetValuePriv(dlwqtype, parid, locid, values, operation)
-
-    use m_sysn          ! System characteristics
-    use m_sysa          ! Pointers in real array workspace
-
-    implicit none
-
-    integer, intent(in)              :: dlwqtype         !< Type of parameter to be set
-    integer, intent(in)              :: parid            !< Index of the parameter
-    integer, intent(in)              :: locid            !< Index of the parameter
-    real, dimension(:), intent(in)   :: values           !< Value to be used in the operation
-    integer, intent(in)              :: operation        !< Operation to apply
-
-    integer, dimension(6)            :: idx
-    logical                          :: success
-
-    !
-    ! Check the arguments
-    !
-    success = .true.
-    call CheckParameterId( dlwqtype, parid, success )
-    call CheckLocationId(  dlwqtype, locid, success )
-    call CheckOperation(   operation, success )
-
-    if ( .not. success ) then
-        SetValuePriv = .false.
-        return
-    endif
-
-    idx = DetermineIndex( dlwqtype, parid, locid )
-
-    !
-    ! Sanity check:
-    ! The size of the array "values" must be equal to
-    ! the number of items stored in "idx"
-    !
-    if ( size(values) /= idx(3) ) then
-        write(*,*) 'SetValues: Error - inconsistent number of values'
-        write(*,*) '           Number of substances: ', notot
-        write(*,*) '           Number of segments:   ', noseg
-        write(*,*) '           Number of values:     ', size(values)
-        write(*,*) '           Should be 1, ', notot*noseg, ' or ', noseg
-        SetValuePriv = .false.
-        return
-    endif
-
-    call StoreOperation( idx, size(values), values, operation )
-
-    SetValuePriv = .true.
-
-end function SetValuePriv
+    !> Set a value
+    logical function SetValuePriv(dlwqtype, parid, locid, values, operation)
+
+        use m_sysn          ! System characteristics
+        use m_sysa          ! Pointers in real array workspace
+
+        implicit none
+
+        integer(kind = int_wp), intent(in) :: dlwqtype          !< Type of parameter to be set
+        integer(kind = int_wp), intent(in) :: parid             !< Index of the parameter
+        integer(kind = int_wp), intent(in) :: locid             !< Index of the parameter
+        real(kind = real_wp), dimension(:), intent(in) :: values            !< Value to be used in the operation
+        integer(kind = int_wp), intent(in) :: operation         !< Operation to apply
+
+        integer(kind = int_wp), dimension(6) :: idx
+        logical :: success
+
+        !
+        ! Check the arguments
+        !
+        success = .true.
+        call CheckParameterId(dlwqtype, parid, success)
+        call CheckLocationId(dlwqtype, locid, success)
+        call CheckOperation(operation, success)
+
+        if (.not. success) then
+            SetValuePriv = .false.
+            return
+        end if
+
+        idx = DetermineIndex(dlwqtype, parid, locid)
+
+        !
+        ! Sanity check:
+        ! The size of the array "values" must be equal to
+        ! the number of items stored in "idx"
+        !
+        if (size(values) /= idx(3)) then
+            write (*, *) 'SetValues: Error - inconsistent number of values'
+            write (*, *) '           Number of substances: ', notot
+            write (*, *) '           Number of segments:   ', noseg
+            write (*, *) '           Number of values:     ', size(values)
+            write (*, *) '           Should be 1, ', notot * noseg, ' or ', noseg
+            SetValuePriv = .false.
+            return
+        end if
+
+        call StoreOperation(idx, size(values), values, operation)
+
+        SetValuePriv = .true.
+
+    end function SetValuePriv
+
+    function DetermineIndex(dlwqtype, parid, locid)
+        !> Determine the exact index in the overall rbuf array
+        !!
+        !! The return value is an array of three data: index, step
+        !! and potential number of elements that is affected
+        use m_sysn          ! System characteristics
+        use m_sysa          ! Pointers in real array workspace
+
+        integer(kind = int_wp), intent(in) :: dlwqtype
+        integer(kind = int_wp), intent(in) :: parid
+        integer(kind = int_wp), intent(in) :: locid
+        integer(kind = int_wp), dimension(6) :: DetermineIndex
+
+        integer(kind = int_wp) :: idx
+        integer(kind = int_wp) :: step
+        integer(kind = int_wp) :: number
+        integer(kind = int_wp) :: idxmass
+        integer(kind = int_wp) :: idxvol
+        integer(kind = int_wp) :: volcorr
+
+        idxmass = -1
+        idxvol = -1
+        volcorr = 1
 
-!> Determine the exact index in the overall rbuf array
-!!
-!! The return value is an array of three data: index, step
-!! and potential number of elements that is affected
-function DetermineIndex( dlwqtype, parid, locid )
+        DetermineIndex(1) = idx
+        DetermineIndex(2) = step
+        DetermineIndex(3) = number
+        DetermineIndex(4) = idxmass
+        DetermineIndex(5) = idxvol
+        DetermineIndex(6) = volcorr
 
-    use m_sysn          ! System characteristics
-    use m_sysa          ! Pointers in real array workspace
+    end function DetermineIndex
 
-    integer, intent(in)   :: dlwqtype
-    integer, intent(in)   :: parid
-    integer, intent(in)   :: locid
-    integer, dimension(6) :: DetermineIndex
+    subroutine StoreOperation(index, number_values, new_value, operation)
+        !> Store the operation and the new value
+        !!
+        !! The operation should actually be applied within a suitable point
+        !! in the computational cycle, so it is stored in a buffer for later use
+        !  note: new_values should be an array of size <number_values>
+        !
 
-    integer               :: idx
-    integer               :: step
-    integer               :: number
-    integer               :: idxmass
-    integer               :: idxvol
-    integer               :: volcorr
+        integer(kind = int_wp), dimension(:), intent(in) :: index            !< Index into the rbuf array
+        integer(kind = int_wp), intent(in) :: number_values    !< Number of values
+        real(kind = real_wp), dimension(:), intent(in) :: new_value        !< Array of new values or modification values
+        integer(kind = int_wp), intent(in) :: operation        !< Operation to be performed
 
+        integer(kind = int_wp) :: pos
 
-    idxmass = -1
-    idxvol  = -1
-    volcorr = 1
+    end subroutine StoreOperation
 
-    DetermineIndex(1) = idx
-    DetermineIndex(2) = step
-    DetermineIndex(3) = number
-    DetermineIndex(4) = idxmass
-    DetermineIndex(5) = idxvol
-    DetermineIndex(6) = volcorr
+    subroutine SetNewValue(value, new_value, operation)
+        !> Set the new value, based on the operation
+        !!
+        !! The operation should actually be applied within a suitable point
+        !! in the computational cycle, so it is stored in a buffer for later use
 
-end function DetermineIndex
+        real(kind = real_wp), intent(inout) :: value
+        real(kind = real_wp), intent(in) :: new_value
+        integer(kind = int_wp), intent(in) :: operation
 
-!> Store the operation and the new value
-!!
-!! The operation should actually be applied within a suitable point
-!! in the computational cycle, so it is stored in a buffer for later use
-!  note: new_values should be an array of size <number_values>
-!
-subroutine StoreOperation( index, number_values, new_value, operation )
+    end subroutine SetNewValue
 
-    integer, dimension(:), intent(in)     :: index           !< Index into the rbuf array
-    integer, intent(in)                   :: number_values   !< Number of values
-    real, dimension(:), intent(in)        :: new_value       !< Array of new values or modification values
-    integer, intent(in)                   :: operation       !< Operation to be performed
+    logical function GetValuePriv(type, parid, locid, value)
+        !> Retrieve a value
 
-    integer                               :: pos
+        integer(kind = int_wp), intent(in) :: type              !< Type of parameter to be set
+        integer(kind = int_wp), intent(in) :: parid             !< Index of the parameter
+        integer(kind = int_wp), intent(in) :: locid             !< Index of the location
+        real(kind = real_wp), dimension(:), intent(out) :: value             !< Value to be used in the operation
 
-end subroutine StoreOperation
+        integer(kind = int_wp), dimension(6) :: idx
+        logical :: success
 
-!> Set the new value, based on the operation
-!!
-!! The operation should actually be applied within a suitable point
-!! in the computational cycle, so it is stored in a buffer for later use
-subroutine SetNewValue( value, new_value, operation )
+        !
+        ! Check the arguments
+        !
+        success = .true.
+        call CheckParameterId(type, parid, success)
+        call CheckLocationId(type, locid, success)
 
-    real, intent(inout)    :: value
-    real, intent(in)       :: new_value
-    integer, intent(in)    :: operation
+        if (.not. success) then
+            GetValuePriv = .false.
+            return
+        end if
 
-end subroutine SetNewValue
+        idx = DetermineIndex(type, parid, locid)
 
+        value = dlwqd%buffer%rbuf(idx(1):idx(1) + (idx(3) - 1) * idx(2):idx(2))
+        GetValuePriv = .true.
 
-!> Retrieve a value
-logical function GetValuePriv(type, parid, locid, value)
+    end function GetValuePriv
 
-    integer, intent(in)              :: type             !< Type of parameter to be set
-    integer, intent(in)              :: parid            !< Index of the parameter
-    integer, intent(in)              :: locid            !< Index of the location
-    real, dimension(:), intent(out)  :: value            !< Value to be used in the operation
+    subroutine CheckParameterId(dlwqtype, parid, success)
+        !> Check that the parameter ID is valid
+        use m_sysn          ! System characteristics
 
-    integer, dimension(6)            :: idx
-    logical                          :: success
+        integer(kind = int_wp), intent(in) :: dlwqtype
+        integer(kind = int_wp), intent(in) :: parid
+        logical, intent(inout) :: success
 
-    !
-    ! Check the arguments
-    !
-    success = .true.
-    call CheckParameterId( type, parid, success )
-    call CheckLocationId(  type, locid, success )
+        success = .false.
 
-    if ( .not. success ) then
-        GetValuePriv = .false.
-        return
-    endif
+    end subroutine CheckParameterId
 
-    idx = DetermineIndex( type, parid, locid )
+    subroutine CheckLocationId(dlwqtype, locid, success)
+        !> Check that the location ID is valid
 
-    value = dlwqd%buffer%rbuf(idx(1):idx(1)+(idx(3)-1)*idx(2):idx(2))
-    GetValuePriv = .true.
+        use m_sysn
 
-end function GetValuePriv
+        integer(kind = int_wp), intent(in) :: dlwqtype
+        integer(kind = int_wp), intent(in) :: locid
+        logical, intent(inout) :: success
 
+        success = .false.
 
-!> Check that the parameter ID is valid
-subroutine CheckParameterId( dlwqtype, parid, success )
+    end subroutine CheckLocationId
 
-    use m_sysn          ! System characteristics
+    subroutine CheckOperation(operation, success)
+        !> Check that the operation is valid
 
-    integer, intent(in)    :: dlwqtype
-    integer, intent(in)    :: parid
-    logical, intent(inout) :: success
+        integer(kind = int_wp), intent(in) :: operation
+        logical, intent(inout) :: success
 
-    success = .false.
+        success = .false.
 
-end subroutine CheckParameterId
+    end subroutine CheckOperation
 
-!> Check that the location ID is valid
-subroutine CheckLocationId(  dlwqtype, locid, success )
+    integer function GetLocationCountPriv(type)
+        !> Retrieve number of locations (of given type)
 
-    use m_sysn
+        use m_sysn
 
-    integer, intent(in)    :: dlwqtype
-    integer, intent(in)    :: locid
-    logical, intent(inout) :: success
+        integer(kind = int_wp), intent(in) :: type
 
-    success = .false.
+        GetLocationCountPriv = 0
 
-end subroutine CheckLocationId
+    end function GetLocationCountPriv
 
-!> Check that the operation is valid
-subroutine CheckOperation(   operation, success )
+    !> Retrieve indices of locations (of given type)
+    integer function GetLocationIndicesPriv(type, idsSize, ids)
 
-    integer, intent(in)    :: operation
-    logical, intent(inout) :: success
+        use m_sysn
 
-    success = .false.
+        integer(kind = int_wp), intent(in) :: type
+        integer(kind = int_wp), intent(in) :: idsSize
+        integer(kind = int_wp), dimension(:), intent(out) :: ids
 
-end subroutine CheckOperation
+        integer(kind = int_wp) :: count
+        integer(kind = int_wp) :: i
 
-!> Retrieve number of locations (of given type)
-integer function GetLocationCountPriv( type )
+        count = GetLocationCountPriv(type)
 
-    use m_sysn
+        if (idsSize /= count) then
+            ids = 0
+            GetLocationIndicesPriv = -1
+        else
+            ids = (/(i, i = 1, count)/)
+            GetLocationIndicesPriv = 0
+        end if
 
-    integer, intent(in)    :: type
+    end function GetLocationIndicesPriv
 
-    GetLocationCountPriv = 0
+    !> Retrieve number of items (of given type)
+    integer function GetItemCountPriv(type)
+        use m_sysn
 
-end function GetLocationCountPriv
+        integer(kind = int_wp), intent(in) :: type
 
-!> Retrieve indices of locations (of given type)
-integer function GetLocationIndicesPriv( type, idsSize, ids )
+        GetItemCountPriv = 0
 
-    use m_sysn
+    end function GetItemCountPriv
 
-    integer, intent(in)                :: type
-    integer, intent(in)                :: idsSize
-    integer, dimension(:), intent(out) :: ids
+    !> Retrieve index of items (of given type)
+    integer function GetItemIndexPriv(dlwqtype, name)
 
-    integer                            :: count
-    integer                            :: i
+        integer, intent(in) :: dlwqtype
+        character(len = *), intent(in) :: name
 
-    count = GetLocationCountPriv( type )
+        integer(kind = int_wp) :: idx
 
-    if ( idsSize /= count ) then
-        ids   = 0
-        GetLocationIndicesPriv = -1
-    else
-        ids   = (/ (i ,i=1,count) /)
-        GetLocationIndicesPriv = 0
-    endif
+        GetItemIndexPriv = 0
 
-end function GetLocationIndicesPriv
+    end function GetItemIndexPriv
 
-!> Retrieve number of items (of given type)
-integer function GetItemCountPriv( type )
-    use m_sysn
+    !> Retrieve the name of items (of given type)
+    integer function GetItemNamePriv(type, idx, name)
 
-    integer, intent(in)    :: type
+        integer, intent(in) :: type
+        character(len = *), intent(out) :: name
+        integer(kind = int_wp) :: idx
 
-    GetItemCountPriv = 0
+        GetItemNamePriv = -1
+        name = '?'
 
-end function GetItemCountPriv
+    end function GetItemNamePriv
 
-!> Retrieve index of items (of given type)
-integer function GetItemIndexPriv( dlwqtype, name )
+    !> Retrieve index of location (of given type)
+    integer function GetLocationIndexPriv(type, name)
 
-    integer, intent(in)             :: dlwqtype
-    character(len=*), intent(in)    :: name
+        integer, intent(in) :: type
+        character(len = *), intent(in) :: name
 
-    integer                         :: idx
+        integer(kind = int_wp) :: idx
 
-    GetItemIndexPriv = 0
+        GetLocationIndexPriv = 0
 
-end function GetItemIndexPriv
+    end function GetLocationIndexPriv
 
-!> Retrieve the name of items (of given type)
-integer function GetItemNamePriv( type, idx, name )
+    !> Get the time parameters for the computation
+    subroutine GetTimeParameters(start, stop, step, current)
 
-    integer, intent(in)             :: type
-    character(len=*), intent(out)   :: name
-    integer                         :: idx
+        use m_sysi
 
-    GetItemNamePriv = -1
-    name             = '?'
+        implicit none
 
-end function GetItemNamePriv
+        real(kind = kind(1.0d0)), intent(out) :: start
+        real(kind = kind(1.0d0)), intent(out) :: stop
+        real(kind = kind(1.0d0)), intent(out) :: step
+        real(kind = kind(1.0d0)), intent(out) :: current
 
-!> Retrieve index of location (of given type)
-integer function GetLocationIndexPriv( type, name )
+        start = dlwqd%otime + itstrt / dlwqd%tscale
+        stop = dlwqd%otime + itstop / dlwqd%tscale
+        step = idt / dlwqd%tscale
+        current = dlwqd%otime + dlwqd%itime / dlwqd%tscale
 
-    integer, intent(in)             :: type
-    character(len=*), intent(in)    :: name
-
-    integer                         :: idx
-
-    GetLocationIndexPriv = 0
-
-end function GetLocationIndexPriv
-
-!> Get the time parameters for the computation
-subroutine GetTimeParameters( start, stop, step, current )
-
-    use m_sysi
-
-    implicit none
-
-    real(kind=kind(1.0d0)), intent(out)                :: start
-    real(kind=kind(1.0d0)), intent(out)                :: stop
-    real(kind=kind(1.0d0)), intent(out)                :: step
-    real(kind=kind(1.0d0)), intent(out)                :: current
-
-    start   = dlwqd%otime + itstrt / dlwqd%tscale
-    stop    = dlwqd%otime + itstop / dlwqd%tscale
-    step    =               idt    / dlwqd%tscale
-    current = dlwqd%otime + dlwqd%itime  / dlwqd%tscale
-
-end subroutine GetTimeParameters
+    end subroutine GetTimeParameters
 
 end module waq_omi_priv
 
-
 module waq_omi_api
+    use m_waq_precision
+
 contains
-integer function Count_Values(partype, parid, loctype, locid)
-    !DEC$ ATTRIBUTES DLLEXPORT::Count_Values
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'COUNT_VALUES' :: Count_Values
-
-    use waq_omi_priv
-    use m_sysn          ! System characteristics
-    use m_sysa          ! Pointers in real array workspace
-
-
-    implicit none
-
-    integer, intent(in)                   :: parid            !< Index of the parameter
-    integer, intent(in)                   :: partype          !< Type of parameter to be set
-    integer, intent(in)                   :: locid            !< Index of the location
-    integer, intent(in)                   :: loctype          !< Type of the location
-
-    integer                               :: dlwqtype
-    integer                               :: count
-
-    Count_Values = 1
-
-end function Count_Values
-
-
-!> Set the current value of a substance or process parameter:
-!! This function provides a general interface to the state variables
-!! and computational parameters.
-!!
-!! The type should be one of the following:
-!! \li DLWQ_CONSTANT: set the value of a "constant" process parameter (location-independent)
-!! \li DLWQ_PARAMETER: set the value of a "parameter" process parameter
-!! \li DLWQ_CONCENTRATION: set the value of a substance (or other state variable)
-!! \li DLWQ_DISCHARGE: set the value for the discharge (mass per time) of a substance
-!! \li DLWQ_BOUNDARYVALUE: set the value for the boundary condition of a substance
-!!
-!! The parameter ID should correspond to the correct type, as should the location ID.
-!! (For constants the location ID is ignored)
-!!
-!! The operation can be:
-!! \li DLWQ_SET: simply replace the original value by the new value
-!! \li DLWQ_ADD: add the given value to the original value
-!! \li DLWQ_MULTIPLY: multiply the original value by the given value
-!!
-!! Note: Specifically for OpenDA
-integer function Set_Values(partype, parid, loctype, locid, operation, number, values)
-
-    !DEC$ ATTRIBUTES DLLEXPORT::Set_Values
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SET_VALUES' :: Set_Values
-
-    use waq_omi_priv
-
-    implicit none
-
-    integer, intent(in)                   :: parid            !< Index of the parameter
-    integer, intent(in)                   :: partype          !< Type of parameter to be set
-    integer, intent(in)                   :: locid            !< Index of the location or ODA_ALL_SEGMENTS
-    integer, intent(in)                   :: loctype          !< Type of location to be set
-    integer, intent(in)                   :: operation        !< Operation to apply
-    integer, intent(in)                   :: number           !< Number of values
-    double precision, dimension(number), intent(in)   :: values  !< Value(s) to be used in the operation
-
-    real, dimension(:), allocatable       :: r_values
-
-    integer                               :: idx
-    integer                               :: locid_
-    integer                               :: parid_
-    integer                               :: dlwqtype
-    logical                               :: success
-
-    Set_Values = 1
-end function Set_Values
-
-
-!> Set the current value of a substance or process parameter:
-!! This function provides a general interface to the state variables
-!! and computational parameters.
-!!
-!! The type should be one of the following:
-!! \li DLWQ_CONSTANT: set the value of a "constant" process parameter (location-independent)
-!! \li DLWQ_PARAMETER: set the value of a "parameter" process parameter
-!! \li DLWQ_CONCENTRATION: set the value of a substance (or other state variable)
-!! \li DLWQ_DISCHARGE: set the value for the discharge (mass per time) of a substance
-!! \li DLWQ_BOUNDARYVALUE: set the value for the boundary condition of a substance
-!!
-!! The parameter ID should correspond to the correct type, as should the location ID.
-!! (For constants the location ID is ignored)
-!!
-!! The operation can be:
-!! \li DLWQ_SET: simply replace the original value by the new value
-!! \li DLWQ_ADD: add the given value to the original value
-!! \li DLWQ_MULTIPLY: multiply the original value by the given value
-!!
-!! Note: this routine is meant for general interfacing - it assumes you use the
-!! DELWAQ codes for the arguments dlwqtype and operation, as well as a single-precision
-!! array for the values.
-!!
-!! Note: the number of values must match the number of values expected for the type
-!! of data.
-!!
-integer function Set_Values_General(dlwqtype, parid, locid, operation, number, values)
-
-    !DEC$ ATTRIBUTES DLLEXPORT::Set_Values_General
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SET_VALUES_GENERAL' :: Set_Values_General
+    integer function Count_Values(partype, parid, loctype, locid)
+        !DEC$ ATTRIBUTES DLLEXPORT::Count_Values
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'COUNT_VALUES' :: Count_Values
+
+        use waq_omi_priv
+        use m_sysn          ! System characteristics
+        use m_sysa          ! Pointers in real array workspace
+
+        implicit none
+
+        integer(kind = int_wp), intent(in) :: parid             !< Index of the parameter
+        integer(kind = int_wp), intent(in) :: partype           !< Type of parameter to be set
+        integer(kind = int_wp), intent(in) :: locid             !< Index of the location
+        integer(kind = int_wp), intent(in) :: loctype           !< Type of the location
+
+        integer(kind = int_wp) :: dlwqtype
+        integer(kind = int_wp) :: count
+
+        Count_Values = 1
+
+    end function Count_Values
+
+    !> Set the current value of a substance or process parameter:
+    !! This function provides a general interface to the state variables
+    !! and computational parameters.
+    !!
+    !! The type should be one of the following:
+    !! \li DLWQ_CONSTANT: set the value of a "constant" process parameter (location-independent)
+    !! \li DLWQ_PARAMETER: set the value of a "parameter" process parameter
+    !! \li DLWQ_CONCENTRATION: set the value of a substance (or other state variable)
+    !! \li DLWQ_DISCHARGE: set the value for the discharge (mass per time) of a substance
+    !! \li DLWQ_BOUNDARYVALUE: set the value for the boundary condition of a substance
+    !!
+    !! The parameter ID should correspond to the correct type, as should the location ID.
+    !! (For constants the location ID is ignored)
+    !!
+    !! The operation can be:
+    !! \li DLWQ_SET: simply replace the original value by the new value
+    !! \li DLWQ_ADD: add the given value to the original value
+    !! \li DLWQ_MULTIPLY: multiply the original value by the given value
+    !!
+    !! Note: Specifically for OpenDA
+    integer function Set_Values(partype, parid, loctype, locid, operation, number, values)
+
+        !DEC$ ATTRIBUTES DLLEXPORT::Set_Values
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SET_VALUES' :: Set_Values
+
+        use waq_omi_priv
+
+        implicit none
+
+        integer(kind = int_wp), intent(in) :: parid             !< Index of the parameter
+        integer(kind = int_wp), intent(in) :: partype           !< Type of parameter to be set
+        integer(kind = int_wp), intent(in) :: locid             !< Index of the location or ODA_ALL_SEGMENTS
+        integer(kind = int_wp), intent(in) :: loctype           !< Type of location to be set
+        integer(kind = int_wp), intent(in) :: operation         !< Operation to apply
+        integer(kind = int_wp), intent(in) :: number            !< Number of values
+        double precision, dimension(number), intent(in) :: values  !< Value(s) to be used in the operation
+
+        real(kind = real_wp), dimension(:), allocatable :: r_values
+
+        integer(kind = int_wp) :: idx
+        integer(kind = int_wp) :: locid_
+        integer(kind = int_wp) :: parid_
+        integer(kind = int_wp) :: dlwqtype
+        logical :: success
+
+        Set_Values = 1
+    end function Set_Values
+
+    !> Set the current value of a substance or process parameter:
+    !! This function provides a general interface to the state variables
+    !! and computational parameters.
+    !!
+    !! The type should be one of the following:
+    !! \li DLWQ_CONSTANT: set the value of a "constant" process parameter (location-independent)
+    !! \li DLWQ_PARAMETER: set the value of a "parameter" process parameter
+    !! \li DLWQ_CONCENTRATION: set the value of a substance (or other state variable)
+    !! \li DLWQ_DISCHARGE: set the value for the discharge (mass per time) of a substance
+    !! \li DLWQ_BOUNDARYVALUE: set the value for the boundary condition of a substance
+    !!
+    !! The parameter ID should correspond to the correct type, as should the location ID.
+    !! (For constants the location ID is ignored)
+    !!
+    !! The operation can be:
+    !! \li DLWQ_SET: simply replace the original value by the new value
+    !! \li DLWQ_ADD: add the given value to the original value
+    !! \li DLWQ_MULTIPLY: multiply the original value by the given value
+    !!
+    !! Note: this routine is meant for general interfacing - it assumes you use the
+    !! DELWAQ codes for the arguments dlwqtype and operation, as well as a single-precision
+    !! array for the values.
+    !!
+    !! Note: the number of values must match the number of values expected for the type
+    !! of data.
+    !!
+    integer function Set_Values_General(dlwqtype, parid, locid, operation, number, values)
+
+        !DEC$ ATTRIBUTES DLLEXPORT::Set_Values_General
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SET_VALUES_GENERAL' :: Set_Values_General
+
+        use waq_omi_priv
 
-    use waq_omi_priv
+        implicit none
 
-    implicit none
+        integer(kind = int_wp), intent(in) :: dlwqtype          !< Type of parameter/location to be set
+        integer(kind = int_wp), intent(in) :: parid             !< Index of the parameter
+        integer(kind = int_wp), intent(in) :: locid             !< Index of the location
+        integer(kind = int_wp), intent(in) :: operation         !< Operation to apply
+        integer(kind = int_wp), intent(in) :: number            !< Number of values
+        real(kind = real_wp), dimension(number), intent(in) :: values            !< Value(s) to be used in the operation
 
-    integer, intent(in)                   :: dlwqtype         !< Type of parameter/location to be set
-    integer, intent(in)                   :: parid            !< Index of the parameter
-    integer, intent(in)                   :: locid            !< Index of the location
-    integer, intent(in)                   :: operation        !< Operation to apply
-    integer, intent(in)                   :: number           !< Number of values
-    real, dimension(number), intent(in)   :: values           !< Value(s) to be used in the operation
+        logical :: success
 
-    logical                               :: success
+        success = SetValuePriv(dlwqtype, parid, locid, values, operation)
+        Set_Values_General = merge(1, 0, success)
+    end function Set_Values_General
 
-    success   = SetValuePriv( dlwqtype, parid, locid, values, operation )
-    Set_Values_General = merge( 1, 0, success )
-end function Set_Values_General
+    !> Retrieve the current value of a substance or process parameter:
+    !! This function provides a general interface to retrieving the state variables
+    !! and computational parameters.
+    !!
+    !! The type should be one of the following:
+    !! \li DLWQ_CONSTANT: set the value of a "constant" process parameter (location-independent)
+    !! \li DLWQ_PARAMETER: set the value of a "parameter" process parameter
+    !! \li DLWQ_CONCENTRATION: set the value of a substance (or other state variable)
+    !! \li DLWQ_DISCHARGE: set the value for the discharge (mass per time) of a substance
+    !! \li DLWQ_BOUNDARYVALUE: set the value for the boundary condition of a substance
+    !!
+    !! The parameter ID should correspond to the correct type, as should the location ID.
+    !! (For constants the location ID is ignored)
+    integer function Get_Values(partype, parid, loctype, locid, number, values)
 
-!> Retrieve the current value of a substance or process parameter:
-!! This function provides a general interface to retrieving the state variables
-!! and computational parameters.
-!!
-!! The type should be one of the following:
-!! \li DLWQ_CONSTANT: set the value of a "constant" process parameter (location-independent)
-!! \li DLWQ_PARAMETER: set the value of a "parameter" process parameter
-!! \li DLWQ_CONCENTRATION: set the value of a substance (or other state variable)
-!! \li DLWQ_DISCHARGE: set the value for the discharge (mass per time) of a substance
-!! \li DLWQ_BOUNDARYVALUE: set the value for the boundary condition of a substance
-!!
-!! The parameter ID should correspond to the correct type, as should the location ID.
-!! (For constants the location ID is ignored)
-integer function Get_Values(partype, parid, loctype, locid, number, values)
+        !DEC$ ATTRIBUTES DLLEXPORT::Get_Values
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GET_VALUES' :: Get_Values
 
-    !DEC$ ATTRIBUTES DLLEXPORT::Get_Values
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GET_VALUES' :: Get_Values
+        use waq_omi_priv
+        !    use m_delwaq_2_openda ! Only for current_instance
 
-    use waq_omi_priv
-!    use m_delwaq_2_openda ! Only for current_instance
+        implicit none
 
-    implicit none
+        integer(kind = int_wp), intent(in) :: partype           !< Type of parameter to be set
+        integer(kind = int_wp), intent(in) :: parid             !< Index of the parameter
+        integer(kind = int_wp), intent(in) :: loctype           !< Type of location to be set
+        integer(kind = int_wp), intent(in) :: locid             !< Index of the location
+        integer(kind = int_wp), intent(in) :: number            !< Size of array values
+        double precision, dimension(number), intent(out) :: values         !< Value to be used in the operation
 
-    integer, intent(in)              :: partype          !< Type of parameter to be set
-    integer, intent(in)              :: parid            !< Index of the parameter
-    integer, intent(in)              :: loctype          !< Type of location to be set
-    integer, intent(in)              :: locid            !< Index of the location
-    integer, intent(in)              :: number           !< Size of array values
-    double precision, dimension(number),intent(out):: values         !< Value to be used in the operation
+        real(kind = real_wp), dimension(:), allocatable :: r_values
+        integer(kind = int_wp) :: idx
+        integer(kind = int_wp) :: dlwqtype
+        logical :: success
+        real(kind = kind(1.0d0)) :: currentTime
+        integer(kind = int_wp) :: dummy
 
-    real, dimension(:), allocatable  :: r_values
-    integer                          :: idx
-    integer                          :: dlwqtype
-    logical                          :: success
-    real(kind=kind(1.0d0))           :: currentTime
-    integer                          :: dummy
+        allocate (r_values(number))
 
-    allocate( r_values(number) )
+        success = GetValuePriv(dlwqtype, parid, locid, r_values)
+        values = r_values
 
-    success  = GetValuePriv( dlwqtype, parid, locid, r_values )
-    values = r_values
+        deallocate (r_values)
 
-    deallocate( r_values )
+        Get_Values = merge(1, 0, success)
 
-    Get_Values = merge( 1, 0, success )
+        dummy = GetWQCurrentTime(currentTime)
 
-    dummy = GetWQCurrentTime(currentTime)
+    end function Get_Values
 
-end function Get_Values
+    !> Interface to CheckParameterId in the waq_omi_priv module for testing purposes
+    subroutine CheckParameterId(type, parid, success)
 
+        !DEC$ ATTRIBUTES DLLEXPORT::CheckParameterId
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'CHECKPARAMETERID' :: CheckParameterId
 
-!> Interface to CheckParameterId in the waq_omi_priv module for testing purposes
-subroutine CheckParameterId(type, parid, success)
+        use waq_omi_priv, TestCheckParameterId => CheckParameterId
 
-    !DEC$ ATTRIBUTES DLLEXPORT::CheckParameterId
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'CHECKPARAMETERID' :: CheckParameterId
+        implicit none
 
-    use waq_omi_priv, TestCheckParameterId => CheckParameterId
+        integer(kind = int_wp), intent(in) :: type
+        integer(kind = int_wp), intent(in) :: parid
+        logical, intent(out) :: success
 
-    implicit none
+        call TestCheckParameterId(type, parid, success)
 
-    integer, intent(in)              :: type
-    integer, intent(in)              :: parid
-    logical, intent(out)             :: success
+    end subroutine CheckParameterId
 
-    call TestCheckParameterId( type, parid, success )
+    !> Interface to SetNewValue in the waq_omi_priv module for testing purposes
+    subroutine SetNewValue(value, new_value, operation)
 
-end subroutine CheckParameterId
+        !DEC$ ATTRIBUTES DLLEXPORT::SetNewValue
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETNEWVALUE' :: SetNewValue
 
+        use waq_omi_priv, TestSetNewValue => SetNewValue
 
-!> Interface to SetNewValue in the waq_omi_priv module for testing purposes
-subroutine SetNewValue(value, new_value, operation)
+        implicit none
 
-    !DEC$ ATTRIBUTES DLLEXPORT::SetNewValue
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETNEWVALUE' :: SetNewValue
+        real(kind = real_wp), intent(inout) :: value
+        real(kind = real_wp), intent(in) :: new_value
+        integer(kind = int_wp), intent(in) :: operation
 
-    use waq_omi_priv, TestSetNewValue => SetNewValue
+        call TestSetNewValue(value, new_value, operation)
 
-    implicit none
+    end subroutine SetNewValue
 
-    real, intent(inout)              :: value
-    real, intent(in)                 :: new_value
-    integer, intent(in)              :: operation
+    !> Interface to get DLWQD from the library for testing purposes
+    subroutine GetDlwqd(dlwqd_copy)
 
-    call TestSetNewValue( value, new_value, operation )
+        use delwaq2_global_data
 
-end subroutine SetNewValue
+        !DEC$ ATTRIBUTES DLLEXPORT::GetDlwqd
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETDLWQD' :: GetDlwqd
 
-!> Interface to get DLWQD from the library for testing purposes
-subroutine GetDlwqd( dlwqd_copy )
+        type(delwaq_data) :: dlwqd_copy
 
-    use delwaq2_global_data
+        dlwqd_copy = dlwqd
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetDlwqd
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETDLWQD' :: GetDlwqd
+    end subroutine GetDlwqd
 
-    type(delwaq_data) :: dlwqd_copy
+    !> Interface to fill DLWQD from the library for testing purposes
+    subroutine SetDlwqd(dlwqd_copy)
 
-    dlwqd_copy = dlwqd
+        use delwaq2_global_data
 
-end subroutine GetDlwqd
+        !DEC$ ATTRIBUTES DLLEXPORT::SetDlwqd
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETDLWQD' :: SetDlwqd
 
-!> Interface to fill DLWQD from the library for testing purposes
-subroutine SetDlwqd( dlwqd_copy )
+        type(delwaq_data) :: dlwqd_copy
 
-    use delwaq2_global_data
+        dlwqd = dlwqd_copy
 
-    !DEC$ ATTRIBUTES DLLEXPORT::SetDlwqd
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETDLWQD' :: SetDlwqd
+    end subroutine SetDlwqd
 
-    type(delwaq_data) :: dlwqd_copy
+    !> Interface to set a number of variables in the COMMON blocks for testing purposes
+    !!
+    !! <i>Note:</i> This is necessary because the COMMON blocks in the DLL are <i>different</i>
+    !! from the ones in the test program
+    subroutine SetCommonVars(icons_, iparm_, iconc_, ibset_, iwste_, nosys_, notot_, nocons_, nopa_, noseg_, nowst_, nobnd_)
 
-    dlwqd = dlwqd_copy
+        !DEC$ ATTRIBUTES DLLEXPORT::SetCommonVars
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETCOMMONVARS' :: SetCommonVars
 
-end subroutine SetDlwqd
+        use m_sysn          ! System characteristics
+        use m_sysa          ! Pointers in real array workspace
 
-!> Interface to set a number of variables in the COMMON blocks for testing purposes
-!!
-!! <i>Note:</i> This is necessary because the COMMON blocks in the DLL are <i>different</i>
-!! from the ones in the test program
-subroutine SetCommonVars( icons_, iparm_, iconc_, ibset_, iwste_, nosys_, notot_, nocons_, nopa_, noseg_, nowst_, nobnd_ )
+        implicit none
 
-    !DEC$ ATTRIBUTES DLLEXPORT::SetCommonVars
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETCOMMONVARS' :: SetCommonVars
+        integer(kind = int_wp) :: icons_, iparm_, iconc_, ibset_, iwste_, nosys_, notot_, nocons_, nopa_, noseg_, nowst_, nobnd_
 
-    use m_sysn          ! System characteristics
-    use m_sysa          ! Pointers in real array workspace
+        icons = icons_
+        iparm = iparm_
+        iconc = iconc_
+        ibset = ibset_
+        iwste = iwste_
+        nosys = nosys_
+        notot = notot_
+        nototp = notot_   ! Particles not supported yet
+        nocons = nocons_
+        nopa = nopa_
+        noseg = noseg_
+        nowst = nowst_
+        nobnd = nobnd_
 
+    end subroutine SetCommonVars
 
-    implicit none
+    !> Interface to StoreOperation in the waq_omi_priv module for testing purposes
+    subroutine StoreOperation(index, number, new_value, operation)
 
-    integer :: icons_, iparm_, iconc_, ibset_, iwste_, nosys_, notot_, nocons_, nopa_, noseg_, nowst_, nobnd_
+        !DEC$ ATTRIBUTES DLLEXPORT::StoreOperation
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'STOREOPERATION' :: StoreOperation
 
-    icons  = icons_
-    iparm  = iparm_
-    iconc  = iconc_
-    ibset  = ibset_
-    iwste  = iwste_
-    nosys  = nosys_
-    notot  = notot_
-    nototp = notot_   ! Particles not supported yet
-    nocons = nocons_
-    nopa   = nopa_
-    noseg  = noseg_
-    nowst  = nowst_
-    nobnd  = nobnd_
+        use waq_omi_priv, TestStoreOperation => StoreOperation
 
-end subroutine SetCommonVars
+        implicit none
 
-!> Interface to StoreOperation in the waq_omi_priv module for testing purposes
-subroutine StoreOperation( index, number, new_value, operation )
+        integer(kind = int_wp), dimension(3), intent(in) :: index
+        integer(kind = int_wp), intent(in) :: number
+        real(kind = real_wp), dimension(number), intent(in) :: new_value
+        integer(kind = int_wp), intent(in) :: operation
 
-    !DEC$ ATTRIBUTES DLLEXPORT::StoreOperation
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'STOREOPERATION' :: StoreOperation
+        call TestStoreOperation(index, number, new_value, operation)
 
-    use waq_omi_priv, TestStoreOperation => StoreOperation
+    end subroutine StoreOperation
 
-    implicit none
+    !> Interface to apply_operations in the delwaq2_data module for testing purposes
+    subroutine test_apply_operations(dlwqd)
 
-    integer, dimension(3), intent(in)    :: index
-    integer, intent(in)                  :: number
-    real, dimension(number), intent(in)  :: new_value
-    integer, intent(in)                  :: operation
+        !DEC$ ATTRIBUTES DLLEXPORT::test_apply_operations
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'TEST_APPLY_OPERATIONS' :: test_apply_operations
 
-    call TestStoreOperation( index, number, new_value, operation )
+        use delwaq2_data
 
-end subroutine StoreOperation
+        implicit none
 
-!> Interface to apply_operations in the delwaq2_data module for testing purposes
-subroutine test_apply_operations( dlwqd )
+        type(delwaq_data) :: dlwqd
 
-    !DEC$ ATTRIBUTES DLLEXPORT::test_apply_operations
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'TEST_APPLY_OPERATIONS' :: test_apply_operations
+        !!call apply_operations( dlwqd )
 
-    use delwaq2_data
+    end subroutine test_apply_operations
 
-    implicit none
+    !> Retrieve number of locations (of given type)
+    integer function GetLocationCount(odatype)
 
-    type(delwaq_data) :: dlwqd
+        !DEC$ ATTRIBUTES DLLEXPORT::GetLocationCount
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONCOUNT' :: GetLocationCount
 
-    !!call apply_operations( dlwqd )
+        use waq_omi_priv
 
-end subroutine test_apply_operations
+        implicit none
 
+        integer(kind = int_wp), intent(in) :: odatype
 
-!> Retrieve number of locations (of given type)
-integer function GetLocationCount( odatype )
+        integer(kind = int_wp) :: dlwqtype
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetLocationCount
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONCOUNT' :: GetLocationCount
+        GetLocationCount = 0
 
-    use waq_omi_priv
+    end function GetLocationCount
 
-    implicit none
+    !> Retrieve number of items (of given type)
+    integer function GetItemCount(type)
 
-    integer, intent(in)    :: odatype
+        !DEC$ ATTRIBUTES DLLEXPORT::GetItemCount
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETITEMCOUNT' :: GetItemCount
 
-    integer :: dlwqtype
+        use waq_omi_priv
 
-    GetLocationCount = 0
+        implicit none
 
-end function GetLocationCount
+        integer(kind = int_wp), intent(in) :: type
 
-!> Retrieve number of items (of given type)
-integer function GetItemCount( type )
+        GetItemCount = GetItemCountPriv(type)
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetItemCount
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETITEMCOUNT' :: GetItemCount
+    end function GetItemCount
 
-    use waq_omi_priv
+    !> Retrieve index of a location (of given type)
+    integer function GetLocationId(type, name)
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetLocationId
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONID' :: GetLocationId
 
-    integer, intent(in)    :: type
+        use waq_omi_priv
 
-    GetItemCount = GetItemCountPriv( type )
+        implicit none
 
-end function GetItemCount
+        integer(kind = int_wp), intent(in) :: type
+        character(len = *), intent(in) :: name
 
-!> Retrieve index of a location (of given type)
-integer function GetLocationId( type, name )
+        GetLocationId = GetLocationIndexPriv(type, name)
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetLocationId
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONID' :: GetLocationId
+    end function GetLocationId
 
-    use waq_omi_priv
+    !> Retrieve index of a location (of given type)
+    integer function GetLocationIds(type, idsSize, ids)
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetLocationIds
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONIDS' :: GetLocationIds
 
-    integer, intent(in)             :: type
-    character(len=*), intent(in)    :: name
+        use waq_omi_priv
 
-    GetLocationId = GetLocationIndexPriv( type, name )
+        implicit none
 
-end function GetLocationId
+        integer(kind = int_wp), intent(in) :: type
+        integer(kind = int_wp), intent(in) :: idsSize
+        integer(kind = int_wp), dimension(idsSize), intent(out) :: ids
 
-!> Retrieve index of a location (of given type)
-integer function GetLocationIds( type, idsSize, ids )
+        GetLocationIds = GetLocationIndicesPriv(type, idsSize, ids)
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetLocationIds
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONIDS' :: GetLocationIds
+    end function GetLocationIds
 
-    use waq_omi_priv
+    !> Retrieve index of an item (of given type)
+    integer function GetItemIndex(type, name)
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetItemIndex
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETITEMINDEX' :: GetItemIndex
 
-    integer, intent(in)                      :: type
-    integer, intent(in)                      :: idsSize
-    integer, dimension(idsSize), intent(out) :: ids
+        use waq_omi_priv
 
-    GetLocationIds = GetLocationIndicesPriv( type, idsSize, ids )
+        implicit none
 
-end function GetLocationIds
+        integer(kind = int_wp), intent(in) :: type
+        character(len = *), intent(in) :: name
 
-!> Retrieve index of an item (of given type)
-integer function GetItemIndex( type, name )
+        GetItemIndex = GetItemIndexPriv(type, name)
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetItemIndex
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETITEMINDEX' :: GetItemIndex
+    end function GetItemIndex
 
-    use waq_omi_priv
+    !> Retrieve name of a location (of given type)
+    integer function GetLocationName(type, idx, name)
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetLocationName
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONNAME' :: GetLocationName
 
-    integer, intent(in)             :: type
-    character(len=*), intent(in)    :: name
+        use waq_omi_priv
 
-    GetItemIndex = GetItemIndexPriv( type, name )
+        implicit none
 
-end function GetItemIndex
+        integer(kind = int_wp), intent(in) :: type             !< Type of location
+        integer(kind = int_wp), intent(in) :: idx              !< Index of the location
+        character(len = *), intent(out) :: name            !< Name of the location (if successful)
 
-!> Retrieve name of a location (of given type)
-integer function GetLocationName( type, idx, name )
+        ! GetLocationName = GetLocationNamePriv( type, idx, name )
+        name = 'TODO'
+        GetLocationName = 1
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetLocationName
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETLOCATIONNAME' :: GetLocationName
+    end function GetLocationName
 
-    use waq_omi_priv
+    !> Retrieve name of an item (of given type)
+    integer function GetItemName(type, idx, name)
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetItemName
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETITEMNAME' :: GetItemName
 
-    integer, intent(in)              :: type            !< Type of location
-    integer, intent(in)              :: idx             !< Index of the location
-    character(len=*), intent(out)    :: name            !< Name of the location (if successful)
+        use waq_omi_priv
 
-   ! GetLocationName = GetLocationNamePriv( type, idx, name )
-    name = 'TODO'
-    GetLocationName = 1
+        implicit none
 
-end function GetLocationName
+        integer(kind = int_wp), intent(in) :: type             !< Type of item
+        integer(kind = int_wp), intent(in) :: idx              !< Index of item
+        character(len = *), intent(out) :: name            !< Name of the item (if successful)
 
-!> Retrieve name of an item (of given type)
-integer function GetItemName( type, idx, name )
+        GetItemName = GetItemNamePriv(type, idx, name)
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetItemName
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETITEMNAME' :: GetItemName
+    end function GetItemName
 
-    use waq_omi_priv
+    !> Get the number of active substances
+    integer function GetActiveSubstancesCount()
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetActiveSubstancesCount
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETACTIVESUBSTANCESCOUNT' :: GetActiveSubstancesCount
 
-    integer, intent(in)              :: type            !< Type of item
-    integer, intent(in)              :: idx             !< Index of item
-    character(len=*), intent(out)    :: name            !< Name of the item (if successful)
+        use waq_omi_priv
 
-    GetItemName = GetItemNamePriv( type, idx, name )
+        implicit none
 
-end function GetItemName
+        GetActiveSubstancesCount = 0
 
-!> Get the number of active substances
-integer function GetActiveSubstancesCount( )
+    end function GetActiveSubstancesCount
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetActiveSubstancesCount
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETACTIVESUBSTANCESCOUNT' :: GetActiveSubstancesCount
+    !> Get the number of all substances
+    integer function GetTotalSubstancesCount()
 
-    use waq_omi_priv
+        !DEC$ ATTRIBUTES DLLEXPORT::GetTotalSubstancesCount
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETTOTALSUBSTANCESCOUNT' :: GetTotalSubstancesCount
 
-    implicit none
+        use waq_omi_priv
 
-    GetActiveSubstancesCount = 0
+        implicit none
 
-end function GetActiveSubstancesCount
+        GetTotalSubstancesCount = 0
 
-!> Get the number of all substances
-integer function GetTotalSubstancesCount( )
+    end function GetTotalSubstancesCount
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetTotalSubstancesCount
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETTOTALSUBSTANCESCOUNT' :: GetTotalSubstancesCount
+    !> Get the name of a substance
+    integer function GetSubstanceName(subid, name)
 
-    use waq_omi_priv
+        !DEC$ ATTRIBUTES DLLEXPORT::GetSubstanceName
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETSUBSTANCENAME' :: GetSubstanceName
 
-    implicit none
+        use waq_omi_priv
 
-    GetTotalSubstancesCount = 0
+        implicit none
 
-end function GetTotalSubstancesCount
+        integer(kind = int_wp), intent(in) :: subid
+        character(len = *), intent(out) :: name
 
-!> Get the name of a substance
-integer function GetSubstanceName( subid, name )
+        GetSubstanceName = 0
+        name = '?'
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetSubstanceName
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETSUBSTANCENAME' :: GetSubstanceName
+    end function GetSubstanceName
 
-    use waq_omi_priv
+    !> Get the index of a substance
+    integer function GetSubstanceId(name)
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetSubstanceId
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETSUBSTANCEID' :: GetSubstanceId
 
-    integer, intent(in)           :: subid
-    character(len=*), intent(out) :: name
+        use waq_omi_priv
 
-    GetSubstanceName = 0
-    name = '?'
+        implicit none
 
-end function GetSubstanceName
+        character(len = *), intent(in) :: name
 
-!> Get the index of a substance
-integer function GetSubstanceId( name )
+        GetSubstanceId = 0
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetSubstanceId
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETSUBSTANCEID' :: GetSubstanceId
+    end function GetSubstanceId
 
-    use waq_omi_priv
+    !> Get the time period for the complete computation
+    integer function GetTimeHorizon(startTime, stopTime)
 
-    implicit none
+        !DEC$ ATTRIBUTES DLLEXPORT::GetTimeHorizon
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETTIMEHORIZON' :: GetTimeHorizon
 
-    character(len=*), intent(in)  :: name
+        use waq_omi_priv
 
-    GetSubstanceId = 0
+        implicit none
 
-end function GetSubstanceId
+        real(kind = kind(1.0d0)), intent(out) :: startTime
+        real(kind = kind(1.0d0)), intent(out) :: stopTime
 
-!> Get the time period for the complete computation
-integer function GetTimeHorizon( startTime, stopTime )
+        real(kind = kind(1.0d0)) :: timeStep
+        real(kind = kind(1.0d0)) :: currentTime
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetTimeHorizon
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETTIMEHORIZON' :: GetTimeHorizon
+        call GetTimeParameters(startTime, stopTime, timeStep, currentTime)
 
-    use waq_omi_priv
+        GetTimeHorizon = 0
 
-    implicit none
+    end function GetTimeHorizon
 
-    real(kind=kind(1.0d0)), intent(out) :: startTime
-    real(kind=kind(1.0d0)), intent(out) :: stopTime
+    !> Get the current time for the computation
+    integer function GetWQCurrentTime(currentTime)
 
-    real(kind=kind(1.0d0))              :: timeStep
-    real(kind=kind(1.0d0))              :: currentTime
+        !DEC$ ATTRIBUTES DLLEXPORT::GetWQCurrentTime
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETWQCURRENTTIME' :: GetWQCurrentTime
 
-    call GetTimeParameters( startTime, stopTime, timeStep, currentTime )
+        use waq_omi_priv
 
-    GetTimeHorizon = 0
+        implicit none
 
-end function GetTimeHorizon
+        real(kind = kind(1.0d0)), intent(out) :: currentTime
 
-!> Get the current time for the computation
-integer function GetWQCurrentTime( currentTime )
+        real(kind = kind(1.0d0)) :: startTime
+        real(kind = kind(1.0d0)) :: stopTime
+        real(kind = kind(1.0d0)) :: timeStep
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetWQCurrentTime
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETWQCURRENTTIME' :: GetWQCurrentTime
+        call GetTimeParameters(startTime, stopTime, timeStep, currentTime)
+        GetWQCurrentTime = 0
 
-    use waq_omi_priv
+    end function GetWQCurrentTime
 
-    implicit none
+    !> Get the next time in the computation
+    integer function GetWQNextTime(nextTime)
 
-    real(kind=kind(1.0d0)), intent(out) :: currentTime
+        !DEC$ ATTRIBUTES DLLEXPORT::GetWQNextTime
+        !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETWQNEXTTIME' :: GetWQNextTime
 
-    real(kind=kind(1.0d0))              :: startTime
-    real(kind=kind(1.0d0))              :: stopTime
-    real(kind=kind(1.0d0))              :: timeStep
+        use waq_omi_priv
 
-    call GetTimeParameters( startTime, stopTime, timeStep, currentTime )
-    GetWQCurrentTime = 0
+        implicit none
 
-end function GetWQCurrentTime
+        real(kind = dp), intent(out) :: nextTime
 
-!> Get the next time in the computation
-integer function GetWQNextTime( nextTime )
+        real(kind = dp) :: startTime
+        real(kind = dp) :: stopTime
+        real(kind = dp) :: timeStep
 
-    !DEC$ ATTRIBUTES DLLEXPORT::GetWQNextTime
-    !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETWQNEXTTIME' :: GetWQNextTime
+        call GetTimeParameters(startTime, stopTime, timeStep, nextTime)
+        nextTime = nextTime + timeStep
 
-    use waq_omi_priv
+        GetWQNextTime = 0
 
-    implicit none
-
-    real(kind=kind(1.0d0)), intent(out) :: nextTime
-
-    real(kind=kind(1.0d0))              :: startTime
-    real(kind=kind(1.0d0))              :: stopTime
-    real(kind=kind(1.0d0))              :: timeStep
-
-    call GetTimeParameters( startTime, stopTime, timeStep, nextTime )
-    nextTime = nextTime + timeStep
-
-    GetWQNextTime = 0
-
-end function GetWQNextTime
+    end function GetWQNextTime
 
 end module waq_omi_api

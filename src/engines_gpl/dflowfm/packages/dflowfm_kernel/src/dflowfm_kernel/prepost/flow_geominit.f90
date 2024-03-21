@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -56,13 +56,14 @@
  use string_module
  use m_plotdots
  use geometry_module, only: getdx, getdy, dbdistance, normalin, normalout, half, duitpl, dlinedis
- use sorting_algorithms, only: indexx
+ use stdlib_sorting, only: sort_index
  use m_flowtimes, only: ti_waq
  use gridoperations
  use m_flow, only : numlimdt, numlimdt_baorg
  use m_oned_functions
  use unstruc_channel_flow, only : network
  use m_sediment, only: stm_included
+ use m_dad, only: dad_included
  use m_flowtimes, only: handle_extra
  use Timers
  use m_structures
@@ -305,11 +306,11 @@
 
  end if
 
- if (stm_included) then
-     call realloc(bl_ave, ndx, keepExisting = .false., fill = dmiss, stat = ierr)
-     call aerr('bl_ave(ndx)', ierr, ndx)
- end if
-
+ if (stm_included .and. ndx2d>ndxi) then
+    call realloc(bl_ave, ndx, keepExisting = .false., fill = dmiss, stat = ierr)
+    call aerr('bl_ave(ndx)', ierr, ndx)
+ endif
+  
  if ( allocated (kfs) ) deallocate(kfs)
  allocate(kfs(ndx))   ;  kfs   = 0
 
@@ -1092,7 +1093,7 @@
     nonLin   = inonLin(3)
  end if
 
- if (japure1D > 0) then
+ if (japure1D == 1 .or. japure1D == 2) then 
     call setisnbnodisnblin() ! set signarray isnbnod for left and rightneighbouring uc1d.
  endif
 
@@ -1416,7 +1417,7 @@
      enddo
    enddo
 
-   CALL INDEXX(mxban,rr,nr)
+   call sort_index(rr, nr)
    do k = 1, mxban
       ka = nr(k)
       nban(1,k) = nbanh(1,ka)

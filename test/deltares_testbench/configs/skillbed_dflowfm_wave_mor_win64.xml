@@ -12,15 +12,15 @@
         <locations>
             <location name="reference_engines">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="engines_to_compare">
                 <root>./data/engines</root>
@@ -51,7 +51,7 @@
             <path>thirdparty/svn/win64/svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
-            <path>dimr/scripts/run_dimr.bat</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>x64</from>

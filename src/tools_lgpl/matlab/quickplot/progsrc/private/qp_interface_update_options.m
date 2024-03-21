@@ -3,7 +3,7 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2023 Stichting Deltares.
+%   Copyright (C) 2011-2024 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,7 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 %   $HeadURL$
 %   $Id$
 
-[DomainNr,Props,subf,selected,stats,vslice,hslice] = get_basics(mfig,UD.MainWin);
+[DomainNr,Props,subf,selected,stats,vslice,hslice] = get_basics(UD.MainWin);
 if isnumeric(Props.NVal) && Props.NVal < 0
     try
         Handle_SelectFile=findobj(mfig,'tag','selectfile');
@@ -56,30 +56,16 @@ setappdata(qv,'animate',strcmp(PlotType,'Animate'))
 set(findobj(mfig,'tag','loaddata'),'enable',onoff(EnableLoad))
 
 
-function [DomainNr,Props,subf,selected,stats,vslice,hslice]=get_basics(mfig,MW)
+function [DomainNr,Props,subf,selected,stats,vslice,hslice]=get_basics(MW)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 
-Handle_Domain=findobj(mfig,'tag','selectdomain');
-DomainNr=get(Handle_Domain,'value');
-
-datafields=findobj(mfig,'tag','selectfield');
-Props=get(datafields,'userdata');
-subf = [];
+[DomainNr,Props,subf] = qpfield;
 selected = [];
 stats =[];
 vslice=0;
 hslice=0;
 if isempty(Props)
     return
-end
-
-fld=get(datafields,'value');
-Props=Props(fld);
-
-if strcmp(get(MW.SubFld,'enable'),'on')
-    subf={get(MW.SubFld,'value')};
-else
-    subf={};
 end
 
 DimFlag=Props.DimFlag;
@@ -246,6 +232,7 @@ forcemarkercolor=0;
 markerflatfill=0;
 edgeflatcolour=0;
 lineproperties=0;
+tracks=0;
 
 unstructured = 0;
 triangles = 1;
@@ -311,25 +298,49 @@ switch geometry
             else
                 switch coordinates
                     case 'xyz'
-                        axestype={'X-Y','X-Z','X-Y-Z'};
+                        if nval == 0
+                            axestype={'X-Y','X-Z','X-Y-Z'};
+                            tracks=1;
+                        else
+                            axestype={'Time-Val','X-Y','X-Z','X-Y-Z'};
+                        end
+                    case 'xy'
+                        if nval == 0
+                            axestype={'X-Y'};
+                            tracks=1;
+                        else
+                            axestype={'Time-Val','X-Y'};
+                        end
                     otherwise
                         axestype={'X-Y'};
+                        tracks=1;
                 end
             end
         elseif multiple(T_)
             if isequal(coordinates,'d')
                 axestype={'Time-Val','Distance-Val'};
-            elseif nval==0 
+            elseif ~isempty(coordinates)
                 switch coordinates
                     case 'xyz'
-                        axestype={'X-Y','X-Z','X-Y-Z'};
+                        if nval == 0
+                            axestype={'X-Y','X-Z','X-Y-Z'};
+                            tracks=1;
+                        else
+                            axestype={'Time-Val','X-Y','X-Z','X-Y-Z'};
+                        end
+                    case 'xy'
+                        if nval == 0
+                            axestype={'X-Y'};
+                            tracks=1;
+                        else
+                            axestype={'Time-Val','X-Y'};
+                        end
                     otherwise
                         axestype={'X-Y'};
+                        tracks=1;
                 end
-            elseif isempty(coordinates)
-                axestype={'Time-Val'};
             else
-                axestype={'Time-Val','X-Y'};
+                axestype={'Time-Val'};
             end
         else
             if isequal(coordinates,'d')
@@ -937,6 +948,8 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                         case {'PNT','PNT+'}
                             if strcmp(axestype,'Time-Z')
                                 PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
+                            elseif multiple(T_)
+                                PrsTps={'markers';'values';'tracks'};
                             else
                                 PrsTps={'markers';'values'};
                             end
@@ -1107,6 +1120,9 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                         thindams=1;
                         nval=0.9;
                 end
+            case 'tracks'
+                lineproperties=1;
+                tracks=1;
             case 'vector'
                 vectors=1';
                 Ops.vectorcomponent='edge';
@@ -1118,10 +1134,15 @@ end
 
 %--------------------------------------------------------------------------
 
-if (isequal(geometry,'PNT') && multiple(T_) && ~isempty(coordinates)) || (isequal(geometry,'POLYL') && strcmp(coordinates,'xyz'))
+% if ismember(axestype,{'X-Y','X-Z','X-Y-Z'}) && (isequal(geometry,'PNT') && multiple(T_) && ~isempty(coordinates)) || (isequal(geometry,'POLYL') && strcmp(coordinates,'xyz'))
+if tracks
     coltrack=findobj(OH,'tag','colourtracks');
-    set(coltrack,'enable','on')
-    if get(coltrack,'value')
+    if nval == 0
+        set(coltrack,'enable','on','style','checkbox')
+    else
+        set(coltrack,'enable','on','style','text')
+    end
+    if nval > 0 || get(coltrack,'value')
         coltrkm=findobj(OH,'tag','trackcolour=?');
         ptrkCLR=get(coltrkm,'string');
         coltrki=get(coltrkm,'value');
@@ -1140,6 +1161,9 @@ if (isequal(geometry,'PNT') && multiple(T_) && ~isempty(coordinates)) || (isequa
         trkCLR = strcat(num2cell(crds_notplotted),' coordinate');
         if multiple(T_) && isempty(strfind('Time',axestype))
             trkCLR{end+1} = 'time';
+        end
+        if nval == 1
+            trkCLR = [{'value'} trkCLR];
         end
         if ~isequal(trkCLR,ptrkCLR)
             % try to find an exact match when switching vector colouring strings

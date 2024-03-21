@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -35,8 +35,8 @@ subroutine write_part_restart_file()
     use fileinfo
     use openfl_mod
     use m_part_modeltypes       ! part model definitions
-
-
+    
+    
     implicit none
 
     ! Locals
@@ -44,8 +44,8 @@ subroutine write_part_restart_file()
     integer(int_wp ) :: lunut             !  output unit number
     integer     :: lures
 
-
-
+    
+    
     ! first to calculate the number of particles in the restart files
     nores = 0
     noras = 0
