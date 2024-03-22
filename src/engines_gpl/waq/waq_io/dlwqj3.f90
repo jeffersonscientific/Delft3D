@@ -25,252 +25,215 @@ module m_dlwqj3
 
     implicit none
 
+    private
+    public :: dlwqj3
+
 contains
 
+    SUBROUTINE DLWQJ3 (binary_work_file, ascii_output_file_unit, output_file_width, num_blocks, integer_array, &
+            real_array, values_arr, num_items, num_dims, iorder, &
+            has_scale_factors, convert_breakpoint, info_from_binary_file, time_function_type, memory_type, &
+            time_factor, is_date_format, is_yyddhh_format, cum_items, cum_dims, &
+            flow_ignore_string, item_string, value_conc_string, breakpoint_harm_string, output_file_option)
 
-    SUBROUTINE DLWQJ3 (LUNWR, LUNUT, IWIDTH, NOBRK, IAR, &
-            RAR, RMAT, NOITM, NODIM, IORDER, &
-            SCALE, ODS, BINFIL, IOPT, IPRO, &
-            ITFACT, DTFLG1, DTFLG3, IFILSZ, JFILSZ, &
-            CAR, STRNG1, STRNG2, STRNG3, IOUTPT)
-
-        ! Prints and writes blocks of data
-        !
-        !     SUBROUTINES CALLED : convert_time_format - converting times of breakpoints
-        !
-        !     LOGICAL UNITS      : LUNWR   = unit intermediate file
-        !                          LUNUT   = unit formatted output file
-        !
-        !     PARAMETERS    :
-        !
-        !     NAME    KIND      LENGTH    FUNCT.  DESCRIPTION
-        !     ---------------------------------------------------------
-        !     LUNWR   INTEGER     1       INPUT   Unit of binary work file
-        !     LUNUT   INTEGER     1       INPUT   Unit of ASCII output file
-        !     IWIDTH  INTEGER     1       INPUT   Width of the output file
-        !     NOBRK   INTEGER     1       INPUT   number of blocks to write
-        !     IAR     INTEGER     *       INPUT   integer   workspace
-        !     RAR     REAL        *       INPUT   real      workspace
-        !     RMAT    REAL        *       INPUT   matrix of values
-        !     NOITM   INTEGER     1       INPUT   number of items to write
-        !     NODIM   INTEGER     1       INPUT   number of subs  to write
-        !     IORDER  INTEGER     1       INPUT   1 = groups of subs per item
-        !     SCALE   LOGICAL     1       INPUT   T = NODIM scale factors present
-        !     ODS     LOGICAL     1       INPUT   T = Breakpoints are converted
-        !     BINFIL  LOGICAL     1       INPUT   T = Info from binary file
-        !     IOPT    INTEGER     1       INPUT   1 is block     2 is linear
-        !                                         3 is harmonics 4 is fourier
-        !     IPRO    INTEGER     1       INPUT   0 is non permanent memory
-        !     ITFACT  INTEGER     1       INPUT   factor between clocks
-        !     DTFLG1  LOGICAL     1       INPUT   'date'-format 1st time scale
-        !     DTFLG3  LOGICAL     1       INPUT   'date'-format (F;ddmmhhss,T;yydddhh)
-        !     IFILSZ  INTEGER     1       IN/OUT  cumulative integer space count
-        !     JFILSZ  INTEGER     1       IN/OUT  cumulative real space count
-        !     CAR     CHARACTER   *       INPUT   character workspace
-        !     STRNG1  CHAR*(*)    1       INPUT   write string 1 (items)
-        !     STRNG2  CHAR*(*)    1       INPUT   write string 2 (values/concs)
-        !     STRNG3  CHAR*(*)    1       INPUT   write string 3 (brkp/harm)
-        !     IOUTPT  INTEGER     1       INPUT   output file option
+        !! Prints and writes blocks of data
+        !     output_file_option  INTEGER     1       INPUT   output file option
 
         use m_dlwqj2
         use date_time_utils, only : convert_time_format
         use timers       !   performance timers
 
-        LOGICAL :: SCALE, ODS, BINFIL, defaults_on
-        LOGICAL :: DTFLG1, DTFLG3
-        CHARACTER*(*) :: STRNG1, STRNG2, STRNG3, CAR(:)
-        integer(kind = int_wp) :: NODIM
-        integer(kind = int_wp) :: k, ie, IE2, NOITM, i1, i2
-        integer(kind = int_wp) :: nodi2, iorder, lunut, lunwr, iar(:)
-        integer(kind = int_wp) :: iopt, ipro
-        integer(kind = int_wp) :: ifilsz, jfilsz, nobrk, ioffb, ioffi, ioffs
-        integer(kind = int_wp) :: iskip, iskp2, notot, iss, ioutpt, iwidth
-        integer(kind = int_wp) :: itel2, itfact, i1dum, i2dum
-        integer(kind = int_wp) :: itels, itel, i3
-        real(kind = real_wp) :: rar(:), rmat(:)
-        !
-        !     Local declarations
+        logical :: has_scale_factors, info_from_binary_file, defaults_on
+        logical, intent(in) :: convert_breakpoint   !! T = Breakpoints are converted
+        logical, intent(in) :: is_date_format       !! 'date'-format 1st time scale
+        logical, intent(in) :: is_yyddhh_format     !! 'date'-format (F;ddmmhhss,T;yydddhh)
+        character(len = *), intent(in)  :: item_string, value_conc_string, breakpoint_harm_string, flow_ignore_string(:)
+        integer(kind = int_wp), intent(in) :: num_dims, num_items        !! number of subs, items to write
+        integer(kind = int_wp), intent(in) :: iorder                 !! 1 = groups of subs per item
+        integer(kind = int_wp), intent(in) :: ascii_output_file_unit !!Unit of ASCII output file(formatted output file)
+        integer(kind = int_wp), intent(in) :: binary_work_file          !! Unit of binary work file
+        integer(kind = int_wp), intent(inout) :: integer_array(:)
+        integer(kind = int_wp), intent(in) :: time_function_type !!1 is block, 2 is linear, 3 is harmonics, 4 is fourier
+        integer(kind = int_wp), intent(in) :: memory_type                           !! 0 is non permanent memory
+        integer(kind = int_wp), intent(inout) :: cum_items, cum_dims    !! cumulative integer/real space count
+        integer(kind = int_wp), intent(in) :: num_blocks                !! number of blocks to write
+        integer(kind = int_wp) :: output_file_option
+        integer(kind = int_wp) :: output_file_width         !! Width of the output file
+        integer(kind = int_wp) :: time_factor               !! factor between clocks
+        real(kind = real_wp), intent(inout) :: real_array(:), values_arr(:)
 
+        integer(kind = int_wp) :: itel2, i1dum, i2dum, nodi2
+        integer(kind = int_wp) :: k, ie, ie2, i1, i2
+        integer(kind = int_wp) :: itels, itel, i3
+        integer(kind = int_wp) :: ioffb, ioffi, ioffs, iskip, iskp2, notot, iss
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("dlwqj3", ithndl)
-        !
-        !     Write headers
-        !
-        defaults_on = .FALSE.
-        IF (NODIM < 0) defaults_on = .TRUE.
-        NODI2 = NODIM
-        IF (NODIM <= 0) NODI2 = 1
-        IF (IORDER == 1) THEN
-            WRITE (LUNUT, 1000) NOITM, NODI2, STRNG2
-            WRITE (LUNWR) IORDER, &
-                    NOITM, (IAR(K), K = 1, NOITM), &
-                    NODIM, (IAR(K), K = NOITM + 1, NOITM + NODIM), &
-                    IOPT, IPRO
-        ELSEIF (IORDER == 2) THEN
-            WRITE (LUNUT, 1000) NODI2, NOITM, STRNG1
-            IF (LUNWR > 0) &
-                    WRITE (LUNWR) IORDER, &
-                            NODIM, (IAR(K), K = 1, NODIM), &
-                            NOITM, (IAR(K), K = NODIM + 1, NODIM + NOITM), &
-                            IOPT, IPRO
-        ENDIF
 
-        IFILSZ = IFILSZ + NOITM + MAX(0, NODIM) + 5
-        !     jvb1
-        !
-        !          just declare array space for binary files and return
-        !
-        IF (BINFIL) THEN
-            WRITE (LUNUT, 1130) IPRO
-            IFILSZ = IFILSZ + 3
-            JFILSZ = JFILSZ + MAX(1, NODIM) * MAX(1, NOITM) * 3
-            GOTO 70
-        ENDIF
-        !
-        !       Initialisation
-        !
-        IF (NOBRK == 0) THEN
-            SCALE = .FALSE.
-            GOTO 70
-        ENDIF
-        IOFFB = NOITM + NODI2 + 1
-        IOFFI = 0
-        IOFFS = NOITM
-        ISKIP = 1
-        ISKP2 = NODI2
-        NOTOT = NOITM * NODI2
-        IF (IOPT == 3 .OR. IOPT == 4) NOTOT = NOTOT + 1
-        IF (IORDER == 2) THEN
-            IOFFI = MAX(NODIM, 0)
-            IOFFS = 0
-            ISKIP = NOITM
-            ISKP2 = 1
-        ENDIF
-        !
-        !       Scale factors
-        !
-        ISS = 1
-        IF (SCALE) THEN
-            SCALE = .FALSE.
-            ISS = 1
-            IF (IOUTPT >= 4) THEN
-                WRITE (LUNUT, 1010)
-                DO I2 = 1, NODIM, IWIDTH
-                    IE = MIN(I2 + IWIDTH - 1, NODIM)
-                    WRITE (LUNUT, 1020) (IAR(IOFFS + K), K = I2, IE)
-                    WRITE (LUNUT, 1025) (CAR_OF_DUM(CAR, IAR(IOFFS + K)), K = I2, IE)
-                    WRITE (LUNUT, 1030) (RAR(K), K = I2, IE)
+        ! write headers
+        defaults_on = .false.
+        if (num_dims < 0) defaults_on = .true.
+        nodi2 = num_dims
+        if (num_dims <= 0) nodi2 = 1
+        if (iorder == 1) then
+            write (ascii_output_file_unit, 1000) num_items, nodi2, value_conc_string
+            write (binary_work_file) iorder, &
+                    num_items, (integer_array(k), k = 1, num_items), &
+                    num_dims, (integer_array(k), k = num_items + 1, num_items + num_dims), &
+                    time_function_type, memory_type
+        elseif (iorder == 2) then
+            write (ascii_output_file_unit, 1000) nodi2, num_items, item_string
+            if (binary_work_file > 0) &
+                    write (binary_work_file) iorder, &
+                            num_dims, (integer_array(k), k = 1, num_dims), &
+                            num_items, (integer_array(k), k = num_dims + 1, num_dims + num_items), &
+                            time_function_type, memory_type
+        endif
+
+        cum_items = cum_items + num_items + max(0, num_dims) + 5
+
+        ! just declare array space for binary files and return
+        if (info_from_binary_file) then
+            write (ascii_output_file_unit, 1130) memory_type
+            cum_items = cum_items + 3
+            cum_dims = cum_dims + max(1, num_dims) * max(1, num_items) * 3
+            goto 70
+        endif
+
+        if (num_blocks == 0) then
+            has_scale_factors = .false.
+            goto 70
+        endif
+        ioffb = num_items + nodi2 + 1
+        ioffi = 0
+        ioffs = num_items
+        iskip = 1
+        iskp2 = nodi2
+        notot = num_items * nodi2
+        if (time_function_type == 3 .or. time_function_type == 4) notot = notot + 1
+        if (iorder == 2) then
+            ioffi = max(num_dims, 0)
+            ioffs = 0
+            iskip = num_items
+            iskp2 = 1
+        endif
+
+        ! scale factors
+        iss = 1
+        if (has_scale_factors) then
+            has_scale_factors = .false.
+            iss = 1
+            if (output_file_option >= 4) then
+                write (ascii_output_file_unit, 1010)
+                do i2 = 1, num_dims, output_file_width
+                    ie = min(i2 + output_file_width - 1, num_dims)
+                    write (ascii_output_file_unit, 1020) (integer_array(ioffs + k), k = i2, ie)
+                    write (ascii_output_file_unit, 1025) (flow_or_ignore(flow_ignore_string, integer_array(ioffs + k)), k = i2, ie)
+                    write (ascii_output_file_unit, 1030) (real_array(k), k = i2, ie)
                 end do
-            ENDIF
-            DO I1 = 1, NOBRK
-                DO I2 = 0, NOTOT - 1
-                    IF (IORDER == 1) ITEL2 = MOD(I2, NODIM) + 1
-                    IF (IORDER == 2) ITEL2 = I2 / NODIM + 1
-                    RMAT(ISS + I2) = RMAT(ISS + I2) * RAR(ITEL2)
+            endif
+            do i1 = 1, num_blocks
+                do i2 = 0, notot - 1
+                    if (iorder == 1) itel2 = mod(i2, num_dims) + 1
+                    if (iorder == 2) itel2 = i2 / num_dims + 1
+                    values_arr(iss + i2) = values_arr(iss + i2) * real_array(itel2)
                 end do
-                ISS = ISS + NOTOT
+                iss = iss + notot
             end do
-        ENDIF
-        !
-        !       Convert breakpoints
-        !
-        IF (NOBRK > 1) THEN
-            IF (IOUTPT >= 4) WRITE (LUNUT, 1040) STRNG3, NOBRK
-            IF (.NOT. ODS) &
-                    CALL convert_time_format (IAR(IOFFB:), NOBRK, ITFACT, DTFLG1, DTFLG3)
-            IF (defaults_on .AND. IOUTPT >= 4) WRITE (LUNUT, 1050)
-        ELSE
-            IF (defaults_on) THEN
-                IF (IOUTPT >= 4) WRITE (LUNUT, 1050)
-            ELSE
-                IF (IOUTPT >= 4) WRITE (LUNUT, 1060)
-            ENDIF
-        ENDIF
-        !
-        !       Write binary file
-        !
-        IF (LUNWR > 0) THEN
-            I1DUM = 0
-            I2DUM = 0
-            CALL write_breakpoint_data_blocks (LUNWR, NOBRK, NOTOT, 1, IAR(IOFFB:), & ! write table in binary format to wrk file.
-                    RMAT, I1DUM, I2DUM)
-            !     jvb1    IF ( IOPT .NE. 0 ) THEN
-            IFILSZ = IFILSZ + I1DUM
-            JFILSZ = JFILSZ + I2DUM
-            !     jvb1    ENDIF
-        ENDIF
-        !
-        !       Write formatted output
-        !
-        IF (IOUTPT >= 4) THEN
-            ITELS = 0
-            DO I1 = 1, NOBRK
-                IF (NOBRK > 1) THEN
-                    IF (IOPT == 1) &
-                            WRITE (LUNUT, 1070) STRNG3, I1, IAR(IOFFB + I1 - 1)
-                    IF (IOPT == 2) &
-                            WRITE (LUNUT, 1070) STRNG3, I1, IAR(IOFFB + I1 - 1)
-                    IF (IOPT == 3) THEN
-                        ITELS = ITELS + 1
-                        WRITE (LUNUT, 1080) I1, IAR(IOFFB + I1 - 1), RMAT(ITELS)
-                    ENDIF
-                    IF (IOPT == 4) THEN
-                        ITELS = ITELS + 1
-                        WRITE (LUNUT, 1090) I1, IAR(IOFFB + I1 - 1), RMAT(ITELS)
-                    ENDIF
-                ENDIF
-                DO I2 = 1, NODI2, IWIDTH
-                    IE2 = MIN(I2 + IWIDTH - 1, NODI2)
-                    IF (NODIM > 0) THEN
-                        WRITE (LUNUT, 1100) STRNG2, (IAR(IOFFS + K), K = I2, IE2)
-                        WRITE (LUNUT, 1150) STRNG1, &
-                                (CAR_OF_DUM(CAR, IAR(IOFFS + K)), K = I2, IE2)
-                    ENDIF
-                    ITEL = ITELS
-                    DO I3 = 1, NOITM
-                        WRITE (LUNUT, 1120)  ABS(IAR(IOFFI + I3)), &
-                                (RMAT(ITEL + K), K = (I2 - 1) * ISKIP + 1, (IE2 - 1) * ISKIP + 1, ISKIP)
-                        ITEL = ITEL + ISKP2
+        endif
+
+        ! convert breakpoints
+        if (num_blocks > 1) then
+            if (output_file_option >= 4) write (ascii_output_file_unit, 1040) breakpoint_harm_string, num_blocks
+            if (.not. convert_breakpoint) &
+                    call convert_time_format(integer_array(ioffb:), num_blocks, time_factor, is_date_format, is_yyddhh_format)
+            if (defaults_on .and. output_file_option >= 4) write (ascii_output_file_unit, 1050)
+        else
+            if (defaults_on) then
+                if (output_file_option >= 4) write (ascii_output_file_unit, 1050)
+            else
+                if (output_file_option >= 4) write (ascii_output_file_unit, 1060)
+            endif
+        endif
+
+        ! write binary file
+        if (binary_work_file > 0) then
+            i1dum = 0
+            i2dum = 0
+            ! write table in binary format to wrk file.
+            call write_breakpoint_data_blocks(binary_work_file, num_blocks, notot, 1, integer_array(ioffb:), values_arr, i1dum, i2dum)
+            cum_items = cum_items + i1dum
+            cum_dims = cum_dims + i2dum
+        endif
+
+        ! write formatted output
+        if (output_file_option >= 4) then
+            itels = 0
+            do i1 = 1, num_blocks
+                if (num_blocks > 1) then
+                    if (time_function_type == 1) &
+                            write (ascii_output_file_unit, 1070) breakpoint_harm_string, i1, integer_array(ioffb + i1 - 1)
+                    if (time_function_type == 2) &
+                            write (ascii_output_file_unit, 1070) breakpoint_harm_string, i1, integer_array(ioffb + i1 - 1)
+                    if (time_function_type == 3) then
+                        itels = itels + 1
+                        write (ascii_output_file_unit, 1080) i1, integer_array(ioffb + i1 - 1), values_arr(itels)
+                    endif
+                    if (time_function_type == 4) then
+                        itels = itels + 1
+                        write (ascii_output_file_unit, 1090) i1, integer_array(ioffb + i1 - 1), values_arr(itels)
+                    endif
+                endif
+                do i2 = 1, nodi2, output_file_width
+                    ie2 = min(i2 + output_file_width - 1, nodi2)
+                    if (num_dims > 0) then
+                        write (ascii_output_file_unit, 1100) value_conc_string, (integer_array(ioffs + k), k = i2, ie2)
+                        write (ascii_output_file_unit, 1150) item_string, &
+                                (flow_or_ignore(flow_ignore_string, integer_array(ioffs + k)), k = i2, ie2)
+                    endif
+                    itel = itels
+                    do i3 = 1, num_items
+                        write (ascii_output_file_unit, 1120)  abs(integer_array(ioffi + i3)), &
+                                (values_arr(itel + k), k = (i2 - 1) * iskip + 1, (ie2 - 1) * iskip + 1, iskip)
+                        itel = itel + iskp2
                     end do
                 end do
-                ITELS = ITELS + NODI2 * NOITM
+                itels = itels + nodi2 * num_items
             end do
-        ENDIF
-        !
-        70 WRITE (LUNUT, 1140)
+        endif
+
+        70 write (ascii_output_file_unit, 1140)
         if (timon) call timstop(ithndl)
-        RETURN
-        !
-        1000 FORMAT (/' DATA grouped in', I10, ' blocks of', I10, ' ', A)
-        1010 FORMAT (' Scale factors for this block of data: ')
-        1020 FORMAT (' Scale    :', I6, 9I12)
-        1025 FORMAT (' Substance:', 10('  ', A10))
-        1030 FORMAT (' values   :', 10E12.4)
-        1040 FORMAT (/' Number of ', A, 's with full data:', I5)
-        1050 FORMAT (' Default values in this block.')
-        1060 FORMAT (' Constant values in this block.')
-        1070 FORMAT (' ', A, ' ', I7, ' :', I10)
-        1080 FORMAT (' Harmonic: ', I3, ' :', I10, ' Phase: ', 10E12.4)
-        1090 FORMAT (' Fourier : ', I3, ' :', I10, ' Phase: ', 10E12.4)
-        1100 FORMAT (' ', A, I20, 9I12)  ! ( ' ',A,I6,9I12)
-        1150 FORMAT (' ', A, ' ', 10('  ', A10))
-        1120 FORMAT (I10, 2X, 1P, 10E12.4)
-        1130 FORMAT (' Info comes at runtime from binary file at unit: ', I3)
-        1140 FORMAT(/' ====> input item completed <==== '//)
-        !
-    END
-    !
-    CHARACTER*20 FUNCTION CAR_OF_DUM(CAR, I)
-        INTEGER(kind = int_wp) :: I
-        CHARACTER*(*) CAR(*)
-        IF (I > 0) THEN
-            CAR_OF_DUM = CAR(I)
-        ELSEIF (I == 0) THEN
-            CAR_OF_DUM = 'FLOW'
-        ELSE
-            CAR_OF_DUM = 'ignored'
-        ENDIF
-        RETURN
-    END
+        return
+
+        1000 format (/' DATA grouped in', I10, ' blocks of', I10, ' ', A)
+        1010 format (' Scale factors for this block of data: ')
+        1020 format (' Scale    :', I6, 9I12)
+        1025 format (' Substance:', 10('  ', A10))
+        1030 format (' values   :', 10E12.4)
+        1040 format (/' Number of ', A, 's with full data:', I5)
+        1050 format (' Default values in this block.')
+        1060 format (' Constant values in this block.')
+        1070 format (' ', A, ' ', I7, ' :', I10)
+        1080 format (' Harmonic: ', I3, ' :', I10, ' Phase: ', 10E12.4)
+        1090 format (' Fourier : ', I3, ' :', I10, ' Phase: ', 10E12.4)
+        1100 format (' ', A, I20, 9I12)  ! ( ' ',A,I6,9I12)
+        1150 format (' ', A, ' ', 10('  ', A10))
+        1120 format (I10, 2X, 1P, 10E12.4)
+        1130 format (' Info comes at runtime from binary file at unit: ', I3)
+        1140 format(/' ====> input item completed <==== '//)
+
+    end subroutine dlwqj3
+
+    character*20 function flow_or_ignore(string, i)
+        integer(kind = int_wp) :: i
+        character(len = *) :: string(*)
+        if (i > 0) then
+            flow_or_ignore = string(i)
+        elseif (i == 0) then
+            flow_or_ignore = 'FLOW'
+        else
+            flow_or_ignore = 'ignored'
+        endif
+    end function flow_or_ignore
 
 end module m_dlwqj3

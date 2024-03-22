@@ -118,7 +118,7 @@ contains
         character     calit*10, caldit*10, strng1*10, strng2*10, strng3*10
         integer(kind = int_wp) :: iorder, count_items_in_use_rule, nodim, iflag, itype, &
                 chkflg, ident, nottc, lunwr2, &
-                file_size_1, file_size_2, ipro, itfacw, iopt, &
+                file_size_1, file_size_2, ipro, itfacw, time_function_type, &
                 nobrk, itel, ioerr, iblock, k, &
                 i, ihulp, ioff, icm, iim, &
                 noits, nconst, itmnr, idx_item_in_use_rule, nocol, &
@@ -167,7 +167,7 @@ contains
         !     USEFOR is the Alias flag, .TRUE. is alias string expected
         !     ODS    is the ODS   flag, .TRUE. ODS datafile expected
         !     NEWREC is the flag for new records
-        !     IOPT   is option flag 1 = block function, 2 = linear
+        !     time_function_type   is option flag 1 = block function, 2 = linear
         !                           3 = harmonics     , 4 = fourier
         !     IOFF   is offset in the array of integers and strings
         !
@@ -175,7 +175,7 @@ contains
         if (ioutpt < 4) write (lunut, 1350)
         iorder = 0
         iflag = 0
-        iopt = 1
+        time_function_type = 1
         nobrk = 0
         itel = 0
         scale = .false.
@@ -260,11 +260,11 @@ contains
         !
         if (iabs(itype) == 1 .and. chulp(1:6) == 'LINEAR') then
             if (ioutpt >= 3) write (lunut, 1005)
-            iopt = 2
+            time_function_type = 2
             goto 10
         endif
         if (iabs(itype) == 1 .and. chulp(1:5) == 'BLOCK') then
-            iopt = 1
+            time_function_type = 1
             goto 10
         endif
         !
@@ -508,11 +508,11 @@ contains
                     nottc = nottt
                 endif
             endif
-            if (iopt == 3 .or. iopt == 4) nottt = nottt + 1  ! harmonics or fourier
+            if (time_function_type == 3 .or. time_function_type == 4) nottt = nottt + 1  ! harmonics or fourier
             call dlwq5d (lunut, iar(nti2:), rar(ntr:), iim, irm, & ! read time series table
                     iposr, npos, ilun, lch, lstack, &
                     cchar, chulp, nottt, nottc, time_dependent, nobrk, &
-                    iopt, dtflg1, dtflg3, itfacw, itype, &
+                    time_function_type, dtflg1, dtflg3, itfacw, itype, &
                     ihulp, rhulp, ierr2, ierr3)
 
             call status%increase_error_count_with(ierr3)
@@ -529,7 +529,7 @@ contains
                 !          Assigns according to computational rules
                 nr2 = ntr + nottt * nobrk
                 call assign_matrix (lunut, iar, count_items_in_use_rule, itmnr, nodim, & ! process parsed values in table  (process operations if any) and store results in rar(nr2:)
-                        idmnr, iorder, rar, iopt, rar(ntr:), &
+                        idmnr, iorder, rar, time_function_type, rar(ntr:), &
                         nocol, nobrk, amiss, iar(nti:), rar(nr2:))
                 strng3 = 'breakpoint'
                 !          Writes to the binary intermediate file
@@ -538,7 +538,7 @@ contains
                 icm = icmax - ntc
                 call dlwqj3 (lunwr2, lunut, iwidth, nobrk, iar, & ! writes data_item to wrk and/or lst files
                         rar(nts:), rar(nr2:), itmnr, idmnr, iorder, &
-                        scale, .true., binfil, iopt, ipro, &
+                        scale, .true., binfil, time_function_type, ipro, &
                         itfacw, dtflg1, dtflg3, file_size_1, file_size_2, &
                         sname, strng1, strng2, strng3, ioutpt)
             endif
@@ -546,7 +546,7 @@ contains
             if (ierr2 == 3) goto 510
             iorder = 0
             iflag = 0
-            iopt = 1
+            time_function_type = 1
             amiss = -999.0
             nobrk = 0
             itel = 0
@@ -588,12 +588,12 @@ contains
             if (ierr2 /= 0) goto 510
             nr2 = ntr + count_items_in_use_rule * nodim * nobrk
             call assign_matrix (lunut, iar, count_items_in_use_rule, itmnr, nodim, &
-                    idmnr, iorder, rar, iopt, rar(ntr:), &
+                    idmnr, iorder, rar, time_function_type, rar(ntr:), &
                     nodim, nobrk, amiss, iar(nti:), rar(nr2:))
             strng3 = 'breakpoint'
             call dlwqj3 (lunwr2, lunut, iwidth, nobrk, iar, &
                     rar(nts:), rar(nr2:), itmnr, idmnr, iorder, &
-                    scale, ods, binfil, iopt, ipro, &
+                    scale, ods, binfil, time_function_type, ipro, &
                     itfacw, dtflg1, dtflg3, file_size_1, file_size_2, &
                     sname, strng1, strng2, strng3, ioutpt)
             if (ierr2 == 2) then
@@ -604,7 +604,7 @@ contains
             iorder = 0
             iflag = 0
             ioff = 0
-            iopt = 1
+            time_function_type = 1
             amiss = -999.0
             nobrk = 0
             itel = 0
@@ -627,7 +627,7 @@ contains
         !
         if (iabs(itype) == 1 .and. chulp(1:4) == 'TIME') then
             time_dependent = .true.
-            iopt = 1
+            time_function_type = 1
             goto 10
         endif
         !
