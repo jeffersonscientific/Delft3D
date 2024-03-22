@@ -271,9 +271,11 @@ module m_open_waq_files
         logical, intent(in), optional :: support_old_status !< use old status if applicable
         logical, intent(in), optional :: replace !< use replace status for opmode 1
 
-        logical :: old_supported = .true.
-        integer :: stat = 0
+        logical :: old_supported
+        integer :: stat
 
+        old_supported = .true.
+        stat = 0
         if (present(support_old_status)) then
             old_supported = support_old_status
         end if
@@ -319,8 +321,9 @@ module m_open_waq_files
         logical, intent(in), optional :: replace !< use replace status for opmode 1
 
         logical :: replace_
-        integer :: stat = 0
-
+        integer :: stat
+        
+        stat = 0
         replace_ = .false.
         if ( present(replace) ) then
             replace_ = replace
