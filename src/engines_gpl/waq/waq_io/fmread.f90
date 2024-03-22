@@ -31,7 +31,7 @@ contains
 
     subroutine fmread (nitem, item, nvals, nfact, factor, &
             nobrk, ibrk, arrin, dtflg, dtflg3, &
-            ifact, iwidth, ioutpt, ierr)
+            ifact, iwidth, output_verbose_level, ierr)
 
         !! Reads blocks of matrices of input values and scales them
         !!
@@ -64,7 +64,7 @@ contains
         logical  (4), intent(in) :: dtflg3                    !< (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: ifact                      !< factor between timings
         integer(kind = int_wp), intent(in) :: iwidth                     !< width of the output file
-        integer(kind = int_wp), intent(in) :: ioutpt                     !< how extensive is output ?
+        integer(kind = int_wp), intent(in) :: output_verbose_level                     !< how extensive is output ?
         integer(kind = int_wp), intent(inout) :: ierr                       !< cumulative error count
 
 
@@ -77,13 +77,13 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("fmread", ithndl)
 
-        if (ioutpt < 4) write (lunut, 2000)
+        if (output_verbose_level < 4) write (lunut, 2000)
 
         do i1 = 1, nobrk
 
             if (gettoken(ctoken, ibrk(i1), itype, ierr2) > 0) goto 10
             if (itype == 1) then                                    !  a time string
-                if (ioutpt >= 4) write (lunut, 2010) i1, ctoken
+                if (output_verbose_level >= 4) write (lunut, 2010) i1, ctoken
                 call convert_string_to_time_offset (ctoken, ibrk(i1), .false., .false., ierr2)
                 if (ibrk(i1) == -999) then
                     write (lunut, 2020) trim(ctoken)
@@ -94,7 +94,7 @@ contains
                     goto 10
                 endif
             else                                                        !  an integer for stop time
-                if (ioutpt >= 4) write (lunut, 2040) i1, ibrk(i1)
+                if (output_verbose_level >= 4) write (lunut, 2040) i1, ibrk(i1)
                 call convert_relative_time (ibrk(i1), ifact, dtflg, dtflg3)
             endif
 
@@ -104,7 +104,7 @@ contains
                 enddo
             enddo
 
-            if (ioutpt >= 4) then
+            if (output_verbose_level >= 4) then
 
                 do i2 = 1, nvals, iwidth
                     ie1 = min(i2 + iwidth - 1, nfact)

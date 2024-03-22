@@ -35,7 +35,7 @@ module m_read_block
 contains
 
 
-    subroutine read_block(lun, lchar, filtype, inpfil, ioutpt, &
+    subroutine read_block(lun, lchar, filtype, inpfil, output_verbose_level, &
             iwidth, substances, constants, parameters, functions, &
             segfuncs, segments, gridps, data_block, ierr, &
             status)
@@ -54,7 +54,7 @@ contains
         character(len = *), intent(inout) :: lchar(*)     !< filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
         type(inputfilestack), intent(inout) :: inpfil       !< input file strucure with include stack and flags
-        integer(kind = int_wp), intent(in) :: ioutpt        !< level of reporting to ascii output file
+        integer(kind = int_wp), intent(in) :: output_verbose_level        !< level of reporting to ascii output file
         integer(kind = int_wp), intent(in) :: iwidth        !< width of output
         type(t_dlwq_item), intent(inout) :: substances   !< delwaq substances list
         type(t_dlwq_item), intent(inout) :: constants    !< delwaq constants list
@@ -271,7 +271,7 @@ contains
                 data_block%subject = SUBJECT_INITIAL
                 data_block%functype = FUNCTYPE_CONSTANT
                 chkflg = 1
-                call read_items(lunut, inpfil, ioutpt, chkflg, callr, &
+                call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
                         waq_param, data_param, substances, types, noits, &
                         ierr2, status)
 
@@ -294,7 +294,7 @@ contains
 
                 chkflg = 0
 
-                call read_items(lunut, inpfil, ioutpt, chkflg, callr, &
+                call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
                         waq_param, data_param, constants, types, noits, &
                         ierr2, status)
 
@@ -321,7 +321,7 @@ contains
 
                 chkflg = 0
 
-                call read_items(lunut, inpfil, ioutpt, chkflg, callr, &
+                call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
                         waq_param, data_param, functions, types, noits, &
                         ierr2, status)
 
@@ -339,7 +339,7 @@ contains
                 data_block%functype = 0
                 write (lunut, *) ' '
 
-                call read_items(lunut, inpfil, ioutpt, chkflg, strng1, &
+                call read_items(lunut, inpfil, output_verbose_level, chkflg, strng1, &
                         waq_param, data_param, parameters, types, noits, &
                         ierr2, status)
 
@@ -358,7 +358,7 @@ contains
                 if (data_block%functype == 0) data_block%functype = 1
                 write (lunut, *) ' '
 
-                call read_items(lunut, inpfil, ioutpt, chkflg, strng1, &
+                call read_items(lunut, inpfil, output_verbose_level, chkflg, strng1, &
                         waq_param, data_param, segfuncs, types, noits, &
                         ierr2, status)
 
@@ -407,7 +407,7 @@ contains
                     chkflg = 1
                     data_block%loc_pointered = .true.
 
-                    call read_items(lunut, inpfil, ioutpt, chkflg, callr, &
+                    call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
                             waq_loc, data_loc, segments, types, noits_loc, &
                             ierr2, status)
 
@@ -589,7 +589,7 @@ contains
                     waq_loc%ipnt => null()
                 endif
                 call print_matrix(lunut, iwidth, data_block, strng1, strng2, &
-                        strng3, ioutpt)
+                        strng3, output_verbose_level)
                 if (ierr2 == 3) goto 50
                 exit
             endif
@@ -855,7 +855,7 @@ contains
 
     end subroutine read_header
 
-    subroutine read_items(lunrep, inpfil, ioutpt, chkflg, callr, &
+    subroutine read_items(lunrep, inpfil, output_verbose_level, chkflg, callr, &
             waq_item, data_item, name_item, type_item, noits, &
             ierr, status)
 
@@ -868,7 +868,7 @@ contains
 
         integer(kind = int_wp), intent(in) :: lunrep        ! report file
         type(inputfilestack), intent(inout) :: inpfil       ! input file strucure with include stack
-        integer(kind = int_wp), intent(in) :: ioutpt        ! level of reporting to ascii output file
+        integer(kind = int_wp), intent(in) :: output_verbose_level        ! level of reporting to ascii output file
         integer(kind = int_wp), intent(in) :: chkflg        ! check on input or add items
         character(len = 10), intent(in) :: callr        ! calling subject
         type(t_dlwq_item), intent(out) :: waq_item     ! list of items to be set in this block ( boundaries, loads, substances etc )
@@ -1042,16 +1042,16 @@ contains
                 endif
                 if (setnam) then
                     namset = waq_item%ipnt(itmnr)
-                    if (namset > 0 .and. ioutpt >= 3) then
+                    if (namset > 0 .and. output_verbose_level >= 3) then
                         write (lunut, 1001) callr, itmnr, callr, namset, &
                                 name_item%name(namset), rtoken
-                    elseif (namset == 0 .and. ioutpt >= 3) then
+                    elseif (namset == 0 .and. output_verbose_level >= 3) then
                         write (lunut, 1001) callr, itmnr, callr, namset, &
                                 'flow', rtoken
-                    elseif (namset == -1300000000 .and. ioutpt >= 3) then
+                    elseif (namset == -1300000000 .and. output_verbose_level >= 3) then
                         write (lunut, 1001) callr, itmnr, callr, namset, &
                                 'Ignored', rtoken
-                    elseif (ioutpt >= 3) then
+                    elseif (output_verbose_level >= 3) then
                         write (lunut, 1011) callr, itmnr, callr, -namset, &
                                 type_item%name(-namset), rtoken
                     endif
@@ -1085,16 +1085,16 @@ contains
         if (itype == 1) then
             if (usefor .and. setnam) then
                 namset = waq_item%ipnt(itmnr)
-                if (namset > 0 .and. ioutpt >= 3) then
+                if (namset > 0 .and. output_verbose_level >= 3) then
                     write (lunut, 1000) callr, itmnr, callr, namset, &
                             name_item%name(namset), ctoken
-                elseif (namset == 0 .and. ioutpt >= 3) then
+                elseif (namset == 0 .and. output_verbose_level >= 3) then
                     write (lunut, 1000) callr, itmnr, callr, namset, &
                             'FLOW', ctoken
-                elseif (namset == -1300000000 .and. ioutpt >= 3) then
+                elseif (namset == -1300000000 .and. output_verbose_level >= 3) then
                     write (lunut, 1000) callr, itmnr, callr, namset, &
                             'Ignored', ctoken
-                elseif (ioutpt >= 3) then
+                elseif (output_verbose_level >= 3) then
                     write (lunut, 1010) callr, itmnr, callr, -namset, &
                             type_item%name(-namset), ctoken
                 endif
@@ -1133,7 +1133,7 @@ contains
                 waq_item%name(itmnr) = ctoken
                 data_item%name(noitm) = ctoken
                 if (usefor) setnam = .true.
-                if (ioutpt >= 3 .and. .not. usefor) &
+                if (output_verbose_level >= 3 .and. .not. usefor) &
                         write (lunut, 1020) callr, itmnr, callr, 0, 'FLOW'
                 goto 10
             endif
@@ -1157,7 +1157,7 @@ contains
                 waq_item%name(itmnr) = ctoken
                 data_item%name(noitm) = ctoken
                 if (usefor) setnam = .true.
-                if (ioutpt >= 3 .and. .not. usefor) &
+                if (output_verbose_level >= 3 .and. .not. usefor) &
                         write (lunut, 1020) callr, itmnr, callr, i2, name_item%name(i2)
                 goto 10
             endif
@@ -1182,7 +1182,7 @@ contains
                 data_item%name(noitm) = ctoken
 
                 if (usefor) setnam = .true.
-                if (ioutpt >= 3 .and. .not. usefor) &
+                if (output_verbose_level >= 3 .and. .not. usefor) &
                         write (lunut, 1030) callr, itmnr, callr, i2, type_item%name(i2)
                 goto 10
             endif
@@ -1237,7 +1237,7 @@ contains
                 data_item%name(noitm) = ctoken
 
                 if (usefor) setnam = .true.
-                if (ioutpt >= 3 .and. .not. usefor) &
+                if (output_verbose_level >= 3 .and. .not. usefor) &
                         write (lunut, 1020) callr, itmnr, callr, &
                                 ntitm, name_item%name(ntitm)
                 goto 10
@@ -1266,24 +1266,24 @@ contains
                         write (lunut, 1060) itoken
                         goto 40
                     endif
-                    if (ioutpt >= 3 .and. .not. usefor) &
+                    if (output_verbose_level >= 3 .and. .not. usefor) &
                             write (lunut, 1015) callr, itmnr, callr, itoken
                     write (ctoken, '(''Segment '',i8)') itoken
                 elseif (itoken == 0 .and. callr /= 'CONCENTR. ') then
                     write (lunut, 1060) itoken
                     goto 40
                 elseif (itoken > 0) then
-                    if (ioutpt >= 3 .and. .not. usefor) &
+                    if (output_verbose_level >= 3 .and. .not. usefor) &
                             write (lunut, 1020) callr, itmnr, callr, itoken, &
                                     name_item%name(itoken)
                     ctoken = name_item%name(itoken)
                 elseif (itoken == 0 .and. callr == 'CONCENTR. ') then
-                    if (ioutpt >= 3 .and. .not. usefor) &
+                    if (output_verbose_level >= 3 .and. .not. usefor) &
                             write (lunut, 1020) callr, itmnr, callr, itoken, &
                                     'FLOW'
                     ctoken = 'FLOW'
                 else
-                    if (ioutpt >= 3 .and. .not. usefor) &
+                    if (output_verbose_level >= 3 .and. .not. usefor) &
                             write (lunut, 1030) callr, itmnr, callr, -itoken, &
                                     type_item%name(-itoken)
                     ctoken = type_item%name(-itoken)

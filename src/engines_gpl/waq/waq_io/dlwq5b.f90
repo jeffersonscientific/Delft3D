@@ -37,9 +37,9 @@ contains
 
     subroutine dlwq5b(lunut, iposr, npos, cchar, car, &
             iar, icmax, iimax, all_names, all_types, &
-            bc_wl_count, bc_wl_types_count, parsed_items_count, noits, chkflg, &
+            num_bc_waste, bc_wl_types_count, parsed_items_count, noits, chkflg, &
             caller, ilun, lch, lstack, itype, &
-            rar, nconst, itmnr, parsed_str, ioutpt, &
+            rar, nconst, itmnr, parsed_str, output_verbose_level, &
             error_ind, status)
 
         use m_string_utils, only : index_in_array, join_strings, string_equals
@@ -52,7 +52,7 @@ contains
         integer(kind = int_wp), intent(inout) :: iposr        !< Start position on input line
         integer(kind = int_wp), intent(in) :: npos         !< Nr of significant characters
         integer(kind = int_wp), intent(out) :: iar(:)       !< Integer workspace
-        integer(kind = int_wp), intent(inout) :: bc_wl_count  !< Number of bounds/wastes
+        integer(kind = int_wp), intent(inout) :: num_bc_waste  !< Number of bounds/wastes
         integer(kind = int_wp), intent(in) :: bc_wl_types_count       !< Number of bound/waste types
         integer(kind = int_wp), intent(out) :: parsed_items_count        !< Number of items read
         integer(kind = int_wp), intent(out) :: noits        !< Number of items for scale
@@ -60,7 +60,7 @@ contains
         integer(kind = int_wp), intent(in) :: lstack       !< Include file stack size
         integer(kind = int_wp), intent(out) :: itype        !< Type of the token read ('at exit')
         integer(kind = int_wp), intent(out) :: nconst       !< Number of values in rar
-        integer(kind = int_wp), intent(in) :: ioutpt       !< Output file option
+        integer(kind = int_wp), intent(in) :: output_verbose_level       !< Output file option
         integer(kind = int_wp), intent(out) :: error_ind    !< Error indicator
 
         real(kind = real_wp), intent(out) :: rar(:)       !< Array with real values
@@ -116,7 +116,7 @@ contains
         substitution_on = .false.
         can_compute = .false.
         operator_on = .false.
-        logging_on = (ioutpt >= 3)
+        logging_on = (output_verbose_level >= 3)
         parsed_items_count = 0
         noits = 0
         itmnr = 0
@@ -259,7 +259,7 @@ contains
                 end if
 
                 ! parsed_str == item-NAME
-                ifound = index_in_array(parsed_str(1:len(all_names(1))), all_names(1:bc_wl_count))
+                ifound = index_in_array(parsed_str(1:len(all_names(1))), all_names(1:num_bc_waste))
                 if (ifound >= 1) then
                     call update_counters(parsed_items_count, noits, itmnr)
                     icm = itmnr + parsed_items_count + ioff
@@ -320,11 +320,11 @@ contains
                 else
                     ! Now a new name is added to the list of names
                     !        the rest is moved upward since it is all 1 array
-                    bc_wl_count = bc_wl_count + 1
+                    num_bc_waste = num_bc_waste + 1
                     ioff = ioff + 1
-                    icm = icmax + bc_wl_count
-                    call shift_char_subarray(all_names, bc_wl_count, icm)
-                    all_names(bc_wl_count) = parsed_str
+                    icm = icmax + num_bc_waste
+                    call shift_char_subarray(all_names, num_bc_waste, icm)
+                    all_names(num_bc_waste) = parsed_str
                     ! plus normal procedure
                     parsed_items_count = parsed_items_count + 1
                     noits = noits + 1
@@ -333,14 +333,14 @@ contains
                     call shift_array_right(iar, itmnr, itmnr + parsed_items_count * 2)
                     call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
                     call shift_char_subarray(car, itmnr + ioff, icm)
-                    iar(itmnr) = bc_wl_count
+                    iar(itmnr) = num_bc_waste
                     iar(itmnr + parsed_items_count) = itmnr
                     iar(itmnr + parsed_items_count + parsed_items_count) = noits
                     car(itmnr + ioff) = parsed_str
                     car(itmnr + parsed_items_count + ioff) = parsed_str
                     if (usefor_on) substitution_on = .true.
                     if (logging_on .and. .not. usefor_on) then
-                        write (lunut, 1020) caller, itmnr, caller, bc_wl_count, all_names(bc_wl_count)
+                        write (lunut, 1020) caller, itmnr, caller, num_bc_waste, all_names(num_bc_waste)
                     end if
                 end if
                 cycle read_and_process
@@ -378,7 +378,7 @@ contains
 
             ! Scenario: no item name was given, but an item number
             if (itype == 2) then
-                if (parsed_int <=  bc_wl_count .and. parsed_int >= -bc_wl_types_count) then
+                if (parsed_int <=  num_bc_waste .and. parsed_int >= -bc_wl_types_count) then
                     call update_counters(parsed_items_count, noits, itmnr)
                     icm = itmnr + parsed_items_count + ioff
 

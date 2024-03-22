@@ -40,7 +40,7 @@ contains
     SUBROUTINE setup_statistical(LUNREP, NPOS, &
             CCHAR, &
             ILUN, LCH, &
-            LSTACK, IOUTPT, &
+            LSTACK, output_verbose_level, &
             DTFLG1, DTFLG3, &
             StatProcesDef, AllItems, &
             status)
@@ -61,7 +61,7 @@ contains
         integer(kind = int_wp), intent(inout) :: ilun (*)          !! unitnumber include stack
         character(*), intent(inout) :: lch  (*)         !! filename include stack for input
         integer(kind = int_wp), intent(in) :: lstack            !! include file stack size
-        integer(kind = int_wp), intent(out) :: ioutpt            !! flag for more or less output
+        integer(kind = int_wp), intent(out) :: output_verbose_level            !! flag for more or less output
         logical, intent(in) :: dtflg1           !! 'date'-format 1st timescale
         logical, intent(in) :: dtflg3           !! 'date'-format (F;ddmmhhss,T;yydddhh)
         type(ProcesPropColl) :: StatProcesDef    !! the statistical proces definition
@@ -114,7 +114,7 @@ contains
         WRITE(LUNREP, 2000)
         IPOSR = 0
         CALL RDSTAT (LUNREP, IPOSR, NPOS, CCHAR, &
-                ILUN, LCH, LSTACK, IOUTPT, DTFLG1, &
+                ILUN, LCH, LSTACK, output_verbose_level, DTFLG1, &
                 DTFLG3, status, NOSTAT, NKEY, NOKEY, &
                 KEYNAM, KEYVAL, NPERIOD, PERNAM, PERSFX, &
                 PSTART, PSTOP)

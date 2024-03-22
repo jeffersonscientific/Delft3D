@@ -40,7 +40,7 @@ program tests_dlwq5a
     integer :: iargc, getarg
 
     type :: bc_fixture
-        integer(kind = int_wp) :: nosys, nobnd, nobtyp, ioutpt, ierr2
+        integer(kind = int_wp) :: nosys, nobnd, nobtyp, output_verbose_level, ierr2
         character(255) :: bc_file, wrk_file, lchar(50)
         character(20), dimension(:), allocatable :: bc_ids
         character(20), dimension(:), allocatable :: bc_types
@@ -145,7 +145,7 @@ contains
         this%bc_types = remove_duplicates(bc_types)
         this%sname = substance_names
         this%ierr2 = 0
-        this%ioutpt = 9
+        this%output_verbose_level = 9
 
         !! Assign global variables
         ! global variable declared in rd_token, loaded inside m_delwaq1_data
@@ -208,7 +208,7 @@ contains
         call dlwq5a(fixture%lun, fixture%lchar, 14, fixture%iwidth, fixture%icmax, &
                 fixture%car, fixture%iimax, fixture%iar, fixture%irmax, fixture%rar, &
                 fixture%sname, fixture%bc_ids, fixture%bc_types(1:fixture%nobtyp), fixture%nobnd, fixture%nosys, &
-                fixture%nobtyp, fixture%drar, fixture%dtflg1, fixture%dtflg3, fixture%ioutpt, &
+                fixture%nobtyp, fixture%drar, fixture%dtflg1, fixture%dtflg3, fixture%output_verbose_level, &
                 fixture%ierr2, fixture%status)
     end subroutine parse_bc
 

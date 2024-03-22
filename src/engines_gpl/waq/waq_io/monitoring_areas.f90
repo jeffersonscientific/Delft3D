@@ -33,7 +33,7 @@ module monitoring_areas
 contains
 
     subroutine read_monitoring_areas(lun, lchar, filtype, duname, nsegdmp, &
-            isegdmp, dmpbal, ndmpar, ntdmps, ioutpt, &
+            isegdmp, dmpbal, ndmpar, ntdmps, output_verbose_level, &
             ierr, status)
 
         !! Reads monitoring areas
@@ -68,7 +68,7 @@ contains
         integer(kind = int_wp), pointer :: dmpbal(:)          !< balance option (flag) per monitoring area
         integer(kind = int_wp), intent(out) :: ndmpar             !< number of monitoring areas
         integer(kind = int_wp), intent(out) :: ntdmps             !< total number of volumes in monitoring areas
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         integer(kind = int_wp), intent(inout) :: ierr               !< error   count
 
         type(error_status), intent(inout) :: status !< current error status
@@ -149,8 +149,8 @@ contains
 
         !        Read specification of the dump areas
 
-        if (ioutpt < 2) write (lunut, 2040)
-        if (ioutpt == 2) write (lunut, 2050)
+        if (output_verbose_level < 2) write (lunut, 2040)
+        if (output_verbose_level == 2) write (lunut, 2050)
         do id = 1, ndmpar
             if (gettoken(duname(id), ierr2) > 0) goto 20
             if (gettoken(option, nseg, itype, ierr2) > 0) goto 20
@@ -191,12 +191,12 @@ contains
                 endif
             enddo
 
-            if (ioutpt >= 2) then
+            if (output_verbose_level >= 2) then
                 write(lunut, 2060) id, duname(id), nseg
                 if (dmpbal(id) == 0) then
                     write(lunut, 2430)
                 endif
-                if (ioutpt >= 3) then
+                if (output_verbose_level >= 3) then
                     write(lunut, 2070)
                     write(lunut, 2080) (k, isegdmp(ntdmps + k), k = 1, nseg)
                 endif
@@ -235,7 +235,7 @@ contains
     end subroutine read_monitoring_areas
 
     subroutine read_monitoring_transects(lun, lchar, filtype, raname, nexcraai, &
-            iexcraai, ioptraai, noraai, ntraaq, ioutpt, &
+            iexcraai, ioptraai, noraai, ntraaq, output_verbose_level, &
             ierr, status)
 
 
@@ -279,7 +279,7 @@ contains
         integer(kind = int_wp), pointer :: ioptraai(:)        !< transport summation option for transects
         integer(kind = int_wp), intent(out) :: noraai             !< number of monitoring transects
         integer(kind = int_wp), intent(out) :: ntraaq             !< total number of exchanges in monitoring transects
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         integer(kind = int_wp), intent(inout) :: ierr               !< error   count
 
         type(error_status), intent(inout) :: status !< current error status
@@ -372,8 +372,8 @@ contains
 
         !        Read specification of the transects
 
-        if (ioutpt < 2) write (lunut, 2040)
-        if (ioutpt == 2) write (lunut, 2050)
+        if (output_verbose_level < 2) write (lunut, 2040)
+        if (output_verbose_level == 2) write (lunut, 2050)
         do ir = 1, noraai
             if (gettoken(raname  (ir), ierr2) > 0) goto 20
             if (gettoken(ioptraai(ir), ierr2) > 0) goto 20
@@ -403,9 +403,9 @@ contains
                 endif
             enddo
 
-            if (ioutpt >= 2) then
+            if (output_verbose_level >= 2) then
                 write(lunut, 2060) ir, raname(ir), ioptraai(ir), nq
-                if (ioutpt >= 3) then
+                if (output_verbose_level >= 3) then
                     write(lunut, 2070)
                     write(lunut, 2080) (k, iexcraai(ntraaq + k), k = 1, nq)
                 endif

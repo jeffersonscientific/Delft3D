@@ -31,7 +31,7 @@ contains
 
 
     SUBROUTINE RDSTAT (LUNREP, IPOSR, NPOS, CCHAR, &
-            ILUN, LCH, LSTACK, IOUTPT, DTFLG1, &
+            ILUN, LCH, LSTACK, output_verbose_level, DTFLG1, &
             DTFLG3, status, NOSTAT, NKEY, NOKEY, &
             KEYNAM, KEYVAL, NPERIOD, PERNAM, PERSFX, &
             PSTART, PSTOP)
@@ -53,7 +53,7 @@ contains
         !     ILUN    INTEGER(kind=int_wp) ::LSTACK      IN/OUT  unit number stack
         !     LCH     CHAR*(*) LSTACK      IN/OUT  Filename stack
         !     LSTACK  INTEGER(kind=int_wp) ::1           INPUT   size of the stack
-        !     IOUTPT  INTEGER(kind=int_wp) ::1           INPUT   output file option
+        !     output_verbose_level  INTEGER(kind=int_wp) ::1           INPUT   output file option
         !     DTFLG1  LOGICAL  1           INPUT   'date'-format 1st timescale
         !     DTFLG3  LOGICAL  1           INPUT   'date'-format (F;ddmmhhss,T;yydddhh)
         !     NOSTAT  INTEGER(kind=int_wp) ::1           OUTPUT  number of statistical processes
@@ -73,7 +73,7 @@ contains
 
         implicit none
 
-        INTEGER(kind = int_wp) :: LUNREP, IPOSR, NPOS, LSTACK, IOUTPT, &
+        INTEGER(kind = int_wp) :: LUNREP, IPOSR, NPOS, LSTACK, output_verbose_level, &
                 NOSTAT, NKEY
         LOGICAL :: DTFLG1, DTFLG3
         INTEGER(kind = int_wp) :: ILUN(*)

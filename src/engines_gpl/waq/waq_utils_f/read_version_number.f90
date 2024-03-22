@@ -30,7 +30,7 @@ contains
 
 
     subroutine read_version_number (lunin, lfile, lunut, npos, input_version_number, &
-            ioutpt)
+            output_verbose_level)
 
         !! Searches and reads the input file for the version string
         !! The version string looks like DELWAQ_VERSION_n.nnn\n
@@ -43,7 +43,7 @@ contains
         integer(kind = int_wp), intent(in) :: lunut             !< unit number report file
         integer(kind = int_wp), intent(in) :: npos              !< number of significant positions in one line
         real(kind = real_wp), intent(out) :: input_version_number            !< Version number
-        integer(kind = int_wp), intent(out) :: ioutpt            !< Output option
+        integer(kind = int_wp), intent(out) :: output_verbose_level            !< Output option
 
         ! Local
         character*(npos) car                              !  read buffer
@@ -55,7 +55,7 @@ contains
         ctrlz = char(26)
 
         input_version_number = 0.0
-        ioutpt = -1
+        output_verbose_level = -1
         status = 0
         do while (status == 0)
             read (lunin, '(a)', iostat = status) car
@@ -73,9 +73,9 @@ contains
                             ' Version number of the input file is: ', input_version_number
                 endif
                 if (car(i:i + 19) == 'PRINT_OUTPUT_OPTION_') then
-                    read (car(i + 20:i + 20), '(i1)') ioutpt
+                    read (car(i + 20:i + 20), '(i1)') output_verbose_level
                     write (lunut, '(a,a,i1)') '       ---------->', &
-                            ' Output level of the listfile is: ', ioutpt
+                            ' Output level of the listfile is: ', output_verbose_level
                 endif
             enddo
         enddo

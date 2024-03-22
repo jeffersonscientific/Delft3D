@@ -467,7 +467,7 @@ contains
                 '     Shuffling:       ', A)
     end subroutine read_ascii_definition_file
 
-    subroutine read_item_num(nmax, iopt, ioutpt, ipnt, npnt, &
+    subroutine read_item_num(nmax, iopt, output_verbose_level, ipnt, npnt, &
             ierr)
 
         !! Reads the item numbers of an input block
@@ -484,7 +484,7 @@ contains
 
         integer(kind = int_wp), intent(in) :: nmax               !< maximum amount of items
         integer(kind = int_wp), intent(in) :: iopt               !< is 1 for block functions
-        integer(kind = int_wp), intent(in) :: ioutpt             !< how extensive is output ?
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< how extensive is output ?
         integer(kind = int_wp), intent(out) :: ipnt  (nmax)       !< the item numbers of this block
         integer(kind = int_wp), intent(out) :: npnt               !< amount of items of this block
         integer(kind = int_wp), intent(inout) :: ierr               !< cumulative error indicator
@@ -510,7 +510,7 @@ contains
 
         ! write them if needed
         write(lunut, 2010) npnt
-        if (ioutpt >= 3) then
+        if (output_verbose_level >= 3) then
             write(lunut, 2020) (ipnt(i), i = 1, npnt)
         else
             write(lunut, 2030)

@@ -34,7 +34,7 @@ contains
             npoins, dtflg1, dtflg2, nodump, iopt, &
             noint, iwidth, dtflg3, ndmpar, ntdmps, &
             noraai, ntraaq, nosys, notot, nototp, &
-            ioutpt, nsegdmp, isegdmp, nexcraai, &
+            output_verbose_level, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, status)
 
         !> Reads integration method; monitoring areas/transects and timers
@@ -93,7 +93,7 @@ contains
         integer(kind = int_wp), intent(in) :: nosys    !< number of transported substances
         integer(kind = int_wp), intent(inout) :: notot    !< total number of substances
         integer(kind = int_wp), intent(out) :: nototp   !< notot inclusive of partcle substances
-        integer(kind = int_wp), intent(in) :: ioutpt   !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level   !< flag for more or less output
 
         logical, intent(out) :: dtflg1 !< 'date'-format 1st timescale
         logical, intent(out) :: dtflg2 !< 'date'-format 2nd timescale
@@ -415,7 +415,7 @@ contains
                 call convert_time_format (iar, nobrk * 2, 1, dtflg1, dtflg3)
             end if
 
-            if (ioutpt >= 4) then
+            if (output_verbose_level >= 4) then
                 write (lunut, '(A,/)') ' Breakpoint          Timestep '
 
                 if (dtflg1) then
@@ -471,7 +471,7 @@ contains
 
         ierr2 = 0
         call read_monitoring_areas (lun, lchar, filtype, duname, nsegdmp, &
-                isegdmp, dmpbal, ndmpar, ntdmps, ioutpt, &
+                isegdmp, dmpbal, ndmpar, ntdmps, output_verbose_level, &
                 ierr2, status)
         if (ierr2 /= 0) goto 30
 
@@ -487,7 +487,7 @@ contains
         ierr2 = 0
         nullify(raname)
         call read_monitoring_transects (lun, lchar, filtype, raname, nexcraai, &
-                iexcraai, ioptraai, noraai, ntraaq, ioutpt, &
+                iexcraai, ioptraai, noraai, ntraaq, output_verbose_level, &
                 ierr2, status)
         if (ierr2 /= 0) goto 30
         if (noraai > 0 .and. ibflag == 0) then

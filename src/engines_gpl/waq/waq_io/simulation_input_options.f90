@@ -438,7 +438,7 @@ contains
     end subroutine validate_simulation_time_steps
 
     subroutine read_constant_data(iopt2, array, nitem, nvals, nscale, &
-            iwidth, lun1, ioutpt, ierr)
+            iwidth, lun1, output_verbose_level, ierr)
 
         !! Reads a block with constant data with and without defaults
         !!
@@ -468,7 +468,7 @@ contains
         integer(kind = int_wp), intent(in) :: nscale      !< number of scale values
         integer(kind = int_wp), intent(in) :: iwidth      !< width of the output file
         integer(kind = int_wp), intent(in) :: lun1        !< output unit number
-        integer(kind = int_wp), intent(in) :: ioutpt      !< how extensive the output ?
+        integer(kind = int_wp), intent(in) :: output_verbose_level      !< how extensive the output ?
         integer(kind = int_wp), intent(inout) :: ierr        !< cumulative rror counter
 
         real(kind = real_wp), allocatable :: factor(:)        !  array for scale factors
@@ -504,11 +504,11 @@ contains
                     if (gettoken(array(ival, item), ierr2) > 0) goto 100
                 enddo
             enddo
-            if (ioutpt < 4) write (lunut, 2020)
+            if (output_verbose_level < 4) write (lunut, 2020)
             do iw = 1, nvals, iwidth
                 ie1 = min(iw + iwidth - 1, nscale)
                 ie2 = min(iw + iwidth - 1, nvals)
-                if (ioutpt >= 4) then
+                if (output_verbose_level >= 4) then
                     write (lunut, 2030)          (ival, ival = iw, ie1)
                     write (lunut, 2040)          (factor(ival), ival = iw, ie1)
                     write (lunut, 2050)
@@ -523,11 +523,11 @@ contains
             do ival = 1, nvals
                 if (gettoken(array(ival, 1), ierr2) > 0) goto 100
             enddo
-            if (ioutpt < 3) write (lunut, 2080)
+            if (output_verbose_level < 3) write (lunut, 2080)
             do iw = 1, nvals, iwidth
                 ie1 = min(iw + iwidth - 1, nscale)
                 ie2 = min(iw + iwidth - 1, nvals)
-                if (ioutpt >= 3) then
+                if (output_verbose_level >= 3) then
                     write (lunut, 2030) (ival, ival = iw, ie1)
                     write (lunut, 2040) (factor(ival), ival = iw, ie1)
                     write (lunut, 2090)
@@ -545,11 +545,11 @@ contains
 
             if (gettoken(nover, ierr2) > 0) goto 100
             write (lunut, 2100) nover
-            if (nover > 0 .and. ioutpt >= 3) write (lunut, 2110)
+            if (nover > 0 .and. output_verbose_level >= 3) write (lunut, 2110)
             do iover = 1, nover
                 if (gettoken(item, ierr2) > 0) goto 100
                 if (item < 1 .or. item > nitem) then
-                    if (ioutpt >= 3) write (lunut, 2120) item, 1, nitem
+                    if (output_verbose_level >= 3) write (lunut, 2120) item, 1, nitem
                     ierr = ierr + 1
                     do ival = 1, nvals
                         if (gettoken(value, ierr2) > 0) goto 100
@@ -558,7 +558,7 @@ contains
                     do ival = 1, nvals
                         if (gettoken(array(ival, item), ierr2) > 0) goto 100
                     enddo
-                    if (ioutpt >= 3) &
+                    if (output_verbose_level >= 3) &
                             write (lunut, 2130) item, (array(ival, item), ival = 1, nvals)
                 endif
             enddo
@@ -609,7 +609,7 @@ contains
 
     subroutine read_time_dependent_variables(lun, lchar, is, nitem, nvals, &
             nscal, ifact, dtflg, dtflg3, nrfunc, &
-            nrharm, iwidth, ioutpt, ierr)
+            nrharm, iwidth, output_verbose_level, ierr)
 
         !!  Read time dependent variables
         !!
@@ -673,7 +673,7 @@ contains
         integer(kind = int_wp), intent(out) :: nrfunc             !< number of functions
         integer(kind = int_wp), intent(out) :: nrharm             !< number of harmonic functions
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         integer(kind = int_wp), intent(inout) :: ierr               !< error count / switch
 
         integer(kind = int_wp), pointer :: breaks(:)         !  breakpoints
@@ -766,7 +766,7 @@ contains
             endif
 
             ! the items in this block by itemnumber
-            call read_item_num (nitem, iopt3, ioutpt, itemId(ntotal), nvarnw, &
+            call read_item_num (nitem, iopt3, output_verbose_level, itemId(ntotal), nvarnw, &
                     ierr)
 
             ! new style for boundaries and wastes
@@ -790,7 +790,7 @@ contains
                 enddo
                 call fmread (nvarnw, itemId(ntotal), nval1, nscal, factor, &
                         nobrk2, break2, value2, dtflg, dtflg3, &
-                        ifact, iwidth, ioutpt, ierr)
+                        ifact, iwidth, output_verbose_level, ierr)
 
                 if (bound .or. waste .or. funcs) then
                     write (lun(is)) nobrk2                      ! boundaries, wastes and
@@ -828,7 +828,7 @@ contains
                 endif
                 call read_fourier_harmoic_func_values(iopt3, nvarnw, nval1, itemId(ntotal), nrec2, &
                         nharms, ifact, dtflg, dtflg3, lunuit, &
-                        iwidth, ioutpt, ierr2)
+                        iwidth, output_verbose_level, ierr2)
                 ierr = ierr + ierr2
                 if (bound .or. waste .or. funcs) then
                     ifilsz = ifilsz + nrec2
@@ -905,7 +905,7 @@ contains
     subroutine read_constants_time_variables(lun, is, noql1, noql2, noql3, &
             ndim2, ndim3, nrftot, nrharm, ifact, &
             dtflg1, disper, volume, iwidth, lchar, &
-            filtype, dtflg3, ioutpt, ierr, &
+            filtype, dtflg3, output_verbose_level, ierr, &
             status, dont_read)
 
         !!  Reads a block with constant or time variable data
@@ -954,7 +954,7 @@ contains
         character(*), intent(inout) :: lchar  (*)    !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)     !< type of binary file
         logical, intent(in) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-        integer(kind = int_wp), intent(in) :: ioutpt         !< how extensive is output ?
+        integer(kind = int_wp), intent(in) :: output_verbose_level         !< how extensive is output ?
         integer(kind = int_wp), intent(inout) :: ierr           !< cumulative error count
         logical, intent(in) :: dont_read  !< do not actually read tokens, if true, the information is already provided
 
@@ -1061,7 +1061,7 @@ contains
             else
                 write (lun(2)) idummy
                 call read_constant_data (1, disp, 1, 3, 3, &
-                        iwidth, lun(2), ioutpt, ierr2)
+                        iwidth, lun(2), output_verbose_level, ierr2)
                 if (ierr2 > 0) goto 50
                 if (ndim2 == 0) goto 9999
             endif
@@ -1087,17 +1087,17 @@ contains
             write (lun(is)) idummy
             if (noql1 > 0) write (lunut, 2030)
             call read_constant_data (iopt2, values, noql1, ndim2, ndim3, &
-                    iwidth, lun(is), ioutpt, ierr2)
+                    iwidth, lun(is), output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
 
             if (noql2 > 0) write (lunut, 2040)
             call read_constant_data (iopt2, values, noql2, ndim2, ndim3, &
-                    iwidth, lun(is), ioutpt, ierr2)
+                    iwidth, lun(is), output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
 
             if (noql3 > 0 .and. noql3 /= ndim1) write (lunut, 2050)
             call read_constant_data (iopt2, values, noql3, ndim2, ndim3, &
-                    iwidth, lun(is), ioutpt, ierr2)
+                    iwidth, lun(is), output_verbose_level, ierr2)
             close (lun(is))
             if (ierr2 > 0) goto 50
 
@@ -1107,7 +1107,7 @@ contains
             if (waste) ierr2 = -2
             call read_time_dependent_variables (lun, lchar, is, ndim1, ndim2, &
                     ndim3, ifact, dtflg1, dtflg3, nrftot, &
-                    nrharm, iwidth, ioutpt, ierr2)
+                    nrharm, iwidth, output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
 
         case default
@@ -1138,7 +1138,7 @@ contains
 
     subroutine read_fourier_harmoic_func_values(iopt, nitem, nvals, item, nrec, &
             nhtot, ifact, dtflg, dtflg3, lununf, &
-            iwidth, ioutpt, ierr)
+            iwidth, output_verbose_level, ierr)
 
         !! Reads function values (Fourier and Harmonic components)
         !!
@@ -1181,7 +1181,7 @@ contains
         logical, intent(in) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: lununf         !< unit nr unformatted file
         integer(kind = int_wp), intent(in) :: iwidth         !< width of theoutput file
-        integer(kind = int_wp), intent(in) :: ioutpt         !< how extensive output ?
+        integer(kind = int_wp), intent(in) :: output_verbose_level         !< how extensive output ?
         integer(kind = int_wp), intent(inout) :: ierr           !< error count
 
         integer(kind = int_wp) :: ndim           ! total size of the matrix
@@ -1245,7 +1245,7 @@ contains
 
         !        control writing
 
-        if (ioutpt < 4) then
+        if (output_verbose_level < 4) then
             write (lunut, 2070)
         else
             if (iopt == 3) then

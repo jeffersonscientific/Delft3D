@@ -95,7 +95,7 @@ module m_delwaq1_data
     integer(4) :: nomult                 !< number of multiple substances
     integer(4) :: iwidth                 !< width of the output file
     integer(4) :: refday                 !< reference day, varying from 1 till 365
-    integer(4) :: ioutpt                 !< flag for more or less output
+    integer(4) :: output_verbose_level                 !< flag for more or less output
     logical :: chkpar(2)              !< flags to check for parameters SURF and LENGTH (used for special waste loads)
     type(GridPointerColl) GridPs
     type(OutputPointers) :: Outputs

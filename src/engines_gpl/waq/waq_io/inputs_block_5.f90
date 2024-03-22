@@ -38,7 +38,7 @@ contains
             rar, nrftot, nrharm, nobnd, nosys, &
             notot, nobtyp, irmax, iimax, dtflg1, &
             iwidth, intsrt, dtflg3, sname, &
-            icmax, ioutpt, status)
+            icmax, output_verbose_level, status)
         !! Reads all inputs associated with open boundaries
         !! This routine reads:
         !!      - the boundary ID's (and names and types for modern files)
@@ -80,7 +80,7 @@ contains
         logical, intent(in) :: dtflg3             !< 'date'-format (f;ddmmhhss,t;yydddhh)
         character(20), intent(inout) :: sname(:)           !< array with substance names
         integer(kind = int_wp), intent(in) :: icmax              !< size of the character workspace
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
 
         integer(kind = int_wp) :: idef
 
@@ -141,7 +141,7 @@ contains
             call srstop(1)
         endif
         nobtyp = 0
-        if (ioutpt < 3) then
+        if (output_verbose_level < 3) then
             write (lunut, 2005)
         else
             if (iwidth == 5) then
@@ -185,7 +185,7 @@ contains
             bndid(i) = bndid_long(i)
             bndtype(i) = bndtype_long(i)
 
-            if (ioutpt >= 3) then
+            if (output_verbose_level >= 3) then
                 if (iwidth == 5) then
                     write (lunut, 2030) bndid(i), bndname(i), bndtype(i)
                 else
@@ -234,7 +234,7 @@ contains
 
         write (lunut, *)
         write (lunut, 2060) nobtyp
-        if (ioutpt < 2) then
+        if (output_verbose_level < 2) then
             write (lunut, 2065)
         else
             write (lunut, 2066)
@@ -308,19 +308,19 @@ contains
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
-        if (ioutpt < 3) then
+        if (output_verbose_level < 3) then
             write (lunut, 2145)
         else
             write (lunut, 2150)
         endif
         if (dtflg1) then
             call convert_time_format (iar, nobnd, ifact, dtflg1, dtflg3)
-            if (ioutpt >= 3) write (lunut, 2160) &
+            if (output_verbose_level >= 3) write (lunut, 2160) &
                     (iar(k) / 31536000, mod(iar(k), 31536000) / 86400, &
                     mod(iar(k), 86400) / 3600, mod(iar(k), 3600) / 60, &
                     mod(iar(k), 60), k = 1, nobnd)
         else
-            if (ioutpt >= 3) write (lunut, 2170) &
+            if (output_verbose_level >= 3) write (lunut, 2170) &
                     (iar(k), k = 1, nobnd)
         endif
         do i = 1, nobnd
@@ -397,13 +397,13 @@ contains
         endif
         if (dtflg1) &
                 call convert_time_format (iar, nobnd, ifact, dtflg1, dtflg3)
-        if (nover > 0 .and. ioutpt >= 3) write (lunut, 2230)
+        if (nover > 0 .and. output_verbose_level >= 3) write (lunut, 2230)
         do i = 1, nover
             ibnd = iabs(iar(i + nobnd))
             if (ibnd > nobnd .or. ibnd == 0) then
                 write (lunut, 2180) iar(i + nobnd)
                 call status%increase_error_count()
-            elseif (ioutpt >= 3) then
+            elseif (output_verbose_level >= 3) then
                 it = iar (ibnd)
                 if (dtflg1) then
                     write (lunut, 2240) ibnd, &
@@ -427,7 +427,7 @@ contains
                 car, iimax, iar, irmax, rar, &
                 sname, bndid, bndtype(1:nobtyp), nobnd, nosys, &
                 nobtyp, drar, dtflg1, dtflg3, &
-                ioutpt, ierr2, status)
+                output_verbose_level, ierr2, status)
         deallocate(drar)
         deallocate(bndid, bndtype)
 
@@ -448,7 +448,7 @@ contains
         call read_constants_time_variables   (lun, 14, 0, 0, nobnd, &
                 nosubs, nosubs, nrftot(8), nrharm(8), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
-                filtype, dtflg3, ioutpt, ierrh, &
+                filtype, dtflg3, output_verbose_level, ierrh, &
                 status, .false.)
         call status%increase_error_count_with(ierrh)
 

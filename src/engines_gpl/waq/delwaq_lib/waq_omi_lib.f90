@@ -1970,7 +1970,7 @@ contains
             character(len = 20), dimension(icmax) :: car
             integer(kind = int_wp), dimension(iimax) :: iar
             integer(kind = int_wp) :: iwidth
-            integer(kind = int_wp) :: ioutpt  ! Dummy
+            integer(kind = int_wp) :: output_verbose_level  ! Dummy
             real :: version = 4.9
             integer(kind = int_wp) :: refday
             type(error_status) :: status
@@ -1998,7 +1998,7 @@ contains
             npos = 100
             cchar = ';'
             iwidth = 100
-            ioutpt = 0
+            output_verbose_level = 0
             call status%initialize(0, 0, 0)
 
             ilun(1) = 9
@@ -2006,7 +2006,7 @@ contains
 
             call read_block_9(lun, lchar, filtype, car, iar, icmax, &
                     iimax, iwidth, &
-                    ioutpt, ioutps, outputs, status)
+                    output_verbose_level, ioutps, outputs, status)
 
             close (9) ! TODO: status = 'delete'
             close (11)

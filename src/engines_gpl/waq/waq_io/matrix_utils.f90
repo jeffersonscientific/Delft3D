@@ -843,7 +843,7 @@ contains
     end subroutine compute_matrix
 
     subroutine print_matrix(lunut, iwidth, dlwqdata, strng1, strng2, &
-            strng3, ioutpt)
+            strng3, output_verbose_level)
 
         !! prints blocks of data, also scale and convert
 
@@ -856,7 +856,7 @@ contains
         character(len = *), intent(in) :: strng1       ! write string 1 (items)
         character(len = *), intent(in) :: strng2       ! write string 2 (values/concs)
         character(len = *), intent(in) :: strng3       ! write string 3 (brkp/harm)
-        integer(kind = int_wp), intent(in) :: ioutpt        ! output file option
+        integer(kind = int_wp), intent(in) :: output_verbose_level        ! output file option
 
         logical :: deflts       ! defaults for the parameters
         integer(kind = int_wp) :: nopar         ! dlwqdata%no_param
@@ -895,7 +895,7 @@ contains
         if (dlwqdata%param_scaled) then
 
             ! print scale factors
-            if (ioutpt >= 4) then
+            if (output_verbose_level >= 4) then
                 write (lunut, 1010)
                 do ipar = 1, nopar, iwidth
                     ie = min(ipar + iwidth - 1, nopar)
@@ -937,18 +937,18 @@ contains
 
         ! convert breakpoints, no more, already been done directly after the read
         if (nobrk > 1) then
-            if (ioutpt >= 4) write (lunut, 1040) strng3, nobrk
-            if (deflts .and. ioutpt >= 4) write (lunut, 1050)
+            if (output_verbose_level >= 4) write (lunut, 1040) strng3, nobrk
+            if (deflts .and. output_verbose_level >= 4) write (lunut, 1050)
         else
             if (deflts) then
-                if (ioutpt >= 4) write (lunut, 1050)
+                if (output_verbose_level >= 4) write (lunut, 1050)
             else
-                if (ioutpt >= 4) write (lunut, 1060)
+                if (output_verbose_level >= 4) write (lunut, 1060)
             endif
         endif
 
         ! write formatted output
-        if (ioutpt >= 4) then
+        if (output_verbose_level >= 4) then
             do ibrk = 1, nobrk
                 if (nobrk > 1) then
                     if (ftype == 1) write (lunut, 1070) strng3, ibrk, dlwqdata%times(ibrk)

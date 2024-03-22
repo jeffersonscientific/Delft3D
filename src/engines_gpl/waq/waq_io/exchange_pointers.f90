@@ -37,7 +37,7 @@ contains
     subroutine read_exchange_pointers_regular_grid(lun, lchar, noseg, nmax, mmax, &
             kmax, noq, noq1, noq2, noq3, &
             noqt, nobnd, ipnt, intsrt, ipopt1, &
-            jtrack, ioutpt, iwidth, GridPs, cellpnt, &
+            jtrack, output_verbose_level, iwidth, GridPs, cellpnt, &
             flowpnt, status)
 
         !! Reads exchange pointers on regular grid
@@ -75,7 +75,7 @@ contains
         integer(kind = int_wp), intent(in) :: intsrt         !< integration number
         integer(kind = int_wp), intent(in) :: ipopt1         !< file option ( 0 = binary )
         integer(kind = int_wp), intent(out) :: jtrack         !< number of codiagonals of matrix
-        integer(kind = int_wp), intent(in) :: ioutpt         !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level         !< flag for more or less output
         integer(kind = int_wp), intent(in) :: iwidth         !< width of the output file
         type(GridPointerColl)           GridPs        !< Collection of grid pointers
         integer(kind = int_wp), pointer :: cellpnt(:)     !< backpointer noseg to mnmaxk
@@ -178,7 +178,7 @@ contains
 
         ! calculate number of boundaries and bandwith of matrix
         call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
-                ioutpt, GridPs, nobnd, jtrack, ipnt, &
+                output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
         ! open cco-file
@@ -221,7 +221,7 @@ contains
 
     subroutine read_exchange_pointers_irregular_grid(lun, lchar, noseg, noq, noq1, &
             noq2, noq3, noqt, nobnd, ipnt, &
-            intsrt, ipopt1, jtrack, ftype, ioutpt, &
+            intsrt, ipopt1, jtrack, ftype, output_verbose_level, &
             GridPs, status)
 
         !!  Reads exchange pointers on irregular grid
@@ -253,7 +253,7 @@ contains
         integer(kind = int_wp), intent(in) :: ipopt1         !< file option ( 0 = binary )
         integer(kind = int_wp), intent(out) :: jtrack         !< number of codiagonals of matrix
         integer(kind = int_wp), intent(in) :: ftype          !< type of the pointer file
-        integer(kind = int_wp), intent(in) :: ioutpt         !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level         !< flag for more or less output
         type(GridPointerColl)           GridPs        !< Collection of grid pointers
 
         type(error_status) :: status !< current error status
@@ -332,7 +332,7 @@ contains
             if (noq2 > 0) write(lun(8))(ipnt(:, iq), iq = noq1 + 1, noq12)
             if (noq3 > 0) write(lun(8))(ipnt(:, iq), iq = noq12 + 1, noq)
 
-            if (ioutpt < 4) then
+            if (output_verbose_level < 4) then
                 write (lunut, 2000)
             else
                 if (noq1 > 0) then
@@ -358,7 +358,7 @@ contains
         ! calculate number of boundaries and bandwith of matrix
 
         call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
-                ioutpt, GridPs, nobnd, jtrack, ipnt, &
+                output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
         close (lun(8))
@@ -379,7 +379,7 @@ contains
 
     end subroutine read_exchange_pointers_irregular_grid
 
-    subroutine generate_bed_layer_pointers(lun, ioutpt, gridps, ibnd, ipoint, &
+    subroutine generate_bed_layer_pointers(lun, output_verbose_level, gridps, ibnd, ipoint, &
             noqt, status)
 
         !! Makes and write additional pointer for the water bed
@@ -401,7 +401,7 @@ contains
         use m_sysn          ! System characteristics
 
         integer(kind = int_wp), intent(in) :: lun   (*)         !< array with unit numbers
-        integer(kind = int_wp), intent(in) :: ioutpt              !< how extensive is output ?
+        integer(kind = int_wp), intent(in) :: output_verbose_level              !< how extensive is output ?
         type(GridPointerColl)           GridPs             !< Collection of grid pointers
         integer(kind = int_wp), intent(in) :: ibnd  (nobnd, 2)  !< normal boundary pointers
         integer(kind = int_wp), intent(in) :: noqt                !< total number of exchanges
@@ -512,7 +512,7 @@ contains
 
         ! sorted after bottom segment number !!
 
-        if (ioutpt < 4) write (lunut, 1000)
+        if (output_verbose_level < 4) write (lunut, 1000)
         ioff1 = (nlay - 1) * nsegl
         ioff2 = max((nlay - 2) * nsegl, 0)
         iqt = noq
@@ -523,7 +523,7 @@ contains
             ib = botmatrix(isegb, 1)
 
             ! header for water-bottom
-            if (ioutpt >= 4) then
+            if (output_verbose_level >= 4) then
                 write (lunut, 1010) ib, noseg + ib
                 write (lunut, 1030)
             endif
@@ -543,11 +543,11 @@ contains
                     ipoint(2, iq + iqt) = ib + noseg
                     ipoint(3, iq + iqt) = ioff2 + i
                     ipoint(4, iq + iqt) = inaarplus
-                    if (ioutpt >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
+                    if (output_verbose_level >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
                 endif
             end do
             ! header within the bottom
-            if (ioutpt >= 4) then
+            if (output_verbose_level >= 4) then
                 write (lunut, 1020)
                 write (lunut, 1030)
             endif
@@ -580,7 +580,7 @@ contains
                 else
                     ipoint(4, iq + iqt) = -ib - nobnd
                 endif
-                if (ioutpt >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
+                if (output_verbose_level >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
 
             end do
             ! copy the column
@@ -599,7 +599,7 @@ contains
         endif
         write (lunut, 1060) nsegb
         odd = .true.
-        if (ioutpt >= 3) then
+        if (output_verbose_level >= 3) then
             write (lunut, 1070)
             do iq = noq + 1, noq + noq4
                 if (ipoint(1, iq) < 0 .or. &
@@ -650,7 +650,7 @@ contains
     END SUBROUTINE generate_bed_layer_pointers
 
     subroutine create_boundary_pointers(lun, noseg, noq, noqt, intsrt, &
-            ioutpt, GridPs, nobnd, jtrack, ipoint, &
+            output_verbose_level, GridPs, nobnd, jtrack, ipoint, &
             status)
 
         !! Determines boundary pointers and number of codiagonals
@@ -666,7 +666,7 @@ contains
         integer(kind = int_wp), intent(in) :: noq                !< number of exchanges from input
         integer(kind = int_wp), intent(in) :: noqt               !< total number of exchanges
         integer(kind = int_wp), intent(in) :: intsrt             !< integration option
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         type(GridPointerColl)        GridPs            !< Structure with grid info
         integer(kind = int_wp), intent(out) :: nobnd              !< number of open boundaries
         integer(kind = int_wp), intent(out) :: jtrack             !< number of codiagonals
@@ -726,7 +726,7 @@ contains
 
         ! Set boundary pointers
         if (nobnd > 0) then
-            if (ioutpt < 3) then
+            if (output_verbose_level < 3) then
                 write (lun(29), 2040)
             else
                 write (lun(29), 2050)
@@ -738,14 +738,14 @@ contains
                     if (ip2 > 0) then
                         ibnd(-ip1, 1) = -iq
                         ibnd(-ip1, 2) = ip2
-                        if (ioutpt >= 3) write (lunut, 2060) -ip1, iq, ip1, ip2
+                        if (output_verbose_level >= 3) write (lunut, 2060) -ip1, iq, ip1, ip2
                     endif
                 endif
                 if (ip2 < 0) then
                     if (ip1 > 0) then
                         ibnd(-ip2, 1) = iq
                         ibnd(-ip2, 2) = ip1
-                        if (ioutpt >= 3) write (lunut, 2060) -ip2, iq, ip1, ip2
+                        if (output_verbose_level >= 3) write (lunut, 2060) -ip2, iq, ip1, ip2
                     endif
                 endif
             enddo
@@ -770,7 +770,7 @@ contains
         end if
 
         ! Additional pointers and boundaries bottom grid
-        call generate_bed_layer_pointers (lun, ioutpt, gridps, ibnd, ipoint, &
+        call generate_bed_layer_pointers (lun, output_verbose_level, gridps, ibnd, ipoint, &
                 noqt, status)
 
         deallocate(ibnd)

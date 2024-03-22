@@ -46,7 +46,7 @@ contains
         type(error_status), intent(inout) :: status !< current error status
 
         integer(kind = int_wp) :: iostat
-        integer(kind = int_wp) :: ioutpt
+        integer(kind = int_wp) :: output_verbose_level
         logical :: dtflg1
         logical :: dtflg3
 
@@ -59,14 +59,14 @@ contains
         endif
         npos = 1000
         cchar = ';'
-        ioutpt = 0
+        output_verbose_level = 0
         dtflg1 = .true.
         dtflg3 = .false.
 
         call status%initialize(0, 0, 0)
 
         call setup_statistical (lunrep, npos, cchar, ilun, lch, &
-                lstack, ioutpt, dtflg1, dtflg3, statprocesdef, allitems, &
+                lstack, output_verbose_level, dtflg1, dtflg3, statprocesdef, allitems, &
                 status)
 
         close(ilun(1))

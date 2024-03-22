@@ -39,7 +39,7 @@ contains
 
     subroutine read_block_4_flow_dims_pointers (lun, lchar, filtype, nrftot, nrharm, &
             ilflag, dtflg1, iwidth, intsrt, dtflg3, &
-            ioutpt, nsegdmp, isegdmp, nexcraai, &
+            output_verbose_level, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, gridps, status, &
             has_hydfile, nexch)
 
@@ -96,7 +96,7 @@ contains
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
         integer(kind = int_wp), intent(in) :: intsrt             !< integration option
         logical, intent(in) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         integer(kind = int_wp), intent(in) :: nsegdmp (*)        !< number of volumes in this monitoring area
         integer(kind = int_wp), intent(inout) :: isegdmp (*)        !< computational volume numbers
         integer(kind = int_wp), intent(in) :: nexcraai(*)        !< number of exchanges in this monitoring transect
@@ -270,7 +270,7 @@ contains
                     call status%increase_error_count()
                 endif
             enddo
-            if (ioutpt >= 2) then
+            if (output_verbose_level >= 2) then
                 write (lunut, 2080) (i, dispnam(i), i = 1, nodisp)
             else
                 write (lunut, 2090)
@@ -305,7 +305,7 @@ contains
                     call status%increase_error_count()
                 endif
             enddo
-            if (ioutpt >= 2) then
+            if (output_verbose_level >= 2) then
                 write (lunut, 2080) (i, dispnam(i), i = 1, novelo)
             else
                 write (lunut, 2090)
@@ -323,7 +323,7 @@ contains
             enddo
         endif
         !           write a report if sensible and write binary file
-        if ((nodisp > 0 .or. novelo > 0) .and. ioutpt >= 2) &
+        if ((nodisp > 0 .or. novelo > 0) .and. output_verbose_level >= 2) &
                 write (lunut, 2140) (i, idisp(i), ivelo(i), i = 1, nosys)
         write (lun(2)) idisp
         write (lun(2)) ivelo
@@ -360,7 +360,7 @@ contains
                 call read_exchange_pointers_regular_grid (lun, lchar, noseg, nmax, mmax, &
                         kmax, noq, noq1, noq2, noq3, &
                         noqt, nobnd, ipnt, intsrt, iopt1, &
-                        jtrack, ioutpt, iwidth, GridPs, cellpnt, &
+                        jtrack, output_verbose_level, iwidth, GridPs, cellpnt, &
                         flowpnt, status)
             endif
         endif
@@ -378,7 +378,7 @@ contains
             ipnt = 0
             call read_exchange_pointers_irregular_grid (lun, lchar, noseg, noq, noq1, &
                     noq2, noq3, noqt, nobnd, ipnt, &
-                    intsrt, iopt1, jtrack, filtype(44), ioutpt, &
+                    intsrt, iopt1, jtrack, filtype(44), output_verbose_level, &
                     GridPs, status)
         endif
         noq12 = noq1 + noq2
@@ -412,7 +412,7 @@ contains
         call read_constants_time_variables   (lun, 9, noq1, noq2, noq3, &
                 nodisp, 1, nrftot(3), nrharm(3), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
-                filtype, dtflg3, ioutpt, ierr2, &
+                filtype, dtflg3, output_verbose_level, ierr2, &
                 status, .false.)
         call status%increase_error_count_with(ierr2)
         disper = .false.
@@ -424,7 +424,7 @@ contains
         call read_constants_time_variables   (lun, 10, noq1, noq2, noq3, &
                 1, 1, nrftot(4), nrharm(4), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
-                filtype, dtflg3, ioutpt, ierr2, &
+                filtype, dtflg3, output_verbose_level, ierr2, &
                 status, has_hydfile)
         call status%increase_error_count_with(ierr2)
 
@@ -435,7 +435,7 @@ contains
         call read_constants_time_variables   (lun, 11, noq1, noq2, noq3, &
                 1, 1, nrftot(5), nrharm(5), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
-                filtype, dtflg3, ioutpt, ierr2, &
+                filtype, dtflg3, output_verbose_level, ierr2, &
                 status, has_hydfile)
         call status%increase_error_count_with(ierr2)
         if (.not. alone) then
@@ -453,7 +453,7 @@ contains
             call read_constants_time_variables   (lun, 12, noq1, noq2, noq3, &
                     novelo, 1, nrftot(6), nrharm(6), ifact, &
                     dtflg1, disper, volume, iwidth, lchar, &
-                    filtype, dtflg3, ioutpt, ierr2, &
+                    filtype, dtflg3, output_verbose_level, ierr2, &
                     status, .false.)
             call status%increase_error_count_with(ierr2)
         endif
@@ -483,7 +483,7 @@ contains
             call read_constants_time_variables   (lun, 13, noq1, noq2, noq3, &
                     2, 1, nrftot(7), nrharm(7), ifact, &
                     dtflg1, disper, volume, iwidth, lchar, &
-                    filtype, dtflg3, ioutpt, ierr2, &
+                    filtype, dtflg3, output_verbose_level, ierr2, &
                     status, has_hydfile)
 
         case default
@@ -551,7 +551,7 @@ contains
         !       calculate number of boundaries and bandwith of matrix
 
         call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
-                ioutpt, GridPs, nobnd, jtrack, ipnt, &
+                output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
         !        set dump area structure

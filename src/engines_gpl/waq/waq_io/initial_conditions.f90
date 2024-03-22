@@ -33,7 +33,7 @@ contains
 
 
     subroutine read_initial_conditions(lun, lchar, filtype, inpfil, notot, &
-            syname, iwidth, ioutpt, gridps, noseg, &
+            syname, iwidth, output_verbose_level, gridps, noseg, &
             conc, ierr, status)
 
         !! read block 8 of input, initial condtions keyword type of input
@@ -53,7 +53,7 @@ contains
         integer(kind = int_wp), intent(in) :: notot         ! nr of substances
         character(len = *), intent(in) :: syname(*)    ! substance names
         integer(kind = int_wp), intent(in) :: iwidth        ! width of output
-        integer(kind = int_wp), intent(in) :: ioutpt        ! level of reporting to ascii output file
+        integer(kind = int_wp), intent(in) :: output_verbose_level        ! level of reporting to ascii output file
         type(gridpointercoll), intent(in) :: gridps       ! collection off all grid definitions
         integer(kind = int_wp), intent(in) :: noseg         ! nr of segments
         real(kind = real_wp), intent(inout) :: conc(notot, noseg)   ! initial conditions
@@ -115,7 +115,7 @@ contains
 
                 ! new file strucure
                 push = .true.
-                call read_block (lun, lchar, filtype, inpfil, ioutpt, &
+                call read_block (lun, lchar, filtype, inpfil, output_verbose_level, &
                         iwidth, substances, constants, parameters, functions, &
                         segfuncs, segments, gridps, dlwqdata, ierr2, &
                         status)

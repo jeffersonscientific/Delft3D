@@ -36,7 +36,7 @@ contains
 
     subroutine read_block_9 (lun, lchar, filtype, car, iar, &
             icmax, iimax, iwidth, &
-            ioutpt, ioutps, outputs, status)
+            output_verbose_level, ioutps, outputs, status)
 
         use output_utils, only : set_default_output
         use error_handling, only : check_error
@@ -56,7 +56,7 @@ contains
         integer(kind = int_wp), intent(inout) :: iar   (*)          !< integer workspace ( dump locations at entrance )
         integer(kind = int_wp), intent(in) :: iimax              !< size of the integer workspace
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         integer(kind = int_wp), intent(out) :: ioutps(7, noutp)    !< output administration array
         type(OutputPointers)                Outputs           !< output collection
 

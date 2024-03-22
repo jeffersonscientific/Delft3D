@@ -38,7 +38,7 @@ contains
             iimax, iar, irmax, rar, notot, &
             noseg, sname, nowst, nowtyp, nrftot, &
             nrharm, dtflg1, dtflg3, iwidth, &
-            ioutpt, chkpar, status)
+            output_verbose_level, chkpar, status)
 
         !! Reads all inputs associated with waste loads and withdrawals
         !! This routine reads:
@@ -82,7 +82,7 @@ contains
         logical, intent(in) :: dtflg1         !< if true then 'date'-format for 2nd time scale
         logical, intent(in) :: dtflg3         !< 'date'-format (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: iwidth          !< width of the output file
-        integer(kind = int_wp), intent(in) :: ioutpt          !< Degree of output in report file
+        integer(kind = int_wp), intent(in) :: output_verbose_level          !< Degree of output in report file
         logical, intent(out) :: chkpar(2)     !< Check for parameters SURF and LENGTH
 
         type(error_status), intent(inout) :: status !< current error status
@@ -151,7 +151,7 @@ contains
             call SRSTOP(1)
         endif
         write (lunut, 2040) nowst
-        if (ioutpt < 3) then
+        if (output_verbose_level < 3) then
             write (lunut, 2045)
         else
             if (iwidth == 5) then
@@ -211,7 +211,7 @@ contains
             wstid(i) = wstid_long(i)
             wsttype(i) = wsttype_long(i)
 
-            if (ioutpt >= 3) then
+            if (output_verbose_level >= 3) then
                 if (iwidth == 5) then
                     if (iwstseg(i) > 0) &
                             write (lunut, 2070) i, iwstseg(i), iwstkind(i), wstid(i), wstname(i), wsttype(i)
@@ -295,7 +295,7 @@ contains
 
         write (lunut, *)
         write (lunut, 2110) nowtyp
-        if (ioutpt < 2) then
+        if (output_verbose_level < 2) then
             write (lunut, 2115)
         else
             write (lunut, 2112)
@@ -319,7 +319,7 @@ contains
                 car, iimax, iar, irmax, rar, &
                 sname, wstid, wsttype, nowst, idummy, &
                 nowtyp, drar, dtflg1, dtflg3, &
-                ioutpt, ierr2, status)
+                output_verbose_level, ierr2, status)
         deallocate(drar)
         if (ierr2 ==  0) then
             deallocate(wstid, wsttype)

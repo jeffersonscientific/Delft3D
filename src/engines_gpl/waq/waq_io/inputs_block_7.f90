@@ -33,7 +33,7 @@ module inputs_block_7
 contains
 
     subroutine read_block_7_process_parameters (lun, lchar, filtype, inpfil, syname, &
-            iwidth, ioutpt, gridps, constants, chkpar, &
+            iwidth, output_verbose_level, gridps, constants, chkpar, &
             status)
 
         !! Reads block 7 of input, process parameters
@@ -56,7 +56,7 @@ contains
         type(inputfilestack), intent(inout) :: inpfil       !< input file structure with include stack and flags
         character(len = *), intent(in) :: syname(*)    !< substance names
         integer(kind = int_wp), intent(in) :: iwidth        !< width of output
-        integer(kind = int_wp), intent(in) :: ioutpt        !< level of reporting to ascii output file
+        integer(kind = int_wp), intent(in) :: output_verbose_level        !< level of reporting to ascii output file
         type(GridPointerColl), intent(in) :: GridPs       !< collection off all grid definitions
         type(t_dlwq_item), intent(inout) :: constants    !< delwaq constants list
         logical, intent(in) :: chkpar(2)    !< check for SURF and LENGTH
@@ -128,7 +128,7 @@ contains
                 ! new file strucure
 
                 push = .true.
-                call read_block (lun, lchar, filtype, inpfil, ioutpt, &
+                call read_block (lun, lchar, filtype, inpfil, output_verbose_level, &
                         iwidth, substances, constants, parameters, functions, &
                         segfuncs, segments, gridps, dlwqdata, ierr2, &
                         status)

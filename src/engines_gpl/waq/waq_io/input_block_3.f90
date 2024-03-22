@@ -35,7 +35,7 @@ contains
 
     subroutine read_block_3_grid_layout (lun, lchar, filtype, nrftot, nrharm, &
             ivflag, dtflg1, iwidth, dtflg3, &
-            ioutpt, gridps, syname, status, &
+            output_verbose_level, gridps, syname, status, &
             has_hydfile, nexch)
 
         !! Reads grid layout; attributes and the computational volumes
@@ -84,7 +84,7 @@ contains
         logical, intent(in) :: dtflg1            !< 'date'-format 1st timescale
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
         logical, intent(in) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         character(20), intent(in) :: syname (*)        !< array with substance names
         logical, intent(out) :: has_hydfile       !< if true, much information comes from the hyd-file
         integer(kind = int_wp), dimension(3), intent(out) :: nexch  !< number of exchanges as read via hyd-file
@@ -312,7 +312,7 @@ contains
                             endif
                         enddo
                     enddo
-                    if (ioutpt < 2) then
+                    if (output_verbose_level < 2) then
                         write (lunut, 2080)
                     else
                         do i = 1, nx, 2 * iwidth
@@ -380,14 +380,14 @@ contains
 
                 case (1)                                      !   no defaults
                     write (lunut, 2150)
-                    if (ioutpt >= 5) then
+                    if (output_verbose_level >= 5) then
                         write (lunut, 2160)
                     else
                         write (lunut, 2170)
                     endif
                     do j = 1, noseg
                         if (gettoken(iread(j), local_status%ierr) > 0) goto 240
-                        if (ioutpt >= 5) write (lunut, 2180) j, iread(j)
+                        if (output_verbose_level >= 5) write (lunut, 2180) j, iread(j)
                     enddo
 
                 case (2)                                      !   default with overridings
@@ -401,7 +401,7 @@ contains
                         enddo
                     endif
                     if (nover > 0) then
-                        if (ioutpt >= 3) then
+                        if (output_verbose_level >= 3) then
                             write (lunut, 2210)
                         else
                             write (lunut, 2220)
@@ -413,7 +413,7 @@ contains
                                 write (lunut, 2230) j, iover
                                 call status%increase_error_count()
                             else
-                                if (ioutpt >= 3) write (lunut, 2240) j, iover, idummy
+                                if (output_verbose_level >= 3) write (lunut, 2240) j, iover, idummy
                                 iread(iover) = idummy
                             endif
                         enddo
@@ -537,7 +537,7 @@ contains
         call read_constants_time_variables   (lun, 7, 0, 0, noseg, &
                 1, 1, nrftot(2), nrharm(2), ifact, &
                 dtflg1, disper, volume, iwidth, lchar, &
-                filtype, dtflg3, ioutpt, local_status%ierr, &
+                filtype, dtflg3, output_verbose_level, local_status%ierr, &
                 local_status, has_hydfile)
 
         call check_volume_time(lunut, lchar(7), noseg, local_status%ierr)

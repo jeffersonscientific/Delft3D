@@ -39,7 +39,7 @@ contains
 
     subroutine read_block_1_from_input (lun, syname, nosys, notot, nomult, &
             multp, iwidth, otime, isfact, refday, &
-            ioutpt, status)
+            output_verbose_level, status)
 
         !< Reads the model identification and substances IDs
         !> This routine reads:
@@ -63,7 +63,7 @@ contains
         character(20), dimension(:), pointer :: syname !< array with substance names
 
         integer(kind = int_wp), intent(in), dimension(*) :: lun    !< array with unit numbers
-        integer(kind = int_wp), intent(out) :: ioutpt !< flag for more or less output
+        integer(kind = int_wp), intent(out) :: output_verbose_level !< flag for more or less output
         integer(kind = int_wp), intent(out) :: isfact !< Units (in sec) of the system clock
 
         integer(kind = int_wp), intent(out) :: iwidth !< width of the output file
@@ -133,7 +133,7 @@ contains
 
         !     Read version number and initialize position on start of new line
 
-        call read_version_number (ilun(1), lch(1), lunut, npos, input_version_number, ioutpt)
+        call read_version_number (ilun(1), lch(1), lunut, npos, input_version_number, output_verbose_level)
         call compare_version_number_to_lower_limit(input_version_number, lunut)
 
         iposr = 0
@@ -268,7 +268,7 @@ contains
 
         !        Fill in their names
 
-        if (ioutpt >= 1) then
+        if (output_verbose_level >= 1) then
             write (lunut, 2100)
         else
             write (lunut, 2110)
@@ -291,7 +291,7 @@ contains
 
             if (imult(isys) == 1) then
                 syname(nosyss) = sname(isys)
-                if (ioutpt >= 1) write (lunut, 2140) nosyss, syname(nosyss)
+                if (output_verbose_level >= 1) write (lunut, 2140) nosyss, syname(nosyss)
                 nosyss = nosyss + 1
             else
                 nomult = nomult + 1
@@ -306,7 +306,7 @@ contains
                     else
                         write (syname(nosyss)(ilen + 1:), '(      i3)') isys2
                     endif
-                    if (ioutpt >= 1) write (lunut, 2140) nosyss, syname(nosyss)
+                    if (output_verbose_level >= 1) write (lunut, 2140) nosyss, syname(nosyss)
                     nosyss = nosyss + 1
                 enddo
             endif

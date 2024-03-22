@@ -36,7 +36,7 @@ contains
 
 
     subroutine read_block_8_initial_conditions(lun, lchar, filtype, noseg, notot, &
-            syname, iwidth, ioutpt, inpfil, &
+            syname, iwidth, output_verbose_level, inpfil, &
             gridps, status)
 
         !!  Reads initial conditions
@@ -81,7 +81,7 @@ contains
         integer(kind = int_wp), intent(in) :: notot          !< nr of delwaq + delpar state variables
         character       (20), intent(in) :: syname(notot)  !< names of the substances
         integer(kind = int_wp), intent(in) :: iwidth         !< width of the output file
-        integer(kind = int_wp), intent(in) :: ioutpt         !< option for extent of output
+        integer(kind = int_wp), intent(in) :: output_verbose_level         !< option for extent of output
         type(inputfilestack), intent(inout) :: inpfil         !< input file strucure with include stack and flags
         type(gridpointercoll), intent(in) :: gridps         !< collection off all grid definitions
 
@@ -249,12 +249,12 @@ contains
             if (transp) then
                 allocate (values(noseg, notot))
                 call read_constant_data  (icopt2, values, notot, noseg, 1, &
-                        iwidth, 0, ioutpt, ierr2)
+                        iwidth, 0, output_verbose_level, ierr2)
                 write (lun(18)) (values(i, :), i = 1, noseg)
             else
                 allocate (values(notot, noseg))
                 call read_constant_data  (icopt2, values, noseg, notot, notot, &
-                        iwidth, 0, ioutpt, ierr2)
+                        iwidth, 0, output_verbose_level, ierr2)
                 write (lun(18)) values
             endif
             close (lun(18))
@@ -270,7 +270,7 @@ contains
             endif
             push = .true.
             call read_initial_conditions (lun, lchar, filtype, inpfil, notot, &
-                    syname, iwidth, ioutpt, gridps, noseg, &
+                    syname, iwidth, output_verbose_level, gridps, noseg, &
                     values, ierr2, status)
             itime = 0
             write(lun(18)) itime, values

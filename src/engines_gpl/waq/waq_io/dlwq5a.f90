@@ -34,12 +34,10 @@ module m_dlwq5a
 
 contains
 
-    subroutine dlwq5a (lun, lchar, iu, iwidth, icmax, &
-            car, iimax, iar, irmax, rar, &
-            sname, aname, atype, bc_wl_count, &
-            substances_count, &
-            nttype, drar, dtflg1, dtflg3, &
-            ioutpt, ierr2, status)
+    subroutine dlwq5a(logical_unit, filenames, file_i, iwidth, max_char_size, &
+            char_arr, max_int_size, int_workspace, max_real_size, real_workspace, &
+            substances_names, bc_waste_ids, bc_waste_types, num_bc_waste, substances_count, &
+            num_bnd_waste_types, dp_workspace, is_date_format, is_yyddhh_format, output_verbose_level, ierr2, status)
 
         !> Boundary and waste data new style
         !>
@@ -66,11 +64,11 @@ contains
         !>    - BINARY files are resolved at run time
 
         ! LOGICAL UNITS:
-        ! LUN(27) = unit stripped DELWAQ input file
-        ! LUN(29) = unit formatted output file
-        ! LUN( 2) = unit intermediate file (system)
-        ! LUN(14) = unit intermediate file (boundaries)
-        ! LUN(15) = unit intermediate file (wastes)
+        ! logical_unit(27) = unit stripped DELWAQ input file
+        ! logical_unit(29) = unit formatted output file
+        ! logical_unit( 2) = unit intermediate file (system)
+        ! logical_unit(14) = unit intermediate file (boundaries)
+        ! logical_unit(15) = unit intermediate file (wastes)
 
         use m_dlwq5b
         use error_handling, only : check_error
@@ -82,31 +80,31 @@ contains
         use m_sysi          ! Timer characteristics
         use m_string_utils, only : index_in_array
 
-        integer(kind = int_wp), intent(inout) :: lun  (:)      !< array with unit numbers
-        integer(kind = int_wp), intent(inout) :: iar  (iimax)  !< integer workspace
+        integer(kind = int_wp), intent(inout) :: logical_unit  (:)      !< array with unit numbers
+        integer(kind = int_wp), intent(inout) :: int_workspace  (max_int_size)  !< integer workspace
 
-        character(*), intent(inout) :: lchar(:) !< filenames
-        character(*), intent(inout) :: car(:)   !< character workspace !icmax
-        character(*), intent(inout) :: sname(:) !< substances names
-        character(*), intent(inout) :: aname(:) !< ID's of the boundaries/wastes
-        character(*), intent(in) :: atype(:) !< Types of the boundaries/wastes
+        character(*), intent(inout) :: filenames(:) !< filenames
+        character(*), intent(inout) :: char_arr(:)   !< character workspace !max_char_size
+        character(*), intent(inout) :: substances_names(:) !< substances names
+        character(*), intent(inout) :: bc_waste_ids(:) !< ID's of the boundaries/wastes
+        character(*), intent(in) :: bc_waste_types(:) !< Types of the boundaries/wastes
 
-        integer(kind = int_wp), intent(in) :: iu               !< index in LUN array of workfile
+        integer(kind = int_wp), intent(in) :: file_i               !< index in logical_unit array of workfile
         integer(kind = int_wp), intent(in) :: iwidth           !< width of the output file
-        integer(kind = int_wp), intent(in) :: icmax            !< maximum size of character workspace
-        integer(kind = int_wp), intent(in) :: iimax            !< maximum size of integer workspace
-        integer(kind = int_wp), intent(inout) :: bc_wl_count      !< number of bounds/wastes
+        integer(kind = int_wp), intent(in) :: max_char_size            !< maximum size of character workspace
+        integer(kind = int_wp), intent(in) :: max_int_size            !< maximum size of integer workspace
+        integer(kind = int_wp), intent(inout) :: num_bc_waste      !< number of bounds/wastes
         integer(kind = int_wp), intent(inout) :: substances_count !< number of substances
-        integer(kind = int_wp), intent(in) :: nttype           !< number of boundary/waste types
-        integer(kind = int_wp), intent(in) :: irmax            !< maximum size of real workspace
-        integer(kind = int_wp), intent(in) :: ioutpt           !< how extensive will the output be
+        integer(kind = int_wp), intent(in) :: num_bnd_waste_types           !< number of boundary/waste types
+        integer(kind = int_wp), intent(in) :: max_real_size            !< maximum size of real workspace
+        integer(kind = int_wp), intent(in) :: output_verbose_level           !< how extensive will the output be
         integer(kind = int_wp), intent(out) :: ierr2            !< return code of this routine
 
-        real(kind = real_wp), intent(inout) :: rar  (irmax) !< real workspace
-        real(kind = dp), intent(inout) :: drar (*)     !< Double precision workspace
+        real(kind = real_wp), intent(inout) :: real_workspace  (max_real_size) !< real workspace
+        real(kind = dp), intent(inout) :: dp_workspace (*)     !< Double precision workspace
 
-        logical, intent(in) :: dtflg1 !< 'date'-format 1st time scale
-        logical, intent(in) :: dtflg3 !< 'date'-format (F;ddmmhhss,T;yydddhh)
+        logical, intent(in) :: is_date_format !< 'date'-format 1st time scale
+        logical, intent(in) :: is_yyddhh_format !< 'date'-format (F;ddmmhhss,T;yydddhh)
 
         type(error_status), intent(inout) :: status !< current error status
 
@@ -136,11 +134,10 @@ contains
         integer(kind = int_wp) :: count_unique_items_in_use_rule
 
         if (timon) call timstrt("dlwq5a", ithndl)
-        !
-        !     Initialise a number of variables
-        !
-        lunut = lun(29)
-        lunwr2 = lun(iu)
+
+        ! Initialise a number of variables
+        lunut = logical_unit(29)
+        lunwr2 = logical_unit(file_i)
         file_size_1 = 0
         file_size_2 = 0
         strng2 = 'Substance'
@@ -167,8 +164,8 @@ contains
         !                           3 = harmonics     , 4 = fourier
         !     IOFF   is offset in the array of integers and strings
         !
-        if (ioutpt < 3) write (lunut, 1340)
-        if (ioutpt < 4) write (lunut, 1350)
+        if (output_verbose_level < 3) write (lunut, 1340)
+        if (output_verbose_level < 4) write (lunut, 1350)
         iorder = 0
         iflag = 0
         time_function_type = 1
@@ -181,8 +178,8 @@ contains
         time_dependent = .false.
 
         ! Open the binary work file and provide a zero overall default
-        call open_waq_files (lun(iu), lchar(iu), iu, 1, ioerr)
-        if (iu == 14) then
+        call open_waq_files (logical_unit(file_i), filenames(file_i), file_i, 1, ioerr)
+        if (file_i == 14) then
             write (lunwr2) ' 4.900BOUND '
             calit = 'BOUNDARIES'
             caldit = 'BDATA_ITEM'
@@ -195,15 +192,14 @@ contains
             strng1 = 'wasteload'
             iblock = 6
         endif
-        write (lunwr2) bc_wl_count, substances_count
+        write (lunwr2) num_bc_waste, substances_count
         write (lunwr2) 1, 0, substances_count, (k, k = 1, substances_count), 1, 0
         write (lunwr2) 1
         write (lunwr2) 0, (0.0, i = 1, substances_count)
         file_size_1 = file_size_1 + 2 + 3 + substances_count + 3 + 1
         file_size_2 = file_size_2 + substances_count
-        !
-        !          Get a token string (and return if something else was found)
-        !
+
+        ! Get a token string (and return if something else was found)
         10 if (iflag == 0) itype = 0
         if (iflag == 1 .or. iflag == 2) itype = -3
         if (iflag == 3) then
@@ -217,7 +213,8 @@ contains
         20 call rdtok1 (lunut, ilun, lch, lstack, cchar, &
                 iposr, npos, chulp, ihulp, rhulp, &
                 itype, ierr2)
-        !        End of block detected
+
+        ! End of block detected
         if (ierr2 == 2) then
             if(itype > 0) then
                 call status%increase_error_count()
@@ -225,37 +222,32 @@ contains
             goto 530
         endif
         if (ierr2 /= 0) goto 510 !close ( lunwr2 )
-        !
-        !          All the following has the old file structure
-        !
+
+        ! All the following has the old file structure
         if (iabs(itype) == 1 .and. chulp == 'OLD-FILE-STRUCTURE') then
             write (lunut, 1000)
             call status%increase_warning_count()
             ierr2 = -1
             goto 540
         endif
-        !
-        !          A local redirection of the name of an item or substance
-        !                                                   is not valid here
-        !
+
+        ! A local redirection of the name of an item or substance is not valid here
         if (iabs(itype) == 1 .and. chulp == 'USEFOR') then
             write (lunut, 1010)
             ierr2 = 1
             goto 510
         endif
-        !
-        !          Time delay for ODS files
-        !
+
+        ! Time delay for ODS files
         30 if (iabs(itype) == 1 .and. chulp(1:10) == 'TIME_DELAY') then
             call read_time_delay (ierr2)
             if (ierr2 /= 0) goto 510
             goto 10
         endif
-        !
-        !          Time interpolation instead of block function
-        !
+
+        ! Time interpolation instead of block function
         if (iabs(itype) == 1 .and. chulp(1:6) == 'LINEAR') then
-            if (ioutpt >= 3) write (lunut, 1005)
+            if (output_verbose_level >= 3) write (lunut, 1005)
             time_function_type = 2
             goto 10
         endif
@@ -263,16 +255,16 @@ contains
             time_function_type = 1
             goto 10
         endif
-        !
-        !          Usedata_item
-        !
+
+        ! Usedata_item
         if (iabs(itype) == 1 .and. (chulp == 'USEDATA_ITEM')) then
             if (iorder == 1 .or. iorder == 2) then
                 write (lunut, 1011)
                 ierr2 = 1
                 goto 510
             endif
-            !          Next token must be a name
+
+            ! Next token must be a name
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
                     iposr, npos, chulp, ihulp, rhulp, &
                     itype, ierr2)
@@ -282,11 +274,12 @@ contains
                 goto 510
             endif
             data_item_name = chulp
-            if (ioutpt >= 3) write (lunut, 1015) data_item_name
-            !          Next token must be 'FORITEM'
+            if (output_verbose_level >= 3) write (lunut, 1015) data_item_name
+            ! Next token must be 'FORITEM'
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
                     iposr, npos, chulp, ihulp, rhulp, &
                     itype, ierr2)
+
             if (chulp /= 'FORITEM') then
                 write (lunut, 1012)
                 ierr2 = 1
@@ -295,14 +288,14 @@ contains
             ! Now get the list of locations to apply the DATA_ITEM
             ioff = 1
             chkflg = 1
-            icm = icmax - ioff
-            iim = iimax - ioff
-            call dlwq5b (lunut, iposr, npos, cchar, car(ioff:), &
-                    iar(ioff:), icm, iim, aname, atype, &
-                    bc_wl_count, nttype, count_items_in_use_rule, noits, chkflg, &
+            icm = max_char_size - ioff
+            iim = max_int_size - ioff
+            call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+                    int_workspace(ioff:), icm, iim, bc_waste_ids, bc_waste_types, &
+                    num_bc_waste, num_bnd_waste_types, count_items_in_use_rule, noits, chkflg, &
                     calit, ilun, lch, lstack, &
-                    itype, rar, nconst, itmnr, chulp, &
-                    ioutpt, ierr2, status)
+                    itype, real_workspace, nconst, itmnr, chulp, &
+                    output_verbose_level, ierr2, status)
             ! Check if data_item already exists
 
             if (dlwq_data_items%cursize > 0) then
@@ -322,39 +315,43 @@ contains
                 !          Already on the list?
                 count_unique_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item
                 if (count_unique_items_in_use_rule>0) then
-                    iitem = index_in_array(car(ioff + idx_item_in_use_rule - 1), &
+                    iitem = index_in_array(char_arr(ioff + idx_item_in_use_rule - 1), &
                             dlwq_data_items%dlwq_foritem(idata_item)%name(1:count_unique_items_in_use_rule))
                 else
                     iitem = -1
                 end if
-                if (iitem<=0 .and. iar(ioff + idx_item_in_use_rule - 1)/=-1300000000) then ! ! if the item has not been added to dlwq_data_items and it shouldn't be ignored
+
+                !! if the item has not been added to dlwq_data_items and it shouldn't be ignored
+                if (iitem<=0 .and. int_workspace(ioff + idx_item_in_use_rule - 1)/=-1300000000) then
                     count_unique_items_in_use_rule = count_unique_items_in_use_rule + 1
                     ierr2 = dlwq_resize_item(dlwq_data_items%dlwq_foritem(idata_item), count_unique_items_in_use_rule)
-                    dlwq_data_items%dlwq_foritem(idata_item)%name(count_unique_items_in_use_rule) = car(ioff + idx_item_in_use_rule - 1)
-                    dlwq_data_items%dlwq_foritem(idata_item)%ipnt(count_unique_items_in_use_rule) = iar(ioff + idx_item_in_use_rule - 1)
-                    dlwq_data_items%dlwq_foritem(idata_item)%sequence(count_unique_items_in_use_rule) = count_unique_items_in_use_rule
+                    dlwq_data_items%dlwq_foritem(idata_item)%name(count_unique_items_in_use_rule) = &
+                            char_arr(ioff + idx_item_in_use_rule - 1)
+                    dlwq_data_items%dlwq_foritem(idata_item)%ipnt(count_unique_items_in_use_rule) = &
+                            int_workspace(ioff + idx_item_in_use_rule - 1)
+                    dlwq_data_items%dlwq_foritem(idata_item)%sequence(count_unique_items_in_use_rule) = &
+                            count_unique_items_in_use_rule
                     dlwq_data_items%dlwq_foritem(idata_item)%no_item = count_unique_items_in_use_rule
                 end if
             end do
             if (ierr2 /= 0) goto 510
             goto 30
         endif
-        !
-        !          Items
-        !
+
+        ! Items
         if (iabs(itype) == 1 .and. (chulp == 'ITEM' .or. chulp == 'IDENTICALITEM' .or. &
                 chulp == 'DATA_ITEM')) then
             if (iorder == 0) then !Items
                 iorder = 1 !concentr.
                 ioff = 1
                 if (chulp == 'IDENTICALITEM') then
-                    if (ioutpt >= 3) write (lunut, 1021)
+                    if (output_verbose_level >= 3) write (lunut, 1021)
                     ident = 1
                 else if (chulp == 'DATA_ITEM') then
-                    if (ioutpt >= 3) write (lunut, 1022)
+                    if (output_verbose_level >= 3) write (lunut, 1022)
                     ident = 2 ! DATA_ITEM
                 else
-                    if (ioutpt >= 3) write (lunut, 1020)
+                    if (output_verbose_level >= 3) write (lunut, 1020)
                     ident = 0
                 endif
             elseif (iorder == 1) then
@@ -362,53 +359,61 @@ contains
                 ierr2 = 1
                 goto 510
             else
-                if (ioutpt >= 3) write (lunut, 1040)
+                if (output_verbose_level >= 3) write (lunut, 1040)
                 ioff = nodim + idmnr + 1
                 ident = 0
             endif
             chkflg = 1
-            icm = icmax - ioff
-            iim = iimax - ioff
+            icm = max_char_size - ioff
+            iim = max_int_size - ioff
             if (ident <= 1) then ! ITEM, IDENTICALITEM
-                call dlwq5b (lunut, iposr, npos, cchar, car(ioff:), &
-                        iar(ioff:), icm, iim, aname, atype, &
-                        bc_wl_count, nttype, count_items_in_use_rule, noits, chkflg, &
+                call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+                        int_workspace(ioff:), icm, iim, bc_waste_ids, bc_waste_types, &
+                        num_bc_waste, num_bnd_waste_types, count_items_in_use_rule, noits, chkflg, &
                         calit, ilun, lch, lstack, itype, &
-                        rar, nconst, itmnr, chulp, ioutpt, &
+                        real_workspace, nconst, itmnr, chulp, output_verbose_level, &
                         ierr2, status)
             else ! DATA_ITEM
-                call dlwq5b (lunut, iposr, npos, cchar, car(ioff:), &
-                        iar(ioff:), icm, iim, dlwq_data_items%name(1:ndata_items), &
+                call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+                        int_workspace(ioff:), icm, iim, dlwq_data_items%name(1:ndata_items), &
                         dlwq_data_items%name(1:ndata_items), &
                         ndata_items, ndata_items, count_items_in_use_rule, noits, chkflg, &
                         caldit, ilun, lch, lstack, itype, &
-                        rar, nconst, itmnr, chulp, ioutpt, &
+                        real_workspace, nconst, itmnr, chulp, output_verbose_level, &
                         ierr2, status)
                 if (count_items_in_use_rule/=1) then
                     write (lunut, 1045)
                     ierr2 = 1
                     goto 510
                 end if
-                idata_item = iar(ioff)
+                idata_item = int_workspace(ioff)
                 if (idata_item > 0) then
-                    !          Replace result of dlwq5b with usedata_item list
+                    ! Replace result of dlwq5b with usedata_item list
                     dlwq_data_items%used(idata_item) = .true.
-                    count_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item !for how many items is applicable this usedata_item?
+                    !! for how many items is applicable this usedata_item?
+                    count_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item
                     if (count_items_in_use_rule /= 0) then
                         itmnr = count_items_in_use_rule
                         noits = count_items_in_use_rule
                         do idx_item_in_use_rule = 1, count_items_in_use_rule
-                            car(ioff + idx_item_in_use_rule - 1) = dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
-                            car(ioff + idx_item_in_use_rule - 1 + count_items_in_use_rule) = &
+                            char_arr(ioff + idx_item_in_use_rule - 1) = &
                                     dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
-                            iar(ioff + idx_item_in_use_rule - 1) = dlwq_data_items%dlwq_foritem(idata_item)%ipnt(idx_item_in_use_rule)
-                            iar(ioff + idx_item_in_use_rule - 1 + count_items_in_use_rule) = &
+                            char_arr(ioff + idx_item_in_use_rule - 1 + count_items_in_use_rule) = &
+                                    dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
+                            int_workspace(ioff + idx_item_in_use_rule - 1) = &
+                                    dlwq_data_items%dlwq_foritem(idata_item)%ipnt(idx_item_in_use_rule)
+                            int_workspace(ioff + idx_item_in_use_rule - 1 + count_items_in_use_rule) = &
                                     dlwq_data_items%dlwq_foritem(idata_item)%sequence(idx_item_in_use_rule)
-                            if (iar(ioff + idx_item_in_use_rule - 1) > 0) then ! I think the log statements below are wrong, not the type but the DATA_ITEM should be printed as 1st argument
-                                write (lunut, 1023) car(ioff), idata_item, calit, iar(ioff + idx_item_in_use_rule - 1), &
+
+                            ! I think the log statements below are wrong, not the type but the DATA_ITEM should be
+                            ! printed as 1st argument
+                            if (int_workspace(ioff + idx_item_in_use_rule - 1) > 0) then
+                                write (lunut, 1023) char_arr(ioff), idata_item, calit, &
+                                        int_workspace(ioff + idx_item_in_use_rule - 1), &
                                         dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
                             else
-                                write (lunut, 1024) car(ioff), idata_item, calit, iar(ioff + idx_item_in_use_rule - 1), &
+                                write (lunut, 1024) char_arr(ioff), idata_item, calit, &
+                                        int_workspace(ioff + idx_item_in_use_rule - 1), &
                                         dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
                             end if
                         end do
@@ -418,8 +423,8 @@ contains
                         count_items_in_use_rule = 1
                         itmnr = 1
                         noits = 1
-                        iar(ioff) = -1300000000
-                        iar(ioff + 1) = 1
+                        int_workspace(ioff) = -1300000000
+                        int_workspace(ioff + 1) = 1
                     end if
                 else
                     write (lunut, 1047)
@@ -427,8 +432,8 @@ contains
                     count_items_in_use_rule = 1
                     itmnr = 1
                     noits = 1
-                    iar(ioff) = -1300000000
-                    iar(ioff + 1) = 1
+                    int_workspace(ioff) = -1300000000
+                    int_workspace(ioff + 1) = 1
                 end if
             endif
 
@@ -436,16 +441,15 @@ contains
             if (ierr2 /= 0) goto 510
             goto 30
         endif
-        !
-        !          Concentrations
-        !
+
+        ! Concentrations
         if (iabs(itype) == 1 .and. chulp(1:6) == 'CONCEN') then
             if (iorder == 0) then
-                if (ioutpt >= 3) write (lunut, 1050)
+                if (output_verbose_level >= 3) write (lunut, 1050)
                 iorder = 2
                 ioff = 1
             elseif (iorder == 1) then
-                if (ioutpt >= 3) write (lunut, 1060)
+                if (output_verbose_level >= 3) write (lunut, 1060)
                 ioff = count_items_in_use_rule + itmnr + 1
             else
                 write (lunut, 1070)
@@ -453,35 +457,34 @@ contains
                 goto 510
             endif
             chkflg = 1
-            icm = icmax - ioff
-            iim = iimax - ioff
-            call dlwq5b (lunut, iposr, npos, cchar, car(ioff:), &
-                    iar(ioff:), icm, iim, sname, atype, &
+            icm = max_char_size - ioff
+            iim = max_int_size - ioff
+            call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+                    int_workspace(ioff:), icm, iim, substances_names, bc_waste_types, &
                     substances_count, 0, nodim, nodis, chkflg, &
                     'CONCENTR. ', ilun, lch, lstack, &
-                    itype, rar, nconst, idmnr, chulp, &
-                    ioutpt, ierr2, status)
+                    itype, real_workspace, nconst, idmnr, chulp, &
+                    output_verbose_level, ierr2, status)
             nocol = nodis
             if (ierr2 /= 0) goto 510
             goto 30
         endif
-        !
-        !          Data
-        !
+
+        ! Data
         if (iabs(itype) == 1 .and. chulp(1:6) == 'DATA') then
             if (count_items_in_use_rule * nodim == 0) then ! nodim = count_subs
                 write (lunut, 1080) count_items_in_use_rule, nodim
                 ierr2 = 1
                 goto 510
             endif
-            !          Checks if an inner loop column header exists for the data matrix
-            call dlwq5g (lunut, iar, itmnr, count_items_in_use_rule, idmnr, &
-                    nodim, iorder, iimax, car, iposr, &
+            ! Checks if an inner loop column header exists for the data matrix
+            call dlwq5g (lunut, int_workspace, itmnr, count_items_in_use_rule, idmnr, &
+                    nodim, iorder, max_int_size, char_arr, iposr, &
                     npos, ilun, lch, lstack, cchar, &
-                    chulp, nocol, dtflg1, dtflg3, itfacw, &
+                    chulp, nocol, is_date_format, is_yyddhh_format, itfacw, &
                     itype, ihulp, rhulp, ierr2, status)
             if (ierr2 > 1) goto 510
-            !          Reads blocks of data
+            ! Reads blocks of data
             if (iorder == 2) then
                 nitm = count_items_in_use_rule
             else
@@ -489,10 +492,10 @@ contains
             endif
             nti = count_items_in_use_rule + nodim + itmnr + idmnr + 1
             nti2 = nti + nitm
-            iim = iimax - nti2
+            iim = max_int_size - nti2
             ntr = nconst + itel + 1
-            iim = iimax - nti2
-            irm = irmax - ntr
+            iim = max_int_size - nti2
+            irm = max_real_size - ntr
             if (iorder == 2) then !concentrations first
                 nottt = nodim * nocol
                 nottc = nottt
@@ -505,10 +508,10 @@ contains
                 endif
             endif
             if (time_function_type == 3 .or. time_function_type == 4) nottt = nottt + 1  ! harmonics or fourier
-            call dlwq5d (lunut, iar(nti2:), rar(ntr:), iim, irm, & ! read time series table
+            call dlwq5d (lunut, int_workspace(nti2:), real_workspace(ntr:), iim, irm, & ! read time series table
                     iposr, npos, ilun, lch, lstack, &
                     cchar, chulp, nottt, nottc, time_dependent, nobrk, &
-                    time_function_type, dtflg1, dtflg3, itfacw, itype, &
+                    time_function_type, is_date_format, is_yyddhh_format, itfacw, itype, &
                     ihulp, rhulp, ierr2, ierr3)
 
             call status%increase_error_count_with(ierr3)
@@ -522,21 +525,22 @@ contains
                 write(lunut, 1370)
                 call status%increase_warning_count()
             else
-                !          Assigns according to computational rules
+                ! Assigns according to computational rules
                 nr2 = ntr + nottt * nobrk
-                call assign_matrix (lunut, iar, count_items_in_use_rule, itmnr, nodim, & ! process parsed values in table  (process operations if any) and store results in rar(nr2:)
-                        idmnr, iorder, rar, time_function_type, rar(ntr:), &
-                        nocol, nobrk, amiss, iar(nti:), rar(nr2:))
+                ! process parsed values in table  (process operations if any) and store results in real_workspace(nr2:)
+                call assign_matrix (lunut, int_workspace, count_items_in_use_rule, itmnr, nodim, &
+                        idmnr, iorder, real_workspace, time_function_type, real_workspace(ntr:), &
+                        nocol, nobrk, amiss, int_workspace(nti:), real_workspace(nr2:))
                 strng3 = 'breakpoint'
-                !          Writes to the binary intermediate file
+                ! Writes to the binary intermediate file
                 nts = nconst + 1
                 ntc = nti
-                icm = icmax - ntc
-                call write_data_blocks (lunwr2, lunut, iwidth, nobrk, iar, & ! writes data_item to wrk and/or lst files
-                        rar(nts:), rar(nr2:), itmnr, idmnr, iorder, &
+                icm = max_char_size - ntc
+                call write_data_blocks (lunwr2, lunut, iwidth, nobrk, int_workspace, & ! writes data_item to wrk and/or lst files
+                        real_workspace(nts:), real_workspace(nr2:), itmnr, idmnr, iorder, &
                         scale, .true., binfil, time_function_type, ipro, &
-                        itfacw, dtflg1, dtflg3, file_size_1, file_size_2, &
-                        sname, strng1, strng2, strng3, ioutpt)
+                        itfacw, is_date_format, is_yyddhh_format, file_size_1, file_size_2, &
+                        substances_names, strng1, strng2, strng3, output_verbose_level)
             endif
             if (ierr2 == 2) goto 530
             if (ierr2 == 3) goto 510
@@ -554,9 +558,8 @@ contains
             if (itype == 1) goto  30
             goto 10
         endif
-        !
-        !          ODS-file option selected
-        !
+
+        ! ODS-file option selected
         if (iabs(itype) == 1 .and. chulp(1:8) == 'ODS_FILE') then
             if (count_items_in_use_rule * nodim == 0) then
                 write (lunut, 1080) count_items_in_use_rule, nodim
@@ -567,31 +570,30 @@ contains
             itype = 1
             goto 20
         endif
-        !
-        !          ODS-file-data retrieval
-        !
+
+        ! ODS-file-data retrieval
         if (iabs(itype) == 1 .and. ods) then
             nti = count_items_in_use_rule + nodim + itmnr + idmnr + 1
             ntr = itel + nconst + 1
             ntd = (ntr + 1) / 2 + 1
             nts = nconst + 1
-            iim = iimax - nti
-            irm = irmax - ntr
-            call dlwq5c (chulp, lunut, car, iar, rar(ntr:), &
-                    icmax, iimax, irmax, drar, count_items_in_use_rule, &
+            iim = max_int_size - nti
+            irm = max_real_size - ntr
+            call dlwq5c (chulp, lunut, char_arr, int_workspace, real_workspace(ntr:), &
+                    max_char_size, max_int_size, max_real_size, dp_workspace, count_items_in_use_rule, &
                     nodim, iorder, scale, itmnr, idmnr, &
                     amiss, nobrk, ierr2, status)
             if (ierr2 /= 0) goto 510
             nr2 = ntr + count_items_in_use_rule * nodim * nobrk
-            call assign_matrix (lunut, iar, count_items_in_use_rule, itmnr, nodim, &
-                    idmnr, iorder, rar, time_function_type, rar(ntr:), &
-                    nodim, nobrk, amiss, iar(nti:), rar(nr2:))
+            call assign_matrix (lunut, int_workspace, count_items_in_use_rule, itmnr, nodim, &
+                    idmnr, iorder, real_workspace, time_function_type, real_workspace(ntr:), &
+                    nodim, nobrk, amiss, int_workspace(nti:), real_workspace(nr2:))
             strng3 = 'breakpoint'
-            call write_data_blocks (lunwr2, lunut, iwidth, nobrk, iar, &
-                    rar(nts:), rar(nr2:), itmnr, idmnr, iorder, &
+            call write_data_blocks (lunwr2, lunut, iwidth, nobrk, int_workspace, &
+                    real_workspace(nts:), real_workspace(nr2:), itmnr, idmnr, iorder, &
                     scale, ods, binfil, time_function_type, ipro, &
-                    itfacw, dtflg1, dtflg3, file_size_1, file_size_2, &
-                    sname, strng1, strng2, strng3, ioutpt)
+                    itfacw, is_date_format, is_yyddhh_format, file_size_1, file_size_2, &
+                    substances_names, strng1, strng2, strng3, output_verbose_level)
             if (ierr2 == 2) then
                 ierr2 = -2
                 goto 530
@@ -611,24 +613,21 @@ contains
             time_dependent = .false.
             goto  10
         endif
-        !
-        !          Absolute or relative timers
-        !
+
+        ! Absolute or relative timers
         if (iabs(itype) == 1 .and. chulp(1:8) == 'ABSOLUTE') then
             write (lunut, 1135)
             chulp = 'TIME'
         endif
-        !
-        !          Say it is a time function
-        !
+
+        ! Say it is a time function
         if (iabs(itype) == 1 .and. chulp(1:4) == 'TIME') then
             time_dependent = .true.
             time_function_type = 1
             goto 10
         endif
-        !
-        !          Scale factors begin
-        !
+
+        ! Scale factors begin
         if (iabs(itype) == 1 .and. chulp == 'SCALE') then
             if (nodim == 0) then
                 write (lunut, 1180)
@@ -644,14 +643,15 @@ contains
             scale = .true.
             goto 10
         endif
-        !          Getting the scale factors
+
+        ! Getting the scale factors
         if (iflag == 4) then
             itel = itel + 1
-            rar(itel + nconst) = rhulp
+            real_workspace(itel + nconst) = rhulp
             if (itel == idmnr) iflag = 0
             goto 10
         endif
-        !
+
         write (lunut, 1320) chulp
         write (lunut, '(A)') ' Expected character string should be a valid level 2 keyword'
         ierr2 = 1
@@ -668,19 +668,13 @@ contains
         call check_error(chulp, iwidth, iblock, ierr2, status)
         540 if (timon) call timstop(ithndl)
         return
-        !
+
         1000 format (/' WARNING: Old file structure is used for this data !')
-        ! 1002 format (  ' Delay integers: IDATE = ',I6,', ITIME = ',I6,'.' )
-        ! 1003 format (  ' New reference time is day: ',I2,'-',I2,'-',I4, ' / ',I2,'H-',I2,'M-',I2,'S.' )
-        ! 1004 format ( /' ERROR: you specified the TIME_DELAY keyword without', &
-        !               ' a valid value string for the delay !'/' 2 integers', &
-        !               ' are expected in YYMMDD and HHMMSS format !')
         1005 format (/' Linear interpolation is selected !')
         1010 format (/' ERROR: USEFOR is not alowed here. Specify ITEM or CONCENTRATION first !')
         1011 format (/' ERROR: USEDATA_ITEM is not alowed here. Specify before ITEM or CONCENTRATION !')
         1012 format (/' ERROR: Expected a DATA_ITEM name')
-        ! 1013 format ( /' ERROR: Expected USEDATA_ITEM keyword after USEDATA_ITEM <data_item>!' )
-        1015 format (/' When the DATA_ITEM ', A, ' is met, data is applied to the following items:') ! ( /' When the DATA_ITEM ',A,' nr: ',I5,' is met, data is applied to the flowing items:'   )
+        1015 format (/' When the DATA_ITEM ', A, ' is met, data is applied to the following items:')
         1016 format (/' WARNING: DATA_ITEM has already been used, and is now redefined!')
         1020 format (/' BLOCKED per ITEM:')
         1021 format (/' IDENTICAL DATA for all items ITEMS:')
@@ -696,28 +690,21 @@ contains
         1060 format (/' CONCENTRATIONs within the item blocks:')
         1070 format (/' ERROR: Second time CONCENs keyword in this block !')
         1080 format (/' ERROR: Nr of ITEMS (', I5, ') or nr of concentrations (', I5, ') is zero for this DATA block !')
-        ! 1110 format (  ' DATA will be retrieved from ODS-file: ',A )
-        ! 1120 format (  ' ERROR: Insufficient memory ! Available:',I10, ', needed:',I10,' !' )
-        ! 1130 format (  ' This block consists of a time function.' )
         1135 format (' Absolute times (YYYY/MM/DD;HH:MM:SS) expected in next', ' time function block.')
-        ! 1160 format (  ' Number of valid time steps found: ',I6 )
-        ! 1170 format (  ' This block consists of constant data.' )
         1180 format (' ERROR: number of substances is zero !')
         1190 format (' ERROR: data has already been entered !')
         1320 format (' ERROR: token found on input file: ', A)
-        ! 1330 format (/1X, 59('*'),' B L O C K -',I2,' ',5('*')/)
         1340 format (' Output on administration only writen for output option 3 and higher !')
         1350 format (' Output of the data only writen for output option 4 and higher !')
         1360 format (' ERROR: no (valid) DATA record available !')
         1370 format (' WARNING: all DATA from this block is ignored !')
-        ! 2220 format (  ' Input comes from binary file: ',A      )
-        !
+
     end subroutine dlwq5a
     !
     !     Additional documentation on the memory lay out
     !
     !     After ITEM, 5B reads Item names. It produces:
-    !     a) in CAR: a series of that item name and then a second series
+    !     a) in char_arr: a series of that item name and then a second series
     !        with the same name, or the substituted name after USEFOR
     !        If ' ' is specified, 'Item-nnn' will appear.
     !        If a positive integer is specified, the name of the
@@ -727,34 +714,34 @@ contains
     !        wasteloads.
     !        If a segment number is expected, 'Segment mmmmmmmm' is produced.
     !        ITMNR counts the first series, NOITM the second series.
-    !     b) in IAR: a series of the number of the item from the items list
+    !     b) in int_workspace: a series of the number of the item from the items list
     !                the same series again
     !                a series with sequence numbers
     !        ITMNR counts the first series, NOITM the second and third series
     !        For types a negative number is used
     !        If FLOW is allowed, it has number 0
-    !     If a number is used after a USEFOR, it is stored in RAR. In the
-    !        CAR location now the word "&$&$SYSTEM_NAME&$&$!" is placed.
-    !        In the second series location in IAR, the negative value of the
-    !        location in RAR is placed. The sequence number is decremented
+    !     If a number is used after a USEFOR, it is stored in real_workspace. In the
+    !        char_arr location now the word "&$&$SYSTEM_NAME&$&$!" is placed.
+    !        In the second series location in int_workspace, the negative value of the
+    !        location in real_workspace is placed. The sequence number is decremented
     !     If a computational sign is (*,/,+,-,MIN,MAX) is encountered:
-    !        The second series location in IAR contains a large negative
+    !        The second series location in int_workspace contains a large negative
     !           number depending on the computational sign. Sequence number
     !           and item number are incremented
     !        If now the name of a previously used item is given, the first
-    !           series location of IAR contains this item number, the second
-    !           series location in CAR contains "&$&$SYSTEM_NAME&$&$!" and
+    !           series location of int_workspace contains this item number, the second
+    !           series location in char_arr contains "&$&$SYSTEM_NAME&$&$!" and
     !           the sequence number is decremented
-    !        If a new name was provided, the 3rd series of IAR is set at
+    !        If a new name was provided, the 3rd series of int_workspace is set at
     !           the corresponding sequence number and the second series
-    !           location in CAR contains that name
+    !           location in char_arr contains that name
     !     At first invocation, this all starts at the beginning of the arrays
     !     ITMNR contains the number of items processed. It is the dimension
-    !        of the first series in IAR and CAR
+    !        of the first series in int_workspace and char_arr
     !     NOITS contains the sequence number. That many things are waiting to
     !        be resolved and this number was used as dimension for SCALE
-    !     NOITM contains the second and third series dimension in IAR and CAR
-    !     NCONST is the number of constants that was put in RAR
+    !     NOITM contains the second and third series dimension in int_workspace and char_arr
+    !     NCONST is the number of constants that was put in real_workspace
     !     ITYPE and CHULP are the type and content of the token at exit
     !
     !     After CONCENTRATION the same happens. Depending on who is first,
@@ -790,7 +777,6 @@ contains
 
         !! Prints and writes blocks of data
 
-        use m_dlwqj2
         use date_time_utils, only : convert_time_format
         use timers       !   performance timers
 

@@ -58,7 +58,7 @@ contains
 
         call read_block_1_from_input(lun, psynam, nosys, notot, nomult, &
                 multp, iwidth, otime, isfact, refday, &
-                ioutpt, status)
+                output_verbose_level, status)
 
         if (status%ierr /= 0) then
             write (lunrep, '(A)') " ERROR: reading system names"
@@ -90,12 +90,12 @@ contains
                 npoins, dtflg1, dtflg2, nodump, iopt, &
                 noint, iwidth, dtflg3, ndmpar, ntdmps, &
                 noraai, ntraaq, nosys, notot, nototp, &
-                ioutpt, nsegdmp, isegdmp, nexcraai, &
+                output_verbose_level, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
 
         call read_block_3_grid_layout(lun, lchar, filtype, nrftot, nrharm, &
                 ivflag, dtflg1, iwidth, dtflg3, &
-                ioutpt, gridps, syname, status, &
+                output_verbose_level, gridps, syname, status, &
                 has_hydfile, nexch)
 
         if (.not. associated(nsegdmp)) allocate (nsegdmp(1))
@@ -105,7 +105,7 @@ contains
         if (.not. associated(ioptraai)) allocate (ioptraai(1))
         call read_block_4_flow_dims_pointers(lun, lchar, filtype, nrftot, nrharm, &
                 ilflag, dtflg1, iwidth, intsrt, dtflg3, &
-                ioutpt, nsegdmp, isegdmp, nexcraai, &
+                output_verbose_level, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, gridps, status, &
                 has_hydfile, nexch)
         if (associated(nsegdmp)) deallocate (nsegdmp)
@@ -119,7 +119,7 @@ contains
                 rar, nrftot, nrharm, nobnd, nosys, &
                 notot, nobtyp, rmax, imax, dtflg1, &
                 iwidth, intsrt, dtflg3, syname, &
-                icmak, ioutpt, status)
+                icmak, output_verbose_level, status)
 
         deltim = otime
 
@@ -128,7 +128,7 @@ contains
                 imax, iar, rmax, rar, notot, &
                 nosss, syname, nowst, nowtyp, nrftot, &
                 nrharm, dtflg1, dtflg3, iwidth, &
-                ioutpt, chkpar, status)
+                output_verbose_level, chkpar, status)
 
         novec = 50
         inpfil%dtflg1 = dtflg1
@@ -139,7 +139,7 @@ contains
         nrharm(10) = 0
         deltim = otime
         call read_block_7_process_parameters(lun, lchar, filtype, inpfil, syname, &
-                iwidth, ioutpt, gridps, constants, chkpar, &
+                iwidth, output_verbose_level, gridps, constants, chkpar, &
                 status)
 
         ! Finish and close system file ( read_block_9 can re-read it )
@@ -148,16 +148,16 @@ contains
         close (lun(2))
 
         call read_block_8_initial_conditions(lun, lchar, filtype, nosss, notot, &
-                syname, iwidth, ioutpt, inpfil, &
+                syname, iwidth, output_verbose_level, inpfil, &
                 gridps, status)
 
         call read_block_9(lun, lchar, filtype, car, iar, &
                 icmak, iimax, iwidth, &
-                ioutpt, ioutps, outputs, status)
+                output_verbose_level, ioutps, outputs, status)
 
         call setup_statistical(lunrep, npos, cchar, &
                 ilun, lch, &
-                lstack, ioutpt, &
+                lstack, output_verbose_level, &
                 dtflg1, dtflg3, &
                 statprocesdef, allitems, &
                 status)
