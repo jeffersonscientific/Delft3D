@@ -1076,23 +1076,23 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_TKE,                                                                   &
                      'Wrihis_turbulence', 'tke', 'turbulent kinetic energy', '',                                       &
                      'm2 s-2', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write k, eps and vicww to his file', &
-                     nc_dim_ids = nc_dims_3D_interface_edge)
+                     nc_dim_ids = nc_dims_3D_interface_center)
       call addoutval(out_quan_conf_his, IDX_HIS_VICWW,                                       &
                      'Wrihis_turbulence', 'vicww' , 'turbulent vertical eddy viscosity', '', &
                      'm2 s-1''', UNC_LOC_STATION, nc_atts = atts(1:1),                       &
-                     nc_dim_ids = nc_dims_3D_interface_edge)
+                     nc_dim_ids = nc_dims_3D_interface_center)
       call addoutval(out_quan_conf_his, IDX_HIS_EPS,                                 &
                      'Wrihis_turbulence', 'eps', 'turbulent energy dissipation', '', &
                      'm2 s-3', UNC_LOC_STATION, nc_atts = atts(1:1),                 &
-                     nc_dim_ids = nc_dims_3D_interface_edge)
+                     nc_dim_ids = nc_dims_3D_interface_center)
       call addoutval(out_quan_conf_his, IDX_HIS_TAU,                         &
                      'Wrihis_turbulence', 'tau', 'turbulent time scale', '', &
                      's-1', UNC_LOC_STATION, nc_atts = atts(1:1),            &
-                     nc_dim_ids = nc_dims_3D_interface_edge)
+                     nc_dim_ids = nc_dims_3D_interface_center)
       call addoutval(out_quan_conf_his, IDX_HIS_RICH,               &
                      'Richardsononoutput', 'rich', 'Richardson Nr', &
                      '', '-', UNC_LOC_STATION, nc_atts = atts(1:1), &
-                     nc_dim_ids = nc_dims_3D_interface_edge)
+                     nc_dim_ids = nc_dims_3D_interface_center)
 
       ! Gravity + buoyancy
       call addoutval(out_quan_conf_his, IDX_HIS_SALINITY,                                                    &
@@ -2264,24 +2264,24 @@ private
       ! Turbulence model
       if (model_is_3D()) then
          if (iturbulencemodel >= 3 .and. jahistur > 0) then
-            temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_TKIN:IPNT_TKIN+kmx)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TKE      ),temp_pointer                            )
+            temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_TKIN:IPNT_TKIN+kmx)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TKE),temp_pointer)
          endif
          if (iturbulencemodel == 3 .and. jahistur >0) then
-            temp_pointer(1:kmx*ntot) => valobs(1:ntot,IDX_HIS_EPS:IDX_HIS_EPS+kmx)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EPS      ),temp_pointer                     )
+            temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_TEPS:IPNT_TEPS+kmx)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_EPS),temp_pointer)
          endif
          if (iturbulencemodel > 1) then
-            temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_VICWW:IPNT_VICWW+kmx)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VICWW    ),temp_pointer                         )
+            temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_VICWW:IPNT_VICWW+kmx)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_VICWW),temp_pointer)
          endif
          if (iturbulencemodel == 4 .and. jahistur > 0) then
-            temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_TEPS:IPNT_TEPS+kmx)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TAU     ),temp_pointer                      )
+            temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_TEPS:IPNT_TEPS+kmx)
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_TAU),temp_pointer)
          endif
       endif
       if (idensform > 0 .and. jaRichardsononoutput > 0 .and. model_is_3D()) then
-         temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_RICH:IPNT_RICH+kmx)
+         temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_RICH:IPNT_RICH+kmx)
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_RICH),temp_pointer)
       endif
 
@@ -2309,7 +2309,7 @@ private
             temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_RHOP:IPNT_RHOP+kmx)
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)
 
-            temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_BRUV:IPNT_BRUV+kmx)
+            temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_BRUV:IPNT_BRUV+kmx)
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
             if (idensform > 10) then
                temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_RHO:IPNT_RHO+kmx)
