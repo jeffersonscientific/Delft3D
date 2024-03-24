@@ -35,3 +35,7 @@ endif()
 if(NOT TARGET waq_hyd_data)
     add_subdirectory(${checkout_src_root}/${waq_hyd_data_module} waq_hyd_data)
 endif()
+
+if(NOT TARGET morphology_data)
+    add_subdirectory(${checkout_src_root}/${morphology_data_module} morphology_data)
+endif()
