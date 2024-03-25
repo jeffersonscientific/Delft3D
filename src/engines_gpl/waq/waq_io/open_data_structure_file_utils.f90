@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module history_file_utils
+module open_data_structure
     use m_waq_precision
     use m_open_waq_files
     use m_file_path_utils, only : extract_file_extension
@@ -624,4 +624,4 @@ contains
 
     end subroutine get_dimension
 
-end module history_file_utils
+end module open_data_structure

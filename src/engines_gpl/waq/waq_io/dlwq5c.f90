@@ -96,7 +96,7 @@ contains
         !     Then the matrix of values to be read in eg in this routine
         !
         use m_usefor, only : compact_usefor_list
-        use history_file_utils, only : get_time, get_parameter, get_matrix_1, get_loc, get_dimension
+        use open_data_structure, only : get_time, get_parameter, get_matrix_1, get_loc, get_dimension
         use timers       !   performance timers
         use m_sysi          ! Timer characteristics
         use time_module

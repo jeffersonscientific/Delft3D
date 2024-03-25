@@ -36,7 +36,7 @@ contains
 
         !! read a block of data from ODS file
 
-        use history_file_utils, only : get_time, get_parameter, get_matrix_2, get_matrix_1, get_dimension, get_loc
+        use open_data_structure, only : get_time, get_parameter, get_matrix_2, get_matrix_1, get_dimension, get_loc
         use dlwq_hyd_data   ! for definition and storage of data
         use timers          !   performance timers
         use m_sysi          ! Timer characteristics
