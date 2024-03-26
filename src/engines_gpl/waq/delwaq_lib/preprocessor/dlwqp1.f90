@@ -70,7 +70,7 @@ contains
         use m_actrep
         use m_startup_screen
         use m_srstop
-        use m_read_working_file_4, only : read_working_file_4
+        use m_working_files, only : read_working_file_4
         use m_monsys
         use m_cli_utils, only : retrieve_command_argument
         use m_open_waq_files

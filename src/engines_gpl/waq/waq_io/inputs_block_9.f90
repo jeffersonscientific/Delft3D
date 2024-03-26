@@ -40,7 +40,7 @@ contains
 
         use output_utils, only : set_default_output
         use error_handling, only : check_error
-        use m_read_working_file_4
+        use m_working_files, only : read_working_file_4
         use m_open_waq_files
         use rd_token     !   for the reading of tokens
         use results, only : OutputPointers, lncout
