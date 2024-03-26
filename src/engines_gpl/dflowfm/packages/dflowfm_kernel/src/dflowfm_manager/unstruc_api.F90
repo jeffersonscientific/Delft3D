@@ -258,6 +258,10 @@ subroutine api_loadmodel(filename)
 end subroutine api_loadmodel
 
 
+!subroutine dll_print_hack()
+   
+!end subroutine dll_print_hack
+
 
  integer function flowinit() result(iresult)
    use timers

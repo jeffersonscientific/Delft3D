@@ -113,7 +113,8 @@ set(library_source_list     ${fortran_version_files}
                             ${dflowfm_utils}
                             ${dflowfm_utils_rest_f90}
                             ${dflowfm_utils_to_deltares_common}
-                            ${to_thirdparty})
+                            ${to_thirdparty}
+                            ${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_manager/dll_hack.cpp)
 
 add_library(${library_name} ${library_source_list})
 
