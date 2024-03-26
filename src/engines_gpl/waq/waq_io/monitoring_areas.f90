@@ -147,8 +147,7 @@ contains
         endif
         max_ntdmps = ndmpar
 
-        !        Read specification of the dump areas
-
+        ! Read specification of the dump areas
         if (output_verbose_level < 2) write (lunut, 2040)
         if (output_verbose_level == 2) write (lunut, 2050)
         do id = 1, ndmpar
@@ -284,8 +283,6 @@ contains
 
         type(error_status), intent(inout) :: status !< current error status
 
-        !     local variables
-
         integer(kind = int_wp) :: iropt1            ! First option number monitoring areas
         integer(kind = int_wp) :: ierr2             ! Local error flag
         integer(kind = int_wp) :: max_ntraaq        ! Size of isegdmp
@@ -300,8 +297,7 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_monitoring_transects", ithndl)
 
-        !     Read file option
-
+        ! Read file option
         if (gettoken(iropt1, ierr2) > 0) goto 20
         select case (iropt1)
         case (:-2)
@@ -353,8 +349,7 @@ contains
 
         end select
 
-        !        Write number of dump transects, allocate arrays
-
+        ! Write number of dump transects, allocate arrays
         write(lunut, 2030) noraai
         ntraaq = 0
         allocate (raname  (noraai), stat = ierr_alloc)
@@ -370,8 +365,7 @@ contains
         endif
         max_ntraaq = noraai * 2
 
-        !        Read specification of the transects
-
+        ! Read specification of the transects
         if (output_verbose_level < 2) write (lunut, 2040)
         if (output_verbose_level == 2) write (lunut, 2050)
         do ir = 1, noraai
@@ -417,8 +411,7 @@ contains
         end do
         goto 30
 
-        !     Error handling
-
+        ! Error handling
         20 write (lunut, 2500)
         ierr = ierr + 1
         30 if (timon) call timstop(ithndl)

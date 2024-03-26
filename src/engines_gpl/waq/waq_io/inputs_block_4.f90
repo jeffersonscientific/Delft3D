@@ -23,12 +23,11 @@
 module inputs_block_4
     use m_waq_precision
     use m_string_utils, only : string_equals
-    use matrix_utils, only : scale_array
+    use matrix_utils, only : scale_array, compute_matrix_size
     use exchange_pointers, only : read_exchange_pointers_irregular_grid, create_boundary_pointers
     use simulation_input_options, only : process_simulation_input_options, validate_simulation_time_steps, &
             read_constant_data, read_constants_time_variables
     use monitoring_areas, only : create_write_monitoring_area_array
-    use matrix_utils, only : compute_matrix_size
 
     implicit none
 
