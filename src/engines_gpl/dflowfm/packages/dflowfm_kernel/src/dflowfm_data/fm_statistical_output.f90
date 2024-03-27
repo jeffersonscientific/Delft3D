@@ -403,7 +403,6 @@ private
    !! because the tracers are only known during model initialization.
    !! Returns config indices for these variables such that they can be added to the output items for the same tracers
    subroutine add_station_tracer_configs(output_config_set, idx_tracers_stations)
-      use m_alloc, only: realloc
       use netcdf_utils, only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use m_transportdata, only: const_names, const_units, ITRA1, ITRAN
@@ -418,7 +417,7 @@ private
 
       num_tracers = ITRAN - ITRA1 + 1
 
-      call realloc(idx_tracers_stations, num_tracers, keepExisting = .false., fill = 0)
+      allocate(idx_tracers_stations(num_tracers), source = 0)
 
       do tracer_index = 1, num_tracers
          constituent_index = tracer_index + ITRA1 - 1
@@ -464,6 +463,129 @@ private
    end do
 
    end subroutine add_station_tracer_output_items
+   
+   !> Add output configs for the waq bottom substances on observation stations just in time,
+   !! because these substances are only known during model initialization.
+   !! Return config indices for these variables such that they can be added to the output items for the same substances
+   !! NOTE (TB): apparently, these are the 'inactive' substances defined in the waq substance file
+   subroutine add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
+   
+      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits
+      use netcdf_utils,      only: ncu_sanitize_name
+      use m_ug_nc_attribute, only: ug_nc_attribute
+      use netcdf_utils,      only: ncu_set_att
+      
+      implicit none
+      
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set         !< Output configuration set for the HIS file.
+      integer, allocatable,               intent(  out) :: idx_wqbot_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
+      
+      character(len=idlen)                              :: waqb_sub_name
+      character(len=idlen)                              :: unit_string
+      type(ug_nc_attribute)                             :: atts(1)
+      integer                                           :: i
+
+      allocate(idx_wqbot_stations(numwqbots), source = 0)
+      
+      call ncu_set_att(atts(1), 'geometry', 'station_geom')
+
+      do i = 1, numwqbots
+         waqb_sub_name = wqbotnames(i)
+         call ncu_sanitize_name(waqb_sub_name)
+
+         unit_string = wqbotunits(i)
+         if (unit_string == ' ') then
+            unit_string = '-'
+         endif
+
+         ! add output config item
+         call addoutval(output_config_set, idx_wqbot_stations(i), 'Wrihis_wqbot', waqb_sub_name, &
+                        trim(wqbotnames(i)), '', unit_string, UNC_LOC_STATION, nc_dim_ids = nc_dims_2D, nc_atts = atts)
+
+         output_config_set%statout(idx_wqbot_stations(i))%input_value = &
+            output_config_set%statout(IDX_HIS_WQBOT_ABSTRACT)%input_value
+      end do
+   
+   end subroutine add_station_wqbot_configs
+   
+   !> Add output configs for the 3D waq bottom substances on observation stations just in time,
+   !! because these substances are only known during model initialization.
+   !! Return config indices for these variables such that they can be added to the output items for the same substances
+   subroutine add_station_wqbot3D_configs(output_config_set, idx_wqbot3D_stations)
+   
+      use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits
+      use netcdf_utils,      only: ncu_sanitize_name
+      use m_ug_nc_attribute, only: ug_nc_attribute
+      use netcdf_utils,      only: ncu_set_att
+      
+      implicit none
+      
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set           !< Output configuration for the HIS file.
+      integer, allocatable,               intent(  out) :: idx_wqbot3D_stations(:)     !< Indices of just-in-time added waq bottom    substances in output_config_set array
+      
+      character(len=idlen)                              :: waqb_sub_name
+      character(len=idlen)                              :: unit_string
+      type(ug_nc_attribute)                             :: atts(1)
+      integer                                           :: i
+
+      allocate(idx_wqbot3D_stations(numwqbots), source = 0)
+      
+      call ncu_set_att(atts(1), 'geometry', 'station_geom')
+
+      do i = 1, numwqbots
+         waqb_sub_name = wqbotnames(i)
+         call ncu_sanitize_name(waqb_sub_name)
+
+         unit_string = wqbotunits(i)
+         if (unit_string == ' ') then
+            unit_string = '-'
+         endif
+
+         ! add output config item
+         call addoutval(output_config_set, idx_wqbot3D_stations(i), 'Wrihis_wqbot3d', waqb_sub_name, &
+                        trim(wqbotnames(i))//' (3D)', '', unit_string, UNC_LOC_STATION, nc_dim_ids = nc_dims_3D_center, nc_atts = atts)
+
+         output_config_set%statout(idx_wqbot3D_stations(i))%input_value = &
+            output_config_set%statout(IDX_HIS_WQBOT_ABSTRACT)%input_value
+      end do
+   
+   end subroutine add_station_wqbot3D_configs
+
+   !> Add output items for all waq bottom substances on stations to output set.
+   subroutine add_station_wqbot_output_items(output_set, output_config_set, idx_wqbot_stations)
+   
+      use m_fm_wq_processes, only: numwqbots
+      use m_observations, only: valobs, IPNT_WQB1
+      
+      type(t_output_variable_set),        intent(inout) :: output_set                !< Output set that item will be added to
+      type(t_output_quantity_config_set), intent(in   ) :: output_config_set         !< Read config items out of config set
+      integer,                            intent(in   ) :: idx_wqbot_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
+
+      integer :: i
+
+      do i = 1, numwqbots
+         call add_stat_output_items(output_set, output_config_set%statout(idx_wqbot_stations(i)), valobs(:,IPNT_WQB1 + i-1))
+      end do
+
+   end subroutine add_station_wqbot_output_items
+
+   !> Add output items for all 3D waq bottom substances on stations to output set.
+   subroutine add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
+   
+      use m_fm_wq_processes, only: numwqbots, wqbot3D_output
+      use m_observations, only: valobs, IPNT_WQB3D1
+      
+      type(t_output_variable_set),        intent(inout) :: output_set                  !< Output set that item will be added to
+      type(t_output_quantity_config_set), intent(in   ) :: output_config_set           !< Read config items out of config set
+      integer,                            intent(in   ) :: idx_wqbot3D_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
+
+      integer :: i
+
+      do i = 1, numwqbots
+         call add_stat_output_items(output_set, output_config_set%statout(idx_wqbot3D_stations(i)), valobs(:,IPNT_WQB3D1 + i-1))
+      end do
+
+   end subroutine add_station_wqbot3D_output_items
 
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
@@ -1383,6 +1505,14 @@ private
                      'Wrihis_tracers', 'station_tracer_abstract', '', &
                      '', '-', UNC_LOC_STATION, description = 'Write tracers to his file')
 
+      call addoutval(out_quan_conf_his, IDX_HIS_WQBOT_ABSTRACT, &
+                     'Wrihis_wqbot', 'station_wqb_abstract', '', &
+                     '', '-', UNC_LOC_STATION, description = 'Write waq bottom substances to his file')
+
+      call addoutval(out_quan_conf_his, IDX_HIS_WQBOT3D_ABSTRACT, &
+                     'Wriwaqbot3Doutput', 'station_wqb3d_abstract', '', &
+                     '', '-', UNC_LOC_STATION, description = 'Write waq bottom 3D substances to his file')
+
       ! HIS: Variables on observation cross sections
       !
       call ncu_set_att(atts(1), 'geometry', 'cross_section_geom')
@@ -1982,7 +2112,7 @@ private
       use m_longculverts, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug, rug
-      use m_fm_wq_processes, only: jawaqproc
+      use m_fm_wq_processes, only: jawaqproc, numwqbots
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
       use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
@@ -1999,6 +2129,7 @@ private
       integer, allocatable, dimension(:) :: id_hwq
       integer, allocatable, dimension(:) :: idx_his_hwq
       integer, allocatable, dimension(:) :: idx_constituents_crs, idx_tracers_stations
+      integer, allocatable, dimension(:) :: idx_wqbot_stations, idx_wqbot3D_stations
 
       ntot = numobs + nummovobs
       !
@@ -2534,6 +2665,16 @@ private
             temp_pointer(1 : num_layers * ntot) => valobs(:, start_index : start_index + num_layers - 1)
             call add_stat_output_items(output_set, output_config_set%statout(idx_his_hwq(variable_index)), temp_pointer)
          end do
+      end if
+      
+      ! Water quality bottom substances
+      if (numwqbots > 0) then
+         call add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
+         call add_station_wqbot_output_items(output_set, output_config_set, idx_wqbot_stations)
+         if (model_is_3D()) then
+            call add_station_wqbot3D_configs(output_config_set, idx_wqbot3D_stations)
+            call add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
+         end if
       end if
 
       ! Transported constituents
