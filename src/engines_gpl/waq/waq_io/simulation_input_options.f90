@@ -652,7 +652,6 @@ contains
         !!      lun( 4) = unit binary intermediate file for pointers
         !!      lun(is) = unit binary intermediate file for function
 
-        use input_utils, only : read_item_num
         use matrix_utils, only : dmatrix
         use m_open_waq_files
         use timers       !   performance timers
@@ -764,8 +763,7 @@ contains
             endif
 
             ! the items in this block by itemnumber
-            call read_item_num (nitem, iopt3, output_verbose_level, itemId(ntotal), nvarnw, &
-                    ierr)
+            call read_item_num(nitem, iopt3, output_verbose_level, itemId(ntotal), nvarnw, ierr)
 
             ! new style for boundaries and wastes
             if (bound .or. funcs) &
@@ -1001,8 +999,7 @@ contains
         ierr = 0
         if (skip) goto 10
 
-        !        Read first option, write zero dispersion if process_simulation_input_options=0
-
+        ! Read first option, write zero dispersion if process_simulation_input_options=0
         if (dont_read) then
             iopt1 = -2
             if (is == 13) then
@@ -1035,9 +1032,8 @@ contains
                 dont_read)
         if (ierr2 > 0) goto 50
 
-        !        Binary file, option = -2 (or sequence of binary files option = -4)
-        !                           everything is block function, except volume
-
+        ! Binary file, option = -2 (or sequence of binary files option = -4)
+        ! everything is block function, except volume
         if (iopt1 == -2 .or. iopt1 == -4) then
             nlines = nlines + ndim1 * ndim2 * 2
             npoins = npoins + ndim1 + 3
@@ -1051,8 +1047,7 @@ contains
             iopt1 = 0
         endif
 
-        !        Dispersion in three directions if DISPER, return if NODISP=0
-
+        ! Dispersion in three directions if DISPER, return if NODISP=0
         if (disper) then
             if (iopt1 == 0) then                            ! binary file, then
                 write (lun(2)) idummy, (adummy, k = 1, 3)     ! no fixed dispersions
@@ -1065,19 +1060,19 @@ contains
             endif
         endif
 
-        if (iopt1 == 0) goto 9999                          ! binary file, we are ready
+        ! binary file, we are ready
+        if (iopt1 == 0) goto 9999
 
-        !        Read second option, set volume flag if OPT2 > 3 AND VOLUME
-
+        ! Read second option, set volume flag if OPT2 > 3 AND VOLUME
         10 if (gettoken(iopt2, ierr2) > 0) goto 50
         write (lunut, 2010) iopt2
-        if (volume == 1 .and. iopt2 > 3) then                  ! Computed volumes !!
+        ! Computed volumes
+        if (volume == 1 .and. iopt2 > 3) then
             volume = 0
             iopt2 = iopt2 - 3
         endif
 
-        !        Get the data
-
+        ! Get the data
         select case (iopt2)
         case (1, 2)              !   Constants with and without defaults in three directions
             allocate (values(ndim2, max(noql1, noql2, noql3)))
@@ -1099,7 +1094,8 @@ contains
             close (lun(is))
             if (ierr2 > 0) goto 50
 
-        case (3)                 !   Time varying data
+        case (3)
+            ! Time varying data
             ierr2 = 0
             if (bound) ierr2 = -1
             if (waste) ierr2 = -2
@@ -1119,8 +1115,6 @@ contains
         50 ierr = ierr + 1
         if (timon) call timstop(ithndl)
         return
-
-        !       Output formats
 
         2000 format (/, ' First  selected option   : ', I7)
         2010 format (' Second selected option   : ', I7)
@@ -1241,8 +1235,7 @@ contains
 
         end select
 
-        !        control writing
-
+        ! control writing
         if (output_verbose_level < 4) then
             write (lunut, 2070)
         else
@@ -1291,8 +1284,6 @@ contains
         100 ierr = ierr + 1
         if (timon) call timstop(ithndl)
         return
-
-        ! output formats
 
         2000 format(/, ' Number of harmonics:', I4)
         2010 format(/, ' Number of Fouriers:', I4, ' base period:', I10)
@@ -1423,5 +1414,71 @@ contains
         2080 format (I10, 2X, 1P, 10E12.4)
 
     end subroutine read_scale_block
+
+    subroutine read_item_num(nmax, iopt, output_verbose_level, ipnt, npnt, ierr)
+
+        !! Reads the item numbers of an input block
+        !!
+        !! This routine reads:
+        !!      - amount of items contained in this block
+        !!      - item numbers in this block
+        !!          If iopt = 1, then block function, item numbers negative
+
+        use timers       !   performance timers
+        use rd_token       ! for the reading of tokens
+
+        integer(kind = int_wp), intent(in) :: nmax               !< maximum amount of items
+        integer(kind = int_wp), intent(in) :: iopt               !< is 1 for block functions
+        integer(kind = int_wp), intent(in) :: output_verbose_level             !< how extensive is output ?
+        integer(kind = int_wp), intent(out) :: ipnt  (nmax)       !< the item numbers of this block
+        integer(kind = int_wp), intent(out) :: npnt               !< amount of items of this block
+        integer(kind = int_wp), intent(inout) :: ierr               !< cumulative error indicator
+
+        integer(kind = int_wp) :: ierr2      ! local error variable
+        integer(kind = int_wp) :: i          ! loop counter
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("read_item_num", ithndl)
+
+
+        ! read number of items in this block
+        if (gettoken(npnt, ierr2) > 0) goto 10
+
+        ! read the item numbers
+        do i = 1, npnt
+            if (gettoken(ipnt(i), ierr2) > 0) goto 10
+            ipnt(i) = iabs (ipnt(i))
+            if (ipnt(i) > nmax) then
+                write (lunut, 2000) ipnt(i), nmax
+                ierr = ierr + 1
+            endif
+        enddo
+
+        ! write them if needed
+        write(lunut, 2010) npnt
+        if (output_verbose_level >= 3) then
+            write(lunut, 2020) (ipnt(i), i = 1, npnt)
+        else
+            write(lunut, 2030)
+        endif
+
+        ! Set negative values if IOPT = 1 ( block function )
+        if (iopt == 1) then
+            do i = 1, npnt
+                ipnt(i) = -ipnt(i)
+            enddo
+        endif
+        if (timon) call timstop(ithndl)
+        return
+
+        10 ierr = ierr + 1
+        if (timon) call timstop(ithndl)
+        return
+
+        2000 format (' ERROR. Item number:', I4, ' larger than maximum (', I4, ')!')
+        2010 format (/, ' Amount of numbers in this block:', I4)
+        2020 format (' Numbers in their order of input:', /, (5X, 10I7))
+        2030 format (' Printed output on input items only for option 3 and higher !')
+
+    end subroutine read_item_num
 
 end module simulation_input_options
