@@ -521,7 +521,7 @@ end subroutine setTUDUnitString
 
 !> compute concentrations of particles (parts per unit volume) in flownodes
 subroutine comp_concentration(h, nconst, iconst, c)
-   use partmem, only: mpart, wpart, oil, nfract, nopart, hyd, noslay
+   use partmem, only: mpart, wpart, oil, nfract, nopart, hyd, noslay, nolayp, lsettl
    use m_particles, laypart => kpart
    use m_part_mesh
    use m_part_geom, only : Ndx, ba, bl
@@ -532,10 +532,10 @@ subroutine comp_concentration(h, nconst, iconst, c)
    implicit none
 
    !! TODO: Make these assumed-shape arrays!
-   double precision, dimension(Ndx/kmx,noslay),        intent(in)  :: h      !< water depth
-   integer,                                         intent(in)  :: nconst !< number of constituents
-   integer,                                         intent(in)  :: iconst !< particle tracer constituent number
-   double precision, dimension(Nconst,Ndx/kmx,noslay), intent(out) :: c      !< constituents
+   double precision, dimension(:),     intent(in)  :: h      !< water depth
+   integer,                            intent(in)  :: nconst !< number of constituents
+   integer,                            intent(in)  :: iconst !< particle tracer constituent number
+   double precision, dimension(:,:,:), intent(out) :: c      !< constituents
 
    integer :: i, k, kl, ifract, lay
 
@@ -557,21 +557,29 @@ subroutine comp_concentration(h, nconst, iconst, c)
    end do
 
    !  compute concentration (parts per unit volume) , but for the oil module should it be per m2 (ie divided by the depth of the segment), for sticky and surface oil
-   do lay = 1,noslay
+   do lay = 1,nolayp
       do k=1,hyd%nosegl
-         if ( h(k,lay) .gt. epshs ) then
-            kl = k + (lay-1) * hyd%nosegl
-            c(iconst,k,lay) = c(iconst,k,lay) / (ba(kl)*h(k,lay))
+         kl = k + (lay-1) * hyd%nosegl
+         if ( h(kl) .gt. epshs ) then
+            c(iconst,k,lay) = c(iconst,k,lay) / (ba(kl)*h(kl))
 
             if (oil) then
                do ifract = 1 , nfract
-                  c(1 + 3 * (ifract - 1), k, lay) =  c(1 + 3 * (ifract - 1), k, lay) * h(k,lay) ! surface floating oil per m2
-                  c(3 + 3 * (ifract - 1), k, lay) =  c(3 + 3 * (ifract - 1), k, lay) * h(k,lay) ! surface floating oil per m2
+                  c(1 + 3 * (ifract - 1), k, lay) =  c(1 + 3 * (ifract - 1), k, lay) * h(kl) ! surface floating oil per m2
+                  c(3 + 3 * (ifract - 1), k, lay) =  c(3 + 3 * (ifract - 1), k, lay) * h(kl) ! surface floating oil per m2
                end do
             endif
          endif
       end do
    end do
+
+   ! compute concentration in the bottom layer - if settling is on (concentration in g/m2 not g/m3)
+
+   if ( lsettl ) then
+      do k=1,hyd%nosegl
+         c(iconst,k,noslay) = c(iconst,k,noslay) / ba(k)
+      end do
+   end if
 
    if ( timon ) call timstop ( ithndl )
 

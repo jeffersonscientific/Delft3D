@@ -109,7 +109,7 @@ subroutine fm_vert_disp (lunpr, itime)
     use m_part_mesh
     use random_generator
     use m_partvs
-    use m_part_recons, only: u0x, u0y   
+    use m_part_recons, only: u0x, u0y
     implicit none
 
 
@@ -122,7 +122,7 @@ subroutine fm_vert_disp (lunpr, itime)
     real(sp)                     :: tp
     real(sp)                     :: c2g, uscrit, uecrit, ubstar_b  ! critical shear stress parameters
     real(sp)                     :: grav   =  9.81
- 
+
 
     double precision             :: thicknessl, depthp, dred
     double precision             :: kpartold, hlayold  ! working variable for depth in a layer
@@ -199,7 +199,7 @@ subroutine fm_vert_disp (lunpr, itime)
            else
               totdepthlay(ilay) = 1.0D0  ! unit depth for the bed layer
            end if
-               
+
         enddo
 
         hpart_prevt(ipart) = hpart(ipart)
@@ -222,7 +222,7 @@ subroutine fm_vert_disp (lunpr, itime)
             abuac  = abuac * sqrt(ddfac)
         endif
         dvz = (2.0 * sq6 * sqrt( cdisp*itdelt ) *   &
-              random_step  +  vz * itdelt)  
+              random_step  +  vz * itdelt)
         ! note that negative value is now sinking (against the direction of the local h coordinate)
         ! for testing use a fixed downward dispersion displacement (>1)
 !        dvz is the total vertical movement (setting plus diffusion)
@@ -237,8 +237,8 @@ subroutine fm_vert_disp (lunpr, itime)
 !            depthp = 0.0d0
 !            laypart(ipart) = 1 ! this does not take into accoutn z-layers where surface may not be layer 1
 !            hpart(ipart) = 0.0d0
-        elseif ( depthp >= totdepthlay(kmx) ) then 
-            ! this is when the particle hits the bed, but here the bouncing comes in, 
+        elseif ( depthp >= totdepthlay(kmx) ) then
+            ! this is when the particle hits the bed, but here the bouncing comes in,
             ! if the particle settles then it should become inactive, we are not introducing erosion in FM (for now)
             if ( lsettl .and. ubstar_b .lt. uscrit   &
                 .and. wsettl(ipart) .gt. 0.0) then
@@ -253,7 +253,7 @@ subroutine fm_vert_disp (lunpr, itime)
 !                    do isub = 1, nosubs
 !                      jsub = mstick(isub)
 !                         if ( jsub .gt. 0 ) then    !  phase change from floating or dispersed
-!                            wpart(jsub,ipart) = wpart(isub,ipart)  
+!                            wpart(jsub,ipart) = wpart(isub,ipart)
 !                            wpart(isub,ipart) = 0.0
 !                         endif
 !                    enddo                         ! ==> also here
@@ -277,9 +277,11 @@ subroutine fm_vert_disp (lunpr, itime)
             hpart(ipart) = 1.0d0 - ( totdepthlay(ilay) - depthp) / h0(laypart(ipart)) ! new relative height in layer
         end if
     end do
-    write( *,     1010 ) nopart_sed - nopart_sed_old, nopart_sed
-    write( lunpr, 1010 ) nopart_sed - nopart_sed_old, nopart_sed
-1010 format('Settling this timestep:', i6, ', total number of settled particles: ', i6 )    
+    if ( lsettl .and. .false. ) then
+        write( *,     1010 ) nopart_sed - nopart_sed_old, nopart_sed
+        write( lunpr, 1010 ) nopart_sed - nopart_sed_old, nopart_sed
+1010    format('Settling this timestep:', i6, ', total number of settled particles: ', i6 )
+    endif
 end subroutine
 
 subroutine v_part_bounce(ipart, depthp, totdepthlay, vz, dvz, itdelt, tp)
@@ -313,7 +315,7 @@ subroutine v_part_bounce(ipart, depthp, totdepthlay, vz, dvz, itdelt, tp)
     endif
     dhpart = (dvz-vz)/h0(laypart(ipart)) ! relative depth change (relative to thickness of the layer) settling + diffusion
 !    dhpart = dvz/h0(laypart(ipart)) ! relative depth change (relative to thickness of the layer) diffusion only
-    
+
     if (  depthp >= totdepthlay(kmx)) then
       laypart(ipart) = layt ! since it hits the bed, the bouncing assumes the layer above the bed
       if (vertical_bounce .and. dhpart > 0.0) then
@@ -332,7 +334,7 @@ subroutine v_part_bounce(ipart, depthp, totdepthlay, vz, dvz, itdelt, tp)
        endif
         !endif
     endif
-    
+
     if ( hpart(ipart) .eq. 0.0 ) hpart(ipart) = 0.0001
     if ( hpart(ipart) .eq. 1.0 ) hpart(ipart) = 0.9999
 
