@@ -271,10 +271,17 @@ end subroutine api_loadmodel
    use m_partitioninfo, only: jampi
    use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
 
+   interface
+      subroutine dll_hack() bind(c)
+         implicit none
+      end subroutine dll_hack
+   end interface
+
    integer, external :: flow_modelinit
    integer          :: timerHandle, inner_timerhandle
 
    !call inidia('api')
+   call dll_hack()
    
    timerHandle = 0
    call timstrt('Initialise flow', timerHandle)

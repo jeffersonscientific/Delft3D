@@ -88,12 +88,6 @@
 
    implicit none
 
-   interface
-      subroutine dll_hack() bind(c)
-         implicit none
-      end subroutine dll_hack
-   end interface
-
    integer :: MODE,NFLD, KEY
    integer :: JQN
    integer :: JDEMO
@@ -165,8 +159,6 @@
    MAXBOAT = MAXLAN
 
     md_jaopenGL = -1 ! no commandline option read for OpenGL (yet)
-
-    call dll_hack()
 
     ierr = read_commandline()
     select case(ierr)
