@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-MODULE memory_mangement
+MODULE variable_declaration
     use m_waq_precision
 
     implicit none
@@ -33,8 +33,8 @@ MODULE memory_mangement
     !! Delwaq group should strictly maintain the policy to only include it
     !! in the dlwqn$ routines and have the remainder of the source code
     !! driven by its parameter lists.
-    !! The allocation should be reserved to the routines dhmmja, dhmmra and
-    !! dhmmca where also the total memory demand is printed
+    !! The allocation should be reserved to the routines allocate_integer_arrays, dhmmra and
+    !! set_character_array_indices where also the total memory demand is printed
 
 
     ! wasteloads
@@ -157,4 +157,4 @@ contains
     end subroutine deallocate_memory
 
 
-END MODULE memory_mangement
+end module variable_declaration

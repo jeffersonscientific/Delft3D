@@ -1704,9 +1704,8 @@ contains
     contains
         ! write_delwaq03 --
         !     Write the first DELWAQ system intermediate file
-        !
         subroutine write_delwaq03(name)
-            use workspace
+            use workspace, only : set_array_indexes
             use m_sysn          ! System characteristics
             use m_sysi          ! Timer characteristics
 
@@ -1724,7 +1723,7 @@ contains
             imaxi = 0
             imaxc = 0
 
-            call space(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, imaxa, imaxi, imaxc)
+            call set_array_indexes(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, imaxa, imaxi, imaxc)
 
             open (newunit = lunwrk, file = trim(name) // '-delwaq03.wrk', form = 'unformatted', access = 'stream')
             write (lunwrk) in

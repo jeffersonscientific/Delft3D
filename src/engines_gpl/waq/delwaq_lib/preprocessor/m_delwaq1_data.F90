@@ -32,7 +32,7 @@ module m_delwaq1_data
     use timers       !   performance timers
 
     use ProcesSet
-    use Workspace
+    use Workspace, only : set_array_indexes
     use Rd_token
 
     use m_sysn          ! System characteristics
