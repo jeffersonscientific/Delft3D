@@ -22,6 +22,8 @@
 !!  rights reserved.
 module m_espgss
     use m_waq_precision
+    use m_calcorder
+    use m_write_error_message, only: write_error_message
 
     implicit none
 
@@ -208,9 +210,9 @@ contains
     integer(kind=int_wp),parameter   :: ip_concdrain = 7
 
     ! input items
-    integer(kind=int_wp)             :: nsrca, nsrcb, nrecin
+    integer(kind=int_wp)              :: nsrca, nsrcb, nrecin
     real(kind=real_wp)                :: delt
-    integer(kind=int_wp)             :: itime
+    integer(kind=int_wp)              :: itime
     real(kind=real_wp)                :: totsurf, fpaved, funpaved, fwater
     real(kind=real_wp)                :: rainfall, ropaved, rounpaved, infilt, exfilt, ssurf, overland
     real(kind=real_wp)                :: ero1, ero2, ero3, facerod
@@ -274,7 +276,7 @@ contains
         nsrca = nint(pmsa(ipoint(ip_nsrca)))
         nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
         nrecin = nint(pmsa(ipoint(ip_nrecin)))
-        if (nrecin/=nrec) call errsys ('Receptors inconsistent',1)
+        if (nrecin/=nrec) call write_error_message ('Receptors inconsistent')
 
         ! pick up constants
         delt = pmsa(ipoint(ip_delt))
@@ -300,7 +302,7 @@ contains
             write (*,*) 'noseg = ',noseg
             write (*,*) 'nofluxrest = ',nofluxrest
             write (*,*) 'noflux = ',noflux
-            call errsys ('NOFLUX has unexpected value',1)
+            call write_error_message ('NOFLUX has unexpected value')
         endif
 
         ! Fluxes Admin

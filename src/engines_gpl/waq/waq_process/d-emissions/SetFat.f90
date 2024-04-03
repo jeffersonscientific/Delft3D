@@ -22,6 +22,7 @@
 !!  rights reserved.
 module m_setfat
     use m_waq_precision
+    use m_evaluate_waq_attribute
 
     implicit none
 
@@ -102,7 +103,7 @@ contains
 
     do iseg = 1 , noseg
 
-        call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
+        call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
         if (iatt1>0) then
 
             decpav20 = pmsa(ipnt(ip_decpav20))
