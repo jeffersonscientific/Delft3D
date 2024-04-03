@@ -48,21 +48,21 @@ contains
     integer(kind=int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
     integer(kind=int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 !
-    integer(kind=int_wp)  :: iseg
+    integer(kind=int_wp) :: iseg
 
     ! PMSA admin
-    integer(kind=int_wp),parameter   :: lins = 6
-    integer(kind=int_wp),parameter   :: louts = 1
-    integer(kind=int_wp)            :: ipnt(lins+louts)    !    Local work array for the pointering
+    integer(kind=int_wp), parameter   :: lins = 6
+    integer(kind=int_wp), parameter   :: louts = 1
+    integer(kind=int_wp)              :: ipnt(lins+louts)    !    Local work array for the pointering
 
     ! pointers to concrete items
-    integer(kind=int_wp),parameter   :: ip_c1 = 1
-    integer(kind=int_wp)parameter   :: ip_c2 = 2
-    integer(kind=int_wp),parameter   :: ip_c3 = 3
-    integer(kind=int_wp),parameter   :: ip_f1 = 4
-    integer(kind=int_wp),parameter   :: ip_f2 = 5
-    integer(kind=int_wp),parameter   :: ip_f3 = 6
-    integer(kind=int_wp),parameter   :: ip_cout = 7
+    integer(kind=int_wp), parameter   :: ip_c1 = 1
+    integer(kind=int_wp), parameter   :: ip_c2 = 2
+    integer(kind=int_wp), parameter   :: ip_c3 = 3
+    integer(kind=int_wp), parameter   :: ip_f1 = 4
+    integer(kind=int_wp), parameter   :: ip_f2 = 5
+    integer(kind=int_wp), parameter   :: ip_f3 = 6
+    integer(kind=int_wp), parameter   :: ip_cout = 7
 
 
     ! input and output items

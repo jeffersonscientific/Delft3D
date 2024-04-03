@@ -52,19 +52,21 @@ contains
     !
     !*******************************************************************************
 
+    integer(kind = int_wp) :: iseg
+
     ! PMSA admin 
-    integer(kind = int_wp),parameter   :: lins = 5
-    integer(kind = int_wp),parameter   :: louts = 2
-    integer(kind = int_wp)            :: ipnt(lins+louts)    !    Local work array for the pointering
+    integer(kind = int_wp), parameter   :: lins = 5
+    integer(kind = int_wp), parameter   :: louts = 2
+    integer(kind = int_wp)             :: ipnt(lins+louts)    !    Local work array for the pointering
 
     ! pointers to concrete items
-    integer(kind = int_wp),parameter   :: ip_ptot  = 1
-    integer(kind = int_wp),parameter   :: ip_plab  = 2
-    integer(kind = int_wp),parameter   :: ip_thick = 3
-    integer(kind = int_wp),parameter   :: ip_poros = 4
-    integer(kind = int_wp),parameter   :: ip_dmden = 5
-    integer(kind = int_wp),parameter   :: ip_qtot  = 6
-    integer(kind = int_wp),parameter   :: ip_flab  = 7
+    integer(kind = int_wp), parameter   :: ip_ptot  = 1
+    integer(kind = int_wp), parameter   :: ip_plab  = 2
+    integer(kind = int_wp), parameter   :: ip_thick = 3
+    integer(kind = int_wp), parameter   :: ip_poros = 4
+    integer(kind = int_wp), parameter   :: ip_dmden = 5
+    integer(kind = int_wp), parameter   :: ip_qtot  = 6
+    integer(kind = int_wp), parameter   :: ip_flab  = 7
 
 
     ! input and output items

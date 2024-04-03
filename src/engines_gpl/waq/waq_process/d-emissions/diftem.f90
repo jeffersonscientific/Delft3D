@@ -51,32 +51,32 @@ contains
 
 !
     !     support variables
-    integer(kind=int_wp) parameter :: lins = 11
-    integer(kind=int_wp) parameter :: line = 1
-    integer(kind=int_wp) parameter :: louts = 3
-    integer(kind=int_wp) parameter :: loute = 0
-    integer(kind=int_wp) parameter :: npmsa = lins+line+louts+loute
+    integer(kind=int_wp), parameter :: lins = 11
+    integer(kind=int_wp), parameter :: line = 1
+    integer(kind=int_wp), parameter :: louts = 3
+    integer(kind=int_wp), parameter :: loute = 0
+    integer(kind=int_wp), parameter :: npmsa = lins+line+louts+loute
     integer            :: ipnt(npmsa)
 
     integer ioq1, ioq2, iseg, iflux
     real    tflux
 
     !     input items
-    integer(kind=int_wp) parameter :: ip_noexf1toW = 1
-    integer(kind=int_wp) parameter :: ip_noexf2toW = 2
-    integer(kind=int_wp) parameter :: ip_tempair = 3
-    integer(kind=int_wp) parameter :: ip_volume = 4
-    integer(kind=int_wp) parameter :: ip_cloudf = 5
-    integer(kind=int_wp) parameter :: ip_period1 = 6
-    integer(kind=int_wp) parameter :: ip_wsin1 = 7
-    integer(kind=int_wp) parameter :: ip_period2 = 8
-    integer(kind=int_wp) parameter :: ip_wsin2 = 9
-    integer(kind=int_wp) parameter :: ip_delt = 10
-    integer(kind=int_wp) parameter :: ip_tempmin = 11
-    integer(kind=int_wp) parameter :: ip_flow = 12
-    integer(kind=int_wp) parameter :: ip_cloudp = 13
-    integer(kind=int_wp) parameter :: ip_wsout1 = 14
-    integer(kind=int_wp) parameter :: ip_wsout2 = 15
+    integer(kind=int_wp), parameter :: ip_noexf1toW = 1
+    integer(kind=int_wp), parameter :: ip_noexf2toW = 2
+    integer(kind=int_wp), parameter :: ip_tempair = 3
+    integer(kind=int_wp), parameter :: ip_volume = 4
+    integer(kind=int_wp), parameter :: ip_cloudf = 5
+    integer(kind=int_wp), parameter :: ip_period1 = 6
+    integer(kind=int_wp), parameter :: ip_wsin1 = 7
+    integer(kind=int_wp), parameter :: ip_period2 = 8
+    integer(kind=int_wp), parameter :: ip_wsin2 = 9
+    integer(kind=int_wp), parameter :: ip_delt = 10
+    integer(kind=int_wp), parameter :: ip_tempmin = 11
+    integer(kind=int_wp), parameter :: ip_flow = 12
+    integer(kind=int_wp), parameter :: ip_cloudp = 13
+    integer(kind=int_wp), parameter :: ip_wsout1 = 14
+    integer(kind=int_wp), parameter :: ip_wsout2 = 15
 
     integer(kind=int_wp) noexf1toW
     integer(kind=int_wp) noexf2toW
