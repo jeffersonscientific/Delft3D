@@ -278,12 +278,12 @@ private
 
          do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
             ! Just-in-time add *config* item for this fraction's bed load sediment transport
-            call addoutval(output_config, idx_const(NUMCONST_MDU*2 + 1 + lsed),                                       &
+            call addoutval(output_config_set, idx_const(NUMCONST_MDU*2 + 1 + lsed),                                       &
                   'Wrihis_constituents', 'cross_section_bedload_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), &
                   'Cumulative bed load sediment transport for fraction '//trim(stmpar%sedpar%namsed(lsed)), &
                   '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
-            output_config%statout(idx_const(NUMCONST_MDU*2 + 1 + lsed))%input_value =     &
-                  output_config%statout(IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT)%input_value
+            output_config_set%statout(idx_const(NUMCONST_MDU*2 + 1 + lsed))%input_value =     &
+                  output_config_set%statout(IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT)%input_value
          end do
       end if
    
@@ -293,12 +293,12 @@ private
 
          do lsed = 1,stmpar%lsedsus    ! Making suspended load on crosssections per fraction
             ! Just-in-time add *config* item for this fraction's suspended load sediment transport
-            call addoutval(output_config, idx_const(NUMCONST_MDU*2 + 1 + stmpar%lsedtot + 1 + lsed), &
+            call addoutval(output_config_set, idx_const(NUMCONST_MDU*2 + 1 + stmpar%lsedtot + 1 + lsed), &
                   'Wrihis_constituents', 'cross_section_suspended_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), &
                   'Cumulative suspended load sediment transport for fraction '//trim(stmpar%sedpar%namsed(lsed)), &
                   '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
-            output_config%statout(idx_const(NUMCONST_MDU*2 + 1 + stmpar%lsedtot + 1 + lsed))%input_value =     &
-                  output_config%statout(IDX_HIS_OBSCRS_SED_STRANSPORT_PERFRAC_ABSTRACT)%input_value
+            output_config_set%statout(idx_const(NUMCONST_MDU*2 + 1 + stmpar%lsedtot + 1 + lsed))%input_value =     &
+                  output_config_set%statout(IDX_HIS_OBSCRS_SED_STRANSPORT_PERFRAC_ABSTRACT)%input_value
          end do
       end if
    end if
