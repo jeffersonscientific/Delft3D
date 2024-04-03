@@ -5,7 +5,6 @@ Copyright (C)  Stichting Deltares, 2013
 """
 
 import os
-from typing import Optional
 import urllib.parse as parse
 from ftplib import FTP, error_perm
 
@@ -46,7 +45,7 @@ class FTPHandler(IHandler):
         from_path: str,
         to_path: str,
         credentials: Credentials,
-        version: Optional[str],
+        version: str,
         logger: ILogger,
     ):
         logger.debug(f"setting up connection to FTP: {from_path}")

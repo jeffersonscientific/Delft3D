@@ -6,7 +6,6 @@ Copyright (C)  Stichting Deltares, 2013
 
 import os
 from distutils import dir_util
-from typing import Optional
 
 from src.config.credentials import Credentials
 from src.config.types.handler_type import HandlerType
@@ -68,7 +67,7 @@ class LocalNetHandler(IHandler):
         from_path: str,
         to_path: str,
         credentials: Credentials,
-        version: Optional[str],
+        version: str,
         logger: ILogger,
     ):
         handler = ResolveHandler.detect(from_path, logger, credentials)

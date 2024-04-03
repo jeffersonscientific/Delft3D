@@ -321,7 +321,7 @@ class TestBenchParameterParser:
         parser.add_argument(
             "--server-base-url",
             help="e.g. SVN, S3, Git LFS",
-            default="https://s3.deltares.nl/dsc-testbench",
+            default="https://repos.deltares.nl/repos/DSCTestbench/trunk",
             required=False,
             dest="server_base_url",
         )
