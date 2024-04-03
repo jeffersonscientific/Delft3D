@@ -84,7 +84,7 @@ contains
 
         !       THIS RELIES ON THE FIRST NOSEG EXCHANGES BEING THE OUTFLOWS OF THE SEGMENTS!!!!
         flow   = pmsa(ipnt(5))
-        if (rivlen.gt.1.) then
+        if (rivlen>1.) then
             velocity = abs(flow) / (volume/rivlen)
         else
             velocity = 0.1

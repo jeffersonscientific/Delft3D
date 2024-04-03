@@ -98,7 +98,7 @@ contains
     do iseg = 1 , noseg
 
         call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
-        if (iatt1.gt.0) then
+        if (iatt1>0) then
 
             fUnpaved = pmsa(ipnt(ip_fUnpaved))
             Thickness = pmsa(ipnt(ip_Thickness )) / 1000. ! from mm to m
@@ -112,7 +112,7 @@ contains
 
             ! kg      m2   -        m          -      kg/m3
             soildm = Area*fUnpaved*Thickness*(1.-Poros)*RhoDM
-            if (soildm.gt.1.0) then
+            if (soildm>1.0) then
                 ! mg/kg       mg    / kg
                 QSim = 1000. * (Soi+Sop) / soildm
             else

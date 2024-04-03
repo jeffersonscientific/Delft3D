@@ -103,7 +103,7 @@ contains
     do iseg = 1 , noseg
 
         call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
-        if (iatt1.gt.0) then
+        if (iatt1>0) then
 
             decpav20 = pmsa(ipnt(ip_decpav20))
             decunp20 = pmsa(ipnt(ip_decunp20))

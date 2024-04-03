@@ -274,7 +274,7 @@ contains
         nsrca = nint(pmsa(ipoint(ip_nsrca)))
         nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
         nrecin = nint(pmsa(ipoint(ip_nrecin)))
-        if (nrecin.ne.nrec) call errsys ('Receptors inconsistent',1)
+        if (nrecin!=nrec) call errsys ('Receptors inconsistent',1)
 
         ! pick up constants
         delt = pmsa(ipoint(ip_delt))
@@ -293,7 +293,7 @@ contains
         offset_srcb = offset_srca + nsrca*(nopar_srca+nrec)  ! data for sources type B
         offset_conc = offset_srcb + nsrcb*(nopar_srcb+nrec)  ! Concentration
         lins  = offset_conc + nrec                   ! SUM
-        if (noflux.lt.(nrec*(1+nsrca+nsrcb)+nofluxrest)) then  ! if other processes have fluxes too, we can not demand equality
+        if (noflux<(nrec*(1+nsrca+nsrcb)+nofluxrest)) then  ! if other processes have fluxes too, we can not demand equality
             write (*,*) 'nrec  = ',nrec
             write (*,*) 'nsrca = ',nsrca
             write (*,*) 'nsrcb = ',nsrcb
@@ -379,7 +379,7 @@ contains
         do iseg = 1 , noseg
             river            = nint(pmsa(ipr))
             downstream(iseg) = nint(pmsa(ipd))
-            if (river.gt.0) then
+            if (river>0) then
                 noriv = noriv + 1
                 seg2riv(iseg) = noriv
             endif
@@ -487,10 +487,10 @@ contains
           losses = emisvar*emisfacA(isrc,iseg)*1000.   ! kg/d to g/d
 
           ! losses per sc
-          if (sumlocator(isrc).gt.0.0) then
+          if (sumlocator(isrc)>0.0) then
             do irec = 1,nrec
                 flux = losses*frac2recA(irec,isrc,iseg)*locator(isrc,iseg)/sumlocator(isrc) / 86400.
-                if (flux.lt.0.0) then ! extraction is prescribed, limit to store plus earlier sources
+                if (flux<0.0) then ! extraction is prescribed, limit to store plus earlier sources
                     mass = currentmass(irec)
                     limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
                     flux = max(flux,-limit)
@@ -517,7 +517,7 @@ contains
           do irec = 1,nrec
               iflux = iflux + 1
               flux = losses*frac2recB(irec,isrc,iseg) / 86400.
-              if (flux.lt.0.0) then ! extraction is prescribed, limit to store plus earlier sources
+              if (flux<0.0) then ! extraction is prescribed, limit to store plus earlier sources
                     mass = currentmass(irec)
                     limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
                     flux = max(flux,-limit)
@@ -584,7 +584,7 @@ contains
       fluxwash = (mass / delt + totflxin(rec_pav) - fluxloss)*fwashoff
 
       ! some extra output
-      if (ropaved.gt.0.0) then
+      if (ropaved>0.0) then
           concwash  = fluxwash / ropaved ! g/m3 = g/s * m3/s
       else
           concwash = 0.0
@@ -641,7 +641,7 @@ contains
       fluxroun = fluxunbound * fdisp * froun
 
       ! some extra output
-      if (rounpaved.gt.0.0) then
+      if (rounpaved>0.0) then
           concroun  = fluxroun / rounpaved ! g/m3 = g/s * m3/s
       else
           concroun = 0.0
@@ -663,8 +663,8 @@ contains
 
       ! COMBINED SEWERS ---------------------------------------------------------------------------------
       ! (local leakage) (or CSO): postive is a %, negative a rainfall threshold
-      if (leakage.lt.-0.1) then
-          if (ra_mmperday.gt.(-leakage)) then   ! threshold on the mm per day value
+      if (leakage<-0.1) then
+          if (ra_mmperday>(-leakage)) then   ! threshold on the mm per day value
               leakage = 1.0
           else
               leakage  = 0.0
@@ -676,7 +676,7 @@ contains
       fr_unc = max(1.0 - FrTreated ,0.0)
 
       ! fraction to effluent/sludge for WW collected and treated
-      if (FrTreated.gt.0.0001) then
+      if (FrTreated>0.0001) then
           fr_Eff =  FrTreat1/FrTreated*Eff_Treat1 + FrTreat2/FrTreated*Eff_Treat2 + FrTreat3/FrTreated*Eff_Treat3
           fr_Sld = (FrTreat1/FrTreated*Sld_Treat1 + FrTreat2/FrTreated*Sld_Treat2 + FrTreat3/FrTreated*Sld_Treat3)*(1.0-fSldgRem)
       else
@@ -695,7 +695,7 @@ contains
 
       ! water balance to be able to calculate a concentration
       ww2sew = pop * pcww * fwwsew / 1000. / 86400. ! convert from l/cap/d to m3/s
-      if (ww2sew+ro2sew.gt.0.0) then
+      if (ww2sew+ro2sew>0.0) then
           concsew = totflxin(rec_sew) / (ww2sew+ro2sew)
       else
           concsew = 0.0
@@ -765,7 +765,7 @@ contains
       ! for Soi
       maxflux  = mass / delt + totflxin(rec_soi)
       courant = (fluxloss+fluxexfa+fluxssfa+fluximmo+fluxeroa)/maxflux
-      if (courant.gt.0.99) then
+      if (courant>0.99) then
           fluxloss = fluxloss/courant
           fluxexfa = fluxexfa/courant
           fluxssfa = fluxssfa/courant
@@ -775,7 +775,7 @@ contains
       ! for Soilpass
       maxflux  = masspas / delt + fluximmo
       courant = (fluxexfp+fluxssfp+fluxerop)/maxflux
-      if (courant.gt.0.99) then
+      if (courant>0.99) then
           fluxexfp = fluxexfp/courant
           fluxssfp = fluxssfp/courant
           fluxerop = fluxerop/courant
@@ -803,14 +803,14 @@ contains
 
       ! to next compartments in this column and same compartment in next cell
       totflxin(rec_sfw) = totflxin(rec_sfw) + fluxeroa + fluxerop + fluxexfa + fluxexfp
-      if (downstream(iseg).gt.0) then
+      if (downstream(iseg)>0) then
       flhorsoi(downstream(iseg)) = flhorsoi(downstream(iseg)) + fluxssfa
       flhorsop(downstream(iseg)) = flhorsop(downstream(iseg)) + fluxssfp
       endif
 
       ! ENDPOINT SURFACE WATER --------------------------------------
 
-      if (seg2riv(iseg).gt.0.or.downstream(iseg).le.0) then
+      if (seg2riv(iseg)>0.or.downstream(iseg)<=0) then
 
           ! river cell, emissions output, no storage
           fluxexp = totflxin(rec_sfw) + flhorsfw(iseg)

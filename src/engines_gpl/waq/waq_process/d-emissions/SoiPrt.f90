@@ -87,7 +87,7 @@ contains
     do iseg = 1 , noseg
 
         call dhkmrk(1,iknmrk(iseg),iatt1) ! pick up first attribute
-        if (iatt1.gt.0) then
+        if (iatt1>0) then
 
             Poros = pmsa(ipnt(ip_Poros ))
             RhoDM = pmsa(ipnt(ip_RhoDM ))
@@ -96,10 +96,10 @@ contains
             lKoc = pmsa(ipnt(ip_lKoc ))
 
             ! simple partitioning
-            if (Kd.gt.0.0) then
+            if (Kd>0.0) then
                 ! m3/kg
                 Kdcalc = Kd
-            elseif (lKoc.gt.0.0) then ! convert from log(l/kg)
+            elseif (lKoc>0.0) then ! convert from log(l/kg)
                 Kdcalc = (10.**(lKoc))/1000.*fOM
             else
                 Kdcalc = 0.0

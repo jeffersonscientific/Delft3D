@@ -1055,7 +1055,7 @@ contains
 
         enddo
 
-        ! if input grid .ne. bottom grid then expand to bottom grid (could be over a multiple reference?)
+        ! if input grid != bottom grid then expand to bottom grid (could be over a multiple reference?)
 
         if (input_grid /= i_bottom_grid) then
             max_nolay = maxval(GridPs%Pointers(input_grid)%nolay_var)

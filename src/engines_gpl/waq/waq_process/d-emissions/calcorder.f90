@@ -49,7 +49,7 @@ contains
 
     ! quick exit in case there is no network defined (all downstream = -99)
     ! set simorder unchanged
-    if (downstream(1).le.-98.) then
+    if (downstream(1)<=-98.) then
         do iseg = 1,noseg
             simorder(iseg) = iseg
         enddo
@@ -60,7 +60,7 @@ contains
     hasbeendone = .false.
     canbedone = .true.
     do iseg = 1,noseg
-        if (downstream(iseg).gt.0) canbedone(downstream(iseg)) = .false.
+        if (downstream(iseg)>0) canbedone(downstream(iseg)) = .false.
     enddo
 
     ! deal with these cells without upstream cells first
@@ -77,7 +77,7 @@ contains
         ! check which cells have all upstreams done
         canbedone = .true.
         do iseg = 1,noseg
-            if (downstream(iseg).gt.0) then
+            if (downstream(iseg)>0) then
                 if (.not.hasbeendone(iseg)) canbedone(downstream(iseg)) = .false.
             endif
         enddo

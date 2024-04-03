@@ -500,7 +500,7 @@ module m_debgrz_protist
                ! Commented out: do we need this code? See issue DELWAQ-597.
                ! if too little food (Food<Xk/1000) then diapause
                !              f_max = max(f_S,f_B)
-               !              if (f_max .lt. Dummy) then
+               !              if (f_max < Dummy) then
                !                  kT=0.
                !              endif
 

@@ -112,7 +112,7 @@ contains
                     IP = IPOINT(2 + 7 * NALG + 2) + (ISEG - 1) * INCREM(2 + 7 * NALG + 2)
                     PMSA (IP) = SEDDM
 
-                    !         NO LONGER Define fluxes only for Bloom (NALG .GT. 6)
+                    !         NO LONGER Define fluxes only for Bloom (NALG > 6)
 
                     IF (DEPTH > 0.0) THEN
                         FL(IFLUX + 1) = SEDCAR / DEPTH

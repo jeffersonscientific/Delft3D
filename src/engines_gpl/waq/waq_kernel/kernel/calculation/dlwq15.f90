@@ -50,9 +50,9 @@ contains
         !>                          that all get the same value.\n
         !>                          The user wasteload dll is called. The user may insert dynamic wasteload processing.\n
         !>                          The normal processing takes place if iwstkind (see below) is zero:
-        !>                             - if wasteflow .gt. 0 then load is wasteflow * prescribed value
+        !>                             - if wasteflow > 0 then load is wasteflow * prescribed value
         !>                             - if wasteflow .eq. 0 then load is prescribed value
-        !>                             - if wasteflow .lt. 0 then
+        !>                             - if wasteflow < 0 then
         !>                                   - withdrawal is wasteflow * model-conc if prescribed value eq 0.0\n
         !>                                   - withdrawal is wasteflow * prescribed value if that ne 0.0\n
         !>                             .
