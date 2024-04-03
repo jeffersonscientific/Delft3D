@@ -268,16 +268,21 @@ contains
    
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
-   use m_statistical_callback
+      use m_statistical_callback
+      use m_partitioninfo, only: are_any_crosssections_across_multiple_partitions
+      use m_monitoring_crosssections, only: crs
+      use MessageHandling, only: mess, LEVEL_WARN
    
       type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
       type(t_output_quantity_config), target,                      intent(in   ) :: output_config !< Output quantity config linked to this output item, a pointer to it will be stored in the new output item.
       double precision, pointer, dimension(:),                     intent(in   ) :: data_pointer  !< Pointer to output quantity data ("source input")
       procedure(process_data_double_interface), optional, pointer, intent(in   ) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
       
-      type(t_output_variable_item) :: item ! new item to be added
+      type(t_output_variable_item)                       :: item ! new item to be added
       character(len=len_trim(output_config%input_value)) :: valuestring
-      integer :: ierr
+      character(len=256)                                 :: operation_string
+      integer                                            :: ierr
+      
       valuestring = output_config%input_value
 
       do while (len_trim(valuestring) > 0) 
@@ -287,6 +292,29 @@ contains
          else if (item%operation_type == SO_NONE) then
             cycle
          else
+            
+            select case (item%operation_type)
+            case default
+               operation_string = ''
+            case (SO_CURRENT)
+               operation_string = 'current'
+            case (SO_MIN)
+               operation_string = 'min'
+            case (SO_MAX)
+               operation_string = 'max'
+            case (SO_AVERAGE)
+               operation_string = 'average'
+            end select
+      
+            ! Disable statistical output items on cross-sections if any cross-sections lie across multiple partitions
+            if (output_config%location_specifier == UNC_LOC_OBSCRS .and. &
+                are_any_crosssections_across_multiple_partitions(crs) .and. &
+                (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX .or. item%operation_type == SO_AVERAGE)) then
+               call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_string) // ')"' // &
+                                    ' as at least one observation cross-section lies across multiple partitions, which could produce invalid output')
+               cycle
+            end if
+            
             output_set%count = output_set%count + 1
             if (output_set%count > output_set%size) then
                call realloc_stat_output(output_set)

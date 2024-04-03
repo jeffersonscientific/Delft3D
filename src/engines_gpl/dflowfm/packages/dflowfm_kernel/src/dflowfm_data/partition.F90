@@ -5292,6 +5292,28 @@ endif
  
 end function  get_list_size
 
+!> Check if any cross-sections lie across multiple partitions
+!! This is currently used for statistical output, to disable output items that
+!! would in this case produce incorrect results (as integrated values on cross-sections
+!! are only reduced every user time step, so min/max in time would not be valid)
+function are_any_crosssections_across_multiple_partitions(crs) result(res)
+   use m_monitoring_crosssections, only: tcrs
+  
+   type(tcrs), intent(in) :: crs(:)    !< The structure with all cross-sections
+   logical                :: res       !< Whether or not any cross-sections lie across multiple partitions
+   
+   integer :: icrs
+   
+   res = .false.
+   
+   do icrs = 1, size(crs)
+      if (.not. are_flowlinks_in_single_partition(crs(icrs)%path%ln)) then
+         res = .true.
+      end if
+   end do
+  
+end function are_any_crosssections_across_multiple_partitions
+
 !> Check if a set of flowlinks is contained entirely within a single partition
 function are_flowlinks_in_single_partition(flowlinks) result(res)
    use mpi
