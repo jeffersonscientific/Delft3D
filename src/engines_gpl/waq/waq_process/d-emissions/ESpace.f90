@@ -26,9 +26,6 @@
       subroutine ESPGSS     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-!DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'ESPGSS' :: ESPGSS
-!*******************************************************************************
-! Note: name has been changed to avoid conflict with process ESPACE in standard Processes Library
 !
       IMPLICIT NONE
 !

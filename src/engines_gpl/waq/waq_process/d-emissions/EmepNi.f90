@@ -25,7 +25,6 @@
       subroutine EMEPNI     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-!DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'EMEPNI' :: EMEPNI
 !*******************************************************************************
 !
       IMPLICIT NONE
