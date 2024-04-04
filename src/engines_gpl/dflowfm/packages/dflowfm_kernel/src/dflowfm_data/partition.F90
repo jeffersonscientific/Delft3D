@@ -3781,7 +3781,7 @@ end subroutine partition_make_globalnumbers
       
       integer,                                     intent(in)    :: numvals      !< number of values
       integer,                                     intent(in)    :: numobs       !< number of observation stations
-      double precision, dimension(numobs,numvals), intent(inout) :: valobs       !< values at obervations stations to be outputte
+      double precision, dimension(numobs,numvals), intent(inout) :: valobs       !< values at obervations stations to be output.
       
       double precision, parameter                                :: dsmall = -huge(1d0)
       integer                                                    :: iobs, ival
