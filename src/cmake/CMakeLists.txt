@@ -17,8 +17,10 @@ include(functions.cmake)
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 # main repository directory
-get_filename_component(PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
-get_filename_component(dir ${PARENT_DIR} DIRECTORY)
+cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
+cmake_path(GET PARENT_DIR PARENT_PATH dir)
+
+
 # Set unit test root directory
 set(unit_tests_dir ${dir}/test/unit_test) # This points to the location of OSS/test
 
