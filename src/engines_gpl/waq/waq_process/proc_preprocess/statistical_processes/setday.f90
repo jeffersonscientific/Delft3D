@@ -171,7 +171,7 @@
 
       item_desc = 'start time for statistics'
       item_ind = 2
-      item_name = 'TINIT'(1:10)//aProcesProp%name(1:10)
+      item_name = 'TINIT'//aProcesProp%name(1:10)
       call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, & 
       IOTYPE_SEGMENT_INPUT)
 !
@@ -194,7 +194,7 @@
 
       item_desc = 'period of time averaged output'
       item_ind = 3
-      item_name = 'PERIOD'(1:10)//aProcesProp%name(1:10)
+      item_name = 'PERIOD'//aProcesProp%name(1:10)
       call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name, & 
       IOTYPE_SEGMENT_INPUT)
 !
