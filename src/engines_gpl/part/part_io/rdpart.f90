@@ -84,6 +84,8 @@ contains
       character( 32)                 filvers         ! to read the file version number
       character( 32)                 cwork           ! small character workstring
       character(256)                 cbuffer         ! character buffer
+      character(256)                 line! character buffer
+      integer  ( int_wp)                  cindex, iindex  ! indices for commas in string
       integer  ( int_wp )                 ibuffer         ! integer buffer
       integer  ( int_wp )                 i, k            ! loop variables
       integer  ( int_wp )                 ios             ! help variable io-status
@@ -686,6 +688,7 @@ contains
       chronrev = .false.
       selstage = 0.0
       leeway = .false. 
+      leeway_csvfile = ""
       leeway_multiplier = 0.
       leeway_modifier = 0.
       leeway_angle = 0.0
@@ -881,6 +884,30 @@ contains
                   leeway = .true.
                   apply_wind_drag = .true.
                   write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
+               case ('leeway_csvfile')
+                  if (modtyp /= 1) goto 9408
+                  write ( lun2, '(/a)' ) '  Found keyword "leeway_csvfile".'
+                  if ( gettoken( leeway_csvfile     , ierr2 ) .ne. 0 ) goto 9410 ! Give stage for release
+
+                  leeway = .true.
+                  apply_wind_drag = .true.
+                  write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
+                !  leeway_csvfile = leeway_csvfile(1:len_trim(leeway_csvfile))
+                  open( newunit = lunfil, file = leeway_csvfile )
+                  read( lunfil, '(256a)') line
+                  read(line,*)leeway_id
+!                    if ( gettoken( leeway_id  , ierr2 ) .ne. 0 ) goto 9410 ! Give stage for release
+                  do while ( substi(1) .ne. leeway_id ) 
+                    read( lunfil, '(256a)' ) line
+                    read(line,*)leeway_id
+                  enddo
+                  cindex = 1
+                  do iindex = 1, 5
+                    cindex = cindex + index(line(cindex:) , ",")
+                  enddo
+                  read(line(cindex:), *)leeway_multiplier, leeway_modifier, leeway_angle
+                  write ( lun2, 3601 )leeway_multiplier, leeway_modifier, leeway_angle
+                  close( lunfil )
               case default
                   write ( lun2, '(/a,a)' ) '  Unrecognised keyword: ', trim(cbuffer)
                   goto 9000
@@ -2566,6 +2593,8 @@ contains
 9408  write(lun2,*) ' Error: found "Leeway" keyword, but this is not a tracer model (modtyp /= 1 ) '
       call stop_exit(1)
 9409  write(lun2,*) ' Error: expected real!'
+      call stop_exit(1)
+9410  write(lun2,*) ' Error: Leeway file not found!'
       call stop_exit(1)
       end
 

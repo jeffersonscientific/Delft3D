@@ -157,7 +157,7 @@ contains
       real   (sp), pointer    :: xcor  ( : )         ! bottom coordinate x
       real   (sp), pointer    :: ycor  ( : )         ! bottom coordinate y
       real   (sp), intent(inout) :: chezy               ! chezy coefficient (is set to 50 if .le. 1.0)
-      real   (sp), intent(inout) :: defang              ! deflection angle for 3d oil simulations
+      real   (sp), intent(inout) :: defang              ! deflection angle for 3d oil simulations, or if leeway is used
                                                         ! enters in degrees, becomes radians
       real   (sp), pointer :: dfact ( : )         ! decay factor ( is exp(-decays*t) )
       real   (sp), pointer :: dps   ( : )         ! depths
@@ -369,6 +369,7 @@ contains
 
       integer(int_wp )   :: nboomtry
       integer(int_wp )   :: nscreenstry
+      real(sp)      :: leeway_ang_sign
       logical       :: screensfirsttry
       logical       :: leftside
 
@@ -401,12 +402,17 @@ contains
          iboomint = 0
          sq6    = sqrt( 6.0 )
          twopi  = 8.0 * atan(1.0)
-         defang = defang * twopi / 360.0    !  deflection angle oil modelling
-         coriol = abs(defang) .ge. 1.0e-6   !  deflection from the equator aparently
          twolay = modtyp .eq. model_two_layer_temp
          oilmod = modtyp .eq. model_oil
          threed = layt .gt. 1
-         cdrag  = drand(3) / 100.0          !  wind drag as a fraction
+         cdrag  = drand(3) / 100.0          !  wind drag converted to a fraction
+         if ( oilmod ) then 
+            defang = defang * twopi / 360.0    !  deflection angle oil modelling
+         elseif ( leeway ) then
+            defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
+            cdrag  = leeway_multiplier          !  windage (leeway), given as a fraction
+      endif
+         coriol = abs(defang) .ge. 1.0e-6   !  deflection from the equator aparently
          ptlay  = 1.0 - pblay
          dspmin = 1.0e+10
          dspmax = 0.0
@@ -1260,11 +1266,15 @@ contains
                if (kp==ktopp) then
                   zpabs = zp * locdep(n0, kp)
                   if (zpabs .lt. max_wind_drag_depth) then
-                     vxw  = - wvelo(n0) * sin( wdirr + sangl )
-                     vyw  = - wvelo(n0) * cos( wdirr + sangl )
+                     leeway_ang_sign = float(mod(ipart, 3) - 1)
+!                     write(*,*) 'particle nr: ',ipart, ' sign: ',  leeway_ang_sign ! to distribute negative positive and 0 angle over the particles
+                     vxw  = - wvelo(n0) * sin( wdirr + leeway_ang_sign * defang + sangl )
+                     vyw  = - wvelo(n0) * cos( wdirr + leeway_ang_sign * defang + sangl )
 !                    drag on the difference vector: cd * (wind - flow)
-                     xnew = xnew  + (cdrag*(vxw-vxr)/dxp) * itdelt    !
-                     ynew = ynew  + (cdrag*(vyw-vyr)/dyp) * itdelt    !
+                     xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier)/dxp) * itdelt    !
+                     ynew = ynew  + ((cdrag*(vyw-vyr) + leeway_modifier)/dyp) * itdelt    !
+
+
                   end if
                end if
             end if

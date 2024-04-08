@@ -388,8 +388,9 @@ module spec_feat_par
       
 ! leeway implementation  
       logical                  :: leeway            ! using the leeway for SAR functionality
+      character( 256)          :: leeway_csvfile    ! filename containing predefined leeway factors
+      character( 20)           :: leeway_id         ! identifier of the leeway object
       real     ( sp)           :: leeway_multiplier ! leeway multiplier (factor)
       real     ( sp)           :: leeway_modifier   ! leeway modifier (correction)
       real     ( sp)           :: leeway_angle      ! leeway divergence angle
-
 end module spec_feat_par
