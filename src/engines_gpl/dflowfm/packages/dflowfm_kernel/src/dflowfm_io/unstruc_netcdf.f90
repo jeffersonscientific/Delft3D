@@ -3020,7 +3020,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_spirint, id_hu, &
         id_ucxq, id_ucyq, &
         id_ucxqbnd, id_ucyqbnd, &
-        id_fvcoro
+        id_fvcoro, &
+        id_rho, id_rho_bnd
 
     integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
     integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
@@ -3054,6 +3055,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     integer,          dimension(:,:,:), allocatable :: work3di
     type(t_structure), pointer                    :: pstru
 
+    integer, allocatable, dimension(:)   :: id1, id1_bnd
 
     ! Grid and flow geometry
     ! hk: not now  call unc_write_net_filepointer(irstfile)      ! Write standard net data as well
@@ -3169,6 +3171,15 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
       endif
     endif
 
+    ! 2D or 3D vector
+    ! We should tr to reduce the 2D-3D branching in this routine. We can do this by using this vector. 
+    if (kmx > 0) then
+       id1 = (/ id_laydim, id_flowelemdim , id_timedim /)
+    else
+       id1 = (/ id_flowelemdim , id_timedim /)
+    endif
+    id1_bnd = (/ id_bnddim, id_timedim/)
+    
     call process_structures_saved_parameters(DEFINE_NCDF_DATA_ID, irstfile)
 
     ! Definition and attributes of size of latest timestep
@@ -3563,6 +3574,19 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
           if (jarstbnd > 0 .and. ndxbnd > 0) then
              call add_att_sediment(id_sf1_bnd,stmpar%lsedsus,id_laydim,id_bnddim,id_timedim,irstfile,'_bnd','FlowElem_xbnd FlowElem_ybnd')
           endif 
+          ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
+          if (stmpar%morpar%densin) then
+             ierr = nf90_def_var(irstfile, 'rho',  nf90_double, id1 , id_rho)
+             ierr = nf90_put_att(irstfile, id_rho,   'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+             ierr = nf90_put_att(irstfile, id_rho,   'long_name'    , 'Water density')
+             ierr = nf90_put_att(irstfile, id_rho,   'units'        , 'kg m-3')             
+             if (jarstbnd > 0 .and. ndxbnd > 0) then
+                ierr = nf90_def_var(irstfile, 'rho_bnd',  nf90_double, id1_bnd , id_rho_bnd) !!!! fill id1_bnd
+                ierr = nf90_put_att(irstfile, id_rho_bnd,   'coordinates'  , 'FlowElem_xbnd FlowElem_ybnd')
+                ierr = nf90_put_att(irstfile, id_rho_bnd,   'long_name'    , 'Water density at boundaries')
+                ierr = nf90_put_att(irstfile, id_rho_bnd,   'units'        , 'kg m-3')    
+             endif !(jarstbnd > 0 .and. ndxbnd > 0) then
+          endif
       endif
       !
       ierr = nf90_def_var(irstfile, 'mor_bl',  nf90_double, (/ id_flowelemdim , id_timedim /) , id_morbl)
@@ -4572,28 +4596,28 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
           !Internal cells
           allocate(dum(ndxi))
           do j=ISED1,ISEDN
-             if (kmx > 0) then
+             if (kmx > 0) then !3D
                 do kk=1,ndxi
                    call getkbotktop(kk,kb,kt)
                    call getlayerindices(kk, nlayb, nrlay)
                    do k = kb,kt
                       work1(k-kb+nlayb,kk) = sed(j-ISED1+1,k) 
-                   enddo
-                enddo
+                   enddo !k
+                enddo !kk
                 ierr = nf90_put_var(irstfile, id_sf1(j-ISED1+1), work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
-             else
+             else !2D
                 do kk=1,ndxi
                    dum(kk) = sed(j-ISED1+1,kk)
-                enddo
+                enddo !kk
                 ierr = nf90_put_var(irstfile, id_sf1(j-ISED1+1), dum, (/ 1, itim /), (/ ndxi, 1 /) )
-             endif
-          enddo
+             endif !kmx
+          enddo !j
           if (allocated(dum)) deallocate(dum)
           !Boundary cells
           if (jarstbnd > 0 .and. ndxbnd > 0) then
               allocate(dum(ndxbnd))
               do j=ISED1,ISEDN
-                 if (kmx > 0) then
+                 if (kmx > 0) then !3D
                     i=0
                     do kk=ndxi+1,ndx
                        i=i+1 
@@ -4601,17 +4625,49 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
                        call getlayerindices(kk, nlayb, nrlay)
                        do k = kb,kt
                           work1(k-kb+nlayb,i) = sed(j-ISED1+1,k) 
-                       enddo
-                    enddo
+                       enddo !k
+                    enddo !kk
                     ierr = nf90_put_var(irstfile, id_sf1_bnd(j-ISED1+1), work1(1:kmx,1:ndxbnd), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
-                 else
+                 else !2D
                     dum= sed(j-ISED1+1,ndxi+1:ndx)
                     ierr = nf90_put_var(irstfile, id_sf1_bnd(j-ISED1+1), dum, (/ 1, itim /), (/ ndxbnd, 1 /) )
-                 endif
-              enddo
+                 endif !kmx
+              enddo !j
               if (allocated(dum)) deallocate(dum)
-          endif
-       endif
+          endif !(jarstbnd > 0 .and. ndxbnd > 0)
+          ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
+          if (stmpar%morpar%densin) then
+             if (kmx > 0) then !3D
+                work1 = dmiss
+                do kk=1,ndxi
+                   call getkbotktop(kk,kb,kt)
+                   call getlayerindices(kk, nlayb, nrlay)
+                   do k = kb,kt
+                      work1(k-kb+nlayb,kk) = rho(k)
+                   enddo
+                enddo
+                ierr = nf90_put_var(irstfile, id_rho, work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
+             else !2D
+                ierr = nf90_put_var(irstfile, id_rho, rho(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
+             endif !(kmx > 0)
+             !rho at boundaries
+             if (jarstbnd > 0 .and. ndxbnd > 0) then
+                if (kmx > 0) then !3D
+                   work1 = dmiss
+                   do kk=ndxi+1,ndx
+                      call getkbotktop(kk,kb,kt)
+                      call getlayerindices(kk, nlayb, nrlay)
+                      do k = kb,kt
+                         work1(k-kb+nlayb,kk) = rho(k)
+                      enddo
+                   enddo
+                   ierr = nf90_put_var(irstfile, id_rho_bnd, work1(1:kmx,1:ndxbnd), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
+                else !2D
+                   ierr = nf90_put_var(irstfile, id_rho_bnd, rho(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
+                endif !(kmx > 0)
+             endif
+          endif !(stmpar%morpar%densin)
+       endif !(stmpar%lsedsus .gt. 0)
        ! morbl
        ierr = nf90_put_var(irstfile, id_morbl, bl, (/1 , itim/),(/ndxi, 1/))
        ierr = nf90_put_var(irstfile, id_morft, stmpar%morpar%morft, (/ itim /))
