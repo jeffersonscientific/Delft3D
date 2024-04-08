@@ -269,7 +269,7 @@ contains
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
       use m_statistical_callback
-      use m_partitioninfo, only: are_any_crosssections_across_multiple_partitions
+      use m_partitioninfo, only: any_crosssections_lie_across_multiple_partitions
       use m_monitoring_crosssections, only: crs
       use MessageHandling, only: mess, LEVEL_WARN
    
@@ -308,7 +308,7 @@ contains
       
             ! Disable statistical output items on cross-sections if any cross-sections lie across multiple partitions
             if (output_config%location_specifier == UNC_LOC_OBSCRS .and. &
-                are_any_crosssections_across_multiple_partitions(crs) .and. &
+                any_crosssections_lie_across_multiple_partitions(crs) .and. &
                 (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX .or. item%operation_type == SO_AVERAGE)) then
                call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_string) // ')"' // &
                                     ' as at least one observation cross-section lies across multiple partitions, which could produce invalid output')
