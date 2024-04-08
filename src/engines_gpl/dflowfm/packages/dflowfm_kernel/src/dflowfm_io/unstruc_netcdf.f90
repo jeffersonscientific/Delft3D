@@ -3039,6 +3039,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     double precision, allocatable, dimension(:)   :: tmp_x, tmp_y, tmp_s0, tmp_s1, tmp_bl, tmp_sa1, tmp_tem1
     double precision, allocatable, dimension(:)   :: tmp_squ, tmp_sqi
     double precision, allocatable, dimension(:)   :: tmp_ucxq, tmp_ucyq
+    double precision, allocatable, dimension(:)   :: tmp_rho
 
     character(len=8) :: numformat
     character(len=2) :: numtrastr, numsedfracstr
@@ -12995,7 +12996,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
                id_morft,                         &
                id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
                id_ucxqbnd, id_ucyqbnd, &
-               id_fvcoro
+               id_fvcoro, &
+               id_rhobnd
 
     integer :: id_tmp
     integer :: layerfrac, layerthk
@@ -13016,6 +13018,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     double precision, allocatable        :: tmp_s1(:), tmp_bl(:), tmp_s0(:)
     double precision, allocatable        :: tmp_sqi(:), tmp_squ(:)
     double precision, allocatable        :: tmp_ucxq(:), tmp_ucyq(:)
+	double precision, allocatable        :: tmp_rho(:)
     double precision, allocatable        :: rst_bodsed(:,:), rst_mfluff(:,:), rst_thlyr(:,:)
     double precision, allocatable        :: rst_msed(:,:,:)
     integer,          allocatable        :: itmpvar(:)
@@ -13326,9 +13329,10 @@ subroutine unc_read_map_or_rst(filename, ierr)
     ! Read qa (flow link), optional: only from rst file, so no error check
     ierr = get_var_and_shift(imapfile, 'qa', qa, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                              um%ilink_own, um%ilink_merge)
-    ucxyq_read_rst=.true.
 
     ! Read ucxq (flow elem), optional: only from rst file, so no error check
+    ucxyq_read_rst=.true.
+
     ierr = get_var_and_shift(imapfile, 'ucxq', ucxq, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
                              um%inode_own, um%inode_merge)
 
@@ -13342,6 +13346,16 @@ subroutine unc_read_map_or_rst(filename, ierr)
 
     if (ierr /= nf90_noerr) then
         ucxyq_read_rst=.false.
+    endif
+
+    ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
+    rho_read_rst=.true.
+
+    ierr = get_var_and_shift(imapfile, 'rho', rho, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
+                             um%inode_own, um%inode_merge)
+
+    if (ierr /= nf90_noerr) then
+        rho_read_rst=.false.
     endif
 
     !Read Coriolis Adams-Bashford (flow link)
@@ -13361,6 +13375,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
           call realloc(tmp_sqi, um%nbnd_read, stat=ierr, keepExisting=.false.)
           call realloc(tmp_ucxq, um%nbnd_read, stat=ierr, keepExisting=.false.)
           call realloc(tmp_ucyq, um%nbnd_read, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_rho , um%nbnd_read, stat=ierr, keepExisting=.false.)
 
           ierr = nf90_inq_varid(imapfile, 's0_bnd', id_s0bnd)
           if (ierr==0) then
@@ -13406,6 +13421,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
               call check_error(ierr, 'ucyq_bnd')
           endif
 
+          ierr = nf90_inq_varid(imapfile, 'rho_bnd', id_rhobnd)
+          if (ierr==0) then
+              ierr = nf90_get_var(imapfile, id_rhobnd, tmp_rho, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+              call check_error(ierr, 'rho_bnd')
+          endif
+
           if (nerr_/=0) goto 999
 
           if (jampi==0) then
@@ -13420,6 +13441,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
                 sqi(kk) = tmp_sqi(i)
                 ucxq(kk) = tmp_ucxq(i)
                 ucyq(kk) = tmp_ucyq(i)
+                rho(kk)  = tmp_rho(i)
              enddo
           else
              do i = 1, um%nbnd_read ! u and z bnd
@@ -13434,6 +13456,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
                 sqi(kk) = tmp_sqi(i)
                 ucxq(kk) = tmp_ucxq(i)
                 ucyq(kk) = tmp_ucyq(i)
+                rho(kk)  = tmp_rho(i)
              enddo
           endif
        endif
@@ -13472,6 +13495,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
           ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 'ucyq_bnd')
+          ierr = get_var_and_shift(imapfile, 'rho_bnd', tmp_rho, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+                                   um%jamergedmap, ibnd_own, um%ibnd_merge)
+          call check_error(ierr, 'rho_bnd')
           do i=1,ndxbnd_own
              j=ibnd_own(i)
              Lf=lnxi+j
@@ -13485,6 +13511,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
              sqi(kk) = tmp_sqi(j)
              ucxq(kk) = tmp_ucxq(j)
              ucyq(kk) = tmp_ucyq(j)
+             rho(kk)  = tmp_rho(j)
           enddo
        endif
     endif
