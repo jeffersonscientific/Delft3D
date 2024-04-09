@@ -148,7 +148,7 @@ use m_fm_write_unc
    ptref = 0.0D0
 
    if ( notrak > 0 ) call unc_init_trk()
-   call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, hyd%nolay)
+   call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, noslay)
 
    time0 = tstart_user
    time1 = time0
