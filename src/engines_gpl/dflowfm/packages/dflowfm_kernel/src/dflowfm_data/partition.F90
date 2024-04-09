@@ -5359,7 +5359,7 @@ end function flowlinks_are_across_multiple_partitions
 
 !> Fills in the geometry arrays of cross sections for history output
 !! Two special situations are also treated:
-!! 1. The flowlinks of one cross section are not successive on one subdomain, which can happen in both sequetial and parallel simulations.
+!! 1. The flowlinks of one cross section are not successive on one subdomain, which can happen in both sequential and parallel simulations.
 !! 2. In parallel simulations, a cross section lies on multiple subdomains.
 subroutine fill_geometry_arrays_crs()
    use m_alloc
@@ -5380,7 +5380,7 @@ subroutine fill_geometry_arrays_crs()
    integer,          allocatable :: maskBnd(:), maskBndAll(:), maskBndGat(:), indBndMPI(:), jaCoincide(:)  ! Arrays for boundary nodes, only used in parallel run
 
    ! Allocate and construct geometry variable arrays (on one subdomain)
-   call realloc(nodeCountCrs,   ncrs, keepExisting = .false., fill = 0  )
+   call realloc(nodeCountCrs, ncrs, keepExisting = .false., fill = 0  )
 
    do i = 1, ncrs
       nlinks = crs(i)%path%lnx
@@ -5390,12 +5390,12 @@ subroutine fill_geometry_arrays_crs()
       end if
    end do
    nNodesCrs = sum(nodeCountCrs)
-   call realloc(geomXCrs,       nNodesCrs,   keepExisting = .false., fill = 0d0)
-   call realloc(geomYCrs,       nNodesCrs,   keepExisting = .false., fill = 0d0)
+   call realloc(geomXCrs, nNodesCrs, keepExisting = .false., fill = 0d0)
+   call realloc(geomYCrs, nNodesCrs, keepExisting = .false., fill = 0d0)
    if (jampi > 0) then
       ! In parallel runs, one cross section might lie on multiple subdomains. To handle this situation,
       ! we will need to know which nodes are on boundaries of a cross section on each subdomain, and the boundary nodes will be handled separately.
-      ! This will aviod having duplicated (boundary) nodes in the arrays of coordinates of a cross section among all subdomains.
+      ! This will avoid having duplicated (boundary) nodes in the arrays of coordinates of a cross section among all subdomains.
        call realloc(maskBndAll, nNodesCrs, keepExisting = .false., fill = 0) ! If the node is a boundary node then the value will be 1
    end if
    is = 0
@@ -5433,10 +5433,10 @@ subroutine fill_geometry_arrays_crs()
                L = crs(i)%path%iperm(L0)
 
                if (comparereal(crs(i)%path%xk(1,L), geomX(k-1), eps6)/=0 .or. comparereal(crs(i)%path%yk(1,L), geomY(k-1), eps6)/=0) then
-                  ! If the 1st node of link L is not the ending node of the prvious link,
-                  ! then this means that the flowlinks for this cross section are not succesive, and
+                  ! If the 1st node of link L is not the ending node of the previous link,
+                  ! then this means that the flowlinks for this cross section are not successive, and
                   ! they have a break between Link L and the previous link.
-                  ! In this siutation, one more node, i.e. the 1st node of link L, should be included.
+                  ! In this situation, one more node, i.e. the 1st node of link L, should be included.
                   nNodes = nNodes + 1
                   nodeCountCrs(i) = nNodes
                   call realloc(geomX, max(allocSize(geomX), nNodes), keepExisting=.true.)
@@ -5450,12 +5450,12 @@ subroutine fill_geometry_arrays_crs()
                      maskBnd(k) = 1
                   end if
 
-               k = k+1
+                  k = k+1
                   nNodesAdd = nNodesAdd + 1
                end if
 
                ! We take the 2nd node of link L, because the orientation of all links hxBndas been
-               ! guaranteed in subroutien crspath_on_singlelink.
+               ! guaranteed in subroutine crspath_on_singlelink.
                geomX(k) = crs(i)%path%xk(2,L)
                geomY(k) = crs(i)%path%yk(2,L)
 
@@ -5479,13 +5479,13 @@ subroutine fill_geometry_arrays_crs()
             geomYCrs(is:ie) = geomY(1:nNodes)
             if (jampi > 0) then
                maskBndAll(is:ie) = maskBnd(1:nNodes)
+            end if
          end if
-      end if
       end if
    end do
 
    !! The codes below are similar to subroutine "fill_geometry_arrays_lateral".
-   !! They work for cross sections, including the situataion that a cross section lies on multiple subdomains.
+   !! They work for cross sections, including the situation that a cross section lies on multiple subdomains.
    ! For parallel simulation: since only process 0000 writes the history output, the related arrays
    ! are only made on 0000.
    if (jampi > 0) then
@@ -5493,7 +5493,7 @@ subroutine fill_geometry_arrays_crs()
 
       if (my_rank == 0) then
          ! Allocate arrays
-         call realloc(nodeCountCrsMPI, ncrs,  keepExisting = .false., fill = 0  )
+         call realloc(nodeCountCrsMPI, ncrs,         keepExisting = .false., fill = 0  )
          call realloc(geomXCrsMPI,     nNodesCrsMPI, keepExisting = .false., fill = 0d0)
          call realloc(geomYCrsMPI,     nNodesCrsMPI, keepExisting = .false., fill = 0d0)
 
@@ -5518,7 +5518,7 @@ subroutine fill_geometry_arrays_crs()
          displs(1) = 0
          do i = 1, ndomains
             is = (i-1)*ncrs+1 ! Starting index in nodeCountCrsGat
-            ie = is+ncrs-1    ! Endding index in nodeCountCrsGat
+            ie = is+ncrs-1    ! Ending   index in nodeCountCrsGat
             nNodesCrsGat(i) = sum(nodeCountCrsGat(is:ie)) ! Total number of nodes on subdomain i
             if (i > 1) then
                displs(i) = displs(i-1) + nNodesCrsGat(i-1)
@@ -5585,14 +5585,14 @@ subroutine fill_geometry_arrays_crs()
                               nb = nb + 1         ! add one boundary node
                               indBndMPI(nb) = j   ! store its index in geomXCrsMPI (and geomYCrsMPI)
                            else
-                        nodeCountCrsMPI(i) = nodeCountCrsMPI(i) - 1 ! adjust the node counter
-                        nNodesCrsMPI = nNodesCrsMPI - 1
-                     end if
+                              nodeCountCrsMPI(i) = nodeCountCrsMPI(i) - 1 ! adjust the node counter
+                              nNodesCrsMPI = nNodesCrsMPI - 1
+                           end if
                         else ! If it is not a boundary node, then add it directly
                            j = j + 1
                            geomXCrsMPI(j) = xGat(kk)
                            geomYCrsMPI(j) = yGat(kk)
-                  end if
+                        end if
                      end do
                   else
                      do k1 = ks, ke
@@ -5604,8 +5604,8 @@ subroutine fill_geometry_arrays_crs()
                            nb = nb + 1
                            indBndMPI(nb) = j ! store the index in geomXCrsMPI for the boundary nodes
                         end if
-                  end do
-               end if
+                     end do
+                  end if
                   nbLast = nb ! update nbLast when the current subdomain is finished.
                end if
             end do
