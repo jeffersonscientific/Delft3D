@@ -5365,8 +5365,9 @@ function flowlinks_are_across_multiple_partitions(flowlinks) result(res)
    integer :: n_partitions_with_flowlinks
    integer :: ierr
    
-   if (jampi == 0) then
-      res = .false.
+   res = .false. !Default return value
+   
+   if (jampi == 0 .or. .not. size(flowlinks) > 0) then
       return
    end if
 
@@ -5390,8 +5391,6 @@ function flowlinks_are_across_multiple_partitions(flowlinks) result(res)
       call mess(LEVEL_ERROR,'Programming error, please report: flowlinks_are_across_multiple_partitions found no partitions with flowlinks!')
    elseif (n_partitions_with_flowlinks > 1) then
       res = .true.
-   elseif (n_partitions_with_flowlinks == 1) then
-      res = .false.
    end if
    
 end function flowlinks_are_across_multiple_partitions
