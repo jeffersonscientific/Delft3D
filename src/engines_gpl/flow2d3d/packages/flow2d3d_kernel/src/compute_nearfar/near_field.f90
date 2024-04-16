@@ -566,7 +566,7 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                       !
                       call wait_until_finished(no_dis, waitfilesold, idis, filename(2), waitlog, ifatal, gdp)
                    endif
-                   if (ifatal == 0) then
+                   if (ifatal /= 0) then
                       exit
                    endif
                    !
