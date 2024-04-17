@@ -1896,7 +1896,7 @@ end subroutine prop_get_integer
 subroutine prop_get_set_integer(tree, chapter, key, value, success, values_first)
     implicit none
     type(tree_data)  , pointer       :: tree        !< The property tree
-    integer          , intent(inout) :: value       !< Value of the key (not set if the key is not found, so you can set a default value)
+    integer          , intent(inout) :: value       !< If key is found value will be read from tree. If not found value will be written to tree.
     character(*)     , intent(in)    :: chapter     !< Name of the chapter (case-insensitive) or "*" to get any key
     character(*)     , intent(in)    :: key         !< Name of the key (case-insensitive)
     logical, optional, intent(out)   :: success     !< Whether successful or not (optional)

@@ -521,10 +521,10 @@ private
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set
-      integer                                                :: size = 0                  !< Actual size of cross-section set
-      integer                                                :: growsby = 200             !< Increment for cross-section set
-      integer                                                :: count= 0                  !< Actual number of cross-section sets
-      type(t_output_quantity_config), pointer, dimension(:)  :: configs                   !< Current cross-section
+      integer                                                :: growsby = 200             !< Increment for config set
+      integer                                                :: count = 0                 !< Number of configs in config set 
+      integer                                                :: size  = 0                 !< Allocated size of config set (size = count + # of empty configs)
+      type(t_output_quantity_config), pointer, dimension(:)  :: configs                   !< array of output quantity configs in config set
    end type t_output_quantity_config_set
 
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
@@ -589,7 +589,7 @@ end subroutine dealloc_config_output
 subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_atts, description)
    use m_map_his_precision, only: md_nc_his_precision
    use netcdf, only: nf90_double, nf90_float
-   type(t_output_quantity_config_set),  intent(inout) :: config_set         !< Array containing all output quantity configs.
+   type(t_output_quantity_config_set),  intent(inout) :: config_set      !< Array containing all output quantity configs.
    integer,                         intent(inout) :: idx                 !< Index for the current variable.
    character(len=*),                intent(in   ) :: key                 !< Key in the MDU file.
    character(len=*),                intent(in   ) :: name                !< Name of the variable on the NETCDF file.
