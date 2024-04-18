@@ -1880,15 +1880,14 @@ subroutine readMDUFile(filename, istat)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_velocity', jahisvelocity, success)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_runupgauge'        , jahisrunupgauge      , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_wqbot'             , jahiswqbot           , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_tracers'           , jahistracers         , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_flow'          , jahiscrs_flow        , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_constituents'  , jahiscrs_constituents, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_sediment'      , jahiscrs_sediment    , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_dred'              , jahisdred            , success)
-    
-    
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_runupgauge'          , jahisrunupgauge      , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_wqbot'               , jahiswqbot           , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_tracers'             , jahistracers         , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_flow'            , jahiscrs_flow        , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_constituents'    , jahiscrs_constituents, success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_sediment'        , jahiscrs_sediment    , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_dred'                , jahisdred            , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_water_quality_output', jahisWAQ             , success)
     
     if (.not. success) then
       call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heatflux', jahisheatflux, success)

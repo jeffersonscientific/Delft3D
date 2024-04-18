@@ -484,13 +484,14 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahistaucurrent           !< Write bed shear stress to his file, 0: no, 1: yes
  integer                           :: jahisvelocity             !< Write velocity magnitude to his file, 0: no, 1: yes
  integer                           :: jahisdischarge            !< Write discharge magnitude to his file, 0: no, 1: yes
- integer                           :: jahisrunupgauge           !< Write jahisrunupgauge       to his file, 0: no, 1: yes
- integer                           :: jahiswqbot                !< Write jahiswqbot            to his file, 0: no, 1: yes
- integer                           :: jahistracers              !< Write jahistracers          to his file, 0: no, 1: yes
- integer                           :: jahiscrs_flow             !< Write jahiscrs_flow         to his file, 0: no, 1: yes
- integer                           :: jahiscrs_constituents     !< Write jahiscrs_constituents to his file, 0: no, 1: yes
- integer                           :: jahiscrs_sediment         !< Write jahiscrs_sediment     to his file, 0: no, 1: yes
- integer                           :: jahisdred                 !< Write jahisdred             to his file, 0: no, 1: yes
+ integer                           :: jahisrunupgauge           !< Write runupgauge       to his file, 0: no, 1: yes
+ integer                           :: jahiswqbot                !< Write wqbot            to his file, 0: no, 1: yes
+ integer                           :: jahistracers              !< Write tracers          to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_flow             !< Write crs_flow         to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_constituents     !< Write crs_constituents to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_sediment         !< Write crs_sediment     to his file, 0: no, 1: yes
+ integer                           :: jahisdred                 !< Write dred             to his file, 0: no, 1: yes
+ integer                           :: jahisWAQ                  !< Write Water Quality    to his file, 0: no, 1: yes
  ! His output structure keywords
  integer                           :: jahiscgen               !< Write structure parameters to his file, 0: n0, 1: yes
  integer                           :: jahispump               !< Write pump      parameters to his file, 0: n0, 1: yes
@@ -996,6 +997,7 @@ subroutine default_flowparameters()
     jahiscrs_constituents  = 1
     jahiscrs_sediment      = 1
     jahisdred              = 1
+    jahisWAQ               = 1
     jamaps0 = 1
     jamaps1 = 1
     jamapevap = 0
