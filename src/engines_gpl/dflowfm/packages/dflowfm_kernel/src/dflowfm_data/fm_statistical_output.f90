@@ -1188,11 +1188,11 @@ private
                      'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write water depth to his file', &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_X_VELOCITY,                                                                                   &
-                     'Wrihis_velocity_vector', 'x_velocity', 'x-component of flow element center velocity vector',                            &
+                     'Wrihis_velocity_vector', 'x_velocity', 'flow element center velocity vector, x-component',                            &
                      'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity vectors to his file', &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_Y_VELOCITY,                                                        &
-                     'Wrihis_velocity_vector', 'y_velocity', 'y-component of flow element center velocity vector', &
+                     'Wrihis_velocity_vector', 'y_velocity', 'flow element center velocity vector, y-component', &
                      'sea_water_y_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                        &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_Z_VELOCITY,                                                                      &
@@ -2643,8 +2643,8 @@ private
          end select
          !
          if (stmpar%morpar%moroutput%frac) then
-            temp_pointer(1:ntot*(IPNT_FRACN-IPNT_FRAC1)) => valobs(:,IPNT_FRAC1:IPNT_FRACN)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_FRAC),temp_pointer)
+            temp_pointer(1:ntot*(IPNT_FRACN-IPNT_FRAC1+1)) => valobs(:,IPNT_FRAC1:IPNT_FRACN)
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_FRAC),temp_pointer)
          endif
          if (stmpar%morpar%moroutput%mudfrac) then
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_MUDFRAC),valobs(:,IPNT_MUDFRAC))
@@ -2653,16 +2653,16 @@ private
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_SANDFRAC),valobs(:,IPNT_SANDFRAC))
          endif
          if (stmpar%morpar%moroutput%fixfac) then
-            temp_pointer(1:ntot*(IVAL_FIXFACN-IVAL_FIXFAC1)) => valobs(:,IVAL_FIXFAC1:IVAL_FIXFACN)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_FIXFRAC),temp_pointer)
+            temp_pointer(1:ntot*(IVAL_FIXFACN-IVAL_FIXFAC1+1)) => valobs(:,IVAL_FIXFAC1:IVAL_FIXFACN)
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_FIXFRAC),temp_pointer)
          endif
          if (stmpar%morpar%moroutput%hidexp) then
-            temp_pointer(1:ntot*(IVAL_HIDEXPN-IVAL_HIDEXP1)) => valobs(:,IVAL_HIDEXP1:IVAL_HIDEXPN)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_HIDEXP),temp_pointer)
+            temp_pointer(1:ntot*(IVAL_HIDEXPN-IVAL_HIDEXP1+1)) => valobs(:,IVAL_HIDEXP1:IVAL_HIDEXPN)
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_HIDEXP),temp_pointer)
          endif
          if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
-            temp_pointer(1:ntot*(IVAL_MFLUFFN-IVAL_MFLUFF1)) => valobs(:,IVAL_MFLUFF1:IVAL_MFLUFFN)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_MFLUFF),temp_pointer)
+            temp_pointer(1:ntot*(IVAL_MFLUFFN-IVAL_MFLUFF1+1)) => valobs(:,IVAL_MFLUFF1:IVAL_MFLUFFN)
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_MFLUFF),temp_pointer)
          end if
       endif
       ! Water quality variables

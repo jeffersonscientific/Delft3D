@@ -3932,13 +3932,13 @@ endif
        call prop_set(prop_ptr, 'output', 'GenerateUUID', unc_uuidgen, 'Generate UUID as unique dataset identifier and include in output NetCDF files.')
     end if
     
-    call set_properties(prop_ptr, 'Output', out_quan_conf_his)
-    call set_properties(prop_ptr, 'Output', out_quan_conf_map)
-    call set_properties(prop_ptr, 'Output', out_quan_conf_clm)
-
     if (writeall .or. jahiszcor /= 1) then
        call prop_set(prop_ptr, 'output', 'Wrihis_zcor', jahiszcor, 'Write vertical coordinates to his file (1: yes, 0: no)' )
     endif
+    
+    call set_properties(prop_ptr, 'Output', out_quan_conf_his)
+    call set_properties(prop_ptr, 'Output', out_quan_conf_map)
+    call set_properties(prop_ptr, 'Output', out_quan_conf_clm)
 
     if(writeall .or. jatekcd /= 0) then
        call prop_set(prop_ptr, 'output', 'Writek_CdWind', jatekcd, 'Write wind friction coeffs to tek file (1: yes, 0: no)')
