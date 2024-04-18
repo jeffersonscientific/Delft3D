@@ -362,6 +362,7 @@ subroutine unc_write_his(tim)            ! wrihis
         ierr = unc_def_his_structure_static_vars(ihisfile, 'source_sink', 'source and sink', jahissourcesink, numsrc, 'line', nNodeTot, id_strlendim, &
                                                  id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy)
         if (jahissourcesink > 0 .and. numsrc > 0) then
+           ierr = nf90_def_dim(ihisfile, 'source_sink_pts', msrc, id_srcptsdim)
            ierr = nf90_def_var(ihisfile, 'source_sink_x_coordinate', nf90_double, (/ id_srcdim, id_srcptsdim  /), id_srcx)
            ierr = nf90_def_var(ihisfile, 'source_sink_y_coordinate', nf90_double, (/ id_srcdim, id_srcptsdim /), id_srcy)
            ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
@@ -627,9 +628,9 @@ subroutine unc_write_his(tim)            ! wrihis
 
             select case(config%location_specifier)
             case (UNC_LOC_SOSI)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_RUG)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_x_coordinate rug_y_coordinate rug_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_GENSTRU)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_DAM)
