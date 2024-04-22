@@ -2147,10 +2147,16 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PRECIP_TOTAL               ),voltot(IDX_HIS_PRECIP_TOTAL            :IDX_HIS_PRECIP_TOTAL               )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EVAP                       ),voltot(IDX_HIS_EVAP                    :IDX_HIS_EVAP                       )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOUR                       ),voltot(IDX_HIS_SOUR                    :IDX_HIS_SOUR                       )                                  )
+         if ( jaFrcInternalTides2D.eq.1 ) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
+         endif
+         if(jatidep > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
+         endif
+         if ( jaselfal.gt.0 ) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
+         endif
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWIN                      ),voltot(IDX_HIS_GRWIN                   :IDX_HIS_GRWIN                      )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWOUT                     ),voltot(IDX_HIS_GRWOUT                  :IDX_HIS_GRWOUT                     )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWTOT                     ),voltot(IDX_HIS_GRWTOT                  :IDX_HIS_GRWTOT                     )                                  )
