@@ -697,7 +697,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE,                   &
                      'Wrihis_sourcesink', 'source_sink_prescribed_discharge', '', '',                     &
-                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1), description='Write source-sink statistics to his file')
+                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1), description='Write source-sink parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT,          &
                      'Wrihis_sourcesink', 'source_sink_prescribed_salinity_increment', '', '',                     &
                      '1e-3', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
