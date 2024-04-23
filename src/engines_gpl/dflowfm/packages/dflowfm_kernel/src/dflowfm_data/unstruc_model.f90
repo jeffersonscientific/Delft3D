@@ -1428,7 +1428,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
     call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)            ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
     
-    if (jased < 4) then
+    if (jased > 0 .and. .not. stm_included) then
        call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
        MxgrKrone = -1
        call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
