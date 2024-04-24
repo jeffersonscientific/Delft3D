@@ -23,6 +23,12 @@ if __name__ == "__main__":
         settings.configs,
     ) = XmlConfigParser().load(settings, logger)
 
+    # Filter the testcases to be run
+    if settings.filter != "":
+        settings.configs = TestBenchParameterParser.filter_configs(
+            settings.configs, settings.filter, logger
+        )
+
     settings.log_overview(logger)
 
     # create and run testbench

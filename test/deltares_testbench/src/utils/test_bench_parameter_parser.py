@@ -16,6 +16,7 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_log_level
+from src.utils.logging.i_logger import ILogger
 
 
 class TestBenchParameterParser:
@@ -48,12 +49,6 @@ class TestBenchParameterParser:
             cls.__get_argument_value("server_base_url", args) or ""
         )
         new_settings.rstr = args.__dict__["or_paths"]
-
-        # Filter the testcases to be run
-        if args.filter != "":
-            new_settings.configs = cls.__filter_configs__(
-                new_settings.configs, args.filter
-            )
 
         # Loglevel from config.xml can be overruled by loglevel from arguments
         if args.__dict__["loglevel"] != "":
@@ -130,7 +125,7 @@ class TestBenchParameterParser:
         return credentials
 
     @classmethod
-    def __filter_configs__(cls, configs: List[TestCaseConfig], args):
+    def filter_configs(cls, configs: List[TestCaseConfig], args: str, logger: ILogger):
         """check which filters to apply to configuration"""
         filtered: List[TestCaseConfig] = []
         filters = args.split(":")
@@ -153,9 +148,10 @@ class TestBenchParameterParser:
             elif con == "startat":
                 start_at_filter = arg.lower()
             else:
-                error_message = "ERROR: Filter keyword " " + con + " " not recognised\n"
-                sys.stderr.write(error_message)
-                raise SyntaxError(error_message)
+                error_message = "ERROR: Filter keyword " " + con + " " not recognised"
+                logger.error(f"{error_message} '{con}'\n")
+                sys.stderr.write(error_message + "\n")
+                raise SyntaxError(error_message + "\n")
 
         # For each testcase (p, t, mrt filters):
         for config in configs:
@@ -164,6 +160,8 @@ class TestBenchParameterParser:
             )
             if c:
                 filtered.append(c)
+            else:
+                logger.info(f"Skip {config.name} due to filter.")
 
         # StartAt filter:
         if start_at_filter:
