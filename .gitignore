@@ -41,3 +41,6 @@ src/**/FortranCInterface.h
 
 # ignore generated doxygen documentation
 /doxy_output
+
+# ignore developer specific build details
+CMakeUserPresets.json
