@@ -336,7 +336,7 @@ contains
             !        zero cumulative arrays
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
+                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
                         ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
@@ -470,7 +470,7 @@ contains
 
                 !         close files, except monitor file
 
-                call CloseHydroFiles(dlwqd%collcoll)
+                call close_hydro_files(dlwqd%collcoll)
                 call close_files(lun)
 
                 !         write restart file

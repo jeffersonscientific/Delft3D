@@ -386,7 +386,7 @@ contains
             !
             !          close files, except monitor file
             !
-            call CloseHydroFiles(dlwqd%collcoll)
+            call close_hydro_files(dlwqd%collcoll)
             call close_files(lun)
             !
             !          write restart file

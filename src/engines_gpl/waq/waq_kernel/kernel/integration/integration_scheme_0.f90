@@ -173,6 +173,7 @@ contains
                         j(iknmr:), iknmkv)
 
             !        user transport processes
+            ! set dispersion length
             call dlwqtr(notot, nosys, nosss, noq, noq1, &
                         noq2, noq3, nopa, nosfun, nodisp, &
                         novelo, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
@@ -181,7 +182,7 @@ contains
                         idt, c(isnam), nocons, nofun, c(icnam), &
                         c(ipnam), c(ifnam), c(isfna), ldummy, ilflag)
 
-            !jvb     Temporary ? set the variables grid-setting for the DELWAQ variables
+            !  Temporary ? set the variables grid-setting for the DELWAQ variables
             call setset(lun(19), nocons, nopa, nofun, nosfun, &
                         nosys, notot, nodisp, novelo, nodef, &
                         noloc, ndspx, nvelx, nlocx, nflux, &
@@ -219,80 +220,71 @@ contains
 
             !     Call OUTPUT system
 
-            call DLWQO2(NOTOT, NOSSS, NOPA, NOSFUN, ITIME, &
-                        C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
-                        A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
-                        A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
-                        LCHAR, LUN, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
-                        C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
-                        C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
-                        NOSYS, A(IBOUN:), J(ILP:), A(IMASS:), A(IMAS2:), &
-                        A(ISMAS:), NFLUX, A(IFLXI:), ISFLAG, IAFLAG, &
-                        IBFLAG, IMSTRT, IMSTOP, IMSTEP, IDSTRT, &
-                        IDSTOP, IDSTEP, IHSTRT, IHSTOP, IHSTEP, &
-                        IMFLAG, IDFLAG, IHFLAG, NOLOC, A(IPLOC:), &
-                        NODEF, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
-                        C(IDANA:), NDMPQ, NDMPS, J(IQDMP:), J(ISDMP:), &
-                        J(IPDMP:), A(IDMPQ:), A(IDMPS:), A(IFLXD:), NTDMPQ, &
-                        C(ICBUF:), NORAAI, NTRAAQ, J(IORAA:), J(NQRAA:), &
-                        J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), NOGRID, &
-                        NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
-                        J(IAKND:), J(IAPOI:), J(IADM1:), J(IADM2:), J(IVSET:), &
-                        J(IGNOS:), J(IGSEG:), A, NOBND, NOBTYP, &
-                        C(IBTYP:), J(INTYP:), C(ICNAM:), noqtt, J(IXPNT:), &
-                        INTOPT, C(IPNAM:), C(IFNAM:), C(ISFNA:), J(IDMPB:), &
-                        NOWST, NOWTYP, C(IWTYP:), J(IWAST:), J(INWTYP:), &
-                        A(IWDMP:), iknmkv, isegcol)
-
-            !          zero cummulative array's
+            call dlwqo2(notot, nosss, nopa, nosfun, itime, &
+                        c(imnam:), c(isnam:), c(idnam:), j(idump:), nodump, &
+                        a(iconc:), a(icons:), a(iparm:), a(ifunc:), a(isfun:), &
+                        a(ivol:), nocons, nofun, idt, noutp, &
+                        lchar, lun, j(iiout:), j(iiopo:), a(iriob:), &
+                        c(iosnm:), c(iouni:), c(iodsc:), c(issnm:), c(isuni:), c(isdsc:), &
+                        c(ionam:), nx, ny, j(igrid:), c(iedit:), &
+                        nosys, a(iboun:), j(ilp:), a(imass:), a(imas2:), &
+                        a(ismas:), nflux, a(iflxi:), isflag, iaflag, &
+                        ibflag, imstrt, imstop, imstep, idstrt, &
+                        idstop, idstep, ihstrt, ihstop, ihstep, &
+                        imflag, idflag, ihflag, noloc, a(iploc:), &
+                        nodef, a(idefa:), itstrt, itstop, ndmpar, &
+                        c(idana:), ndmpq, ndmps, j(iqdmp:), j(isdmp:), &
+                        j(ipdmp:), a(idmpq:), a(idmps:), a(iflxd:), ntdmpq, &
+                        c(icbuf:), noraai, ntraaq, j(ioraa:), j(nqraa:), &
+                        j(iqraa:), a(itrra:), c(irnam:), a(istoc:), nogrid, &
+                        novar, j(ivarr:), j(ividx:), j(ivtda:), j(ivdag:), &
+                        j(iaknd:), j(iapoi:), j(iadm1:), j(iadm2:), j(ivset:), &
+                        j(ignos:), j(igseg:), a, nobnd, nobtyp, &
+                        c(ibtyp:), j(intyp:), c(icnam:), noqtt, j(ixpnt:), &
+                        intopt, c(ipnam:), c(ifnam:), c(isfna:), j(idmpb:), &
+                        nowst, nowtyp, c(iwtyp:), j(iwast:), j(inwtyp:), &
+                        a(iwdmp:), iknmkv, isegcol)
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum(notot, nosys, nflux, ndmpar, ndmpq, &
+            ! zero cummulative array's
+                call set_cumulative_arrays_zero(notot, nosys, nflux, ndmpar, ndmpq, &
                             ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                             a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                             a(itrra:), ibflag, nowst, a(iwdmp:))
             end if
 
-            !          simulation done ?
-
+            ! simulation done ?
             if (itime < 0) goto 9999
             if (itime >= itstop) goto 20
 
-            !        add processes
-
+            ! add processes
             call dlwq14(a(iderv:), notot, nosss, itfact, a(imas2:), &
                         idt, iaflag, a(idmps:), intopt, j(isdmp:))
-            itimel = itime                     ! For case 2 a(ivoll) contains the incorrect
-            itime = itime + idt               ! new volume from file and mass correction
+            itimel = itime       ! For case 2 a(ivoll) contains the incorrect
+            itime = itime + idt  ! new volume from file and mass correction
             idtold = idt
 
-            !        set a time step
-
-            call dlwq18(nosys, notot, nototp, nosss, a(ivol2:), &
+            ! set a time step
+            call update_concs_explicit_time_step(nosys, notot, nototp, nosss, a(ivol2:), &
                         surface, a(imass:), a(iconc:), a(iderv:), idtold, &
                         ivflag, lun(19))
 
-            !          integrate the fluxes at dump segments fill ASMASS with mass
-
+            ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
                 call proint(nflux, ndmpar, idtold, itfact, a(iflxd:), &
                             a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             end if
-            !          end of loop
-
+            ! end of loop
             if (ACTION == ACTION_FULLCOMPUTATION) goto 10
-
 20          continue
 
             if (ACTION == ACTION_FINALISATION .or. &
                 ACTION == ACTION_FULLCOMPUTATION) then
-                !             close files, except monitor file
-
-                call CloseHydroFiles(dlwqd%collcoll)
+                ! close files, except monitor file
+                call close_hydro_files(dlwqd%collcoll)
                 call close_files(lun)
 
-                !             write restart file
-
+                ! write restart file
                 call DLWQ13(LUN, LCHAR, A(ICONC:), ITIME, C(IMNAM:), &
                             C(ISNAM:), NOTOT, NOSSS)
             end if

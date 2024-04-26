@@ -330,7 +330,7 @@ contains
             !          zero cummulative array's
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
+                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
                         ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
@@ -415,7 +415,7 @@ contains
 
             !          set a time step
 
-            call dlwq18 (nosys, notot, nototp, nosss, a(ivol2:), &
+            call update_concs_explicit_time_step (nosys, notot, nototp, nosss, a(ivol2:), &
                     surface, a(imass:), a(iconc:), a(iderv:), idtold, &
                     ivflag, lun(19))
             !
@@ -453,7 +453,7 @@ contains
 
                 !         close files, except monitor file
 
-                call CloseHydroFiles(dlwqd%collcoll)
+                call close_hydro_files(dlwqd%collcoll)
                 call close_files(lun)
 
                 !         write restart file
