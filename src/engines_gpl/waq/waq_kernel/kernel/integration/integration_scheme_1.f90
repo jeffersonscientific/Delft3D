@@ -93,7 +93,7 @@ contains
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
         use delwaq2_data
         use m_waq_openda_exchange_items, only : get_openda_buffer
@@ -114,7 +114,7 @@ contains
 
         type(waq_data_buffer), target :: buffer           !< System total array space
         integer(kind = int_wp), intent(inout) :: lun  (*)          !< array with unit numbers
-        character*(*), intent(in) :: lchar(*)          !< array with file names
+        character(len=*), intent(in) :: lchar(*)          !< array with file names
         integer(kind = int_wp), intent(in) :: action            !< type of action to perform
         type(delwaq_data), target :: dlwqd             !< delwaq data structure
         type(GridPointerColl) :: gridps            !< collection of all grid definitions
@@ -132,6 +132,9 @@ contains
 
         INTEGER(kind = int_wp) :: IDTOLD
         INTEGER(kind = int_wp) :: sindex
+        
+        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
@@ -257,7 +260,7 @@ contains
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
                     ioffbl, a(imass:), nosys, &
                     itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), iknmkv, noq1, noq2, noq3, &
+                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
                     noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
                     j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
                     nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
@@ -318,7 +321,7 @@ contains
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
                 call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
-                        ndmps, a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), &
+                        ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
             endif

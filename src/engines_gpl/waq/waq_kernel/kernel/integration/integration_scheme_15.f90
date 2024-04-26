@@ -117,7 +117,7 @@ contains
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
         use variable_declaration                         ! Global memory with allocatable GMRES arrays
         use delwaq2_data
@@ -129,6 +129,7 @@ contains
         use m_sysj          ! Pointers in integer array workspace
         use m_sysc          ! Pointers in character array workspace
         use m_dlwqdata_save_restore
+        use omp_lib
 
         implicit none
 
@@ -143,9 +144,6 @@ contains
         integer(kind = int_wp) :: action     !< handle to stepwise call
         type(delwaq_data), target :: dlwqd      !< data structure stepwize call
         type(gridpointercoll) :: gridps     !< collection off all grid definitions
-
-        !$    include "omp_lib.h"
-
 
         !     Local declarations
 
@@ -173,6 +171,9 @@ contains
         integer(kind = int_wp), save :: iter
         integer(kind = int_wp), save :: iscale
 
+        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        p_iknmkv(1:size(iknmkv)) => iknmkv
+        
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
             !     SPECIAL REMARKS    : MASS-ARRAY IS USED FOR RHS VECTOR!!
@@ -339,7 +340,7 @@ contains
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
                     ioffbl, a(imass:), nosys, &
                     itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), iknmkv, noq1, noq2, noq3, &
+                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
                     noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
                     j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
                     nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
@@ -400,7 +401,7 @@ contains
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
                 call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
-                        ndmps, a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), &
+                        ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
             endif

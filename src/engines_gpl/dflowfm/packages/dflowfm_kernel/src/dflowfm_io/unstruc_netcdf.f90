@@ -264,7 +264,8 @@ type t_unc_mapids
    integer :: id_viu(MAX_ID_VAR)      = -1 !< Variable ID for horizontal eddy viscosity
    integer :: id_diu(MAX_ID_VAR)      = -1 !< Variable ID for horizontal eddy diffusivity
    integer :: id_ww1(MAX_ID_VAR)      = -1 !< Variable ID for
-   integer :: id_rho(MAX_ID_VAR)      = -1 !< Variable ID for
+   integer :: id_rho(MAX_ID_VAR)      = -1 !< Variable ID for density of water
+   integer :: id_rhop(MAX_ID_VAR)     = -1 !< Variable ID for potential density of water
    integer :: id_sa1(MAX_ID_VAR)      = -1 !< Variable ID for
    integer :: id_tem1(MAX_ID_VAR)     = -1 !< Variable ID for
    integer :: id_nrfld(MAX_ID_VAR)    = -1 !< Variable ID for
@@ -5532,7 +5533,11 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, nc_precision, UNC_LOC_W, 'ww1', 'upward_sea_water_velocity', 'Upward velocity on vertical interface, n-component', 'm s-1', jabndnd=jabndnd_)
          endif
          if (jamaprho > 0) then
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, nc_precision, UNC_LOC_S3D, 'rho', 'sea_water_density', 'Flow element center mass density', 'kg m-3', jabndnd=jabndnd_)
+             if ( density_is_pressure_dependent() ) then
+                 ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho,  nc_precision, UNC_LOC_S3D, 'density', 'sea_water_density',           'Flow element center mass density',      'kg m-3', jabndnd=jabndnd_)
+             else
+                 ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, nc_precision, UNC_LOC_S3D, 'rho',     'sea_water_potential_density', 'Flow element center potential density', 'kg m-3', jabndnd=jabndnd_)
+             endif
          endif
       endif
 
@@ -6625,7 +6630,11 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, UNC_LOC_W, ww1, jabndnd=jabndnd_)
       endif
       if (jamaprho > 0) then
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+          if ( density_is_pressure_dependent() ) then
+              ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho,  UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+          else
+              ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+          endif
       endif
    endif
 
@@ -8049,7 +8058,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
     id_sourse, id_sinkse, id_ws, &
     id_sxtot, id_sytot, id_rsedeq, id_umod, id_zumod, id_ustar, id_dzdn, id_dzdt, id_morbl, id_aks, id_rca, &
     id_bodsed, id_dpsed, id_msed, id_lyrfrac, id_thlyr, id_poros, id_nlyrdim, &
-    id_sedtotdim, id_sedsusdim, id_rho, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
+    id_sedtotdim, id_sedsusdim, id_rho, id_rhop, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
     id_q1main, &
     id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
     id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
@@ -8280,7 +8289,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                     ierr = nf90_def_var(imapfile, 'ww1'  , nf90_double, (/ id_wdim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_ww1(iid))
                 endif
                 if (jamaprho > 0) then
-                    ierr = nf90_def_var(imapfile, 'rho'  , nf90_double, (/ id_laydim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_rho(iid))
+                    if ( density_is_pressure_dependent() ) then
+                        ierr = nf90_def_var(imapfile, 'density', nf90_double, (/ id_laydim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_rho(iid))
+                    else
+                        ierr = nf90_def_var(imapfile, 'rho',     nf90_double, (/ id_laydim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_rhop(iid))
+                    endif
                 endif
               !
                 if (jamapucvec > 0) then
@@ -8318,11 +8331,19 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                   !?elevation
                 endif
                 if (jamaprho > 0) then
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'standard_name', 'sea_water_density')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'long_name'    , 'flow mass density')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'units'        , 'kg m-3')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  '_FillValue'   , dmiss)
+                  if ( density_is_pressure_dependent() ) then
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'standard_name', 'sea_water_density')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'long_name'    , 'flow mass density')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'units'        , 'kg m-3')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  '_FillValue'   , dmiss)
+                  else
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'standard_name', 'sea_water_potential_density')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'long_name'    , 'flow mass potential density')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'units'        , 'kg m-3')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  '_FillValue'   , dmiss)
+                  endif
                 endif
             endif  ! kmx>0
 
@@ -9154,7 +9175,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
               ierr = unc_add_gridmapping_att(imapfile, idum, jsferic)
            endif
            if (kmx > 0) then
-              ierr = unc_add_gridmapping_att(imapfile, (/ id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rho(iid) /), jsferic)
+              if ( density_is_pressure_dependent() ) then
+                  ierr = unc_add_gridmapping_att(imapfile, (/ id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rho(iid) /), jsferic)
+              else
+                  ierr = unc_add_gridmapping_att(imapfile, (/ id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rhop(iid) /), jsferic)
+              endif
            endif
 
            if (jamaptrachy > 0 .and. jatrt == 1) then
@@ -9477,7 +9502,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
           ierr = nf90_inq_varid(imapfile, 'ucxa', id_ucxa(iid))
           ierr = nf90_inq_varid(imapfile, 'ucya', id_ucya(iid))
           ierr = nf90_inq_varid(imapfile, 'ww1', id_ww1(iid))
-          ierr = nf90_inq_varid(imapfile, 'rho', id_rho(iid))
+          if ( density_is_pressure_dependent() ) then
+            ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
+          else
+            ierr = nf90_inq_varid(imapfile, 'rho', id_rhop(iid))
+          endif
           if ( iturbulencemodel >= 3 ) then
              ierr = nf90_inq_varid(imapfile, 'turkin1', id_turkin1(iid))
              ierr = nf90_inq_varid(imapfile, 'tureps1', id_tureps1(iid))
@@ -9486,7 +9515,6 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
         else
           ierr = nf90_inq_varid(imapfile, 'ucx', id_ucx(iid))
           ierr = nf90_inq_varid(imapfile, 'ucy', id_ucy(iid))
-          !ierr = nf90_inq_varid(imapfile, 'rho', id_rho(iid))
           ierr = nf90_inq_varid(imapfile, 'spircrv', id_spircrv(iid))
           ierr = nf90_inq_varid(imapfile, 'spirint', id_spirint(iid))
         endif
@@ -9983,7 +10011,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                    work1(k-kb+nlayb, kk) = rho(k)
                 enddo
              enddo
-             ierr = nf90_put_var(imapfile, id_rho(iid), work1(1:kmx,1:ndxndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxndxi, 1 /))
+             if ( density_is_pressure_dependent() ) then
+                 ierr = nf90_put_var(imapfile, id_rho(iid),  work1(1:kmx,1:ndxndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxndxi, 1 /))
+             else
+                 ierr = nf90_put_var(imapfile, id_rhop(iid), work1(1:kmx,1:ndxndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxndxi, 1 /))
+             endif
           endif
 
           if (jamaptur > 0 .and. iturbulencemodel >= 3) then
@@ -13525,6 +13557,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
           endif
           call realloc(tmp_squ, ndx-ndxi, stat=ierr, keepExisting=.false.)
           call realloc(tmp_sqi, ndx-ndxi, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_ucxq, ndx-ndxi, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_ucyq, ndx-ndxi, stat=ierr, keepExisting=.false.)
           ierr = get_var_and_shift(imapfile, 's0_bnd', tmp_s0, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 's0_bnd')

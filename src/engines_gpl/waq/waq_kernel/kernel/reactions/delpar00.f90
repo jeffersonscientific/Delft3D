@@ -96,6 +96,7 @@ contains
         if (mdpfile /= ' ') then
             call norm_init()
             alone = .false.
+            close( lunitp(2) ) ! Report file is already open, when run under DIMR
             call rdfnam (lunitp, mdpfile, fnamep, nfilesp, 2, &
                     1, .false.)
             lunut = lunitp(2)
@@ -341,7 +342,7 @@ contains
             itraki = notrak  ! timestep for writing trackinformation to the track file, if notrack =0 then no track file
             if (ltrack) then
                 !     write initial information to track file
-                dtstep = float(idelt)
+                dtstep = real(idelt)
                 nstept = 1 + ((itstopp - itstrtp) / idelt) / itraki
                 call writrk (lunut, fout, fnamep(16), nopart, title(4), &
                         dtstep, nstept, ibuff, rbuff, cbuff, &
