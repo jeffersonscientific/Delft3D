@@ -2223,9 +2223,9 @@ contains
    ierr = nf90_put_var(ncid_bal_file, ncid_bal_area_names, mba_name, [1, nomba + 1], [NAMMBALEN, 1])
    
    do imba = 1,nomba+1
-      ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_flow_names(imba), water_flow%bal_area(imba)%name, [1, 1])
+      ierr = mba_write_netcdf_flux_names(ncid_bal_file, ncid_bal_const_flux_names(imbs,imba), water_flow%bal_area(imba))
       do imbs = 1, nombs
-          ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_flux_names(imbs,imba), const_flux(imbs)%bal_area(imba)%name, [1, 1])
+          ierr = mba_write_netcdf_flux_names(ncid_bal_file, ncid_bal_water_flow_names(imba), const_flux(imbs)%bal_area(imba))
       end do
    end do
    
@@ -2240,6 +2240,27 @@ contains
    ierr = unc_close(ncid_bal_file)   
    end subroutine mba_write_netcdf_header
 
+   !> write the names of one balance to the netCDF file
+   function mba_write_netcdf_flux_names(ncid_bal_file, ncid_balance, balance) result (ierr)
+   use m_mass_balance_areas, only : bal_area_type, NAMMBALEN
+   use netcdf, only : nf90_put_var
+   
+   integer             , intent(in)    :: ncid_bal_file     !< id of the netCDF balances file
+   integer             , intent(in)    :: ncid_balance      !< netCDF id of the water flow/constituent flux names
+   type(bal_area_type) , intent(in)    :: balance           !< derived type containing the flux groups, names and values
+   integer                             :: ierr              !< netCDF return code
+  
+   integer                             :: i                 !< loop variable for the fluxes
+   character(NAMMBALEN), allocatable   :: balance_names(:)  !< temporary array for the names
+   
+   allocate(balance_names(balance%n_entries))
+   do i = 1, balance%n_entries
+       balance_names(i) = trim(balance%group(i)) // ', ' // balance%name(i)
+   end do      
+   ierr = nf90_put_var(ncid_bal_file, ncid_balance, balance_names, [1, 1])
+   deallocate(balance_names)
+   end function mba_write_netcdf_flux_names
+   
    subroutine mba_write_netcdf_step()
    use m_flowtimes, only : time1
    use m_mass_balance_areas
