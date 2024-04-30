@@ -146,38 +146,38 @@ contains
                 !          some initialisation
                 !
                 ithandl = 0
-                ITIME = ITSTRT
-                NSTEP = (ITSTOP - ITSTRT) / IDT
-                IFFLAG = 0
-                IAFLAG = 0
+                itime = itstrt
+                nstep = (itstop - itstrt) / idt
+                ifflag = 0
+                iaflag = 0
                 ibflag = 0
 
                 !     Dummy variables - used in DLWQD
-                ITIMEL = ITIME
+                itimel = itime
                 lleng = 0
                 ioptzb = 0
                 nopred = 6
                 NOWARN = 0
                 tol = 0.0D0
-                forester = .FALSE.
-                updatr = .FALSE.
-                NOQT = NOQ + NOQ4
+                forester = .false.
+                updatr = .false.
+                noqt = noq + noq4
 
                 if (btest(intopt, 3)) ibflag = 1
-                LDUMMY = .FALSE.
-                IF (NDSPN == 0) THEN
-                    NDDIM = NODISP
-                ELSE
-                    NDDIM = NDSPN
-                ENDIF
-                IF (NVELN == 0) THEN
-                    NVDIM = NOVELO
-                ELSE
-                    NVDIM = NVELN
-                ENDIF
-                LSTREC = ICFLAG == 1
+                ldummy = .false.
+                if (ndspn == 0) then
+                    nddim = nodisp
+                else
+                    nddim = ndspn
+                end if
+                if (nveln == 0) then
+                    nvdim = novelo
+                else
+                    nvdim = nveln
+                end if
+                lstrec = icflag == 1
                 nosss = noseg + nseg2
-                NOQTT = NOQ + NOQ4
+                noqtt = noq + noq4
                 inwtyp = intyp + nobnd
                 !
                 !          initialize second volume array with the first one

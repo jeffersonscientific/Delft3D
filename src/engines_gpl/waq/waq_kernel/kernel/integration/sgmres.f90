@@ -56,91 +56,85 @@ contains
         use m_matvec
         use m_srstop
 
-        integer(kind = int_wp), intent(in) :: ntrace                      !< Dimension of the matrix
-        real(kind = dp), intent(in) :: rhs    (ntrace)             !< right-hand side (1 substance)
-        real(kind = dp), intent(inout) :: sol    (ntrace)             !< on entry: initial guess / on exit: solution
-        integer(kind = int_wp), intent(in) :: restrt                      !< size of Krylov space, restrt < ntrace !
-        real(kind = dp) :: work   (ntrace, restrt + 5)  !< workspace
-        integer(kind = int_wp), intent(in) :: ldw !< leading dimension >= max(1,ntrace  ) (probably superfluous lp)
-        real(kind = dp), intent(in) :: hess   (restrt + 1, restrt + 2)  !< hessenberg matrix
-        integer(kind = int_wp), intent(in) :: ldh !< leading dimension >= max(1,restrt+1) (probably superfluous lp)
-        integer(kind = int_wp), intent(in) :: maxit !< maximum number of iterations
-        real(kind = dp), intent(in) :: tol                         !< convergence criterion
-        integer(kind = int_wp), intent(in) :: nomat !< number of off-diagonal entries of matrix a (format from lp)
-        real(kind = dp), intent(in) :: amat   (nomat)              !< off-diagonal entries of matrix a (format from lp)
-        integer(kind = int_wp), intent(in) :: imat   (nomat)              !< pointer table off-diagonal entries
-        real(kind = dp), intent(in) :: diag   (ntrace)             !< diagonal entries of matrix a
-        integer(kind = int_wp), intent(in) :: idiag  (0:ntrace)           !< position of the diagonals in amat
-        integer(kind = int_wp), intent(in) :: klay                        !< number of layers
-        integer(kind = int_wp), intent(in) :: ioptpc                      !< option for preconditioner
-        integer(kind = int_wp), intent(in) :: nobnd                       !< number of open boundaries
-        real(kind = dp) :: triwrk (klay * 6)             !< workspace for tridiagonal solution vertical
-        integer(kind = int_wp), intent(in) :: iexseg (ntrace)             !< 0 for explicit volumes
-        integer(kind = int_wp), intent(in) :: lurep                       !< Unit number report file
-        logical, intent(in) :: litrep                      !< Perform report on iteration process if TRUE
+        integer(kind = int_wp), intent(in   ) :: ntrace                       !< Dimension of the matrix
+        real(kind = dp),        intent(in   ) :: rhs(ntrace)                  !< right-hand side (1 substance)
+        real(kind = dp),        intent(inout) :: sol(ntrace)                  !< on entry: initial guess / on exit: solution
+        integer(kind = int_wp), intent(in   ) :: restrt                       !< size of Krylov space, restrt < ntrace !
+        real(kind = dp),        intent(inout) :: work(ntrace, restrt + 5)     !< workspace
+        integer(kind = int_wp), intent(in   ) :: ldw                          !< leading dimension >= max(1,ntrace  ) (probably superfluous lp)
+        real(kind = dp),        intent(in   ) :: hess(restrt + 1, restrt + 2) !< hessenberg matrix
+        integer(kind = int_wp), intent(in   ) :: ldh                          !< leading dimension >= max(1,restrt+1) (probably superfluous lp)
+        integer(kind = int_wp), intent(in   ) :: maxit                        !< maximum number of iterations
+        real(kind = dp),        intent(in   ) :: tol                          !< convergence criterion
+        integer(kind = int_wp), intent(in   ) :: nomat                        !< number of off-diagonal entries of matrix a (format from lp)
+        real(kind = dp),        intent(in   ) :: amat(nomat)                  !< off-diagonal entries of matrix a (format from lp)
+        integer(kind = int_wp), intent(in   ) :: imat(nomat)                  !< pointer table off-diagonal entries
+        real(kind = dp),        intent(in   ) :: diag   (ntrace)              !< diagonal entries of matrix a
+        integer(kind = int_wp), intent(in   ) :: idiag  (0:ntrace)            !< position of the diagonals in amat
+        integer(kind = int_wp), intent(in   ) :: klay                         !< number of layers
+        integer(kind = int_wp), intent(in   ) :: ioptpc                       !< option for preconditioner
+        integer(kind = int_wp), intent(in   ) :: nobnd                        !< number of open boundaries
+        real(kind = dp),        intent(inout) :: triwrk (klay * 6)            !< workspace for tridiagonal solution vertical
+        integer(kind = int_wp), intent(in   ) :: iexseg (ntrace)              !< 0 for explicit volumes
+        integer(kind = int_wp), intent(in   ) :: lurep                        !< Unit number report file
+        logical,                intent(in   ) :: litrep                       !< Perform report on iteration process if TRUE
 
         ! Local constants
-
         REAL(kind = dp) :: SMALL, SMALL2
 
         ! SMALL MUST always be larger then SMALL2 !!!!!!!!!!!
-
         PARAMETER (SMALL = 1.0E-7, SMALL2 = 1.0E-25)
 
-        INTEGER(kind = int_wp) :: I, J, K, iter, AV, CS, &
-                &          SN, R, S, V, W, Y, &
-                &          I2, IERR, imax, iloop
-        REAL(kind = dp) :: AA, BB, BNRM2, RNORM, RESID, rmax
+        INTEGER(kind = int_wp) :: i, j, k, iter, av, cs, &
+                &          sn, r, s, v, w, y, &
+                &          i2, ierr, imax, iloop
+        real(kind = dp) :: aa, bb, bnrm2, rnorm, resid, rmax
 
-        LOGICAL   FIRST
-        DATA            FIRST  /.TRUE./
-
+        logical   first
+        data      first  /.true./
         integer(kind = int_wp) :: ithandl = 0
+
+
         if (timon) call timstrt ("sgmres", ithandl)
 
         ! sloppy way of output
-
-        ITER = 0
-        IERR = 0
-        IF (FIRST) THEN
-            FIRST = .FALSE.
-            IF (LITREP) THEN
-                WRITE(LUREP, *) '   ITER       TOL  OPTION:   ', maxit, TOL, IOPTPC
-                WRITE(LUREP, *) '   CYCLE    RESID  '
-            ENDIF
-        ENDIF
+        iter = 0
+        ierr = 0
+        if (first) then
+            first = .false.
+            if (litrep) then
+                write(lurep, *) '   ITER       TOL  OPTION:   ', maxit, tol, ioptpc
+                write(lurep, *) '   CYCLE    RESID  '
+            end if
+        end if
 
         ! Test the input parameters.
-
-        IF (ntrace < 0) THEN
-            IERR = -1
-        ELSE IF (LDW < MAX(1, ntrace)) THEN
-            IERR = -2
-        ELSE IF (maxit <= 0) THEN
-            IERR = -3
-        ELSE IF (LDH < RESTRT + 1) THEN
-            IERR = -4
-        ENDIF
-        IF (IERR /= 0) goto 9999
+        if (ntrace < 0) then
+            ierr = -1
+        else if (ldw < max(1, ntrace)) then
+            ierr = -2
+        else if (maxit <= 0) then
+            ierr = -3
+        else if (ldh < restrt + 1) then
+            ierr = -4
+        endif
+        if (ierr /= 0) goto 9999
 
 
         !     Alias workspace columns.
-
-        R = 1
-        S = R + 1
-        W = S + 1
-        Y = W
-        AV = Y + 1
-        V = AV + 1
+        r = 1
+        s = r + 1
+        w = s + 1
+        y = w
+        av = y + 1
+        v = av + 1
 
 
         !     Store the Givens parameters in matrix H.
-
-        CS = RESTRT + 1
-        SN = CS + 1
+        cs = restrt + 1
+        sn = cs + 1
 
         !   Adapt initial guess if necessary
-
         do iloop = 1, ntrace
             if (isnan(rhs(iloop))) then
                 write (lurep, '(''ERROR: NaN in RHS of segment:'', i10)') iloop
@@ -151,7 +145,6 @@ contains
         if (bnrm2 < small) sol = 0.0
 
         !     Set initial residual (AV is temporary workspace here).
-
         work(:, av) = rhs
         IF (sqrt(sum(sol * sol)) /= 0.0D+00) THEN
             CALL MATVEC (ntrace, NOMAT, -1.0D+00, amat, imat, &
@@ -183,7 +176,6 @@ contains
 
 
         !     Main GMRES iteration loop
-
         10 CONTINUE
 
         I = 0

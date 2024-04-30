@@ -29,8 +29,8 @@ contains
 
 
     !> Scales derivatives and accumulates processes in the balances arrays
-    !! In other words, uses calculated nunerical approximations of derivatives
-    !! to derive numerically approximated deltas, and applies these changes.
+    !! In other words, uses calculated numerical approximations of derivatives
+    !! for processes to numerically calculate approximated deltas, and applies these changes.
     subroutine apply_approx_derivatives_processes(deriv, notot, noseg, itfact, amass2, &
             idt, iaflag, dmps, intopt, isdmp)
 

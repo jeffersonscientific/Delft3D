@@ -174,7 +174,7 @@ contains
             ithandl = 0
             if (timon) call timstrt ("integration_scheme_18", ithandl)
 
-            call dlwqf5 (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
+            call initialize_gmres (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
                     iter, tol, iscale, litrep, noseg, &
                     noq3, noq, nobnd, novec, nomat, &
                     nolay, intsrt, intopt)

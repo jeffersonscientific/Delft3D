@@ -221,7 +221,7 @@ contains
                 !        of system of equations [0 = no, 1 =yes], klat = number of
                 !        layers in preconditioner [1,kmax]
 
-                call dlwqf5 (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
+                call initialize_gmres (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
                         iter, tol, iscale, litrep, noseg, &
                         noq3, noq, nobnd, novec, nomat, &
                         nolay, intsrt, intopt)

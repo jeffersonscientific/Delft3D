@@ -29,7 +29,7 @@ module m_dlwqf5
 contains
 
 
-    subroutine dlwqf5 (lunrep, nocons, coname, cons, ioptpc, &
+    subroutine initialize_gmres (lunrep, nocons, coname, cons, ioptpc, &
             &                    iter, tol, iscale, litrep, noseg, &
             &                    noq3, noq, nobnd, novec, nomat, &
             &                    nolay, intsrt, intopt)
