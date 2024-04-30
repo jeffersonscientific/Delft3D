@@ -46,6 +46,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    use m_sferic,               only: jsferic, fcorio
    use m_flowtimes ,           only : dts, time1, tstart_user, tfac
    use m_flowparameters,       only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
+   use m_lateral,              only: numlatsg, balat, get_lateral_discharge, add_lateral_load, add_lateral_sink
    use m_missing,              only: dmiss
    use timers,                 only: timon, timstrt, timstop
 
@@ -54,11 +55,13 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    integer, intent(in)         :: jas
 
    double precision            :: dvoli
-   integer                     :: i, iconst, j, kk, kkk, k, kb, kt, n, kk2, L, imba, jamba_src
+   integer                     :: i, iconst, j, kk, kkk, k, kb, kt, n, kk2, L, imba, jamba_src, ierr
    double precision, parameter :: dtol=1d-8
    double precision            :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
 
    double precision            :: Trefi
+   double precision, allocatable, dimension(:,:)     :: qin_over_laterals
+   double precision, allocatable, dimension(:,:)     :: qout_over_laterals
 
    integer(4) ithndl /0/
    if (timon) call timstrt ( "fill_constituents", ithndl )
@@ -149,6 +152,15 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
       end do
    end if
 
+   ! TODO AJV only when necessary, ie numlatsg > 0, apply_transport > 0)
+   ! add lateral in- and outflow of constituents as souces and sinks
+   allocate(qin_over_laterals(numlatsg,ndxi),stat=ierr)
+   allocate(qout_over_laterals(numlatsg,ndxi),stat=ierr)
+
+   call get_lateral_discharge(qin_over_laterals,qout_over_laterals)
+   call add_lateral_load(const_sour, qin_over_laterals, vol1, dtol)
+   call add_lateral_sink(const_sink, qout_over_laterals)
+
 !  sources
    do kk=1,Ndx
 
@@ -196,9 +208,10 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
          do j=1,NUMCONST
             const_sour(j,k) = const_sour(j,k) - constituents(j,k) * sq(k) * dvoli
          end do
+                  
       end do
-
-!     Note: from now on, only _add_ to sources
+      
+      !     Note: from now on, only _add_ to sources
 
 !     spiral flow source term
       if ( jasecflow > 0 .and. jaequili == 0 .and. kmx == 0 ) then

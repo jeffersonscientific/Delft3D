@@ -62,6 +62,7 @@ implicit none
          end do
       end if
       call realloc(incoming_lat_concentration, (/1, numconst, numlatsg/))
+      incoming_lat_concentration = 0d0
       call realloc(outgoing_lat_concentration, (/1, numconst, numlatsg/))
 
    end subroutine initialize_lateraldata
@@ -149,25 +150,49 @@ implicit none
    end subroutine get_lateral_discharge
    
    
-   ! Get / add lateral input contribution to the load being transported
-   module subroutine get_lateral_load(transport_load,lateral_discharge_in)
+   ! Add lateral input contribution to the load being transported
+   module subroutine add_lateral_load(transport_load, lateral_discharge_in, vol1, dtol)
       use m_transportdata, only: numconst
 
-      double precision, dimension(:,:), intent(in   )     :: lateral_discharge_in !< Lateral discharge going into the model (source)
       double precision, dimension(:,:), intent(inout)     :: transport_load       !< Load being transported
+      double precision, dimension(:,:), intent(in   )     :: lateral_discharge_in !< Lateral discharge going into the model (source)
+      double precision, dimension(:),   intent(in)        :: vol1                  !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
+      double precision, intent(in)                        :: dtol
 
+      double precision :: dvoli
+      integer i_const, i_lateral, i_cell, k1
+      
+
+      do i_const = 1,numconst   
+         do i_lateral = 1,numlatsg
+            do k1=n1latsg(i_lateral),n2latsg(i_lateral)
+               i_cell = nnlat(k1)
+               dvoli = 1d0/max(vol1(i_cell),dtol)
+               transport_load(i_const,i_cell) = transport_load(i_const,i_cell) + dvoli * lateral_discharge_in(i_lateral,i_cell) * incoming_lat_concentration(1,i_const,i_lateral)
+            enddo
+         enddo
+      enddo   
+   end subroutine add_lateral_load
+
+   ! Add lateral output contribution to the sink term
+   module subroutine add_lateral_sink(transport_sink, lateral_discharge_out)
+      use m_transportdata, only: numconst
+
+      double precision, dimension(:,:), intent(inout)     :: transport_sink        !< 
+      double precision, dimension(:,:), intent(in)        :: lateral_discharge_out !< Lateral discharge going into the model (source)
+      
       integer i_const, i_lateral, i_cell, k1
 
       do i_const = 1,numconst   
          do i_lateral = 1,numlatsg
-               do k1=n1latsg(i_lateral),n2latsg(i_lateral)
-                  i_cell = nnlat(k1) 
-                  transport_load(i_const,i_cell) = transport_load(i_const,i_cell) + lateral_discharge_in(i_lateral,i_cell) * incoming_lat_concentration(1,i_const,i_lateral)
-               enddo
+            do k1=n1latsg(i_lateral),n2latsg(i_lateral)
+               i_cell = nnlat(k1)
+               transport_sink(i_const,i_cell) = transport_sink(i_const,i_cell) + lateral_discharge_out(i_lateral,i_cell)
+            enddo
          enddo
       enddo   
-   end subroutine get_lateral_load
-
+   end subroutine add_lateral_sink
+   
    
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.

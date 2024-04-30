@@ -117,7 +117,7 @@ subroutine test_get_lateral_load_and_discharge
    incoming_lat_concentration(1,:,1) = (/31d0,20d0,0.23d0/)
    incoming_lat_concentration(1,:,2) = 25d0
    
-   call get_lateral_load(transport_load,lateral_discharge_in)
+   call add_lateral_load(transport_load,lateral_discharge_in, (/1d0/), 1d0)
    
    i_lateral = 1 ! only the first lateral is a source
    do i_const = 1,numconst
