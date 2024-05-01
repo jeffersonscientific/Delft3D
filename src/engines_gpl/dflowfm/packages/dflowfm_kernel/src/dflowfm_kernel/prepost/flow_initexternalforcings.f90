@@ -267,7 +267,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
             iadv(Lf) = 0
          endif
 
-         if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+         if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
             zkbndz(1,k) = zk(lncn(1,Lf) )
             zkbndz(2,k) = zk(lncn(2,Lf) )
          endif
@@ -356,7 +356,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
            iadv(Lf)   = -1                              ! switch off adv at open u-bnd's
 
-           if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+           if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
                zkbndu(1,k) = zk(lncn(1,Lf) )
                zkbndu(2,k) = zk(lncn(2,Lf) )
            endif
