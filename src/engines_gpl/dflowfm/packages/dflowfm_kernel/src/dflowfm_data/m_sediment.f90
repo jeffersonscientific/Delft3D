@@ -209,6 +209,8 @@ module m_sediment
  end subroutine allocgrains
 
  subroutine deallocgrains() ! for all fractions:
+ use m_turbulence, only: sigsed
+
  if (allocated (d50) ) then
     deallocate (d50, rhosed, erosionpar, ustcre2, ws, sedini, uniformerodablethickness,  &
                 d50ca, d50cb, d50wa, d50wb, d50wc, bwcr  )
