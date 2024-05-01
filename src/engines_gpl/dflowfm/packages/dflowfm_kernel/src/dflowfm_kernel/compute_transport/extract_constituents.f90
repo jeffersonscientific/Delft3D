@@ -32,6 +32,7 @@
 
 !> extract constituent array
 subroutine extract_constituents()
+   use precision, only: fp
    use m_transport
    use m_flow
    use m_flowgeom
@@ -49,6 +50,7 @@ subroutine extract_constituents()
    integer :: i, iconst, k, kk, limmin, limmax,  ll, kb, k1, kt, ii   
    double precision :: dmin
    double precision :: t_freeze  !< freezing point temperature [degC]
+   integer, parameter :: dp = kind(t_freeze)
 
    integer(4) ithndl /0/
    if (timon) call timstrt ( "extract_constituents", ithndl )
@@ -116,7 +118,7 @@ subroutine extract_constituents()
       else if (isalt > 0) then ! only at surface limit to freezing point
          do k = 1, Ndx
             kt = ktop(k)
-            t_freeze = freezing_temperature(constituents(isalt,kt))
+            t_freeze = real(freezing_temperature(real(constituents(isalt,kt),fp)),dp)
             if (constituents(itemp,kt) < t_freeze) then
                 constituents(itemp,kt) = t_freeze
                 limmin   = limmin + 1

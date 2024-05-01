@@ -113,18 +113,23 @@ end type icecover_type
 contains
 
 !> Compute the freezing temperature based on NEMO (2022), Fofonoff and Millard (1983)
-pure function freezing_temperature(salinity) result (t_freeze)
-    real(fp), intent(in) :: salinity            !< salinity (ppt)
-    real(fp)             :: t_freeze            !< freezing temperature of water (degC)
+!! Parameter names consistent with the latter publication.
+pure function freezing_temperature(salinity, pressure) result (t_freeze)
+    real(fp)          , intent(in)    :: salinity            !< salinity (ppt)
+    real(fp), optional, intent(in)    :: pressure            !< pressure (Pa)
+    real(fp)                          :: t_freeze            !< freezing temperature of water (degC)
 
-    real(fp), parameter  :: a = -0.0575_fp      !< coefficient a of freezing point formula
-    real(fp), parameter  :: b =  1.710523e-3_fp !< coefficient b of freezing point formula
-    real(fp), parameter  :: c = -2.154996e-4_fp !< coefficient c of freezing point formula
+    real(fp), parameter  :: a0 = -0.0575_fp      !< coefficient a0
+    real(fp), parameter  :: a1 =  1.710523e-3_fp !< coefficient a1
+    real(fp), parameter  :: a2 = -2.154996e-4_fp !< coefficient a2
+    real(fp), parameter  :: b  = -7.53e-8_fp     !< coefficient b. Note Fofonoff & Millard define pressure in decibar, we use Pascal.
 
-    ! d = -7.53d-3
-    ! P = 0
-    ! fp = (a + b*sqrt(S) + c*S)*S + d*P
-    t_freeze = ( a + b*sqrt(salinity) + c*salinity )*salinity
+    t_freeze = ( a0 + a1*sqrt(salinity) + a2*salinity )*salinity
+    if (present(pressure)) then
+        ! pressure can often be ignored since the typical atmospheric pressure of 1 bar
+        ! makes only a difference of 0.007 degC
+        t_freeze = t_freeze + b * pressure
+    end if
 end function freezing_temperature
 
 !> Nullify/initialize an icecover data structure.
