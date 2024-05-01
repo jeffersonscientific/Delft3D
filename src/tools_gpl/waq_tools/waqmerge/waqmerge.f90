@@ -23,15 +23,14 @@
 
 program waqmerge
 
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, set_log_unit_number
       use io_netcdf
       use m_write_waqgeom
       use m_hydmod
       use hyd_waqgeom_old
       use m_alloc
       use waqmerge_version_module, only: getfullversionstring_waqmerge
-      use m_dattim
+      use m_date_time_utils_external, only : write_date_time
       use m_file_path_utils, only : extract_file_extension
 
       implicit none
@@ -83,8 +82,8 @@ program waqmerge
          mdu_exist = .false.
          inquire(file = trim(hyd%file_hyd%name),exist = mdu_exist)
          if (.not. mdu_exist) then
-            write(*     ,'(a,a)') '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
-            call srstop(1)
+            write(*     ,'(a,a)'), '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
+            call terminate_execution(1)
          endif
 
          ! report
@@ -111,11 +110,11 @@ program waqmerge
          write(*      ,'(/a)') ' Execution will stop '
          stop (1)
       endif
-      call setmlu(lunrep)
+      call set_log_unit_number(lunrep)
 
       ! execution start
 
-      call dattim(rundat)
+      call write_date_time(rundat)
       write (lunrep,*)
       write (lunrep,'(2a)') ' execution start : ',rundat
       write (lunrep,*)
@@ -178,7 +177,7 @@ program waqmerge
                domain_hyd%file_bnd%name = domain_hyd%file_lga%name
             else
                write(lunrep,'(a)') ' error: no boundary file found for domain'
-               call srstop(1)
+               call terminate_execution(1)
             endif
          endif
          if (domain_hyd%file_geo%name .eq. ' ') then
@@ -187,7 +186,7 @@ program waqmerge
                domain_hyd%file_geo%name = domain_hyd%file_cco%name
             else
                write(lunrep,'(a)') ' error: no waqgeom file found for domain'
-               call srstop(1)
+               call terminate_execution(1)
             endif
          endif
          call read_hyd_init(domain_hyd)
@@ -266,7 +265,7 @@ program waqmerge
                write(lunrep,'(a,i10)') 'Time in domain: ', itime_domain
                write(lunrep,'(a,i10)') 'Time expected:  ', itime
                write(lunrep,'(a,i10)') 'Domain is:      ', i_domain
-               call srstop(1)
+               call terminate_execution(1)
             endif
             if ( iend_domain .ne. iend ) then
                write(lunrep,'(a)') ' warning end time in domains not equal'
@@ -287,7 +286,7 @@ program waqmerge
 
       ! finished
 
-      call dattim(rundat)
+      call write_date_time(rundat)
       write (lunrep,*)
       write (lunrep,'(a)') ' normal end of execution'
       write (lunrep,'(2a)') ' execution stop : ',rundat
