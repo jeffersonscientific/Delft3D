@@ -348,11 +348,12 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
     
     do iconst = 1,numconst
         if (i1 == i2) then ! on outflow side
+            const_sour(iconst,k) = const_sour(iconst,k) + qsrck * ccsrc(iconst,n) * dvoli
             flux = qsrck * ccsrc(iconst,n)
         else ! on inflow side
+            const_sour(iconst,k) = const_sour(iconst,k) + qsrck * constituents(iconst,k) * dvoli
             flux = qsrck * constituents(iconst,k)
         endif
-        const_sour(iconst,k) = const_sour(iconst,k) + flux * dvoli
         if (jamba_src > 0) then
             if (imbs2sed(iconst) > 0) then
                 dt = dts * morfac
