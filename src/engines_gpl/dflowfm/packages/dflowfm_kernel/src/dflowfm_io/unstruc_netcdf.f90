@@ -13448,7 +13448,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
           call realloc(tmp_ucxq, um%nbnd_read, stat=ierr, keepExisting=.false.)
           call realloc(tmp_ucyq, um%nbnd_read, stat=ierr, keepExisting=.false.)
           call realloc(tmp_rho   , um%nbnd_read, stat=ierr, keepExisting=.false.)
-          call realloc(tmp_rhowat, um%nbnd_read, stat=ierr, keepExisting=.false.)
+          if (stm_included) then
+             call realloc(tmp_rhowat, um%nbnd_read, stat=ierr, keepExisting=.false.)
+          endif
 
           ierr = nf90_inq_varid(imapfile, 's0_bnd', id_s0bnd)
           if (ierr==0) then
@@ -13500,10 +13502,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
               call check_error(ierr, 'rho_bnd')
           endif
 
-          ierr = nf90_inq_varid(imapfile, 'rhowat_bnd', id_rhowatbnd)
-          if (ierr==0) then
-              ierr = nf90_get_var(imapfile, id_rhowatbnd, tmp_rhowat, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
-              call check_error(ierr, 'rhowat_bnd')
+          if (stm_included) then
+              ierr = nf90_inq_varid(imapfile, 'rhowat_bnd', id_rhowatbnd)
+              if (ierr==0) then
+                  ierr = nf90_get_var(imapfile, id_rhowatbnd, tmp_rhowat, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+                  call check_error(ierr, 'rhowat_bnd')
+              endif
           endif
 
           if (nerr_/=0) goto 999
@@ -13559,6 +13563,11 @@ subroutine unc_read_map_or_rst(filename, ierr)
           call realloc(tmp_sqi, ndx-ndxi, stat=ierr, keepExisting=.false.)
           call realloc(tmp_ucxq, ndx-ndxi, stat=ierr, keepExisting=.false.)
           call realloc(tmp_ucyq, ndx-ndxi, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_rho   , ndx-ndxi, stat=ierr, keepExisting=.false.)
+          if (stm_included) then
+             call realloc(tmp_rhowat, ndx-ndxi, stat=ierr, keepExisting=.false.)
+          endif
+          
           ierr = get_var_and_shift(imapfile, 's0_bnd', tmp_s0, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 's0_bnd')
@@ -13585,6 +13594,11 @@ subroutine unc_read_map_or_rst(filename, ierr)
           ierr = get_var_and_shift(imapfile, 'rho_bnd', tmp_rho, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 'rho_bnd')
+          if (stm_included) then
+             ierr = get_var_and_shift(imapfile, 'rhowat_bnd', tmp_rhowat, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
+             call check_error(ierr, 'rhowat_bnd')
+          endif
           do i=1,ndxbnd_own
              j=ibnd_own(i)
              Lf=lnxi+j
@@ -13599,6 +13613,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
              ucxq(kk) = tmp_ucxq(j)
              ucyq(kk) = tmp_ucyq(j)
              rho(kk)  = tmp_rho(j)
+             if (stm_included) then
+                rhowat(kk)  = tmp_rhowat(j)
+             endif
           enddo
        endif
     endif
