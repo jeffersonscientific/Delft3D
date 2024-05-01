@@ -36,7 +36,6 @@
       use m_sferic
       use m_flowtimes
       use m_xbeach_netcdf
-      use m_transform_wave_physics
 
       use unstruc_display
 
@@ -53,7 +52,7 @@
       endif
 
       ! SWAN
-      if ((jawave==3 .or. jawave==6) .and. .not. flowWithoutWaves) then
+      if ((jawave==3 .or. jawave>=6) .and. .not. flowWithoutWaves) then
          if( kmx == 0 ) then
             call tauwave()       ! 3D, done in update_verticalprofiles
          end if
@@ -93,23 +92,6 @@
             call tauwave()
          endif
       endif
-      !
-      if (jawave==7 .and. .not. flowWithoutWaves) then
-         ! 
-         call transform_wave_physics_hp(  hwavcom      ,phiwav    ,twavcom   ,hs     , &
-                                        & sxwav        ,sywav     ,mxwav     ,mywav  , &
-                                        & distot       ,dsurf     ,dwcap             , &
-                                        & ndx          ,1         ,hwav      ,twav   , &
-                                        & ag           ,.true.    ,waveforcing       , &
-                                        & JONSWAPgamma0, sbxwav   ,sbywav    ,ierror   )
-         !
-         if( kmx == 0 ) then
-            call tauwave()       ! 3D, done in update_verticalprofiles
-         end if             
-         !
-         call setwavfu()
-         call setwavmubnd()
-      end if
       !
       ! this part is for online interacter visualisation
       if ( jaGUI == 1 .and. jawave>2 .and. .not. flowWithoutWaves) then

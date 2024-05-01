@@ -2657,16 +2657,16 @@ module m_ec_provider
              ncstdnames(2) = 'sea_surface_wave_significant_height'
          case ('xwaveforce')
              ncvarnames(1) = 'xfor'
-             ncstdnames(1) = 'xfor'
+             ncstdnames(1) = 'eastward_wave_force'
          case ('ywaveforce')
              ncvarnames(1) = 'yfor'
-             ncstdnames(1) = 'yfor'
+             ncstdnames(1) = 'northward_wave_force'
          case ('freesurfacedissipation')
              ncvarnames(1) = 'ssurf'
-             ncstdnames(1) = 'ssurf'
+             ncstdnames(1) = 'depth_induced_surf_breaking_energy_dissipation'
          case ('whitecappingdissipation')
              ncvarnames(1) = 'swcap'
-             ncstdnames(1) = 'swcap'
+             ncstdnames(1) = 'whitecapping_energy_dissipation'
          case ('totalwaveenergydissipation')
              ncvarnames(1) = 'dissip'
              ncstdnames(1) = 'total_energy_dissipation'    

@@ -499,37 +499,36 @@ end subroutine set_all_wave_parameters
 
 !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress gradients)
 subroutine set_parameters_for_radiation_stress_driven_forces()
-
-    ! don't change this order, ec module depends on it. To be refactored
-    success = success .and. ecGetValues(ecInstancePtr, item_dir , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_tp  , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_fx  , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_fy  , ecTime)
-    mxwav  (:) = 0d0
-    mywav  (:) = 0d0
-    uorbwav(:) = 0d0
+   implicit none
+   success = success .and. ecGetValues(ecInstancePtr, item_dir , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_tp  , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_fx  , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_fy  , ecTime)
+   mxwav  (:) = 0d0
+   mywav  (:) = 0d0
+   uorbwav(:) = 0d0
 
 end subroutine set_parameters_for_radiation_stress_driven_forces
+
 !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via total dissipation) 
 subroutine set_parameters_for_dissipation_driven_forces()
-    twav(:) = 0d0
-    success = success .and. ecGetValues(ecInstancePtr, item_dir   , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_hrms  , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_tp    , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_distot, ecTime)
-    sxwav  (:) = 0d0
-    sywav  (:) = 0d0
-    mxwav  (:) = 0d0
-    mywav  (:) = 0d0
-    uorbwav(:) = 0d0
+   implicit none
+   success = success .and. ecGetValues(ecInstancePtr, item_dir   , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_hrms  , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_tp    , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_distot, ecTime)
+   sxwav  (:) = 0d0
+   sywav  (:) = 0d0
+   mxwav  (:) = 0d0
+   mywav  (:) = 0d0
+   uorbwav(:) = 0d0
 
 end subroutine set_parameters_for_dissipation_driven_forces
 
 !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
 subroutine set_parameters_for_3d_dissipation_driven_forces()
 
-    ! don't change this order, ec module depends on it. To be refactored
     success = success .and. ecGetValues(ecInstancePtr, item_tp     , ecTime)
     success = success .and. ecGetValues(ecInstancePtr, item_dir    , ecTime)
     success = success .and. ecGetValues(ecInstancePtr, item_hrms   , ecTime)

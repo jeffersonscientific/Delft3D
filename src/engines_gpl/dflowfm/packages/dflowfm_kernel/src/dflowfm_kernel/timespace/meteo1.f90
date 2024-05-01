@@ -7232,10 +7232,9 @@ module m_meteo
          case ('dir', 'wavedirection')
             itemPtr1 => item_dir
             dataPtr1 => phiwav
-            ! debug offline wave, see if needed
+            ! wave height needed as the weighting factor for direction interpolation
             itemPtr2 => item_hrms
             dataPtr2 => hwavcom
-            !\debug
             jamapwav_phiwav = 1
          case ('fx','xwaveforce')
             itemPtr1 => item_fx

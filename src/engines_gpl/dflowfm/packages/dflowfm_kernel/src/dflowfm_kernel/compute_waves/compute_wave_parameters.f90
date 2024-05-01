@@ -39,12 +39,14 @@
       use m_sferic
       use m_flowtimes
       use mathconsts, only: sqrt2_hp
+      use m_transform_wave_physics
 
       use unstruc_display
 
       implicit none
 
       integer                                     :: k1, k2, k, L
+      integer                                     :: ierror
       double precision                            :: hh, hw, tw, cs, sn, uorbi, rkw, ustt, uwi
 
       ! Fetch models
@@ -87,6 +89,17 @@
          endif
          hwav = min(hwav, gammax*hs)
          call wave_uorbrlabda()
+         !
+         ! Needed here, because we need wave mass fluxes to calculate stokes drift
+         if (jawave==7) then
+            call transform_wave_physics_hp(  hwavcom      ,phiwav    ,twavcom   ,hs     , &
+                               & sxwav        ,sywav     ,mxwav     ,mywav  , &
+                               & distot       ,dsurf     ,dwcap             , &
+                               & ndx          ,1         ,hwav      ,twav   , &
+                               & ag           ,.true.    ,waveforcing       , &
+                               & JONSWAPgamma0, sbxwav   ,sbywav    ,ierror   )
+         end if
+         !
          if(kmx == 0) then
             call wave_comp_stokes_velocities()
          end if
