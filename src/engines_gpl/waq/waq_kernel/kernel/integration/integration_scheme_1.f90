@@ -418,33 +418,29 @@ contains
                 call dlwqce (a(imass:), a(ivoll:), a(ivol2:), nosys, notot, noseg, file_unit_list(19))
                 call copy_real_array_elements   (a(ivoll:), a(ivol:), noseg)
             else
-                !           replace old by new volumes
+                ! replace old by new volumes
                 call copy_real_array_elements   (a(ivol2:), a(ivol:), noseg)
             endif
 
-            !          integrate the fluxes at dump segments fill ASMASS with mass
-
+            ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
                 call proint (nflux, ndmpar, idtold, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
-            !          end of loop
-
+            ! end of loop
             if (ACTION == ACTION_FULLCOMPUTATION) goto 10
 
             20 continue
 
             if (ACTION == ACTION_FINALISATION    .or. &
                     ACTION == ACTION_FULLCOMPUTATION) then
-                !             close files, except monitor file
-
+                ! close files, except monitor file
                 call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
-                !             write restart file
-
-                CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
+                ! write restart file
+                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
                         C(ISNAM:), NOTOT, NOSSS)
             endif
 

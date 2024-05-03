@@ -434,7 +434,7 @@ contains
 
                 !             write restart file
 
-                CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
+                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
                         C(ISNAM:), NOTOT, NOSSS)
             endif
 

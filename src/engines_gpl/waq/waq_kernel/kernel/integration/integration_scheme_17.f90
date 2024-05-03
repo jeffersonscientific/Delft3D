@@ -378,7 +378,7 @@ contains
             !
             !          write restart file
             !
-            CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
+            CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
                     C(ISNAM:), NOTOT, NOSEG)
             !
         end associate

@@ -280,7 +280,7 @@ contains
                 call close_files(file_unit_list)
 
                 ! write restart file
-                call DLWQ13(file_unit_list, LCHAR, A(ICONC:), ITIME, C(IMNAM:), &
+                call write_restart_file(file_unit_list, LCHAR, A(ICONC:), ITIME, C(IMNAM:), &
                             C(ISNAM:), NOTOT, NOSSS)
             end if
 

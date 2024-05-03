@@ -296,7 +296,7 @@ contains
                 write(*, '(A)')   '          Current concentration fields written to _res.map.'
                 write(lunout, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
                 write(*, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
-                call dlwq13 (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
+                call write_restart_file (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
                 call srstop(1)
             endif
         endif
