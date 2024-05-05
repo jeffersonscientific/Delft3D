@@ -5691,7 +5691,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f022_c304_sedimentmodelnr3_1EH" ref="dflowfm_default">
-      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c304_sedimentmodelnr2_1EH</path>
+      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c304_sedimentmodelnr3_1EH</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">
