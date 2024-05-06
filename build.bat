@@ -9,19 +9,21 @@ set -vs=0
 set ifort=
 set -ifort=0
 set coverage=0
+set build_type=Release
+set -build_type=
 set cmake=cmake
 
 rem # Jump to the directory where this build.bat script is
 cd %~dp0
 set root=%CD%
 
-call :GetArguments %*
+call :get_arguments %*
 if !ERRORLEVEL! NEQ 0 exit /B %~1
-call :GetEnvironmentVars
+call :get_environment_vars
 if !ERRORLEVEL! NEQ 0 exit /B %~1
-call :SetGenerator
+call :set_generator
 if !ERRORLEVEL! NEQ 0 exit /B %~1
-call :CheckCMakeInstallation
+call :check_cmake_installation
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 
@@ -32,29 +34,27 @@ echo     ifort       : !ifort!
 echo     prepareonly : !prepareonly!
 echo     coverage    : !coverage!
 echo     vs          : !vs!
+echo     build_type  : !build_type!
 
-call :Checks
+call :checks
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 rem Only set the enviroment if not run from a developer command prompt
 if "%VCINSTALLDIR%" == "" (
-    call :vcvarsall
+    call :set_vs_environment
     if !ERRORLEVEL! NEQ 0 exit /B %~1
 )
 
-call :DoCMake !config!
+call :do_cmake
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
-if "!config!" == "dflowfm_interacter" call :set_dflowfm_interacter_link_flag
+if !coverage! EQU 1 call :insert_coverage !config!
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
-if !coverage! EQU 1 call :insertCoverage !config!
+call :build
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
-call :Build !config!
-if !ERRORLEVEL! NEQ 0 exit /B %~1
-
-call :installall
+call :install
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 
@@ -70,7 +70,7 @@ rem ===
 rem =================================
 rem === Command line arguments    ===
 rem =================================
-:GetArguments
+:get_arguments
     echo.
     echo Get command line arguments ...
 
@@ -93,7 +93,7 @@ rem =================================
     )
 
     rem Read other arguments
-    set "options=-vs:0 -ifort:0 -coverage: -prepareonly:"
+    set "options=-vs:0 -ifort:0 -coverage: -prepareonly: -build_type:Release"
     rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
     for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
     :loop
@@ -112,10 +112,13 @@ rem =================================
       goto :loop
     )
     if !-coverage! == 1 (
-    set coverage=1
+        set coverage=1
     )
     if !-prepareonly! == 1 (
-    set prepareonly=1
+        set prepareonly=1
+    )
+    if not "!-build_type!" == "" (
+        set "build_type=!-build_type!"
     )
     goto :eof
 
@@ -130,7 +133,7 @@ rem =======================
 rem =================================
 rem === Get environment variables ===
 rem =================================
-:GetEnvironmentVars
+:get_environment_vars
     echo.
     echo Attempting to find latest versions of ifort and Visual Studio based on environment variables ...
 
@@ -209,7 +212,7 @@ rem =================================
 rem ================================
 rem === Check CMake installation ===
 rem ================================
-:CheckCMakeInstallation
+:check_cmake_installation
     echo.
     echo Checking whether CMake is installed ...
     set count=1
@@ -240,16 +243,13 @@ rem ================================
             echo        Be sure that the cmake directory is added to environment parameter PATH
             goto :end
         )
-
-
-
     )
     goto :eof
 
 rem =======================
-rem === SetGenerator   ====
+rem === Set generator  ====
 rem =======================
-:SetGenerator
+:set_generator
     if "!vs!" == "2017" (
         set generator="Visual Studio 15 2017"
     )
@@ -262,9 +262,9 @@ rem =======================
     goto :eof
 
 rem =======================
-rem === Checks         ====
+rem === Checks ============
 rem =======================
-:Checks
+:checks
     if "!config!" == "" (
         echo ERROR: config is empty.
         set ERRORLEVEL=1
@@ -280,10 +280,10 @@ rem =======================
     )
     goto :eof
 
-rem =================
-rem === vcvarsall ===
-rem =================
-:vcvarsall
+rem =======================
+rem === Set VS enviroment =
+rem =======================
+:set_vs_environment
     rem # Attempt to execute vcvarsall.bat if not run from a developer command prompt
     if %prepareonly% EQU 1 goto :eof
     if !ERRORLEVEL! NEQ 0 goto :eof
@@ -304,46 +304,41 @@ rem =================
     goto :eof
 
 rem =======================
-rem === DoCMake        ====
+rem === CMake configure ===
 rem =======================
-:DoCMake
+:do_cmake
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
-    call :createCMakeDir build_%~1
-    echo Running CMake for %~1 ...
-    cd /d "%root%\build_%~1\"
-    !cmake! ..\src\cmake -G %generator% -A x64 -B "." -D CONFIGURATION_TYPE="%~1" 1>cmake_%~1.log 2>&1
+    call :create_cmake_dir build_!config!
+    echo Running CMake for !config! ...
+    !cmake! -S .\src\cmake -B build_!config! -G %generator% -A x64 -D CONFIGURATION_TYPE="!config!" -D CMAKE_INSTALL_PREFIX=.\install_!config!\ 1>build_!config!\cmake_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
 
 rem =======================
-rem === insertCoverage ====
+rem === Insert coverage ===
 rem =======================
-:insertCoverage
+:insert_coverage
     rem Insert options to implement the build objects with hooks for the code-coverage tool.
     rem This code is running from within build_%~1
     python %root%\src\scripts_lgpl\win64\testcoverage\addcovoptions.py %~1.sln
 
-
 rem =======================
-rem === Build          ====
+rem === Build =============
 rem =======================
-:Build
+:build
     if %prepareonly% EQU 1 goto :eof
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
-    echo Building %~1 ...
-    cd /d "%root%\build_%~1\"
-    call :VSbuild %~1
-    cd /d "%root%\"
+    echo Building !config! ...
+    !cmake! --build build_!config! --config !build_type! 1>build_!config!\build_!config!.log 2>&1
+    if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
 
-
-
 rem =======================
-rem === createCMakeDir ====
+rem === Create CMake dir ==
 rem =======================
-:createCMakeDir
+:create_cmake_dir
     echo Creating directory %root%\%~1 ...
     cd /d %root%
     if exist "%root%\%~1\" rmdir /s/q "%root%\%~1\" > del.log 2>&1
@@ -351,91 +346,21 @@ rem =======================
     del /f/q del.log
     goto :eof
 
-
-
 rem =======================
-rem === VSbuild        ====
+rem === Install ===========
 rem =======================
-:VSbuild
+:install
+    if %prepareonly% EQU 1                goto :eof
+    if !ERRORLEVEL! NEQ 0                 goto :eof
+
     echo.
-    echo Building with VisualStudio: %~1 ...
-    set currentWorkDir=%CD%
-    devenv.com %~1.sln /Rebuild "Release|x64" 1>%currentWorkDir%\build_%~1.log 2>&1
+    echo Installing !config! ...
+    !cmake! --install build_%config% --config !build_type! 1>build_!config!\install_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
 
 rem =======================
-rem === InstallAll     ====
-rem =======================
-:installall
-    if %prepareonly% EQU 1                goto :eof
-    if !ERRORLEVEL! NEQ 0                 goto :eof
-
-    if "!config!" == "all" (
-        echo.
-        echo Installing in build_all ...
-        xcopy %root%\build_all\x64\Release\dimr                     %root%\build_all\x64\dimr\            /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\dflowfm\bin\dflowfm*     %root%\build_all\x64\dflowfm\bin\     /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dflowfm\bin\dfm*         %root%\build_all\x64\dflowfm\bin\     /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dflowfm\bin\cosumo_bmi*  %root%\build_all\x64\dflowfm\bin\     /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dflowfm\default          %root%\build_all\x64\dflowfm\default\ /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dflowfm\scripts          %root%\build_all\x64\dflowfm\scripts\ /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\dwaq\bin\delwaq.dll      %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\delwaq*.exe     %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\agrhyd.exe      %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\ddcouple.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\maptonetcdf.exe      %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\waqmerge.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\waqpb_export.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\waqpb_import.exe    %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\bin\waq_plugin*.dll %root%\build_all\x64\dwaq\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\resources             %root%\build_all\x64\dwaq\resources\    /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\installation_default    %root%\build_all\x64\dwaq\installation_default\    /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaq\scripts             %root%\build_all\x64\dwaq\scripts\    /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\dpart\bin\delpar.exe     %root%\build_all\x64\dpart\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dpart\scripts            %root%\build_all\x64\dpart\scripts\    /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\dwaves\bin\wave.dll      %root%\build_all\x64\dwaves\bin\      /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaves\bin\wave.exe      %root%\build_all\x64\dwaves\bin\      /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaves\default           %root%\build_all\x64\dwaves\default\  /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\dwaves\scripts           %root%\build_all\x64\dwaves\scripts\  /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\swan\bin\swan_mpi.exe    %root%\build_all\x64\swan\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\swan\bin\swan_omp.exe    %root%\build_all\x64\swan\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\swan\scripts             %root%\build_all\x64\swan\scripts\    /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\esmf\bin                 %root%\build_all\x64\esmf\bin\        /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_all\x64\Release\esmf\scripts             %root%\build_all\x64\esmf\scripts\    /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\dmor                     %root%\build_all\x64\dmor\            /E /C /Y /Q > del.log 2>&1
-
-        xcopy %root%\build_all\x64\Release\share\bin                %root%\build_all\x64\share\bin\       /E /C /Y /Q > del.log 2>&1
-        rmdir /s /q %root%\build_all\x64\Release > del.log 2>&1
-        del /f/q del.log
-    )
-    if "!config!" == "delft3d4" (
-        echo.
-        echo Installing in build_delft3d4 ...
-        xcopy %root%\build_delft3d4\x64\Release\dflow2d3d                %root%\build_delft3d4\x64\dflow2d3d\       /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\dimr                     %root%\build_delft3d4\x64\dimr\            /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\dpart                    %root%\build_delft3d4\x64\dpart\           /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\dwaq                     %root%\build_delft3d4\x64\dwaq\            /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\dwaves                   %root%\build_delft3d4\x64\dwaves\          /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\share                    %root%\build_delft3d4\x64\share\           /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\swan                     %root%\build_delft3d4\x64\swan\            /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\d_hydro\bin\*.exe        %root%\build_delft3d4\x64\dflow2d3d\bin\   /E /C /Y /Q > del.log 2>&1
-        xcopy %root%\build_delft3d4\x64\Release\dmor                     %root%\build_delft3d4\x64\dmor\            /E /C /Y /Q > del.log 2>&1
-
-        rmdir /s /q %root%\build_delft3d4\x64\Release > del.log 2>&1
-        del /f/q del.log
-    )
-    goto :eof
-
-rem =======================
-rem === USAGE        ======
+rem === Usage =============
 rem =======================
 :usage
     echo.
@@ -472,6 +397,7 @@ rem =======================
     echo "-prepareonly: Only prepare solution, do not build the code.         Example: -prepareonly"
     echo "-vs: desired visual studio version.                                 Example: -vs 2019
     echo "-ifort: desired intel fortran compiler version.                     Example: -ifort 21
+    echo "-build_type: build optimization level                               Example: -build_type Debug
     echo.
     echo "More info  : https://oss.deltares.nl/web/delft3d/source-code"
     echo "About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README"
@@ -480,7 +406,7 @@ rem =======================
     goto :end
 
 rem =======================
-rem === errorMessage ======
+rem === Error message =====
 rem =======================
 :errorMessage
     echo.
@@ -489,9 +415,8 @@ rem =======================
     echo ERROR: Please check the log files in the build_%config% directory.
     goto :eof
 
-
 rem =======================
-rem === END TAG ===========
+rem === End tag ===========
 rem =======================
 :end
     rem # To prevent the DOS box from disappearing immediately: remove the rem on the following line
@@ -503,6 +428,6 @@ rem =======================
     )
 
 rem =======================
-rem === EOF TAG ===========
+rem === EOF tag ===========
 rem =======================
 :eof
