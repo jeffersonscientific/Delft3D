@@ -440,8 +440,8 @@ contains
                 call close_files(file_unit_list)
 
                 ! write restart file
-                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
-                        C(ISNAM:), NOTOT, NOSSS)
+                call write_restart_file(file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                        c(isnam:), notot, nosss)
             endif
 
         end associate

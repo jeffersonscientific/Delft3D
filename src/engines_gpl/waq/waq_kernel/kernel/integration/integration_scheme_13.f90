@@ -142,9 +142,7 @@ contains
             IF (ACTION == ACTION_INITIALISATION  .OR. &
                     ACTION == ACTION_FULLCOMPUTATION) THEN
 
-                !
-                !          some initialisation
-                !
+                ! some initialisation
                 ithandl = 0
                 ITIME = ITSTRT
                 NSTEP = (ITSTOP - ITSTRT) / IDT
@@ -194,7 +192,6 @@ contains
             ENDIF
 
             !          adaptations for layered bottom 08-03-2007  lp
-
             nosss = noseg + nseg2
             NOQTT = NOQ + NOQ4
             inwtyp = intyp + nobnd
@@ -384,8 +381,7 @@ contains
                     c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
                     a(iwdmp:), 1, notot)
 
-            !          explicit part of the transport step, derivative
-
+            ! explicit part of the transport step, derivative
             call dlwq16 (nosys, notot, nosss, noq1, noq2, &
                     noq3, noqt, nddim, nvdim, a(idisp:), &
                     a(idnew:), a(ivnew:), a(iarea:), a(iflow:), a(ileng:), &
@@ -393,15 +389,13 @@ contains
                     a(iboun:), intopt, ilflag, idt, a(iderv:), &
                     iaflag, a(imas2:), ndmpq, j(iqdmp:), a(idmpq:))
 
-            !          explicit part of transport done, volumes on diagonal
-
+            ! explicit part of transport done, volumes on diagonal
             call dlwq42 (nosys, notot, nototp, nosss, a(ivol2:), &
                     surface, a(imass:), a(iconc:), a(iderv:), idt, &
                     ivflag, file_unit_list(19))
 
 
-            !          performs the implicit part of the transport step
-
+            ! performs the implicit part of the transport step
             call dlwqe1 (nosys, notot, nosss, noq3, lnoq, &
                     nddim, nvdim, a(ldisp:), a(ldiff:), a(lvelo:), &
                     a(larea:), a(lflow:), a(lleng:), j(lxpnt:), iknmkv, &

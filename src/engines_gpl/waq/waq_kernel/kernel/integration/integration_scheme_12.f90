@@ -396,7 +396,7 @@ contains
 
             !        explicit part of the transport step, derivative
 
-            call dlwq50 (nosys, notot, nosss, noqt, nvdim, &
+            call first_step_fct (nosys, notot, nosss, noqt, nvdim, &
                     a(ivnew:), a(iarea:), a(iflow:), j(ixpnt:), j(ivpnw:), &
                     a(iconc:), a(iboun:), idt, a(iderv:), iaflag, &
                     a(imas2:))
