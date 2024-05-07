@@ -5328,9 +5328,13 @@ function any_structures_lie_across_multiple_partitions(node_count_per_structure)
       return
    end if
    
-#ifdef HAVE_MPI
    number_of_structures = size(node_count_per_structure)
    
+   if (number_of_structures == 0) then
+      return
+   end if
+   
+#ifdef HAVE_MPI
    loop_over_structures: do i_struc = 1, number_of_structures
    
       ! The number of nodes for each structure that is provided as input, is different for each process. If none of the structure's

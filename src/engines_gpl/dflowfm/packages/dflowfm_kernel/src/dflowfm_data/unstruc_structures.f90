@@ -230,17 +230,18 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  !> Whether or not the model has any structures that lie across multiple partitions
  !! (needed to disable possibly invalid statistical output items)
  !! (set in fill_geometry_arrays_structure)
- logical, protected :: model_has_weirs_across_partitions              = .false.
- logical, protected :: model_has_general_structures_across_partitions = .false.
- logical, protected :: model_has_orifices_across_partitions           = .false.
- logical, protected :: model_has_universal_weirs_across_partitions    = .false.
- logical, protected :: model_has_culverts_across_partitions           = .false.
- logical, protected :: model_has_pumps_across_partitions              = .false.
- logical, protected :: model_has_bridges_across_partitions            = .false. 
- logical, protected :: model_has_long_culverts_across_partitions      = .false.
- logical, protected :: model_has_dams_across_partitions               = .false.
- logical, protected :: model_has_dambreaks_across_partitions          = .false.
- logical, protected :: model_has_gates_across_partitions              = .false.
+ logical, protected :: model_has_weirs_across_partitions               = .false.
+ logical, protected :: model_has_general_structures_across_partitions  = .false.
+ logical, protected :: model_has_orifices_across_partitions            = .false.
+ logical, protected :: model_has_universal_weirs_across_partitions     = .false.
+ logical, protected :: model_has_culverts_across_partitions            = .false.
+ logical, protected :: model_has_pumps_across_partitions               = .false.
+ logical, protected :: model_has_bridges_across_partitions             = .false. 
+ logical, protected :: model_has_long_culverts_across_partitions       = .false.
+ logical, protected :: model_has_dams_across_partitions                = .false.
+ logical, protected :: model_has_dambreaks_across_partitions           = .false.
+ logical, protected :: model_has_gates_across_partitions               = .false.
+ logical, protected :: model_has_compound_structures_across_partitions = .false.
  
  integer, parameter :: IOPENDIR_FROMLEFT  = -1 !< Gate door opens/closes from left side.
  integer, parameter :: IOPENDIR_FROMRIGHT =  1 !< Gate door opens/closes from right side.
@@ -1520,6 +1521,32 @@ subroutine check_model_has_gates_across_partitions
       
 end subroutine check_model_has_gates_across_partitions
 
+!> Check if the model has any compound structures that lie across multiple partitions
+!! (needed to disable possibly invalid statistical output items)
+subroutine check_model_has_compound_structures_across_partitions
+   use m_partitioninfo, only: jampi, any_structures_lie_across_multiple_partitions
+   use unstruc_channel_flow, only: network
+   
+   integer :: i_cmpnd
+   integer, dimension(:), allocatable :: links, nlinks_per_cmpnd
+
+   if (jampi == 0) then
+      model_has_compound_structures_across_partitions = .false.
+      return
+   end if
+   
+   allocate(nlinks_per_cmpnd(network%cmps%count), source = 0)
+   
+   do i_cmpnd = 1, network%cmps%count
+      call retrieve_set_of_flowlinks_compound_structure(i_cmpnd, links)
+      nlinks_per_cmpnd(i_cmpnd) = size(links)
+      deallocate(links)
+   end do
+   
+   model_has_compound_structures_across_partitions = any_structures_lie_across_multiple_partitions(nlinks_per_cmpnd)
+      
+end subroutine check_model_has_compound_structures_across_partitions
+
 !> Fill in array valstruct for a givin general structure, weir or orifice.
 subroutine fill_valstruct_per_structure(valstruct, istrtypein, istru, nlinks)
    use m_missing, only: dmiss
@@ -1840,6 +1867,22 @@ subroutine retrieve_set_of_flowlinks_gate(i_gate, links)
    end do
       
 end subroutine retrieve_set_of_flowlinks_gate
+
+!> Retrieve the set of snapped flowlinks for a compound structure
+subroutine retrieve_set_of_flowlinks_compound_structure(i_cmpnd, links)
+   use unstruc_channel_flow, only: network
+   
+   integer,                            intent(in   ) :: i_cmpnd     !< Index of the compound structure
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this compound structure has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: i
+   
+   n_links = network%cmps%compound(i_cmpnd)%numlinks
+   allocate(links(n_links), source = -999)
+   links  = network%cmps%compound(i_cmpnd)%linknumbers
+      
+end subroutine retrieve_set_of_flowlinks_compound_structure
 
 !> Calculate the x,y-coordinates of the midpoint of a set of flowlinks
 !! (presumably those that a polyline has been snapped to)
