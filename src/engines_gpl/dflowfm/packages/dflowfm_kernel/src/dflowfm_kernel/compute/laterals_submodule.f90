@@ -39,7 +39,7 @@ implicit none
 
    !> Reset the counters for lateral data.
    module subroutine reset_lateral()
-         numlatsg = 0           !< [] nr of lateral discharge providers
+      numlatsg = 0           !< [] nr of lateral discharge providers
       nlatnd   = 0           !< lateral nodes dimension, counter of nnlat(:)
    end subroutine reset_lateral
 
