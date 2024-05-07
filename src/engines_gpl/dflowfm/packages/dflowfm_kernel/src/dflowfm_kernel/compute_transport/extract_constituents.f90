@@ -176,6 +176,7 @@ subroutine extract_constituents()
                    call getkbotktop(k,kb,kt)
                    ssccum(ll,k) = ssccum(ll,k)+sum(constituents(ISED1+ll-1,kb:kt))/dts*bai_mor(k)*vol1(k)
                    constituents(ISED1+ll-1,kb:kt) = 0d0
+                   sed(ll,kb:kt) = 0d0
                 endif
              enddo
            enddo
