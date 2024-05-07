@@ -37,6 +37,7 @@ module m_lateral
       public average_concentrations_for_laterals
       public reset_outgoing_lat_concentration 
       public finish_outgoing_lat_concentration
+      public get_lateral_volume_per_layer
    !!
    !! Laterals
    !!
@@ -73,6 +74,7 @@ module m_lateral
       private
       real(kind=dp), allocatable, target, dimension(:,:,:), public :: outgoing_lat_concentration !< Average concentration per lateral discharge location.
       real(kind=dp), allocatable, target, dimension(:,:,:), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
+      real(kind=dp), allocatable, target, dimension(:,:),   public :: lateral_volume_per_layer   !< Total water volume per layer, for each lateral (kmx,numlatsg).
       integer,       allocatable, target, dimension(:),     public :: apply_transport            !< Flag to apply transport for laterals (0 means only water and no substances are transported).
       logical, public :: apply_transport_is_used
       !> Reset the defaults for laterals
@@ -130,6 +132,13 @@ module m_lateral
             real(kind=dp), intent(in):: time_interval
          end subroutine finish_outgoing_lat_concentration
       end interface finish_outgoing_lat_concentration
+
+      !> Compute water volume per layer in each lateral
+      interface get_lateral_volume_per_layer
+         module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
+             real(kind=dp), dimension(:,:), intent(out)   :: lateral_volume_per_layer                !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
+         end subroutine get_lateral_volume_per_layer
+      end interface get_lateral_volume_per_layer
       
    end module m_lateral
    
