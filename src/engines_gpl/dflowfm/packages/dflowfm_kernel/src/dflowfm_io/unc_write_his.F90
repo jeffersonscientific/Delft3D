@@ -1668,11 +1668,12 @@ subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
    call check_netcdf_error( nf90_put_var(ihisfile, local_id_var, transformed_data, count = counts, start = starts))
 end subroutine write_station_netcdf_variable
 
+!> set the fill value according to dmiss/intmiss of a netcdf variable and the requested precision
 subroutine setfillvalue(ncid, varid, nc_precision)
 
-integer, intent(in   ) :: ncid
-integer, intent(in   ) :: varid
-integer, intent(in   ) :: nc_precision
+integer, intent(in   ) :: ncid         !< file id of the open netcdf dataset that varid was defined in
+integer, intent(in   ) :: varid        !< nf90 variable id of the variable that needs a fill value
+integer, intent(in   ) :: nc_precision !< precision of the variable that needs a fill value
 
  ! Add a fill value of the correct type
    select case (nc_precision)
