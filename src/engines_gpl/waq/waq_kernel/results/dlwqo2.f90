@@ -23,7 +23,6 @@
 module m_dlwqo2
     use m_waq_precision
     use m_values
-    use m_stepyn
     use m_sobbal
     use m_raatra
     use m_outmon
@@ -1090,5 +1089,52 @@ contains
         if (timon) call timstop (ithandl)
 
     END SUBROUTINE ACTLOC
+
+    SUBROUTINE evaluate_timers (ITIME, IDT, ISTRT, ISTOP, ISTEP, LFLAG, LFIRST)
+        !  Evaluates if action is necessary according to timers
+
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     ITIME   INTEGER       1     INPUT   Time in system clock units
+        !     IDT     INTEGER       1     INPUT   Simulation timestep
+        !     IMSTRT  INTEGER       1     INPUT   start time of timer
+        !     IMSTOP  INTEGER       1     INPUT   stop time of timer
+        !     IMSTEP  INTEGER       1     INPUT   time step of timer
+        !     LFLAG   LOGICAL       1     OUTPUT  If .T. then action else not
+        !     LFIRST  LOGICAL       1     OUTPUT  If .T. then first step
+
+        use timers
+
+        INTEGER(kind = int_wp) :: ITIME, IDT, ISTRT, ISTOP, ISTEP
+        LOGICAL :: LFLAG, LFIRST
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("evaluate_timers", ithandl)
+
+        ! Evaluate timer
+        LFLAG = .TRUE.
+        LFIRST = .FALSE.
+        IF (ISTEP <= 0 .AND. ISTRT /= ISTOP) THEN
+            LFLAG = .FALSE.
+            GOTO 100
+        ENDIF
+        IF (ISTRT > ITIME) THEN
+            LFLAG = .FALSE.
+            GOTO 100
+        ENDIF
+        IF (ISTOP <= ITIME - IDT) THEN
+            LFLAG = .FALSE.
+            GOTO 100
+        ENDIF
+        IF (MOD(ITIME - ISTRT, ISTEP) >= IDT) LFLAG = .FALSE.
+        IF (LFLAG) THEN
+            IF (ITIME - ISTRT < ISTEP) LFIRST = .TRUE.
+        ENDIF
+
+        100 CONTINUE
+
+        if (timon) call timstop (ithandl)
+
+    END SUBROUTINE evaluate_timers
 
 end module m_dlwqo2
