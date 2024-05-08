@@ -26,7 +26,6 @@ module m_dlwqo2
     use m_sobbal
     use m_raatra
     use m_write_monitoring_output
-    use m_outmo3
     use m_write_nefis_output
     use m_write_map_output
     use m_outhnf
