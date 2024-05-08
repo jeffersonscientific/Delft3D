@@ -644,7 +644,7 @@ contains
             elseif (isrtou == imnf) then
 
                 iof = nrvar * noseg + 1
-                call outmnf (lunout, lchout, itime, moname, noseg, notot, conc, syname, nrvar, riobuf, &
+                call write_map_to_nefis_file (lunout, lchout, itime, moname, noseg, notot, conc, syname, nrvar, riobuf, &
                         ounam(k1), iostrt, iostop, iostep, riobuf(iof), iniout)
 
             elseif (isrtou == imnc) then
@@ -662,7 +662,7 @@ contains
             elseif (isrtou == imn2) then
 
                 iof = nrvar * noseg + 1
-                call outmnf (lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
+                call write_map_to_nefis_file (lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
                         ounam(k1), iostrt, iostop, iostep, riobuf(iof), iniout)
 
             elseif (isrtou == imnc2) then
