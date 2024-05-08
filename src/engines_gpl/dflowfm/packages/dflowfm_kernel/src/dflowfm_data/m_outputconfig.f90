@@ -523,11 +523,11 @@ private
       type(t_nc_dim_ids), allocatable  :: nc_dim_ids            !< optional detailed specification of NetCDF dim-ids when UNC_LOC is insufficient
    end type t_output_quantity_config
 
-   type, public :: t_output_quantity_config_set
+   type, public :: t_output_config_set
       integer                                                   :: count = 0      !< Number of configs in config set 
       integer                                                   :: capacity  = 0  !< Allocated size of config set (size = count + # of empty configs)
       type(t_output_quantity_config), allocatable, dimension(:) :: configs        !< array of output quantity configs in config set
-   end type t_output_quantity_config_set
+   end type t_output_config_set
 
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
    type, public :: t_nc_dim_ids
@@ -547,29 +547,29 @@ contains
 subroutine reallocate_config_set(config_set)
    use m_alloc
 
-   type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
+   type(t_output_config_set), intent(inout) :: config_set !< Output configuration set.
 
    type(t_output_quantity_config), dimension(:), allocatable :: new_configs
 
-if(allocated(config_set%configs) .and. config_set%capacity > 0) then
-   allocate(new_configs(config_set%capacity*2))
-   new_configs(1:config_set%capacity) = config_set%configs
-   call move_alloc(new_configs,config_set%configs)
-else
-   allocate(config_set%configs(200)) ! hardcoded default start size of 200
-end if
+   if(allocated(config_set%configs) .and. config_set%capacity > 0) then
+      allocate(new_configs(config_set%capacity*2))
+      new_configs(1:config_set%capacity) = config_set%configs
+      call move_alloc(new_configs,config_set%configs)
+   else
+      allocate(config_set%configs(200)) ! hardcoded default start size of 200
+   end if
    config_set%capacity = size(config_set%configs)
-   
+
 end subroutine reallocate_config_set
 
 !> Deallocate config set.
 subroutine deallocate_config_set(config_set)
    ! Input/output parameters
-   type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
+   type(t_output_config_set), intent(inout) :: config_set !< Output configuration set.
 
    if (config_set%capacity > 0) then
       deallocate(config_set%configs)
-   endif
+   end if
 end subroutine deallocate_config_set
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
@@ -577,7 +577,7 @@ subroutine add_output_config(config_set, idx, key, name, long_name, standard_nam
    use m_map_his_precision, only: md_nc_his_precision
    use netcdf, only: nf90_double, nf90_float
    
-   type(t_output_quantity_config_set), intent(inout) :: config_set          !< Array containing all output quantity configs.
+   type(t_output_config_set), intent(inout) :: config_set          !< Array containing all output quantity configs.
    integer,                            intent(  out) :: idx                 !< Index for the current variable.
    character(len=*),                   intent(in   ) :: key                 !< Key in the MDU file.
    character(len=*),                   intent(in   ) :: name                !< Name of the variable on the NETCDF file.
@@ -612,7 +612,7 @@ subroutine add_output_config(config_set, idx, key, name, long_name, standard_nam
    config_set%count = config_set%count+1
    if (config_set%count > config_set%capacity) then
       call realloc(config_set)
-   endif
+   end if
    num_entries = config_set%count
    idx = num_entries
    config_set%configs(num_entries)%key                = key
@@ -639,7 +639,7 @@ subroutine add_output_config(config_set, idx, key, name, long_name, standard_nam
       config_set%configs(num_entries)%description = description
    else
       config_set%configs(num_entries)%description = ''
-   endif
+   end if
 
 end subroutine add_output_config
 
@@ -675,43 +675,43 @@ function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
 end function id_nc_type2nc_type_his
 
 
-!> scan the input tree, using the keys in the quantity_config_set
-subroutine scan_input_tree(tree, paragraph, quantity_config_set)
+!> scan the input tree, using the keys in the config_set
+subroutine scan_input_tree(tree, paragraph, config_set)
    use properties
 
    type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
    character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_config_set),                   intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
 
    integer :: i
 
-   do i = 1, quantity_config_set%count
-      call prop_get_string(tree, paragraph, quantity_config_set%configs(i)%key, quantity_config_set%configs(i)%input_value)
-   enddo
+   do i = 1, config_set%count
+      call prop_get_string(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
+   end do
 
 end subroutine scan_input_tree
 
 !> Set the properties for the diagnostics file
-subroutine set_properties(tree, paragraph, quantity_config_set)
+subroutine set_properties(tree, paragraph, config_set)
    use properties
 
    type(tree_data), pointer,           intent(in   )     :: tree        !< Property tree
    character(len=*),                   intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set), intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_config_set),          intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
 
    integer :: i
    type(t_output_quantity_config), pointer :: config
    
-   do i = 1, quantity_config_set%count
-      associate(config => quantity_config_set%configs(i))
+   do i = 1, config_set%count
+      associate(config => config_set%configs(i))
          if (len_trim(config%description) > 0 .and. len_trim(config%input_value) > 0) then
             if (trim(config%input_value)=='current') then
                config%input_value = '1'   
-            endif
+            end if
             call prop_set(tree, trim(paragraph), trim(config%key), trim(config%input_value), trim(config%description))
-         endif
+         end if
       end associate
-   enddo
+   end do
 
 
 end subroutine set_properties

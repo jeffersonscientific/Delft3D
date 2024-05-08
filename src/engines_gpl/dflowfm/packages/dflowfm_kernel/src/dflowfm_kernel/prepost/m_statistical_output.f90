@@ -72,18 +72,18 @@ contains
       logical, intent(in), optional                :: crop       !< crop output set to number of valid items
       
       integer                   :: ierr
-      logical                   :: crop_local
+      logical                   :: crop_
       type(t_output_variable_item), pointer, dimension(:)    :: old_statout
    
-      crop_local = .false.
+      crop_ = .false.
       if(present(crop)) then
-         crop_local = crop
+         crop_ = crop
       end if
       if (output_set%capacity > 0) then
          old_statout => output_set%statout
       end if
       
-      if (crop_local) then
+      if (crop_) then
          allocate(output_set%statout(output_set%count), stat=ierr)
          call aerr('output_set%statout(size)', ierr, output_set%count)
 

@@ -74,7 +74,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use odugrid
     use m_statistical_output
     use fm_statistical_output
-    use m_output_config
+    use m_output_config, only: T_output_quantity_config
     use MessageHandling, only: err
 
     implicit none

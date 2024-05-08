@@ -26,7 +26,7 @@ module m_statistical_callback
       !> subroutine to be called by update_source_input when advanced operations are required and the data to be
       !! written to the his/map file cannot be a pointer but must be calculated and stored every timestep.
       !!
-      !! NOTE: these callback subroutine are also called once during init_statistical_output();
+      !! NOTE: these callback subroutines are also called once during init_statistical_output();
       !!       if %source_input must point to newly allocated memory, that is the time to do it once,
       !!       and should never be reallocated after that.
       subroutine process_data_interface_double(data_pointer)
