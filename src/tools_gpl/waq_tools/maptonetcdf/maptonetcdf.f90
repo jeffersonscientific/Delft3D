@@ -28,7 +28,7 @@
 !      Program to convert a traditional binary map file into a NetCDF map file
 
 program maptonetcdf
-    use m_outmnc
+    use m_write_netcdf_output
 
     implicit none
 

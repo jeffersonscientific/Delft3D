@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_outmnc
+module m_write_netcdf_output
     use m_waq_precision
     use m_logger, only: terminate_execution
     use m_universally_unique_id_generator, only: generate_uuid
@@ -1247,4 +1247,4 @@ contains
 
     end function replace_space_by_underscore
 
-end module m_outmnc
+end module m_write_netcdf_output

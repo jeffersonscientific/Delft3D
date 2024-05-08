@@ -31,7 +31,7 @@ module m_dlwqo2
     use m_outmnf
     use m_outmap
     use m_outhnf
-    use m_outmnc
+    use m_write_netcdf_output
     use m_outhis
     use m_outdmp
     use m_outbal
@@ -278,14 +278,14 @@ contains
         if (first) then
             allocate(mncwqid1(notot, 3), mncwqid2(novar, 3))
             allocate(hncwqid1(notot, 2), hncwqid2(novar, 2))
-            !        allow switching of NAN concentrations check
+            ! allow switching of NAN concentrations check
             call retrieve_command_argument ('-nonancheck', 0, lfound, idummy, rdummy, adummy, ierr2)
             lnancheck = .not. lfound
             first = .false.
         endif
 
         if (lnancheck) then
-            !        Check for NANs in the concentration array
+            ! Check for NANs in the concentration array
             lunout = file_unit_list(19)
             lnonans = nan_check(conc, 'conc(notot, noseg)', lunout, 1, 1)
             if (.not. lnonans) then
