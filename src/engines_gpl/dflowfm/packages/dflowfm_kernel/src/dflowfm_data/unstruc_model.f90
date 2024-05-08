@@ -653,9 +653,9 @@ subroutine loadModel(filename)
    ! Load runup gauge polygons from file
    if (len_trim(md_rugfile) > 0) then
       call strsplit(md_rugfile,1,fnames,1)
-      call loadRunupGauges(fnames(1),0)
+      call load_runup_gauges(fnames(1),.false.)
       do ifil=2,size(fnames)
-         call loadRunupGauges(fnames(ifil), 1)
+         call load_runup_gauges(fnames(ifil), .true.)
       enddo
       deallocate(fnames)
    endif

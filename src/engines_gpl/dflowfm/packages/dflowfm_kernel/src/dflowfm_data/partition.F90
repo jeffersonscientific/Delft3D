@@ -3880,34 +3880,8 @@ end subroutine partition_make_globalnumbers
       integer                                                    :: ierror
       
 #ifdef HAVE_MPI
-
-      if ( my_rank.eq.0 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.1 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.2 ) then
-         continue
-      end if
-      
       call MPI_allreduce(srsn,srsn_all,numsrc*NUMVALS,mpi_double_precision,mpi_sum,DFM_COMM_DFMWORLD,ierror)
       srsn = srsn_all
-      
-      if ( my_rank.eq.0 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.1 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.2 ) then
-         continue
-      end if
-      
 #endif
       return
    end subroutine reduce_srsn
@@ -4006,24 +3980,24 @@ end subroutine partition_make_globalnumbers
    
 !> Reduce runup for each runup gauge across all MPI partitions.
 !> Returns max across domains (1,:), and domain number of max (2,:)   
-   subroutine reduce_rug(resu,nrug)
+   subroutine reduce_rug(resu,num_rugs)
 #ifdef HAVE_MPI
       use mpi
 #endif
       implicit none
       
-      integer,                             intent(in)    :: nrug                !< number of gauges
-      double precision, dimension(2,nrug), intent(inout) :: resu                !< runup data
+      integer,                             intent(in)    :: num_rugs                !< number of gauges
+      double precision, dimension(2,num_rugs), intent(inout) :: resu                !< runup data
       double precision, dimension(:,:),    allocatable   :: resu_all
       
       integer                                            :: ierror
       
 #ifdef HAVE_MPI
 !     allocate
-      allocate(resu_all(2,nrug))
+      allocate(resu_all(2,num_rugs))
       resu_all = 0d0
       
-      call mpi_allreduce(resu,resu_all,nrug,mpi_2double_precision,mpi_maxloc,DFM_COMM_DFMWORLD,ierror)
+      call mpi_allreduce(resu,resu_all,num_rugs,mpi_2double_precision,mpi_maxloc,DFM_COMM_DFMWORLD,ierror)
       if (ierror .ne. 0) then
          goto 1234
       endif   

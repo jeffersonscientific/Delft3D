@@ -628,7 +628,7 @@ private
       obscrs_data(i, 2) = crs(i)%sumvalcum(IPNT_Q1C)
       ! Cross sectional areas A*u
       obscrs_data(i, 3) = crs(i)%sumvalcur(IPNT_AUC)
-         ! Average velocity Q/Au
+      ! Average velocity Q/Au
       obscrs_data(i, 4) = crs(i)%sumvalcur(IPNT_U1A)
       ! Entry 5 intentionally left blank (IPNT_S1A)
    end do
@@ -1072,7 +1072,7 @@ private
       use m_sediment, only: stmpar
       use m_output_config, only: id_nc_byte, id_nc_char, id_nc_short, id_nc_int, id_nc_float, id_nc_double
 
-      type(ug_nc_attribute) :: atts(5)
+      type(ug_nc_attribute) :: atts(4)
       character(len=25)     :: transpunit
 
       out_quan_conf_his%count = 0
@@ -1193,6 +1193,12 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUHEIGHT,                   &
                      'Wrihis_runupgauge', 'runup_height', 'runup height', '',                     &
                      'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
+      call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUX,                   &
+                     'Wrihis_runupgauge', 'rug_x_coordinate', 'time-varying x-coordinate of shoreline position', '',                     &
+                     'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
+      call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUY,                   &
+                     'Wrihis_runupgauge', 'rug_y_coordinate', 'time-varying y-coordinate of shoreline position', '',                     &
+                     'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
 
       !
       ! HIS: hydraulic structures
@@ -1268,10 +1274,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2, 3, 4 /))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 4 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_STATE,                            &
                      'Wrihis_structure_gen', 'general_structure_state', 'Flow state at general structure', '',                     &
-                     '', UNC_LOC_GENSTRU, id_nc_type = id_nc_int, nc_atts = atts(1:5))
+                     '', UNC_LOC_GENSTRU, id_nc_type = id_nc_int, nc_atts = atts)
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST,                      &
                      'Wrihis_structure_gen', 'general_structure_s1_on_crest', 'Water level on crest of general structure',          &
                      '', 'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
@@ -1404,10 +1409,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2 /))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 2 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_STATE,                                      &
                      'Wrihis_structure_weir', 'weirgen_state', 'Flow state at weir',                                 &
-                     '', '', UNC_LOC_WEIRGEN, nc_atts = atts(1:5), id_nc_type = id_nc_int)
+                     '', '', UNC_LOC_WEIRGEN, nc_atts = atts, id_nc_type = id_nc_int)
 
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_FORCE_DIFFERENCE,                           &
                      'Wrihis_structure_weir', 'weirgen_force_difference', 'Force difference per unit width at weir', '',                      &
@@ -1450,10 +1454,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2, 3, 4/))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 4 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_STATE,                                      &
                      'Wrihis_structure_orifice', 'orifice_state', 'Flow state at orifice', '',                      &
-                     '', UNC_LOC_ORIFICE, nc_atts = atts(1:5), id_nc_type = id_nc_int)
+                     '', UNC_LOC_ORIFICE, nc_atts = atts, id_nc_type = id_nc_int)
 
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_S1_ON_CREST,                                &
                      'Wrihis_structure_orifice', 'orifice_s1_on_crest', 'Water level on crest of orifice', '',                     &
@@ -1530,10 +1533,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2/))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow culvert_free culvert_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 2 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_STATE,                                      &
                      'Wrihis_structure_culvert', 'culvert_state', 'Flow state at culvert', '',                     &
-                     '', UNC_LOC_CULVERT, nc_atts = atts(1:5), id_nc_type = id_nc_int)
+                     '', UNC_LOC_CULVERT, nc_atts = atts, id_nc_type = id_nc_int)
 
       !! Dambreak
       call addoutval(out_quan_conf_his, IDX_HIS_DAMBREAK_S1UP,                                      &
@@ -2006,7 +2008,8 @@ private
                      '', 'm s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       ! Disable writing cross_section_velocity_avg (see UNST-1148), because in a parallel run, it is impossible to compute
       ! summation of area (denominator) at each computational time step in a cheap way, i.e. without communication between
-      ! partitions. @see subroutines: sumvalueOnCrossSections, updateValuesOnCrossSections
+      ! partitions. @see subroutine: update_values_on_cross_sections
+      ! TODO: UNST-7786 this is no longer the case, allow writing this? Where is it even disabled?
 
       ! The following output value is an abstract entry representing all constituents.
       ! The constituents that are actually available depend on the model initialization
@@ -2599,7 +2602,7 @@ private
       use m_sediment, only: stm_included, stmpar
       use m_longculverts, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs
-      use m_monitoring_runupgauges, only: nrug, rug
+      use m_monitoring_runupgauges, only: num_rugs, rug
       use m_fm_wq_processes, only: jawaqproc, numwqbots
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
@@ -2694,9 +2697,10 @@ private
       !
       ! Run-up gauge variables
       !
-      if (nrug > 0) then
-         temp_pointer => rug%maxruh
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUHEIGHT), temp_pointer)
+      if (num_rugs > 0) then
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUHEIGHT), rug(:)%max_rug_height)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUX), rug(:)%max_x)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUY), rug(:)%max_y)
       endif
 
       !
@@ -3226,7 +3230,8 @@ private
       endif
 
       call process_output_quantity_configs(output_config_set)
-      call initialize_statistical_output(output_set)
+      call realloc(output_set, output_set%count) ! set size to count
+      call initialize_statistical_output(output_set%statout)
 
    end subroutine flow_init_statistical_output_his
 

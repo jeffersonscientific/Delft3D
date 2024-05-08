@@ -38,6 +38,7 @@ module m_monitoring_crosssections
 use m_crspath
 use m_missing
 use MessageHandling, only: IdLen
+use stdlib_kinds, only: dp
 implicit none
 
 type tcrs
@@ -65,12 +66,8 @@ integer                              :: maxnval = 5            !< Current max nu
 
 integer, private                     :: iUniq_ = 1
 character(len=*), parameter, private :: defaultName_ = 'Crs'
-double precision                     :: tlastupd_sumval        !< Time at which the sumval* arrays were last updated.
-double precision, allocatable        :: sumvalcum_global(:,:)  !< Global cumulative values of monitored crs quantities, only needed by MPI_RANK_0 process 
-double precision, allocatable        :: sumvalcum_local(:,:)   !< Local cumulative values of monitored crs quantities 
-double precision, allocatable        :: sumvalcur_global(:,:)  !< Global current values of monitored crs quantities, only needed by MPI_RANK_0 process 
-double precision, allocatable        :: sumvalcur_local(:,:)   !< Local  current values of monitored crs quantities 
-double precision, allocatable        :: sumvalcum_timescale(:) !< Store the time-scale multiplication (e.g. morfac in the case of sediment).
+real(dp), allocatable                :: crs_values(:,:)        !< Current values of monitored crs quantities; size = [ number of monitored values (nval) -by- number of cross-sections (ncrs)]
+real(dp), allocatable                :: crs_timescales(:)      !< Time-scale multiplication factors (e.g. morfac in the case of sediment).
 integer                              :: nval = 0               !< number of quantities moonitored including sediment
 integer                              :: nNodesCrs              !< [-] Total number of nodes for all cross section geometries
 integer,          allocatable, target:: nodeCountCrs(:)        !< [-] Count of nodes per cross section geometry.
@@ -181,7 +178,7 @@ end subroutine copyCrossSections
 subroutine increaseCrossSections(n)
     integer, intent(in) :: n !< Desired number of cross sections.
 
-    type(tcrs), allocatable :: crst(:) ! Temp storage
+    type(tcrs), allocatable :: temp_crs_array(:) ! Temp storage
     integer                 :: jacopy
 
     jacopy = 0
@@ -190,19 +187,19 @@ subroutine increaseCrossSections(n)
         return
     end if
 
-    call allocCrossSections(crst, maxcrs)
+    call allocCrossSections(temp_crs_array, maxcrs)
 
     if (n > maxcrs) then
         maxcrs    = max(maxcrs, int(1.2*n))
     end if
 
     if (allocated(crs)) then
-       call copyCrossSections(crs, crst)
+       call copyCrossSections(crs, temp_crs_array)
     end if
     call allocCrossSections(crs, maxcrs)
-    call copyCrossSections(crst, crs)
+    call copyCrossSections(temp_crs_array, crs)
 
-    call deallocCrossSections(crst)
+    call deallocCrossSections(temp_crs_array)
 
 end subroutine increaseCrossSections
 
@@ -249,15 +246,12 @@ end subroutine addCrossSections
 subroutine delCrossSections()
     ncrs = 0
     iUniq_ = 1
-
-    if (allocated(sumvalcur_local)) then
-       deallocate(sumvalcur_local)
+    if (allocated(crs_values)) then
+       deallocate(crs_values)
     end if
-    if (allocated(sumvalcum_timescale)) then
-       deallocate(sumvalcum_timescale)
+    if (allocated(crs_timescales)) then
+       deallocate(crs_timescales)
     end if
-    tlastupd_sumval = dmiss
-
     ! Do not reset crs data, just let it be overwritten later.
 end subroutine delCrossSections
 
