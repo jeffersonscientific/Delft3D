@@ -28,7 +28,7 @@ module m_dlwqo2
     use m_write_monitoring_output
     use m_outmo3
     use m_write_nefis_output
-    use m_outmap
+    use m_write_map_output
     use m_outhnf
     use m_write_netcdf_output
     use m_write_history_output
@@ -636,7 +636,7 @@ contains
 
             elseif (isrtou == imap) then
 
-                call outmap (lunout, lchout, itime, moname, noseg, &
+                call write_map_output (lunout, lchout, itime, moname, noseg, &
                         notot, conc, syname, nrvar, riobuf, &
                         ounam(k1), iknmrk, iniout)
 
@@ -655,7 +655,7 @@ contains
 
             elseif (isrtou == ima2) then
 
-                call outmap (lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
+                call write_map_output (lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
                         ounam(k1), iknmrk, iniout)
 
             elseif (isrtou == imn2) then

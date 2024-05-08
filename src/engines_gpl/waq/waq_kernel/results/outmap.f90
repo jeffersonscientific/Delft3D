@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_outmap
+module m_write_map_output
     use m_waq_precision
 
     implicit none
@@ -28,29 +28,12 @@ module m_outmap
 contains
 
 
-    subroutine outmap (iomap, namfim, itime, moname, noseg, &
-            notot1, conc1, synam1, notot2, conc2, &
-            synam2, iknmrk, init)
-
-        !     Deltares Software Centre
-
-        !     Function            : Writes map output
-
-        !     Created             : May       1993 by Jan van Beek
-        !     Modified            : October   2010 by Leo Postma
-        !                                          addition of feature array for drying and flooding
-        !                                          FORTRAN-90 look and feel
+    subroutine write_map_output (iomap, namfim, itime, moname, noseg, &
+            notot1, conc1, synam1, notot2, conc2, synam2, iknmrk, init)
 
         !     Files               : iomap = unit number of binary map output file
-
-        !     Routines called     : none
-
         use timers
         implicit none
-
-        !     Parameters          :
-
-        !     kind           function         name                    description
 
         integer(kind = int_wp), intent(in) :: iomap                ! unit number output file
         character(len=*), intent(in) :: namfim               ! name output file
@@ -74,7 +57,7 @@ contains
 
         real(kind = real_wp), dimension(:, :), allocatable :: outconc
 
-        if (timon) call timstrt ("outmap", ithandl)
+        if (timon) call timstrt ("write_map_output", ithandl)
 
         !     Initialize file
 
@@ -120,4 +103,4 @@ contains
         return
     end
 
-end module m_outmap
+end module m_write_map_output
