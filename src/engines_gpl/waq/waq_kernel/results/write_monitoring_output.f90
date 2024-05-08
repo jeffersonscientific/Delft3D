@@ -61,7 +61,6 @@ contains
         !     ITSTOP  INTEGER     1       INPUT   stop time
         !
         !
-        use m_outmo2
         use date_time_utils, only: report_time
         use timers
 
@@ -190,10 +189,10 @@ contains
         INTEGER(kind = int_wp) :: IOUT, NODUMP, ID, NEND, NOTOT
         INTEGER(kind = int_wp) :: IDUMP(*)
         REAL(kind = real_wp) :: ARRA(NOTOT, *)
-        character(len=40) VNAME
-        character(len=20) DNAME(*)
+        character(len = 40) VNAME
+        character(len = 20) DNAME(*)
 
-        character(len=1)  SPACE
+        character(len = 1)  SPACE
         DATA         SPACE / ' ' /
         integer(kind = int_wp) :: i, k, iseg
         integer(kind = int_wp) :: ithandl = 0
@@ -237,8 +236,8 @@ contains
 
         INTEGER(kind = int_wp) :: IOUT, NODUMP, ID, NEND, NOTOT
         REAL(kind = real_wp) :: ARRA(NOTOT, *)
-        character(len=20) DNAME(*)
-        character(len=40) VNAME
+        character(len = 20) DNAME(*)
+        character(len = 40) VNAME
 
         integer(kind = int_wp) :: idmp, k
 
@@ -293,8 +292,7 @@ contains
         !     DANAM   CHAR*20  NDMPAR     INPUT   names of dump area's
         !
         !
-        use m_outmo2
-        use date_time_utils, only : report_time
+        use date_time_utils, only: report_time
         use timers
 
         INTEGER(kind = int_wp) :: IOUT, ITIME, NOTOT, ISFLAG, IBFLAG, &
@@ -302,12 +300,12 @@ contains
         INTEGER(kind = int_wp) :: IP(4)
         REAL(kind = real_wp) :: AMASS2(NOTOT, 5), ASMASS(NOTOT, NDMPAR, *), &
                 CONC2(*)
-        character(len=20) SNAME(*), SYNAM2(*), DANAM(*)
-        character(len=40) MNAME(*)
+        character(len = 20) SNAME(*), SYNAM2(*), DANAM(*)
+        character(len = 40) MNAME(*)
         !
         !     Local declaration
         !
-        character(len=40) VNAME
+        character(len = 40) VNAME
         integer(kind = int_wp) :: idmp, k, id, id2, nend, nend2
         real(kind = real_wp) :: percit
 
