@@ -37,7 +37,9 @@ contains
         !     Function            : Writes map output to NetCDF
 
         use timers
-        use dlwq_netcdf  !   read/write grid in netcdf
+        use waq_netcdf_utils, only: set_debug_status, read_dimensions, find_mesh_by_attributes, &
+                copy_variable_attributes, copy_mesh, create_dimension, create_layer_dimension, create_time_variable, &
+                create_variable, write_time
         use delwaq_version_module
         use results, only : ncopt
         implicit none
@@ -123,7 +125,7 @@ contains
         if (ncidmap < 0) then
 
             ! Turn on debug info from dlwaqnc
-            inc_error = dlwqnc_debug_status(.true.)
+            inc_error = set_debug_status(.true.)
 
             ! Prepare a Delwaq-NetCDF output-file for map data from the UGRID-file
             ! To do: we should check if everything went right, if not, NetCDF output is not possible...
@@ -138,7 +140,7 @@ contains
                 goto 800
             end if
 
-            inc_error = dlwqnc_read_dims(ncid, dimsizes)
+            inc_error = read_dimensions(ncid, dimsizes)
             if (inc_error /= nf90_noerr) then
                 write (lunut, 2531) trim(ugridf)
                 goto 800
@@ -155,8 +157,8 @@ contains
                 goto 800
             endif
 
-            ! We don't assume variable names, but we try to find all meshes by their attributes using dlwqnc_find_meshes_by_att
-            inc_error = dlwqnc_find_meshes_by_att(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
+            ! We don't assume variable names, but we try to find all meshes by their attributes using find_mesh_by_attributes
+            inc_error = find_mesh_by_attributes(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
             if (inc_error /= nf90_noerr) then
                 write (lunut, 2540)
                 goto 800
@@ -285,7 +287,7 @@ contains
                 write (lunut, 2551) trim(mesh_name1d)
             endif
 
-            inc_error = dlwqnc_copy_var_atts(ncid, ncidmap, nf90_global, nf90_global)
+            inc_error = copy_variable_attributes(ncid, ncidmap, nf90_global, nf90_global)
             if (inc_error /= nf90_noerr) then
                 write (lunut, 2570)
                 goto 800
@@ -301,26 +303,26 @@ contains
 
             ! For now we can simply copy the mesh data
             if (meshid2d > 0) then
-                inc_error = dlwqnc_copy_mesh(ncid, ncidmap, meshid2d, mesh_name2d, type_ugrid)
+                inc_error = copy_mesh(ncid, ncidmap, meshid2d, mesh_name2d, type_ugrid)
                 if (inc_error /= nf90_noerr) then
                     write (lunut, 2572)
                     goto 800
                 endif
             endif
             if (networkid > 0) then
-                inc_error = dlwqnc_copy_mesh(ncid, ncidmap, networkid, network_name, type_ugrid_network)
+                inc_error = copy_mesh(ncid, ncidmap, networkid, network_name, type_ugrid_network)
                 if (inc_error /= nf90_noerr) then
                     write (lunut, 2572)
                     goto 800
                 endif
-                inc_error = dlwqnc_copy_mesh(ncid, ncidmap, network_geometryid, network_geometry_name, type_ugrid_network_geometry)
+                inc_error = copy_mesh(ncid, ncidmap, network_geometryid, network_geometry_name, type_ugrid_network_geometry)
                 if (inc_error /= nf90_noerr) then
                     write (lunut, 2572)
                     goto 800
                 endif
             endif
             if (meshid1d > 0) then
-                inc_error = dlwqnc_copy_mesh(ncid, ncidmap, meshid1d, mesh_name1d, type_ugrid_mesh1d)
+                inc_error = copy_mesh(ncid, ncidmap, meshid1d, mesh_name1d, type_ugrid_mesh1d)
                 if (inc_error /= nf90_noerr) then
                     write (lunut, 2572)
                     goto 800
@@ -330,7 +332,7 @@ contains
             ! Add a "layer" dimension for DELWAQ and update the IDs
             ! (Must happen after copying the mesh - otherwise the dimension IDs do not match)
             if (type_ugrid == type_ugrid_node_crds) then
-                inc_error = dlwqnc_create_delwaq_dims(ncidmap, noseglmesh2d, nolay, dimids, dimsizes)
+                inc_error = create_dimension(ncidmap, noseglmesh2d, nolay, dimids, dimsizes)
                 if (inc_error /= nf90_noerr) then
                     write (lunut, 2570)
                     goto 800
@@ -384,7 +386,7 @@ contains
             if (meshid2d > 0) then
                 allocate(laythickness(nolay))
                 laythickness = 1.0 / real(nolay)  ! Uniform distribution for now !!
-                inc_error = dlwqnc_create_layer_dim(ncidmap, mesh_name2d, nolay, laythickness, nolayid)
+                inc_error = create_layer_dimension(ncidmap, mesh_name2d, nolay, laythickness, nolayid)
 
                 if (nolay == 1) then
                     nolayid = dlwqnc_type2d
@@ -397,7 +399,7 @@ contains
             endif
 
             t0string = moname(4)
-            inc_error = dlwqnc_create_wqtime(ncidmap, t0string, timeid, bndtimeid, ntimeid)
+            inc_error = create_time_variable(ncidmap, t0string, timeid, bndtimeid, ntimeid)
             if (inc_error /= nf90_noerr) then
                 write(lunut, 2581)
                 goto 800
@@ -412,7 +414,7 @@ contains
             if (meshid2d > 0) then
                 allocate(sumconc1(notot1), sumconc2(notot2))
                 do iout = 1, notot1
-                    inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name2d, synam1(iout), sydsc1(iout), &
+                    inc_error = create_variable(ncidmap, mesh_name2d, synam1(iout), sydsc1(iout), &
                             sysnm1(iout), syuni1(iout), ntimeid, noseglid2d, nolayid, wqid1(iout, 1))
                     if (inc_error /= nf90_noerr) then
                         write(lunut, 2582)
@@ -420,7 +422,7 @@ contains
                     endif
 
                     if (nolay > 1) then
-                        inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name2d, synam1(iout), sydsc1(iout), &
+                        inc_error = create_variable(ncidmap, mesh_name2d, synam1(iout), sydsc1(iout), &
                                 sysnm1(iout), syuni1(iout), ntimeid, noseglid2d, dlwqnc_type2d, wqid1(iout, 2))
                         if (inc_error /= nf90_noerr) then
                             write(lunut, 2582)
@@ -436,14 +438,14 @@ contains
                     endif
                 enddo
                 do iout = 1, notot2
-                    inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name2d, synam2(iout), sydsc2(iout), &
+                    inc_error = create_variable(ncidmap, mesh_name2d, synam2(iout), sydsc2(iout), &
                             sysnm2(iout), syuni2(iout), ntimeid, noseglid2d, nolayid, wqid2(iout, 1))
                     if (inc_error /= nf90_noerr) then
                         write(lunut, 2582)
                         goto 800
                     endif
                     if (nolay > 1) then
-                        inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name2d, synam2(iout), sydsc2(iout), &
+                        inc_error = create_variable(ncidmap, mesh_name2d, synam2(iout), sydsc2(iout), &
                                 sysnm2(iout), syuni2(iout), ntimeid, noseglid2d, dlwqnc_type2d, wqid2(iout, 2))
                         if (inc_error /= nf90_noerr) then
                             write(lunut, 2582)
@@ -460,14 +462,14 @@ contains
                 !           Always add volume
                 !           Note: the standard name for "volume" is fixed for the moment, but the NetCDF standard is
                 !           far from complete.
-                inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
+                inc_error = create_variable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
                         'sea_water_volume', 'm3', ntimeid, noseglid2d, nolayid, wqidvolume_2d3d)
                 if (inc_error /= nf90_noerr) then
                     write(lunut, 2583)
                     goto 800
                 endif
                 if (nolay > 1) then
-                    inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
+                    inc_error = create_variable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
                             'sea_water_volume', 'm3', ntimeid, noseglid2d, dlwqnc_type2d, wqidvolume_2d)
                     if (inc_error /= nf90_noerr) then
                         write(lunut, 2583)
@@ -478,7 +480,7 @@ contains
 
             if (meshid1d > 0) then
                 do iout = 1, notot1
-                    inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name1d, synam1(iout), sydsc1(iout), &
+                    inc_error = create_variable(ncidmap, mesh_name1d, synam1(iout), sydsc1(iout), &
                             sysnm1(iout), syuni1(iout), ntimeid, nosegid1d, dlwqnc_type1d, wqid1(iout, 3))
                     if (inc_error /= nf90_noerr) then
                         write(lunut, 2582)
@@ -486,7 +488,7 @@ contains
                     endif
                 enddo
                 do iout = 1, notot2
-                    inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name1d, synam2(iout), sydsc2(iout), &
+                    inc_error = create_variable(ncidmap, mesh_name1d, synam2(iout), sydsc2(iout), &
                             sysnm2(iout), syuni2(iout), ntimeid, nosegid1d, dlwqnc_type1d, wqid2(iout, 3))
                     if (inc_error /= nf90_noerr) then
                         write(lunut, 2582)
@@ -497,7 +499,7 @@ contains
                 !           Always add volume
                 !           Note: the standard name for "volume" is fixed for the moment, but the NetCDF standard is
                 !           far from complete.
-                inc_error = dlwqnc_create_wqvariable(ncidmap, mesh_name1d, 'volume', 'volume (m3)', &
+                inc_error = create_variable(ncidmap, mesh_name1d, 'volume', 'volume (m3)', &
                         'sea_water_volume', 'm3', ntimeid, nosegid1d, dlwqnc_type1d, wqidvolume_1d)
                 if (inc_error /= nf90_noerr) then
                     write(lunut, 2583)
@@ -515,7 +517,7 @@ contains
 
         !     Perform output
         !     New time record
-        inc_error = dlwqnc_write_wqtime(ncidmap, timeid, bndtimeid, mncrec, itime)
+        inc_error = write_time(ncidmap, timeid, bndtimeid, mncrec, itime)
         if (inc_error /= nf90_noerr) then
             if (inc_error /= nf90_noerr) then
                 write(lunut, 2590)

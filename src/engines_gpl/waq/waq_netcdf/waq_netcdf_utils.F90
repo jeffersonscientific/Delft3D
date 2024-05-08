@@ -77,7 +77,7 @@ module waq_netcdf_utils
 
 contains
 
-    integer function set_debug_status (debug_status)
+    integer function set_debug_status(debug_status)
         !! Set the debug status of these routines
         !! Returns:
         !!     nf90_noerr if variable found, otherwise an error code

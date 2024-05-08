@@ -70,7 +70,7 @@ contains
         use rd_token     !   for the reading of tokens
         use partmem      !   for PARTicle tracking
         use timers       !   performance timers
-        use dlwq_netcdf  !   read/write grid in netcdf
+        use waq_netcdf_utils, only: set_debug_status, find_mesh_by_attributes
         use results, only : lncout       !   output settings
         use m_sysn          ! System characteristics
         use m_error_status
@@ -167,7 +167,7 @@ contains
         if (cdummy == 'UGRID' .or. (has_hydfile .and. ugridfile /= ' ')) then
 
             ! Turn on debug info from dlwaqnc
-            inc_error = dlwqnc_debug_status(.true.)
+            inc_error = set_debug_status(.true.)
             ! Check if the UGRID file is suitable for Delwaq Output
             write (file_unit, 2500)
 
@@ -201,7 +201,7 @@ contains
 
             if (lncout) then
                 ! Find all grids
-                inc_error = dlwqnc_find_meshes_by_att(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
+                inc_error = find_mesh_by_attributes(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
                 if (inc_error /= nf90_noerr) then
                     write (file_unit, 2540)
                     lncout = .false.

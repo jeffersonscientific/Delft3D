@@ -42,7 +42,7 @@ contains
         use m_universally_unique_id_generator
         use m_logger, only : terminate_execution
         use timers
-        use dlwq_netcdf  !   read/write grid in netcdf
+        use waq_netcdf_utils, only: set_debug_status, create_time_variable, write_time
         use results, only : ncopt
         implicit none
 
@@ -139,7 +139,7 @@ contains
         if (ncidhis < 0) then
 
             ! Turn on debug info from dlwaqnc
-            inc_error = dlwqnc_debug_status(.true.)
+            inc_error = set_debug_status(.true.)
 
             ! Prepare a Delwaq-NetCDF output-file for history data from the UGRID-file
             ! To do: we should check if everything went right, if not, NetCDF output is not possible...
@@ -240,7 +240,7 @@ contains
 
             mesh_name = 'history'
             t0string = moname(4)
-            inc_error = dlwqnc_create_wqtime(ncidhis, t0string, timeid, bndtimeid, ntimeid)
+            inc_error = create_time_variable(ncidhis, t0string, timeid, bndtimeid, ntimeid)
             if (inc_error /= nf90_noerr) then
                 write(lunut, 2581)
                 goto 800
@@ -407,7 +407,7 @@ contains
         allocate(dlwq_values(nodump))
 
         !     New time record
-        inc_error = dlwqnc_write_wqtime(ncidhis, timeid, bndtimeid, hncrec, itime)
+        inc_error = write_time(ncidhis, timeid, bndtimeid, hncrec, itime)
         if (inc_error /= nf90_noerr) then
             if (inc_error /= nf90_noerr) then
                 write(lunut, 2590)
