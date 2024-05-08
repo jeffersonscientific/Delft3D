@@ -30,19 +30,8 @@ contains
 
     SUBROUTINE OUTMO1 (IOUT, IDUMP, ARRA, VNAME, DNAME, &
             NODUMP, ID, NEND, NOTOT)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED: april 4, 1991 by J. van Beek
-        !
-        !     FUNCTION            : Writes monitoring results to IOUT in
-        !                                          blocks of 10 systems.
-        !
-        !     LOGICAL UNITNUMBERS : IOUT = number of monitoring output file
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          : 9
+        ! Writes monitoring results to IOUT in blocks of 10 systems.
+
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
@@ -65,9 +54,7 @@ contains
         REAL(kind = real_wp) :: ARRA(NOTOT, *)
         character(len=40) VNAME
         character(len=20) DNAME(*)
-        !
-        !     Local declaration
-        !
+
         character(len=1)  SPACE
         DATA         SPACE / ' ' /
         integer(kind = int_wp) :: i, k, iseg
@@ -90,6 +77,6 @@ contains
         2060 FORMAT (' ', A40)
         2080 FORMAT (' SEGMENT NR:', I6, '   ', 10(1P, E11.4))
         2090 FORMAT (' ', A20, 10(1P, E11.4))
-    END
+    END SUBROUTINE OUTMO1
 
 end module m_outmo1

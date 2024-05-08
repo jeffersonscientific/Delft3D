@@ -39,20 +39,9 @@ contains
         use m_array_manipulation, only : initialize_real_array
         use timers
 
-        implicit none
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED:            : may 1993 by Jan van Beek
-        !
-        !     FUNCTION            : Fills output buffer OUTVAL on sub grid.
-        !
-        !     SUBROUTINES CALLED  : ZERO  , zero's a real array
-        !
-        !     FILES               : -
-        !
-        !     PARAMETERS          : 27
-        !
+
+        ! Fills output buffer OUTVAL on sub grid.
+
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     OUTVAL  REAL  NCOUT+NRVAR,* OUTPUT  Values for vars on output grid
@@ -425,6 +414,6 @@ contains
         !
         if (timon) call timstop (ithandl)
         return
-    end
+    end subroutine fiosub
 
 end module m_fiosub
