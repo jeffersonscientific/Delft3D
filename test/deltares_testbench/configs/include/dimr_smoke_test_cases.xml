@@ -1,4 +1,67 @@
 <testCases>
+  <testCase name="e02_f014_c001_trench_EH_par_crs" ref="sif_dimr">    <!-- dflowfm multiple partitions -->
+    <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+    <programs>
+      <program ref="execute_singularity" seq="1">
+        <arguments>
+          <argument>-p</argument>
+          <argument>2</argument>
+          <argument>run_dflowfm.sh</argument>
+          <argument>--partition:ndomains=4:icgsolver=6</argument>
+          <argument>t01.mdu</argument>
+        </arguments>
+      </program>
+      <program ref="execute_singularity" seq="2">
+        <arguments>
+          <argument>-p</argument>
+          <argument>2</argument>
+          <argument>run_dimr.sh</argument>
+          <argument>-c</argument>
+          <argument>4</argument>
+          <argument>-m</argument>
+          <argument>dimr.xml</argument>
+        </arguments>
+      </program>
+    </programs>
+    <maxRunTime>120.0</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
+         <parameters>
+             <parameter name="cross_section_discharge" toleranceAbsolute="0.001" />
+             <parameter name="cross_section_Sediment_sand" toleranceAbsolute="0.001" />
+       <parameter name="cross_section_Sediment_bedload" toleranceAbsolute="0.001" />
+         </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f012_c0323_mapmerge" ref="sif_postproc">    <!-- dflowfm mapmerge -->
+      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0323_alloutrealistic_f12_e02_mapmerge</path>
+      <programs>
+        <program ref="execute_singularity">
+          <arguments>
+            <argument>-p</argument>
+            <argument>2</argument>
+            <argument>run_dfmoutput.sh</argument>
+            <argument>--</argument>
+            <argument>-d</argument>
+            <argument>mapmerge</argument>
+            <argument>--infile</argument>
+            <argument>western_scheldt_3domains_0000_map.nc </argument>
+            <argument>western_scheldt_3domains_0001_map.nc </argument>
+            <argument>western_scheldt_3domains_0002_map.nc </argument>
+            <argument>--outfile</argument>
+            <argument>western_scheldt_3domains_map.nc </argument>
+          </arguments>
+        </program>
+      </programs>
+       <checks>
+          <file name="western_scheldt_3domains_map.nc" type="NETCDF">
+              <parameters>
+                  <parameter name="s1" toleranceAbsolute="0.0001" />
+              </parameters>
+          </file>
+      </checks>
+  </testCase>
   <testCase name="e109_f01_c010" ref="dimr_trunk_lnx64">    <!-- dflowfm + drtc + dwaves -->
     <path version="2024-01-11T14:00:00">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
     <checks>

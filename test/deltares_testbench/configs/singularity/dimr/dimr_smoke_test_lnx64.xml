@@ -142,6 +142,24 @@
 			</location>
 			<maxRunTime>3600.0</maxRunTime>
 		</testCase>
+        <testCase name="sif_dimr">
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
+        <testCase name="sif_postproc">
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
 	</defaultTestCases>
 	<xi:include href="../../include/dimr_smoke_test_cases.xml"/>
 </deltaresTestbench_v3>
