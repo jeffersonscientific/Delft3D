@@ -25,6 +25,9 @@ module m_write_monitoring_output
 
     implicit none
 
+    private
+    public :: write_monitoring_output, OUTMO3
+
 contains
 
 

@@ -25,6 +25,9 @@ module m_write_history_output
 
     implicit none
 
+    private
+    public :: write_history_output
+
 contains
 
 
@@ -54,32 +57,32 @@ contains
 
         use timers
 
-        INTEGER(kind = int_wp) :: history_file_unit, ITIME, NODUMP, NOTOT1, NOTOT2, INIT
-        INTEGER(kind = int_wp) :: IDUMP(*)
-        character(len=*) MONAME(4), NAMFIH
-        character(len=*) DUNAME(*), SYNAM1(*), SYNAM2(*)
-        REAL(kind = real_wp) :: CONC1(*), CONC2(*)
+        integer(kind = int_wp) :: history_file_unit, itime, nodump, notot1, notot2, init
+        integer(kind = int_wp) :: idump(*)
+        character(len = *) moname(4), namfih
+        character(len = *) duname(*), synam1(*), synam2(*)
+        real(kind = real_wp) :: conc1(*), conc2(*)
         integer(kind = int_wp) :: i, k1, k2, j
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("write_history_output", ithandl)
 
         ! Initialize file
-        IF (INIT == 1) THEN
-            INIT = 0
-            WRITE (history_file_unit) (MONAME(I), I = 1, 4)
-            WRITE (history_file_unit)  NOTOT1 + NOTOT2, NODUMP
-            WRITE (history_file_unit) (SYNAM1(I), I = 1, NOTOT1), (SYNAM2(I), I = 1, NOTOT2)
-            WRITE (history_file_unit) (I, DUNAME(I), I = 1, NODUMP)
-        ENDIF
+        if (init == 1) then
+            init = 0
+            write (history_file_unit) (moname(i), i = 1, 4)
+            write (history_file_unit)  notot1 + notot2, nodump
+            write (history_file_unit) (synam1(i), i = 1, notot1), (synam2(i), i = 1, notot2)
+            write (history_file_unit) (i, duname(i), i = 1, nodump)
+        endif
 
         ! Perform output
-        WRITE (history_file_unit) ITIME, (&
-                (CONC1(K1 + (IDUMP(J) - 1) * NOTOT1), K1 = 1, NOTOT1), &
-                (CONC2(K2 + (J - 1) * NOTOT2), K2 = 1, NOTOT2), &
-                J = 1, NODUMP)
+        write (history_file_unit) itime, (&
+                (conc1(k1 + (idump(j) - 1) * notot1), k1 = 1, notot1), &
+                (conc2(k2 + (j - 1) * notot2), k2 = 1, notot2), &
+                j = 1, nodump)
         if (timon) call timstop (ithandl)
 
-    END SUBROUTINE write_history_output
+    end subroutine write_history_output
 
 end module m_write_history_output

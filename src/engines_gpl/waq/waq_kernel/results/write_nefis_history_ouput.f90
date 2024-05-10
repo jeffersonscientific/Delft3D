@@ -25,10 +25,12 @@ module m_write_nefis_history_ouput
 
     implicit none
 
+    private
+    public :: write_nefis_history_ouput
 contains
 
 
-    subroutine write_nefis_history_ouput (iout, lchout, itime, moname, noseg, &
+    subroutine write_nefis_history_ouput(iout, lchout, itime, moname, noseg, &
             notot1, conc1, syname, notot2, conc2, &
             iostrt, iostop, iostep, nodump, idump, &
             duname, rbuffr, init)

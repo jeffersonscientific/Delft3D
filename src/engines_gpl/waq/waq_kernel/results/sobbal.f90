@@ -214,8 +214,7 @@ contains
             onlysm = .NOT. btest(intopt, 13)
             suppft = .NOT. btest(intopt, 14)
 
-            !         from ini file
-
+            ! from ini file
             call retrieve_command_argument ('-i', 3, lfound, idummy, rdummy, &
                     inifil, ierr2)
             if (lfound) then
@@ -271,7 +270,7 @@ contains
             IF (IERR > 0) GOTO 9000
             IF (.NOT. LUMPTR) THEN
 
-                !             allocate and set SEGDMP, first dump number for each segment (if any)
+                ! allocate and set SEGDMP, first dump number for each segment (if any)
                 if (allocated(segdmp)) then
                     deallocate(segdmp)
                 endif
@@ -300,51 +299,50 @@ contains
                 ENDDO
 
             ENDIF
-            IF (.NOT. LUMPEM) THEN
-
-                !             allocate and set IWDMP, set to true is wasteload is in dump area
+            if (.not. lumpem) then
+                ! allocate and set IWDMP, set to true is wasteload is in dump area
                 if (allocated(iwdmp)) then
                     deallocate(iwdmp)
                 endif
-                allocate (IWDMP(NOWST, NDMPAR), STAT = IERR)
-                IF (IERR > 0) GOTO 9000
-                IWDMP = .FALSE.
-                ITEL = 0
-                IDUMP_OUT = 0
-                DO IDUMP = 1, NDMPAR
-                    NSC = IPDMP(NDMPAR + NTDMPQ + IDUMP)
-                    IF (DMPBAL(IDUMP) == 1) THEN
-                        IDUMP_OUT = IDUMP_OUT + 1
-                        DO ISC = 1, NSC
-                            ITEL = ITEL + 1
-                            ISEG = IPDMP(NDMPAR + NTDMPQ + NDMPAR + ITEL)
-                            IF (ISEG > 0) THEN
-                                DO IW = 1, NOWST
-                                    IF (IWASTE(IW) == ISEG) THEN
-                                        IWDMP(IW, IDUMP_OUT) = .TRUE.
-                                    ENDIF
-                                ENDDO
-                            ENDIF
-                        ENDDO
-                    ELSE
-                        ITEL = ITEL + NSC
-                    ENDIF
-                ENDDO
+                allocate (iwdmp(nowst, ndmpar), stat = ierr)
+                if (ierr > 0) goto 9000
+                iwdmp = .false.
+                itel = 0
+                idump_out = 0
+                do idump = 1, ndmpar
+                    nsc = ipdmp(ndmpar + ntdmpq + idump)
+                    if (dmpbal(idump) == 1) then
+                        idump_out = idump_out + 1
+                        do isc = 1, nsc
+                            itel = itel + 1
+                            iseg = ipdmp(ndmpar + ntdmpq + ndmpar + itel)
+                            if (iseg > 0) then
+                                do iw = 1, nowst
+                                    if (iwaste(iw) == iseg) then
+                                        iwdmp(iw, idump_out) = .true.
+                                    endif
+                                enddo
+                            endif
+                        enddo
+                    else
+                        itel = itel + nsc
+                    endif
+                enddo
 
-            ENDIF
+            endif
 
             !         Balances are constructed for all system variables
             !         + total N + total P (IF RELEVANT!)
             !         Find which state variables contribute to what extent
 
-            CALL COMSUM (NOSUM, TFACTO, NOTOT, SYNAME, SFACTO, &
-                    NOCONS, CONAME, CONS)
-            DO ISYS = 1, NOTOT
-                SYNAMP(ISYS) = SYNAME(ISYS)
-            ENDDO
-            DO ISUM = 1, NOSUM
-                SYNAMP(NOTOT + ISUM) = SYNAMS(ISUM)
-            ENDDO
+            call comsum (nosum, tfacto, notot, syname, sfacto, &
+                    nocons, coname, cons)
+            do isys = 1, notot
+                synamp(isys) = syname(isys)
+            enddo
+            do isum = 1, nosum
+                synamp(notot + isum) = synams(isum)
+            enddo
 
             !         Count number of balance terms dep. on flags LUMPEM/LUMPPR
 
@@ -359,130 +357,128 @@ contains
             !                                     if LUMPPR only total
             !                                     if not    per process
             !
-            IF (LUMPEM) THEN
-                NEMISS = 2
-            ELSE
+            if (lumpem) then
+                nemiss = 2
+            else
 
                 !             boundary types and loads as seperate term (all in and out)
-                NEMISS = 2 * NOBTYP + 2 * NOWTYP
-            ENDIF
+                nemiss = 2 * nobtyp + 2 * nowtyp
+            endif
 
-            IF (LUMPTR) THEN
-                NTRANS = 2
-            ELSE
+            if (lumptr) then
+                ntrans = 2
+            else
 
                 !             internal transport from every dump area possible plus the other term
-                NTRANS = 2 * NDMPAR_OUT + 2
-            ENDIF
+                ntrans = 2 * ndmpar_out + 2
+            endif
 
-            NOOUT = 0
-            DO ISYS = 1, NOTOT + NOSUM
-                IF (ISYS > NOTOT) THEN
-                    IF (TFACTO(ISYS - NOTOT) > 0.0001) THEN
-                        INCLUD = .TRUE.
-                    ELSE
-                        INCLUD = .FALSE.
-                        IMASSA(ISYS) = -1
-                    ENDIF
-                ELSE
-                    INCLUD = .TRUE.
-                ENDIF
-                IF (INCLUD) THEN
-                    IMASSA(ISYS) = NOOUT + 1
-                    NOOUT = NOOUT + 1
-                    IEMISS(ISYS) = NOOUT + 1
-                    NOOUT = NOOUT + NEMISS
-                    ITRANS(ISYS) = NOOUT + 1
-                    NOOUT = NOOUT + NTRANS
-                    IPROCS(ISYS) = NOOUT + 1
-                    IF (LUMPPR) THEN
-                        NPROCS(ISYS) = 1
-                    ELSE
-                        !                     Find sum STOCHI coefficients for sum parameters
-                        IF (ISYS > NOTOT) THEN
-                            ISUM = ISYS - NOTOT
-                            DO IFLUX = 1, NOFLUX
-                                STOCHL(ISUM, IFLUX) = 0.0
-                                DO ISYS2 = 1, NOTOT
-                                    STOCHL(ISUM, IFLUX) = &
-                                            STOCHL(ISUM, IFLUX) &
-                                                    + STOCHI(ISYS2, IFLUX) &
-                                                    * SFACTO(ISUM, ISYS2)
-                                ENDDO
-                            ENDDO
-                        ENDIF
+            noout = 0
+            do isys = 1, notot + nosum
+                if (isys > notot) then
+                    if (tfacto(isys - notot) > 0.0001) then
+                        includ = .true.
+                    else
+                        includ = .false.
+                        imassa(isys) = -1
+                    endif
+                else
+                    includ = .true.
+                endif
+                if (includ) then
+                    imassa(isys) = noout + 1
+                    noout = noout + 1
+                    iemiss(isys) = noout + 1
+                    noout = noout + nemiss
+                    itrans(isys) = noout + 1
+                    noout = noout + ntrans
+                    iprocs(isys) = noout + 1
+                    if (lumppr) then
+                        nprocs(isys) = 1
+                    else
+                        ! find sum stochi coefficients for sum parameters
+                        if (isys > notot) then
+                            isum = isys - notot
+                            do iflux = 1, noflux
+                                stochl(isum, iflux) = 0.0
+                                do isys2 = 1, notot
+                                    stochl(isum, iflux) = &
+                                            stochl(isum, iflux) &
+                                                    + stochi(isys2, iflux) &
+                                                    * sfacto(isum, isys2)
+                                enddo
+                            enddo
+                        endif
 
-                        !                     Make sure that irrelevant fluxes are not included
-                        NPROCS(ISYS) = 0
-                        DO IFLUX = 1, NOFLUX
-                            IF (ISYS <= NOTOT) THEN
-                                ST = STOCHI(ISYS, IFLUX)
-                            ELSE
-                                ST = STOCHL(ISYS - NOTOT, IFLUX)
-                            ENDIF
-                            IF (ABS(ST) > 1.E-20) THEN
-                                NPROCS(ISYS) = NPROCS(ISYS) + 1
-                                FL2BAL(ISYS, NPROCS(ISYS)) = IFLUX
-                            ENDIF
-                        ENDDO
-                    ENDIF
-                    NOOUT = NOOUT + NPROCS(ISYS)
-                ENDIF
-            ENDDO
+                        ! Make sure that irrelevant fluxes are not included
+                        nprocs(isys) = 0
+                        do iflux = 1, noflux
+                            if (isys <= notot) then
+                                st = stochi(isys, iflux)
+                            else
+                                st = stochl(isys - notot, iflux)
+                            endif
+                            if (abs(st) > 1.e-20) then
+                                nprocs(isys) = nprocs(isys) + 1
+                                fl2bal(isys, nprocs(isys)) = iflux
+                            endif
+                        enddo
+                    endif
+                    noout = noout + nprocs(isys)
+                endif
+            enddo
 
-            !         Dimension additional arrays
-
+            ! Dimension additional arrays
             if (allocated(balans)) then
                 deallocate(balans, baltot, ouname)
             endif
 
-            allocate (BALANS(NOOUT, NDMPAR_OUT + 1), &
-                    BALTOT(NOOUT, NDMPAR_OUT + 1), &
-                    OUNAME(NOOUT), &
+            allocate (balans(noout, ndmpar_out + 1), &
+                    baltot(noout, ndmpar_out + 1), &
+                    ouname(noout), &
                     stat = ierr)
             if (ierr > 0) goto 9000
 
-            !         Set balance term names
-
-            DO ISYS = 1, NOTOT + NOSUM
-                IF (IMASSA(ISYS) > 0) THEN
-                    C20 = SYNAMP(ISYS)
-                    OUNAME(IMASSA(ISYS)) = C20(1:6) // '_Storage'
-                    IF (LUMPEM) THEN
-                        OUNAME(IEMISS(ISYS)) = C20(1:6) // '_All Bo+Lo_In'
-                        OUNAME(IEMISS(ISYS) + 1) = C20(1:6) // '_All Bo+Lo_Out'
-                    ELSE
-                        ITEL2 = IEMISS(ISYS) - 1
-                        DO IFRAC = 1, NOBTYP
-                            ITEL2 = ITEL2 + 1
-                            OUNAME(ITEL2) = &
-                                    C20(1:6) // '_' // BNDTYP(IFRAC)(1:9) // '_In'
-                            ITEL2 = ITEL2 + 1
-                            OUNAME(ITEL2) = &
-                                    C20(1:6) // '_' // BNDTYP(IFRAC)(1:9) // '_Out'
-                        ENDDO
-                        DO IFRAC = 1, NOWTYP
-                            ITEL2 = ITEL2 + 1
-                            OUNAME(ITEL2) = &
-                                    C20(1:6) // '_' // WSTTYP(IFRAC)(1:9) // '_In'
-                            ITEL2 = ITEL2 + 1
-                            OUNAME(ITEL2) = &
-                                    C20(1:6) // '_' // WSTTYP(IFRAC)(1:9) // '_Out'
-                        ENDDO
-                    ENDIF
-                    IF (LUMPTR) THEN
-                        OUNAME(ITRANS(ISYS)) = C20(1:6) // '_Transport In'
-                        OUNAME(ITRANS(ISYS) + 1) = C20(1:6) // '_Transport Out'
-                    ELSE
-                        ITEL2 = ITRANS(ISYS) - 1
-                        ITEL2 = ITEL2 + 1
-                        OUNAME(ITEL2) = C20(1:6) // '_' // 'Other    ' // '_In'
-                        ITEL2 = ITEL2 + 1
-                        OUNAME(ITEL2) = C20(1:6) // '_' // 'Other    ' // '_Out'
-                        DO IDUMP = 1, NDMPAR
-                            IF (DMPBAL(IDUMP) == 1) THEN
-                                ITEL2 = ITEL2 + 1
-                                OUNAME(ITEL2) = C20(1:6) // '_' // DANAM(IDUMP)(1:9) // '_In'
+            ! Set balance term names
+            do isys = 1, notot + nosum
+                if (imassa(isys) > 0) then
+                    c20 = synamp(isys)
+                    ouname(imassa(isys)) = c20(1:6) // '_Storage'
+                    if (lumpem) then
+                        ouname(iemiss(isys)) = c20(1:6) // '_All Bo+Lo_In'
+                        ouname(iemiss(isys) + 1) = c20(1:6) // '_All Bo+Lo_Out'
+                    else
+                        itel2 = iemiss(isys) - 1
+                        do ifrac = 1, nobtyp
+                            itel2 = itel2 + 1
+                            ouname(itel2) = &
+                                    c20(1:6) // '_' // bndtyp(ifrac)(1:9) // '_In'
+                            itel2 = itel2 + 1
+                            ouname(itel2) = &
+                                    c20(1:6) // '_' // bndtyp(ifrac)(1:9) // '_Out'
+                        enddo
+                        do ifrac = 1, nowtyp
+                            itel2 = itel2 + 1
+                            ouname(itel2) = &
+                                    c20(1:6) // '_' // wsttyp(ifrac)(1:9) // '_In'
+                            itel2 = itel2 + 1
+                            ouname(itel2) = &
+                                    c20(1:6) // '_' // wsttyp(ifrac)(1:9) // '_Out'
+                        enddo
+                    endif
+                    if (lumptr) then
+                        ouname(itrans(isys)) = c20(1:6) // '_Transport In'
+                        ouname(itrans(isys) + 1) = c20(1:6) // '_Transport Out'
+                    else
+                        itel2 = itrans(isys) - 1
+                        itel2 = itel2 + 1
+                        ouname(itel2) = c20(1:6) // '_' // 'Other    ' // '_In'
+                        itel2 = itel2 + 1
+                        ouname(itel2) = c20(1:6) // '_' // 'Other    ' // '_Out'
+                        do idump = 1, ndmpar
+                            if (dmpbal(idump) == 1) then
+                                itel2 = itel2 + 1
+                                ouname(itel2) = c20(1:6) // '_' // danam(idump)(1:9) // '_In'
                                 ITEL2 = ITEL2 + 1
                                 OUNAME(ITEL2) = C20(1:6) // '_' // DANAM(IDUMP)(1:9) // '_Out'
                             ENDIF

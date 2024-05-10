@@ -25,6 +25,9 @@ module m_write_restart_map_file
 
     implicit none
 
+    private
+    public :: write_restart_map_file
+
 contains
 
 

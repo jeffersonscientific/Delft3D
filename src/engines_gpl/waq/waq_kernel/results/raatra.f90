@@ -29,7 +29,6 @@ contains
 
 
     subroutine raatra(nosys, ndmpq, noraai, ntraaq, ioraai, nqraai, iqraai, iqdmp, dmpq, trraai)
-
         !! Fills transport terms for raaien
 
         !
@@ -89,15 +88,11 @@ contains
                     ipq = iqdmp(-iq)
                     do isys = 1, nosys
                         if (integration_id == 1) then
-                            trraai(isys, iraai) = trraai(isys, iraai) - &
-                                    dmpq(isys, ipq, 1) + &
-                                    dmpq(isys, ipq, 2)
+                            trraai(isys, iraai) = trraai(isys, iraai) - dmpq(isys, ipq, 1) + dmpq(isys, ipq, 2)
                         elseif (integration_id == 2) then
-                            trraai(isys, iraai) = trraai(isys, iraai) + &
-                                    dmpq(isys, ipq, 2)
+                            trraai(isys, iraai) = trraai(isys, iraai) + dmpq(isys, ipq, 2)
                         elseif (integration_id == 3) then
-                            trraai(isys, iraai) = trraai(isys, iraai) - &
-                                    dmpq(isys, ipq, 1)
+                            trraai(isys, iraai) = trraai(isys, iraai) - dmpq(isys, ipq, 1)
                         endif
                     end do
                 endif

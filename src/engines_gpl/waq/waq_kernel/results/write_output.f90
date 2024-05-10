@@ -45,7 +45,7 @@ module m_write_output
 contains
 
 
-    subroutine write_output (notot, noseg, nopa, nosfun, itime, &
+    subroutine write_output(notot, noseg, nopa, nosfun, itime, &
             moname, syname, duname, idump, nodump, &
             conc, cons, param, func, segfun, &
             volume, nocons, nofun, idt, noutp, &
@@ -293,7 +293,7 @@ contains
                 write(*, '(A)')   '          Current concentration fields written to _res.map.'
                 write(lunout, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
                 write(*, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
-                call write_restart_map_file (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
+                call write_restart_map_file(file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
                 call terminate_execution(1)
             endif
         endif

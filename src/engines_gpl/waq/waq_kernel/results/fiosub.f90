@@ -71,9 +71,6 @@ contains
         !     DEFAUL  REAL          *     INPUT   Default proces parameters
         !     NCOUT   INTEGER       1     INPUT   number of conc in output
         !     NTDMPQ  INTEGER       1     INPUT   total number exchanges in dump area
-        !
-        !     Declaration of arguments
-        !
         integer(kind = int_wp) :: nrvar, nocons, nopa, nofun, nosfun, &
                 notot, idt, itime, noseg, nosys, &
                 ndmpar, noloc, nodef, ncout, ntdmpq

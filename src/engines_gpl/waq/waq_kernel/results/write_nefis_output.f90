@@ -24,6 +24,8 @@ module m_write_nefis_output
     use m_waq_precision
 
     implicit none
+    private
+    public :: write_map_to_nefis_file
 
 contains
 

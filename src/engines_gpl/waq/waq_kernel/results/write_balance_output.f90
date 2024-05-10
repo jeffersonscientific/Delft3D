@@ -25,6 +25,9 @@ module m_write_balance_output
 
     implicit none
 
+    private
+    public :: write_balance_output
+
 contains
 
 
@@ -53,38 +56,38 @@ contains
 
         use timers
 
-        INTEGER(kind = int_wp) :: LUBAL, ITIME, INIT, NOTOT, NOFLUX, &
-                NDMPAR, NOTOT2, NOPOUT
-        REAL(kind = real_wp) :: ASMASS(NOTOT, NDMPAR, 6), FLXINT(NOFLUX, NDMPAR), &
-                CONC2(NOTOT2, NDMPAR)
-        character(len = 20)  SYNAME(*), DANAME(*)
-        character(len = 40)  MONAME(4)
-        character(len = *) FILBAL
-        INTEGER(kind = int_wp) :: J, I, K, ISYS, IFLX, IHLP
+        integer(kind = int_wp) :: lubal, itime, init, notot, noflux, &
+                ndmpar, notot2, nopout
+        real(kind = real_wp) :: asmass(notot, ndmpar, 6), flxint(noflux, ndmpar), &
+                conc2(notot2, ndmpar)
+        character(len = 20)  syname(*), daname(*)
+        character(len = 40)  moname(4)
+        character(len = *) filbal
+        integer(kind = int_wp) :: j, i, k, isys, iflx, ihlp
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("write_balance_output", ithandl)
 
         ! Initialize file
-        IF (INIT == 1) THEN
-            INIT = 0
+        if (init == 1) then
+            init = 0
 
-            ! Write header
-            WRITE (LUBAL) (MONAME(I), I = 1, 4)
-            NOPOUT = 6 * NOTOT + NOFLUX + 2
-            WRITE (LUBAL) NOPOUT, NDMPAR, NOTOT
-            WRITE (LUBAL) (SYNAME(I), I = 1, NOTOT)
-            WRITE (LUBAL) (DANAME(I), I = 1, NDMPAR)
-        ENDIF
+            ! write header
+            write (lubal) (moname(i), i = 1, 4)
+            nopout = 6 * notot + noflux + 2
+            write (lubal) nopout, ndmpar, notot
+            write (lubal) (syname(i), i = 1, notot)
+            write (lubal) (daname(i), i = 1, ndmpar)
+        endif
 
         ! Perform output
-        WRITE (LUBAL) ITIME, (&
-                ((ASMASS(ISYS, J, K), K = 1, 6), ISYS = 1, NOTOT), &
-                (FLXINT(IFLX, J), IFLX = 1, NOFLUX), &
-                (CONC2(IHLP, J), IHLP = 1, 2), &
-                J = 1, NDMPAR)
+        write (lubal) itime, (&
+                ((asmass(isys, j, k), k = 1, 6), isys = 1, notot), &
+                (flxint(iflx, j), iflx = 1, noflux), &
+                (conc2(ihlp, j), ihlp = 1, 2), &
+                j = 1, ndmpar)
 
         if (timon) call timstop (ithandl)
 
-    END SUBROUTINE write_balance_output
+    end subroutine write_balance_output
 
 end module m_write_balance_output

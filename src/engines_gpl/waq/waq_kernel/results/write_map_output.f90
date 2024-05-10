@@ -31,9 +31,7 @@ contains
     subroutine write_map_output(map_file_unit, namfim, itime, moname, noseg, &
             notot1, conc1, synam1, notot2, conc2, synam2, iknmrk, init)
 
-        !     Files               : map_file_unit = unit number of binary map output file
         use timers
-        implicit none
 
         integer(kind = int_wp), intent(in) :: map_file_unit                ! unit number output file
         character(len=*), intent(in) :: namfim               ! name output file
@@ -54,13 +52,10 @@ contains
         integer(kind = int_wp) :: ierr
         real(kind = real_wp) :: missing_value = -999.0       ! missing value indicator
         integer(kind = int_wp) :: ithandl = 0
-
         real(kind = real_wp), dimension(:, :), allocatable :: outconc
-
         if (timon) call timstrt ("write_map_output", ithandl)
 
-        !     Initialize file
-
+        ! Initialize file
         if (init == 1) then
             init = 0
             write (map_file_unit)  moname
@@ -74,7 +69,6 @@ contains
         !
         !     Note: this may fail, if there is not enough memory, so provide
         !     a slower alternative.
-
         allocate(outconc(notot1, noseg), source = conc1, stat = ierr)
 
         if (ierr == 0) then
@@ -83,7 +77,6 @@ contains
                     outconc(:, iseg) = missing_value
                 endif
             enddo
-
             write (map_file_unit) itime, (outconc(:, iseg), conc2(:, iseg), iseg = 1, noseg)
 
             deallocate(outconc)
@@ -98,9 +91,8 @@ contains
                 endif
             enddo
         endif
-
         if (timon) call timstop (ithandl)
-        return
+
     end subroutine write_map_output
 
 end module m_write_map_output
