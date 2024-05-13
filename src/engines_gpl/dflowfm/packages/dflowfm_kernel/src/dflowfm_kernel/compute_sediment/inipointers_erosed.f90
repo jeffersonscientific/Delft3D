@@ -46,7 +46,7 @@
    dzbdt               => mtd%dzbdt
    seddif              => mtd%seddif
    blchg               => mtd%blchg
-   sed                 => mtd%sed
+   !sed                 => mtd%sed
    ws                  => mtd%ws
    uau                 => mtd%uau
 

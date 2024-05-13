@@ -960,13 +960,14 @@ public :: fm_bott3d
    !!
    
    use sediment_basics_module
-   use m_flowgeom , only: nd, bai_mor, ndxi, bl, wu, wu_mor, xz, yz
+   use m_flowgeom , only: nd, bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ba
    use m_flow, only: kmx, s1, vol1
    use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, morfac, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff
    use m_sediment, only: avalflux, ssccum
    use m_flowtimes, only: dts, dnt
    use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
    use unstruc_files, only: mdia
+   use m_debug
    
    implicit none
 
@@ -1070,6 +1071,9 @@ public :: fm_bott3d
                endif
                thick1 = vol1(k) * bai_mor(nm)
                sedflx = sinksetot(j,nm)*bai_mor(nm) + ssccum(l,nm)   ! kg/s/m2
+               !if (allocated(debugarr2d)) then
+               !   debugarr2d(nm, l) = ssccum(l,nm)*dts*ba(nm)
+               !end if
                ssccum(l,nm) = 0d0
                eroflx = sourse(nm,l)*thick1            ! mass conservation, different from D3D
                !
@@ -1563,7 +1567,8 @@ public :: fm_bott3d
          botcrit=0.95*hsk
          ddp = hsk/max(hsk-blchg(k),botcrit)
          do ll = 1, stmpar%lsedsus
-            m_sediment_sed(ll,k) = m_sediment_sed(ll,k) * ddp
+            !m_sediment_sed(ll,k) = m_sediment_sed(ll,k) * ddp
+            constituents(ISED1+ll-1,k) = constituents(ISED1+ll-1,k) * ddp
          enddo !ll
          !
          if (jasal>0) then
@@ -1585,7 +1590,7 @@ public :: fm_bott3d
             ddp = hsk/max(hsk-blchg(k),botcrit)
             call getkbotktop(k,kb,kt)
             do kk=kb,kt
-               m_sediment_sed(ll,kk) = m_sediment_sed(ll,kk) * ddp
+               constituents(ISED1+ll-1,kk) = constituents(ISED1+ll-1,kk) * ddp
             enddo !kk
          enddo !k
       enddo !ll
@@ -1618,11 +1623,11 @@ public :: fm_bott3d
       !
    endif !kmx==0
    
-   if (stmpar%lsedsus>0) then
-      do ll = 1,stmpar%lsedsus
-         constituents(ISED1+ll-1,:) = m_sediment_sed(ll,:)
-      end do
-   endif
+   !if (stmpar%lsedsus>0) then
+   !   do ll = 1,stmpar%lsedsus
+   !      constituents(ISED1+ll-1,:) = m_sediment_sed(ll,:)
+   !   end do
+   !endif
 
    end subroutine fm_update_concentrations_after_bed_level_update
 

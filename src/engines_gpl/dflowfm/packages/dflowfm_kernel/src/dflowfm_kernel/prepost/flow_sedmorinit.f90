@@ -265,7 +265,6 @@ subroutine flow_sedmorinit()
        deallocate(mtd%uau)
 
        deallocate(mtd%seddif)
-       deallocate(mtd%sed)
        deallocate(mtd%ws)
        deallocate(mtd%blchg)
 
@@ -277,7 +276,6 @@ subroutine flow_sedmorinit()
     allocate(mtd%dzbdt(ndx))
     allocate(mtd%uau(lnx))
     allocate(mtd%seddif(stmpar%lsedsus,ndkx))
-    allocate(mtd%sed(stmpar%lsedsus,ndkx))
     allocate(mtd%ws(ndkx,stmpar%lsedsus))
     allocate(mtd%blchg(Ndx))
     allocate(mtd%messages)
@@ -286,18 +284,14 @@ subroutine flow_sedmorinit()
     mtd%dzbdt       = 0.0_fp
     mtd%uau         = 0.0_fp    
     mtd%seddif      = 0.0_fp
-    mtd%sed         = 0.0_fp
     mtd%ws          = 0.0_fp
     mtd%blchg       = 0.0_fp
     !
     ! Array for transport.f90
     mxgr = stmpar%lsedsus
-    if ( allocated(sed) ) deallocate(sed)
     if ( allocated(ssccum) ) deallocate(ssccum)
     if (stmpar%lsedsus .gt. 0) then
-       allocate(sed(stmpar%lsedsus,Ndkx))
-       allocate(ssccum(stmpar%lsedsus,Ndkx))
-       sed    = 0d0
+       allocate(ssccum(stmpar%lsedsus,Ndx))
        ssccum = 0d0
     endif
     !

@@ -77,7 +77,9 @@ subroutine extract_constituents()
                maserrsed = maserrsed + vol1(k)*(constituents(iconst,k)-upperlimitssc)
                constituents(iconst,k) = upperlimitssc
             endif
-            sed(i,k) = constituents(iconst,k)
+            if (.not. stm_included) then
+               sed(i,k) = constituents(iconst,k)
+            endif
          end do
       end if
    end do
@@ -172,11 +174,11 @@ subroutine extract_constituents()
         if (ISED1>0) then
           do ll=1,mxgr
              do k=1,ndx
-                if (hs(k)<stmpar%morpar%sedthr) then
+                if (hs(k)<=stmpar%morpar%sedthr) then
                    call getkbotktop(k,kb,kt)
-                   ssccum(ll,k) = ssccum(ll,k)+sum(constituents(ISED1+ll-1,kb:kt))/dts*bai_mor(k)*vol1(k)
+                   ssccum(ll,k) = ssccum(ll,k)+sum(constituents(ISED1+ll-1,kb:kt)*vol1(kb:kt))/dts*bai_mor(k)   ! correct integration, thanks Willem
                    constituents(ISED1+ll-1,kb:kt) = 0d0
-                   sed(ll,kb:kt) = 0d0
+                   !sed(ll,kb:kt) = 0d0
                 endif
              enddo
            enddo

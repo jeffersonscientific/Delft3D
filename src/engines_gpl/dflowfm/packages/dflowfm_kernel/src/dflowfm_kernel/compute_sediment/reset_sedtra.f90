@@ -47,7 +47,7 @@
       deallocate(mtd%dzbdt)
       deallocate(mtd%uau)
       deallocate(mtd%seddif)
-      deallocate(mtd%sed)
+      !deallocate(mtd%sed)
       deallocate(mtd%ws)
       deallocate(mtd%blchg)
 

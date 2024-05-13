@@ -70,7 +70,7 @@ subroutine transport()                           ! transport for now, advect sal
 
  integer                        :: j, kj, kdj, kuj, kl1j, kl2j, kbj, kij, ki, jastep, kk, kb1, kb2, n1, n2, kkua, kkub, ku2
 
- integer                        :: LL, Lb, Lt, kt, km, ivert, ja, m, LL1, LL2, jachange
+ integer                        :: LL, Lb, Lt, kt, km, ivert, ja, m, LL1, LL2, jachange, jj
 
  double precision               :: flx  (mxgr)           !< sed erosion flux (kg/s)                 , dimension = mxgr
  double precision               :: seq  (mxgr)           !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
@@ -420,11 +420,19 @@ subroutine transport()                           ! transport for now, advect sal
           if (jatem > 0  .and. keepstbndonoutflow == 0) then
               constituents(itemp, kb) = constituents(itemp,ki)
           endif
-          if (jased > 0) then
+          if (jased > 0 .and. .not. stm_included) then
              do j = 1,mxgr
                 sed(j,kb) = sed(j,ki)
              enddo
           endif
+          !
+          ! we removed sed from the morfo module code, so we need this:
+          if (jased > 0 .and. stm_included) then
+             do j = 1, stmpar%lsedsus
+                jj = ISED1+j-1
+                constituents(jj,kb) = constituents(jj,ki)
+             end do
+          end if
        endif
     enddo
  enddo
@@ -435,17 +443,17 @@ subroutine transport()                           ! transport for now, advect sal
     endif
  endif
 
- do k = 1, 0!  ndxi ! for test selectiveZ.mdu
-    if (xz(k) > 270) then
-       do kk = kbot(k), ktop(k)
-          if (zws(kk) < -5d0) then
-             constituents(isalt,kk) = 30d0
-          else
-             constituents(isalt,kk) = 0d0
-          endif
-       enddo
-    endif
- enddo
+ !do k = 1, 0!  ndxi ! for test selectiveZ.mdu
+ !   if (xz(k) > 270) then
+ !      do kk = kbot(k), ktop(k)
+ !         if (zws(kk) < -5d0) then
+ !            constituents(isalt,kk) = 30d0
+ !         else
+ !            constituents(isalt,kk) = 0d0
+ !         endif
+ !      enddo
+ !   endif
+ !enddo
 
  if (numconst > 0 .and. apply_transport_is_used) then
     call average_concentrations_for_laterals(numconst, kmx, ba, constituents, dts)

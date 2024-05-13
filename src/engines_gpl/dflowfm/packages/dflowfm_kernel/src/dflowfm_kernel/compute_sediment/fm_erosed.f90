@@ -61,7 +61,7 @@
    use m_sediment, only: stmpar, sedtra, stm_included, mtd, jatranspvel, sbcx_raw,sbcy_raw,sswx_raw,sswy_raw,sbwx_raw,sbwy_raw
    use m_flowgeom, only: bl, lnxi, lnx, ln, dxi, ndx, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, nd, csu, snu, wcl
    use m_flow, only: s0, s1, u1, kmx, zws, hs, &
-      iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg,jabaptist,cfuhi, epshs, taubxu, epsz0
+      iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg,jabaptist,cfuhi, epshs, taubxu, epsz0, taubu
    use m_flowtimes, only: julrefdat, dts, time1
    use unstruc_files, only: mdia
    use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
