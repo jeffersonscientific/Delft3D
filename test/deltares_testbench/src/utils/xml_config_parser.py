@@ -28,6 +28,7 @@ from src.config.types.presence_type import PresenceType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.i_main_logger import IMainLogger
+from src.utils.logging.test_loggers.test_result_type import TestResultType
 
 
 def loop(dictionary: Dict[str, Any], key: str) -> List:
@@ -233,7 +234,8 @@ class XmlConfigParser(object):
                     test_name = str(cases["testCase"][caseNr]["name"][0]) 
                     testcase_logger = logger.create_test_case_logger(test_name)
                     testcase_logger.test_started()
-                    testcase_logger.test_Result(TestResultType.Exception, str(e))
+                    testcase_logger.test_Result(TestResultType.Exception, str(e.args[0]))
+                    raise
 
         return local_paths, self.__program_configs, result
 
