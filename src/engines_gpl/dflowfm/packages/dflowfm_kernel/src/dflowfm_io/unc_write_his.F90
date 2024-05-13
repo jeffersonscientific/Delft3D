@@ -1026,28 +1026,28 @@ contains
       
       call get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
       
-      call check_netcdf_error( nf90_def_dim(ihisfile, prefix, count, id_strdim))
-      call check_netcdf_error( nf90_def_var(ihisfile, prefix//'_name',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid))
+      call check_netcdf_error( nf90_def_dim(ihisfile, trim(prefix), count, id_strdim))
+      call check_netcdf_error( nf90_def_var(ihisfile, trim(prefix)//'_name',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid))
       call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'cf_role',   'timeseries_id'))
       call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'long_name', 'name of '//trim(name)))
 
       if (.not. strcmpi(geom_type, 'none') .and. len_trim(geom_type) > 0) then
          ! Define geometry related variables
-         ierr = sgeom_def_geometry_variables(ihisfile, prefix//'_geom', name, geom_type, ngeom_node, id_strdim, &
+         ierr = sgeom_def_geometry_variables(ihisfile, trim(prefix)//'_geom', trim(name), geom_type, ngeom_node, id_strdim, &
                                              id_geom_node_count, id_geom_coordx, id_geom_coordy, add_latlon, id_geom_coordlon, id_geom_coordlat)
       end if
          
       ! Polyline midpoint coordinates
-      if (strcmpi(prefix,'pump')) then  ! TODO (UNST-7919): define xmid,ymid for all polyline structures by replacing this line with:   if (strcmpi(geom_type,'line')) then
+      if (strcmpi(trim(prefix),'pump')) then  ! TODO (UNST-7919): define xmid,ymid for all polyline structures by replacing this line with:   if (strcmpi(geom_type,'line')) then
          if (.not. (present(id_poly_xmid) .and. present(id_poly_ymid))) then
             call mess(LEVEL_WARN, 'unc_def_his_structure_static_vars should return id_poly_xmid and id_poly_ymid for polyline structures')
          end if
-         call check_netcdf_error(nf90_def_var(ihisfile, prefix//'_xmid', nc_precision, [id_strdim], id_poly_xmid))
-         call check_netcdf_error(nf90_def_var(ihisfile, prefix//'_ymid', nc_precision, [id_strdim], id_poly_ymid))
+         call check_netcdf_error(nf90_def_var(ihisfile, trim(prefix)//'_xmid', nc_precision, [id_strdim], id_poly_xmid))
+         call check_netcdf_error(nf90_def_var(ihisfile, trim(prefix)//'_ymid', nc_precision, [id_strdim], id_poly_ymid))
          ! jsferic: xy pair is in : 0=cart, 1=sferic coordinates
          ierr = unc_addcoordatts(ihisfile, id_poly_xmid, id_poly_ymid, jsferic)
-         call check_netcdf_error(nf90_put_att(ihisfile, id_poly_xmid, 'long_name', 'x-coordinate of representative mid point of '//prefix//' location (snapped polyline)'))
-         call check_netcdf_error(nf90_put_att(ihisfile, id_poly_ymid, 'long_name', 'y-coordinate of representative mid point of '//prefix//' location (snapped polyline)'))
+         call check_netcdf_error(nf90_put_att(ihisfile, id_poly_xmid, 'long_name', 'x-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
+         call check_netcdf_error(nf90_put_att(ihisfile, id_poly_ymid, 'long_name', 'y-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
       end if
 
    end function unc_def_his_structure_static_vars
