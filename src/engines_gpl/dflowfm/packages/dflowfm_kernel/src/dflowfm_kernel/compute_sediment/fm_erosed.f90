@@ -61,7 +61,7 @@
    use m_sediment, only: stmpar, sedtra, stm_included, mtd, jatranspvel, sbcx_raw,sbcy_raw,sswx_raw,sswy_raw,sbwx_raw,sbwy_raw
    use m_flowgeom, only: bl, lnxi, lnx, ln, dxi, ndx, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, nd, csu, snu, wcl
    use m_flow, only: s0, s1, u1, kmx, zws, hs, &
-      iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg,jabaptist,cfuhi, epshs, taubxu, epsz0, taubu
+      iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg,jabaptist,cfuhi, epshs, taubxu, epsz0
    use m_flowtimes, only: julrefdat, dts, time1
    use unstruc_files, only: mdia
    use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -1130,7 +1130,6 @@
                ! coefficients for sediment in layer interfaces from
                ! bottom of reference cell downwards, to ensure little
                ! gradient in sed. conc. exists in this area.
-
                difbot = 10.0_fp * ws(kmxsed(nm,l)-1,l) * thick1
                do kk = kb-1, kmxsed(nm,l)-1
                   seddif(l, kk) = difbot

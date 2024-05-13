@@ -171,10 +171,6 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
                fluxfac = (sigdifi(j)*vicwws(k) + difsed(j) + ozmid)*dtbazi
             end if
 
-!           BEGIN DEBUG
-!            fluxfac = dt_loc * (difsed(j)) *ba(kk) / ( 0.5d0*(zws(k+1) - zws(k-1)) )  ! m3
-!           END DEBUG
-
             b(n,j)   = b(n,j)   + fluxfac*dvol1i
             c(n,j)   = c(n,j)   - fluxfac*dvol1i
 
@@ -183,9 +179,6 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
 
 !           advection
             if ( thetavert(j).gt.0d0 ) then ! semi-implicit, use central scheme
-                ! BEGIN DEBUG
-                ! if ( .false. .and. thetavert(j).gt.0d0 ) then ! semi-implicit, use central scheme
-                ! END DEBUG
 
                 if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                    if (jased < 4) then
@@ -208,7 +201,8 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
 
             if (jased > 0 .and. jaimplicitfallvelocity == 1) then 
                fluxfac = 0d0
-               if (jased > 3) then 
+               if (jased > 3) then
+                  !if (k<sedtra%kmxsed(kk,j-ISED1+1)) cycle     this would be consistent
                   if ( j.ge.ISED1 .and. j.le.ISEDN ) then
                      fluxfac = mtd%ws(k,j-ISED1+1)*a1(kk)*dt_loc
                   else

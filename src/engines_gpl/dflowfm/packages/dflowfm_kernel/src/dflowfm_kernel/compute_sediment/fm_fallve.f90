@@ -177,7 +177,7 @@
       !
       if (kmx > 0) then                ! 3D
          call getkbotktop(k, kb, kt)
-      else ! 2D or quasi 2D
+      else ! 2D or quasi 3D
          kb = k
          kt = k+1
       endif
@@ -326,7 +326,7 @@
             ws(kk, ll) = wsloc
          end do ! ll
       end do ! kk
-      if (kmx > 1) then
+      if (kmx > 1) then      ! what abt kmx=1?
          do ll = 1, lsed 
             ws(kb-1,ll) = ws(kb,ll)     ! to check
          end do ! ll
