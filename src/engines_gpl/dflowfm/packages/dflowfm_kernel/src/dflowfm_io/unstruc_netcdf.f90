@@ -17854,9 +17854,7 @@ subroutine definencvar(ncid, idq, itype, idims, name, long_name, unit, namecoord
    end select
 
    if (present(attset)) then
-      if (attset%count > 0) then
-         ierr = ncu_put_var_attset(ncid, idq, attset%atts(1:attset%count))
-      end if
+      ierr = ncu_put_var_attset(ncid, idq, attset%atts(1:size(attset%atts)))
    end if
 
    end subroutine definencvar
