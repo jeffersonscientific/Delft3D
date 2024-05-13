@@ -5,9 +5,9 @@ Copyright (C)  Stichting Deltares, 2013
 """
 
 import copy
+import operator
 import re
 import sys
-import operator
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from lxml import etree
@@ -95,7 +95,7 @@ class XmlConfigParser(object):
 
         parsed_tree = branch(root_node, prefix)
         return (parsed_tree, schema, root_name)
-    
+
     @classmethod
     def filter_configs(cls, configs: List[TestCaseConfig], args: str, logger: ILogger):
         """check which filters to apply to configuration"""
@@ -127,9 +127,7 @@ class XmlConfigParser(object):
 
         # For each testcase (p, t, mrt filters):
         for config in configs:
-            c = cls.__find_characteristics__(
-                config, program_filter, test_case_filter, max_runtime, operator
-            )
+            c = cls.__find_characteristics__(config, program_filter, test_case_filter, max_runtime, operator)
             if c:
                 filtered.append(c)
             else:
@@ -208,9 +206,7 @@ class XmlConfigParser(object):
         for config_tag in config_tags:
             #
             # The following for-loop should be deleted (when preparations are finished)
-            self.__credentials = self.__credentials + list(
-                self.__parse_credentials(config_tag)
-            )
+            self.__credentials = self.__credentials + list(self.__parse_credentials(config_tag))
             local_paths = self.__parse_local_paths(config_tag)
             self.__locations = list(self.__parse_locations(config_tag))
 
@@ -287,46 +283,31 @@ class XmlConfigParser(object):
             newroot = self.__getOverwritePaths__(
                 self.__testbench_settings.override_paths, new_location.name, "root"
             )
+
+            root_text = str(element["root"][0]["txt"].strip())
+
             if newroot:
                 new_location.root = newroot
-            elif str(element["root"][0]["txt"].strip()).startswith("{server_base_url}"):
-                directory_with_handlebar = str(element["root"][0]["txt"].strip())
-                if self.__testbench_settings.server_base_url.endswith(
-                    "/"
-                ) and directory_with_handlebar.replace(
-                    "{server_base_url}", ""
-                ).startswith(
-                    "/"
-                ):
-                    new_location.root = directory_with_handlebar.replace(
-                        "{server_base_url}/", self.__testbench_settings.server_base_url
-                    )
-                    new_location.root = new_location.root.replace(
-                        "{server_base_url}", self.__testbench_settings.server_base_url
-                    )
-                elif self.__testbench_settings.server_base_url.endswith("/"):
-                    new_location.root = directory_with_handlebar.replace(
-                        "{server_base_url}", self.__testbench_settings.server_base_url
-                    )
-                elif directory_with_handlebar.replace(
-                    "{server_base_url}", ""
-                ).startswith("/"):
-                    new_location.root = directory_with_handlebar.replace(
-                        "{server_base_url}", self.__testbench_settings.server_base_url
-                    )
+            elif root_text.startswith("{server_base_url}"):
+                server_base_url = self.__testbench_settings.server_base_url
+                directory_with_handlebar = root_text
+
+                # Make sure the URL has correct slashes
+                if server_base_url.endswith("/") and directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}/", server_base_url)
+                elif server_base_url.endswith("/") or directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}", server_base_url)
                 else:
-                    new_location.root = directory_with_handlebar.replace(
-                        "{server_base_url}",
-                        self.__testbench_settings.server_base_url + "/",
-                    )
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}", server_base_url + "/")
+
+                new_location.root = new_location.root.replace("{server_base_url}", server_base_url)
             else:
-                new_location.root = str(element["root"][0]["txt"].strip())
+                # If root text doesn't start with "{server_base_url}", assign it directly
+                new_location.root = root_text
         else:
             new_location = copy.deepcopy(self.__getLocations__(element["ref"][0]))
             if not new_location:
-                raise XmlError(
-                    "invalid network path reference value in " + element["ref"][0]
-                )
+                raise XmlError("invalid network path reference value in " + element["ref"][0])
         if "type" in element:
             if str(element["type"][0]).lower() == "input":
                 new_location.type = PathType.INPUT
@@ -336,9 +317,7 @@ class XmlConfigParser(object):
                 new_location.type = PathType.REFERENCE
         if "path" in element:
             #  overwrite paths if specified
-            newpath = self.__getOverwritePaths__(
-                self.__testbench_settings.override_paths, new_location.name, "path"
-            )
+            newpath = self.__getOverwritePaths__(self.__testbench_settings.override_paths, new_location.name, "path")
             if newpath:
                 new_location.from_path = newpath
             else:
@@ -347,9 +326,7 @@ class XmlConfigParser(object):
             new_location.version = str(element["version"][0]["txt"])
         if "from" in element:
             # overwrite from if specified
-            newfrom = self.__getOverwritePaths__(
-                self.__testbench_settings.override_paths, new_location.name, "from"
-            )
+            newfrom = self.__getOverwritePaths__(self.__testbench_settings.override_paths, new_location.name, "from")
             if newfrom:
                 new_location.from_path = newfrom
             else:
@@ -376,40 +353,20 @@ class XmlConfigParser(object):
                 return None
         if "name" in element:
             p.name = str(element["name"][0])
-        if (
-            "programStringRemoveQuotes" in element
-            and str(element["programStringRemoveQuotes"][0]).lower() == "true"
-        ):
+        if ("programStringRemoveQuotes" in element and str(element["programStringRemoveQuotes"][0]).lower() == "true"):
             p.program_remove_quotes = True
-        if (
-            "shellStringRemoveQuotes" in element
-            and str(element["shellStringRemoveQuotes"][0]).lower() == "true"
-        ):
+        if ("shellStringRemoveQuotes" in element and str(element["shellStringRemoveQuotes"][0]).lower() == "true"):
             p.shell_remove_quotes = True
-        if (
-            "ignoreStandardError" in element
-            and str(element["ignoreStandardError"][0]).lower() == "true"
-        ):
+        if ("ignoreStandardError" in element and str(element["ignoreStandardError"][0]).lower() == "true"):
             p.ignore_standard_error = True
-        if (
-            "ignoreReturnValue" in element
-            and str(element["ignoreReturnValue"][0]).lower() == "true"
-        ):
+        if ("ignoreReturnValue" in element and str(element["ignoreReturnValue"][0]).lower() == "true"):
             p.ignore_return_value = True
-        if (
-            "logOutputToFile" in element
-            and str(element["logOutputToFile"][0]).lower() == "true"
-        ):
+        if ("logOutputToFile" in element and str(element["logOutputToFile"][0]).lower() == "true"):
             p.log_output_to_file = True
-        if (
-            "addSearchPaths" in element
-            and str(element["addSearchPaths"][0]).lower() == "true"
-        ):
+        if ("addSearchPaths" in element and str(element["addSearchPaths"][0]).lower() == "true"):
             p.add_search_paths = True
         if "excludeSearchPathsContaining" in element:
-            p.exclude_search_paths_containing = str(
-                element["excludeSearchPathsContaining"][0]
-            )
+            p.exclude_search_paths_containing = str(element["excludeSearchPathsContaining"][0])
 
         if "ref" in element:
             p.name = str(element["ref"][0])
@@ -421,9 +378,7 @@ class XmlConfigParser(object):
             p.max_run_time = float(element["maxRunTime"][0]["txt"])
         if "path" in element:
             # overwrite path if specified
-            newpath = self.__getOverwritePaths__(
-                self.__testbench_settings.override_paths, p.name, "path"
-            )
+            newpath = self.__getOverwritePaths__(self.__testbench_settings.override_paths, p.name, "path")
             if newpath:
                 p.path = newpath
             else:
@@ -586,9 +541,7 @@ class XmlConfigParser(object):
         # add case path
         if "path" in element:
             # overwrite path if specified
-            newpath = self.__getOverwritePaths__(
-                self.__testbench_settings.override_paths, test_case.name, "path"
-            )
+            newpath = self.__getOverwritePaths__(self.__testbench_settings.override_paths, test_case.name, "path")
             if newpath:
                 test_case.path = TestCasePath(newpath, None)
             else:
