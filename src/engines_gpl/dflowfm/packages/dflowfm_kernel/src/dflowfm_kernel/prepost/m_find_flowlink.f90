@@ -26,40 +26,55 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !                                                                               
 !-------------------------------------------------------------------------------
-
-! 
-! 
-
-subroutine closeto1Dorbnd(x, y, node_id_closest)  ! IF NOT IN FLOWCELL, MAYBE CLOSE TO 1d OF BND
-                                                  ! je moet dwars op een flow liggen, anders doe je niet mee
-                                                  ! misschien is dat soms wat streng
-   use stdlib_kinds, only: dp
-   use m_find_flowlink, only: find_flowlink
-   use m_flowgeom, only: ln, xz, yz
-   use geometry_module, only: dbdistance
-   use m_sferic, only: jsferic, jasfer3D
-   use m_missing, only: dmiss
-
+   
+module m_find_flowlink
+   
    implicit none
+   
+   private
+   
+   public :: find_flowlink
+   
+contains
+   
+   !> Find the flowlink with the shortest perpendicular distance to the point [x,y]
+   subroutine find_flowlink(x, y, link_id_closest)
+      use stdlib_kinds, only: dp
+      use MessageHandling, only: mess, LEVEL_WARN, LEVEL_ERROR
+      use m_flowgeom, only: lnx, lnx1D, lnxi, ln, xz, yz
+      use m_sferic, only: jsferic, jasfer3D
+      use geometry_module, only: dlinedis
+      use m_missing, only: dmiss
       
-   real(dp), intent(in   ) :: x, y
-   integer,  intent(  out) :: node_id_closest
+      real(dp), intent(in   ) :: x, y            !< x,y-coordinates
+      integer,  intent(  out) :: link_id_closest !< id of the link whose midpoint lies closest to the point [x,y]
       
-   integer  :: link_id_closest, ka, kb
+      integer  :: link_id, ka, kb
+      real(dp) :: dist_perp, dist_perp_min
+      integer  :: ja
+      real(dp) :: xa, ya, xb, yb, xn, yn
+      
+      link_id_closest = 0
+      dist_perp_min   = huge(dist_perp_min)
    
-   node_id_closest = 0
+      do link_id = 1, lnx
+         if (link_id <= lnx1D .or. link_id > lnxi) then
+            ka = ln(1,link_id)
+            kb = ln(2,link_id)
+            xa = xz(ka)
+            ya = yz(ka)
+            xb = xz(kb)
+            yb = yz(kb)
+            call dlinedis(x, y, xa, ya, xb, yb, ja, dist_perp, xn, yn, jsferic, jasfer3D, dmiss)
+            if (ja == 1) then
+               if (dist_perp < dist_perp_min) then
+                  link_id_closest = link_id
+                  dist_perp_min = dist_perp
+               end if
+            end if
+         end if
+      end do
+      
+   end subroutine find_flowlink
    
-   call find_flowlink(x, y, link_id_closest)
-   
-   if (link_id_closest /= 0) then
-      ka = ln(1,link_id_closest)
-      kb = ln(2,link_id_closest)
-      if (dbdistance(x, y, xz(ka), yz(ka), jsferic, jasfer3D, dmiss) < &
-          dbdistance(x, y, xz(kb), yz(kb), jsferic, jasfer3D, dmiss) ) THEN
-         node_id_closest = ka
-      else
-         node_id_closest = kb
-      end if
-   end if
-
-end subroutine closeto1Dorbnd
+end module m_find_flowlink

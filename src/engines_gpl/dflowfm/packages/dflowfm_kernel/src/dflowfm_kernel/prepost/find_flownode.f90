@@ -31,7 +31,7 @@
 ! 
 
 !> Finds the flow nodes/cell numbers for each given x,y point (e.g., an observation station)
-subroutine find_flownode(N, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocTp)
+subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocTp)
    use unstruc_messages
    use m_partitioninfo
    use m_flowgeom
@@ -43,83 +43,82 @@ subroutine find_flownode(N, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
 
    implicit none
 
-   integer,                            intent(in)     :: N           !< number of points
-   double precision,     dimension(N), intent(in)     :: xobs, yobs  !< points coordinates
-   character(len=IdLen), dimension(N), intent(in)     :: namobs      !< names of points
-   integer,              dimension(N), intent(inout)  :: kobs        !< associated flow nodes, if found.
+   integer,                            intent(in   )  :: n           !< number of points
+   double precision,     dimension(n), intent(in   )  :: xobs, yobs  !< points coordinates
+   character(len=IdLen), dimension(n), intent(in   )  :: namobs      !< names of points
+   integer,              dimension(n), intent(inout)  :: kobs        !< associated flow nodes, if found.
    integer,                            intent(inout)  :: jakdtree    !< use kdtree (1) or not (other)
-   integer,                            intent(in)     :: jaoutside   !< allow outside cells (for 1D) (1) or not (0)
-   integer,                            intent(in)     :: iLocTp      !< Node type, one of INDTP_1D/2D/ALL.
-   integer                                         :: ierror      !  error (1) or not (0)
-   integer                                         :: i, k, k1b
-   integer,           dimension(1)                 :: idum
-   double precision                                :: d1, d2
+   integer,                            intent(in   )  :: jaoutside   !< allow outside cells (for 1D) (1) or not (0)
+   integer,                            intent(in   )  :: iLocTp      !< Node type, one of INDTP_1D/2D/ALL.
+   integer                                            :: ierror      !< error (1) or not (0)
+   integer                                            :: i, k, k1b
+   integer,           dimension(1)                    :: idum
+   double precision                                   :: d1, d2
 
    ierror = 1
 
-   if ( jakdtree.eq.1 ) then
-      call find_flowcells_kdtree(treeglob,N,xobs,yobs,kobs,jaoutside,iLocTp, ierror)
+   if (jakdtree == 1) then
+      call find_flowcells_kdtree(treeglob, n, xobs, yobs, kobs, jaoutside, iLocTp, ierror)
 
-      if ( jampi.eq.1 ) then
-!        globally reduce ierror
+      if (jampi == 1) then
+         ! globally reduce ierror
          idum(1) = ierror
          call reduce_int_max(1, idum)
          ierror = idum(1)
       end if
 
-      if ( ierror.ne.0 ) then
+      if (ierror /= 0) then
          jakdtree = 0   ! retry without kdtree
       end if
 
-!     disable observation stations without attached flowlinks
-      do i=1,N
-         k=kobs(i)
-         if ( k.gt.0 ) then
-            if ( nd(k)%lnx.lt.1 ) then
+      ! disable observation stations without attached flowlinks
+      do i = 1, n
+         k = kobs(i)
+         if (k > 0) then
+            if (nd(k)%lnx < 1) then
                kobs(i) = 0
             end if
          end if
       end do
-   end if
-
-   if ( jakdtree.ne.1 ) then
-      do i=1,N
-         call inflowcell(xobs(i),yobs(i),k,jaoutside, iLocTp)
-         if ( jaoutside.eq.1 .and. (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL)) then
-            call CLOSETO1DORBND(xobs(i),yobs(i),k1B)
-            IF (K .ne. 0 .and. k1b .ne. 0) THEN
-                D1 = DBDISTANCE(XZ(K1B), YZ(K1B), XOBS(I), YOBS(I), jsferic, jasfer3D, dmiss)
-                D2 = DBDISTANCE(XZ(K  ), YZ(K  ), XOBS(I), YOBS(I), jsferic, jasfer3D, dmiss)
-                IF ( D1 < D2 ) THEN
-                   K = K1B
-                ENDIF
-            ELSE IF (K1B .NE. 0) THEN
-                K = K1B
-            ENDIF
+   
+   else
+      
+      do i = 1, n
+         call inflowcell(xobs(i), yobs(i), k, jaoutside, iLocTp)
+         if (jaoutside == 1 .and. (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL)) then
+            call closeto1Dorbnd(xobs(i), yobs(i), k1b)
+            if (k /= 0 .and. k1b /= 0) then
+                d1 = dbdistance(xz(k1b), yz(k1b), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
+                d2 = dbdistance(xz(k  ), yz(k  ), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
+                if (d1 < d2) then
+                   k = k1b
+                end if
+            else if (k1b /= 0) then
+                k = k1b
+            end if
          end if
          kobs(i) = 0
-         if ( k.ne.0 ) then
-            if ( nd(k)%lnx.gt.0 ) then
+         if (k /= 0) then
+            if ( nd(k)%lnx > 0 ) then
                kobs(i) = k
             end if
          end if
       end do
    end if
 
-   if ( jampi.eq.1 .and. N.gt.0 ) then
-!     check if this subdomain owns the observation station
-      call reduce_kobs(N,kobs,xobs,yobs,jaoutside)
+   if (jampi == 1 .and. n > 0) then
+      ! check if this subdomain owns the observation station
+      call reduce_kobs(n, kobs, xobs, yobs, jaoutside)
    end if
 
-   do i=1,N
-      if ( kobs(i).eq.0 ) then
+   do i = 1, n
+      if (kobs(i) == 0) then
           write(msgbuf, '(a,i0,a,a,a)') 'Could not find flowcell for point #', i, ' (', trim(namobs(i)), '). Discarding.'
           call msg_flush()
-      endif
+      end if
    end do
 
    ierror = 0
 1234 continue
 
-   return
    end subroutine find_flownode
