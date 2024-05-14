@@ -3,7 +3,7 @@ set(library_name metisoptions)
 # Check if the include path is defined. If it is not present, it cannot be guaranteed that this module can be configured correctly
 include_directories($ENV{METIS_DIR}/include)
 
-get_module_include_path(${checkout_src_root}/${metis_module} 
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${metis_module} 
                         ${library_name}
                         metis_include_path)
 include_directories(${metis_include_path})

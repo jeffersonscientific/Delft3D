@@ -11,15 +11,15 @@ set(dd_iterators_path ${src_path}/dd/iterators)
 set(dd_mapper_path ${src_path}/dd/mapper)
 
 # Define include directories
-get_module_include_path(${checkout_src_root}/${d_hydro_lib_module}
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${d_hydro_lib_module}
                         ${library_name}
                         d_hydro_lib_include_path)
 
-get_module_include_path(${checkout_src_root}/${deltares_common_c_module}
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${deltares_common_c_module}
                         ${library_name}
                         deltares_common_c_include_path)
 
-get_module_include_path(${checkout_src_root}/${esmfsm_module}
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${esmfsm_module}
                         ${library_name}
                         esmfsm_module_include_path)
 
@@ -150,10 +150,10 @@ if (WIN32)
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib"
                             "${mpi_library_path}"
                             "${expat_library_path_win}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name}
                             "libexpat.lib"

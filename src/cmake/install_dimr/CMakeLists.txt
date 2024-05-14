@@ -1,5 +1,5 @@
-install(SCRIPT "${checkout_src_root}/cmake/install_dimr/install_and_bundle.cmake")
+install(SCRIPT "${CMAKE_SOURCE_DIR}/src/cmake/install_dimr/install_and_bundle.cmake")
 if(NOT DEFINED COMMIT_VERSION)
   set(COMMIT_VERSION "0")
 endif()
-configure_package_installer("Deltares Integrated Model Runner (DIMR) Open" "${checkout_src_root}/cmake/install_dimr/ReadMe.txt" "1" "0" "${COMMIT_VERSION}" "STGZ;TGZ")
+configure_package_installer("Deltares Integrated Model Runner (DIMR) Open" "${CMAKE_SOURCE_DIR}/src/cmake/install_dimr/ReadMe.txt" "1" "0" "${COMMIT_VERSION}" "STGZ;TGZ")

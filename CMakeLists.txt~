@@ -58,7 +58,7 @@ if (WIN32)
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
     # Set pthreads library
-    set(pthreads_path ${checkout_src_root}/third_party_open/pthreads/include/x64)
+    set(pthreads_path ${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/include/x64)
     message(STATUS "pthreads set to ${pthreads_path}")
 
     # Set mpi_include_path
@@ -87,8 +87,8 @@ if (WIN32)
         message(DEPRECATION "mpich2 MPI")
         list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-        set(mpi_include_path ${checkout_src_root}/third_party_open/mpich2/x64/include)
-        set(mpi_library_path ${checkout_src_root}/third_party_open/mpich2/x64/lib)
+        set(mpi_include_path ${CMAKE_SOURCE_DIR}/src/third_party_open/mpich2/x64/include)
+        set(mpi_library_path ${CMAKE_SOURCE_DIR}/src/third_party_open/mpich2/x64/lib)
         set(mpi_fortran_library "fmpich2.lib mpi.lib")
         set(mpi_c_library "mpi.lib")
     endif()
@@ -106,14 +106,14 @@ if (WIN32)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
     # Set the Tecplot path
-    set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
+    set(tecplot_path ${CMAKE_SOURCE_DIR}/src/third_party_open/Tecplot/include)
     message(STATUS "Tecplot set to ${tecplot_path}")
 
     if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
         # Set the petsc path
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
+        set(petsc_path ${CMAKE_SOURCE_DIR}/src/third_party_open/petsc/petsc-3.10.2/include)
     else()
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
+        set(petsc_path ${CMAKE_SOURCE_DIR}/src/third_party_open/petsc/petsc-3.19.4/include)
     endif()
 
     #also set PETSC library directory
@@ -125,11 +125,11 @@ if (WIN32)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
     # Set the GDAL path
-    set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
+    set(gisinternals_path ${CMAKE_SOURCE_DIR}/src/third_party_open/GISInternals/release-1911-x64/lib)
     message(STATUS "gisinternals set to ${gisinternals_path}")
 
     # Set the SQLITE3 path
-    set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
+    set(sqlite3_path ${CMAKE_SOURCE_DIR}/src/third_party_open/sqlite3/sqlite-3.44.0)
     message(STATUS "sqlite3 set to ${sqlite3_path}")
 
     add_definitions(-DHAVE_MPI=1)
@@ -168,9 +168,9 @@ endif()
 # Expat:
 #     Windows: use prebuild library in ".../expat/x64/x64"
 #     Linux  : compile source code  using ".../expat/cmake_deltares/CMakeLists.txt"
-set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
+set(expat_include_path ${CMAKE_SOURCE_DIR}/src/third_party_open/expat/x64/include)
 if (WIN32)
-    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64)
+    set(expat_library_path_win ${CMAKE_SOURCE_DIR}/src/third_party_open/expat/x64/x64)
 endif(WIN32)
 
 ### Configuration names
@@ -180,7 +180,7 @@ string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(installdir "install_${configuration_type_lower}")
-  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
+  SET(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/src/../${installdir} CACHE PATH "default" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")

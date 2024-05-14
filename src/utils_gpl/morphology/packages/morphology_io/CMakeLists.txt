@@ -15,7 +15,7 @@ if(UNIX)
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(UNIX)
 
-include_directories(${checkout_src_root}
+include_directories(${CMAKE_SOURCE_DIR}/src
                    "${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 
 set_source_files_properties(

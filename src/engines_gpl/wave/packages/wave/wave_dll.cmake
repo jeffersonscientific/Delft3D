@@ -38,8 +38,8 @@ if (WIN32)
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/netCDF 4.6.1/lib"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64"
                             "${mpi_library_path}")
 
     target_link_libraries(${library_name}                                                   

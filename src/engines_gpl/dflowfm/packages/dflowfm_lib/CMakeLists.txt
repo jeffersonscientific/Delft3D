@@ -161,10 +161,10 @@ if (WIN32)
     target_link_directories(${library_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib"
                             "${petsc_libdir}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-                            "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/Tecplot/lib/x64")
 
 
     target_link_libraries(${library_name}

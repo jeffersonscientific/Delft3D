@@ -2,7 +2,7 @@ set(library_name flow2d3d_kernel_dd_f)
 # Set directory which contains all source files
 set(src_path src)
 
-get_module_include_path(${checkout_src_root}/${deltares_common_module} 
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${deltares_common_module} 
                         ${library_name}
                         deltares_common_include_path)
 message(STATUS "Configuring '${library_name}' with the following deltares_common include path: '${deltares_common_include_path}'")

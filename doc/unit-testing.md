@@ -266,7 +266,7 @@ to the sub-dir you want to test.
 
 ```cmake
 if (NOT TARGET ftnunit)
-    add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${ftnunit_module} ftnunit)
 endif ()
 
 # D-Waq kernel

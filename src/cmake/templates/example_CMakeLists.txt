@@ -21,7 +21,7 @@
 # In order to let this function, the component needs to define a property named public_include_path.
 #
 # This can be done by the command: set(public_include_path ${path_to_expose_from_the_component})
-get_module_include_path(${checkout_src_root}/${path_to_module_to_retrieve_include_directory_from} 
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${path_to_module_to_retrieve_include_directory_from} 
                         ${current_component_name}
                         public_include_path)
 
@@ -41,7 +41,7 @@ set(ini_version_file "${CMAKE_CURRENT_SOURCE_DIR}/include/version_number.ini")
 set(fortran_version_file "${CMAKE_CURRENT_SOURCE_DIR}/src/library_version.F90")
 
 # Generate the F90 version file
-generate_version_files(${fortran_version_file} ${checkout_src_root} ${ini_version_file}) # This is the command as defined in the functions.cmake file, see the file for documentation.
+generate_version_files(${fortran_version_file} ${CMAKE_SOURCE_DIR}/src ${ini_version_file}) # This is the command as defined in the functions.cmake file, see the file for documentation.
 set(svn_version_file ${fortran_version_file}.svn)
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ set_source_files_properties(fileToSetPropertiesFor1.f90
 # To define prebuild events
 # This command adds a prebuild event to generate the version number. Check the functions.cmake for documentation.
 prebuild_version_number(${library_name} ${fortran_version_file} 
-                                        ${checkout_src_root} 
+                                        ${CMAKE_SOURCE_DIR}/src 
                                         ${ini_version_file})
 
 # Other explicit prebuild events can be set as follows:

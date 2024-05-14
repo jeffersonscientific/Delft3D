@@ -225,7 +225,7 @@ function(configure_package_installer name description_file  mayor minor build ge
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${name}")
   set(CPACK_PACKAGE_VENDOR "Deltares 2021")
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${description_file}")
-  set(CPACK_RESOURCE_FILE_LICENSE "${checkout_src_root}/Copyright.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/src/Copyright.txt")
   set(CPACK_PACKAGE_VERSION_MAJOR "${mayor}")
   set(CPACK_PACKAGE_VERSION_MINOR "${minor}")
   set(CPACK_PACKAGE_VERSION_PATCH "${build}")
@@ -328,7 +328,7 @@ function(create_test test_name)
         target_link_directories(
                 ${test_name} PRIVATE
                 ${mpi_library_path}
-                ${checkout_src_root}/third_party_open/pthreads/bin/x64
+                ${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64
         )
     endif(WIN32)
     set_target_properties(${test_name} PROPERTIES FOLDER ${op_visual_studio_folder})

@@ -71,16 +71,16 @@ if(WIN32)
                                ${header_path}
                                "${expat_include_path}"
                                "${mpi_include_path}"
-                               "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
-                               "${checkout_src_root}/third_party_open/pthreads/include/x64")
+                               "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/include"
+                               "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name}   ${oss_dependencies}
                                             netcdf

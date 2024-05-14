@@ -30,7 +30,7 @@ target_include_directories(${library_name}  PRIVATE ${version_include_dir} ${rc_
 if(UNIX)
     target_link_directories(${library_name}
             INTERFACE
-            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
+            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib")
 
 
     # Add dependency
@@ -48,7 +48,7 @@ endif(UNIX)
 if (WIN32)
     target_link_directories(${library_name}
             INTERFACE
-            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
+            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib")
 
     # Add dependency
     set(oss_dependencies deltares_common

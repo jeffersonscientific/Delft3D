@@ -44,7 +44,7 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib")
 
     target_link_libraries(${executable_name}
                           "${mpi_fortran_library}"
@@ -81,11 +81,11 @@ if(UNIX)
 endif(UNIX)
 
 # Define additional compilation flags
-set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpids.F
-                            ${checkout_src_root}/third_party_open/swan/src/swancom1.F
-                            ${checkout_src_root}/third_party_open/swan/src/swanmain.F
-                            ${checkout_src_root}/third_party_open/swan/src/swanparll.F
-                            ${checkout_src_root}/third_party_open/swan/src/swmod2.F
+set_source_files_properties(${CMAKE_SOURCE_DIR}/src/third_party_open/swan/src/ocpids.F
+                            ${CMAKE_SOURCE_DIR}/src/third_party_open/swan/src/swancom1.F
+                            ${CMAKE_SOURCE_DIR}/src/third_party_open/swan/src/swanmain.F
+                            ${CMAKE_SOURCE_DIR}/src/third_party_open/swan/src/swanparll.F
+                            ${CMAKE_SOURCE_DIR}/src/third_party_open/swan/src/swmod2.F
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
@@ -101,7 +101,7 @@ if (UNIX)
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio
-source_group(TREE ${checkout_src_root}/third_party_open/swan FILES ${executable_files})
+source_group(TREE ${CMAKE_SOURCE_DIR}/src/third_party_open/swan FILES ${executable_files})
 set_target_properties (${executable_name} PROPERTIES FOLDER third_party_open/swan_mpi)
 
 if (WIN32)

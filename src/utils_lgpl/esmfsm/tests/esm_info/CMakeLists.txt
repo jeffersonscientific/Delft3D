@@ -46,10 +46,10 @@ if (WIN32)
                                PRIVATE  
                                ${esmfsm_include_path}
                                ${esm_include_path}
-                               "${checkout_src_root}/third_party_open/pthreads/include/x64")
+                               "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/include/x64")
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64")
     target_link_libraries(${executable_name}    ${oss_dependencies}
                                                 "pthreadVC2.lib")
 

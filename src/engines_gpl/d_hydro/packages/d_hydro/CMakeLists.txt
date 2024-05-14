@@ -5,10 +5,10 @@ set(src_path src)
 set(header_path include)
 
 # Define include directories
-get_module_include_path(${checkout_src_root}/${d_hydro_lib_module} 
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${d_hydro_lib_module} 
                         ${executable_name}
                         d_hydro_lib_include_path)
-get_module_include_path(${checkout_src_root}/${deltares_common_c_module} 
+get_module_include_path(${CMAKE_SOURCE_DIR}/src/${deltares_common_c_module} 
                         ${executable_name}
                         deltares_common_c_include_path)
 
@@ -77,16 +77,16 @@ if (WIN32)
                                 "${d_hydro_lib_path}/include"
                                 "${expat_include_path}"
                                 "${mpi_include_path}"
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
-                                "${checkout_src_root}/third_party_open/pthreads/include/x64")
+                                "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/include"
+                                "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${executable_name}    ${oss_dependencies}
                                                 "${mpi_c_library}"

@@ -4,9 +4,9 @@ set(ENABLE_TIFF OFF)
 set(ENABLE_CURL OFF)
 set(BUILD_APPS OFF)
 if(WIN32)
-    set(SQLITE3_INCLUDE_DIR ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0/include)
-    set(SQLITE3_LIBRARY ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0/lib/sqlite3.lib)
-    set(EXE_SQLITE3 ${checkout_src_root}/third_party_open/sqlite3/sqlite3-3.44.0/bin/sqlite3.exe)
+    set(SQLITE3_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/third_party_open/sqlite3/sqlite-3.44.0/include)
+    set(SQLITE3_LIBRARY ${CMAKE_SOURCE_DIR}/src/third_party_open/sqlite3/sqlite-3.44.0/lib/sqlite3.lib)
+    set(EXE_SQLITE3 ${CMAKE_SOURCE_DIR}/src/third_party_open/sqlite3/sqlite3-3.44.0/bin/sqlite3.exe)
 endif(WIN32)
 
 # Disable BUILD_SHARED_LIBS and BUILD_TESTING before proj configuration. Restore them after.

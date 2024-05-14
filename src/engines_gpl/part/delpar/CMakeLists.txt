@@ -31,7 +31,7 @@ if(WIN32)
     # Set linker properties
     target_link_directories(${executable_name}
         PRIVATE
-        "${checkout_src_root}/third_party_open/pthreads/bin/x64")
+        "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${executable_name}
         "pthreadVC2.lib")

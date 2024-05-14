@@ -18,7 +18,7 @@ if(WITH_INTERACTER)
     message(CHECK_START "Looking for Interacter library (intmwi64.lib)")
     find_library (lib_interacter intmwi64.lib
               HINTS ENV INTERACTER_DIR
-                  PATHS "${checkout_src_root}/third_party/interacter/bin/win32/x64")
+                  PATHS "${CMAKE_SOURCE_DIR}/src/third_party/interacter/bin/win32/x64")
 
     if(NOT lib_interacter)
        message(CHECK_FAIL "not found")
@@ -179,10 +179,10 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib"
                             "${petsc_libdir}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-                            "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64"
+                            "${CMAKE_SOURCE_DIR}/src/third_party_open/Tecplot/lib/x64")
 
     target_link_libraries(${executable_name}
                           "comctl32.lib"
