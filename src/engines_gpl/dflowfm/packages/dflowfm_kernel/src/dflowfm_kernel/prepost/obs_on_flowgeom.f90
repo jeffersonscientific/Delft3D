@@ -37,6 +37,7 @@ subroutine obs_on_flowgeom(iobstype)
     use m_partitioninfo
     use m_flowgeom, only : xz,yz,ndx2D,ndxi
     use unstruc_caching
+    use m_find_flownode, only: find_flownode_for_obs
 
     implicit none
 
