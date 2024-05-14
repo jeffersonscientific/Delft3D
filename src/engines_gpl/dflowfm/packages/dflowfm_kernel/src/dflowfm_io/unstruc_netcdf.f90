@@ -13920,12 +13920,6 @@ subroutine unc_read_map_or_rst(filename, ierr)
              call read_sediment(tmpvar,'_bnd',imapfile,kstart,um%nbnd_read,it_read,um)
              constituents(:,ndxi+1:ndx)=tmpvar
           endif !um%nbnd_read > 0
-          sed=constituents(ISED1:ISEDN,:)
-          !!copy from constituents to sed
-          !do i = ISED1,ISEDN
-          !   j = i - ISED1 + 1
-          !   sed(j,:)=constituents(i,:)
-          !end
        endif !lsedsus
 
        ! morbl

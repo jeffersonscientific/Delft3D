@@ -6820,7 +6820,6 @@ module m_meteo
       if ( allocated(item_sedfracbnd) ) deallocate(item_sedfracbnd)
       allocate(item_sedfracbnd(numfracs))
       item_sedfracbnd = ec_undef_int
-      ! TO ADD: initial concentration field?
       
       if ( allocated(item_waqfun) ) deallocate(item_waqfun)
       allocate(item_waqfun(nofun))

@@ -1172,11 +1172,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   if (success) then
                      do kk = 1,Ndx
                         if (viuh(kk) .ne. dmiss) then
-                           !sed(iconst-ISED1+1,kk) = viuh(kk)
                            constituents(iconst,kk) = viuh(kk)
                            call getkbotktop(kk,kb,kt)
                            do k=kb,kb+kmxn(kk)-1
-                              !sed(iconst-ISED1+1,k) = sed(iconst-ISED1+1,kk)     ! fill array with vertically uniform values
                               constituents(iconst,k) = constituents(iconst,kk)     ! fill array with vertically uniform values
                            end do
                         endif
@@ -1198,7 +1196,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   allocate(tt(1:ndkx))
                   tt = dmiss
                   call setinitialverticalprofile(tt, ndkx, filename) ; success = .true.
-                  !sed(iconst-ISED1+1,:)=tt
                   constituents(iconst,:)=tt
                   deallocate(tt)
                endif
@@ -1213,7 +1210,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   allocate(tt(1:ndkx))
                   tt = dmiss
                   call setinitialverticalprofilesigma(tt, ndkx, filename) ; success = .true.
-                  !sed(iconst-ISED1+1,:)=tt
                   constituents(iconst,:)=tt
                   deallocate(tt)
                endif

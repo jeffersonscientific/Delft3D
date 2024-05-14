@@ -1453,7 +1453,6 @@ subroutine initialize_salinity_temperature_on_boundary()
    use m_flowparameters,       only : jasal, jased, jatem
    use m_flowgeom,             only : ln, lnx, lnxi
    use m_flow,                 only : sa1, q1, tem1
-   use m_sediment,             only : mxgr, sed
 
    implicit none
 
@@ -1464,7 +1463,6 @@ subroutine initialize_salinity_temperature_on_boundary()
 
    integer   :: boundary_cell
    integer   :: internal_cell
-   integer   :: grain
 
    do link = lnxi + 1, lnx                           ! copy on outflow
        call getLbotLtop(link,bottom_link,top_link)

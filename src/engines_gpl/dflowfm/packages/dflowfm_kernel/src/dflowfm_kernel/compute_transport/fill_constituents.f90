@@ -79,23 +79,6 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
       end if
    end do
 
-   ! this part is not necessary anymore if we set sed to zero in extract_constituents
-   !if (stm_included) then
-   !   if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor*tfac) then
-   !      if ( ISED1.ne.0 ) then
-   !         do k=1,ndx
-   !            if (hs(k)<=stmpar%morpar%sedthr) then    ! in erosed: hs>sedthr kfsed=1
-   !               do i=1,mxgr
-   !                  iconst = ISED1+i-1
-   !                  call getkbotktop(k,kb,kt)
-   !                  constituents(iconst,kb:kt) = 0d0
-   !               end do
-   !            endif
-   !         end do
-   !      end if
-   !   endif
-   !endif
-
    difsedu = 0d0 ; difsedw = 0d0 ; sigdifi = 0d0
 
 !  diffusion coefficients
