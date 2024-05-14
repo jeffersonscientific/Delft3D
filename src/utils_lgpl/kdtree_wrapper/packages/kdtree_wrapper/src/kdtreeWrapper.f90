@@ -1,6 +1,8 @@
 module kdtree2Factory
 
    use kdtree2_module
+   
+   implicit none
 
    !! build_kdtree
    integer, parameter     :: ITREE_EMPTY   = 0              ! tree not allocated
@@ -40,16 +42,13 @@ module kdtree2Factory
 
    contains
 
-   !----------------------------------------------------------------------------!
-   !> 1. Build subroutine
-   !----------------------------------------------------------------------------!
+   !> Build a k-d tree
    subroutine build_kdtree(treeinst, N, x, y, ierror, jsferic, dmiss)
    
       use m_alloc
       use physicalconsts, only: earth_radius 
       use mathconsts, only: degrad_hp 
    
-      implicit none
       type(kdtree_instance)          :: treeinst
       integer                        :: N       !< number of entries
       double precision, dimension(N) :: x, y    !< coordinates
@@ -62,53 +61,57 @@ module kdtree2Factory
 
       ierror = 1
 
-      if ( N.eq.0 ) then
+      if (N == 0) then
          treeinst%itreestat = ITREE_EMPTY
          goto 1234   ! nothing to do
       end if
 
-      !  build tree
+      ! build tree
       !LC: to handle differently call mess(LEVEL_INFO, 'Building kdtree...')
 
-      !  check for spherical coordinates
-      if ( jsferic.eq.0 ) then
-         !     Cartesian coordinates: 2D space
+      ! check for spherical coordinates
+      if (jsferic == 0) then
+         ! Cartesian coordinates: 2D space
          NTREEDIM = 2
       else
-         !      spherical coordinates: 3D space
+         ! spherical coordinates: 3D space
          NTREEDIM = 3
       end if
 
-      if ( treeinst%itreestat.ne.ITREE_EMPTY ) call delete_kdtree2(treeinst)
+      if (treeinst%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeinst)
+      end if
 
-      allocate(treeinst%sample_coords(NTREEDIM,N),stat=ierr)
+      allocate(treeinst%sample_coords(NTREEDIM, N), stat = ierr)
       call aerr('sample_coords(NTREEDIM,N)', ierr, NTREEDIM*N)
       treeinst%sample_coords = 0d0
 
-      !  fill coordinates
+      ! fill coordinates
       num = 0
-      do k=1,N
-         if ( x(k).eq.DMISS .or. y(k).eq.DMISS ) then
+      do k = 1, N
+         
+         if (x(k) == dmiss .or. y(k) == dmiss) then
             cycle
          end if
 
          num = num+1
 
-         if ( jsferic.eq.0 ) then
-            !        Cartesian coordinates: 2D space
+         if (jsferic == 0) then
+            ! Cartesian coordinates: 2D space
             treeinst%sample_coords(1,k) = x(k)
             treeinst%sample_coords(2,k) = y(k)
          else
-            !        spherical coordinates: 3D space
+            ! spherical coordinates: 3D space
             treeinst%sample_coords(1,k) = earth_radius * cos(y(k)*degrad_hp) * cos(x(k)*degrad_hp)
             treeinst%sample_coords(2,k) = earth_radius * cos(y(k)*degrad_hp) * sin(x(k)*degrad_hp)
             treeinst%sample_coords(3,k) = earth_radius * sin(y(k)*degrad_hp)
          end if
       end do
 
-      treeinst%tree => kdtree2_create(treeinst%sample_coords, rearrange=.true., sort=.true., dim=NTREEDIM)
+      treeinst%tree => kdtree2_create(treeinst%sample_coords, rearrange = .true., sort = .true., dim = NTREEDIM)
+      
       !  error handling
-      if ( kdtree2_ierror.ne.0 ) then
+      if (kdtree2_ierror /= 0) then
          ! call mess(LEVEL_DEBUG, 'kdtree error: kdtree2_ierror=', kdtree2_ierror)
          !LC call mess(LEVEL_info, 'kdtree error: kdtree2_ierror=', kdtree2_ierror)
          goto 1234
@@ -116,10 +119,10 @@ module kdtree2Factory
 
       !LC call mess(LEVEL_INFO, 'done')
 
-      !  allocate query vector
+      ! allocate query vector
       allocate(treeinst%qv(NTREEDIM))
 
-      !  allocate results array
+      ! allocate results array
       IRESULTSIZE = INIRESULTSIZE
       allocate(treeinst%results(IRESULTSIZE))
 
@@ -128,9 +131,7 @@ module kdtree2Factory
       ierror = 0
 1234 continue
 
-      return
    end subroutine build_kdtree
-   
    
    !----------------------------------------------------------------------------!
    !> 2. Delete subroutine
