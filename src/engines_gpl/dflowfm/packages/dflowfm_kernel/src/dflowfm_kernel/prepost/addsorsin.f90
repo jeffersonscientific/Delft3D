@@ -43,6 +43,7 @@
  use geometry_module, only: normalin
  use m_sferic, only: jsferic, jasfer3D
  use MessageHandling, only: IdLen
+ use m_find_flownode, only: find_flownode
 
  implicit none
 

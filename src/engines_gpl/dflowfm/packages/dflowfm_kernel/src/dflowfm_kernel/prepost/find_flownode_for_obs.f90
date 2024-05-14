@@ -46,7 +46,10 @@ subroutine find_flownode_for_obs(nstart, nend)
    use dfm_error
    use m_alloc
    use m_flowgeom
+   use m_find_flownode, only: find_flownode
+   
    implicit none
+   
    integer, intent(in)               :: nstart ! starting index of obs for snapping to a flow node
    integer, intent(in)               :: nend   ! ending index of obs for snapping to a flow node
    integer                           :: i, nodenr, branchIdx, ntotal, nobsini, ierr, jakdtree, jabybranch

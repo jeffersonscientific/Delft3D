@@ -27,8 +27,15 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
+module m_find_flownode
+   
+   implicit none
+   
+   private
+   
+   public :: find_flownode
+   
+   contains
 
 !> Finds the flow nodes/cell numbers for each given x,y point (e.g., an observation station)
 subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocTp)
@@ -86,7 +93,7 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
       do i = 1, n
          call inflowcell(xobs(i), yobs(i), k, jaoutside, iLocTp)
          if (jaoutside == 1 .and. (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL)) then
-            call closeto1Dorbnd(xobs(i), yobs(i), k1b)
+            call find_flownode_bruteforce(xobs(i), yobs(i), k1b)
             if (k /= 0 .and. k1b /= 0) then
                 d1 = dbdistance(xz(k1b), yz(k1b), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
                 d2 = dbdistance(xz(k  ), yz(k  ), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
@@ -121,4 +128,40 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
    ierror = 0
 1234 continue
 
-   end subroutine find_flownode
+end subroutine find_flownode
+
+subroutine find_flownode_bruteforce(x, y, node_id_closest)  ! IF NOT IN FLOWCELL, MAYBE CLOSE TO 1d OF BND
+                                                  ! je moet dwars op een flow liggen, anders doe je niet mee
+                                                  ! misschien is dat soms wat streng
+   use stdlib_kinds, only: dp
+   use m_find_flowlink, only: find_flowlink_bruteforce
+   use m_flowgeom, only: ln, xz, yz
+   use geometry_module, only: dbdistance
+   use m_sferic, only: jsferic, jasfer3D
+   use m_missing, only: dmiss
+
+   implicit none
+      
+   real(dp), intent(in   ) :: x, y
+   integer,  intent(  out) :: node_id_closest
+      
+   integer  :: link_id_closest, ka, kb
+   
+   node_id_closest = 0
+   
+   call find_flowlink_bruteforce(x, y, link_id_closest)
+   
+   if (link_id_closest /= 0) then
+      ka = ln(1,link_id_closest)
+      kb = ln(2,link_id_closest)
+      if (dbdistance(x, y, xz(ka), yz(ka), jsferic, jasfer3D, dmiss) < &
+          dbdistance(x, y, xz(kb), yz(kb), jsferic, jasfer3D, dmiss) ) THEN
+         node_id_closest = ka
+      else
+         node_id_closest = kb
+      end if
+   end if
+
+end subroutine find_flownode_bruteforce
+
+end module m_find_flownode

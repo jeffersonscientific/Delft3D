@@ -240,6 +240,8 @@ implicit none
      use m_flowgeom, only: xz, yz
      use m_GlobalParameters, only: INDTP_ALL
      use MessageHandling, only: IdLen
+     use m_find_flownode, only: find_flownode
+      
      implicit none
 
      integer,                                     intent(in)  :: Nin          !< thin-dyke polyline size

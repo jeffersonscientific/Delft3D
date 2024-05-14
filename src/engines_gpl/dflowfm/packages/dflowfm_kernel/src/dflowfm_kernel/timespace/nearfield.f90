@@ -331,6 +331,7 @@ end subroutine nearfieldToFM
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
 subroutine getSinkLocations(idif, jakdtree, jaoutside, iLocTp)
     use m_alloc
+    use m_find_flownode, only: find_flownode
     !
     ! Arguments
     integer, intent(in)    :: idif      !< Diffuser id
@@ -379,6 +380,7 @@ end subroutine getSinkLocations
 subroutine getIntakeLocations(idif, jakdtree, jaoutside, iLocTp)
     use m_alloc
     use m_flow, only: zws
+    use m_find_flownode, only: find_flownode
     !
     ! Arguments
     integer, intent(in)    :: idif      !< Diffuser id
@@ -499,6 +501,7 @@ end subroutine getIntakeLocations
 subroutine getSourceLocations(idif, jakdtree, jaoutside, iLocTp)
     use m_alloc
     use mathconsts, only: pi
+    use m_find_flownode, only: find_flownode
     !
     ! Arguments
     integer, intent(in)    :: idif      !< Diffuser id

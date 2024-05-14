@@ -33,12 +33,13 @@ module m_find_flowlink
    
    private
    
-   public :: find_flowlink
+   public :: find_flowlink_bruteforce
    
-contains
+   contains
    
    !> Find the flowlink with the shortest perpendicular distance to the point [x,y]
-   subroutine find_flowlink(x, y, link_id_closest)
+   !! Brute-force approach: simply check all flowlinks in the entire grid
+   subroutine find_flowlink_bruteforce(x, y, link_id_closest)
       use stdlib_kinds, only: dp
       use MessageHandling, only: mess, LEVEL_WARN, LEVEL_ERROR
       use m_flowgeom, only: lnx, lnx1D, lnxi, ln, xz, yz
@@ -75,6 +76,6 @@ contains
          end if
       end do
       
-   end subroutine find_flowlink
+   end subroutine find_flowlink_bruteforce
    
 end module m_find_flowlink

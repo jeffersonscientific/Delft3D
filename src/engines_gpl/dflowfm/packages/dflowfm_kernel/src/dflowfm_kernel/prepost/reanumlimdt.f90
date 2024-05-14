@@ -38,7 +38,10 @@
  use m_flow
  use m_partitioninfo
  use m_samples
+ use m_find_flownode, only: find_flownode
+ 
  implicit none
+ 
  character(len=IdLen) :: name, nams
  logical              :: jawel
  integer              :: mlim, k, numlimdtk, kk, jakdtree=1, jaoutside=0

@@ -239,6 +239,7 @@ module m_oned_functions
       use m_GlobalParameters, only: INDTP_ALL
       use m_partitioninfo, only: jampi
       use m_inquire_flowgeom
+      use m_find_flownode, only: find_flownode
 
       implicit none
 
