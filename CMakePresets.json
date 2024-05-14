@@ -7,19 +7,50 @@
   },
   "configurePresets": [
     {
-      "name": "dwaq",
-      "displayName": "D-WAQ IFORT win64 Release",
-      "description": "Configure D-WAQ using Visual Studio 17 2022 generator",
-      "generator": "Visual Studio 17 2022",
-      "binaryDir": "build_dwaq",
+      "name": "default",
+      "hidden": true,
+      "displayName": "Default config",
+      "description": "Default config",
+      "generator": "Default generator",
+      "binaryDir": "build_${presetName}",
       "cacheVariables": {
-        "CONFIGURATION_TYPE": "dwaq",
-        "CMAKE_INSTALL_PREFIX": "install_dwaq",
-        "ENABLE_CODE_COVERAGE": "OFF",
+        "CONFIGURATION_TYPE": "${presetName}",
+        "CMAKE_INSTALL_PREFIX": "install_${presetName}",
+        "ENABLE_CODE_COVERAGE": "OFF"
+      }
+    },
+    {
+      "name": "windows",
+      "hidden": true,
+      "inherits": "default",
+      "displayName": "win64 config",
+      "description": "win64 config using Visual Studio 17 2022 generator",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
         "architecture": {
           "value": "x64"
         }
       }
+    },
+    {
+      "name": "linux",
+      "hidden": true,
+      "inherits": "default",
+      "displayName": "linux config",
+      "description": "linux config using Ninja generator",
+      "generator": "Ninja"
+    },
+    {
+      "name": "all",
+      "inherits": "windows",
+      "displayName": "All IFORT win64 Release",
+      "description": "Configure all using Visual Studio 17 2022 generator"
+    },
+    {
+      "name": "dwaq",
+      "inherits": "windows",
+      "displayName": "D-WAQ/D-PART IFORT win64 Release",
+      "description": "Configure D-WAQ/D-PART using Visual Studio 17 2022 generator"
     }
   ]
 }
