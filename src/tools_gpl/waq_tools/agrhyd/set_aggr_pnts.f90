@@ -31,20 +31,20 @@
 
       ! global declarations
 
-      use m_srstop
-      use hydmod
+      use m_logger, only : terminate_execution
+      use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)          :: input_hyd                             ! description of the input hydrodynamics
+      type(t_hydrodynamics)          :: input_hyd                             ! description of the input hydrodynamics
       integer              :: ipnt_h(input_hyd%nmax,input_hyd%mmax) ! horizontal aggregation
       integer              :: ipnt_v(input_hyd%kmax)                ! vertical aggregation
       integer              :: ipnt(input_hyd%noseg)                 ! aggregation pointer segments
       integer              :: ipnt_vdf(input_hyd%noseg)             ! aggregation pointer used for minimum vertical diffusion
       integer              :: nosegbt                               ! length aggregation pointer used for boundaries
       integer              :: ipnt_b(nosegbt)                       ! aggregation pointer used for boundaries
-      type(t_hyd)          :: output_hyd                            ! description of the output hydrodynamics
+      type(t_hydrodynamics)          :: output_hyd                            ! description of the output hydrodynamics
       logical              :: l_regular                             ! regular aggregartion option
       integer              :: ipnt_tau(input_hyd%noseg)             ! aggregation pointer used for tau
       logical              :: l_expand                              ! expand to full matrix
@@ -117,7 +117,7 @@
                      write(*,*) 'segment number before aggregation                 = ',iseg
                      write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
                      write(*,*) 'the same segment number was already aggregated to = ',ipnt(iseg)
-                     call srstop(1)
+                     call terminate_execution(1)
                   endif
                else
                   if ( ipnt_h(n,m) .eq. 0 ) then
@@ -162,7 +162,7 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call srstop(1)
+                  call terminate_execution(1)
                endif
             else
                if ( ipnt_h(n,m) .eq. 0 ) then
@@ -181,7 +181,7 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call srstop(1)
+                  call terminate_execution(1)
                end if      
             endif
          enddo

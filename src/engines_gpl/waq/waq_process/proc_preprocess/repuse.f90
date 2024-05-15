@@ -34,7 +34,7 @@ contains
 
         ! report on the use of the delwaq input
 
-        use m_monsys
+        use m_logger
         use processet
         use timers       !   performance timers
         use string_module
@@ -76,24 +76,29 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         character(len = 24) :: spcl_const_print ! special constants not used printed in brackets for lsp file
 
-        character(len = 18), dimension(21), parameter :: special_constants = & ! names of special constants
-                (/ 'SURF', 'SWSCALE', 'CLOSE_ERR', 'MIN_VOLUME', &
-                        'THETA', 'MIN_AREA', 'TIMMULTBL', 'ZTHRESHOLD', &
-                        'NOVEC', 'Z_THRESH', 'TOLERANCE', 'ONLY_ACTIVE', &
-                        'ACTIVE', 'NOTHREADS', 'ITERATION', 'NUMBER_OF_BUCKETS', &
-                        'LENGTH', 'DRY_TRESH', 'SWPRECOND', 'ITERATION REPORT', &
-                        'MAXITER'/)
+        character(len = 17), dimension(21), parameter :: special_constants = & ! names of special constants
+                     (/ 'SURF             ', 'SWSCALE          ', &
+                        'CLOSE_ERR        ', 'MIN_VOLUME       ', &
+                        'THETA            ', 'MIN_AREA         ', &
+                        'TIMMULTBL        ', 'ZTHRESHOLD       ', &
+                        'NOVEC            ', 'Z_THRESH         ', &
+                        'TOLERANCE        ', 'ONLY_ACTIVE      ', &
+                        'ACTIVE           ', 'NOTHREADS        ', &
+                        'ITERATION        ', 'NUMBER_OF_BUCKETS', &
+                        'LENGTH           ', 'DRY_TRESH        ', &
+                        'SWPRECOND        ', 'ITERATION REPORT ', &
+                        'MAXITER          '/)
 
         if (timon) call timstrt("repuse", ithndl)
 
         ! write header report output block
 
         write (line, '(a)') '# determining the use of the delwaq input'
-        call monsys(line, 4)
+        call write_log_message(line)
         line = ' '
-        call monsys(line, 4)
+        call write_log_message(line)
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
 
         ! loop over the constants
 
@@ -132,7 +137,7 @@ contains
                 noinfo = noinfo + 1
                 write(spcl_const_print, '(3a)') '[', trim(coname(icons)), ']'
                 write (line, '(3a)') ' info: constant ', spcl_const_print, ' is not used by the process system'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
@@ -166,7 +171,7 @@ contains
             if (.not. variable_is_used .and. string_equals('output    ', paname(ipa))) then
                 noinfo = noinfo + 1
                 write (line, '(3a)') ' info: parameter [', paname(ipa)(1:10), '] is not used by the process system'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
@@ -200,7 +205,7 @@ contains
             if (.not. variable_is_used) then
                 noinfo = noinfo + 1
                 write (line, '(3a)') ' info: function [', funame(ifun)(1:10), '] is not used by the process system'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
@@ -234,12 +239,12 @@ contains
             if (.not. variable_is_used) then
                 noinfo = noinfo + 1
                 write (line, '(3a)') ' info: segment function [', sfname(isfun)(1:10), '] is not used by the process system'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
         line = ' '
-        call monsys(line, 4)
+        call write_log_message(line)
 
         if (timon) call timstop(ithndl)
         return

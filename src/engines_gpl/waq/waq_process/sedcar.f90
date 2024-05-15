@@ -63,7 +63,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_monsys
+        use m_logger
         use m_cli_utils, only : retrieve_command_argument
         use m_evaluate_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
@@ -88,7 +88,7 @@ contains
         IF (FIRST) THEN
             CALL retrieve_command_argument('-psedmin', 2, SW_PSEDMIN, IDUMMY, PSEDMIN, CDUMMY, IERR2)
             IF (SW_PSEDMIN) THEN
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 IF (IERR2 == 0) THEN
                     WRITE(LUNREP, *) ' option -psedmin found, value: ', PSEDMIN
                 ELSE
@@ -283,7 +283,7 @@ contains
         IP11 = IPOINT(11)
         IP12 = IPOINT(12)
 
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             IWA1 = Coll%set(IK)%fstwatsed
             IWA2 = Coll%set(IK)%lstwatsed

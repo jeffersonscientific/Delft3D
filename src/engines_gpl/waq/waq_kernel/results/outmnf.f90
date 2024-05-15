@@ -46,9 +46,8 @@
       !                          manage_nefis_data_character, handles i/o to nefis file for char's
       !                          putget, handles i/o to nefis file for int/real(kind=real_wp) ::!
 
-      use m_srstop
+      use m_logger, only : terminate_execution, get_log_unit_number
       use nefis_data, only : manage_nefis_data_character
-      use m_monsys
       use m_array_manipulation, only : fill_element_dimensions
       use timers
       use data_processing, only : delete_file
@@ -114,7 +113,7 @@
       integer(kind=int_wp), save                         ::fd_nef = -1            ! handle to NEFIS file
       integer(kind=int_wp) , external                    :: FLSDAT, FLSDEF
 
-      character*20                  , save :: duname(1) = ' '
+      character(len=20)                  , save :: duname(1) = ' '
       character(len=20), allocatable, save :: syname(:)              ! complete list of names
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outmnf", ithandl )
@@ -124,7 +123,7 @@
       notot  = notot1 + notot2
       noelm2 = notot  + 1
       ierrem = 0
-      call getmlu(lunout)
+      call get_log_unit_number(lunout)
 
 !     initialize file
 
@@ -144,7 +143,7 @@
          if ( ierr_alloc /= 0 ) then
             write(lunout,*) 'ERROR : allocating nefis output structure'
             write(*,*) 'ERROR : allocating nefis output structure'
-            call srstop(1)
+            call terminate_execution(1)
          endif
 
          ! initialize independent element names

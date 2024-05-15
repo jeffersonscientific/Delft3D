@@ -66,17 +66,15 @@ contains
         use m_blmeff
         use m_algrep
         use m_actrep
-        use m_dattim
-        use m_srstop
+        use m_date_time_utils_external, only : write_date_time
+        use m_logger, only : terminate_execution, write_log_message
         use m_rd_stt
-        use m_monsys
         use m_getidentification
         use m_cli_utils, only : retrieve_command_argument
         use processes_input
         use processes_pointers
         use process_registration
-
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use date_time_utils, only : simulation_start_time_scu, simulation_stop_time_scu, system_time_factor_seconds, &
                 base_julian_time
         use bloom_data_io, only : runnam
@@ -106,7 +104,7 @@ contains
         integer(kind = int_wp) :: statival         !< pointer in waq arrays of stat output
         integer(kind = int_wp), intent(in) :: nomult           !< number of multiple substances
         integer(kind = int_wp), intent(in) :: imultp(2, nomult) !< multiple substance administration
-        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         integer(kind = int_wp), intent(inout) :: noinfo           !< count of informative message
         integer(kind = int_wp), intent(inout) :: nowarn           !< count of warnings
         integer(kind = int_wp), intent(inout) :: ierr             !< error count
@@ -161,12 +159,12 @@ contains
         real(kind = real_wp) :: rdummy           ! dummy variable
         character :: cdummy          ! dummy variable
 
-        character*20, allocatable :: ainame(:)       ! all item names names in the proc_def
-        character*20 :: subname         ! substance name
-        character*100, allocatable :: substdname(:)   ! substance standard name
-        character*40, allocatable :: subunit(:)      ! substance unit
-        character*60, allocatable :: subdescr(:)     ! substance description
-        character*20 :: outname         ! output name
+        character(len=20), allocatable :: ainame(:)       ! all item names names in the proc_def
+        character(len=20) :: subname         ! substance name
+        character(len=100), allocatable :: substdname(:)   ! substance standard name
+        character(len=40), allocatable :: subunit(:)      ! substance unit
+        character(len=60), allocatable :: subdescr(:)     ! substance description
+        character(len=20) :: outname         ! output name
         integer(kind = int_wp), intent(in) :: refday           ! reference day, varying from 1 till 365
 
         type(error_status) :: main_status
@@ -184,16 +182,16 @@ contains
         integer(kind = int_wp) :: serial           ! serial number process definition
         integer(kind = int_wp) :: target_serial    ! target serial number process definition
         real(kind = real_wp) :: versio           ! version process defintion
-        character*20, allocatable :: actlst(:)
+        character(len=20), allocatable :: actlst(:)
 
         ! settings
 
-        character*80   swinam
-        character*80   blmnam
-        character*80   line
-        character*80   idstr
-        character*20   rundat
-        character*10   config
+        character(len=80)   swinam
+        character(len=80)   blmnam
+        character(len=80)   line
+        character(len=80)   idstr
+        character(len=20)   rundat
+        character(len=10)   config
         logical        lfound, laswi, swi_nopro
         integer(kind = int_wp) :: blm_act                        ! index of ACTIVE_BLOOM_P
 
@@ -207,26 +205,26 @@ contains
         integer(kind = int_wp) :: maxtyp, maxcof
         parameter   (maxtyp = 500, maxcof = 50)
         integer(kind = int_wp) :: notyp, nocof, nogrp
-        character*10  alggrp(maxtyp), algtyp(maxtyp)
-        character*5   abrgrp(maxtyp), abrtyp(maxtyp)
-        character*80  algdsc(maxtyp)
-        character*10  cofnam(maxcof)
+        character(len=10)  alggrp(maxtyp), algtyp(maxtyp)
+        character(len=5)   abrgrp(maxtyp), abrtyp(maxtyp)
+        character(len=80)  algdsc(maxtyp)
+        character(len=10)  cofnam(maxcof)
         real(kind = real_wp) :: algcof(maxcof, maxtyp)
         integer(kind = int_wp) :: algact(maxtyp)
         integer(kind = int_wp) :: noutgrp, nouttyp
-        character*10  outgrp(maxtyp), outtyp(maxtyp)
+        character(len=10)  outgrp(maxtyp), outtyp(maxtyp)
         integer(kind = int_wp) :: noprot, nopralg
-        character*10  namprot(maxtyp), nampact(maxtyp), nampralg(maxtyp)
+        character(len=10)  namprot(maxtyp), nampact(maxtyp), nampralg(maxtyp)
         character(256) filnam       ! File name with extention
 
         ! actual algae
 
         integer(kind = int_wp) :: noalg
-        character*10  name10
-        character*10  grpnam(maxtyp)
-        character*5   grpabr(maxtyp)
-        character*10  typnam(maxtyp)
-        character*5   typabr(maxtyp)
+        character(len=10)  name10
+        character(len=10)  grpnam(maxtyp)
+        character(len=5)   grpabr(maxtyp)
+        character(len=10)  typnam(maxtyp)
+        character(len=5)   typabr(maxtyp)
 
         ! output things
 
@@ -258,11 +256,11 @@ contains
         nveln = 0
         noqtt = 1
         !      nosss  = noseg + nseg2
-        allitems%cursize = 0
+        allitems%current_size = 0
         allitems%maxsize = 0
-        procesdef%cursize = 0
+        procesdef%current_size = 0
         procesdef%maxsize = 0
-        old_items%cursize = 0
+        old_items%current_size = 0
         old_items%maxsize = 0
 
         ! open report file
@@ -270,7 +268,7 @@ contains
         ! Header for lsp
         call getidentification(idstr)
         write(lunlsp, '(XA/)') idstr
-        call dattim(rundat)
+        call write_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 
         ! Active/inactive substance list
@@ -285,15 +283,12 @@ contains
         write(lunlsp, '(/)')
         ! command line settingen , commands
 
-        ! monitoring level
-        call setmmo (10)
-
         ! active processes only switch
         ! only activated processes are switched on
         laswi = .true.
 
         ! initialise statistical processes
-        statprocesdef%cursize = 0
+        statprocesdef%current_size = 0
         statprocesdef%maxsize = 0
         if (sttfil/=' ') then
             simulation_start_time_scu = itstrt_process
@@ -368,15 +363,15 @@ contains
             call retrieve_command_argument ('-target_serial', 1, lfound, target_serial, rdummy, cdummy, ierr2)
             if (lfound) then
                 write(line, '(a)') ' found -target_serial command line switch'
-                call monsys(line, 1)
+                call write_log_message(line)
                 if (ierr2/= 0) then
                     old_items%target_serial = target_serial
                     write(line, '(a)')' no serial number given, using current'
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = serial
                 else
                     write(line, '(a,i13)') ' using target serial number: ', target_serial
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = target_serial
                 endif
             else
@@ -389,14 +384,14 @@ contains
         call retrieve_command_argument ('-conf', 3, lfound, idummy, rdummy, config, ierr2)
         if (lfound) then
             write(line, '(a)') ' found -conf command line switch'
-            call monsys(line, 1)
+            call write_log_message(line)
             if (ierr2/= 0) then
                 write(line, '(a)')' no configuration id given, using default'
-                call monsys(line, 1)
+                call write_log_message(line)
                 config = ' '
             else
                 write(line, '(a25,a10)') ' using configuration id: ', config
-                call monsys(line, 1)
+                call write_log_message(line)
             endif
         else
             config = ' '
@@ -408,17 +403,17 @@ contains
 
         if (.not.l_eco) then
             blmnam = 'ACTIVE_BLOOM_P'
-            blm_act = dlwq_find(constants, blmnam)
+            blm_act = constants%find(blmnam)
             if (blm_act > 0 .and. .not.swi_nopro) then
                 blmfil = 'bloom.spe'
                 inquire(file = blmfil, exist = l_eco)
                 if (l_eco) then
                     line = ' '
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     write(line, '(a)') ' found constant ACTIVE_BLOOM_P without -eco command line switch'
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     write(line, '(a)') ' and found default file bloom.spe. Will using default BLOOM file.'
-                    call monsys(line, 1)
+                    call write_log_message(line)
                 else
                     l_eco = .false.
                     noprot = 0
@@ -487,7 +482,7 @@ contains
             ! when no algae were found, turn of eco mode
             if (noalg == 0) then
                 write(line, '(a)') ' no BLOOM algae were found, switching off eco mode.'
-                call monsys(line, 1)
+                call write_log_message(line)
                 l_eco = .false.
             else
                 ! set algal group list
@@ -511,12 +506,12 @@ contains
         ! active only switch set trough a constant
 
         swinam = 'only_active'
-        ix_act = dlwq_find(constants, swinam)
+        ix_act = constants%find(swinam)
         if (ix_act > 0) then
             write(line, '(a)') ' found only_active constant'
-            call monsys(line, 1)
+            call write_log_message(line)
             write(line, '(a)') ' only activated processes are switched on'
-            call monsys(line, 1)
+            call write_log_message(line)
             laswi = .true.
         endif
 
@@ -537,7 +532,7 @@ contains
                     config = 'waq'
                 endif
                 write(line, '(a,a10)') ' using default configuration: ', config
-                call monsys(line, 1)
+                call write_log_message(line)
             endif
         endif
 
@@ -551,7 +546,7 @@ contains
                 call cnfrep(noalg, noprot, namprot, nampact, nopralg, nampralg)
             endif
 
-            ! add the processes in the strucure
+            ! add the processes in the structure
 
             call prprop (lunlsp, laswi, config, no_act, actlst, allitems, procesdef, &
                     old_items, temp_status)
@@ -559,7 +554,7 @@ contains
                 call main_status%increase_error_count()
                 temp_status%ierr = 0
             end if
-            nbpr = procesdef%cursize
+            nbpr = procesdef%current_size
 
         else
             nbpr = 0
@@ -567,14 +562,14 @@ contains
 
         ! add the statistical processes in the structure
 
-        if (statprocesdef%cursize > 0) then
-            do istat = 1, statprocesdef%cursize
+        if (statprocesdef%current_size > 0) then
+            do istat = 1, statprocesdef%current_size
                 statprocesdef%procesprops(istat)%sfrac_type = 0
                 iret = procespropcolladd(procesdef, statprocesdef%procesprops(istat))
                 actlst(no_act + istat) = statprocesdef%procesprops(istat)%name
             enddo
-            nbpr = nbpr + statprocesdef%cursize
-            no_act = no_act + statprocesdef%cursize
+            nbpr = nbpr + statprocesdef%current_size
+            no_act = no_act + statprocesdef%current_size
         endif
 
         ! set processes and fluxes for the substance fractions, this adds and alters processes in procesdef!
@@ -592,42 +587,42 @@ contains
         noout_statt = 0
         noout_state = 0
         !     first statistics with temporal output
-        if (statprocesdef%cursize > 0) then
-            do istat = 1, statprocesdef%cursize
+        if (statprocesdef%current_size > 0) then
+            do istat = 1, statprocesdef%current_size
                 do iitem = 1, statprocesdef%procesprops(istat)%no_output
                     if (statprocesdef%procesprops(istat)%output_item(iitem)%type == iotype_segment_output) then
                         statproc = statprocesdef%procesprops(istat)%routine
                         if (statproc=='STADAY'.or.statproc=='STADPT') then
                             statname = statprocesdef%procesprops(istat)%output_item(iitem)%name
-                            noout = outputs%cursize + 1
+                            noout = outputs%current_size + 1
                             noout_statt = noout_statt + 1
                             call reallocP(outputs%names, noout, keepExisting = .true., fill = statname)
                             call reallocP(outputs%std_var_name, noout, keepExisting = .true., fill = ' ')
                             call reallocP(outputs%pointers, noout, keepExisting = .true., fill = -1)
                             call reallocP(outputs%units, noout, keepExisting = .true., fill = ' ')
                             call reallocP(outputs%description, noout, keepExisting = .true., fill = ' ')
-                            outputs%cursize = noout
+                            outputs%current_size = noout
                         endif
                     endif
                 enddo
             enddo
         endif
         !     then statistics with end output
-        if (statprocesdef%cursize > 0) then
-            do istat = 1, statprocesdef%cursize
+        if (statprocesdef%current_size > 0) then
+            do istat = 1, statprocesdef%current_size
                 do iitem = 1, statprocesdef%procesprops(istat)%no_output
                     if (statprocesdef%procesprops(istat)%output_item(iitem)%type == iotype_segment_output) then
                         statproc = statprocesdef%procesprops(istat)%routine
                         if (.not.(statproc=='STADAY'.or.statproc=='STADPT')) then
                             statname = statprocesdef%procesprops(istat)%output_item(iitem)%name
-                            noout = outputs%cursize + 1
+                            noout = outputs%current_size + 1
                             noout_state = noout_state + 1
                             call reallocP(outputs%names, noout, keepExisting = .true., fill = statname)
                             call reallocP(outputs%std_var_name, noout, keepExisting = .true., fill = ' ')
                             call reallocP(outputs%pointers, noout, keepExisting = .true., fill = -1)
                             call reallocP(outputs%units, noout, keepExisting = .true., fill = ' ')
                             call reallocP(outputs%description, noout, keepExisting = .true., fill = ' ')
-                            outputs%cursize = noout
+                            outputs%current_size = noout
                         endif
                     endif
                 enddo
@@ -714,8 +709,8 @@ contains
         call realloc(dename, maxdef, keepExisting = .false., Fill = ' ')
 
         defaul = 0.0
-        defaul(5) = float(itstrt_process)
-        defaul(6) = float(itstop_process)
+        defaul(5) = real(itstrt_process)
+        defaul(6) = real(itstop_process)
         call realloc(locnam, novarm, keepExisting = .false., Fill = ' ')
 
         ! put theta in local array if wanted for output, the value will be filled by the integration routine
@@ -743,7 +738,7 @@ contains
             write(lunlsp, *) ' not all input available.'
             write(lunlsp, *) ' number off missing variables :', nmis
             write(lunlsp, *) ' simulation impossible.'
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         ! set new pointer for dispersion and velocity
@@ -759,7 +754,7 @@ contains
         nflux = 0
 
         nbpr = 0
-        do iproc = 1, procesdef%cursize
+        do iproc = 1, procesdef%current_size
             if (procesdef%procesprops(iproc)%active) then
                 nbpr = nbpr + 1
             endif
@@ -824,7 +819,7 @@ contains
 
         nflx = 0
         totfluxsys = 0
-        do iproc = 1, procesdef%cursize
+        do iproc = 1, procesdef%current_size
             proc => procesdef%procesprops(iproc)
             if (proc%active) then
                 do istochi = 1, proc%no_fluxstochi
@@ -860,13 +855,13 @@ contains
 
         ! nrvart is in the boot sysn common
 
-        nrvart = outputs%cursize
+        nrvart = outputs%current_size
 
         ! Prepare descrtion and unit information for output from the proces library to be written in the NetCDF-file
 
         ! Extract names list from allitems
-        call realloc(ainame, allitems%cursize, keepExisting = .false., Fill = ' ')
-        do iitem = 1, allitems%cursize
+        call realloc(ainame, allitems%current_size, keepExisting = .false., Fill = ' ')
+        do iitem = 1, allitems%current_size
             ainame(iitem) = allitems%itemproppnts(iitem)%pnt%name
         enddo
 
@@ -909,7 +904,7 @@ contains
         enddo
 
         ! Lookup output names in names list
-        do ioutp = 1, outputs%cursize
+        do ioutp = 1, outputs%current_size
             outname = outputs%names(ioutp)
             call str_lower(outname)
             iindx = index_in_array(outname, ainame)

@@ -72,25 +72,23 @@ contains
         !                           PROINT, integrate fluxes at dump segments
         !                           PROVEL, calculate new velocities/dispersions
         !                           aggregate_extended, aggrgation of a variable
-        !                           GETMLU, get unit number monitor file
-        !                           SRSTOP, stops execution with an error indication
+        !                           get_log_unit_number, get unit number monitor file
+        !                           terminate_execution, stops execution with an error indication
 
         !     Files               : Monitoring file if needed for messages
 
         use m_dlwqp0
         use m_dlwq14
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution
         use m_cli_utils, only : retrieve_command_argument
         use aggregation, only : aggregate, aggregate_extended, resample, aggregate_attributes
         use m_dhgvar
         use m_array_manipulation, only : set_array_parameters
         use timers
         use process_registration
+        use omp_lib
 
         implicit none
-
-        !$    include "omp_lib.h"
 
         !     Arguments           :
 
@@ -109,11 +107,11 @@ contains
         integer(kind = int_wp), intent(in) :: ndmpar                      !< Number of dump areas
         integer(kind = int_wp), intent(in) :: nproc                       !< Number of processes
         integer(kind = int_wp), intent(in) :: noflux                      !< Number of fluxes
-        integer(kind = int_wp), intent(in) :: ipmsa (*)                   !< Direct pointer in DELWAQ arrays
+        integer(kind = int_wp), intent(in) :: ipmsa (:)                   !< Direct pointer in DELWAQ arrays
         integer(kind = int_wp), intent(in) :: prvnio(nproc)               !< Nr. of state variables per proces
         integer(kind = int_wp), intent(in) :: promnr(nproc)               !< Proces module number per proces
         integer(kind = int_wp), intent(in) :: iflux (nproc)               !< Offset in flux array per process
-        integer(kind = int_wp), intent(in) :: increm(*)                   !< Direct increment in DELWAQ arrays
+        integer(kind = int_wp), intent(in) :: increm(:)                   !< Direct increment in DELWAQ arrays
         real(kind = real_wp) :: flux  (noflux, noseg, nogrid) !< Proces fluxes
         real(kind = real_wp) :: flxdmp(ndmps, noflux)       !< Fluxes at dump segments
         real(kind = real_wp), intent(in) :: stochi(notot, noflux)       !< Proces stochiometry
@@ -127,8 +125,8 @@ contains
         integer(kind = int_wp), intent(in) :: iaflag                      !< if 1 then accumulation
         integer(kind = int_wp), intent(in) :: intopt                      !< Integration suboptions
         real(kind = real_wp), intent(inout) :: flxint(ndmpar, noflux)       !< Integrated fluxes at dump areas
-        integer(kind = int_wp), intent(in) :: iexpnt(4, *)                 !< Exchange pointer
-        integer(kind = int_wp), intent(inout) :: iknmrk(noseg, nogrid)        !< Integration suboptions
+        integer(kind = int_wp), intent(in) :: iexpnt(:)                 !< Exchange pointer
+        integer(kind = int_wp), intent(inout) :: iknmrk(:)        !< Integration suboptions
         integer(kind = int_wp), intent(in) :: noq1                        !< Number of exchanges first direction
         integer(kind = int_wp), intent(in) :: noq2                        !< Number of exchanges second direction
         integer(kind = int_wp), intent(in) :: noq3                        !< Number of exchanges vertical
@@ -140,7 +138,7 @@ contains
         integer(kind = int_wp), intent(in) :: idpnt (nosys)              !< Pointer to original dispersion
         real(kind = real_wp), intent(in) :: disper(nodisp, *)            !< Original dispersions
         integer(kind = int_wp), intent(in) :: ndspx                       !< Nr. of calculated dispersions
-        real(kind = real_wp) :: dspx  (ndspx, *)            !< Calculated dispersions
+        real(kind = real_wp) :: dspx  (:)            !< Calculated dispersions
         real(kind = real_wp), intent(in) :: dsto  (nosys, ndspx)         !< Factor for calc. dispersions
         integer(kind = int_wp), intent(in) :: nveln                       !< Nr. of new velocity array's
         integer(kind = int_wp), intent(in) :: ivpnew(nosys)              !< Pointer to new velo array
@@ -173,7 +171,7 @@ contains
         integer(kind = int_wp) :: vgrset(novar, nogrid)        !< Local flag for variables and grid
         integer(kind = int_wp), intent(in) :: grdnos(nogrid)              !< Number of segments per grid
         integer(kind = int_wp), intent(in) :: grdseg(noseg, nogrid)        !< Aggregation pointer per grid
-        real(kind = real_wp), intent(in) :: a     (*)                   !<
+        real(kind = real_wp), intent(in)   :: a     (:)                   !<
         integer(kind = int_wp), intent(in) :: ndmps                       !<
         character(20) :: pronam(*)                   !< Name of called module
         integer(kind = int_wp), intent(in) :: intsrt                      !< Number of integration routine used
@@ -240,7 +238,7 @@ contains
         ! open openpb dll
 
         if (ifirst == 1) then
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             call retrieve_command_argument ('-openpb', 3, lfound, idummy, rdummy, shared_dll, ierr2)
             if (lfound) then
                 if (ierr2== 0) then
@@ -266,7 +264,7 @@ contains
                 write(lunrep, *) 'ERROR : opening process library DLL'
                 write(lunrep, *) 'DLL   : ', trim(shared_dll)
                 write(lunrep, *) 'dll handle: ', dll_opb
-                call srstop(1)
+                call terminate_execution(1)
             endif
             ifirst = 0
         endif
@@ -315,7 +313,7 @@ contains
 
         !     Fill some specific variables absolute in the real array
 
-        defaul(2) = float(itime)
+        defaul(2) = real(itime)
         noq = noq1 + noq2 + noq3 + noq4
 
         !     BLOOM fractional step (derivs assumed zero at entry)
@@ -350,12 +348,12 @@ contains
                     call aggregate(noseg, noseg2, notot, 1, nototh, &
                             notot, 1, 1, isysh, 1, &
                             nosys, grdseg(1, igrblo), 3, conc, volume, &
-                            a(ip_arh), conc(1, 1, igrblo))
+                            a(ip_arh:), conc(1, 1, igrblo))
                     if (notot - nosys > 0)      & !   inactives
                             call aggregate(noseg, noseg2, notot, 1, nototh, &
                                     notot, nosys + 1, 1, isysh, nosys + 1, &
                                     notot - nosys, grdseg(1, igrblo), 3, conc, surfac, &
-                                    a(ip_arh), conc(1, 1, igrblo))
+                                    a(ip_arh:), conc(1, 1, igrblo))
                     do isys = 1, notot
                         ivar = iv_cnc + isys - 1
                         vgrset(ivar, igrblo) = 1
@@ -369,8 +367,8 @@ contains
                 idtpro = prondt(ipbloo) * idt
                 ipp_idt = nodef - 2 * nproc + ipbloo
                 ipp_delt = nodef - nproc + ipbloo
-                defaul(ipp_idt) = float(idt)
-                defaul(ipp_delt) = float(idt) / float(itfact)
+                defaul(ipp_idt) = real(idt)
+                defaul(ipp_delt) = real(idt) / real(itfact)
                 if (timon) call timstrt ("onepro", ithand2)
                 call onepro (ipbloo, ioffbl, idt, itfact, progrd, &
                         grdnos, prvnio, prvtyp, prvvar, vararr, &
@@ -432,9 +430,8 @@ contains
                 endif
 
                 !           Scale fluxes and update "processes" accumulation arrays
-
-                call dlwq14 (deriv, notot, noseg, itfact, amass2, &
-                        idt, iaflag, dmps, intopt, isdmp)
+                call scale_processes_derivs_and_update_balances (deriv, notot, noseg, itfact, amass2, &
+                     idt, iaflag, dmps, intopt, isdmp)
 
                 !           Integration (derivs are zeroed)
 
@@ -484,12 +481,12 @@ contains
                 call aggregate(noseg, noseg2, notot, 1, nototh, &
                         notot, 1, 1, isysh, 1, &
                         nosys, grdseg(1, igrid), 3, conc, volume, &
-                        a(ip_arh), conc(1, 1, igrid))
+                        a(ip_arh:), conc(1, 1, igrid))
                 if (notot - nosys > 0)      & !   inactives
                         call aggregate(noseg, noseg2, notot, 1, nototh, &
                                 notot, nosys + 1, 1, isysh, nosys + 1, &
                                 notot - nosys, grdseg(1, igrid), 3, conc, surfac, &
-                                a(ip_arh), conc(1, 1, igrid))
+                                a(ip_arh:), conc(1, 1, igrid))
                 do isys = 1, notot
                     ivar = iv_cnc + isys - 1
                     vgrset(ivar, igrid) = 1
@@ -542,8 +539,8 @@ contains
                     ipp_idt = nodef - 2 * nproc + iproc
                     ipp_delt = nodef - nproc + iproc
                     IDTPRO = PRONDT(IPROC) * IDT
-                    DEFAUL(ipp_idt) = FLOAT(IDTPRO)
-                    DEFAUL(ipp_delt) = FLOAT(IDTPRO) / FLOAT(ITFACT)
+                    DEFAUL(ipp_idt) = real(IDTPRO)
+                    DEFAUL(ipp_delt) = real(IDTPRO) / real(ITFACT)
 
                     call onepro (iproc, prvpnt(iproc), idt, itfact, progrd, &
                             grdnos, prvnio, prvtyp, prvvar, vararr, &
@@ -612,8 +609,8 @@ contains
 
                 !           Scale fluxes and update "processes" accumulation arrays
 
-                call dlwq14 (deriv, notot, noseg, itfact, amass2, &
-                        idt, iaflag, dmps, intopt, isdmp)
+                call scale_processes_derivs_and_update_balances(deriv, notot, noseg, itfact, amass2, &
+                     idt, iaflag, dmps, intopt, isdmp)
 
                 !           Integration (derivs are zeroed)
 
@@ -681,16 +678,16 @@ contains
                 ARRDM2(*), VGRSET(NOVAR, *), &
                 VARTDA(*), VARDAG(*), &
                 GRDSEG(NOSEG, *), VARAGG(*), &
-                IPMSA (*), INCREM(*), &
+                IPMSA (:), INCREM(:), &
                 IFLUX (*), PROMNR(*), &
-                IEXPNT(*), IKNMRK(*), &
+                IEXPNT(:), IKNMRK(:), &
                 PRONDT(*), ISDMP (*), &
                 VARTAG(*), &
                 DSPNDT(*), VELNDT(*)
-        REAL(kind = real_wp) :: A(*), FLUX(*), &
+        REAL(kind = real_wp) :: A(:), FLUX(*), &
                 DERIV(*), STOCHI(*), &
                 VOLUME(*), FLXDMP(*)
-        CHARACTER*10        PRONAM(*)
+        character(len=10)        PRONAM(*)
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
         !
         !     Local
@@ -838,9 +835,9 @@ contains
                                             ISYSI, ISYSW, &
                                             ISYSH, ISYSO, &
                                             GRDSEG(1, IGR3), IDATYP, &
-                                            A(IP_ARI), A(IP_ARW), &
-                                            ISWCUM, A(IP_ARH), &
-                                            A(IP_ARO))
+                                            A(IP_ARI:), A(IP_ARW:), &
+                                            ISWCUM, A(IP_ARH:), &
+                                            A(IP_ARO:))
                                     VGRSET(IVAR, 1) = 1
                                 ENDIF
                             ENDDO
@@ -908,8 +905,8 @@ contains
                                     ISYSI, ISYSW, &
                                     ISYSH, ISYSO, &
                                     GRDSEG(1, IGRID), IAGTYP, &
-                                    A(IP_ARI), A(IP_ARW), &
-                                    A(IP_ARH), A(IP_ARO))
+                                    A(IP_ARI:), A(IP_ARW:), &
+                                    A(IP_ARH:), A(IP_ARO:))
                             VGRSET(IVAR, IGRID) = 1
                         ENDIF
                         !
@@ -938,10 +935,10 @@ contains
         !
         IPFLUX = (IGRID - 1) * NOFLUX * NOSEG + IFLUX(IPROC)
         IPKNMR = (IGRID - 1) * ARRDM1(IIKNMR) * ARRDM2(IIKNMR) + 1
-        CALL PROCAL (A, PROMNR(IPROC), FLUX(IPFLUX), IPMSA(K), INCREM(K), &
-                NOSEG2, NOFLUX, IEXPNT, IKNMRK(IPKNMR), NOQ1, &
-                NOQ2, NOQ3, NOQ4, PRONAM(IPROC), PRVNIO(IPROC), &
-                PRVTYP(K), iproc, dll_opb)
+        CALL PROCAL (A, PROMNR(IPROC), FLUX(IPFLUX:(noflux*noseg*nogrid)), IPMSA(K:), INCREM(K:), &
+                NOSEG2, NOFLUX, IEXPNT, IKNMRK(IPKNMR:), NOQ1, &
+                NOQ2, NOQ3, NOQ4, PRONAM(IPROC), &
+                iproc, dll_opb)
         !
         !     the used grid is now the only actual value for the output
         !

@@ -31,10 +31,10 @@
       contains
 
 
-      SUBROUTINE SETDAY ( LUNREP     , NOKEY      , & 
-                         KEYNAM     , KEYVAL     , & 
+      SUBROUTINE SETDAY ( LUNREP     , NOKEY      , &
+                         KEYNAM     , KEYVAL     , &
                          is_date_format     , is_yyddhh_format     , &
-                         IPROC      , aProcesProp, & 
+                         IPROC      , aProcesProp, &
                          AllItems   , status )
 !
 !     Deltares
@@ -43,7 +43,7 @@
 !
 !     FUNCTION            : Sets io list for statistical routine STADAY
 !
-!     SUBROUTINES CALLED  : SRSTOP, stops execution
+!     SUBROUTINES CALLED  : terminate_execution, stops execution
 !                           ZOEK  , finds string in character array
 !                           convert_string_to_time_offset, converts absolute time to system time (seconds)
 !
@@ -59,7 +59,7 @@
 !     aProcesProp               OUTPUT  properties for this proces
 !     AllItems                  INPUT   all items known to the proces system
 !
-      use m_srstop
+      use m_logger, only : terminate_execution
       use m_string_manipulation, only : get_trimmed_length
 
       use timers       !   performance timers
@@ -71,7 +71,7 @@
 !
       INTEGER(kind=int_wp) ::LUNREP, NOKEY , IPROC , item_ind
       LOGICAL       is_date_format , is_yyddhh_format
-      CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
+      character(len=20)  KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
       type(ItemPropColl)    :: AllItems            ! all items of the proces system
 
@@ -82,8 +82,8 @@
       INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISLEN     , IERR2 , IRET
       integer(kind=int_wp) ::istart , iperiod
       INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      CHARACTER*20  SUFFIX  , NAME, item_name
-      CHARACTER*50  item_desc
+      character(len=20)  SUFFIX  , NAME, item_name
+      character(len=50)  item_desc
       REAL(kind=real_wp) ::PERIOD, default_value
       type(ItemProp)        :: aItemProp            ! one item
       integer(kind=int_wp) ::ithndl = 0
@@ -96,7 +96,7 @@
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
-         CALL SRSTOP(1)
+         CALL terminate_execution(1)
       ENDIF
       ISUSED = 0
 
@@ -119,14 +119,14 @@
       aProcesProp%no_FluxStochi = 0
       aProcesProp%no_DispStochi = 0
       aProcesProp%no_VeloStochi = 0
-      ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), & 
-              aProcesProp%output_item(aProcesProp%no_output), & 
+      ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), &
+              aProcesProp%output_item(aProcesProp%no_output), &
               STAT=IERR_ALLOC)
       IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_1, array length:',aProcesProp%no_input,aProcesProp%no_output
          WRITE(*,*) 'ERROR allocating array:',IERR_ALLOC
-         CALL SRSTOP(1)
+         CALL terminate_execution(1)
       ENDIF
 !
       IKEY = index_in_array('SUBSTANCE',KEYNAM)
@@ -160,7 +160,7 @@
          IF ( IERR2 /= 0 ) THEN
             CALL convert_string_to_time_offset( KEYVAL(IKEY), istart, .FALSE., .FALSE., IERR2)
             IF ( IERR2 /= 0 ) THEN
-               WRITE(LUNREP,*)'ERROR interpreting start time:', & 
+               WRITE(LUNREP,*)'ERROR interpreting start time:', &
                               KEYVAL(IKEY)
                call status%increase_error_count()
             ENDIF
@@ -171,8 +171,8 @@
 
       item_desc = 'start time for statistics'
       item_ind = 2
-      item_name = 'TINIT'(1:10)//aProcesProp%name(1:10)
-      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, & 
+      item_name = 'TINIT'//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, &
       IOTYPE_SEGMENT_INPUT)
 !
       IKEY = index_in_array('PERIOD',KEYNAM)
@@ -194,8 +194,8 @@
 
       item_desc = 'period of time averaged output'
       item_ind = 3
-      item_name = 'PERIOD'(1:10)//aProcesProp%name(1:10)
-      call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name, & 
+      item_name = 'PERIOD'//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name, &
       IOTYPE_SEGMENT_INPUT)
 !
       aItemProp%name    = 'ITIME'
@@ -261,7 +261,7 @@
       aProcesProp%output_item(1)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%output_item(1)%indx= 1
       aProcesProp%output_item(1)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, &
                         '] created with periodic average from [',aProcesProp%input_item(1)%name,']'
 !
       !     work array in input and in output
@@ -279,7 +279,7 @@
       aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%output_item(2)%indx= 2
       aProcesProp%output_item(2)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, &
                        '] created with periodic minimum from [',aProcesProp%input_item(1)%name,']'
 !
       IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
@@ -296,7 +296,7 @@
       aProcesProp%output_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%output_item(3)%indx= 3
       aProcesProp%output_item(3)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, &
                        '] created with periodic maximum from [',aProcesProp%input_item(1)%name,']'
 !
 !     work array in input and in output
@@ -400,7 +400,7 @@
  2000 FORMAT(5A)
       END
 
-      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name, & 
+      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name, &
       item_type)
 !
 !     FUNCTION            : Update process properties

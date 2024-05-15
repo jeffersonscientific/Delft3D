@@ -34,7 +34,7 @@ contains
 
         ! add processes per fractions
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use processet
         use timers       !   performance timers
 
@@ -84,7 +84,7 @@ contains
 
         ! loop over the processes
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
         proc_loop : do iproc = 1, nproc
 
             proc => procesdef%procesprops(iproc)
@@ -156,7 +156,7 @@ contains
                                     write(lunrep, *) 'procn%no_dispstochi:', procn%no_dispstochi
                                     write(lunrep, *) 'procn%no_velostochi:', procn%no_velostochi
                                     write(*, *) 'error allocating array:', ierr_alloc
-                                    call srstop(1)
+                                    call terminate_execution(1)
                                 endif
 
                                 ! copy input

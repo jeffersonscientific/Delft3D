@@ -29,19 +29,16 @@
 
       subroutine write_hyd_init(hyd)
 
-      ! function : write the time independent data from a hydrodynamics
-
-      ! global declarations
-
-      use m_monsys
-      use hydmod
+      ! write the time independent data from a hydrodynamics
+      use m_logger, only : get_log_unit_number
+      use m_hydmod
       use m_write_waqgeom
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd     ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd     ! description of the hydrodynamics
 
       ! local declarations
 
@@ -52,7 +49,7 @@
 
       ! some init
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
          ! grid table

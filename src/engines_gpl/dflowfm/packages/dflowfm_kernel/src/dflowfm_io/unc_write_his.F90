@@ -402,11 +402,11 @@ subroutine unc_write_his(tim)            ! wrihis
 
                if (iturbulencemodel >= 3 .and. jahistur > 0) then
                   call definencvar(ihisfile,id_turkin, nc_precision, idims,3, 'tke'   , 'turbulent kinetic energy'   , 'm2 s-2',  trim(statcoordstring) // ' zcoordinate_wu', station_geom_container_name, fillVal = dmiss)
+                  ierr = nf90_put_att(ihisfile, id_turkin, 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
                   jawrizw = 1
                endif
                if (iturbulencemodel > 1 .and. jahistur > 0 ) then
                   call definencvar(ihisfile,id_vicwwu, nc_precision, idims,3, 'vicww' , 'turbulent vertical eddy viscosity'    , 'm2 s-1' ,  trim(statcoordstring) // ' zcoordinate_wu', station_geom_container_name, fillVal = dmiss)
-                  ierr = nf90_put_att(ihisfile, id_turkin, 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
                   jawrizw = 1
                endif
                if (iturbulencemodel == 3 .and. jahistur > 0) then
@@ -657,9 +657,10 @@ subroutine unc_write_his(tim)            ! wrihis
                   idims(1) = id_laydim
                   idims(2) = id_statdim
                   jawrizc = 1
-                  call definencvar(ihisfile,id_varrhop, nc_precision, idims,3,'potential_density'       , 'potential_density'         , 'kg m-3' ,  trim(statcoordstring) // ' zcoordinate_c', station_geom_container_name, fillVal = dmiss)
-                  if (idensform > 10) then
-                     call definencvar(ihisfile,id_varrho , nc_precision, idims,3,'density'                 , 'density'                   , 'kg m-3' ,  trim(statcoordstring) // ' zcoordinate_c', station_geom_container_name, fillVal = dmiss)
+                  if ( density_is_pressure_dependent() ) then
+                      call definencvar(ihisfile,id_varrho,  nc_precision, idims,3, 'density',           'density',           'kg m-3',  trim(statcoordstring) // ' zcoordinate_c', station_geom_container_name, fillVal = dmiss)
+                  else
+                      call definencvar(ihisfile,id_varrhop, nc_precision, idims,3, 'potential_density', 'potential_density', 'kg m-3',  trim(statcoordstring) // ' zcoordinate_c', station_geom_container_name, fillVal = dmiss)
                   endif
                   idims(1) = id_laydimw
                   call definencvar(ihisfile,id_bruv   , nc_precision, idims,3,'Brunt_Vaisala_N2'  , 'Brunt_Vaisala_N2'  , '1/s2'   ,  trim(statcoordstring) // ' zcoordinate_w', station_geom_container_name, fillVal = dmiss)
@@ -1184,7 +1185,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_def_var(ihisfile, 'cross_section_'//trim(tmpstr), nc_precision, (/ id_crsdim, id_timedim /), id_const(num))
                ierr = nf90_put_att(ihisfile, id_const(num), 'long_name', 'flux (based on upwind flow cell) for '//trim(tmpstr)//'.')
 
-               if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+               if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then    ! if the constituent is sediment
                   select case(stmpar%morpar%moroutput%transptype)
                   case (0)
                      tmpstr = 'kg'
@@ -1202,7 +1203,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_att(ihisfile, id_const_cum(num), 'coordinates', 'cross_section_name')
                ierr = nf90_put_att(ihisfile, id_const_cum(num), 'geometry', crs_geom_container_name)
 
-               if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+               if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then    ! if the constituent is sediment
                   select case(stmpar%morpar%moroutput%transptype)
                   case (0)
                      tmpstr = 'kg/s'
@@ -2801,9 +2802,10 @@ subroutine unc_write_his(tim)            ! wrihis
              ierr = nf90_put_var(ihisfile, id_vartem, valobsT(:,IPNT_TEM1+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
        end if
        if( (jasal > 0 .or. jatem > 0 .or. jased > 0 ) .and. jahisrho > 0) then
-          ierr = nf90_put_var(ihisfile, id_varrhop , valobsT(:,IPNT_RHOP +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
-          if (idensform > 10) then
+          if ( density_is_pressure_dependent() ) then
              ierr = nf90_put_var(ihisfile, id_varrho  , valobsT(:,IPNT_RHO +kk-1) , start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+          else
+             ierr = nf90_put_var(ihisfile, id_varrhop , valobsT(:,IPNT_RHOP +kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
           endif
        end if
        if (jased > 0 .and. .not. stm_included) then
@@ -2868,8 +2870,8 @@ subroutine unc_write_his(tim)            ! wrihis
        if (jatem > 0) then
           ierr = nf90_put_var(ihisfile, id_vartem, valobsT(:,IPNT_TEM1), start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
-          if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
-             ierr = nf90_put_var(ihisfile, id_varrhop, valobsT(:,IPNT_RHOP) ,  start = (/ 1, it_his /), count = (/ ntot, 1 /))
+       if ( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
+          ierr = nf90_put_var(ihisfile, id_varrhop, valobsT(:,IPNT_RHOP) ,  start = (/ 1, it_his /), count = (/ ntot, 1 /))
        end if
 
        if (IVAL_TRA1 > 0) then
@@ -3134,7 +3136,7 @@ subroutine unc_write_his(tim)            ! wrihis
              IP = IPNT_HUA
              do num = 1,NUMCONST_MDU
                 IP = IP + 1
-                if (num >= ISED1 .and. num <= ISEDN) then
+                if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
                    l = sedtot2sedsus(num-ISED1+1)
                    select case(stmpar%morpar%moroutput%transptype)
                    case (0)
@@ -3581,10 +3583,10 @@ subroutine unc_write_his(tim)            ! wrihis
          end if
 
       if (jahislateral > 0 .and. numlatsg > 0) then
-         ierr = nf90_put_var(ihisfile, id_lat_predis_inst,  qplat,       start = (/1,it_his/), count = (/numlatsg,1/))
-         ierr = nf90_put_var(ihisfile, id_lat_predis_ave,   qplatAve,    start = (/1,it_his/), count = (/numlatsg,1/))
-         ierr = nf90_put_var(ihisfile, id_lat_realdis_inst, qLatReal,    start = (/1,it_his/), count = (/numlatsg,1/))
-         ierr = nf90_put_var(ihisfile, id_lat_realdis_ave,  qLatRealAve, start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_predis_inst,  sum(qplat,dim=1),start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_predis_ave,   qplatAve,        start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_realdis_inst, qLatReal,        start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_realdis_ave,  qLatRealAve,     start = (/1,it_his/), count = (/numlatsg,1/))
          ! write geometry variables at the first time of history output
          if (it_his == 1) then
             ierr = nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))

@@ -52,7 +52,7 @@ contains
         !                  Contains:
         !    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
         !    integer                 :: maxsize ! maximum size of the current array
-        !    integer                 :: cursize ! filled up to this size
+        !    integer                 :: current_size ! filled up to this size
         ! BotColm Struct 1   O  Structure with bottom collumn info
         !                  Contains:
         !    integer :: fstwatsed  ! first water sediment exchange number
@@ -220,7 +220,7 @@ contains
         IPDVOL = IPOINT(32)
 
         !.....Loop over kolommen
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             !         Select first column of exchanges for DOWNWARD advection
 
@@ -794,7 +794,7 @@ contains
         !                  Contains:
         !    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
         !    integer                 :: maxsize ! maximum size of the current array
-        !    integer                 :: cursize ! filled up to this size
+        !    integer                 :: current_size ! filled up to this size
         ! BotColm Struct 1   O  Structure with bottom collumn info
         !                  Contains:
         !    integer :: fstwatsed  ! first water sediment exchange number
@@ -802,8 +802,7 @@ contains
         !    integer :: topsedsed  ! first within collumn exchange number
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_evaluate_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
@@ -821,7 +820,7 @@ contains
         DATA FIRST / .true. /
         INTEGER(kind = int_wp) :: lunrep, errorcode
 
-        call getmlu(lunrep)
+        call get_log_unit_number(lunrep)
         errorcode = 0
 
         !     Check for bottom collumns anyway
@@ -830,7 +829,7 @@ contains
         !     Check for first call
         if (.NOT. FIRST) return
         FIRST = .false.
-        Coll%cursize = 0
+        Coll%current_size = 0
         Coll%maxsize = 0
 
         !.....Exchangeloop over de verticale richting
@@ -902,7 +901,7 @@ contains
             enddo
             Coll%set((ik + 1) / 2) = set
         enddo
-        Coll%cursize = nkolom / 2
+        Coll%current_size = nkolom / 2
         RETURN
         !
         9000 if (errorcode==0) errorcode = 9000
@@ -914,7 +913,7 @@ contains
         9006 if (errorcode==0) errorcode = 9006
         write (lunrep, *)'Illegal structure of pointer table MAKKOL: ', errorcode
         write (*, *)'Illegal structure of pointer table MAKKOL: ', errorcode
-        call srstop(1)
+        call terminate_execution(1)
         !
     END
 

@@ -30,18 +30,15 @@
       subroutine read_lga(file_lga, mmax  , nmax  , nolay , nosegl, &
                           noq1    , noq2  , noq3  , lgrid )
 
-      ! function : read a lga file and check dimensions
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use filmod                   ! module contains everything for the files
+      ! read a lga file and check dimensions
+      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_lga               ! aggregation-file
+      type(t_file)                       :: file_lga               ! aggregation-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       integer                                :: nolay                  ! nolay
@@ -60,13 +57,13 @@
       integer                                :: n                      ! loop counter
       integer                                :: lunrep                 ! unit number report file
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
-      call dlwqfile_open(file_lga)
-      read(file_lga%unit_nr,iostat=ioerr) nmaxd, mmaxd, nosegl, nolay, noq1, noq2, noq3
+      call file_lga%open()
+      read(file_lga%unit,iostat=ioerr) nmaxd, mmaxd, nosegl, nolay, noq1, noq2, noq3
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading lga file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       if ( nmaxd.ne.nmax .or. mmaxd.ne.mmax ) then
@@ -75,13 +72,13 @@
          write(lunrep,*) ' nmax hyd file:',nmax
          write(lunrep,*) ' mmax lga file:',mmaxd
          write(lunrep,*) ' nmax lga file:',nmaxd
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
-      read(file_lga%unit_nr,iostat=ioerr) ((lgrid(n,m),n=1,nmax),m=1,mmax)
+      read(file_lga%unit,iostat=ioerr) ((lgrid(n,m),n=1,nmax),m=1,mmax)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading lga file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       return

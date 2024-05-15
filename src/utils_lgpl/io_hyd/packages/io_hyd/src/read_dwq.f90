@@ -29,17 +29,15 @@
 
       subroutine read_dwq(file_dwq, mmax  , nmax, ipnt )
 
-      ! function : read a dwq file and check dimensions
+      !! read a dwq file and check dimensions
 
-      ! global declarations
-
-      use m_srstop
-      use filmod                   ! module contains everything for the files
+      use m_logger, only : terminate_execution
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_dwq               ! aggregation-file
+      type(t_file)                       :: file_dwq               ! aggregation-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       integer                                :: ipnt(nmax,mmax)        ! aggregation pointer
@@ -54,29 +52,29 @@
       integer                                :: n,m                    ! loop counters
       integer                                :: ioerr                  ! error on file
 
-      call dlwqfile_open(file_dwq)
-      read(file_dwq%unit_nr,*,iostat=ioerr) nmaxd, mmaxd, nmd, ioptdd, idum
+      call file_dwq%open()
+      read(file_dwq%unit,*,iostat=ioerr) nmaxd, mmaxd, nmd, ioptdd, idum
       if ( ioerr .ne. 0 ) then
          write(*,*) ' error reading dwq file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
 !     If nmaxd or mmaxd is one, only check if nmd.ne.nmax*mmax
       if (nmaxd.eq.1.or.mmaxd.eq.1) then
         if (nmd.ne.nmax*mmax) then
            write(*,*) ' dimensions grid on dido file differ from input hydrodynamics'
-           call srstop(1)
+           call terminate_execution(1)
         endif
       else   
         if (nmaxd.ne.nmax.or.mmaxd.ne.mmax) then
            write(*,*) ' dimensions grid on dido file differ from input hydrodynamics'
-           call srstop(1)
+           call terminate_execution(1)
         endif
       endif
-      read(file_dwq%unit_nr,*,iostat=ioerr) ((ipnt(n,m),n=1,nmax),m=1,mmax)
+      read(file_dwq%unit,*,iostat=ioerr) ((ipnt(n,m),n=1,nmax),m=1,mmax)
       if ( ioerr .ne. 0 ) then
          write(*,*) ' error reading dwq file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       return

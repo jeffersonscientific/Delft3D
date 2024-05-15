@@ -60,7 +60,7 @@ contains
         !     ***********************************************************************
 
         use m_evaluate_waq_attribute
-        use m_write_error_message
+        use m_logger, only : get_log_unit_number, write_error_message_with_values
 
         IMPLICIT NONE
 
@@ -176,7 +176,7 @@ contains
 
             !             check proces parameters
 
-            IF (I_NRDZ<=0) CALL write_error_message_with_values('I_NRDZ', FLOAT(I_NRDZ), ISEG, 'MPBLLM')
+            IF (I_NRDZ<=0) CALL write_error_message_with_values('I_NRDZ', real(I_NRDZ), ISEG, 'MPBLLM')
 
             !             scale all radiance to PAR, radsurf with enhancement since it is used as top of sediment layer radiation
 

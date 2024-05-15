@@ -28,20 +28,15 @@ module m_integration_scheme_25
     use m_proces
     use m_hsurf
     use m_dlwqtr
-    use m_dlwqt0
+    use time_dependent_variables, only : initialize_time_dependent_variables
 
     implicit none
 
 contains
 
 
-    subroutine integration_scheme_25 (buffer, lun, lchar, &
-            action, dlwqd, gridps)
-
-        !       Deltares Software Centre
-
-        !>\file
-        !>                         Special of first order upwind in space and time for emission module (25)
+    subroutine integration_scheme_25 (buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+        !>  Special of first order upwind in space and time for emission module (25)
         !>
         !>                         Performs first order explicit time integration using
         !>                         upwind discretization in space. The method is explict
@@ -49,16 +44,16 @@ contains
 
         !     CREATED            : june 1988 by L. Postma
 
-        !     LOGICAL UNITS      : LUN(19) , output, monitoring file
-        !                          LUN(20) , output, formatted dump file
-        !                          LUN(21) , output, unformatted hist. file
-        !                          LUN(22) , output, unformatted dump file
-        !                          LUN(23) , output, unformatted dump file
+        !     LOGICAL UNITS      : file_unit_list(19) , output, monitoring file
+        !                          file_unit_list(20) , output, formatted dump file
+        !                          file_unit_list(21) , output, unformatted hist. file
+        !                          file_unit_list(22) , output, unformatted dump file
+        !                          file_unit_list(23) , output, unformatted dump file
 
         !     SUBROUTINES CALLED : DLWQTR          , user transport routine
         !                          PROCES          , DELWAQ proces system
         !                          DLWQO2          , DELWAQ output system
-        !                          DLWQT0          , sets time functions
+        !                          initialize_time_dependent_variables          , sets time functions
         !                          DLWQ13          , system postpro-dump routine
         !                          DLWQ14          , scales waterquality
         !                          DLWQ15          , wasteload routine
@@ -94,7 +89,7 @@ contains
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
         use delwaq2_data
         use m_waq_openda_exchange_items, only : get_openda_buffer
@@ -107,20 +102,13 @@ contains
         use m_sysc          ! Pointers in character array workspace
         use m_dlwqdata_save_restore
 
-        implicit none
-
-        !     Parameters         :
-
-        !     kind           function         name                Descriptipon
         type(waq_data_buffer), target :: buffer      !< System total array space
-        integer(kind = int_wp), intent(inout) :: lun  (*)          !< array with unit numbers
-        character*(*), intent(in) :: lchar(*)          !< array with file names
+        integer(kind = int_wp), intent(inout) :: file_unit_list  (*)          !< array with unit numbers
+        character*(*), intent(in) :: file_name_list(*)          !< array with file names
         integer(kind = int_wp), intent(in) :: action            !< type of action to perform
         type(delwaq_data), target :: dlwqd             !< delwaq data structure
         type(GridPointerColl) :: gridps            !< collection of all grid definitions
 
-
-        !     Local declarations
 
         LOGICAL         IMFLAG, IDFLAG, IHFLAG
         LOGICAL         LREWIN
@@ -132,12 +120,15 @@ contains
 
         INTEGER(kind = int_wp) :: IDTOLD
         INTEGER(kind = int_wp) :: sindex
+        
+        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
             if (ACTION == ACTION_FINALISATION) then
                 call dlwqdata_restore(dlwqd)
-                if (timon) call timstrt ("integration_scheme_1", ithandl)
+                if (timon) call timstrt ("integration_scheme_25", ithandl)
                 goto 20
             endif
 
@@ -218,7 +209,7 @@ contains
             !        They cannot have explicit processes during this time step
 
             call hsurf  (noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
-                    c(isfna:), a(isfun:), surface, lun(19))
+                    c(isfna:), a(isfun:), surface, file_unit_list(19))
             call dryfld (noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
                     a(iarea:), nocons, c(icnam:), a(icons:), surface, &
                     j(iknmr:), iknmkv)
@@ -235,7 +226,7 @@ contains
 
             !jvb     Temporary ? set the variables grid-setting for the DELWAQ variables
 
-            call setset (lun(19), nocons, nopa, nofun, nosfun, &
+            call setset (file_unit_list(19), nocons, nopa, nofun, nosfun, &
                     nosys, notot, nodisp, novelo, nodef, &
                     noloc, ndspx, nvelx, nlocx, nflux, &
                     nopred, novar, nogrid, j(ivset:))
@@ -257,7 +248,7 @@ contains
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
                     ioffbl, a(imass:), nosys, &
                     itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), iknmkv, noq1, noq2, noq3, &
+                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
                     noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
                     j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
                     nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
@@ -269,7 +260,7 @@ contains
                     j(igseg:), novar, a, nogrid, ndmps, &
                     c(iprna:), intsrt, &
                     j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
-                    surface, lun(19))
+                    surface, file_unit_list(19))
 
             !          set new boundaries
 
@@ -283,7 +274,7 @@ contains
                         enddo
                     enddo
                 endif
-                call dlwq17 (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
+                call thatcher_harleman_bc (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
                         notot, idt, a(iconc:), a(iflow:), a(iboun:))
             endif
 
@@ -293,7 +284,7 @@ contains
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
-                    LCHAR, LUN, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
+                    file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
                     C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
                     C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
                     NOSYS, A(IBOUN:), J(ILP:), A(IMASS:), A(IMAS2:), &
@@ -317,8 +308,8 @@ contains
             !          zero cummulative array's
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
-                        ndmps, a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), &
+                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
+                        ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
             endif
@@ -330,7 +321,7 @@ contains
 
             !        add processes
 
-            call dlwq14 (a(iderv:), notot, nosss, itfact, a(imas2:), &
+            call scale_processes_derivs_and_update_balances (a(iderv:), notot, nosss, itfact, a(imas2:), &
                     idt, iaflag, a(idmps:), intopt, j(isdmp:))
             ! correct new volumes come in a(ivol2:)
             !        get new volumes                    ! at rewind a(ivoll:) contains the new volume
@@ -346,9 +337,9 @@ contains
                         ndmpq, j(iqdmp:))
                 updatr = .true.
             case (2)                 !     the fraudulent computation option
-                call dlwq41 (lun, itime, itimel, a(iharm:), a(ifarr:), &
+                call dlwq41 (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                         j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivoll:), &
-                        j(ibulk:), lchar, ftype, isflag, ivflag, &
+                        j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivol2:), dlwqd)
                 if (lrewin) call copy_real_array_elements (a(ivol2:), a(ivoll:), noseg)
@@ -358,9 +349,9 @@ contains
                 lrewin = .true.
                 lstrec = .true.  ! always closure error correction
             case default               !     read new volumes from files
-                call dlwq41 (lun, itime, itimel, a(iharm:), a(ifarr:), &
+                call dlwq41 (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                         j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
-                        j(ibulk:), lchar, ftype, isflag, ivflag, &
+                        j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivoll:), dlwqd)
             end select
@@ -393,11 +384,11 @@ contains
             !        new time values, volumes excluded
 
             idtold = idt
-            call dlwqt0 (lun, itime, itimel, a(iharm:), a(ifarr:), &
+            call initialize_time_dependent_variables (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                     j(inrha:), j(inrh2:), j(inrft:), idt, a(ivol:), &
                     a(idiff:), a(iarea:), a(iflow:), a(ivelo:), a(ileng:), &
                     a(iwste:), a(ibset:), a(icons:), a(iparm:), a(ifunc:), &
-                    a(isfun:), j(ibulk:), lchar, c(ilunt:), ftype, &
+                    a(isfun:), j(ibulk:), file_name_list, c(ilunt:), ftype, &
                     intsrt, isflag, ifflag, ivflag, ilflag, &
                     updatr, j(iktim:), j(iknmr:), j(inisp:), a(inrsp:), &
                     j(intyp:), j(iwork:), .false., ldummy, rdummy, &
@@ -405,16 +396,16 @@ contains
 
             !        set a time step
 
-            call dlwq18 (nosys, notot, nototp, nosss, a(ivol2:), &
+            call update_concs_explicit_time_step (nosys, notot, nototp, nosss, a(ivol2:), &
                     surface, a(imass:), a(iconc:), a(iderv:), idtold, &
-                    ivflag, lun(19))
+                    ivflag, file_unit_list(19))
 
 
             !        calculate closure error
 
             if (lrewin .and. lstrec) then
                 call dlwqce (a(imass:), a(ivoll:), a(ivol2:), nosys, notot, &
-                        noseg, lun(19))
+                        noseg, file_unit_list(19))
                 call copy_real_array_elements   (a(ivoll:), a(ivol:), noseg)
             else
                 !           replace old by new volumes
@@ -438,12 +429,12 @@ contains
                     ACTION == ACTION_FULLCOMPUTATION) then
                 !             close files, except monitor file
 
-                call CloseHydroFiles(dlwqd%collcoll)
-                call close_files(lun)
+                call close_hydro_files(dlwqd%collcoll)
+                call close_files(file_unit_list)
 
                 !             write restart file
 
-                CALL DLWQ13 (LUN, LCHAR, A(ICONC:), ITIME, C(IMNAM:), &
+                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
                         C(ISNAM:), NOTOT, NOSSS)
             endif
 
