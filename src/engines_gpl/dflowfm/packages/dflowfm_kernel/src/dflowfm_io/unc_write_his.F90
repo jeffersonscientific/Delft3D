@@ -387,7 +387,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
         ! Gate (Old .ext file, QUANTITY='gateloweredgelevel')
         ierr = unc_def_his_structure_static_vars(ihisfile, 'gate', 'gate', jahisgate, ngatesg, 'none', 0, id_strlendim, &
-                                                 id_gatedim, id_gate_id)
+                                                 id_gatedim, id_gate_id) !reuse gategendim
 
         if(jahisgate > 0 .and. ngategen > 0 ) then
             ! Define geometry related variables
@@ -526,6 +526,7 @@ subroutine unc_write_his(tim)            ! wrihis
                   .and. config%location_specifier /= UNC_LOC_DAM &
                   .and. config%location_specifier /= UNC_LOC_PUMP &
                   .and. config%location_specifier /= UNC_LOC_GATE &
+                  .and. config%location_specifier /= UNC_LOC_GATEGEN &
                   .and. config%location_specifier /= UNC_LOC_WEIRGEN &
                   .and. config%location_specifier /= UNC_LOC_ORIFICE &
                   .and. config%location_specifier /= UNC_LOC_BRIDGE &
@@ -589,6 +590,8 @@ subroutine unc_write_his(tim)            ! wrihis
             case (UNC_LOC_PUMP)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_pumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GATE)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gatedim,        id_timedim /), var_name, var_long_name, config%unit, 'gate_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+            case (UNC_LOC_GATEGEN)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gategendim,     id_timedim /), var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_WEIRGEN)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_weirgendim,     id_timedim /), var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
@@ -887,6 +890,7 @@ subroutine unc_write_his(tim)            ! wrihis
             .and. config%location_specifier /= UNC_LOC_DAM &
             .and. config%location_specifier /= UNC_LOC_PUMP &
             .and. config%location_specifier /= UNC_LOC_GATE &
+            .and. config%location_specifier /= UNC_LOC_GATEGEN &
             .and. config%location_specifier /= UNC_LOC_WEIRGEN &
             .and. config%location_specifier /= UNC_LOC_ORIFICE &
             .and. config%location_specifier /= UNC_LOC_BRIDGE &
@@ -912,6 +916,7 @@ subroutine unc_write_his(tim)            ! wrihis
          UNC_LOC_DAM, &
          UNC_LOC_PUMP, &
          UNC_LOC_GATE, &
+         UNC_LOC_GATEGEN, &
          UNC_LOC_WEIRGEN, &
          UNC_LOC_ORIFICE, &
          UNC_LOC_BRIDGE, &

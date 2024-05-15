@@ -881,28 +881,28 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_DISCHARGE,                                  &
                      'Wrihis_structure_gate', 'gategen_discharge', 'gate discharge (via general structure)',             &
-                     '', 'm3 s-1', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     '', 'm3 s-1', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_CREST_LEVEL,                                &
                      'Wrihis_structure_gate', 'gategen_crest_level', 'gate crest level (via general structure)',           &
-                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     '', 'm', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_CREST_WIDTH,                                &
                      'Wrihis_structure_gate', 'gategen_crest_width', 'gate crest width (via general structure)',           &
-                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     '', 'm', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_GATE_LOWER_EDGE_LEVEL,                      &
                      'Wrihis_structure_gate', 'gategen_gate_lower_edge_level', 'gate lower edge level (via general structure)',      &
-                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     '', 'm', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_FLOW_THROUGH_HEIGHT,                        &
                      'Wrihis_structure_gate', 'gategen_flow_through_height', 'gate flow through height (via general structure)',   &
-                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     '', 'm', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_GATE_OPENING_WIDTH,                         &
                      'Wrihis_structure_gate', 'gategen_gate_opening_width', 'gate opening width (via general structure)',         &
-                     '', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     '', 'm', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_S1UP,                                       &
                      'Wrihis_structure_gate', 'gategen_s1up', 'gate water level up (via general structure)',        &
-                     'sea_surface_height', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     'sea_surface_height', 'm', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_GATEGEN_S1DN,                                       &
                      'Wrihis_structure_gate', 'gategen_s1dn', 'gate water level down (via general structure)',      &
-                     'sea_surface_height', 'm', UNC_LOC_GATE, nc_atts = atts(1:1))
+                     'sea_surface_height', 'm', UNC_LOC_GATEGEN, nc_atts = atts(1:1))
 
 
       !! Weir (via general_structure)

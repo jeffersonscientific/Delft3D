@@ -88,10 +88,9 @@ contains
          statoutput%growsBy = 200
       end if
       
-      if (present(size) .and. size >= statoutput%count) then
+      if (present(size) .and. size > statoutput%count) then
          allocate(statoutput%statout(size), stat=ierr)
          call aerr('statoutput%statout(size)', ierr, size)
-
          statoutput%statout(1:size) = oldstats(1:size)
          deallocate(oldstats)
          statoutput%size = size
