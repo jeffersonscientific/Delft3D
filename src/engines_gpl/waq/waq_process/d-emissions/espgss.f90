@@ -23,7 +23,7 @@
 module m_espgss
     use m_waq_precision
     use m_calcorder
-    use m_write_error_message, only: write_error_message
+    use m_logger, only: write_error_message
 
     implicit none
 

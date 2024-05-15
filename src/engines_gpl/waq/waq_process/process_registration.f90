@@ -451,7 +451,6 @@ contains
                             process_routine_info('PHPROT', PHPROT), &
                             process_routine_info('FLOCSD', FLOCSD), &
                             process_routine_info('AGECAR', AGECART), &
-                            process_routine_info('DEBGRP', DEBGRZ_PROTIST), &
                             process_routine_info('PRTMRT', protist_mortality_salinity), &
                             process_routine_info('HYDRAU', HYDRAU), &
                             process_routine_info('DIFTEM', DIFTEM), &
@@ -463,7 +462,7 @@ contains
                             process_routine_info('SEDLNK', SEDLNK), &
                             process_routine_info('SOINIT', SOINIT), &
                             process_routine_info('SOIPHO', SOIPHO), &
-                            process_routine_info('SOIPRT', SOIPRT) &
+                            process_routine_info('SOIPRT', SOIPRT), &
                             process_routine_info('PRTMRT', protist_mortality_salinity) &
                     ]
 
