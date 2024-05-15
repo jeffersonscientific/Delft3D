@@ -36,8 +36,7 @@ contains
 
     !> No tranport scheme (0)
     !! Performs only calculation of new concentrations due processes
-    subroutine integration_scheme_0(buffer, file_unit_list, lchar, &
-                                    action, dlwqd, gridps)
+    subroutine integration_scheme_0(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         use m_dlwq18
         use m_dlwq14
@@ -62,7 +61,7 @@ contains
 
         type(waq_data_buffer), target :: buffer                  !< System total array space
         integer(kind=int_wp), intent(inout) :: file_unit_list(*) !< array with logocal unit numbers
-        character(len=*), intent(in) :: lchar(*)                 !< array with file names
+        character(len=*), intent(in) :: file_name_list(*)                 !< array with file names
         integer(kind=int_wp), intent(in) :: action               !< span of the run or type of action to perform
                                                                  !< (run_span = {initialise, time_step, finalise, whole_computation} )
         type(delwaq_data), target :: dlwqd                       !< delwaq data structure

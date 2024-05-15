@@ -54,25 +54,6 @@ module m_integration_scheme_18
         !                          file_unit_list(22) , output, unformatted dump file
         !                          file_unit_list(23) , output, unformatted restart file
         !
-<<<<<<< HEAD
-        !     SUBROUTINES CALLED : DLWQTR, user transport routine
-        !                          write_output, DELWAQ4 output routine
-        !                          write_restart_map_file, system postpro-dump routine
-        !                          DLWQ15, wasteload routine
-        !                          DLWQ60, scales water quality
-        !                          DLWQH1, set diagonal and deriv in deriv(1)
-        !                          DLWQG3, fills the matrix (except diagonal)
-        !                          DLWQ63, stores the results
-        !                          DLWQ64, performs mass balance computation
-        !                          DLWQ65, computes closure error
-        !                          DLWQ66, makes masses
-        !                          DLWQH3, check diagonal on zero's
-        !                          SGMRES, fast solver
-        !                          open_waq_files, opens files
-        !                          MOVE  , copy an array
-        !
-=======
->>>>>>> 5c10676307d483dee7cc4eedd2bebdeb1c49588e
         !      NOTE             :   " DELWAQ FASTSOLVERS 2 " (R.J.Vos, M.Borsboom and K.
         !       Newton-Krylov methods for solving linear and non-linear equations
         !       report T1596, January 1996, Deltares
@@ -320,18 +301,11 @@ module m_integration_scheme_18
                     NOTOT, NOQ1, NOQ2, NOQ, NDDIM, &
                     NVDIM, J(IDPNW:), J(IVPNW:), INTOPT, A(IMAS2:), &
                     ILFLAG, A(IDMPQ:), NDMPQ, J(IQDMP:))
-<<<<<<< HEAD
             CALL DLWQ66 (A(IDERV:), A(IVOL:), A(ICONC:), NOTOT, NOSEG)
             !
             !     Call OUTPUT system ( note that mass is in A(IDERV:) )
             !
             CALL write_output (NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
-=======
-            CALL DLWQ66(A(IDERV:), A(IVOL:), A(ICONC:), NOTOT, NOSEG)
-
-            ! Call OUTPUT system ( note that mass is in A(IDERV:) )
-            CALL DLWQO2(NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
->>>>>>> 5c10676307d483dee7cc4eedd2bebdeb1c49588e
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
