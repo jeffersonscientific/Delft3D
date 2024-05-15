@@ -687,7 +687,6 @@ subroutine unc_write_his(tim)            ! wrihis
            if (jahissourcesink > 0 .and. numsrc > 0) then
               do i = 1, numsrc
                  call check_netcdf_error( nf90_put_var(ihisfile, id_srcname, trimexact(srcname(i), strlen_netcdf), (/ 1, i/) ))
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_qsrccur, qstss((numconst+1)*(i-1)+1), (/ i, it_his /))) ! Intentionally here for the first output time
               end do
               call check_netcdf_error( nf90_put_var(ihisfile, id_srcx, xsrc))
               call check_netcdf_error( nf90_put_var(ihisfile, id_srcy, ysrc))
@@ -956,6 +955,15 @@ subroutine unc_write_his(tim)            ! wrihis
        end do
     end if
 
+    ! Source-sinks
+    if (jahissourcesink > 0 .and. numsrc > 0) then
+       do i = 1, numsrc
+          id_var = out_variable_set_his%statout(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE)%id_var
+          if(id_var > 0) then
+             call check_netcdf_error( nf90_put_var(ihisfile, id_var, qstss((numconst+1)*(i-1)+1), (/ i, it_his /))) ! Intentionally here for the first output time
+          end if
+       end do
+    end if
     if ( jacheckmonitor.eq.1 ) then
        call check_netcdf_error( nf90_put_var(ihisfile, id_checkmon, checkmonitor, start=(/ 1, it_his /)))
 
