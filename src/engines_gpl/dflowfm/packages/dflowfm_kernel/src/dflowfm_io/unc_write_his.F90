@@ -72,7 +72,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_longculverts
     use m_lateral, only : numlatsg, nNodesLat, lat_ids, geomXLat, geomYLat, nlatnd, nodeCountLat
     use odugrid
-    use m_statistical_output
+    use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
     use fm_statistical_output
     use m_output_config
     use MessageHandling, only: err
@@ -318,7 +318,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
 
         ! Runup gauges
-        ierr = unc_def_his_structure_static_vars(ihisfile, 'runup_gauge', 'runup gauge', 1, rug_allocated_size, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, 'runup_gauge', 'runup gauge', 1, num_rugs, 'none', 0, id_strlendim, &
                                                  id_rugdim, id_rugid) ! No geometry
 
         ! Source-sinks
