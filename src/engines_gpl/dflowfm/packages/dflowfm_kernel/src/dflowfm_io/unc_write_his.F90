@@ -1200,8 +1200,6 @@ contains
 
       ! jsferic: xy pair is in : 0=cart, 1=sferic coordinates
       ierr = unc_addcoordatts(ihisfile, id_statx, id_staty, jsferic)
-      
-      deallocate( dim_ids)
 
    end function unc_def_his_station_coord_vars_xy
 
@@ -1569,7 +1567,7 @@ function build_nc_dimension_id_list(nc_dim_ids) result(res)
               make_mask_from_dim_ids(nc_dim_ids))
    if (any(res==0)) then
       call mess(LEVEL_ERROR,'A dimension ID was used without being defined!')
-end if
+   end if
 end function build_nc_dimension_id_list
 
 !> Return array of NetCDF dimension start indices corresponding to NetCDF dimensions
