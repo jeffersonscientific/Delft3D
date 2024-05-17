@@ -230,7 +230,7 @@ private
    use m_monitoring_crosssections, only: ncrs
    use m_ug_nc_attribute
    use m_transport, only: NUMCONST_MDU, const_names, isedn, ised1, const_units
-   use m_sediment, only: stmpar, jased
+   use m_sediment, only: stmpar, jased, stm_included
    use messagehandling, only : Idlen
    use string_module, only: replace_char
    use netcdf_utils, only: ncu_set_att
@@ -276,7 +276,7 @@ private
       call replace_char(conststr,47,95) ! '/' -> '_'
 
       unitstr = ''
-      if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+      if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then    ! if the constituent is sediment
          select case(stmpar%morpar%moroutput%transptype)
          case (0)
             unitstr = 'kg s-1'
@@ -364,7 +364,7 @@ private
    subroutine aggregate_obscrs_data(data_pointer)
    use m_monitoring_crosssections
    use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
-   use m_sediment, only: sedtot2sedsus, stmpar, jased
+   use m_sediment, only: sedtot2sedsus, stmpar, jased, stm_included
    real(dp), pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs_data
 
    integer :: i, IP, num, l, lsed
@@ -390,7 +390,7 @@ private
    ! Fill all constituent transport through observation crosssection
    do num = 1,NUMCONST_MDU
       IP = IPNT_HUA + num
-      if (num >= ISED1 .and. num <= ISEDN) then
+      if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
          l = sedtot2sedsus(num-ISED1+1)
          select case(stmpar%morpar%moroutput%transptype)
          case (0)
