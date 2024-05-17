@@ -87,12 +87,6 @@
       "description": "Configure DIMR using Visual Studio 17 2022 generator"
     },
     {
-      "name": "drr",
-      "inherits": "windows",
-      "displayName": "D-RR IFORT win64 Release",
-      "description": "Configure D-RR using Visual Studio 17 2022 generator"
-    },
-    {
       "name": "dwaq",
       "inherits": "windows",
       "displayName": "D-WAQ/D-PART IFORT win64 Release",
