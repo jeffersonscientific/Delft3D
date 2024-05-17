@@ -28,12 +28,12 @@ module m_fioutv
 contains
 
 
-    SUBROUTINE FIOUTV (OUTVAL, IOPOIN, NRVAR, NOCONS, NOPA, &
-            NOFUN, NOSFUN, NOTOT, CONC, SEGFUN, &
-            FUNC, PARAM, CONS, IDT, ITIME, &
-            VOLUME, NOSEG, NOSYS, NODUMP, IDUMP, &
-            NX, NY, LGRID, IGRID, BOUND, &
-            NOLOC, PROLOC, NODEF, DEFAUL)
+    subroutine fioutv (outval, iopoin, nrvar, nocons, nopa, &
+            nofun, nosfun, notot, conc, segfun, &
+            func, param, cons, idt, itime, &
+            volume, noseg, nosys, nodump, idump, &
+            nx, ny, lgrid, igrid, bound, &
+            noloc, proloc, nodef, defaul)
 
         ! Fills output buffer OUTVAL.
         !
@@ -71,25 +71,25 @@ contains
 
         use timers
 
-        INTEGER(kind = int_wp) :: NRVAR, NOCONS, NOPA, NOFUN, NOSFUN, &
-                NOTOT, IDT, ITIME, NOSEG, NOSYS, &
-                NODUMP, NX, NY, IGRID, NOLOC, &
-                NODEF
-        INTEGER(kind = int_wp) :: IOPOIN(*), IDUMP(*), &
-                LGRID(*)
-        REAL(kind = real_wp) :: OUTVAL(*), CONC(NOTOT, *), &
-                SEGFUN(NOSEG, *), FUNC(*), &
-                PARAM(*), CONS(*), &
-                VOLUME(*), BOUND(*), &
-                PROLOC(*), DEFAUL(*)
+        integer(kind = int_wp) :: nrvar, nocons, nopa, nofun, nosfun, &
+                notot, idt, itime, noseg, nosys, &
+                nodump, nx, ny, igrid, noloc, &
+                nodef
+        integer(kind = int_wp) :: iopoin(*), idump(*), &
+                lgrid(*)
+        real(kind = real_wp) :: outval(*), conc(notot, *), &
+                segfun(noseg, *), func(*), &
+                param(*), cons(*), &
+                volume(*), bound(*), &
+                proloc(*), defaul(*)
         !
-        !     Local
+        !     local
         !
-        integer(kind = int_wp), PARAMETER :: IGSEG = 1, IGMON = 2, IGGRD = 3, IGSUB = 4
-        real(kind = real_wp), PARAMETER :: RMISS = -999.
-        integer(kind = int_wp), PARAMETER :: NOPRED = 6
-        INTEGER(kind = int_wp) :: IOPA, IOFUNC, IOSFUN, IOCONC, IOLOC, &
-                IODEF, IP, icel, iseg, iocons, nocel, i, iicel, iip
+        integer(kind = int_wp), parameter :: igseg = 1, igmon = 2, iggrd = 3, igsub = 4
+        real(kind = real_wp), parameter :: rmiss = -999.
+        integer(kind = int_wp), parameter :: nopred = 6
+        integer(kind = int_wp) :: iopa, iofunc, iosfun, ioconc, ioloc, &
+                iodef, ip, icel, iseg, iocons, nocel, i, iicel, iip
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("fioutv", ithandl)
         !
@@ -174,6 +174,6 @@ contains
 
         if (timon) call timstop (ithandl)
 
-    END SUBROUTINE FIOUTV
+    end subroutine fioutv
 
 end module m_fioutv
