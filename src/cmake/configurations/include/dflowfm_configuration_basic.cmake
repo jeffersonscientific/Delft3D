@@ -43,8 +43,8 @@ if(NOT TARGET flow1d)
 endif()
 
 # Waq
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_base.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_dflowfm_online_coupling.cmake)
+include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/dwaq/dwaq_base.cmake)
+include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
 
 
@@ -156,7 +156,7 @@ endif()
 # proj
 if(WIN32)
     if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+        include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/proj_configuration.cmake)
     endif()
 endif(WIN32)
 
@@ -217,11 +217,11 @@ if(NOT WITH_INTERACTER)
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${CMAKE_SOURCE_DIR}/src/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
-    
+
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${CMAKE_SOURCE_DIR}/src/${test_deltares_common_module} test_deltares_common)
     endif()
-    
+
     if(NOT TARGET test_ec_module)
         add_subdirectory(${CMAKE_SOURCE_DIR}/src/${test_ec_module} test_ec_module)
     endif()
