@@ -42,9 +42,7 @@ contains
         !! Writes map output to NetCDF
 
         use timers
-        use waq_netcdf_utils    !, only: set_dlwqnc_debug_status, read_dimensions, find_mesh_by_attributes, &
-        !copy_variable_attributes, copy_mesh, create_dimension, create_layer_dimension, create_time_variable, &
-        !create_variable, write_time
+        use waq_netcdf_utils
         use delwaq_version_module
         use results, only: ncopt
 
@@ -158,8 +156,8 @@ contains
             endif
 
             ! We don't assume variable names, but we try to find all meshes by their attributes using
-            ! find_mesh_by_attributes
-            inc_error = find_mesh_by_attributes(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
+            ! find_meshes_by_attributes
+            inc_error = find_meshes_by_attributes(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
             if (inc_error /= nf90_noerr) then
                 write (lunut, 2540)
                 goto 800

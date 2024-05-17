@@ -188,7 +188,7 @@ contains
 
             if (lncout) then
                 ! Find all grids
-                inc_error = find_mesh_by_attributes(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
+                inc_error = find_meshes_by_attributes(ncid, meshid2d, type_ugrid, meshid1d, networkid, network_geometryid)
                 if (inc_error /= nf90_noerr) then
                     write (file_unit, 2540)
                     lncout = .false.

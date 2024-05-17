@@ -68,7 +68,7 @@ module waq_netcdf_utils
             nf90_format_classic, nf90_global, nf90_put_att, nf90_def_dim, nf90_char, nf90_sync, nf90_enddef, &
             nf90_redef, nf90_get_var, nf90_def_var, nf90_double, nf90_put_var, nf90_float, nf90_enameinuse, &
             nf90_inq_dimid
-    public :: set_dlwqnc_debug_status, find_mesh_by_attributes, write_time, dlwqnc_write_wqvariable, &
+    public :: set_dlwqnc_debug_status, find_meshes_by_attributes, write_time, dlwqnc_write_wqvariable, &
             create_variable, create_time_variable, create_layer_dimension, create_dimension, &
             copy_mesh, copy_variable_attributes, read_dimensions
     public :: type_ugrid_face_crds, type_ugrid_node_crds, dlwqnc_type1d, dlwqnc_type2d, type_ugrid_mesh1d, &
@@ -106,7 +106,7 @@ contains
         enddo
     end function lowercase
 
-    integer function find_mesh_by_attributes(netcdf_id, var_id_2d, ugrid_type, var_id_1d, var_id_network, &
+    integer function find_meshes_by_attributes(netcdf_id, var_id_2d, ugrid_type, var_id_1d, var_id_network, &
             var_id_network_geometry)
         !! Find the grid(s) by their particular attribute(s)
         !!
@@ -136,7 +136,7 @@ contains
 
         allocate(character(len = 0) :: cf_role)
         allocate(character(len = 0) :: edge_geometry)
-        find_mesh_by_attributes = -1
+        find_meshes_by_attributes = -1
         var_id_2d = -1
         ugrid_type = -1
         var_id_1d = -1
@@ -249,12 +249,12 @@ contains
         enddo
 
         if (var_id_2d /= -1 .or. var_id_1d /= -1) then
-            find_mesh_by_attributes = nf90_noerr
+            find_meshes_by_attributes = nf90_noerr
         else
-            find_mesh_by_attributes = nf90_enotatt
+            find_meshes_by_attributes = nf90_enotatt
         endif
 
-    end function find_mesh_by_attributes
+    end function find_meshes_by_attributes
 
     integer function copy_variable_attributes(source_nc_id, destination_nc_id, source_var_id, destination_var_id)
         !! Copy the attributes for a variable (convenience function)
