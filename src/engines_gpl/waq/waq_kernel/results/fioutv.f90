@@ -58,7 +58,7 @@ contains
         !     NOSEG   INTEGER       1     INPUT   Nr. of computational elements
         !     NOSYS   INTEGER       1     INPUT   Number of active substances
         !     NODUMP  INTEGER       1     INPUT   number of dump locations
-        !     IDUMP  ? INTEGER    NODUMP   INPUT   dump segment numbers
+        !     IDUMP   INTEGER    NODUMP   INPUT   dump segment numbers
         !     NX      INTEGER       1     INPUT   Width of output grid
         !     NY      INTEGER       1     INPUT   Depth of output grid
         !     LGRID   INTEGER     NX*NY   INPUT   grid-layout
