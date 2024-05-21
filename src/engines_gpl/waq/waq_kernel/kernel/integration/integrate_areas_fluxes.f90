@@ -28,7 +28,7 @@ module m_integrate_areas_fluxes
 contains
 
 
-    subroutine integrate_areas_fluxes(noflux, ndmpar, idt, iturat, flxdmp, &
+    subroutine integrate_fluxes_for_dump_areas(noflux, ndmpar, idt, iturat, flxdmp, &
             flxint, isdmp, ipdmp, ntdmpq)
         !! Integrates the fluxes for dump area's
 
@@ -47,7 +47,7 @@ contains
         integer(kind = int_wp) :: itel2, idump, nsc, isc, iseg, ips, iflx, ip1
         real(kind = real_wp) :: fscale
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("integrate_areas_fluxes", ithandl)
+        if (timon) call timstrt ("integrate_fluxes_for_dump_areas", ithandl)
 
         ! Loop over the dump area's
         ip1 = ndmpar + ntdmpq
@@ -70,6 +70,6 @@ contains
 
         if (timon) call timstop (ithandl)
 
-    end subroutine integrate_areas_fluxes
+    end subroutine integrate_fluxes_for_dump_areas
 
 end module m_integrate_areas_fluxes

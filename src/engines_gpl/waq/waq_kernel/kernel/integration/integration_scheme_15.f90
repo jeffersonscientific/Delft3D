@@ -89,7 +89,7 @@ contains
         !      |            V      dlwqf7: copies solution in the conc. array updates mass balance arrays
         !      |                   dlwqb4: update mass arrays, set explicit step for all passive substances
         !      |                   dlwqce: computes closure error correction at rewind of volume file
-        !      |                   integrate_areas_fluxes: integration of fluxes for mass balances per monitoring area
+        !      |                   integrate_fluxes_for_dump_areas : integration of fluxes for mass balances per monitoring area
         !     VVV                  srwshl: call to the standaard-raamwerk-water interface if switched 'on'
         !      V                   initialize_time_dependent_variables: updates all time dependent items (in this case exclusive of volumes)
         !                          write_restart_map_file: system dump routine of restart files at the end
@@ -556,7 +556,7 @@ contains
 
             !     integrate the fluxes at dump segments fill asmass with mass
             if (ibflag > 0) then
-                call integrate_areas_fluxes (nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 

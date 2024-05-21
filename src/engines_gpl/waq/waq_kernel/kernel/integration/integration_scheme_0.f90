@@ -266,7 +266,7 @@ contains
 
             ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
-                call integrate_areas_fluxes (nflux, ndmpar, idtold, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idtold, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
             ! end of loop

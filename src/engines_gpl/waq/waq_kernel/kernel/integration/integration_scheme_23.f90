@@ -64,7 +64,7 @@ contains
         !                          DLWQ17, boundary routine
         !                          DLWQ18, integration step
         !                          DLWQ30, transport routine
-        !                          integrate_areas_fluxes, integration of fluxes
+        !                          integrate_fluxes_for_dump_areas , integration of fluxes
         !                          open_waq_files, opens files
         !                          ZERCUM, zero's the cummulative array's
         !
@@ -423,7 +423,7 @@ contains
 
             !     integrate the fluxes at dump segments fill asmass with mass
             if (ibflag > 0) then
-                call integrate_areas_fluxes (nflux, ndmpar, idtold, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idtold, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 

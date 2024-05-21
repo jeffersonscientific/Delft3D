@@ -78,7 +78,7 @@ contains
         !                          dlwql2, fills matrix
         !                          dlwql3, sets (scaled) rhs of system of equations
         !                          move,   copies one array to another
-        !                          integrate_areas_fluxes, integration of fluxes
+        !                          integrate_fluxes_for_dump_areas , integration of fluxes
         !                          open_waq_files, opens files
         !                          sgmres, solves (iteratively) system of equations
         !                          zercum, zero's the cummulative array's
@@ -565,7 +565,7 @@ contains
 
             !     integrate the fluxes at dump segments fill asmass with mass
             if (ibflag > 0) then
-                call integrate_areas_fluxes (nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
