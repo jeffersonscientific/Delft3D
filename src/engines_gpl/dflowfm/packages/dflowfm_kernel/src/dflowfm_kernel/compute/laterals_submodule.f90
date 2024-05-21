@@ -39,8 +39,8 @@ implicit none
 
    !> Reset the counters for lateral data.
    module subroutine reset_lateral()
-      numlatsg = 0           !< [] nr of lateral discharge providers
-      nlatnd   = 0           !< lateral nodes dimension, counter of nnlat(:)
+      numlatsg = 0  !< [] nr of lateral discharge providers
+      nlatnd   = 0  !< lateral nodes dimension, counter of nnlat(:)
    end subroutine reset_lateral
 
    !> allocate the arrays for laterals on 3d/BMI
@@ -48,10 +48,11 @@ implicit none
       use m_flow, only: kmx
       use m_alloc
    
-      integer, intent(in)    :: numconst        !< number of constitiuents
-      integer, intent(inout) :: ierr            !< error flag
-      integer :: i
-      integer :: num_layers !< Number of layers
+      integer, intent(in)    :: numconst  !< number of constitiuents
+      integer, intent(inout) :: ierr      !< error flag
+      
+      integer :: i           ! loop counter
+      integer :: num_layers  ! Number of layers
 
       apply_transport_is_used = .false.
       if (allocated(apply_transport)) then
@@ -86,11 +87,11 @@ implicit none
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine average_concentrations_for_laterals(numconst, kmx, bottom_area, constituents, dt)
 
-      integer,                       intent(in) :: numconst       !< Number or constituents.
-      integer,                       intent(in) :: kmx            !< Number of layers (0 means 2d computation).
-      real(kind=dp), dimension(:),   intent(in) :: bottom_area    !< Cell area.
-      real(kind=dp), dimension(:,:), intent(in) :: constituents   !< concentrations.
-      real(kind=dp),                 intent(in) :: dt             !< timestep in seconds
+      integer,                       intent(in) :: numconst      !< Number or constituents.
+      integer,                       intent(in) :: kmx           !< Number of layers (0 means 2d computation).
+      real(kind=dp), dimension(:),   intent(in) :: bottom_area   !< Cell area.
+      real(kind=dp), dimension(:,:), intent(in) :: constituents  !< concentrations.
+      real(kind=dp),                 intent(in) :: dt            !< timestep in seconds
 
       integer :: ilat
       integer :: n, iconst, k, k1, kt, kb
@@ -124,10 +125,10 @@ implicit none
       use m_flowtimes, only: dts
       use m_partitioninfo, only: is_ghost_node
 
-      real(kind=dp), dimension(:,:), intent(inout)     :: lateral_discharge_in  !< Lateral discharge flowing into the model (source)
-      real(kind=dp), dimension(:,:), intent(inout)     :: lateral_discharge_out !< Lateral discharge extracted out of the model (sink)
+      real(kind=dp), dimension(:,:), intent(inout) :: lateral_discharge_in   !< Lateral discharge flowing into the model (source)
+      real(kind=dp), dimension(:,:), intent(inout) :: lateral_discharge_out  !< Lateral discharge extracted out of the model (sink)
    
-      integer          :: k1, i_cell, i_lateral
+      integer :: k1, i_cell, i_lateral
       real(kind=dp) :: qlat
 
       if (numlatsg > 0) then
@@ -158,15 +159,15 @@ implicit none
    ! Add lateral input contribution to the load being transported
    module subroutine add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,dtol)
       use m_transportdata, only: numconst
-      real(kind=dp), dimension(:,:), intent(inout)     :: transport_load        !< Load being transported into domain
-      real(kind=dp), dimension(:,:), intent(inout)     :: transport_sink        !< Load being transported out
-      real(kind=dp), dimension(:,:), intent(in   )     :: discharge_in          !< Lateral discharge going into domain (source)
-      real(kind=dp), dimension(:,:), intent(in   )     :: discharge_out         !< Lateral discharge going out (sink)
-      real(kind=dp), dimension(:),   intent(in)        :: vol1                  !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
-      real(kind=dp), intent(in)                        :: dtol                  !< cut off value for vol1, to prevent division by zero
+      real(kind=dp), dimension(:,:), intent(inout) :: transport_load  !< Load being transported into domain
+      real(kind=dp), dimension(:,:), intent(inout) :: transport_sink  !< Load being transported out
+      real(kind=dp), dimension(:,:), intent(in   ) :: discharge_in    !< Lateral discharge going into domain (source)
+      real(kind=dp), dimension(:,:), intent(in   ) :: discharge_out   !< Lateral discharge going out (sink)
+      real(kind=dp), dimension(:),   intent(in)    :: vol1            !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), intent(in)                    :: dtol            !< cut off value for vol1, to prevent division by zero
 
       real(kind=dp) :: dvoli
-      integer i_const, i_lateral, i_cell, k1
+      integer :: i_const, i_lateral, i_cell, k1
       
       do i_const = 1,numconst   
          do i_lateral = 1,numlatsg
@@ -182,12 +183,14 @@ implicit none
       end do   
    end subroutine add_lateral_load_and_sink
       
-   !> Compute water volume per layer in each lateral
+   !> Compute water volume per layer in each lateral.
+   !! The water volume in a lateral means the sum of water volumes in all
+   !! grid cells belonging to the lateral (per layer).
    module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
    
       use m_flow, only: vol1, kmx, kmxn
       
-      real(kind=dp), dimension(:,:), intent(out)   :: lateral_volume_per_layer                !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
+      real(kind=dp), dimension(:,:), intent(out) :: lateral_volume_per_layer  !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
       
       integer :: i_node, i_lateral, i_layer, i_nnlat, i_vol1, index_vol1_bottom_layer, index_vol1_top_layer, index_active_bottom_layer
       
