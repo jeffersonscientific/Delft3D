@@ -113,8 +113,21 @@
   ],
   "buildPresets": [
     {
-      "name": "default",
-      "configurePreset": "default"
+      "name": "build-base",
+      "hidden": true,
+      "configurePreset": "debug"
+    },
+    {
+      "name": "debug",
+      "displayName": "Build Debug",
+      "inherits": "build-base",
+      "configurePreset": "dwaq"
+    },
+    {
+      "name": "release",
+      "displayName": "Build Release",
+      "inherits": "build-base",
+      "configurePreset": "dwaq"
     }
   ],
   "workflowPresets": [
@@ -123,11 +136,11 @@
       "steps": [
         {
           "type": "configure",
-          "name": "default"
+          "name": "dwaq"
         },
         {
           "type": "build",
-          "name": "default"
+          "name": "release"
         }
       ]
     }
