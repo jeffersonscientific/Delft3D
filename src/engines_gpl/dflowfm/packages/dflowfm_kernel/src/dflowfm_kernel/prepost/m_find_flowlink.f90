@@ -33,13 +33,58 @@ module m_find_flowlink
    
    private
    
-   public :: find_1D_or_boundary_flowlink_bruteforce
+   public :: find_nearest_1D_or_boundary_flowlink_bruteforce, find_nearest_flowlinks
    
    contains
    
    !> Find the flowlinks with the shortest perpendicular distances to the points [xx,yy]
+   subroutine find_nearest_flowlinks(xx, yy, link_ids_closest)
+      use stdlib_kinds, only: dp
+      use MessageHandling, only: mess, LEVEL_WARN, LEVEL_ERROR
+      use m_GlobalParameters, only: INDTP_ALL
+      use m_partitioninfo, only: jampi
+      use mpi
+      
+      real(dp), dimension(:), intent(in   ) :: xx, yy           !< x,y-coordinates
+      integer,  dimension(:), intent(  out) :: link_ids_closest !< ids of the flowlinks with the shortest perpendicular distance to the points [xx,yy]
+      
+      integer                       :: ii,k,jaoutside
+      character(len=255)            :: str
+      real(dp), dimension(size(xx)) :: distances
+      integer                       :: ierror
+      
+      if (size(xx) /= size(yy) .or. size(xx) /= size(link_ids_closest)) then
+         call mess(LEVEL_ERROR,'find_flowlinks: unmatched input array size')
+      end if
+      
+      ! Return warnings for points that lie outside the grid
+      do ii = 1, size(xx)
+         k = 0
+         jaoutside = -1
+         call inflowcell(xx(ii), yy(ii), k, jaoutside, INDTP_ALL)
+         if (jampi == 1) then
+            call mpi_allreduce( mpi_in_place, k, 1, mpi_integer, mpi_max, mpi_comm_world, ierror)
+         end if
+         if (k == 0) then
+            write(str,'(A,I6,A,F14.4,A,F14.4,A)') 'find_flowlinks: point ', ii, '([x,y] = [', xx(ii), ',', yy(ii), & 
+                                                  ']) lies outside of the model grid; closest flowlink might be inaccurate'
+            call mess(LEVEL_WARN,trim(str))
+         end if
+      end do
+      
+      ! First try it using a k-d tree. If that fails, use a brute-force search instead
+      call find_nearest_flowlinks_kdtree(xx, yy, link_ids_closest, distances, ierror)
+      if (ierror /= 0) then
+         call find_nearest_flowlinks_bruteforce(xx, yy, link_ids_closest, distances)
+      end if
+      
+      call reduce_nearest_flowlinks(distances, link_ids_closest)
+      
+   end subroutine find_nearest_flowlinks
+   
+   !> Find the flowlinks with the shortest perpendicular distances to the points [xx,yy]
    !! Uses the k-d tree routines
-   subroutine find_flowlinks_kdtree(xx, yy, link_ids_closest)
+   subroutine find_nearest_flowlinks_kdtree(xx, yy, link_ids_closest, distances, ierror)
       use stdlib_kinds, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_flowgeom, only: lnx, ln, xz, yz
@@ -50,7 +95,9 @@ module m_find_flowlink
       use m_missing, only: dmiss
       
       real(dp), dimension(:), intent(in   ) :: xx, yy           !< x,y-coordinates
-      integer,  dimension(:), intent(  out) :: link_ids_closest !< ids of the flowlinks whose midpoints lie closest to the points [xx,yy]
+      integer,  dimension(:), intent(  out) :: link_ids_closest !< ids of the flowlinks with the shortest perpendicular distance to the points [xx,yy]
+      real(dp), dimension(:), intent(  out) :: distances        !< Perpendicular distances between those flowlinks to the points
+      integer,                intent(  out) :: ierror           !< Error code (0 if no error)
       
       real(dp), dimension(lnx)             :: flowlink_midpoints_x
       real(dp), dimension(lnx)             :: flowlink_midpoints_y
@@ -60,15 +107,12 @@ module m_find_flowlink
       type(kdtree_instance)                :: treeinst
       integer, parameter                   :: n_nearest_kdtree = 100
       integer, dimension(n_nearest_kdtree) :: link_ids_closest_midpoint
-      integer                              :: ierror
       integer                              :: i_sample
-      real(dp)                             :: dist_perp, dist_perp_min
-      
-      if (size(xx) /= size(yy) .or. size(xx) /= size(link_ids_closest)) then
-         call mess(LEVEL_ERROR,'find_flowlinks: unmatched input array size')
-      end if
+      real(dp)                             :: dist_perp
       
       link_ids_closest = 0
+      distances = huge(distances)
+      ierror = 0
       
       ! Calculate the x,y-coordinates of the midpoints of all the flowlinks
       do link_id = 1, lnx
@@ -83,30 +127,32 @@ module m_find_flowlink
          
          ! The k-d tree uses the distance to the midpoints of the flowlinks
          ! which is not actually what we want (namely the perpendicular distance).
-         ! To solve this, we query the nearest n points (default 10) and then
+         ! To solve this, we query the nearest n points (default 100) and then
          ! do a brute-force search on this (very) small subset
          call find_nearest_sample_kdtree(treeinst, lnx, 2, flowlink_midpoints_x, flowlink_midpoints_y, zs_dummy, &
                                          xx(i_point), yy(i_point), n_nearest_kdtree, link_ids_closest_midpoint, &
                                          ierror, jsferic, dmiss)
+         if (ierror /= 0) then  ! Failed to build a k-d tree
+            exit
+         end if
          
          ! Now loop over the n nearest points to find the one with the shortest perpendicular distance
-         dist_perp_min   = huge(dist_perp_min)
          do i_sample = 1, n_nearest_kdtree
             link_id = link_ids_closest_midpoint(i_sample)
             call perpendicular_distance_to_flowlink(xx(i_point), yy(i_point), link_id, dist_perp)
-            if (dist_perp < dist_perp_min) then
+            if (dist_perp < distances(i_point)) then
                link_ids_closest(i_point) = link_id
-               dist_perp_min = dist_perp
+               distances(i_point) = dist_perp
             end if
          end do
          
       end do
       
-   end subroutine find_flowlinks_kdtree
+   end subroutine find_nearest_flowlinks_kdtree
    
    !> Find the flowlinks with the shortest perpendicular distances to the points [xx,yy]
    !! Brute-force approach: simply check all flowlinks in the entire grid
-   subroutine find_flowlinks_bruteforce(xx, yy, link_ids_closest)
+   subroutine find_nearest_flowlinks_bruteforce(xx, yy, link_ids_closest, distances)
       use stdlib_kinds, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_flowgeom, only: lnx, ln, xz, yz
@@ -115,35 +161,32 @@ module m_find_flowlink
       use m_missing, only: dmiss
       
       real(dp), dimension(:), intent(in   ) :: xx, yy           !< x,y-coordinates
-      integer,  dimension(:), intent(  out) :: link_ids_closest !< ids of the flowlinks whose midpoints lie closest to the points [xx,yy]
+      integer,  dimension(:), intent(  out) :: link_ids_closest !< ids of the flowlinks with the shortest perpendicular distance to the points [xx,yy]
+      real(dp), dimension(:), intent(  out) :: distances        !< Perpendicular distances between those flowlinks to the points
       
       integer  :: number_of_points, i_point
       integer  :: link_id
       real(dp) :: dist_perp, dist_perp_min
       
-      if (size(xx) /= size(yy) .or. size(xx) /= size(link_ids_closest)) then
-         call mess(LEVEL_ERROR,'find_flowlinks: unmatched input array size')
-      end if
-      
       link_ids_closest = 0
+      distances = huge(distances)
       
       number_of_points = size(xx)
       do i_point = 1, number_of_points
-         dist_perp_min   = huge(dist_perp_min)
          do link_id = 1, lnx
             call perpendicular_distance_to_flowlink(xx(i_point), yy(i_point), link_id, dist_perp)
-            if (dist_perp < dist_perp_min) then
+            if (dist_perp < distances(i_point)) then
                link_ids_closest(i_point) = link_id
-               dist_perp_min = dist_perp
+               distances(i_point) = dist_perp
             end if
          end do
       end do
       
-   end subroutine find_flowlinks_bruteforce
+   end subroutine find_nearest_flowlinks_bruteforce
    
    !> Find the 1-D or boundary flowlink with the shortest perpendicular distance to the point [x,y]
    !! Brute-force approach: simply check all flowlinks in the entire grid
-   subroutine find_1D_or_boundary_flowlink_bruteforce(x, y, link_id_closest)
+   subroutine find_nearest_1D_or_boundary_flowlink_bruteforce(x, y, link_id_closest)
       use stdlib_kinds, only: dp
       use m_flowgeom, only: lnx, lnx1D, lnxi, ln, xz, yz, ndx
       use m_sferic, only: jsferic, jasfer3D
@@ -151,7 +194,7 @@ module m_find_flowlink
       use m_missing, only: dmiss
       
       real(dp), intent(in   ) :: x, y            !< x,y-coordinates
-      integer,  intent(  out) :: link_id_closest !< id of the flowlink whose midpoint lies closest to the point [x,y]
+      integer,  intent(  out) :: link_id_closest !< id of the flowlink with the shortest perpendicular distance to the point [x,y]
       
       integer  :: link_id
       real(dp) :: dist_perp, dist_perp_min
@@ -172,7 +215,7 @@ module m_find_flowlink
          end if
       end do
       
-   end subroutine find_1D_or_boundary_flowlink_bruteforce
+   end subroutine find_nearest_1D_or_boundary_flowlink_bruteforce
    
    !> Calculate the perpendicular distance from the point [x,y] to a flowlink
    subroutine perpendicular_distance_to_flowlink(x, y, link_id, perpendicular_distance, ja)
@@ -206,5 +249,46 @@ module m_find_flowlink
       end if
             
    end subroutine perpendicular_distance_to_flowlink
+   
+   !> Reduce the indices of the nearest flowlinks across the processes,
+   !! so that the index is only non-zero for the process that actually owns the nearest flowlink
+   subroutine reduce_nearest_flowlinks(distances, link_ids_closest)
+      use stdlib_kinds, only: dp
+      use MessageHandling, only: mess, LEVEL_ERROR
+      use mpi
+      use m_partitioninfo, only: jampi, my_rank
+      
+      real(dp), dimension(:), intent(in   ) :: distances        !< Distances to nearest flowlink reported by each process
+      integer,  dimension(:), intent(inout) :: link_ids_closest !< id of the flowlink whose midpoint lies closest to the point [x,y]
+      
+      integer                :: number_of_links, i
+      real(dp), dimension(2) :: distance_and_rank_pair
+      integer                :: ierr, rank_with_shortest_distance
+      
+      if (jampi == 0) then
+         return
+      end if
+      
+      if (size(distances) /= size(link_ids_closest)) then
+         call mess(LEVEL_ERROR,'reduce_nearest_flowlinks: unmatched input array size')
+      end if
+      
+      number_of_links = size(distances)
+      
+      do i = 1, number_of_links
+         
+         ! Use mpi_allreduce with mpi_minloc to determine which process reported the shortest distance
+         distance_and_rank_pair = [distances(i), real(my_rank,dp)]  ! Because mpi_minloc needs a pair of values of the same type
+         call mpi_allreduce(mpi_in_place, distance_and_rank_pair, 1, mpi_2double_precision, mpi_minloc, mpi_comm_world, ierr)
+         rank_with_shortest_distance = nint(distance_and_rank_pair(2))
+         
+         ! Let the process with the shortest distance keep their flowlink id; all others set it to zero
+         if (my_rank /= rank_with_shortest_distance) then
+            link_ids_closest(i) = 0
+         end if
+         
+      end do
+      
+   end subroutine reduce_nearest_flowlinks
    
 end module m_find_flowlink

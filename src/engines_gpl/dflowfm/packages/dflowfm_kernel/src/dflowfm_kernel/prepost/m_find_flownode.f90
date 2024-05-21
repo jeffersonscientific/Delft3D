@@ -255,7 +255,7 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
       do i = 1, n
          call inflowcell(xobs(i), yobs(i), k, jaoutside, iLocTp)
          if (jaoutside == 1 .and. (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL)) then
-            call find_1D_or_boundary_flownode_bruteforce(xobs(i), yobs(i), k1b)
+            call find_nearest_1D_or_boundary_flownode_bruteforce(xobs(i), yobs(i), k1b)
             if (k /= 0 .and. k1b /= 0) then
                 d1 = dbdistance(xz(k1b), yz(k1b), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
                 d2 = dbdistance(xz(k  ), yz(k  ), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
@@ -451,9 +451,9 @@ end subroutine find_flowcells_kdtree
 
 !> Find the 1-D or boundary flownode with the shortest distance to the point [x,y]
 !! Brute-force approach: simply check all flowlinks in the entire grid
-subroutine find_1D_or_boundary_flownode_bruteforce(x, y, node_id_closest)
+subroutine find_nearest_1D_or_boundary_flownode_bruteforce(x, y, node_id_closest)
    use stdlib_kinds, only: dp
-   use m_find_flowlink, only: find_1D_or_boundary_flowlink_bruteforce
+   use m_find_flowlink, only: find_nearest_1D_or_boundary_flowlink_bruteforce
    use m_flowgeom, only: ln, xz, yz
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
@@ -468,7 +468,7 @@ subroutine find_1D_or_boundary_flownode_bruteforce(x, y, node_id_closest)
    
    node_id_closest = 0
    
-   call find_1D_or_boundary_flowlink_bruteforce(x, y, link_id_closest)
+   call find_nearest_1D_or_boundary_flowlink_bruteforce(x, y, link_id_closest)
    
    if (link_id_closest /= 0) then
       ka = ln(1,link_id_closest)
@@ -481,6 +481,6 @@ subroutine find_1D_or_boundary_flownode_bruteforce(x, y, node_id_closest)
       end if
    end if
 
-end subroutine find_1D_or_boundary_flownode_bruteforce
+end subroutine find_nearest_1D_or_boundary_flownode_bruteforce
 
 end module m_find_flownode
