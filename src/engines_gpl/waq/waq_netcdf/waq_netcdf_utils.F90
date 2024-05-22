@@ -29,7 +29,7 @@ module waq_netcdf_utils
             nf90_eindefine, nf90_enddef, nf90_get_var, nf90_put_var, nf90_inq_varid, nf90_inq_attname, nf90_get_att, &
             nf90_copy_att, nf90_del_att, nf90_inq_dimid, nf90_float, nf90_def_dim, nf90_put_att, nf90_def_dim, &
             nf90_elatefill, nf90_inquire_variable, nf90_int, nf90_enotindefine, nf90_unlimited, &
-            ! imported from waq_netcdf_utils
+            ! imported from waq_netcdf_utils, but not used in this module (should be abstractec in a derived data tybe)
             nf90_inq_libvers, nf90_nowrite, nf90_open, nf90_strerror, nf90_create, nf90_netcdf4, nf90_clobber, &
             nf90_format_classic, nf90_global, nf90_char, nf90_max_var_dims, nf90_sync, nf90_double
 
