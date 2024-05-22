@@ -872,8 +872,8 @@ contains
         integer :: ierr
         integer :: i
 
-        real, dimension(:), allocatable :: int_data_1d
-        real, dimension(:, :), allocatable :: int_data_2d
+        real, dimension(:), allocatable :: real_data_1d
+        real, dimension(:, :), allocatable :: real_data_2d
 
         copy_real_variable = -1
 
@@ -882,11 +882,11 @@ contains
             do i = 1, num_dimensions
                 total_size = total_size * dimension_sizes(dimension_ids(i))
             enddo
-            allocate(int_data_1d(total_size))
-            ierror = nf90_get_var(source_nc_id, source_variable_id, int_data_1d)
+            allocate(real_data_1d(total_size))
+            ierror = nf90_get_var(source_nc_id, source_variable_id, real_data_1d)
         else
-            allocate(int_data_2d(dimension_sizes(dimension_ids(1)), dimension_sizes(dimension_ids(2))))
-            ierror = nf90_get_var(source_nc_id, source_variable_id, int_data_2d)
+            allocate(real_data_2d(dimension_sizes(dimension_ids(1)), dimension_sizes(dimension_ids(2))))
+            ierror = nf90_get_var(source_nc_id, source_variable_id, real_data_2d)
         endif
 
         if (ierror /= nf90_noerr) then
@@ -896,9 +896,9 @@ contains
         endif
 
         if (num_dimensions /= 2) then
-            ierror = nf90_put_var(destination_nc_id, destination_variable_id, int_data_1d)
+            ierror = nf90_put_var(destination_nc_id, destination_variable_id, real_data_1d)
         else
-            ierror = nf90_put_var(destination_nc_id, destination_variable_id, int_data_2d)
+            ierror = nf90_put_var(destination_nc_id, destination_variable_id, real_data_2d)
         endif
 
         if (ierror /= nf90_noerr) then
@@ -920,8 +920,8 @@ contains
         integer :: ierr
         integer :: i
 
-        real(kind = kind(1.0d0)), dimension(:), allocatable :: int_data_1d
-        real(kind = kind(1.0d0)), dimension(:, :), allocatable :: int_data_2d
+        real(kind = kind(1.0d0)), dimension(:), allocatable :: real_data_1d
+        real(kind = kind(1.0d0)), dimension(:, :), allocatable :: real_data_2d
 
         copy_double_variable = -1
 
@@ -930,11 +930,11 @@ contains
             do i = 1, num_dimensions
                 total_size = total_size * dimension_sizes(dimension_ids(i))
             enddo
-            allocate(int_data_1d(total_size))
-            ierror = nf90_get_var(source_nc_id, source_variable_id, int_data_1d)
+            allocate(real_data_1d(total_size))
+            ierror = nf90_get_var(source_nc_id, source_variable_id, real_data_1d)
         else
-            allocate(int_data_2d(dimension_sizes(dimension_ids(1)), dimension_sizes(dimension_ids(2))))
-            ierror = nf90_get_var(source_nc_id, source_variable_id, int_data_2d)
+            allocate(real_data_2d(dimension_sizes(dimension_ids(1)), dimension_sizes(dimension_ids(2))))
+            ierror = nf90_get_var(source_nc_id, source_variable_id, real_data_2d)
         endif
 
         if (ierror /= nf90_noerr) then
@@ -944,9 +944,9 @@ contains
         endif
 
         if (num_dimensions /= 2) then
-            ierror = nf90_put_var(destination_nc_id, destination_variable_id, int_data_1d)
+            ierror = nf90_put_var(destination_nc_id, destination_variable_id, real_data_1d)
         else
-            ierror = nf90_put_var(destination_nc_id, destination_variable_id, int_data_2d)
+            ierror = nf90_put_var(destination_nc_id, destination_variable_id, real_data_2d)
         endif
 
         if (ierror /= nf90_noerr) then
