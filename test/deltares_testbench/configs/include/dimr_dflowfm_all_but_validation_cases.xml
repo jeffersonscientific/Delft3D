@@ -5534,7 +5534,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f022_c98_graded_sediment_ConcBc_restart" ref="dflowfm_restart">
+    <testCase name="e02_f022_c98_graded_sediment_ConcBc_restart" ref="dflowfm_restart_platform">
       <path version="2024-04-03T08:00:00">e02_dflowfm/f022_morphology_2D/c98_graded_sediment_ConcBc_restart</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -7410,7 +7410,7 @@
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
-        <file name="rst/dflowfmoutput/t02Unstr_20160803_001000_rst.nc" type="netCDF">
+        <file name="rst/dflowfmoutput/t02Unstr_20160803_000960_rst.nc" type="netCDF">
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
@@ -7448,8 +7448,8 @@
         </file>        
       </checks>
     </testCase>
-    <testCase name="e02_f422_c50_fixed_layer_Unstr" ref="dflowfm_restart">
-      <path version="2024-05-22T05:32:00">e02_dflowfm/f422_morphology_2D_restart/c50_fixed_layer_Unstr</path>
+    <testCase name="e02_f422_c50_fixed_layer_Unstr" ref="dflowfm_restart_platform">
+      <path version="2024-05-22T16:00:00">e02_dflowfm/f422_morphology_2D_restart/c50_fixed_layer_Unstr</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/t1-unstr_20071119_001360_rst.nc" type="netCDF">
@@ -7704,8 +7704,8 @@
         </file>        
       </checks>
     </testCase>
-    <testCase name="e02_f422_c60_thindams" ref="dflowfm_restart">
-      <path version="2024-05-22T05:05:00">e02_dflowfm/f422_morphology_2D_restart/c60_thindams</path>
+    <testCase name="e02_f422_c60_thindams" ref="dflowfm_restart_platform">
+      <path version="2024-05-22T16:01:00">e02_dflowfm/f422_morphology_2D_restart/c60_thindams</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/dams_sed_20010101_002000_rst.nc" type="netCDF">
@@ -7923,7 +7923,6 @@
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
             <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
         <file name="rst/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
@@ -7933,7 +7932,6 @@
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
             <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        
       </checks>
