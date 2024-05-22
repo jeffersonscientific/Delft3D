@@ -636,7 +636,7 @@ contains
             elseif (isrtou == imnc) then
 
                 mncrec = mncrec + 1
-                call write_map_output_to_netcdf(file_unit_list(49), file_name_list(49), file_name_list(46), timeid, bndtimeid, mncrec, &
+                call write_netcdf_map_output(file_unit_list(49), file_name_list(49), file_name_list(46), timeid, bndtimeid, mncrec, &
                         itime, moname, noseg, notot, conc, syname, sysnm, syuni, sydsc, mncwqid1, nrvar, &
                         riobuf, ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), mncwqid2, volume, iknmrk, file_unit_list(19))
 
@@ -654,7 +654,7 @@ contains
             elseif (isrtou == imnc2) then
 
                 mncrec = mncrec + 1
-                call write_map_output_to_netcdf (file_unit_list(49), file_name_list(49), file_name_list(46), timeid, bndtimeid, mncrec, &
+                call write_netcdf_map_output(file_unit_list(49), file_name_list(49), file_name_list(46), timeid, bndtimeid, mncrec, &
                         itime, moname, noseg, 0, &
                         conc, syname, sysnm, syuni, sydsc, mncwqid1, nrvar, &
                         riobuf, ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), mncwqid2, &

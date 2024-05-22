@@ -151,7 +151,7 @@ program maptonetcdf
 
         mncrec = mncrec + 1
 
-        call write_map_output_to_netcdf ( ncidmap, mncfile, ugridfile, timeid, bndtimeid, mncrec, time, title,  &
+        call write_netcdf_map_output( ncidmap, mncfile, ugridfile, timeid, bndtimeid, mncrec, time, title,  &
                       noseg, 0, conc, syname, systd, syunit, sydesc, wqid1, nosys, &
                       conc, syname, systd, syunit, sydesc, wqid2, volume, iknmrk, lunut)
 

@@ -32,11 +32,11 @@ module m_write_netcdf_output
     ! There are a lot of variables passed from the netcdf module to this module then from this module out.
     ! these variables also needs to be declared as public here
     !    private
-    !    public :: write_map_output_to_netcdf, write_netcdf_history_output
+    !    public :: write_netcdf_map_output, write_netcdf_history_output
 
 contains
 
-    subroutine write_map_output_to_netcdf(ncidmap, mncnam, ugridf, timeid, bndtimeid, mncrec, itime, moname, &
+    subroutine write_netcdf_map_output(ncidmap, mncnam, ugridf, timeid, bndtimeid, mncrec, itime, moname, &
             noseg, notot1, conc1, synam1, sysnm1, syuni1, sydsc1, wqid1, notot2, &
             conc2, synam2, sysnm2, syuni2, sydsc2, wqid2, volume, iknmrk, lunut)
         !! Writes map output to NetCDF
@@ -117,7 +117,7 @@ contains
         save sumconc1, sumconc2
 
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("write_map_output_to_netcdf", ithandl)
+        if (timon) call timstrt ("write_netcdf_map_output", ithandl)
 
         !     Initialize file
         if (ncidmap < 0) then
@@ -792,7 +792,7 @@ contains
         2600 format (/ ' NetCDF error number: ', I6)
         2610 format (/ ' NetCDF error message: ', A)
 
-    end subroutine write_map_output_to_netcdf
+    end subroutine write_netcdf_map_output
 
 
     subroutine write_netcdf_history_output(ncidhis, hncnam, ugridf, timeid, bndtimeid, &
