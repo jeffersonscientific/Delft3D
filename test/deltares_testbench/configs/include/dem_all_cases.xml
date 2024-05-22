@@ -1,0 +1,38 @@
+<testCases>
+    <testCase name="e03_f19_c01_combined_run_EM_WQ" ref="dem_default">
+        <path version="2024-05-23T09:00:00">e03_waq/f19_d_emissions/c01_combined_run_EM_WQ</path>
+        <maxRunTime>3000.0</maxRunTime>
+        <checks>
+            <file name="EMtemplate.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="EMtemplate.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="WQtemplate.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="EMtemplate.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>
