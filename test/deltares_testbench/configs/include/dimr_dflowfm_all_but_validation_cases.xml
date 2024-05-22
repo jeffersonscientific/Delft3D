@@ -6094,7 +6094,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c46_shoal_ds_IBedCond0_us_IBedCond1_cn_suspended" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c46_shoal_ds_IBedCond0_us_IBedCond1_cn_suspended</path>
+      <path version="2024-05-22T16:16:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c46_shoal_ds_IBedCond0_us_IBedCond1_cn_suspended</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c36_map.nc" type="netCDF">
