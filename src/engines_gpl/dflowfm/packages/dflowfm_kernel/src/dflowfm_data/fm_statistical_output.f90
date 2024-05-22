@@ -21,10 +21,10 @@ private
    public default_fm_statistical_output, flow_init_statistical_output_his, model_is_3D, &
           model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations, close_fm_statistical_output
 
-   type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
+   type(t_station_nc_dimensions), parameter :: station_nc_dims_2D = t_station_nc_dimensions(statdim = .true., timedim = .true.)
+   type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_center = t_station_nc_dimensions(laydim = .true., statdim = .true., timedim = .true.)
+   type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_interface_center = t_station_nc_dimensions(laydim_interface_center = .true., statdim = .true., timedim = .true.)
+   type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_interface_edge = t_station_nc_dimensions(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
 
    real(dp), dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
    real(dp), dimension(:),   allocatable, target :: time_dredged, time_ploughed
@@ -475,7 +475,7 @@ private
 
          ! add output config item
          call add_output_config(output_config_set, idx_tracers_stations(tracer_index), 'Wrihis_constituents', constituent_string, &
-                        const_names(constituent_index), '', unit_string, UNC_LOC_STATION, nc_dim_ids = nc_dims_3D_center)
+                        const_names(constituent_index), '', unit_string, UNC_LOC_STATION, nc_dim_ids = station_nc_dims_3D_center)
 
          output_config_set%configs(idx_tracers_stations(tracer_index))%input_value = &
             output_config_set%configs(IDX_HIS_TRACERS_ABSTRACT)%input_value
@@ -542,7 +542,7 @@ private
 
          ! add output config item
          call add_output_config(output_config_set, idx_wqbot_stations(i), 'Wrihis_wqbot', waqb_sub_name, &
-                        trim(wqbotnames(i)), '', unit_string, UNC_LOC_STATION, nc_dim_ids = nc_dims_2D, nc_attributes = atts)
+                        trim(wqbotnames(i)), '', unit_string, UNC_LOC_STATION, nc_dim_ids = station_nc_dims_2D, nc_attributes = atts)
 
          output_config_set%configs(idx_wqbot_stations(i))%input_value = &
             output_config_set%configs(IDX_HIS_WQBOT_ABSTRACT)%input_value
@@ -585,7 +585,7 @@ private
 
          ! add output config item
          call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'Wrihis_wqbot3d', waqb_sub_name, &
-                        trim(wqbotnames(i))//' (3D)', '', unit_string, UNC_LOC_STATION, nc_dim_ids = nc_dims_3D_center, nc_attributes = atts)
+                        trim(wqbotnames(i))//' (3D)', '', unit_string, UNC_LOC_STATION, nc_dim_ids = station_nc_dims_3D_center, nc_attributes = atts)
 
          output_config_set%configs(idx_wqbot3D_stations(i))%input_value = &
             output_config_set%configs(IDX_HIS_WQBOT_ABSTRACT)%input_value
@@ -1220,330 +1220,330 @@ private
       call add_output_config(config_set_his, IDX_HIS_WATERLEVEL,                                                  &
                      'Wrihis_waterlevel_s1', 'waterlevel', 'water level', 'sea_surface_height',              &
                      'm', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write water level to his-file', &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_BEDLEVEL,                                                    &
                      'Wrihis_bedlevel', 'bedlevel', 'bottom level', '',                                      &
                      'm', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write bed level to his-file',   &
-                      nc_dim_ids = nc_dims_2D)
+                      nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WATERDEPTH,                                                  &
                      'Wrihis_waterdepth', 'waterdepth', 'water depth', '',                                   &
                      'm', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write water depth to his-file', &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_X_VELOCITY,                                                                                   &
                      'Wrihis_velocity_vector', 'x_velocity', 'flow element center velocity vector, x-component',                            &
                      'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write velocity vectors to his-file', &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_Y_VELOCITY,                                                        &
                      'Wrihis_velocity_vector', 'y_velocity', 'flow element center velocity vector, y-component', &
                      'sea_water_y_velocity', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                        &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_Z_VELOCITY,                                                                      &
                      'Wrihis_velocity_vector', 'z_velocity', 'vertical/upward component of flow element center velocity vector', &
                      'upward_sea_water_velocity', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                 &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_DEPTH_AVERAGED_X_VELOCITY,                                                                     &
                      'Wrihis_velocity_vector', 'depth-averaged_x_velocity', 'flow element center depth-averaged velocity vector, x-component', &
                      'sea_water_depth-averaged_x_velocity', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                     &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY,                                                                     &
                      'Wrihis_velocity_vector', 'depth-averaged_y_velocity', 'flow element center depth-averaged velocity vector, y-component', &
                      'sea_water_depth-averaged_y_velocity', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                     &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_VELOCITY_MAGNITUDE,                                                                        &
                      'Wrihis_velocity', 'velocity_magnitude',                                                                              &
                      'velocity magnitude',                                                                                                 &
                      'sea_water_speed', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write velocity magnitude to his-file', &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN,                    &
                      'Wrihis_velocity', 'velocity_magnitude',                                   &
                      'Eulerian velocity magnitude',                                             &
                      'sea_water_eulerian_speed', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_DISCHARGE_MAGNITUDE,                                            &
                      'Wrihis_discharge', 'discharge_magnitude',                                                 &
                      'average discharge magnitude',                                                             &
                      'water_volume_transport_in_river_channel', 'm3 s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     description='Write discharge magnitude to his-file', nc_dim_ids = nc_dims_3D_center)
+                     description='Write discharge magnitude to his-file', nc_dim_ids = station_nc_dims_3D_center)
 
       ! Turbulence model
       call add_output_config(config_set_his, IDX_HIS_TKE,                                                                   &
                      'Wrihis_turbulence', 'tke', 'turbulent kinetic energy', '',                                       &
                      'm2 s-2', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write k, eps and vicww to his-file', &
-                     nc_dim_ids = nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWW,                                       &
                      'Wrihis_turbulence', 'vicww' , 'turbulent vertical eddy viscosity', '', &
                      'm2 s-1''', UNC_LOC_STATION, nc_attributes = atts(1:1),                       &
-                     nc_dim_ids = nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_EPS,                                 &
                      'Wrihis_turbulence', 'eps', 'turbulent energy dissipation', '', &
                      'm2 s-3', UNC_LOC_STATION, nc_attributes = atts(1:1),                 &
-                     nc_dim_ids = nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_TAU,                         &
                      'Wrihis_turbulence', 'tau', 'turbulent time scale', '', &
                      's-1', UNC_LOC_STATION, nc_attributes = atts(1:1),            &
-                     nc_dim_ids = nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_RICH,               &
                      'Richardsononoutput', 'rich', 'Richardson Nr', &
                      '', '-', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_center)
 
       ! Gravity + buoyancy
       call add_output_config(config_set_his, IDX_HIS_SALINITY,                                                    &
                      'Wrihis_salinity', 'salinity', '', 'sea_water_salinity',                                &
                      '1e-3', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write salinity to his-file', &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_TEMPERATURE,                                        &
                      'Wrihis_temperature', 'temperature', '', 'sea_water_temperature',&
                      'degC', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write temperature to his-file', &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_POTENTIAL_DENSITY,                                  &
                      'Wrihis_density', 'potential_density', 'potential_density', '',                     &
                      'kg m-3', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write density to his-file', &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_DENSITY,             &
                      'Wrihis_density', 'density', 'density', '',     &
                      'kg m-3', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_BRUNT_VAISALA_N2,                  &
                      'Wrihis_density', 'Brunt_Vaisala_N2', 'Brunt_Vaisala_N2', '', &
                      '1/s2', UNC_LOC_STATION, nc_attributes = atts(1:1),                 &
-                     nc_dim_ids = nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_center)
 
       ! Wave model
       call add_output_config(config_set_his, IDX_HIS_HWAV,                                                       &
                      'Wrihis_waves', 'hwav', 'Significant wave height',                                     &
                      'sea_surface_wave_significant_wave_height', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     description='Write wave data to his-file', nc_dim_ids = nc_dims_2D)
+                     description='Write wave data to his-file', nc_dim_ids = station_nc_dims_2D)
       ! TODO: hwav sig vs. rms
       call add_output_config(config_set_his, IDX_HIS_TWAV,                                      &
                      'Wrihis_waves', 'twav', 'Wave period',                                &
                      'sea_surface_wave_period', 's', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_PHIWAV,                                                     &
                      'Wrihis_waves', 'phiwav', 'Wave from direction',                                       &
                      'sea_surface_wave_from_direction', 'deg from N', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RLABDA,                                    &
                      'Wrihis_waves', 'rlabda', 'Wave length',                              &
                      'sea_surface_wave_length', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_R,                                                       &
                      'Wrihis_waves', 'R', 'Roller energy per square meter',                              &
                      'sea_surface_bulk_roller_energy', 'J m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),    &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_UORB,                                                    &
                      'Wrihis_waves', 'uorb', 'Orbital velocity',                                         &
                      'sea_surface_wave_orbital_velocity', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_USTOKES,                                               &
                      'Wrihis_waves', 'ustokes', 'Stokes drift, x-component',                           &
                      'sea_surface_wave_stokes_drift_x', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_VSTOKES,                                               &
                      'Wrihis_waves', 'vstokes', 'Stokes drift, y-component',                           &
                      'sea_surface_wave_stokes_drift_y', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_TAUSX,                                                           &
                      'Wrihis_taucurrent', 'tausx',                                                               &
                      'Mean bottom shear stress vector, x-component',                                             &
                      'mean_bottom_shear_stress vector, x-component', 'Pa', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     description='Write mean bed shear stress to his-file', nc_dim_ids = nc_dims_2D)
+                     description='Write mean bed shear stress to his-file', nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TAUSY,                                                           &
                      'Wrihis_taucurrent', 'tausy',                                                               &
                      'Mean bottom shear stress vector, y-component',                                             &
                      'mean_bottom_shear_stress vector, y-component', 'Pa', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
 
       ! Meteo
 
       call add_output_config(config_set_his, IDX_HIS_PATM, 'Wrihis_wind', 'patm', 'atmospheric pressure', '', &
                      'N m-2', UNC_LOC_STATION, nc_attributes = atts(1:1), description = 'Write wind velocities to his-file', &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDX,                                                               &
                      'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'eastward_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDX_SFERIC,                                                 &
                      'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'x_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                           &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDY,                                                                &
                      'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'northward_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                                   &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDY_SFERIC,                                                 &
                      'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'y_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                           &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN,                                                                 &
                      'Wrihis_rain', 'rain', 'precipitation depth per time unit', 'lwe_precipitation_rate',            &
                      'mm day-1', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write precipitation to his-file', &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_INFILTRATION_CAP,                                                   &
                      'Wrihis_infiltration', 'infiltration_cap', 'Infiltration capacity', '',                        &
                      'mm hr-1', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write infiltration to his-file', &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL,                  &
                      'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
                      'mm hr-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                              &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
 
       ! Variable (computed) air density
       call add_output_config(config_set_his, IDX_HIS_AIR_DENSITY,                  &
                      'Wrihis_airdensity', 'rhoair', 'air density', '', &
                      'kg m-3', UNC_LOC_STATION, nc_attributes = atts(1:1),                              &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
 
       ! Heat flux model
       call add_output_config(config_set_his, IDX_HIS_WIND,                                                            &
                      'Wrihis_heat_fluxes', 'wind'  , 'windspeed', '',                                            &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write heat fluxes to his-file', &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TAIR,                       &
                      'Wrihis_heat_fluxes', 'Tair'  , 'air temperature', '', &
                      'degC', UNC_LOC_STATION, nc_attributes = atts(1:1),          &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RHUM,                         &
                      'Wrihis_heat_fluxes', 'rhum'  , 'relative humidity', '', &
                      '', UNC_LOC_STATION, nc_attributes = atts(1:1),                &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_CLOU,                  &
                      'Wrihis_heat_fluxes', 'clou'  , 'cloudiness', '', &
                      ' ', UNC_LOC_STATION, nc_attributes = atts(1:1),        &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QSUN,                    &
                      'Wrihis_heat_fluxes', 'Qsun'  , 'solar influx', '', &
                      'W m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),      &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QEVA,                             &
                      'Wrihis_heat_fluxes', 'Qeva'  , 'evaporative heat flux', '', &
                      'W m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),               &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QCON,                          &
                      'Wrihis_heat_fluxes', 'Qcon'  , 'sensible heat flux', '', &
                      'W m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),            &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QLONG,                               &
                      'Wrihis_heat_fluxes', 'Qlong' , 'long wave back radiation', '', &
                      'W m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),                  &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QFREVA,                                           &
                      'Wrihis_heat_fluxes', 'Qfreva', 'free convection evaporative heat flux', '', &
                      'W m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),                               &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QFRCON,                                        &
                      'Wrihis_heat_fluxes', 'Qfrcon', 'free convection sensible heat flux', '', &
                      'W m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),                            &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QTOT,                       &
                      'Wrihis_heat_fluxes', 'Qtot'  , 'total heat flux', '', &
                      'W m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),         &
-                     nc_dim_ids = nc_dims_2D)
+                     nc_dim_ids = station_nc_dims_2D)
 
       ! Sediment model
       call add_output_config(config_set_his, IDX_HIS_SED,                                                                         &
                      'Wrihis_sediment', 'sed', 'Sediment concentration',                                                     &
                      '', 'kg m-3', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write sediment transport to his-file', &
-                     nc_dim_ids = t_nc_dim_ids(laydim = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
+                     nc_dim_ids = t_station_nc_dimensions(laydim = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_WS,                         &
                      'Wrihis_sediment', 'ws', 'Sediment settling velocity', &
                      '', 'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),     &
-                     nc_dim_ids = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
+                     nc_dim_ids = t_station_nc_dimensions(laydim_interface_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_SEDDIF,                          &
                      'Wrihis_sediment', 'seddif', 'Sediment vertical diffusion', &
                      '', 'm2 s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),         &
-                     nc_dim_ids = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
+                     nc_dim_ids = t_station_nc_dimensions(laydim_interface_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_BODSED,                                                &
                      'Wrihis_sediment', 'bodsed', 'Available sediment mass in the bed',                   &
-                     '', 'kg m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true., timedim = .true.))
+                     '', 'kg m-2', UNC_LOC_STATION, nc_attributes = atts(1:1),nc_dim_ids = t_station_nc_dimensions(statdim = .true., sedtotdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_DPSED,                                                 &
                      'Wrihis_sediment', 'dpsed', 'Sediment thickness in the bed',                         &
-                     '', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = nc_dims_2D)
+                     '', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = station_nc_dims_2D)
        call add_output_config(config_set_his, IDX_HIS_TAUB,                 &
                      'wrihis_sediment', 'taub',              &
                      'Bed shear stress for morphology',             &
-                     '', 'Pa', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = nc_dims_2D)
+                     '', 'Pa', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = station_nc_dims_2D)
        call add_output_config(config_set_his, IDX_HIS_SBCX,                 &
                      'wrihis_sediment', 'sbcx',              &
                      'Current related bedload transport, x-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call add_output_config(config_set_his, IDX_HIS_SBCY,                 &
                      'wrihis_sediment', 'sbcy',              &
                      'Current related bedload transport, y-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_SBWX,                 &
                      'wrihis_sediment', 'sbwx',              &
                      'Wave related bedload transport, x-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call add_output_config(config_set_his, IDX_HIS_SBWY,                 &
                      'wrihis_sediment', 'sbwy',              &
                      'Wave related bedload transport, y-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_SSWX,                 &
                      'wrihis_sediment', 'sswx',              &
                      'Wave related suspended transport, x-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call add_output_config(config_set_his, IDX_HIS_SSWY,                 &
                      'wrihis_sediment', 'sswy',              &
                      'Wave related suspended transport, y-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_SSCX,                 &
                      'wrihis_sediment', 'sscx',              &
                      'Current related suspended transport, x-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
        call add_output_config(config_set_his, IDX_HIS_SSCY,                 &
                      'wrihis_sediment', 'sscy',              &
                      'Current related suspended transport, y-component',             &
-                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', transpunit, UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true.,sedtotdim = .true., timedim = .true.))
 
        ! Bed composition variables
        call add_output_config(config_set_his, IDX_HIS_MSED,                 &
                      'wrihis_sediment', 'msed',              &
                      'Available sediment mass in a layer of the bed',             &
-                     '', 'kg m-2', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true.,sedtotdim = .true., timedim = .true.))
+                     '', 'kg m-2', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(nlyrdim=.true.,  statdim = .true.,sedtotdim = .true., timedim = .true.))
        call add_output_config(config_set_his, IDX_HIS_THLYR,                 &
                      'wrihis_sediment', 'thlyr',              &
                      'Thickness of a layer of the bed',             &
-                     '', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true., timedim = .true.))
+                     '', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(nlyrdim=.true.,  statdim = .true., timedim = .true.))
        call add_output_config(config_set_his, IDX_HIS_POROS,                 &
                      'wrihis_sediment', 'poros',              &
                      'Porosity of a layer of the bed',             &
-                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true., timedim = .true.))
+                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(nlyrdim=.true.,  statdim = .true., timedim = .true.))
        call add_output_config(config_set_his, IDX_HIS_LYRFRAC,                 &
                      'wrihis_sediment', 'lyrfrac',              &
                      'Volume fraction in a layer of the bed',             &
-                     '', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(nlyrdim=.true.,  statdim = .true., sedtotdim = .true., timedim = .true.))
+                     '', 'm', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(nlyrdim=.true.,  statdim = .true., sedtotdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_FRAC,                 &
                      'wrihis_sediment', 'frac',              &
                      'Availability fraction in top layer',             &
-                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true., timedim = .true.))
+                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true., sedtotdim = .true., timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_MUDFRAC,                 &
                      'wrihis_sediment', 'mudfrac',              &
                      'Mud fraction in top layer',             &
-                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = nc_dims_2D)
+                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_SANDFRAC,                 &
                      'wrihis_sediment', 'sandfrac',              &
                      'Sand fraction in top layer',             &
-                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = nc_dims_2D)
+                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_FIXFRAC,                 &
                      'wrihis_sediment', 'fixfac',              &
                      'Reduction factor due to limited sediment thickness',             &
-                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true. , timedim = .true.))
+                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true., sedtotdim = .true. , timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_HIDEXP,                 &
                      'wrihis_sediment', 'hidexp',              &
                      'Hiding and exposure factor',             &
-                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedtotdim = .true. , timedim = .true.))
+                     '', '', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true., sedtotdim = .true. , timedim = .true.))
       call add_output_config(config_set_his, IDX_HIS_MFLUFF,                 &
                      'wrihis_sediment', 'mfluff',              &
                      'Sediment mass in fluff layer',             &
-                     '', 'kg', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_nc_dim_ids(statdim = .true., sedsusdim = .true. , timedim = .true.))
+                     '', 'kg', UNC_LOC_STATION, nc_attributes = atts(1:1), nc_dim_ids = t_station_nc_dimensions(statdim = .true., sedsusdim = .true. , timedim = .true.))
 
       ! The following output value is an abstract entry representing all water quality outputs.
       ! The actual output variables will only be added later, during init_fm_statistical_output_his().
       ! This is necessary for reading the key from the MDU file and providing the input value.
       call add_output_config(config_set_his, IDX_HIS_HWQ_ABSTRACT, 'Wrihis_water_quality_output', 'water_quality_output_abstract', &
                      '', '', '-', UNC_LOC_STATION, nc_attributes = atts(1:1), description = 'Write all water quality outputs to his-file', &
-                     nc_dim_ids = nc_dims_3D_center)
+                     nc_dim_ids = station_nc_dims_3D_center)
 
       call add_output_config(config_set_his, IDX_HIS_TRACERS_ABSTRACT, &
                      'wrihis_constituents', 'station_tracer_abstract', '', &
@@ -2959,7 +2959,7 @@ private
 
    !> Deactivate 3D dimension IDs for 2D variables
    subroutine process_nc_dim_ids(nc_dim_ids)
-      type(t_nc_dim_ids), intent(inout) :: nc_dim_ids !< The NetCDF dimension IDs for a possible output variable config
+      type(t_station_nc_dimensions), intent(inout) :: nc_dim_ids !< The NetCDF dimension IDs for a possible output variable config
 
       if (.not. model_is_3D()) then ! Turn off layer dimensions in 2D
          nc_dim_ids%laydim = .false.

@@ -521,7 +521,7 @@ private
       integer                          :: location_specifier    !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
                                                                 !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)
       type(nc_att_set)                 :: additional_attributes !< optional additional NetCDF attributes for this quantity
-      type(t_nc_dim_ids), allocatable  :: nc_dim_ids            !< optional detailed specification of NetCDF dim-ids when UNC_LOC is insufficient
+      type(t_station_nc_dimensions), allocatable :: nc_dim_ids  !< optional detailed specification of NetCDF dim-ids for observation stations
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set
@@ -530,8 +530,8 @@ private
       type(t_output_quantity_config), allocatable, dimension(:) :: configs        !< array of output quantity configs in config set
    end type t_output_quantity_config_set
 
-   !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
-   type, public :: t_nc_dim_ids
+   !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for observation stations, since they do are not uniform.
+   type, public :: t_station_nc_dimensions
       logical :: laydim = .false.
       logical :: laydim_interface_center = .false.
       logical :: laydim_interface_edge = .false.
@@ -540,7 +540,7 @@ private
       logical :: sedsusdim = .false.
       logical :: sedtotdim = .false.
       logical :: timedim = .false.
-   end type t_nc_dim_ids
+   end type t_station_nc_dimensions
 
 contains
 
@@ -582,18 +582,18 @@ subroutine add_output_config(config_set, idx, key, name, long_name, standard_nam
    use m_map_his_precision, only: md_nc_his_precision
    use netcdf, only: nf90_double, nf90_float
    
-   type(t_output_quantity_config_set), intent(inout) :: config_set          !< Array containing all output quantity configs.
-   integer,                            intent(  out) :: idx                 !< Index for the current variable.
-   character(len=*),                   intent(in   ) :: key                 !< Key in the MDU file.
-   character(len=*),                   intent(in   ) :: name                !< Name of the variable on the NETCDF file.
-   character(len=*),                   intent(in   ) :: long_name           !< Long name of the variable on the NETCDF file.
-   character(len=*),                   intent(in   ) :: standard_name       !< Standard name of the variable on the NETCDF file.
-   character(len=*),                   intent(in   ) :: unit                !< Unit of the variable on the NETCDF file.
-   integer,                            intent(in   ) :: location_specifier  !< Location specifier of the variable.
-   type(t_nc_dim_ids), optional,       intent(in   ) :: nc_dim_ids          !< Included NetCDF dimensions
-   integer,            optional,       intent(in   ) :: id_nc_type          !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc. Default: id_nc_undefined.
-   type(nc_attribute), optional,       intent(in   ) :: nc_attributes(:)    !< (optional) list of additional NetCDF attributes to be stored for this output variable.
-   character(len=*),   optional,       intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
+   type(t_output_quantity_config_set),      intent(inout) :: config_set          !< Array containing all output quantity configs.
+   integer,                                 intent(  out) :: idx                 !< Index for the current variable.
+   character(len=*),                        intent(in   ) :: key                 !< Key in the MDU file.
+   character(len=*),                        intent(in   ) :: name                !< Name of the variable on the NETCDF file.
+   character(len=*),                        intent(in   ) :: long_name           !< Long name of the variable on the NETCDF file.
+   character(len=*),                        intent(in   ) :: standard_name       !< Standard name of the variable on the NETCDF file.
+   character(len=*),                        intent(in   ) :: unit                !< Unit of the variable on the NETCDF file.
+   integer,                                 intent(in   ) :: location_specifier  !< Location specifier of the variable.
+   type(t_station_nc_dimensions), optional, intent(in   ) :: nc_dim_ids          !< Included NetCDF dimensions
+   integer,                       optional, intent(in   ) :: id_nc_type          !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc. Default: id_nc_undefined.
+   type(nc_attribute),            optional, intent(in   ) :: nc_attributes(:)    !< (optional) list of additional NetCDF attributes to be stored for this output variable.
+   character(len=*),              optional, intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
 
    integer :: num_entries, id_nc_type_, num_attributes
 
