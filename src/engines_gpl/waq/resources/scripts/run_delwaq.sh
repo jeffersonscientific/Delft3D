@@ -24,6 +24,9 @@ function print_usage_info {
     echo "-np"
     echo "       do not use any Delwaq processes (all substances will be seen as tracers)"
     echo
+    echo "-dem"
+    echo "       use the D-Emissions process library file $D3D_HOME/share/d-emissions/em_proc_def"
+    echo
     echo "-eco [<bloom.spe>]"
     echo "       use BLOOM, optionally using an alternative algea database for the default $D3D_HOME/share/delft3d/bloom.spe"
     echo
@@ -42,6 +45,7 @@ function print_usage_info {
 configfile=
 procfile=
 userprocfile=
+dem=
 eco=
 userspefile=none
 D3D_HOME=
@@ -78,6 +82,11 @@ case $key in
     ;;
     -p)
     userprocfile="$1"
+    shift
+    ;;
+    -dem)
+    dem=true
+    echo "Running D-Emissions"
     shift
     ;;
     -eco)
@@ -121,11 +130,16 @@ if [ ! -d $D3D_HOME ]; then
 fi
 export D3D_HOME
 
-if [ ! "$userprocfile" == "" ]
+if [ "$dem" == "true" ]
     then
-    procfile=$userprocfile
+    procfile=$D3D_HOME/share/d-emissions/em_proc_def
 else
-    procfile=$D3D_HOME/share/delft3d/proc_def
+    if [ ! "$userprocfile" == "" ]
+        then
+        procfile=$userprocfile
+    else
+        procfile=$D3D_HOME/share/delft3d/proc_def
+    fi
 fi
 
 if [ ! -f $procfile ]; then

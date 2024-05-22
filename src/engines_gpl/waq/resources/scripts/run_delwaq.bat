@@ -36,16 +36,17 @@ echo Working directory: %workdir%
 set D3D_HOME=%~dp0..
 set waqdir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share\delft3d
+set d_emissionsdir=%D3D_HOME%\share\d-emissions
 set libdir=%D3D_HOME%\lib
-set PATH=%sharedir%;%libdir%;%waqdir%
+set PATH=%sharedir%;%d_emissionsdir%;%libdir%;%waqdir%
 
 rem
 rem process other arguments
 rem
 set userprocfile=none
 set eco=false
+set dem=false
 set userspefile=none
-set only2=false
 set switches=
 
 shift
@@ -62,9 +63,9 @@ if [%1] EQU [-p] (
       if not [%2] EQU [] (
          set userspefile=%2
          shift
-   ) ) else if [%1] EQU [-only2] (
-      echo set only2=true
-      set only2=true
+   ) ) else if [%1] EQU [-dem] (
+      echo Running D-Emissions
+      set dem=true
    ) else (
    rem always copy all additional arguments to delwaq
    set switches=%switches% %1
@@ -73,11 +74,15 @@ shift
 goto loop
 :continue
 
-if [%userprocfile%] EQU [none] (
-    set procfile=%sharedir%\proc_def
+if [%dem%] EQU [true] (
+    set procfile=%d_emissionsdir%\em_proc_def
     ) else (
-       set procfile=%userprocfile%
-    )
+	if [%userprocfile%] EQU [none] (
+		set procfile=%sharedir%\proc_def
+		) else (
+		set procfile=%userprocfile%
+		)
+	)
 
 if [%eco%] EQU [true] (
     if [%userspefile%] EQU [none] (
@@ -118,6 +123,7 @@ echo     --help             : (Optional) show this usage
 echo     delwaq.inp         : (Mandatory) Delwaq input file
 echo     -p proc_def        : use an alternative process library file instead of $D3D_HOME/share/delft3d/proc_def
 echo     -np                : do not use any Delwaq processes (all substances will be seen as tracers)
+echo     -dem               : use the D-Emissions proc_def file $D3D_HOME/share/d-emissions/em_proc_def
 echo     -eco [bloom.spe]   : use BLOOM, optionally using an alternative algea database for the default
 echo                          $D3D_HOME/share/delft3d/bloom.spe
 echo     ...                : any other options are passed through to Delwaq to process
