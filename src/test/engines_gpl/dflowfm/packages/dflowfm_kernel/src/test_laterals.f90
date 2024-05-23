@@ -35,7 +35,7 @@ module test_lateral
 !
 !==============================================================================
 !   
-subroutine tests_lateral
+subroutine tests_lateral()
    ! initialization of global state variables for all tests in this module
    call setup_testcase()
 
@@ -50,7 +50,7 @@ end subroutine tests_lateral
 !
 !==============================================================================
 !> Test computation of sinks and sources (discharge and transport load per cell) due to laterals
-subroutine test_get_lateral_discharge
+subroutine test_get_lateral_discharge()
    use m_flow, only: vol1
    use m_transportdata, only: numconst
    use m_flowgeom, only: ndxi
@@ -97,7 +97,7 @@ end subroutine test_get_lateral_discharge
 !
 !==============================================================================
 !> Test computation of sinks and sources (discharge and transport load per cell) due to laterals
-subroutine test_add_lateral_load_and_sink
+subroutine test_add_lateral_load_and_sink()
    use m_flow, only: vol1
    use m_transportdata, only: numconst
    use m_flowgeom, only: ndxi
@@ -199,6 +199,7 @@ subroutine setup_testcase()
    call initialize_lateraldata(numconst, ierr)
    allocate(n1latsg(numlatsg),stat=ierr)
    allocate(n2latsg(numlatsg),stat=ierr)
+   allocate(apply_transport(numlatsg),stat=ierr)
    allocate(nnlat(nlatnd),stat=ierr)
    allocate(qplat(1,numlatsg),stat=ierr)
    allocate(ba(ndxi),stat=ierr)
@@ -211,6 +212,7 @@ subroutine setup_testcase()
    n1latsg(2) = 4
    n2latsg(2) = 5
    nnlat = (/1,2,3,5,8/)
+   apply_transport(:)=1
    ba(:) = 0.1_dp
    vol1(:) = 0.1_dp
    hs(:) = 2_dp
@@ -247,6 +249,7 @@ subroutine finish_testcase()
    call dealloc_lateraldata()
    deallocate(n1latsg)
    deallocate(n2latsg)
+   deallocate(apply_transport)
    deallocate(nnlat)
    deallocate(qplat)
    deallocate(ba)

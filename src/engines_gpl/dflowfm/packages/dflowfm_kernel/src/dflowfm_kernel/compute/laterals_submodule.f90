@@ -139,7 +139,7 @@ implicit none
                ! loop over all elements of the lateral that are inside the current domain
                i_cell = nnlat(k1)
                ! apply_transport can only have values 0 or 1, only add lateral discharge if apply_transport == 1               
-               qlat = (real(apply_transport(i), kind=dp) * qplat(1,i_lateral) * ba(i_cell)) / balat(i_lateral)
+               qlat = (real(apply_transport(i_lateral),kind=dp) * qplat(1,i_lateral) * ba(i_cell)) / balat(i_lateral)
                if (qlat > 0) then
                   if (.not. is_ghost_node(i_cell)) then 
                      lateral_discharge_in(i_lateral,i_cell) = lateral_discharge_in(i_lateral,i_cell) + qlat
