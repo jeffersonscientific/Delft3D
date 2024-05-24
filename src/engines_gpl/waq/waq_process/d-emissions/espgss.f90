@@ -395,8 +395,8 @@ contains
         allocate(flhorsfw(noseg))
 
         ! prepare for output
-        open (lu_bin,file=filbin,form='binary')
-        open (lu_txt,file=filtxt)
+        open (lu_bin, file=filbin, form='unformatted', access='stream')
+        open (lu_txt, file=filtxt)
         write (lu_txt,'(''Emission metadata'')')
         write (lu_txt,'(''Emissions in g/s'')')
         write (lu_txt,'(''Nr of segments:     '',i10)') noriv
