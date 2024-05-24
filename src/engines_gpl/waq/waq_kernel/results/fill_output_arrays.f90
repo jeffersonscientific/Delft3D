@@ -27,13 +27,13 @@ module m_fill_output_arrays
     implicit none
 
     private
-    public :: writes_concentrations_in_grid_layout, store_variables_in_output_grid, fill_transport_terms, &
+    public :: write_concentrations_in_grid_layout, store_variables_in_output_grid, fill_transport_terms, &
             store_variables_in_output_sub_grid
 
 contains
 
 
-    subroutine writes_concentrations_in_grid_layout(iout, lchout, itime, mname, nx, &
+    subroutine write_concentrations_in_grid_layout(iout, lchout, itime, mname, nx, &
             ny, lgrid, cgrid, notot, nosys, &
             sname, conc, bound, notot2, synam2, &
             conc2, ip, isflag, iniout)
@@ -83,7 +83,7 @@ contains
         character(len = 6)   point, padder
         data          point / '  .   ' /
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("writes_concentrations_in_grid_layout", ithandl)
+        if (timon) call timstrt ("write_concentrations_in_grid_layout", ithandl)
 
         if (nx * ny == 0) goto 9999  !   return
 
@@ -206,7 +206,7 @@ contains
         2030 FORMAT (6X, 20A6)
         2040 FORMAT (45X, A40)
 
-    end subroutine writes_concentrations_in_grid_layout
+    end subroutine write_concentrations_in_grid_layout
 
     subroutine store_variables_in_output_grid(outval, iopoin, nrvar, nocons, nopa, &
             nofun, nosfun, notot, conc, segfun, &
@@ -428,6 +428,7 @@ contains
             ncout, ntdmpq, paname, sfname, funame, &
             danam)
         use m_array_manipulation, only: initialize_real_array
+        use m_string_utils, only: index_in_array
 
 
 

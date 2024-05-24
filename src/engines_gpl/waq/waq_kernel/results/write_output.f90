@@ -26,11 +26,11 @@ module m_write_output
     use m_write_balance_output
     use m_write_monitoring_output
     use m_write_map_output, only: write_binary_history_output, write_binary_map_output
-    use m_write_nefis_output, only: write_nefis_history_output
+    use m_write_nefis_output, only: write_nefis_history_output, write_nefis_map_output
     use m_write_netcdf_output
-    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout, store_variables_in_output_grid, fill_transport_terms, store_variables_in_output_sub_grid
+    use m_fill_output_arrays, only: write_concentrations_in_grid_layout, store_variables_in_output_grid, &
+            fill_transport_terms, store_variables_in_output_sub_grid
     use timers, only: evaluate_timers
-
 
     implicit none
 
@@ -159,9 +159,9 @@ contains
         !     ==================================================================
         !
         use m_write_restart_map_file
-        use m_array_manipulation, only : initialize_real_array
-        use m_logger_helper, only : stop_with_error
-        use m_cli_utils, only : is_command_arg_specified
+        use m_array_manipulation, only: initialize_real_array
+        use m_logger_helper, only: stop_with_error
+        use m_cli_utils, only: is_command_arg_specified
         use timers
         use results
         use nan_check_module
@@ -488,14 +488,14 @@ contains
                 !
             elseif (isrtou == idmp) then
                 !
-                call writes_concentrations_in_grid_layout (lunout, lchout, itime, moname, nx, &
+                call write_concentrations_in_grid_layout (lunout, lchout, itime, moname, nx, &
                         ny, lgrid, cgrid, notot, nosys, &
                         syname, conc, bound, nrvar, ounam(k1), &
                         riobuf, ip(5), isflag, iniout)
                 !
             elseif (isrtou == idm2) then
                 !
-                call writes_concentrations_in_grid_layout (lunout, lchout, itime, moname, nx, &
+                call write_concentrations_in_grid_layout (lunout, lchout, itime, moname, nx, &
                         ny, lgrid, cgrid, 0, 0, &
                         syname, conc, bound, nrvar, ounam(k1), &
                         riobuf, ip(5), isflag, iniout)
@@ -1080,7 +1080,7 @@ contains
         !     ASMASS  REAL NOTOT*NDMPAR*6 INPUT   Mass balance terms
         !     BALINT  REAL  NOBALT*NDMPAR OUTPUT  Balance terms
 
-        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_logger_helper, only: stop_with_error, get_log_unit_number
         use timers
 
         INTEGER(kind = int_wp) :: NOTOT, NOFLUX, NDMPAR, NOBALT
