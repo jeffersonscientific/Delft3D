@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_outdmp
+module m_fill_output_arrays
     use m_waq_precision
 
     implicit none
@@ -203,4 +203,4 @@ contains
 
     end subroutine writes_concentrations_in_grid_layout
 
-end module m_outdmp
+end module m_fill_output_arrays

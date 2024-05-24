@@ -30,7 +30,7 @@ module m_write_output
     use m_write_map_output, only: write_binary_history_output, write_binary_map_output
     use m_write_nefis_output, only: write_nefis_history_output
     use m_write_netcdf_output
-    use m_outdmp
+    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout
     use m_fioutv
     use m_fiosub
 
