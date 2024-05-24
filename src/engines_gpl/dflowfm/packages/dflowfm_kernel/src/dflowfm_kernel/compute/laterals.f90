@@ -111,7 +111,7 @@ module m_lateral
          module subroutine average_concentrations_for_laterals(numconst, kmx, cell_volume, constituents, dt)
             integer,                       intent(in) :: numconst     !< Number or constituents.
             integer,                       intent(in) :: kmx          !< Number of layers (0 means 2D computation).
-            real(kind=dp), dimension(:)  , intent(in) :: cell_volume  !< Cell water-volume. Note that a cell can be completly or partially filled up with water, or dry.
+            real(kind=dp), dimension(:)  , intent(in) :: cell_volume  !< Volume of water in computational cells.
             real(kind=dp), dimension(:,:), intent(in) :: constituents !< Concentrations of constituents.
             real(kind=dp),                 intent(in) :: dt           !< Timestep in seconds
          end subroutine average_concentrations_for_laterals

@@ -87,7 +87,7 @@ implicit none
 
       integer,                       intent(in) :: numconst       !< Number or constituents.
       integer,                       intent(in) :: kmx            !< Number of layers (0 means 2D computation).
-      real(kind=dp), dimension(:),   intent(in) :: cell_volume    !< Cell water-volume. Note that a cell can be completly or partially filled up with water, or dry.
+      real(kind=dp), dimension(:),   intent(in) :: cell_volume    !< Volume of water in computational cells. 
       real(kind=dp), dimension(:,:), intent(in) :: constituents   !< Concentrations of constituents.
       real(kind=dp),                 intent(in) :: dt             !< Timestep in seconds
 
@@ -96,7 +96,7 @@ implicit none
       real(kind=dp) :: total_volume
 
       do ilat = 1, numlatsg
-         total_volume = 0d0
+         total_volume = 0_dp
          do iconst = 1, numconst
             do k1 = n1latsg(ilat), n2latsg(ilat)
                n = nnlat(k1)
