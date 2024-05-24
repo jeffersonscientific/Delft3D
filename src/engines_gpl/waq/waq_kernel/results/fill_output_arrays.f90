@@ -22,11 +22,13 @@
 !!  rights reserved.
 module m_fill_output_arrays
     use m_waq_precision
+    use timers
 
     implicit none
 
     private
-    public :: writes_concentrations_in_grid_layout, store_variables_in_output_grid, raatra
+    public :: writes_concentrations_in_grid_layout, store_variables_in_output_grid, fill_transport_terms, &
+            store_variables_in_output_sub_grid
 
 contains
 
@@ -63,7 +65,6 @@ contains
         !     INIOUT  INTEGER  1           IN/OUT  Initialize flag
 
         use date_time_utils, only: report_time
-        use timers
 
         integer(kind = int_wp) :: iout, itime, nx, ny, notot, &
                 nosys, isflag, notot2, iniout
@@ -248,8 +249,6 @@ contains
         !     NODEF   INTEGER       1     INPUT   Number of used defaults
         !     DEFAUL  REAL          *     INPUT   Default proces parameters
 
-        use timers
-
         integer(kind = int_wp) :: nrvar, nocons, nopa, nofun, nosfun, &
                 notot, idt, itime, noseg, nosys, &
                 nodump, nx, ny, igrid, noloc, &
@@ -355,8 +354,8 @@ contains
 
     end subroutine store_variables_in_output_grid
 
-    subroutine raatra(nosys, ndmpq, noraai, ntraaq, ioraai, nqraai, iqraai, iqdmp, dmpq, trraai)
-        !! Fills transport terms for raaien (cum tranport over raai)
+    subroutine fill_transport_terms(nosys, ndmpq, noraai, ntraaq, ioraai, nqraai, iqraai, iqdmp, dmpq, trraai)
+        !! Fills transport terms for raaien
 
 
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
@@ -372,17 +371,14 @@ contains
         !     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
         !     TRRAAI  REAL NOTOT*NDMPAR*6 IN/OUT  Cummulative transport over raai
 
-        use timers
-
         integer(kind = int_wp) :: nosys, ndmpq, noraai, ntraaq
         integer(kind = int_wp) :: ioraai(*), nqraai(*), iqraai(*), iqdmp(*)
         real(kind = real_wp) :: dmpq(nosys, ndmpq, *), trraai(nosys, *)
 
-        ! local
         integer(kind = int_wp) :: itel1, isys, iraai, nqc, integration_id, iqc, iq, ipq
 
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("raatra", ithandl)
+        if (timon) call timstrt ("fill_transport_terms", ithandl)
 
         ! loop over the raaien
         itel1 = 0
@@ -421,10 +417,10 @@ contains
         end do
 
         if (timon) call timstop (ithandl)
-    end subroutine raatra
+    end subroutine fill_transport_terms
 
 
-    subroutine fiosub (outval, iopoin, nrvar, nocons, nopa, &
+    subroutine store_variables_in_output_sub_grid(outval, iopoin, nrvar, nocons, nopa, &
             nofun, nosfun, notot, conc, segfun, &
             func, param, cons, idt, itime, &
             volume, noseg, nosys, ndmpar, ipdmp, &
@@ -432,7 +428,7 @@ contains
             ncout, ntdmpq, paname, sfname, funame, &
             danam)
         use m_array_manipulation, only: initialize_real_array
-        use timers
+
 
 
         ! Fills output buffer OUTVAL on sub grid.
@@ -492,10 +488,8 @@ contains
         real(kind = real_wp) :: hlpvar, hlpcum, valcum, valvar, srf, cumsrf
         logical     parm
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("fiosub", ithandl)
-        !
-        !     Pointer offsets
-        !
+        if (timon) call timstrt ("store_variables_in_output_sub_grid", ithandl)
+        ! Pointer offsets
         iocons = nopred + 1
         iopa = iocons + nocons
         iofunc = iopa + nopa
@@ -803,6 +797,6 @@ contains
 
         if (timon) call timstop (ithandl)
 
-    end subroutine fiosub
+    end subroutine store_variables_in_output_sub_grid
 
 end module m_fill_output_arrays

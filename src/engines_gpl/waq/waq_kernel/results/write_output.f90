@@ -28,7 +28,7 @@ module m_write_output
     use m_write_map_output, only: write_binary_history_output, write_binary_map_output
     use m_write_nefis_output, only: write_nefis_history_output
     use m_write_netcdf_output
-    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout, store_variables_in_output_grid, raatra, fiosub
+    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout, store_variables_in_output_grid, fill_transport_terms, store_variables_in_output_sub_grid
     use timers, only: evaluate_timers
 
 
@@ -323,7 +323,7 @@ contains
                 if (lhfirs) then
                     call initialize_real_array(trraai, noraai * nosys)
                 else
-                    call raatra (nosys, ndmpq, noraai, ntraaq, ioraai, &
+                    call fill_transport_terms(nosys, ndmpq, noraai, ntraaq, ioraai, &
                             nqraai, iqraai, iqdmp, dmpq, trraai)
                 endif
             endif
@@ -395,7 +395,7 @@ contains
                 endif
                 nrvar2 = nrvar / 2
                 ! For the dump area's
-                call fiosub (riobuf, iopoin(k1), nrvar2, nocons, nopa, &
+                call store_variables_in_output_sub_grid(riobuf, iopoin(k1), nrvar2, nocons, nopa, &
                         nofun, nosfun, notot, conc, segfun, &
                         func, param, cons, idt, itime, &
                         volume, noseg, nosys, ndmpar, ipdmp, &
