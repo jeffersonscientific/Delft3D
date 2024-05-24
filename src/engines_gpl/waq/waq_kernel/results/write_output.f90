@@ -27,10 +27,9 @@ module m_write_output
     use m_raatra
     use m_write_monitoring_output
     use m_write_nefis_output
-    use m_write_map_output
+    use m_write_map_output, only: write_binary_history_output, write_binary_map_output
     use m_write_nefis_history_ouput
     use m_write_netcdf_output
-    use m_write_history_output
     use m_outdmp
     use m_fioutv
     use m_fiosub
@@ -623,7 +622,7 @@ contains
 
             elseif (isrtou == imap) then
 
-                call write_map_output (lunout, lchout, itime, moname, noseg, &
+                call write_binary_map_output (lunout, lchout, itime, moname, noseg, &
                         notot, conc, syname, nrvar, riobuf, &
                         ounam(k1), iknmrk, iniout)
 
@@ -642,7 +641,7 @@ contains
 
             elseif (isrtou == ima2) then
 
-                call write_map_output (lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
+                call write_binary_map_output (lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
                         ounam(k1), iknmrk, iniout)
 
             elseif (isrtou == imn2) then
@@ -662,7 +661,7 @@ contains
 
             elseif (isrtou == ibal) then
 
-                call write_balance_output(lunout, itime, moname, notot, noflux, syname, ndmpar, danam, asmass, &
+                call write_balance_history_output(lunout, itime, moname, notot, noflux, syname, ndmpar, danam, asmass, &
                         flxint, nrvar2, riobuf, iniout)
 
             elseif (isrtou == iba2) then
@@ -678,7 +677,7 @@ contains
                         paname, func, funame, segfun, sfname, &
                         lget, ierr)
 
-                call sobbal (notot, itime, nosys, noflux, ndmpar, &
+                call write_balance_text_output(notot, itime, nosys, noflux, ndmpar, &
                         ndmpq, ntdmpq, itstop, imstrt, imstop, &
                         iqdmp, ipdmp, asmass, flxint, stochi, &
                         syname, danam, moname, dmpq, nobnd, &
@@ -1186,7 +1185,8 @@ contains
 
     END SUBROUTINE FLXBAL
 
-    subroutine write_balance_output(balance_file_unit, simulation_time, model_name, num_substances, &
+    ! TODO: move to the sobbal
+    subroutine write_balance_history_output(balance_file_unit, simulation_time, model_name, num_substances, &
             num_fluxes, substances_names, num_dump_segments, monitoring_station_names, mass_balance_terms, &
             integrated_fluxes, num_extra_variables, extra_variables, initialize_file)
         ! Writes balance output
@@ -1210,7 +1210,7 @@ contains
         integer(kind = int_wp) :: j, i, k, isys, iflx, ihlp
         integer(kind = int_wp) :: ithandl = 0
         integer(kind = int_wp) :: nopout
-        if (timon) call timstrt ("write_balance_output", ithandl)
+        if (timon) call timstrt ("write_balance_history_output", ithandl)
 
         ! Initialize file
         if (initialize_file == 1) then
@@ -1233,6 +1233,6 @@ contains
 
         if (timon) call timstop (ithandl)
 
-    end subroutine write_balance_output
+    end subroutine write_balance_history_output
 
 end module m_write_output
