@@ -29,11 +29,16 @@
 
 module m_unc_write_his
 
-   use MessageHandling, only: mess, LEVEL_ERROR
+   use stdlib_kinds, only: dp
+   use MessageHandling, only: mess, err, LEVEL_ERROR, LEVEL_DEBUG
+   use dfm_error, only: DFM_NOERR
    use fm_statistical_output, only: model_is_3D
    use unstruc_netcdf, only: ihisfile, definencvar
-   use m_flowtimes, only: it_his, ti_hise
+   use m_flowtimes, only: it_his, ti_his, ti_hiss, ti_hise
    use netcdf_utils, only: ncu_set_att, check_netcdf_error
+   use timers, only: timon, timstrt, timstop
+   use m_flowtimes, only: handle_extra
+   use m_missing, only: dmiss
 
    implicit none
    
@@ -42,8 +47,9 @@ module m_unc_write_his
    public :: unc_write_his
    
    !> local ids of netcdf variables and dims
-   integer, save :: &
-      id_timedim, id_num_timesteps, id_comp_time, &
+   integer :: &
+      id_twodim, &
+      id_timedim, id_timebds, id_num_timesteps, id_comp_time, &
       id_laydim, id_laydimw, id_sedtotdim, id_sedsusdim, id_frac_name, &
       id_statdim, id_strlendim, id_crsdim, id_crslendim, id_crsptsdim,  &
       id_statx, id_staty, id_stat_id, id_statname, id_time, id_timestep, &
@@ -67,8 +73,8 @@ module m_unc_write_his
       id_latdim, id_lat_id, id_lat_predis_inst, id_lat_predis_ave, id_lat_realdis_inst, id_lat_realdis_ave, &
       id_rugdim, id_rugx, id_rugy, id_rugid, id_rugname
 
-   ! ids for geometry variables, only use them once at the first time of history output
-   integer, save :: &
+   !> ids for geometry variables, only use them once at the first time of history output
+   integer :: &
       id_statgeom_node_count,          id_statgeom_node_coordx,          id_statgeom_node_coordy,          id_statgeom_node_lon, id_statgeom_node_lat, &
       id_latgeom_node_count,           id_latgeom_node_coordx,           id_latgeom_node_coordy,     &
       id_weirgengeom_input_node_count, id_weirgengeom_input_node_coordx, id_weirgengeom_input_node_coordy, &
@@ -84,6 +90,23 @@ module m_unc_write_his
       id_srcgeom_node_count,           id_srcgeom_node_coordx,           id_srcgeom_node_coordy,           id_src_xmid,         id_src_ymid, &
       id_longculvertgeom_node_count,   id_longculvertgeom_node_coordx,   id_longculvertgeom_node_coordy,   id_longculvert_xmid, id_longculvert_ymid
 
+    integer              :: strlen_netcdf  !< string length definition for (station) names on history file
+    integer              :: nc_precision
+    
+    real(dp)             :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
+    real(dp)             :: time_his_prev
+    
+    logical              :: add_latlon = .false.
+    integer              :: jawrizc    = 0
+    integer              :: jawrizw    = 0
+    
+    character(len=1024)  :: statcoordstring
+    
+    integer, allocatable :: id_hwq(:)
+    integer, allocatable :: id_hwqb(:)
+    integer, allocatable :: id_hwqb3d(:)
+    integer, allocatable :: id_sedbtransfrac(:)
+    integer, allocatable :: id_sedstransfrac(:)
    
 contains
 
@@ -97,13 +120,10 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_observations
     use m_monitoring_crosssections
     use m_monitoring_runupgauges
-    use m_missing, only: dmiss
     use netcdf
     use netcdf_utils
-    use unstruc_files, only: defaultFilename
-    use unstruc_netcdf, only: unc_create, unc_close, unc_addcoordatts, unc_addcoordmapping, unc_def_var_nonspatial, definencvar, unc_meta_add_user_defined
+    use unstruc_netcdf, only: unc_create, unc_close, definencvar
     use unstruc_netcdf, only: unc_writeopts, unc_noforcedflush, UG_WRITE_LATLON
-    use unstruc_netcdf, only: unc_add_time_coverage
     use unstruc_netcdf, only: unc_write_struc_input_coordinates
     use unstruc_messages
     use m_map_his_precision
@@ -126,7 +146,6 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_longculverts
     use m_lateral, only : numlatsg, nNodesLat, lat_ids, geomXLat, geomYLat, nlatnd, nodeCountLat
     use odugrid
-    use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
     use fm_statistical_output
     use m_output_config
     use MessageHandling, only: err
@@ -139,51 +158,26 @@ subroutine unc_write_his(tim)            ! wrihis
 
     double precision, allocatable :: geom_x(:), geom_y(:)
     integer, allocatable          :: node_count(:)
-    integer, allocatable, save :: id_tra(:)
-    integer, allocatable, save :: id_hwq(:)
-    integer, allocatable, save :: id_hwqb(:)
-    integer, allocatable, save :: id_hwqb3d(:)
-    integer, allocatable, save :: id_sedbtransfrac(:)
-    integer, allocatable, save :: id_sedstransfrac(:)
-    integer :: maxlocT, maxvalT !< row+column count of valobs
 
     integer                      :: IP, num, ngenstru_, n, nlyrs
 
-    double precision, save       :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
     integer                      :: ntot, k, i, j, ierr, kk, L, Lf, k3, k4, nNodeTot, nNodes, L0, k1, k2, nlinks
     double precision             :: cof0
 
-    integer                      :: strlen_netcdf  ! string length definition for (station) names on history file
-    character(len=255)           :: filename
-    character(len=25)            :: transpunit
-    character(len=1024)          :: statcoordstring, local_statcoordstring
     integer                      :: igen, istru
     integer                      :: ndims
     character(len=255)           :: tmpstr
-    integer                      :: jawrizc = 0
-    integer                      :: jawrizw = 0
     double precision             :: w1, pumplensum, pumplenmid, pumpxmid, pumpymid
     double precision             :: rhol
     double precision, allocatable:: toutput1(:), toutputx(:,:), toutputy(:,:), toutput3(:,:,:)
     double precision, allocatable:: toutput_cum, toutput_cur
     integer                      :: lsed
-    logical                      :: add_latlon
 
     ! NOTE: below new variables based on statistical output modules
     character(len=255)           :: var_name, var_standard_name, var_long_name
     type(t_output_quantity_config), pointer :: config
     type(ug_nc_attribute), target :: attributes(4)
     integer :: ivar
-
-    integer :: id_twodim, nc_precision
-    integer, save :: id_timebds
-    double precision, save :: time_his_prev
-
-    character(len=4)  :: stat_name_postfix
-    character(len=11) :: stat_name_filter_postfix
-    character(len=16) :: stat_long_name_postfix
-    character(len=16) :: stat_cell_methods
-    character(len=43) :: stat_cell_methods_filter_postfix
 
     if (jahiszcor > 0) then
        jawrizc = 1
@@ -193,12 +187,6 @@ subroutine unc_write_his(tim)            ! wrihis
     nc_precision = netcdf_data_type(md_nc_his_precision)
 
     if (timon) call timstrt ( "unc_write_his", handle_extra(54))
-
-    ! Another time-partitioned file needs to start, reset iteration count (and file).
-    if (ti_split > 0d0 .and. curtime_split /= time_split0) then
-        it_his        = 0
-        curtime_split = time_split0
-    end if
 
     ! Close/reset any previous hisfile.
     if (ihisfile/=0) then  ! reset stord ncid to zero if file not open
@@ -229,435 +217,9 @@ subroutine unc_write_his(tim)            ! wrihis
 
     if (ihisfile == 0) then
         if (timon) call timstrt ( "unc_write_his INIT/DEF", handle_extra(61))
-
-        call realloc(id_tra, ITRAN-ITRA1+1, keepExisting = .false.)
-
-        ! Possibly a different model, so make valobs transpose at correct size again.
-        maxlocT = max(size(valobs, 2), npumpsg, network%sts%numPumps, ngatesg, ncdamsg, ncgensg, ngategen, &
-                      nweirgen, network%sts%numWeirs, ngenstru,  network%sts%numGeneralStructures, &
-                      ndambreaklinks, network%sts%numOrifices, network%sts%numBridges, network%sts%numculverts, &
-                      network%sts%numuniweirs, network%cmps%count, nlongculverts)
-        maxvalT = max(size(valobs, 1), NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, NUMVALS_GATEGEN, &
-                      NUMVALS_WEIRGEN, NUMVALS_GENSTRU, &
-                      NUMVALS_DAMBREAK, NUMVALS_ORIFGEN, NUMVALS_BRIDGE, NUMVALS_CULVERT, &
-                      NUMVALS_UNIWEIR, NUMVALS_CMPSTRU, NUMVALS_LONGCULVERT)
-
-        if (ti_split > 0d0) then
-            filename = defaultFilename('his', timestamp=time_split0)
-        else
-            filename = defaultFilename('his')
-        end if
-
-        ierr = unc_create(filename, 0, ihisfile)
-        if (ierr /= nf90_noerr) then
-            call mess(LEVEL_WARN, 'Could not create history file.')
-        end if
-
-        !
-        ! Global metadata
-        !
-        ierr = unc_meta_add_user_defined(ihisfile)
-
-        ierr = unc_add_time_coverage(ihisfile, ti_hiss, ti_hise, ti_his)
-
-        !
-        ! General purpose dimensions
-        !
-        !if (unc_nounlimited > 0) then ! UNST-4764: His file has never shown good results with NcNoUnlimited option on.
-        call check_netcdf_error( nf90_def_dim(ihisfile, 'time', nf90_unlimited, id_timedim))
-        call check_netcdf_error( nf90_def_dim(ihisfile, 'two', 2, id_twodim))
-
-        strlen_netcdf = idlen  !< Max string length of Ids.
-        call check_netcdf_error( nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim))
-
-        if (model_is_3D()) then
-           call check_netcdf_error( nf90_def_dim(ihisfile, 'laydim', kmx, id_laydim))
-           call check_netcdf_error( nf90_def_dim(ihisfile, 'laydimw', kmx+1, id_laydimw))
-        end if
-
-        if (stm_included .and. jahissed > 0) then
-           if ( ISED1 > 0 ) then
-              ! New implementation, sedsus fraction is additional dimension
-              call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim))
-              call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim))
-              call definencvar(ihisfile, id_frac_name, nf90_char, (/ id_strlendim, id_sedtotdim /), 'sedfrac_name', 'sediment fraction identifier')
-           end if
-           if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr==2) then
-              call check_netcdf_error( nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
-           end if
-        end if
-
-        ! Time
-        !
-        call ncu_set_att(attributes(1), 'standard_name', 'time')
-        call ncu_set_att(attributes(2), 'bounds', 'time_bds')
-        call definencvar(ihisfile, id_time, nf90_double, (/ id_timedim /), 'time', unit=trim(Tudunitstr),extra_attributes=attributes(1:2))
-        call definencvar(ihisfile, id_timebds, nf90_double,(/ id_twodim, id_timedim /), 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr),extra_attributes=attributes(1:1))
-
-        ! Size of latest timestep
-        ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, (/ id_timedim /), 'timestep', '',     'latest computational timestep size in each output interval', 's')
-        !
-        ! Observation stations
-        !
-        if (model_has_obs_stations()) then
-            ierr = unc_addcoordmapping(ihisfile, jsferic)
-
-            nNodeTot = numobs+nummovobs
-            ierr = unc_def_his_structure_static_vars(ST_OBS_STATION, 1, nNodeTot, 'point', nNodeTot, id_strlendim, nc_precision, &
-                                                     id_statdim, id_statname, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
-                                                     add_latlon, id_statgeom_node_lon, id_statgeom_node_lat)
-
-            ! Special definition of station_id for backwards compatibility reasons..
-            call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', extra_attributes=attributes(1:1))
-            
-            ! Define the x/y, lat/lon, and z coordinate variables for the station type.
-            ierr = unc_def_his_station_coord_vars(id_laydim, id_laydimw, id_statdim, id_timedim, &
-                                                  add_latlon, jawrizc, jawrizw, nc_precision, &
-                                                  id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
-                                                  id_zcs, id_zws, id_zwu)
-
-        end if
-
-         ierr = unc_def_his_structure_static_vars(ST_CROSS_SECTION, 1, ncrs, 'line', nNodesCrs, id_strlendim, nc_precision, &
-                                                   id_crsdim, id_crs_id, id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, &
-                                                   id_poly_xmid = id_crs_xmid, id_poly_ymid = id_crs_ymid)
-
-
-        ! Runup gauges
-        ierr = unc_def_his_structure_static_vars(ST_RUNUP_GAUGE, 1, num_rugs, 'none', 0, id_strlendim, nc_precision, &
-                                                 id_rugdim, id_rugid) ! No geometry
-
-        ! Source-sinks
-        if (jahissourcesink > 0 .and. numsrc > 0) then
-           ! Define geometry related variables
-            nNodeTot = 0
-            do i = 1, numsrc
-               nNodes = 0
-               k1 = ksrc(1,i)
-               k2 = ksrc(4,i)
-               if (k1 /= 0) then
-                  nNodes = nNodes + 1
-               end if
-               if (k2 /= 0) then
-                  nNodes = nNodes + 1
-               end if
-               nNodeTot = nNodeTot + nNodes
-            end do
-        end if
-
-        ierr = unc_def_his_structure_static_vars(ST_SOURCE_SINK, jahissourcesink, numsrc, 'line', nNodeTot, id_strlendim, nc_precision, &
-                                                 id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
-                                                 id_poly_xmid = id_src_xmid, id_poly_ymid = id_src_ymid)
-        if (jahissourcesink > 0 .and. numsrc > 0) then
-           call check_netcdf_error( nf90_def_dim(ihisfile, 'source_sink_points', msrc, id_srcptsdim))
-           call definencvar(ihisfile,  id_srcx, nf90_double,(/ id_srcdim, id_srcptsdim /), 'source_sink_x_coordinate')
-           call definencvar(ihisfile,  id_srcy, nf90_double,(/ id_srcdim, id_srcptsdim /), 'source_sink_y_coordinate')
-           ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
-        end if
-
-        if (timon) call timstrt ( "unc_write_his DEF structures", handle_extra(60))
-
-        ! General structure (either via old .ext file or new structures.ini file)
-        if (jaoldstr == 1) then
-           ngenstru_ = ncgensg
-        else
-           ngenstru_ = ngenstru
-        end if
-        if (jahiscgen > 0 .and. ngenstru_ > 0) then
-            nNodeTot = 0
-            if (network%sts%numGeneralStructures > 0) then ! new general structure
-               nNodeTot = nNodesGenstru
-            else ! old general structure
-               do n = 1, ngenstru
-                  i = genstru2cgen(n)
-                  nlinks = L2cgensg(i) - L1cgensg(i) + 1
-                  if (nlinks > 0) then
-                     nNodes = nlinks + 1
-                  else if (nlinks == 0) then
-                     nNodes = 0
-                  end if
-                  nNodeTot = nNodeTot + nNodes
-               end do
-            end if
-        end if
-        ierr = unc_def_his_structure_static_vars(ST_GENERAL_ST, jahiscgen, ngenstru_, 'line', nNodeTot, id_strlendim, nc_precision, &
-                                                 id_genstrudim, id_genstru_id, id_genstrugeom_node_count, id_genstrugeom_node_coordx, id_genstrugeom_node_coordy, &
-                                                 id_poly_xmid = id_genstru_xmid, id_poly_ymid = id_genstru_ymid)
-
-        ! Pump
-        if (jahispump > 0 .and. npumpsg > 0) then
-            call check_netcdf_error( nf90_def_dim(ihisfile, 'pumps', npumpsg, id_pumpdim))
-            call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_pump_id, nf90_char, (/ id_strlendim, id_pumpdim /), 'pump_id','Id of pump',extra_attributes=attributes(1:1))
-        end if
-        ierr = unc_def_his_structure_static_vars(ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, nc_precision, &
-                                                 id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
-                                                 id_poly_xmid = id_pump_xmid, id_poly_ymid = id_pump_ymid)
-
-        ! Gate (Old .ext file, QUANTITY='gateloweredgelevel')
-        ierr = unc_def_his_structure_static_vars(ST_GATE, jahisgate, ngatesg, 'none', 0, id_strlendim, nc_precision, &
-                                                 id_gatedim, id_gate_id)
-
-        if(jahisgate > 0 .and. ngategen > 0 ) then
-            ! Define geometry related variables
-            nNodeTot = 0
-            do n = 1, ngategen
-               i = gate2cgen(n)
-               nlinks = L2cgensg(i) - L1cgensg(i) + 1
-               if (nlinks > 0) then
-                  nNodes = nlinks + 1
-               else if (nlinks == 0) then
-                  nNodes = 0
-               end if
-               nNodeTot = nNodeTot + nNodes
-            end do
-        end if
-        ierr = unc_def_his_structure_static_vars(ST_GATEGEN, jahisgate, ngategen, 'line', nNodeTot, id_strlendim, nc_precision, &
-                                                 id_gategendim, id_gategen_id, id_gategengeom_node_count, id_gategengeom_node_coordx, id_gategengeom_node_coordy, &
-                                                 id_poly_xmid = id_gategen_xmid, id_poly_ymid = id_gategen_ymid)
-
-        ! Controllable dam (Old .ext file QUANTITY='damlevel')
-        ierr = unc_def_his_structure_static_vars(ST_DAM, jahiscdam, ncdamsg, 'none', 0, id_strlendim, nc_precision, &
-                                                 id_cdamdim, id_cdam_id)
-
-        ! Weir
-        if(jahisweir > 0 .and. nweirgen > 0 ) then
-            ! Define geometry related variables
-            nNodeTot = 0
-            if (network%sts%numWeirs > 0) then ! new weir
-               nNodeTot = nNodesWeir
-            else ! old weir
-               do n = 1, nweirgen
-                  i = weir2cgen(n)
-                  nlinks = L2cgensg(i) - L1cgensg(i) + 1
-                  if (nlinks > 0) then
-                     nNodes = nlinks + 1
-                  else if (nlinks == 0) then
-                     nNodes = 0
-                  end if
-                  nNodeTot = nNodeTot + nNodes
-               end do
-            end if
-        end if
-        ierr = unc_def_his_structure_static_vars(ST_WEIR, jahisweir, nweirgen, 'line', nNodeTot, id_strlendim, nc_precision, &
-                                                 id_weirgendim, id_weirgen_id, id_weirgengeom_node_count, id_weirgengeom_node_coordx, id_weirgengeom_node_coordy, &
-                                                 id_poly_xmid = id_weirgen_xmid, id_poly_ymid = id_weirgen_ymid)
-
-        ! Orifice
-        ierr = unc_def_his_structure_static_vars(ST_ORIFICE, jahisorif, network%sts%numOrifices, 'line', nNodesOrif, id_strlendim, nc_precision, &
-                                                 id_orifgendim, id_orifgen_id, id_orifgengeom_node_count, id_orifgengeom_node_coordx, id_orifgengeom_node_coordy, &
-                                                 id_poly_xmid = id_weirgen_xmid, id_poly_ymid = id_weirgen_ymid)
-
-        ! Bridge
-        ierr = unc_def_his_structure_static_vars(ST_BRIDGE, jahisbridge, network%sts%numBridges, 'line', nNodesBridge, id_strlendim, nc_precision, &
-                                                 id_bridgedim, id_bridge_id, id_bridgegeom_node_count, id_bridgegeom_node_coordx, id_bridgegeom_node_coordy, &
-                                                 id_poly_xmid = id_bridge_xmid, id_poly_ymid = id_bridge_ymid)
-
-        ! Culvert
-        ierr = unc_def_his_structure_static_vars(ST_CULVERT,  jahisculv, network%sts%numculverts, 'line', nNodesCulv, id_strlendim, nc_precision, &
-                                                 id_culvertdim, id_culvert_id, id_culvertgeom_node_count, id_culvertgeom_node_coordx, id_culvertgeom_node_coordy, &
-                                                 id_poly_xmid = id_culvert_xmid, id_poly_ymid = id_culvert_ymid)
-
-        ! Dambreak
-        ierr = unc_def_his_structure_static_vars(ST_DAMBREAK, jahisdambreak, ndambreaksignals, 'none', 0, id_strlendim, nc_precision, &
-                                                 id_dambreakdim, id_dambreak_id)
-
-        ! Universal weir
-        ierr = unc_def_his_structure_static_vars(ST_UNI_WEIR, jahisuniweir, network%sts%numuniweirs, 'line', nNodesUniweir, id_strlendim, nc_precision, &
-                                                 id_uniweirdim, id_uniweir_id, id_uniweirgeom_node_count, id_uniweirgeom_node_coordx, id_uniweirgeom_node_coordy, &
-                                                 id_poly_xmid = id_uniweir_xmid, id_poly_ymid = id_uniweir_ymid)
-
-
-        ! compound structure
-        ierr = unc_def_his_structure_static_vars(ST_COMPOUND, jahiscmpstru, network%cmps%count, 'none', 0, id_strlendim, nc_precision, &
-                                                 id_cmpstrudim, id_cmpstru_id)
-
-        ! Long culvert
-        ierr = unc_def_his_structure_static_vars(ST_LONGCULVERT, jahislongculv, nlongculverts, 'line', nNodesLongCulv, id_strlendim, nc_precision, &
-                                                 id_longculvertdim, id_longculvert_id, id_longculvertgeom_node_count, id_longculvertgeom_node_coordx, id_longculvertgeom_node_coordy, &
-                                                 id_poly_xmid = id_longculvert_xmid, id_poly_ymid = id_longculvert_ymid)
-
-        ! Lateral
-        ierr = unc_def_his_structure_static_vars(ST_LATERAL, jahislateral, numlatsg, 'point', nNodesLat, id_strlendim, nc_precision, &
-                                                 id_latdim, id_lat_id, id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy)
-        ! TODO: UNST-7239: remove separate average IDX?
-        if (timon) call timstop (handle_extra(60))
-
-        if(dad_included) then  ! Output for dredging and dumping
-            call check_netcdf_error( nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim))
-            call check_netcdf_error( nf90_def_dim(ihisfile, 'ndred', dadpar%dredge_dimension_length, id_dreddim))
-            call check_netcdf_error( nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim))
-            call definencvar(ihisfile, id_dred_name, nf90_char, (/ id_strlendim, id_dreddim /), 'dredge_area_name', 'dredge area identifier')
-            call definencvar(ihisfile, id_dump_name, nf90_char, (/ id_strlendim, id_dreddim /), 'dump_area_name'  , 'dump area identifier'  )
-        end if
-
-        if ( jacheckmonitor.eq.1 ) then
-           call definencvar(ihisfile, id_checkmon, nc_precision, (/ id_laydim, id_timedim /), 'checkerboard_monitor','Checkerboard mode monitor', unit='m s-1')
-           call definencvar(ihisfile, id_num_timesteps, nf90_int, (/ id_timedim /), 'num_timesteps')
-           call definencvar(ihisfile, id_comp_time, nc_precision, (/ id_timedim /), 'comp_time')
-        end if
-
-        ! set sediment transport unit after modelinit
-        if (jahissed>0 .and. jased>0 .and. stm_included) then
-           select case(stmpar%morpar%moroutput%transptype)
-           case (0)
-              transpunit = 'kg s-1 m-1'
-           case (1)
-              transpunit = 'm3 s-1 m-1'
-           case (2)
-              transpunit = 'm3 s-1 m-1'
-           end select
-           do ivar = IDX_HIS_SBCX,IDX_HIS_SSCY
-              config_set_his%configs(ivar)%unit = transpunit
-           end do
-        end if
-
-        ! WAQ statistic outputs are kept outside of the statistical output framework
-        if (jawaqproc <= 0) then
-          ierr = unc_def_his_station_waq_statistic_outputs(statcoordstring, nc_precision, id_hwq)
-        end if
-
-        if ( jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included ) then
-            call definencvar(ihisfile, id_varb, nc_precision,(/ id_statdim /), 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
-        end if
-
-         do ivar = 1,out_variable_set_his%count
-            associate(config => out_variable_set_his%statout(ivar)%output_config, &
-                      id_var => out_variable_set_his%statout(ivar)%id_var)
-
-            if (config%location_specifier         /= UNC_LOC_STATION &
-                  .and. config%location_specifier /= UNC_LOC_OBSCRS &
-                  .and. config%location_specifier /= UNC_LOC_GLOBAL &
-                  .and. config%location_specifier /= UNC_LOC_SOSI &
-                  .and. config%location_specifier /= UNC_LOC_RUG &
-                  .and. config%location_specifier /= UNC_LOC_GENSTRU &
-                  .and. config%location_specifier /= UNC_LOC_DAM &
-                  .and. config%location_specifier /= UNC_LOC_PUMP &
-                  .and. config%location_specifier /= UNC_LOC_GATE &
-                  .and. config%location_specifier /= UNC_LOC_GATEGEN &
-                  .and. config%location_specifier /= UNC_LOC_WEIRGEN &
-                  .and. config%location_specifier /= UNC_LOC_ORIFICE &
-                  .and. config%location_specifier /= UNC_LOC_BRIDGE &
-                  .and. config%location_specifier /= UNC_LOC_CULVERT &
-                  .and. config%location_specifier /= UNC_LOC_DAMBREAK &
-                  .and. config%location_specifier /= UNC_LOC_UNIWEIR &
-                  .and. config%location_specifier /= UNC_LOC_CMPSTRU &
-                  .and. config%location_specifier /= UNC_LOC_LONGCULVERT &
-                  .and. config%location_specifier /= UNC_LOC_LATERAL &
-                  .and. config%location_specifier /= UNC_LOC_DREDGE &
-                  .and. config%location_specifier /= UNC_LOC_DUMP &
-                  .and. config%location_specifier /= UNC_LOC_DRED_LINK &
-
-            ) then
-               call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known output location.')
-               cycle
-            end if
-
-            select case(out_variable_set_his%statout(ivar)%operation_type)
-            case(SO_CURRENT)
-               stat_name_postfix      = ''
-               stat_long_name_postfix = ''
-               stat_cell_methods      = 'time: point'
-            case(SO_AVERAGE)
-               stat_name_postfix      = '_avg'
-               stat_long_name_postfix = ' (average)'
-               stat_cell_methods      = 'time: mean'
-            case(SO_MAX)
-               stat_name_postfix      = '_max'
-               stat_long_name_postfix = ' (maximum)'
-               stat_cell_methods      = 'time: maximum'
-            case(SO_MIN)
-               stat_name_postfix      = '_min'
-               stat_long_name_postfix = ' (minimum)'
-               stat_cell_methods      = 'time: minimum'
-            end select
-            stat_name_filter_postfix = ''
-            stat_cell_methods_filter_postfix = ''
-            if (out_variable_set_his%statout(ivar)%moving_average_window > 1) then
-               write(stat_name_filter_postfix, '(a,i0)') '_filter', out_variable_set_his%statout(ivar)%moving_average_window
-               write(stat_cell_methods_filter_postfix, '(a,i0,a)') ' (moving average filter using ', out_variable_set_his%statout(ivar)%moving_average_window, ' samples)'
-            end if
-
-            var_name          = trim(config%name) // trim(stat_name_postfix) // trim(stat_name_filter_postfix)
-            var_standard_name = config%standard_name ! Intentionally no pre/postfix for standard_name
-            if (len_trim(config%long_name) > 0) then
-               var_long_name = trim(config%long_name) // trim(stat_long_name_postfix)
-            else
-               var_long_name = ''
-            end if
-
-            select case(config%location_specifier)
-            case (UNC_LOC_SOSI)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_RUG)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_GENSTRU)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_DAM)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cdamdim,        id_timedim /), var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_PUMP)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_pumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_GATE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gatedim,        id_timedim /), var_name, var_long_name, config%unit, 'gate_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_GATEGEN)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gategendim,     id_timedim /), var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_WEIRGEN)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_weirgendim,     id_timedim /), var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_ORIFICE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_orifgendim,     id_timedim /), var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_BRIDGE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_bridgedim,      id_timedim /), var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_CULVERT)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_culvertdim,     id_timedim /), var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_DAMBREAK)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dambreakdim,    id_timedim /), var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_UNIWEIR)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_uniweirdim,     id_timedim /), var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_CMPSTRU)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cmpstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_LONGCULVERT)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_LATERAL)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_DREDGE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dreddim,        id_timedim /), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-             case (UNC_LOC_DUMP)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-             case (UNC_LOC_DRED_LINK)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dredlinkdim, id_sedtotdim, id_timedim /), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_STATION)
-               if (allocated(config%nc_dim_ids)) then
-                  if (config%nc_dim_ids%laydim) then
-                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_c'
-                  else if (config%nc_dim_ids%laydim_interface_center) then
-                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_w'
-                  else if (config%nc_dim_ids%laydim_interface_edge) then
-                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_wu'
-                  else
-                     local_statcoordstring = statcoordstring
-                  end if
-                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), build_nc_dimension_id_list(config%nc_dim_ids), var_name, var_long_name, &
-                                   config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., extra_attributes=config%additional_attributes%atts)
-               else
-                  call err('Internal error, please report: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
-               end if
-            case (UNC_LOC_OBSCRS)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-            case (UNC_LOC_GLOBAL)
-               if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-               if (timon) call timstop (handle_extra(59))
-            end select
-
-            if (len_trim(var_standard_name) > 0) then
-               call check_netcdf_error( nf90_put_att(ihisfile, id_var, 'standard_name', trim(var_standard_name)))
-            end if
-            if (len_trim(stat_cell_methods) > 0) then
-               call check_netcdf_error( nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods) // trim(stat_cell_methods_filter_postfix)))
-            end if
-            end associate
-         end do
+    
+       ! Create the his file and define all its dimensions and variables
+       call unc_write_his_def
 
         call check_netcdf_error( nf90_enddef(ihisfile))
         if (timon) call timstop (handle_extra(61))
@@ -852,6 +414,7 @@ subroutine unc_write_his(tim)            ! wrihis
            if (timon) call timstop ( handle_extra(63))
         end if
     end if
+    
     ! Increment output counters in m_flowtimes.
     if (it_his == 0) then
        time_his_prev = tim
@@ -979,6 +542,504 @@ subroutine unc_write_his(tim)            ! wrihis
 
 end subroutine unc_write_his
 
+!> Create the his file and define all its dimensions and variables
+subroutine unc_write_his_def
+   use netcdf, only: nf90_noerr, nf90_def_dim, nf90_unlimited, nf90_char, nf90_double, nf90_int
+   use unstruc_netcdf, only: unc_create, unc_meta_add_user_defined, unc_add_time_coverage, definencvar, &
+                             unc_def_var_nonspatial, unc_addcoordmapping, unc_addcoordatts
+   use unstruc_files, only: defaultFilename
+   use m_flowtimes, only: ti_split, time_split0, Tudunitstr
+   use MessageHandling, only: mess, LEVEL_WARN, idlen
+   use m_flow, only: kmx
+   use m_sediment, only: stm_included, stmpar, jased
+   use m_flowparameters, only: jahissed, jahissourcesink, jahiscgen, jahispump, jahisgate, jahiscdam, &
+                               jahisweir, jahisuniweir, jahiscmpstru, jahislongculv, jahislateral, jahisculv, &
+                               jahisdambreak, jahisbridge, jahisorif, jacheckmonitor, jahisbedlev
+   use m_transport, only: ISED1
+   use m_ug_nc_attribute, only: ug_nc_attribute
+   use fm_statistical_output, only: model_has_obs_stations
+   use m_sferic, only: jsferic
+   use m_observations, only: numobs, nummovobs
+   use m_globalparameters, only: ST_OBS_STATION, ST_CROSS_SECTION, ST_RUNUP_GAUGE, ST_SOURCE_SINK, &
+                                 ST_GENERAL_ST, ST_PUMP, ST_GATE, ST_GATEGEN, ST_DAM, ST_WEIR, ST_ORIFICE, &
+                                 ST_BRIDGE, ST_CULVERT, ST_DAMBREAK, ST_UNI_WEIR, ST_COMPOUND, ST_LONGCULVERT, &
+                                 ST_LATERAL
+   use m_monitoring_crosssections, only: ncrs, nNodesCrs
+   use m_monitoring_runupgauges, only: num_rugs
+   use m_flowexternalforcings, only: numsrc, ksrc, msrc, ncgensg, ngenstru, genstru2cgen, L1cgensg, &
+                                     L2cgensg, npumpsg, ngatesg, ngategen, gate2cgen, L1cgensg, L2cgensg, &
+                                     ncdamsg, nweirgen, weir2cgen, ndambreaksignals
+   use m_structures, only: jaoldstr, nNodesGenstru, number_of_pump_nodes, nNodesWeir, nNodesOrif, nNodesBridge, &
+                                     nNodesCulv, nNodesUniweir, nNodesLongculv
+   use unstruc_channel_flow, only: network
+   use m_longculverts, only: nlongculverts
+   use m_lateral, only: numlatsg, nNodesLat
+   use m_dad, only: dad_included, dadpar
+   use m_fm_wq_processes, only: jawaqproc
+   
+   character(len=255)            :: filename
+   integer                       :: ierr
+   type(ug_nc_attribute), target :: attributes(4)
+   integer                       :: total_number_of_stations
+   integer                       :: nNodeTot, i, k1, k2, nNodes, n, nlinks
+   integer                       :: ngenstru_
+
+   if (ihisfile /= 0) then ! The his file already exists
+      return
+   end if
+
+   ! Another time-partitioned file needs to start, reset iteration count (and file).
+   if (ti_split > 0d0 .and. curtime_split /= time_split0) then
+      it_his        = 0
+      curtime_split = time_split0
+   end if
+
+   if (ti_split > 0d0) then
+      filename = defaultFilename('his', timestamp=time_split0)
+   else
+      filename = defaultFilename('his')
+   end if
+
+   ierr = unc_create(filename, 0, ihisfile)
+   if (ierr /= nf90_noerr) then
+      call mess(LEVEL_WARN, 'Could not create history file.')
+   end if
+
+   ierr = unc_meta_add_user_defined(ihisfile)
+   ierr = unc_add_time_coverage(ihisfile, ti_hiss, ti_hise, ti_his)
+
+   ! General purpose dimensions
+   !if (unc_nounlimited > 0) then ! UNST-4764: His file has never shown good results with NcNoUnlimited option on.
+   call check_netcdf_error( nf90_def_dim(ihisfile, 'time', nf90_unlimited, id_timedim))
+   call check_netcdf_error( nf90_def_dim(ihisfile, 'two', 2, id_twodim))
+
+   strlen_netcdf = idlen  !< Max string length of Ids.
+   call check_netcdf_error( nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim))
+
+   if (model_is_3D()) then
+      call check_netcdf_error( nf90_def_dim(ihisfile, 'laydim', kmx, id_laydim))
+      call check_netcdf_error( nf90_def_dim(ihisfile, 'laydimw', kmx+1, id_laydimw))
+   end if
+
+   if (stm_included .and. jahissed > 0) then
+      if (ISED1 > 0) then
+         ! New implementation, sedsus fraction is additional dimension
+         call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim))
+         call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim))
+         call definencvar(ihisfile, id_frac_name, nf90_char, (/ id_strlendim, id_sedtotdim /), 'sedfrac_name', 'sediment fraction identifier')
+      end if
+      if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr==2) then
+         call check_netcdf_error( nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
+      end if
+   end if
+   
+   ! Time
+   call ncu_set_att(attributes(1), 'standard_name', 'time')
+   call ncu_set_att(attributes(2), 'bounds', 'time_bds')
+   call definencvar(ihisfile, id_time, nf90_double, (/ id_timedim /), 'time', unit=trim(Tudunitstr),extra_attributes=attributes(1:2))
+   call definencvar(ihisfile, id_timebds, nf90_double,(/ id_twodim, id_timedim /), 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr),extra_attributes=attributes(1:1))
+
+   ! Size of latest timestep
+   ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, (/ id_timedim /), 'timestep', '',     'latest computational timestep size in each output interval', 's')
+        
+   ! Observation stations
+   if (model_has_obs_stations()) then
+      ierr = unc_addcoordmapping(ihisfile, jsferic)
+
+      total_number_of_stations = numobs + nummovobs  ! Normal and moving
+      ierr = unc_def_his_structure_static_vars(ST_OBS_STATION, 1, total_number_of_stations, 'point', total_number_of_stations, id_strlendim, nc_precision, &
+                                                id_statdim, id_statname, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
+                                                add_latlon, id_statgeom_node_lon, id_statgeom_node_lat)
+
+      ! Special definition of station_id for backwards compatibility reasons..
+      call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
+      call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', extra_attributes=attributes(1:1))
+            
+      ! Define the x/y, lat/lon, and z coordinate variables for the station type.
+      ierr = unc_def_his_station_coord_vars(id_laydim, id_laydimw, id_statdim, id_timedim, &
+                                            add_latlon, jawrizc, jawrizw, nc_precision, &
+                                            id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
+                                            id_zcs, id_zws, id_zwu)
+
+   end if
+
+   ! Cross sections
+   ierr = unc_def_his_structure_static_vars(ST_CROSS_SECTION, 1, ncrs, 'line', nNodesCrs, id_strlendim, nc_precision, &
+                                            id_crsdim, id_crs_id, id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, &
+                                            id_poly_xmid = id_crs_xmid, id_poly_ymid = id_crs_ymid)
+
+   ! Runup gauges
+   ierr = unc_def_his_structure_static_vars(ST_RUNUP_GAUGE, 1, num_rugs, 'none', 0, id_strlendim, nc_precision, &
+                                            id_rugdim, id_rugid) ! No geometry
+
+   ! Source-sinks
+   if (jahissourcesink > 0 .and. numsrc > 0) then
+      ! Define geometry related variables
+      nNodeTot = 0
+      do i = 1, numsrc
+         nNodes = 0
+         k1 = ksrc(1,i)
+         k2 = ksrc(4,i)
+         if (k1 /= 0) then
+            nNodes = nNodes + 1
+         end if
+         if (k2 /= 0) then
+            nNodes = nNodes + 1
+         end if
+         nNodeTot = nNodeTot + nNodes
+      end do
+   end if
+
+   ierr = unc_def_his_structure_static_vars(ST_SOURCE_SINK, jahissourcesink, numsrc, 'line', nNodeTot, id_strlendim, nc_precision, &
+                                            id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
+                                            id_poly_xmid = id_src_xmid, id_poly_ymid = id_src_ymid)
+   
+   if (jahissourcesink > 0 .and. numsrc > 0) then
+      call check_netcdf_error( nf90_def_dim(ihisfile, 'source_sink_points', msrc, id_srcptsdim))
+      call definencvar(ihisfile,  id_srcx, nf90_double,(/ id_srcdim, id_srcptsdim /), 'source_sink_x_coordinate')
+      call definencvar(ihisfile,  id_srcy, nf90_double,(/ id_srcdim, id_srcptsdim /), 'source_sink_y_coordinate')
+      ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
+   end if
+
+   if (timon) call timstrt ( "unc_write_his DEF structures", handle_extra(60))
+
+   ! General structure (either via old .ext file or new structures.ini file)
+   if (jaoldstr == 1) then
+      ngenstru_ = ncgensg
+   else
+      ngenstru_ = ngenstru
+   end if
+   if (jahiscgen > 0 .and. ngenstru_ > 0) then
+      nNodeTot = 0
+      if (network%sts%numGeneralStructures > 0) then ! new general structure
+         nNodeTot = nNodesGenstru
+      else ! old general structure
+         do n = 1, ngenstru
+            i = genstru2cgen(n)
+            nlinks = L2cgensg(i) - L1cgensg(i) + 1
+            if (nlinks > 0) then
+               nNodes = nlinks + 1
+            else if (nlinks == 0) then
+               nNodes = 0
+            end if
+            nNodeTot = nNodeTot + nNodes
+         end do
+      end if
+   end if
+   ierr = unc_def_his_structure_static_vars(ST_GENERAL_ST, jahiscgen, ngenstru_, 'line', nNodeTot, id_strlendim, nc_precision, &
+                                            id_genstrudim, id_genstru_id, id_genstrugeom_node_count, id_genstrugeom_node_coordx, id_genstrugeom_node_coordy, &
+                                            id_poly_xmid = id_genstru_xmid, id_poly_ymid = id_genstru_ymid)
+
+   ! Pump
+   if (jahispump > 0 .and. npumpsg > 0) then
+      call check_netcdf_error( nf90_def_dim(ihisfile, 'pumps', npumpsg, id_pumpdim))
+      call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
+      call definencvar(ihisfile, id_pump_id, nf90_char, (/ id_strlendim, id_pumpdim /), 'pump_id','Id of pump',extra_attributes=attributes(1:1))
+   end if
+   ierr = unc_def_his_structure_static_vars(ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, nc_precision, &
+                                            id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
+                                            id_poly_xmid = id_pump_xmid, id_poly_ymid = id_pump_ymid)
+
+   ! Gate (Old .ext file, QUANTITY='gateloweredgelevel')
+   ierr = unc_def_his_structure_static_vars(ST_GATE, jahisgate, ngatesg, 'none', 0, id_strlendim, nc_precision, &
+                                            id_gatedim, id_gate_id)
+
+   if (jahisgate > 0 .and. ngategen > 0 ) then
+      ! Define geometry related variables
+      nNodeTot = 0
+      do n = 1, ngategen
+         i = gate2cgen(n)
+         nlinks = L2cgensg(i) - L1cgensg(i) + 1
+         if (nlinks > 0) then
+            nNodes = nlinks + 1
+         else if (nlinks == 0) then
+            nNodes = 0
+         end if
+         nNodeTot = nNodeTot + nNodes
+      end do
+   end if
+   ierr = unc_def_his_structure_static_vars(ST_GATEGEN, jahisgate, ngategen, 'line', nNodeTot, id_strlendim, nc_precision, &
+                                            id_gategendim, id_gategen_id, id_gategengeom_node_count, id_gategengeom_node_coordx, id_gategengeom_node_coordy, &
+                                            id_poly_xmid = id_gategen_xmid, id_poly_ymid = id_gategen_ymid)
+
+   ! Controllable dam (Old .ext file QUANTITY='damlevel')
+   ierr = unc_def_his_structure_static_vars(ST_DAM, jahiscdam, ncdamsg, 'none', 0, id_strlendim, nc_precision, &
+                                            id_cdamdim, id_cdam_id)
+
+   ! Weir
+   if (jahisweir > 0 .and. nweirgen > 0) then
+      ! Define geometry related variables
+      nNodeTot = 0
+      if (network%sts%numWeirs > 0) then ! new weir
+         nNodeTot = nNodesWeir
+      else ! old weir
+         do n = 1, nweirgen
+            i = weir2cgen(n)
+            nlinks = L2cgensg(i) - L1cgensg(i) + 1
+            if (nlinks > 0) then
+               nNodes = nlinks + 1
+            else if (nlinks == 0) then
+               nNodes = 0
+            end if
+            nNodeTot = nNodeTot + nNodes
+         end do
+      end if
+   end if
+   ierr = unc_def_his_structure_static_vars(ST_WEIR, jahisweir, nweirgen, 'line', nNodeTot, id_strlendim, nc_precision, &
+                                            id_weirgendim, id_weirgen_id, id_weirgengeom_node_count, id_weirgengeom_node_coordx, id_weirgengeom_node_coordy, &
+                                            id_poly_xmid = id_weirgen_xmid, id_poly_ymid = id_weirgen_ymid)
+   
+
+   ! Orifice
+   ierr = unc_def_his_structure_static_vars(ST_ORIFICE, jahisorif, network%sts%numOrifices, 'line', nNodesOrif, id_strlendim, nc_precision, &
+                                            id_orifgendim, id_orifgen_id, id_orifgengeom_node_count, id_orifgengeom_node_coordx, id_orifgengeom_node_coordy, &
+                                            id_poly_xmid = id_weirgen_xmid, id_poly_ymid = id_weirgen_ymid)
+
+   ! Bridge
+   ierr = unc_def_his_structure_static_vars(ST_BRIDGE, jahisbridge, network%sts%numBridges, 'line', nNodesBridge, id_strlendim, nc_precision, &
+                                            id_bridgedim, id_bridge_id, id_bridgegeom_node_count, id_bridgegeom_node_coordx, id_bridgegeom_node_coordy, &
+                                            id_poly_xmid = id_bridge_xmid, id_poly_ymid = id_bridge_ymid)
+
+   ! Culvert
+   ierr = unc_def_his_structure_static_vars(ST_CULVERT,  jahisculv, network%sts%numculverts, 'line', nNodesCulv, id_strlendim, nc_precision, &
+                                            id_culvertdim, id_culvert_id, id_culvertgeom_node_count, id_culvertgeom_node_coordx, id_culvertgeom_node_coordy, &
+                                            id_poly_xmid = id_culvert_xmid, id_poly_ymid = id_culvert_ymid)
+
+   ! Dambreak
+   ierr = unc_def_his_structure_static_vars(ST_DAMBREAK, jahisdambreak, ndambreaksignals, 'none', 0, id_strlendim, nc_precision, &
+                                            id_dambreakdim, id_dambreak_id)
+
+   ! Universal weir
+   ierr = unc_def_his_structure_static_vars(ST_UNI_WEIR, jahisuniweir, network%sts%numuniweirs, 'line', nNodesUniweir, id_strlendim, nc_precision, &
+                                            id_uniweirdim, id_uniweir_id, id_uniweirgeom_node_count, id_uniweirgeom_node_coordx, id_uniweirgeom_node_coordy, &
+                                            id_poly_xmid = id_uniweir_xmid, id_poly_ymid = id_uniweir_ymid)
+
+
+   ! compound structure
+   ierr = unc_def_his_structure_static_vars(ST_COMPOUND, jahiscmpstru, network%cmps%count, 'none', 0, id_strlendim, nc_precision, &
+                                            id_cmpstrudim, id_cmpstru_id)
+
+   ! Long culvert
+   ierr = unc_def_his_structure_static_vars(ST_LONGCULVERT, jahislongculv, nlongculverts, 'line', nNodesLongCulv, id_strlendim, nc_precision, &
+                                            id_longculvertdim, id_longculvert_id, id_longculvertgeom_node_count, id_longculvertgeom_node_coordx, id_longculvertgeom_node_coordy, &
+                                            id_poly_xmid = id_longculvert_xmid, id_poly_ymid = id_longculvert_ymid)
+
+   ! Lateral
+   ierr = unc_def_his_structure_static_vars(ST_LATERAL, jahislateral, numlatsg, 'point', nNodesLat, id_strlendim, nc_precision, &
+                                            id_latdim, id_lat_id, id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy)
+   
+   ! TODO: UNST-7239: remove separate average IDX?
+   if (timon) call timstop (handle_extra(60))
+   
+   if (dad_included) then  ! Output for dredging and dumping
+      call check_netcdf_error( nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim))
+      call check_netcdf_error( nf90_def_dim(ihisfile, 'ndred', dadpar%dredge_dimension_length, id_dreddim))
+      call check_netcdf_error( nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim))
+      call definencvar(ihisfile, id_dred_name, nf90_char, (/ id_strlendim, id_dreddim /), 'dredge_area_name', 'dredge area identifier')
+      call definencvar(ihisfile, id_dump_name, nf90_char, (/ id_strlendim, id_dreddim /), 'dump_area_name'  , 'dump area identifier'  )
+   end if
+
+   if (jacheckmonitor == 1) then
+      call definencvar(ihisfile, id_checkmon, nc_precision, (/ id_laydim, id_timedim /), 'checkerboard_monitor','Checkerboard mode monitor', unit='m s-1')
+      call definencvar(ihisfile, id_num_timesteps, nf90_int, (/ id_timedim /), 'num_timesteps')
+      call definencvar(ihisfile, id_comp_time, nc_precision, (/ id_timedim /), 'comp_time')
+   end if
+
+   ! WAQ statistic outputs are kept outside of the statistical output framework
+   if (jawaqproc <= 0) then
+      ierr = unc_def_his_station_waq_statistic_outputs(statcoordstring, nc_precision, id_hwq)
+   end if
+
+   ! Bottom level is written separately from statout if it is static
+   if (jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included ) then
+      call definencvar(ihisfile, id_varb, nc_precision, [id_statdim], 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
+   end if
+   
+   ! Define all user-requested statistical output variables
+   call unc_write_his_def_statoutput
+        
+end subroutine unc_write_his_def
+
+!> Define all user-requested statistical output variables
+subroutine unc_write_his_def_statoutput
+   use m_flowparameters, only: jahissed
+   use m_sediment, only: jased, stm_included, stmpar
+   use fm_statistical_output, only: config_set_his, out_variable_set_his
+   use m_output_config, only: IDX_HIS_SBCX, IDX_HIS_SSCY, t_output_quantity_config, id_nc_type2nc_type_his, &
+      UNC_LOC_GLOBAL, UNC_LOC_SOSI, UNC_LOC_GENSTRU, UNC_LOC_DAM, UNC_LOC_PUMP, UNC_LOC_GATE, &
+      UNC_LOC_GATEGEN, UNC_LOC_WEIRGEN, UNC_LOC_ORIFICE, UNC_LOC_BRIDGE, UNC_LOC_CULVERT, &
+      UNC_LOC_DAMBREAK, UNC_LOC_UNIWEIR, UNC_LOC_CMPSTRU, UNC_LOC_LONGCULVERT, UNC_LOC_STATION, &
+      UNC_LOC_OBSCRS, UNC_LOC_LATERAL, UNC_LOC_RUG, UNC_LOC_DREDGE, UNC_LOC_DUMP, UNC_LOC_DRED_LINK
+   use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
+   use m_ug_nc_attribute, only: ug_nc_attribute
+   use netcdf, only: nf90_put_att
+   
+   character(len=25)                       :: transpunit
+   integer                                 :: ivar
+   character(len=4)                        :: stat_name_postfix
+   character(len=11)                       :: stat_name_filter_postfix
+   character(len=16)                       :: stat_long_name_postfix
+   character(len=16)                       :: stat_cell_methods
+   character(len=43)                       :: stat_cell_methods_filter_postfix
+   character(len=255)                      :: var_name, var_standard_name, var_long_name
+   type(t_output_quantity_config), pointer :: config
+   type(ug_nc_attribute), target           :: attributes(4)
+   character(len=1024)                     :: local_statcoordstring
+
+   ! set sediment transport unit after modelinit
+   if (jahissed > 0 .and. jased > 0 .and. stm_included) then
+      select case(stmpar%morpar%moroutput%transptype)
+      case (0)
+         transpunit = 'kg s-1 m-1'
+      case (1)
+         transpunit = 'm3 s-1 m-1'
+      case (2)
+         transpunit = 'm3 s-1 m-1'
+      end select
+      do ivar = IDX_HIS_SBCX, IDX_HIS_SSCY
+         config_set_his%configs(ivar)%unit = transpunit
+      end do
+   end if
+
+   do ivar = 1, out_variable_set_his%count
+      associate(config => out_variable_set_his%statout(ivar)%output_config, &
+                  id_var => out_variable_set_his%statout(ivar)%id_var)
+
+      if (config%location_specifier         /= UNC_LOC_STATION &
+            .and. config%location_specifier /= UNC_LOC_OBSCRS &
+            .and. config%location_specifier /= UNC_LOC_GLOBAL &
+            .and. config%location_specifier /= UNC_LOC_SOSI &
+            .and. config%location_specifier /= UNC_LOC_RUG &
+            .and. config%location_specifier /= UNC_LOC_GENSTRU &
+            .and. config%location_specifier /= UNC_LOC_DAM &
+            .and. config%location_specifier /= UNC_LOC_PUMP &
+            .and. config%location_specifier /= UNC_LOC_GATE &
+            .and. config%location_specifier /= UNC_LOC_GATEGEN &
+            .and. config%location_specifier /= UNC_LOC_WEIRGEN &
+            .and. config%location_specifier /= UNC_LOC_ORIFICE &
+            .and. config%location_specifier /= UNC_LOC_BRIDGE &
+            .and. config%location_specifier /= UNC_LOC_CULVERT &
+            .and. config%location_specifier /= UNC_LOC_DAMBREAK &
+            .and. config%location_specifier /= UNC_LOC_UNIWEIR &
+            .and. config%location_specifier /= UNC_LOC_CMPSTRU &
+            .and. config%location_specifier /= UNC_LOC_LONGCULVERT &
+            .and. config%location_specifier /= UNC_LOC_LATERAL &
+            .and. config%location_specifier /= UNC_LOC_DREDGE &
+            .and. config%location_specifier /= UNC_LOC_DUMP &
+            .and. config%location_specifier /= UNC_LOC_DRED_LINK &
+
+      ) then
+         call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known output location.')
+         cycle
+      end if
+
+      select case(out_variable_set_his%statout(ivar)%operation_type)
+      case (SO_CURRENT)
+         stat_name_postfix      = ''
+         stat_long_name_postfix = ''
+         stat_cell_methods      = 'time: point'
+      case (SO_AVERAGE)
+         stat_name_postfix      = '_avg'
+         stat_long_name_postfix = ' (average)'
+         stat_cell_methods      = 'time: mean'
+      case (SO_MAX)
+         stat_name_postfix      = '_max'
+         stat_long_name_postfix = ' (maximum)'
+         stat_cell_methods      = 'time: maximum'
+      case (SO_MIN)
+         stat_name_postfix      = '_min'
+         stat_long_name_postfix = ' (minimum)'
+         stat_cell_methods      = 'time: minimum'
+      end select
+      stat_name_filter_postfix = ''
+      stat_cell_methods_filter_postfix = ''
+      if (out_variable_set_his%statout(ivar)%moving_average_window > 1) then
+         write(stat_name_filter_postfix, '(a,i0)') '_filter', out_variable_set_his%statout(ivar)%moving_average_window
+         write(stat_cell_methods_filter_postfix, '(a,i0,a)') ' (moving average filter using ', out_variable_set_his%statout(ivar)%moving_average_window, ' samples)'
+      end if
+
+      var_name          = trim(config%name) // trim(stat_name_postfix) // trim(stat_name_filter_postfix)
+      var_standard_name = config%standard_name ! Intentionally no pre/postfix for standard_name
+      if (len_trim(config%long_name) > 0) then
+         var_long_name = trim(config%long_name) // trim(stat_long_name_postfix)
+      else
+         var_long_name = ''
+      end if
+
+      select case(config%location_specifier)
+      case (UNC_LOC_SOSI)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_RUG)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_GENSTRU)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_DAM)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cdamdim,        id_timedim /), var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_PUMP)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_pumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_GATE)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gatedim,        id_timedim /), var_name, var_long_name, config%unit, 'gate_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_GATEGEN)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gategendim,     id_timedim /), var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_WEIRGEN)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_weirgendim,     id_timedim /), var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_ORIFICE)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_orifgendim,     id_timedim /), var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_BRIDGE)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_bridgedim,      id_timedim /), var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_CULVERT)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_culvertdim,     id_timedim /), var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_DAMBREAK)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dambreakdim,    id_timedim /), var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_UNIWEIR)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_uniweirdim,     id_timedim /), var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_CMPSTRU)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cmpstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_LONGCULVERT)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_LATERAL)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_DREDGE)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dreddim,        id_timedim /), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+         case (UNC_LOC_DUMP)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+         case (UNC_LOC_DRED_LINK)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dredlinkdim, id_sedtotdim, id_timedim /), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_STATION)
+         if (allocated(config%nc_dim_ids)) then
+            if (config%nc_dim_ids%laydim) then
+               local_statcoordstring = trim(statcoordstring) // ' zcoordinate_c'
+            else if (config%nc_dim_ids%laydim_interface_center) then
+               local_statcoordstring = trim(statcoordstring) // ' zcoordinate_w'
+            else if (config%nc_dim_ids%laydim_interface_edge) then
+               local_statcoordstring = trim(statcoordstring) // ' zcoordinate_wu'
+            else
+               local_statcoordstring = statcoordstring
+            end if
+            call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), build_nc_dimension_id_list(config%nc_dim_ids), var_name, var_long_name, &
+                              config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., extra_attributes=config%additional_attributes%atts)
+         else
+            call err('Internal error, please report: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
+         end if
+      case (UNC_LOC_OBSCRS)
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+      case (UNC_LOC_GLOBAL)
+         if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
+         call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+         if (timon) call timstop (handle_extra(59))
+      end select
+
+      if (len_trim(var_standard_name) > 0) then
+         call check_netcdf_error( nf90_put_att(ihisfile, id_var, 'standard_name', trim(var_standard_name)))
+      end if
+      if (len_trim(stat_cell_methods) > 0) then
+         call check_netcdf_error( nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods) // trim(stat_cell_methods_filter_postfix)))
+      end if
+      end associate
+   end do
+         
+end subroutine unc_write_his_def_statoutput
+
 !> Define the static variables for a single structure type.
 !! This includes: NetCDF dimension ids, character Id variable and simple geometry container variables.
 !! Note: the writing ('putting') of data is done by another subroutine: unc_put_his_structure_static_vars.
@@ -988,7 +1049,6 @@ function unc_def_his_structure_static_vars(struc_type_id, output_enabled, count,
    use string_module, only: strcmpi
    use MessageHandling, only: mess, LEVEL_WARN
    use unstruc_netcdf, only: unc_addcoordatts
-   use dfm_error, only: DFM_NOERR
    use netcdf, only: nf90_def_dim, nf90_def_var, nf90_char, nf90_put_att
    use simple_geometry, only: sgeom_def_geometry_variables
    use m_sferic, only: jsferic
@@ -1205,7 +1265,6 @@ function unc_def_his_station_coord_vars(id_laydim, id_laydimw, id_statdim, id_ti
                                         add_latlon, jawrizc, jawrizw, nc_precision, &
                                         id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
                                         id_zcs, id_zws, id_zwu) result(ierr)
-   use dfm_error, only: DFM_NOERR
 
    integer,             intent(in   ) :: id_laydim       !< NetCDF dimension id for the vertical layers
    integer,             intent(in   ) :: id_laydimw      !< NetCDF dimension id for the staggered vertical layers
@@ -1257,7 +1316,6 @@ end function unc_def_his_station_coord_vars
 !> Define the x/y-coordinate variables for the station type.
 function unc_def_his_station_coord_vars_xy(id_statdim, id_timedim, &
                                            id_statx, id_staty) result(ierr)
-   use dfm_error, only: DFM_NOERR
    use m_sferic, only: jsferic
    use fm_statistical_output, only: model_has_moving_obs_stations
    use netcdf, only: nf90_double
@@ -1293,7 +1351,6 @@ end function unc_def_his_station_coord_vars_xy
 
 !> Define the lat/lon-coordinate variables for the station type.
 function unc_def_his_station_coord_vars_latlon(id_statx, id_statlat, id_statlon) result(ierr)
-   use dfm_error, only: DFM_NOERR
    use netcdf_utils, only: ncu_clone_vardef
 
    integer,             intent(in   ) :: id_statx        !< NetCDF variable id for the station x-coordinate
@@ -1315,9 +1372,7 @@ end function unc_def_his_station_coord_vars_latlon
 !> Define the z-coordinate variables for the station type.
 function unc_def_his_station_coord_vars_z(id_laydim, id_laydimw, id_statdim, id_timedim, &
                                           jawrizc, jawrizw, nc_precision, statcoordstring, id_zcs, id_zws, id_zwu) result(ierr)
-   use dfm_error, only: DFM_NOERR
    use m_ug_nc_attribute, only: ug_nc_attribute
-   use m_missing, only: dmiss
 
    integer,             intent(in   ) :: id_laydim       !< NetCDF dimension id for the vertical layers
    integer,             intent(in   ) :: id_laydimw      !< NetCDF dimension id for the staggered vertical layers
@@ -1364,7 +1419,6 @@ function unc_put_his_station_coord_vars(add_latlon, jawrizc, jawrizw, &
                                         id_zcs, id_zws, id_zwu, it_his, &
                                         id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
                                         id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
-   use dfm_error, only: DFM_NOERR
    use fm_statistical_output, only: model_has_obs_stations
    use m_observations, only: numobs, nummovobs
 
@@ -1410,7 +1464,6 @@ end function unc_put_his_station_coord_vars
 
 !> Write (put) the x/y-coordinate variables for the station type.
 function unc_put_his_station_coord_vars_xy(id_statx, id_staty, it_his) result(ierr)
-   use dfm_error, only: DFM_NOERR
    use fm_statistical_output, only: model_has_moving_obs_stations
    use netcdf, only: nf90_put_var
    use m_observations, only: xobs, yobs, numobs, nummovobs
@@ -1445,7 +1498,6 @@ end function unc_put_his_station_coord_vars_xy
 !> Write (put) the lat/lon-coordinate variables for the station type.
 function unc_put_his_station_coord_vars_latlon(id_statlat, id_statlon, it_his) result(ierr)
    use m_observations, only: xobs, yobs, numobs, nummovobs
-   use dfm_error, only: DFM_NOERR
    use fm_statistical_output, only: model_has_moving_obs_stations
    use coordinate_reference_system, only: transform_and_put_latlon_coordinates
    use unstruc_netcdf, only: nccrs => crs
@@ -1475,7 +1527,6 @@ end function unc_put_his_station_coord_vars_latlon
 
 !> Write (put) the z-coordinate variables for the station type.
 function unc_put_his_station_coord_vars_z(jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his) result(ierr)
-   use dfm_error, only: DFM_NOERR
    use m_flow, only: kmx
    use netcdf, only: nf90_put_var
    use m_observations, only: valobs, IPNT_ZCS, IPNT_ZWS, IPNT_ZWU, numobs, nummovobs
@@ -1517,8 +1568,6 @@ end function unc_put_his_station_coord_vars_z
 !! because writing output only in the final time step is currently not supported in statistical output,
 !! and because statistic outputs may be redundant in the future when the statistical output framework is feature complete.
 function unc_def_his_station_waq_statistic_outputs(statcoordstring, nc_precision, waq_statistics_ids) result(ierr)
-   use dfm_error, only: DFM_NOERR
-   use m_missing, only: dmiss
    use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user
    use netcdf, only: nf90_put_att
    use string_module, only: replace_multiple_spaces_by_single_spaces
@@ -1564,7 +1613,6 @@ end function unc_def_his_station_waq_statistic_outputs
 
 !> Write data to WAQ statistic output variables (not to be confused with the general statistical output framework).
 function unc_put_his_station_waq_statistic_outputs(tim, waq_statistics_ids) result(ierr)
-   use dfm_error, only: DFM_NOERR
    use m_observations, only: numobs, nummovobs, IPNT_HWQ1, valobs
    use m_flow, only: kmx
    use m_fm_wq_processes, only: noout_statt, noout_state, noout_user
@@ -1619,7 +1667,6 @@ end function unc_put_his_station_waq_statistic_outputs
 function unc_put_his_station_geom_coord_vars_xy(it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
                                                 add_latlon, id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
    use m_observations, only: xobs, yobs, numobs
-   use dfm_error, only: DFM_NOERR
    use coordinate_reference_system, only: transform_and_put_latlon_coordinates
    use unstruc_netcdf, only: nccrs => crs
    use netcdf, only: nf90_put_var
