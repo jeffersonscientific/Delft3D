@@ -319,7 +319,7 @@ module part14fm_mod
 !              spread the particles over a circle
 ! this is the code to deal with sferical models (if needed) te get the distances correct
                dpangle =2.0D0 * pi * rnd(rseed)
-               dradius = rnd(rseed) * radiuh !noteradius is in m. need to convert to degrees.
+               dradius = sqrt(rnd(rseed)) * radiuh !noteradius is in m. need to convert to degrees.
                dxp = cos(dpangle) * dradius
                dyp = sin(dpangle) * dradius
                xpart(i) = xwasth + dxp !radius(iload)/2. * rnd(rseed)

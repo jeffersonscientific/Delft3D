@@ -138,6 +138,7 @@ subroutine fm_vert_disp (lunpr, itime)
     integer(int_wp), save        :: nopart_sed     = 0      ! accumulative number of particles in the sediment layer
     integer(int_wp), save        :: nopart_sed_old = 0      ! number of particles in the sediment layer (previous timestep)
     real(dp), dimension(noslay)  :: totdepthlay             ! total depth (below water surface) of bottom of layers
+    integer(int_wp)              :: pb                      ! lowest waterlayer at particle position
     real(dp)                     :: dhpart
     logical                      :: rise, sink, neutral     ! has the particle a rising or setting speed?
 
@@ -176,6 +177,7 @@ subroutine fm_vert_disp (lunpr, itime)
 
         totdepthlay(1) = h0(partcel)
         pc             = partcel + (partlay-1) * hyd%nosegl
+        pb             = laybot(1, mpart(ipart))
         ubstar_b = sqrt( c2g * (u0x(pc)**2 + u0y(pc)) )
         do ilay = 2, noslay
            if (ilay <= kmx) then
@@ -217,9 +219,10 @@ subroutine fm_vert_disp (lunpr, itime)
         sink = dvz > 0
         neutral = dvz == 0
         dhpart = (dvz - vz) / h0(pc)
+        
         if ( depthp <= 0.0 ) then
             call  v_part_bounce(ipart, depthp, totdepthlay, dhpart)
-        elseif ( depthp >= totdepthlay(kmx) ) then
+        elseif ( depthp >= totdepthlay(pb) ) then
             ! this is when the particle hits the bed, but here the bouncing comes in,
             ! if the particle settles then it should become inactive, we are not introducing erosion in FM (for now)
             if ( lsettl .and. ubstar_b .lt. uscrit   &
