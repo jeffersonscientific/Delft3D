@@ -795,7 +795,6 @@ contains
 
     end subroutine write_netcdf_map_output
 
-    !TODO: take out to a separate module
     subroutine write_netcdf_history_output(ncidhis, hncnam, ugridf, timeid, bndtimeid, &
             hncrec, itime, moname, idump, duname, &
             nodump, notot1, conc1, synam1, sysnm1, &
