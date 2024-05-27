@@ -1270,8 +1270,12 @@ private
                      'Wrihis_turbulence', 'tke', 'turbulent kinetic energy', '',                                       &
                      'm2 s-2', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write k, eps and vicww to his-file', &
                      nc_dim_ids = station_nc_dims_3D_interface_center)
-      call add_output_config(config_set_his, IDX_HIS_VICWW,                                       &
-                     'Wrihis_turbulence', 'vicww' , 'turbulent vertical eddy viscosity', '', &
+      call add_output_config(config_set_his, IDX_HIS_VICWWS,                                       &
+                     'Wrihis_turbulence', 'vicwws' , 'turbulent vertical eddy viscosity (flow nodes)', '', &
+                     'm2 s-1''', UNC_LOC_STATION, nc_attributes = atts(1:1),                       &
+                     nc_dim_ids = station_nc_dims_3D_interface_center)
+      call add_output_config(config_set_his, IDX_HIS_VICWWU,                                       &
+                     'Wrihis_turbulence', 'vicwwu' , 'turbulent vertical eddy viscosity (flow links)', '', &
                      'm2 s-1''', UNC_LOC_STATION, nc_attributes = atts(1:1),                       &
                      nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_EPS,                                 &
@@ -2479,7 +2483,9 @@ private
             end if
             if (iturbulencemodel > 1) then
                temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_VICWWS:IPNT_VICWWS+kmx)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWW),temp_pointer)
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS),temp_pointer)
+               temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_VICWWU:IPNT_VICWWU+kmx)
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU),temp_pointer)
             end if
             if (iturbulencemodel == 4 .and. jahistur > 0) then
                temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_TEPS:IPNT_TEPS+kmx)

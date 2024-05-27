@@ -244,6 +244,7 @@ private
 
    integer, public :: IDX_HIS_TKE
    integer, public :: IDX_HIS_VICWWS
+   integer, public :: IDX_HIS_VICWWU
    integer, public :: IDX_HIS_EPS
    integer, public :: IDX_HIS_TAU
    integer, public :: IDX_HIS_RICH

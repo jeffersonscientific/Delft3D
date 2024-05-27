@@ -39,66 +39,43 @@ module m_obs_on_flowgeom
 
 subroutine obs_on_flowgeom(iobstype)
 
-    use m_observations
-    use unstruc_messages
-    use m_partitioninfo
-    use m_flowgeom, only : xz,yz,ndx2D,ndxi
-    use unstruc_caching
+   use m_observations, only: numobs, nummovobs, kobs, namobs
+   use unstruc_messages, only: loglevel_StdOut, LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
+   use m_flowgeom, only: ndx2D, ndxi
 
-    implicit none
+   implicit none
 
-    integer, intent(in) :: iobstype !< Which obs stations to update: 0=normal, 1=moving, 2=both
-    integer :: i, k, n, n1, n2, k1b, iobs
-    double precision           :: d1, d2
-    logical                    :: cache_success
+   integer, intent(in) :: iobstype !< Which obs stations to update: 0=normal, 1=moving, 2=both
+   
+   integer                    :: n1, n2, iobs
 
-    integer                    :: jakdtree
-    jakdtree = 1  ! use kdtree (1) or not (other)
+   if (iobstype == 0) then
+      ! Only normal stations
+      n1 = 1
+      n2 = numobs
+   elseif (iobstype == 1) then
+      ! Only moving stations
+      n1 = numobs+1
+      n2 = numobs+nummovobs
+   else
+      ! All stations
+      n1 = 1
+      n2 = numobs+nummovobs
+   end if
 
-    ! Include normal stations?
-    if (iobstype == 0 .or. iobstype == 2) then
-        n1 = 1
-    else
-        n1 = numobs+1
-    end if
+   call find_flownodes_and_links_for_all_observation_stations(n1, n2)
 
-    ! Include moving stations?
-    if (iobstype == 1 .or. iobstype == 2) then
-        n2 = numobs+nummovobs
-    else
-        n2 = numobs
-    end if
+   if (loglevel_StdOut == LEVEL_DEBUG) then
+      do iobs = n1, n2
+         if (kobs(iobs) < ndx2D) then
+            write(msgbuf, '(a,i0,a,i0,a)') "Obs #",iobs,":"//trim(namobs(iobs))//" on node ",kobs(iobs)," (2D)"
+         elseif (kobs(iobs) <= ndxi) then
+            write(msgbuf, '(a,i0,a,i0,a)') "Obs #",iobs,":"//trim(namobs(iobs))//" on node ",kobs(iobs)," (1D)"
+         end if
+         call mess(LEVEL_INFO, msgbuf)
+      end do
+   end if
 
-    ! Try to read normal (non-moving) stations from cache file
-    cache_success = .false.
-    if (iobstype == 0 .or. iobstype == 2) then
-       if ( cacheRetrieved() ) then
-          call copyCachedObservations( cache_success )
-       endif
-    end if
-
-    if (cache_success) then
-       ! When necessary, process also the moving observation points (which are not in cache file)
-       if ((iobstype == 1 .or. iobstype == 2) .and. nummovobs > 0) then
-          call find_flownodes_and_links_for_all_observation_stations(numobs+1, numobs+nummovobs)
-       end if
-    else
-       ! No cache, so process all requested observation points.
-       call find_flownodes_and_links_for_all_observation_stations(n1, n2)
-    endif
-
-    if (loglevel_StdOut == LEVEL_DEBUG) then
-       do iobs = n1,n2
-          if (kobs(iobs)<ndx2D) then
-             write(msgbuf, '(a,i0,a,i0,a)') "Obs #",iobs,":"//trim(namobs(iobs))//" on node ",kobs(iobs)," (2D)"
-          else if (kobs(iobs)<=ndxi) then
-             write(msgbuf, '(a,i0,a,i0,a)') "Obs #",iobs,":"//trim(namobs(iobs))//" on node ",kobs(iobs)," (1D)"
-          endif
-          call mess(LEVEL_INFO, msgbuf)
-       enddo
-    endif
-
-    return
 end subroutine obs_on_flowgeom
 
 !> Finds the flow nodes/cell numbers for all observation points. There are four kinds of obs, treated differently:

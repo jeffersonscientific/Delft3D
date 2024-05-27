@@ -151,6 +151,7 @@ implicit none
     integer                           :: IVAL_TKIN
     integer                           :: IVAL_TEPS
     integer                           :: IVAL_VICWWS
+    integer                           :: IVAL_VICWWU
     integer                           :: IVAL_WS1
     integer                           :: IVAL_WSN
     integer                           :: IVAL_SEDDIF1
@@ -254,6 +255,7 @@ implicit none
     integer                           :: IPNT_TKIN
     integer                           :: IPNT_TEPS
     integer                           :: IPNT_VICWWS
+    integer                           :: IPNT_VICWWU
     integer                           :: IPNT_WS1
     integer                           :: IPNT_SEDDIF1
     integer                           :: IPNT_RICH
@@ -390,6 +392,7 @@ subroutine init_valobs_pointers()
    IVAL_TKIN       = 0
    IVAL_TEPS       = 0
    IVAL_VICWWS     = 0
+   IVAL_VICWWU     = 0
    IVAL_RICH       = 0
    IVAL_WS1        = 0
    IVAL_WSN        = 0
@@ -617,23 +620,24 @@ subroutine init_valobs_pointers()
    MAXNUMVALOBS3D                       = i-i0
 
 !  3D, layer interfaces
-   i0=i;
-   if ( kmx.gt.0 ) then
+   i0 = i
+   if (kmx > 0) then
       i=i+1;            IVAL_ZWS        = i
       i=i+1;            IVAL_ZWU        = i
       i=i+1;            IVAL_BRUV       = i
-      if ( iturbulencemodel.gt.0 ) then
+      if (iturbulencemodel > 0) then
          i=i+1;         IVAL_TKIN       = i
          i=i+1;         IVAL_TEPS       = i
          i=i+1;         IVAL_VICWWS     = i
+         i=i+1;         IVAL_VICWWU     = i
       end if
-      if ( idensform.gt.0 ) then
+      if (idensform > 0) then
          i=i+1;         IVAL_RICH       = i
       end if
-      if (jased>0 .and. stm_included .and. ISED1.gt.0) then
+      if (jased > 0 .and. stm_included .and. ISED1 > 0) then
          i=i+1;              IVAL_SEDDIF1   = i
          i=i+ISEDN-ISED1;    IVAL_SEDDIFN   = i
-      endif
+      end if
    end if
    if (jased>0 .and. stm_included .and. ISED1.gt.0) then     ! also 2d
       i=i+1;              IVAL_WS1       = i
@@ -697,6 +701,7 @@ subroutine init_valobs_pointers()
    IPNT_TKIN  = ivalpoint(IVAL_TKIN,  kmx, nlyrs)
    IPNT_TEPS  = ivalpoint(IVAL_TEPS,  kmx, nlyrs)
    IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
+   IPNT_VICWWU = ivalpoint(IVAL_VICWWU, kmx, nlyrs)
    IPNT_RICH  = ivalpoint(IVAL_RICH,  kmx, nlyrs)
    IPNT_RHOP  = ivalpoint(IVAL_RHOP,  kmx, nlyrs)
    IPNT_RHO   = ivalpoint(IVAL_RHO,   kmx, nlyrs)
