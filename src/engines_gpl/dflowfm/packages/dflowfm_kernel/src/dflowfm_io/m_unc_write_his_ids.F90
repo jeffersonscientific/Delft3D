@@ -73,7 +73,6 @@ module m_unc_write_his_ids
       id_bridgegeom_node_count,        id_bridgegeom_node_coordx,        id_bridgegeom_node_coordy,        id_bridge_xmid,      id_bridge_ymid, &
       id_srcgeom_node_count,           id_srcgeom_node_coordx,           id_srcgeom_node_coordy,           id_src_xmid,         id_src_ymid, &
       id_longculvertgeom_node_count,   id_longculvertgeom_node_coordx,   id_longculvertgeom_node_coordy,   id_longculvert_xmid, id_longculvert_ymid
-   
-contains
 
-end module m_unc_write_his_ids
+   end module m_unc_write_his_ids
+   

@@ -87,7 +87,9 @@ subroutine unc_write_his(tim)
 
    nc_precision = netcdf_data_type(md_nc_his_precision)
 
-   if (timon) call timstrt ( "unc_write_his", handle_extra(54))
+   if (timon) then 
+      call timstrt ( "unc_write_his", handle_extra(54))
+   end if
 
    ! Close/reset any previous hisfile.
    if (ihisfile /= 0) then  ! reset stord ncid to zero if file not open
@@ -119,11 +121,11 @@ subroutine unc_write_his(tim)
    if (ihisfile == 0) then
        
       ! Create the his file and define all its dimensions and variables
-      call unc_write_his_def
+      call unc_write_his_def()
        
       ! Write all time-independent data to the his file
       if (it_his == 0) then
-         call unc_write_his_write_timeindependent
+         call unc_write_his_write_time_independent()
       end if
       
    end if
@@ -136,18 +138,20 @@ subroutine unc_write_his(tim)
    it_his   = it_his + 1
     
    ! Write all time-independent data to the his file
-   call unc_write_his_write_timedependent
+   call unc_write_his_write_time_dependent()
 
    if (unc_noforcedflush == 0) then
       call check_netcdf_error( nf90_sync(ihisfile)) ! Flush file
    end if
 
-   if (timon) call timstop (handle_extra(54))
+   if (timon) then
+      call timstop (handle_extra(54))
+   end if
 
 end subroutine unc_write_his
 
 !> Create the his file and define all its dimensions and variables
-subroutine unc_write_his_def
+subroutine unc_write_his_def()
    use netcdf, only: nf90_noerr, nf90_def_dim, nf90_unlimited, nf90_char, nf90_double, nf90_int, nf90_enddef
    use unstruc_netcdf, only: unc_create, unc_meta_add_user_defined, unc_add_time_coverage, definencvar, &
                              unc_def_var_nonspatial, unc_addcoordmapping, unc_addcoordatts
@@ -192,7 +196,9 @@ subroutine unc_write_his_def
       return
    end if
    
-    if (timon) call timstrt ( "unc_write_his INIT/DEF", handle_extra(61))
+   if (timon) then
+      call timstrt ( "unc_write_his INIT/DEF", handle_extra(61))
+   end if
 
    ! Another time-partitioned file needs to start, reset iteration count (and file).
    if (ti_split > 0d0 .and. curtime_split /= time_split0) then
@@ -307,7 +313,9 @@ subroutine unc_write_his_def
       ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
    end if
 
-   if (timon) call timstrt ( "unc_write_his DEF structures", handle_extra(60))
+   if (timon) then
+      call timstrt ( "unc_write_his DEF structures", handle_extra(60))
+   end if
 
    ! General structure (either via old .ext file or new structures.ini file)
    if (jaoldstr == 1) then
@@ -435,7 +443,9 @@ subroutine unc_write_his_def
                                             id_latdim, id_lat_id, id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy)
    
    ! TODO: UNST-7239: remove separate average IDX?
-   if (timon) call timstop (handle_extra(60))
+   if (timon) then
+      call timstop (handle_extra(60))
+   end if
    
    if (dad_included) then  ! Output for dredging and dumping
       call check_netcdf_error( nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim))
@@ -467,12 +477,14 @@ subroutine unc_write_his_def
    ! Switch from define mode to data mode
    call check_netcdf_error(nf90_enddef(ihisfile))
    
-   if (timon) call timstop(handle_extra(61))
+   if (timon) then
+      call timstop(handle_extra(61))
+   end if
         
 end subroutine unc_write_his_def
 
 !> Write all time-independent data to the his file
-subroutine unc_write_his_write_timeindependent
+subroutine unc_write_his_write_time_independent()
    use m_observations, only: numobs, nummovobs, namobs
    use netcdf, only: nf90_put_var
    use string_module, only: trimexact
@@ -503,7 +515,9 @@ subroutine unc_write_his_write_timeindependent
    integer               :: igen, istru
    integer               :: ierr
            
-   if (timon) call timstrt('unc_write_his timeindep data', handle_extra(63))
+   if (timon) then
+      call timstrt('unc_write_his timeindep data', handle_extra(63))
+   end if
    
    ! Observation stations
    do i = 1, numobs+nummovobs
@@ -691,12 +705,14 @@ subroutine unc_write_his_write_timeindependent
                                              id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
                                              id_poly_xmid = id_pump_xmid, id_poly_ymid = id_pump_ymid)
    
-   if (timon) call timstop( handle_extra(63))
+   if (timon) then
+      call timstop( handle_extra(63))
+   end if
    
-end subroutine unc_write_his_write_timeindependent
+end subroutine unc_write_his_write_time_independent
 
 !> Write all time-dependent data to the his file
-subroutine unc_write_his_write_timedependent
+subroutine unc_write_his_write_time_dependent()
    use netcdf, only: nf90_put_var
    use m_flowtimes, only: dts, dnt, handle_steps
    use m_flowexternalforcings, only: numsrc, qsrc, qstss
@@ -714,12 +730,18 @@ subroutine unc_write_his_write_timedependent
    
    integer :: i, ierr, n
 
-   if (timon) call timstrt('unc_write_his time data', handle_extra(64))
+   if (timon) then
+      call timstrt('unc_write_his time data', handle_extra(64))
+   end if
+   
    call check_netcdf_error( nf90_put_var(ihisfile, id_time, time_his, (/ it_his /)))
    call check_netcdf_error( nf90_put_var(ihisfile, id_timebds, (/ time_his_prev, time_his /), (/ 1, it_his /)))
    time_his_prev = time_his
    call check_netcdf_error( nf90_put_var(ihisfile, id_timestep, dts, (/ it_his /)))
-   if (timon) call timstop( handle_extra(64))
+   
+   if (timon) then
+      call timstop( handle_extra(64))
+   end if
 
    ! Fill average source-sink discharge with different array on first timestep
    if (it_his == 1) then
@@ -739,7 +761,7 @@ subroutine unc_write_his_write_timedependent
    end if
    
    ! Write all user-requested statistical output variables
-   call unc_write_his_write_statoutput
+   call unc_write_his_write_statoutput()
 
    ! Write x/y-, lat/lon- and z-coordinates for the observation stations every time (needed for moving observation stations)
    ierr = unc_put_his_station_coord_vars(add_latlon, jawrizc, jawrizw, &
@@ -760,7 +782,7 @@ subroutine unc_write_his_write_timedependent
       call check_netcdf_error( nf90_put_var(ihisfile, id_comp_time, tim_get_wallclock(handle_steps), start = [it_his]))
    end if
     
-end subroutine unc_write_his_write_timedependent
+end subroutine unc_write_his_write_time_dependent
 
 !> Define the static variables for a single structure type.
 !! This includes: NetCDF dimension ids, character Id variable and simple geometry container variables.
