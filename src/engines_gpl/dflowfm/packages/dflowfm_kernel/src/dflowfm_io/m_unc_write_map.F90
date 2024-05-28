@@ -87,32 +87,33 @@ end subroutine unc_write_map
 !> Writes map/flow data to an already opened netCDF dataset. NEW version according to UGRID conventions + much cleanup.
 !! The netnode and -links have been written already.
 subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
-   use m_flow
-   use m_flowtimes
-   use m_flowgeom
-   use m_heatfluxes
-   use m_sferic
-   use network_data
-   use m_sediment
-   use m_bedform
-   use m_wind
+   use m_flow !< Import all the jamap_XXX flags, all the ja_XX flags, and all the flow model data
+   use m_flowtimes, only: handle_extra, ti_map, ti_maps, ti_mape, tudunitstr, dts, dtcell, time_map, time_wetground
+   use m_flowgeom, only: ndxi, ndx, ndx2d, ntheta, lnx1d, lnx, blup, bl, wu_mor, bl_ave, ba_mor, bare, ba, ln, wcx1, wcx2, wcy1, wcy2
+   use m_sferic, only: jsferic
+   use network_data, only: zk
+   use m_sediment, only: stm_included, stmpar, mxgr, jaceneqtr, sedtra, sedtot2sedsus, mtd, sbcx_raw, sbcy_raw, sbwx_raw, sbwy_raw, &
+                         sswx_raw, sswy_raw, avalflux, sed, grainlay
+   use precision_basics, only: comparereal, hp
+   use m_bedform, only: bfmpar
    use m_flowparameters, only: jatrt, ibedlevtyp
-   use m_mass_balance_areas
-   use m_fm_wq_processes
-   use m_xbeach_data
-   use m_transportdata
-   use m_alloc
-   use m_waves, hminlw_waves=>hminlw
-   use m_missing
-   use m_CrossSections
+   use m_mass_balance_areas, only: nomba, mbaname, mbadef
+   use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot3d_output, jawaqproc, noout_map, outputs, noout_statt, &
+                                noout_user, noout_state, fp, wqbot, outvar, waqoutputs, kbx
+   use m_xbeach_data, only: roller, E, R, D, DR, DF, sxx, sxy, syy, sigmwav, cwav, cgwav, kwav, nwav, l1, ctheta
+   use m_transportdata, only: numconst, itra1, itran, const_names, const_units, constituents, isalt, itemp, isedn, ised1
+   use m_alloc, only: realloc
+   use m_waves, only: hminlw_waves=>hminlw, hwav, jamapsigwav, twav, phiwav, sxwav, sywav, sbxwav, sbywav, mxwav, mywav, &
+                      dsurf, dwcap, distot, uorbwav, uorb, ustokes, vstokes
+   use m_CrossSections, only: t_cstype
    use unstruc_channel_flow, only: network
    use string_module, only: replace_multiple_spaces_by_single_spaces
    use m_save_ugrid_state, only: mesh1dname, mesh2dname
    use m_hydrology_data, only : jadhyd, ActEvap, PotEvap, interceptionmodel, DFM_HYD_NOINTERCEPT, InterceptHs
    use m_subsidence, only: jasubsupl, subsout, subsupl, subsupl_t0
-   use Timers
-   use m_output_config
-   use m_map_his_precision
+   use Timers, only: timon
+   use m_output_config, only: UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_S, UNC_LOC_U, UNC_LOC_W, UNC_LOC_WU, UNC_LOC_CN, UNC_LOC_L
+   use m_map_his_precision, only: netcdf_data_type, md_nc_map_precision
    use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
    use unstruc_netcdf, only: t_unc_mapids, ug_meta_fm, ug_addglobalatts, unc_meta_add_user_defined, unc_add_time_coverage, &
                              unc_nounlimited, unc_def_var_nonspatial, MAX_ID_VAR, unc_def_var_map, unc_put_att, unc_cmode, &
@@ -156,9 +157,6 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    double precision                                    :: vicc, dicc
 
    double precision, dimension(:), pointer             :: dens
-   
-!    Secondary Flow
-!        id_rsi, id_rsiexact, id_dudx, id_dudy, id_dvdx, id_dvdy, id_dsdx, id_dsdy
 
    integer :: i, j, jj, itim, n, LL, L, Lb, Lt, k, k1, k2
    integer :: id_twodim
