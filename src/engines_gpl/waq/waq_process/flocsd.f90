@@ -82,7 +82,7 @@ contains
         real(kind = real_wp) :: spmratioem  ! o  flocculation ratio macro:micro empirical model     (-)
         real(kind = real_wp) :: dflocim1    ! f  flocculation or break-up flux im1                  (g/m3/d)
         real(kind = real_wp) :: dflocim2    ! f  flocculation or break-up flux im2                  (g/m3/d)
-        real(kind = real_wp) :: dia_micro   ! i  characteristic diameter of micro flocs             (m)
+        real(kind = real_wp) :: d_micro     ! i  characteristic diameter of micro flocs             (m)
         real(kind = real_wp) :: ustar_macro ! i  characteristic shear velocity of macro flocs       (m/s)
         logical active      !    active segment
         real(kind = real_wp) :: macro       !    concentration macro flocs                            (g/m3)
@@ -114,7 +114,7 @@ contains
             total_depth = pmsa(ipnt(11))
             local_depth = pmsa(ipnt(12)) - 0.5 * pmsa( ipnt( 13) )  ! The "average" depth of the segment,
                                                                     ! not the bottom level
-            dia_micro   = pmsa(ipnt(14))
+            d_micro     = pmsa(ipnt(14))
             ustar_macro = pmsa(ipnt(15))
 
             ! only for active water segments
@@ -122,7 +122,7 @@ contains
             active = btest(iknmrk(iseg), 0)
             if (active) then
                 call flocculate_dwq(swfloform, cmacro, cmicro, tpm, tau, total_depth, local_depth, viscosity, rho_water, &
-                        spmratioem, ws_macro, ws_micro, dia_micro, ustar_macro)
+                         d_micro, ustar_macro, spmratioem, ws_macro, ws_micro)
 
 
                 ! calculate flocculatio/break-up flux and restrict flux to 50% in one timestep for stability

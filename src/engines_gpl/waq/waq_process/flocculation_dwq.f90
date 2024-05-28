@@ -42,7 +42,7 @@ contains
 
 !> Update the mass distribution of clay over the various floc sizes.
 subroutine flocculate_dwq( swfloform, cmacro, cmicro, tpm, tau, total_depth, local_depth, viscosity, rho_water, &
-                           spmratioem, ws_macro, ws_micro, dia_micro, ustar_macro )
+                           d_micro, ustar_macro, spmratioem, ws_macro, ws_micro )
 !
 ! Global variables
 !
@@ -55,11 +55,11 @@ subroutine flocculate_dwq( swfloform, cmacro, cmicro, tpm, tau, total_depth, loc
     real(kind=real_wp), intent(in)   ::  local_depth  !< Total depth (distance segment to surface) [m]
     real(kind=real_wp), intent(in)   ::  viscosity    !< Kinematic viscosity [m2/s]
     real(kind=real_wp), intent(in)   ::  rho_water    !< Density of water- [kg/m3]
+    real(kind=real_wp), intent(in)   ::  d_micro      !< characteristic diameter of micro flocs [m]
+    real(kind=real_wp), intent(in)   ::  ustar_macro  !< characteristic shear velocity of macro flocs [m/s]
     real(kind=real_wp), intent(out)  ::  spmratioem   !< Ratio of concentration macro flocs to total [-]
     real(kind=real_wp), intent(out)  ::  ws_macro     !< Fall velocity for macro flocs [m/d]
     real(kind=real_wp), intent(out)  ::  ws_micro     !< Fall velocity for micro flocs [m/d]
-    real(kind=real_wp), intent(in)   ::  dia_micro    !< characteristic diameter of micro flocs [m]
-    real(kind=real_wp), intent(in)   ::  ustar_macro  !< characteristic shear velocity of macro flocs [m/s]
 
 !
 ! Local variables
@@ -87,7 +87,7 @@ subroutine flocculate_dwq( swfloform, cmacro, cmicro, tpm, tau, total_depth, loc
     viscosity_fp = real(viscosity,fp)
     rho_water_fp = real(rho_water,fp)
     
-    DiaMicro   = dia_micro
+    DiaMicro   = d_micro
     UstarMacro = ustar_macro
     
     call get_tshear_tdiss( tshear_fp, turb_diss_fp, rho_water_fp, taub=tau_fp, &
