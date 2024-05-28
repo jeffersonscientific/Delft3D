@@ -37,6 +37,7 @@ subroutine wricom(tim)
     use unstruc_netcdf
     use unstruc_model
     use unstruc_files , only: defaultFilename
+    use m_unc_write_map_cfold, only: unc_write_map_filepointer
     implicit none
     double precision, intent(in) :: tim
 
