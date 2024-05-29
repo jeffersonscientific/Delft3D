@@ -60,7 +60,7 @@ contains
     !     Type    Name         I/O Description                                        Unit
     !
     !     support variables
-    integer(kind=int_wp)            :: iseg, iflux, ip, ipp, isrc, irec, isegadmin, noriv, ipr, ipd
+    integer(kind=int_wp)            :: iseg, iflux, ip, ipp, isrc, irec, isegadmin, noriv, ipr, ipd, ierr
     real(kind=real_wp)               :: emisvar, losses, flux, ro_mmperday, ra_mmperday, roun_mmperday,&
                         in_mmperday, fwashoff, ferosion, froun, finf, fdisp, over_mmperday
     real(kind=real_wp)               :: fluxloss, mass, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxleak, &
@@ -258,8 +258,8 @@ contains
     real(kind=real_wp) :: emisfacB
 
     ! files
-    integer(kind=int_wp),parameter :: lu_bin = 1961
-    integer(kind=int_wp),parameter :: lu_txt = 1962
+    integer(kind=int_wp) :: lu_bin
+    integer(kind=int_wp) :: lu_txt
     character(len=80),parameter :: filbin = 'outdata_em.bin'
     character(len=80),parameter :: filtxt = 'outdata_em.txt'
 
@@ -395,8 +395,10 @@ contains
         allocate(flhorsfw(noseg))
 
         ! prepare for output
-        open (lu_bin, file=filbin, form='unformatted', access='stream')
-        open (lu_txt, file=filtxt)
+        open (newunit=lu_bin, file=filbin, form='unformatted', access='stream', status='replace', iostat=ierr)
+        if (ierr/=0) call write_error_message ('ERROR: Could not open outdata_em.bin for writing')
+        open (newunit=lu_txt, file=filtxt, status='replace', iostat=ierr)
+        if (ierr/=0) call write_error_message ('ERROR: Could not open outdata_em.txt for writing')
         write (lu_txt,'(''Emission metadata'')')
         write (lu_txt,'(''Emissions in g/s'')')
         write (lu_txt,'(''Nr of segments:     '',i10)') noriv
