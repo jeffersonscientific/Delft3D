@@ -38,6 +38,7 @@ module m_setup_structures_and_weirs_list
          ndambreaklinks, ndambreaksignals, dambreaks, L1dambreaksg, L2dambreaksg, kdambreak
       use unstruc_channel_flow, only: network
       use m_GlobalParameters, only: ST_PUMP
+      use array_module, only: convert_mask_to_indices
 
       integer, allocatable, dimension(:) :: links_with_structures_or_weirs !< List of indices of the flow links that contain structures or weirs
       integer :: L, L0, ng, istru, k, n
@@ -100,6 +101,6 @@ module m_setup_structures_and_weirs_list
          end do
       end if
       ! Convert mask to array of indices
-      links_with_structures_or_weirs = pack([(i, integer :: i = 1, lnx)], does_link_contain_structures)
+      links_with_structures_or_weirs = convert_mask_to_indices(does_link_contain_structures)
    end function build_structures_and_weirs_list
 end module m_setup_structures_and_weirs_list
