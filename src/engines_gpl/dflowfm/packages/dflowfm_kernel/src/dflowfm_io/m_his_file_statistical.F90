@@ -41,12 +41,12 @@ module m_his_file_statistical
    
    private
    
-   public :: unc_write_his_def_statoutput, unc_write_his_write_statoutput
+   public :: def_his_file_statoutput, put_his_file_statoutput
    
 contains
 
 !> Define all user-requested statistical output variables
-subroutine unc_write_his_def_statoutput(statcoordstring)
+subroutine def_his_file_statoutput(statcoordstring)
    use m_flowparameters, only: jahissed
    use m_sediment, only: jased, stm_included, stmpar
    use fm_statistical_output, only: config_set_his, out_variable_set_his
@@ -116,7 +116,7 @@ subroutine unc_write_his_def_statoutput(statcoordstring)
             .and. config%location_specifier /= UNC_LOC_DRED_LINK &
 
       ) then
-         call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known output location.')
+         call mess(LEVEL_DEBUG, 'def_his_file_statoutput: skipping item '//trim(config%name)//', because it''s not on a known output location.')
          cycle
       end if
 
@@ -211,7 +211,7 @@ subroutine unc_write_his_def_statoutput(statcoordstring)
       case (UNC_LOC_OBSCRS)
          call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
       case (UNC_LOC_GLOBAL)
-         if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
+         if (timon) call timstrt ( "def_his_file_statoutput DEF bal", handle_extra(59))
          call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
          if (timon) call timstop (handle_extra(59))
       end select
@@ -225,10 +225,10 @@ subroutine unc_write_his_def_statoutput(statcoordstring)
       end associate
    end do
          
-end subroutine unc_write_his_def_statoutput
+end subroutine def_his_file_statoutput
 
 !> Write all user-requested statistical output variables
-subroutine unc_write_his_write_statoutput
+subroutine put_his_file_statoutput
    use fm_statistical_output, only: out_variable_set_his
    use m_output_config, only: &
       UNC_LOC_GLOBAL, UNC_LOC_SOSI, UNC_LOC_GENSTRU, UNC_LOC_DAM, UNC_LOC_PUMP, UNC_LOC_GATE, &
@@ -268,7 +268,7 @@ subroutine unc_write_his_write_statoutput
             .and. config%location_specifier /= UNC_LOC_DUMP &
             .and. config%location_specifier /= UNC_LOC_DRED_LINK &
             ) then
-         call mess(LEVEL_DEBUG, 'unc_write_his: skipping item '//trim(config%name)//', because it''s not on a known statistical output location.')
+         call mess(LEVEL_DEBUG, 'def_his_file_statoutput: skipping item '//trim(config%name)//', because it''s not on a known statistical output location.')
          cycle
       end if
 
@@ -299,14 +299,14 @@ subroutine unc_write_his_write_statoutput
       case (UNC_LOC_DRED_LINK)
          call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /)))
       case (UNC_LOC_GLOBAL)
-         if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
+         if (timon) call timstrt('def_his_file_statoutput IDX data', handle_extra(67))
          call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /)))
          if (timon) call timstop(handle_extra(67))
       end select
       end associate
    end do
    
-end subroutine unc_write_his_write_statoutput
+end subroutine put_his_file_statoutput
 
 !> Convert t_station_nc_dimensions to integer array of NetCDF dimension ids
 function build_nc_dimension_id_list(nc_dim_ids) result(res)

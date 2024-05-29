@@ -55,7 +55,7 @@
  use system_utils, only: makedir
  use fm_statistical_output, only: out_variable_set_his
  use m_statistical_output, only: reset_statistical_output, finalize_average
- use m_his_file, only: unc_write_his
+ use m_his_file, only: def_and_put_his_file
  
 #ifdef _OPENMP
  use omp_lib
@@ -80,7 +80,7 @@
          endif
          
          if ( jampi.eq.0 .or. ( jampi.eq.1 .and. my_rank.eq.0 ) ) then
-            call unc_write_his(tim)   ! wrihis
+            call def_and_put_his_file(tim)   ! wrihis
          endif
          if (out_variable_set_his%count > 0) then
             call reset_statistical_output(out_variable_set_his%statout)

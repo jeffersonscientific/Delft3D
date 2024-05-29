@@ -39,7 +39,7 @@ subroutine flow_externaloutput_direct()
    use m_flowtimes
    use unstruc_messages
    use time_module, only: datetime_to_string
-   use m_his_file, only: unc_write_his
+   use m_his_file, only: def_and_put_his_file
    implicit none
    integer :: iyear, imonth, iday, ihour, imin, isec
 
@@ -53,7 +53,7 @@ subroutine flow_externaloutput_direct()
 
    call wrimap(time1)
 
-   call unc_write_his(time1)
+   call def_and_put_his_file(time1)
 
    call wrirst(time1)
 
