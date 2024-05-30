@@ -31,6 +31,7 @@
 ! 
 module unstruc_opengl
    use precision
+   use IFWINA, only: HANDLE
 #ifdef HAVE_OPENGL
  use IFOPNGL
 #endif
@@ -43,12 +44,12 @@ module unstruc_opengl
  integer :: jaOpenGL = 0   !< use OpenGL (1) or not (0)
 #endif
  
- integer :: HWND = 0
- integer :: MEMDC = 0
- integer :: HBITMAP = 0
+ integer(HANDLE) :: HWND = 0
+ integer(HANDLE) :: MEMDC = 0
+ integer(HANDLE) :: HBITMAP = 0
  integer :: OldBitmap = 0
- integer :: HDC = 0
- integer :: HRC = 0  
+ integer(HANDLE) :: HDC = 0
+ integer(HANDLE) :: HRC = 0
  integer :: currentWidth, currentHeight
  integer :: lastNCol = -1
  integer :: lastWidth, lastHeight
@@ -273,7 +274,7 @@ END SUBROUTINE
     use M_DEVICES
     use user32
     implicit none 
-    integer :: res, oldBitmap
+    logical(c_bool) :: res
     
     if ( jaOpenGL.eq.0 ) then
       return
@@ -296,7 +297,8 @@ END SUBROUTINE
     use IFWINA ! renamed symbols to avoid conflicts
     use M_DEVICES
     implicit none
-    integer :: res, ptr_bytes
+    integer(HANDLE) :: ptr_bytes
+    logical(c_bool) :: res
     type(T_BITMAPINFO) bmi
     
     ! We render into a bitmap because not all video cards support mixing gdi / opengl directly. This may mean
@@ -341,7 +343,8 @@ END SUBROUTINE
     use, intrinsic :: ISO_C_BINDING
     use IFWINA ! renamed symbols to avoid conflicts
     implicit none
-    integer :: res, pixelFormat
+    logical(c_bool) :: res
+    integer :: pixelFormat, error_code
     type(T_PixelFormatDescriptor) pfd
     
     HWND = GetActiveWindow()
@@ -364,9 +367,9 @@ END SUBROUTINE
     ! create render context
     HRC = fwglCreateContext(memDC)
     if (HRC .eq. 0) then
-        res = GetLastError() 
-        if (res .gt. 0) then
-            write (*,*) 'error initialiseopengl:', res
+        error_code = GetLastError()
+        if (error_code .gt. 0) then
+            write (*,*) 'error initialiseopengl:', error_code
         endif
     endif
     res = fwglMakeCurrent(memDC, HRC)  
@@ -386,7 +389,8 @@ SUBROUTINE SetTextHeight(height)
  integer, intent(in) :: height
  
 #ifdef HAVE_OPENGL
- integer :: res, font, prevFont
+ integer(HANDLE) :: font, prevFont
+ logical(c_bool) :: res
 
     ! prepare the font to render text in
     font = CreateFont( height, 0, 0, 0, & ! font size
@@ -412,8 +416,9 @@ SUBROUTINE SetTextHeight(height)
  SUBROUTINE DeInitializeOpenGl
 #ifdef HAVE_OPENGL
     use IFWINA
+    use iso_c_binding, only: c_bool
     implicit none
-    integer :: res
+    logical(c_bool) :: res
     
     res = DeleteObject(hbitmap)
     res = fwglMakeCurrent(NULL,NULL)    
