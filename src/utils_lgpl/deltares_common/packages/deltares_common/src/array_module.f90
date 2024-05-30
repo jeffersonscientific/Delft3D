@@ -168,7 +168,9 @@ pure function convert_mask_to_indices(mask) result(indices)
 
    integer, allocatable, dimension(:) :: indices !< Resulting indices where mask is true
 
-   indices = pack([(i, integer :: i = 1, size(mask))], mask)
+   integer :: i
+
+   indices = pack([(i, i = 1, size(mask))], mask)
 end function convert_mask_to_indices
 
 end module array_module
