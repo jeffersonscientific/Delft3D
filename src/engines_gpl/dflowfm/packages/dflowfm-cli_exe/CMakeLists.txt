@@ -152,12 +152,6 @@ if(UNIX)
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
-
-if(WIN32)
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
-endif(WIN32)
-
-
 # Define additional compilation flags
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")

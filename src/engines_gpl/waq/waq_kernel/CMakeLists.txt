@@ -17,6 +17,9 @@ set(oss_dependencies deltares_common
         waq_hyd_data)
 
 target_link_libraries(${library_name} ${oss_dependencies})
+if (UNIX)
+    target_link_options(${library_name} PRIVATE "${openmp_flag}")
+endif (UNIX)
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")
