@@ -69,7 +69,7 @@ if(UNIX)
 
     add_definitions(-DHAVE_CONFIG_H=1)
 
-    target_link_options(${executable_name} PRIVATE ${openmp_flag})
+    target_link_options(${executable_name} PUBLIC ${openmp_flag})
 endif(UNIX)
 
 # Define additional compilation flags

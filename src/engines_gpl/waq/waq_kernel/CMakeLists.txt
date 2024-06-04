@@ -18,7 +18,7 @@ set(oss_dependencies deltares_common
 
 target_link_libraries(${library_name} ${oss_dependencies})
 if (UNIX)
-    target_link_options(${library_name} PRIVATE "${openmp_flag}")
+    target_link_options(${library_name} PUBLIC "${openmp_flag}")
 endif (UNIX)
 
 # Set additional compilation properties
