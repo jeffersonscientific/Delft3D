@@ -34,6 +34,7 @@ if (UNIX)
     target_include_directories(${executable_name} PRIVATE ${version_include_dir})
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif (UNIX)
 
 if (WIN32)
@@ -67,9 +68,6 @@ if (WIN32)
 endif(WIN32)
 
 target_compile_options(${executable_name} PRIVATE ${openmp_flag})
-if(UNIX)
-    target_link_options(${executable_name} PRIVATE ${openmp_flag})
-endif(UNIX)
 set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/waq)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)

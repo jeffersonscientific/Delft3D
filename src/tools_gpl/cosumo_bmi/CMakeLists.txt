@@ -9,7 +9,7 @@ set(library_name cosumo_bmi)
 add_library(${library_name} SHARED  ${source_files})
 
 # Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}" "${openmp_flag}")
+target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
 
 # Set dependencies on windows
 if (WIN32)
@@ -49,8 +49,6 @@ if(UNIX)
     target_link_libraries(${library_name} ${library_dependencies})
 
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
-
-    target_link_options(${library_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio

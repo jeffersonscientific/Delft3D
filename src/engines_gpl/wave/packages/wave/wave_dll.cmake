@@ -8,10 +8,7 @@ add_library(${library_name} SHARED  ${library_files}
                                     ${rc_version_file})
 
 # Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}" "${openmp_flag}")
-if(UNIX)
-    target_link_options(${library_name} PRIVATE ${openmp_flag})
-endif(UNIX)
+target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
 
 # Set dependencies on windows
 if (WIN32)
