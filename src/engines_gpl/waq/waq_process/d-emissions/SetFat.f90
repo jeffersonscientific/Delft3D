@@ -103,7 +103,7 @@ contains
 
     do iseg = 1 , noseg
 
-        call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
+        call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
         if (iatt1>0) then
 
             decpav20 = pmsa(ipnt(ip_decpav20))
