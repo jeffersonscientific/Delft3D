@@ -1358,6 +1358,8 @@ end function addtimespacerelation_boundaries
  
  logical :: res
  
+ integer, allocatable :: k_mask(:)
+ 
  res = .false.
  ! First check for required input:
        call prop_get_string(node_ptr, '', 'quantity', quantity, retVal)
@@ -1394,12 +1396,11 @@ end function addtimespacerelation_boundaries
        if (len_trim(targetMaskFile) > 0) then
           ! Mask flow nodes based on inside polygon(s), or outside.
           ! in: kcs, all flow nodes, out: kcsini: all masked flow nodes.
-          call realloc(kdum, ndx, keepExisting=.false., fill = 0)
-          call selectelset_internal_nodes(xz, yz, kcs, ndx, kdum, nini, &
+          call realloc(k_mask, ndx, keepExisting=.false., fill = 0)
+          call selectelset_internal_nodes(xz, yz, kcs, ndx, k_mask, nini, &
                                        LOCTP_POLYGON_FILE, targetmaskfile)
-          ! Transfer kdum(1:nini) into a 0-1 mask kcsini(1:ndx)
           do n=1,nini
-             kcsini(kdum(n)) = 1
+             kcsini(k_mask(n)) = 1
           end do
 
           if (invertMask) then
