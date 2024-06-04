@@ -889,7 +889,7 @@ function addtimespacerelation_boundaries(qid, filename, filetype, method, operan
    end if
 end function addtimespacerelation_boundaries
 
-logical function initboundaryblocksforcings(filename)
+ function init_external_forcings(filename) result(res)
  use properties
  use tree_data_types
  use tree_structures
@@ -913,21 +913,22 @@ logical function initboundaryblocksforcings(filename)
 
  implicit none
 
+ logical                      :: res
  character(len=*), intent(in) :: filename            !< file name for new external forcing boundary blocks
+ 
  type(tree_data), pointer     :: bnd_ptr             !< tree of extForceBnd-file's [boundary] blocks
  type(tree_data), pointer     :: node_ptr            !
- type(tree_data), pointer     :: block_ptr           !
  integer                      :: istat               !
- integer, parameter           :: ini_key_len   = 32  !
- integer, parameter           :: ini_value_len = 256 !
- character(len=ini_key_len)   :: groupname           !
- character(len=ini_value_len) :: property_name
- character(len=ini_value_len) :: property_value
- character(len=ini_value_len) :: quantity
- character(len=ini_value_len) :: locationfile        !
- character(len=ini_value_len) :: forcingfile         !
- character(len=ini_value_len) :: forcingfiletype     !
- character(len=ini_value_len) :: targetmaskfile      !
+ integer, parameter           :: INI_KEY_LEN   = 32  !
+ integer, parameter           :: INI_VALUE_LEN = 256 !
+ character(len=INI_KEY_LEN)   :: groupname           !
+ character(len=INI_VALUE_LEN) :: property_name
+ character(len=INI_VALUE_LEN) :: property_value
+ character(len=INI_VALUE_LEN) :: quantity
+ character(len=INI_VALUE_LEN) :: locationfile        !
+ character(len=INI_VALUE_LEN) :: forcingfile         !
+ character(len=INI_VALUE_LEN) :: forcingfiletype     !
+ character(len=INI_VALUE_LEN) :: targetmaskfile      !
  integer                      :: i,j                 !
  integer                      :: num_items_in_file   !
  integer                      :: num_items_in_block
@@ -936,13 +937,13 @@ logical function initboundaryblocksforcings(filename)
  character(len=1)             :: oper                !
  character (len=300)          :: rec
 
- character(len=ini_value_len) :: nodeid
- character(len=ini_value_len) :: branchid
+ character(len=INI_VALUE_LEN) :: nodeid
+ character(len=INI_VALUE_LEN) :: branchid
 
- character(len=ini_value_len) :: locid
- character(len=ini_value_len) :: itemtype
- character(len=256)           :: fnam
- character(len=256)           :: basedir
+ character(len=INI_VALUE_LEN) :: locid
+ character(len=INI_VALUE_LEN) :: itemtype
+ character(len=INI_VALUE_LEN) :: fnam
+ character(len=INI_VALUE_LEN) :: basedir
  double precision             :: chainage
  integer                      :: ierr
  integer                      :: ilattype, nlat
@@ -955,16 +956,15 @@ logical function initboundaryblocksforcings(filename)
  integer                      :: loc_spec_type
  integer                      :: numcoordinates
  double precision, allocatable :: xcoordinates(:), ycoordinates(:)
- double precision, allocatable :: xdum(:), ydum(:)
- integer, allocatable          :: kdum(:)
+ double precision              :: xdum(1), ydum(1)
+ integer                       :: kdum(1)
  integer, allocatable          :: itpenzr(:), itpenur(:)
 
- if (allocated(xdum  )) deallocate(xdum, ydum, kdum) !, xy2dum)
- allocate ( xdum(1), ydum(1), kdum(1)) !, xy2dum(2,1) , stat=ierr)
- !call aerr('xdum(1), ydum(1), kdum(1), xy2dum     ', ierr, 3)
- xdum = 1d0 ; ydum = 1d0; kdum = 1!; xy2dum = 0d0
+ xdum = 1d0
+ ydum = 1d0
+ kdum = 1
 
- initboundaryblocksforcings = .true.
+ res = .true.
 
  call tree_create(trim(filename), bnd_ptr)
  call prop_file('ini',trim(filename),bnd_ptr,istat)
@@ -976,7 +976,7 @@ logical function initboundaryblocksforcings(filename)
  if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
     write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//trim(filename)//''': v', major, minor, '. Current format: v',ExtfileNewMajorVersion,ExtfileNewMinorVersion,'. Ignoring this file.'
     call err_flush()
-    initboundaryblocksforcings = .false.
+    res = .false.
     return
  end if
 
@@ -1025,13 +1025,65 @@ logical function initboundaryblocksforcings(filename)
 
     case ('boundary')
 
-       ! First check for required input:
+       res = init_boundary_blocks_forcings()
+       
+    case ('lateral')
+       
+        res = init_lateral_forcings()
+
+    case ('meteo')
+
+       res = init_meteo_forcings()
+
+    case default       ! Unrecognized item in a ext block
+       ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
+       write(msgbuf, '(5a)') 'Unrecognized block in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
+       call warn_flush()
+    end select
+ end do
+
+ if (allocated(itpenzr)) deallocate(itpenzr)
+ if (allocated(itpenur)) deallocate(itpenur)
+ if (numlatsg > 0) then
+    do n = 1,numlatsg
+       balat(n) = 0d0
+       do k1=n1latsg(n),n2latsg(n)
+          k = nnlat(k1)
+          if (k > 0) then
+             if (.not. is_ghost_node(k)) then
+             balat(n) = balat(n) + ba(k)
+             end if
+          endif
+       end do
+    end do
+    if (jampi > 0) then
+       call reduce_sum(numlatsg, balat)
+    end if
+    if (allocated(kclat)) then
+       deallocate(kclat)
+    endif
+ end if
+
+ call tree_destroy(bnd_ptr)
+ if (allocated(thrtt)) then
+    call init_threttimes()
+ endif
+ 
+ contains
+ 
+ function init_boundary_blocks_forcings() result (res)
+ 
+ logical :: res
+ 
+  type(tree_data), pointer     :: block_ptr           !
+ 
+ res = .false.
+ ! First check for required input:
        call prop_get_string(node_ptr, '', 'quantity', quantity, retVal)
        if (.not. retVal) then
-          initboundaryblocksforcings = .false.
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''quantity'' is missing.'
           call warn_flush()
-          cycle
+          return
        end if
        ib = ib + 1
 
@@ -1048,20 +1100,18 @@ logical function initboundaryblocksforcings(filename)
        if (retVal) then
           call resolvePath(locationfile, basedir)
        else
-          initboundaryblocksforcings = .false.
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''locationfile'' is missing.'
           call warn_flush()
-          cycle
+          return
        end if
 
        call prop_get_string(node_ptr, '', 'forcingFile ', forcingfile , retVal)
        if (retVal) then
           call resolvePath(forcingfile, basedir)
        else
-          initboundaryblocksforcings = .false.
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFile'' is missing.'
           call warn_flush()
-          cycle
+          return
        end if
 
        oper = '-'
@@ -1130,7 +1180,7 @@ logical function initboundaryblocksforcings(filename)
                              operand=oper, forcingfile = forcingfile)
                    endif
                 endif
-                initboundaryblocksforcings = initboundaryblocksforcings .and. retVal ! Remember any previous errors.
+                res = res .and. retVal ! Remember any previous errors.
                 oper = '-'
              else if (property_name == 'operand') then
                 continue
@@ -1145,7 +1195,7 @@ logical function initboundaryblocksforcings(filename)
              else if (property_name == 'bndbldepth') then
                 continue
              else
-                ! initboundaryblocksforcings remains unchanged: support ignored lines in ext file.
+                ! res remains unchanged: support ignored lines in ext file.
                 write(msgbuf, '(9a)') 'Unrecognized line in file ''', trim(filename), ''' for block [', trim(groupname), ']: ', trim(property_name), ' = ', trim(property_value), '. Ignoring this line.'
                 call warn_flush()
                 cycle
@@ -1160,15 +1210,23 @@ logical function initboundaryblocksforcings(filename)
           call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)//'''. Check preceding log lines for details.')
        end if
        
-    case ('lateral')
-       ! [Lateral]
+       res = .true.
+       
+ end function init_boundary_blocks_forcings
+ 
+ function init_lateral_forcings() result(res)
+ 
+ logical  :: res
+ 
+ res = .false.
+ ! [Lateral]
        ! Id = ...
        locid = ' '
        call prop_get(node_ptr, '', 'Id', locid, success)
        if (.not. success .or. len_trim(locid) == 0) then
           write(msgbuf, '(a,i0,a)') 'Required field ''Id'' missing in lateral (block #', i, ').'
           call warn_flush()
-          cycle
+          return
        end if
 
        ! locationType = optional for lateral
@@ -1241,7 +1299,7 @@ logical function initboundaryblocksforcings(filename)
           if (.not. success .or. len_trim(locationfile) == 0) then
              write(msgbuf, '(a,a,a)') 'Required field ''LocationFile'' missing in lateral ''', trim(locid), '''.'
              call warn_flush()
-             cycle
+             return
           else
              call resolvePath(locationfile, basedir)
           end if
@@ -1249,7 +1307,7 @@ logical function initboundaryblocksforcings(filename)
        if (loc_spec_type == imiss) then
           write(msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(locid), '''.'
           call warn_flush()
-          cycle
+          return
        end if
 
        call ini_alloc_laterals()
@@ -1282,7 +1340,7 @@ logical function initboundaryblocksforcings(filename)
        else
           write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(locid), '''.'
           call warn_flush()
-          cycle
+          return
        end if
 
        qid = 'lateral_discharge' ! New quantity name in .bc files
@@ -1291,29 +1349,36 @@ logical function initboundaryblocksforcings(filename)
           jaqin = 1
           lat_ids(numlatsg) = locid
        end if
+       
+       res = .true.
+       
+ end function init_lateral_forcings
 
-    case ('meteo')
-
-       ! First check for required input:
+ function init_meteo_forcings() result(res)
+ 
+ logical :: res
+ 
+ res = .false.
+ ! First check for required input:
        call prop_get_string(node_ptr, '', 'quantity', quantity, retVal)
        if (.not. retVal) then
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''quantity'' is missing.'
           call warn_flush()
-          cycle
+          return
        end if
 
        call prop_get_string(node_ptr, '', 'forcingFileType', forcingfiletype, retVal)
        if (.not. retVal) then
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFileType'' is missing.'
           call warn_flush()
-          cycle
+          return
        end if
 
        call prop_get_string(node_ptr, '', 'forcingFile', forcingfile , retVal)
        if (.not. retVal) then
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFile'' is missing.'
           call warn_flush()
-          cycle
+          return
        else
           call resolvePath(forcingfile, basedir)
        end if
@@ -1359,7 +1424,7 @@ logical function initboundaryblocksforcings(filename)
              if (jaQext == 0) then
                 write(msgbuf, '(a)') 'quantity '''// trim(quantity) //' in file ''', trim(filename), ''': [', trim(groupname), '] is missing QExt=1 in MDU. Ignoring this block.'
                 call warn_flush()
-                cycle
+                return
              end if
              if (strcmpi(forcingFileType, 'sample')) then
                 filetype = triangulation
@@ -1368,7 +1433,7 @@ logical function initboundaryblocksforcings(filename)
              else
                 write(msgbuf, '(a)') 'Unknown forcingFileType '''// trim(forcingfiletype) //' in file ''', trim(filename), ''': [', trim(groupname), '], quantity=', trim(quantity), '. Ignoring this block.'
                 call warn_flush()
-                cycle
+                return
              end if
              call prop_get(node_ptr, '', 'locationType', itemtype, success)
              select case (str_tolower(trim(itemtype)))
@@ -1387,12 +1452,12 @@ logical function initboundaryblocksforcings(filename)
              call prepare_lateral_mask(kcsini, ilattype)
              !kcsini(ndx2d+1:ndxi) = 1 ! Only 1D for now
 
-             success = timespaceinitialfield(xz, yz, qext, ndx, forcingFile, filetype, fmmethod, oper, transformcoef, 2, kcsini) ! zie meteo module
-             cycle ! This was a special case, don't continue with timespace processing below.
+             res = timespaceinitialfield(xz, yz, qext, ndx, forcingFile, filetype, fmmethod, oper, transformcoef, 2, kcsini) ! zie meteo module
+             return ! This was a special case, don't continue with timespace processing below.
           case default
              write(msgbuf, '(a)') 'Unknown quantity '''// trim(quantity) //' in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
              call warn_flush()
-             cycle
+             return
        end select
        select case (trim(str_tolower(forcingfiletype)))
        case ('bcascii')
@@ -1411,7 +1476,7 @@ logical function initboundaryblocksforcings(filename)
        case default
           write(msgbuf, '(a)') 'Unknown forcingFileType '''// trim(forcingfiletype) //' in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
           call warn_flush()
-          cycle
+          return
        end select
        if (success) then
           select case (quantity)
@@ -1422,42 +1487,11 @@ logical function initboundaryblocksforcings(filename)
                 jawind = 1
           end select
        endif
-
-    case default       ! Unrecognized item in a ext block
-       ! initboundaryblocksforcings remains unchanged: Not an error (support commented/disabled blocks in ext file)
-       write(msgbuf, '(5a)') 'Unrecognized block in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
-       call warn_flush()
-    end select
- end do
-
- if (allocated(itpenzr)) deallocate(itpenzr)
- if (allocated(itpenur)) deallocate(itpenur)
- if (numlatsg > 0) then
-    do n = 1,numlatsg
-       balat(n) = 0d0
-       do k1=n1latsg(n),n2latsg(n)
-          k = nnlat(k1)
-          if (k > 0) then
-             if (.not. is_ghost_node(k)) then
-             balat(n) = balat(n) + ba(k)
-             end if
-          endif
-       end do
-    end do
-    if (jampi > 0) then
-       call reduce_sum(numlatsg, balat)
-    end if
-    if (allocated(kclat)) then
-       deallocate(kclat)
-    endif
- end if
-
- call tree_destroy(bnd_ptr)
- if (allocated(thrtt)) then
-    call init_threttimes()
- endif
-
-end function initboundaryblocksforcings
+    res = .true.
+    
+ end function init_meteo_forcings
+ 
+end function init_external_forcings
 
 
 !> Initializes memory for laterals on flow nodes.

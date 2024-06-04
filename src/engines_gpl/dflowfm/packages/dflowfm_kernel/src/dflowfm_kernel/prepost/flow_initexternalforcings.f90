@@ -779,7 +779,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    ! First initialize new-style ExtForceFileNew quantities.
    num_lat_ini_blocks = 0
    if (len_trim(md_extfile_new) > 0) then
-      success = initboundaryblocksforcings(md_extfile_new)
+      success = init_external_forcings(md_extfile_new)
       if (.not. success) then
          iresult = DFM_WRONGINPUT
          call mess(LEVEL_WARN, 'Error in external forcings file '''//trim(md_extfile_new)//'''.')
