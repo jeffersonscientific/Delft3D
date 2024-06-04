@@ -68,6 +68,8 @@ if(UNIX)
                         ${CMAKE_BINARY_DIR}/fortran_module_dir)
 
     add_definitions(-DHAVE_CONFIG_H=1)
+
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
 # Define additional compilation flags

@@ -50,6 +50,7 @@ if(UNIX)
 
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 
+    target_link_options(${library_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio

@@ -59,8 +59,10 @@ if (UNIX)
             uuid)
 endif (UNIX)
 
-target_compile_options(${library_name} PRIVATE "${openmp_flag}")
-target_compile_options(${library_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${library_name} PRIVATE "${waq_default_flags}" "${openmp_flag}")
+if(UNIX)
+    target_link_options(${library_name} PRIVATE ${openmp_flag})
+endif(UNIX)
 
 target_include_directories(${library_name} PRIVATE ${version_include_dir})
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

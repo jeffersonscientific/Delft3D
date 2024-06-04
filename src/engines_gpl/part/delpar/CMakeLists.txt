@@ -22,6 +22,9 @@ target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags} ${openmp_flag})
+if(UNIX)
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
+endif(UNIX)
 
 if(WIN32)
     # Set linker properties

@@ -12,6 +12,9 @@ add_executable(${executable_name}   ${executable_files}
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE "${extend_source132_flag}" "${openmp_flag}")
+if(UNIX)
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
+endif(UNIX)
 
 # Set dependencies
 if (WIN32)
