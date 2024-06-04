@@ -22,4 +22,3 @@ exclude = [third_party, third_party_open]
 strip-comments = False
 disable-fypp = True
 disable-indent-mod = False
-recursive
