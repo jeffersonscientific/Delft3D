@@ -37,7 +37,7 @@ if(UNIX)
    add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
-target_include_directories(${library_name}  PRIVATE ${version_include_dir})
+target_include_directories(${library_name} PRIVATE ${version_include_dir})
 
 
 # Set additional compilation properties, specific for Debug mode
@@ -45,7 +45,7 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointe
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 target_compile_options(${library_name} PRIVATE ${openmp_flag})
 if (UNIX)
-    target_link_options(${library_name} PRIVATE ${openmp_flag})
+    target_link_options(${library_name} PUBLIC ${openmp_flag})
 endif (UNIX)
 
 set_source_files_properties(${fortran_version_file}
