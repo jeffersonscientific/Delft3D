@@ -3,7 +3,7 @@ message(STATUS "Installing Intel Redistributable Libraries")
 # Set the directory of where the source code is located
 set(src_path src)
 
-if (ifort_version LESS_EQUAL 23)
+if (intel_version LESS_EQUAL 23)
     set (mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/redist/intel64)
     string(REPLACE "\\" "/" mkl_path "${mkl_path}")
     install (DIRECTORY ${mkl_path}/ DESTINATION lib
@@ -45,7 +45,7 @@ if (ifort_version LESS_EQUAL 23)
         install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION lib FILES_MATCHING PATTERN "*.dll")
     endif()
 
-elseif (ifort_version GREATER_EQUAL 24)
+elseif (intel_version GREATER_EQUAL 24)
     # Intel OneAPI folder structures and environment variables have changed with OneAPI 2024
     set (mkl_path $ENV{MKLROOT}/bin)
     string(REPLACE "\\" "/" mkl_path "${mkl_path}")
@@ -92,5 +92,5 @@ elseif (ifort_version GREATER_EQUAL 24)
         install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
     endif()
 else()
-    message(FATAL_ERROR "ifort_version ${ifort_version} was not recognized. \nCannot install intel redistributable libraries.")
+    message(FATAL_ERROR "intel version ${intel_version} was not recognized. \nCannot install intel redistributable libraries.")
 endif()

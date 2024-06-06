@@ -36,15 +36,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Set compiler flags
 enable_language(Fortran C CXX)
 
-get_ifort_version()
-
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
     include(compiler_options/gnu.cmake)
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
+    get_intel_version()
     include(compiler_options/intel.cmake)
 else()
-    echo (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
-    include(compiler_options/intel.cmake)
+    message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 
 # Set available build configurations for the .sln file
@@ -69,7 +67,7 @@ if (WIN32)
         message(STATUS "Intel MPI")
         list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-        if(ifort_version GREATER_EQUAL 24)
+        if(intel_version GREATER_EQUAL 24)
             message(STATUS "Using Intel 2024 folder structure.")
             set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
             set(mpi_module_path ${mpi_include_path}/mpi)
