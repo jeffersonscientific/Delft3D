@@ -106,11 +106,11 @@ implicit none
                i_node = nnlat(k1)
                if (i_node > 0) then
                   if (kmx < 1) then 
-                     total_volume = total_volume + cell_volume(k)
+                     total_volume = total_volume + cell_volume(i_node)
                      outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + &
                                                                     dt * cell_volume(i_node) * constituents(iconst, i_node)
                   else
-                     i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer wtih the first active bottom layer of base node(i_node)
+                     i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer to the index of first active bottom layer of base node(i_node)
                      call getkbotktop(i_node, kb, kt)
                      do k = kb, kt
                         total_volume = total_volume + cell_volume(k)

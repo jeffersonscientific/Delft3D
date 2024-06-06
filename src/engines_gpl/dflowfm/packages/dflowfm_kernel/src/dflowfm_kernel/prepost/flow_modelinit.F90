@@ -508,10 +508,10 @@
  call timstop(handle_extra(33)) ! end Fourier init
 
  if (numconst > 0.and. apply_transport_is_used) then
-   ! During initialisation, the lateral data must be initialized correctly
+    ! During initialisation, the lateral data must be initialized correctly
     call reset_outgoing_lat_concentration()
-    ! Use for timestep 1 s, because in that case the result is averaged concentrations at each lateral location.
-    call average_concentrations_for_laterals(numconst, kmx, ba, constituents, 1d0)
+    ! Use timestep 1 s to set outgoing_lat_concentration to the initial averaged concentrations at each lateral location.
+    call average_concentrations_for_laterals(numconst, kmx, kmxn, ba, constituents, 1._dp)
     call get_lateral_volume_per_layer(lateral_volume_per_layer)
  endif
  
