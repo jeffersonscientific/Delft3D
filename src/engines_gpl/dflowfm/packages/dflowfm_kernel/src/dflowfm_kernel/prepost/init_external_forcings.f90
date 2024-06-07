@@ -61,26 +61,28 @@ contains
  type(tree_data), pointer      :: bnd_ptr             !< tree of extForceBnd-file's [boundary] blocks
  type(tree_data), pointer      :: node_ptr            !
  integer                       :: istat               !
+ integer, parameter           :: INI_KEY_LEN   = 32  !
+ integer, parameter           :: INI_VALUE_LEN = 256 !
  character(len=:), allocatable :: group_name          !
- character(len=:), allocatable :: property_name
- character(len=:), allocatable :: property_value
- character(len=:), allocatable :: quantity
- character(len=:), allocatable :: location_file       !
- character(len=:), allocatable :: forcing_file        !
- character(len=:), allocatable :: forcing_file_type   !
- character(len=:), allocatable :: target_mask_file    !
+ character(len=INI_VALUE_LEN)  :: property_name
+ character(len=INI_VALUE_LEN)  :: property_value
+ character(len=INI_VALUE_LEN)  :: quantity
+ character(len=INI_VALUE_LEN)  :: location_file       !
+ character(len=INI_VALUE_LEN)  :: forcing_file        !
+ character(len=INI_VALUE_LEN)  :: forcing_file_type   !
+ character(len=INI_VALUE_LEN)  :: target_mask_file    !
  integer                       :: i,j                 !
  integer                       :: num_items_in_file   !
  integer                       :: num_items_in_block
  logical                       :: return_value
  character(len=1)              :: oper                !
  character (len=300)           :: rec
- character(len=:), allocatable :: nodeid
- character(len=:), allocatable :: branchid
- character(len=:), allocatable :: loc_id
- character(len=:), allocatable :: item_type
- character(len=:), allocatable :: fnam
- character(len=:), allocatable :: base_dir
+ character(len=INI_VALUE_LEN)  :: nodeid
+ character(len=INI_VALUE_LEN)  :: branchid
+ character(len=INI_VALUE_LEN)  :: loc_id
+ character(len=INI_VALUE_LEN)  :: item_type
+ character(len=INI_VALUE_LEN)  :: fnam
+ character(len=INI_VALUE_LEN)  :: base_dir
  double precision              :: chainage
  integer                       :: ierr
  integer                       :: ilattype, nlat
@@ -333,8 +335,8 @@ contains
                 continue
              else
                 ! res remains unchanged: support ignored lines in ext file.
-                write(msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', property_name, ' = ', &
-                    property_value, '. Ignoring this line.'
+                write(msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', trim(property_name), ' = ', &
+                    trim(property_value), '. Ignoring this line.'
                 call warn_flush()
                 cycle
              endif
@@ -345,7 +347,7 @@ contains
           if (len_trim(rec)>0) then
              call mess(LEVEL_WARN, trim(rec))
           endif
-          call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//quantity//'''. Check preceding log lines for details.')
+          call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)//'''. Check preceding log lines for details.')
        end if
        
        res = .true.
@@ -377,7 +379,7 @@ contains
        else
           call prop_get(node_ptr, '', 'Type',         item_type, success)
        end if
-       select case (str_tolower(item_type))
+       select case (str_tolower(trim(item_type)))
        case ('1d')
           ilattype = ILATTP_1D
        case ('2d')
@@ -436,7 +438,7 @@ contains
           location_file = ''
           call prop_get(node_ptr, '', 'LocationFile', location_file, success)
           if (.not. success .or. len_trim(location_file) == 0) then
-             write(msgbuf, '(a,a,a)') 'Required field ''LocationFile'' missing in lateral ''', loc_id, '''.'
+             write(msgbuf, '(a,a,a)') 'Required field ''LocationFile'' missing in lateral ''', trim(loc_id), '''.'
              call warn_flush()
              return
           else
@@ -444,7 +446,7 @@ contains
           end if
        end if
        if (loc_spec_type == imiss) then
-          write(msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', loc_id, '''.'
+          write(msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(loc_id), '''.'
           call warn_flush()
           return
        end if
@@ -477,13 +479,13 @@ contains
        if (len_trim(rec) > 0) then
           call resolvePath(rec, base_dir)
        else
-          write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', loc_id, '''.'
+          write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(loc_id), '''.'
           call warn_flush()
           return
        end if
 
        qid = 'lateral_discharge' ! New quantity name in .bc files
-       success = adduniformtimerelation_objects(qid, '', 'lateral', loc_id, 'discharge', trim(rec), numlatsg, kx, qplat(1,:))
+       success = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, kx, qplat(1,:))
        if (success) then
           jaqin = 1
           lat_ids(numlatsg) = loc_id
@@ -563,7 +565,7 @@ contains
           case ('qext')
              ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
              if (jaQext == 0) then
-                write(msgbuf, '(a)') 'quantity '''// quantity //' in file ''', file_name, ''': [', group_name, &
+                write(msgbuf, '(a)') 'quantity '''// trim(quantity) //' in file ''', file_name, ''': [', group_name, &
                     '] is missing QExt=1 in MDU. Ignoring this block.'
                 call warn_flush()
                 return
@@ -572,13 +574,13 @@ contains
                 filetype = triangulation
                 fmmethod = 5 ! triangulation
              else
-                write(msgbuf, '(a)') 'Unknown forcingFileType '''// forcing_file_type //' in file ''', file_name, &
-                    ''': [', group_name, '], quantity=', quantity, '. Ignoring this block.'
+                write(msgbuf, '(a)') 'Unknown forcingFileType '''// trim(forcing_file_type) //' in file ''', file_name, &
+                    ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
                 call warn_flush()
                 return
              end if
              call prop_get(node_ptr, '', 'locationType', item_type, success)
-             select case (str_tolower(item_type))
+             select case (str_tolower(trim(item_type)))
              case ('1d')
                 ilattype = ILATTP_1D
              case ('2d')
@@ -595,7 +597,7 @@ contains
              res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, fmmethod, oper, transformcoef, 2, kcsini) ! zie meteo module
              return ! This was a special case, don't continue with timespace processing below.
           case default
-             write(msgbuf, '(a)') 'Unknown quantity '''// quantity //' in file ''', file_name, ''': [', group_name, &
+             write(msgbuf, '(a)') 'Unknown quantity '''// trim(quantity) //' in file ''', file_name, ''': [', group_name, &
                  ']. Ignoring this block.'
              call warn_flush()
              return
@@ -616,7 +618,7 @@ contains
           fmmethod = spaceandtime
           success = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), kcsini, kx, forcing_file, filetype=filetype, method=fmmethod, operand=oper)
        case default
-          write(msgbuf, '(a)') 'Unknown forcingFileType '''// forcing_file_type //' in file ''', file_name, &
+          write(msgbuf, '(a)') 'Unknown forcingFileType '''// trim(forcing_file_type) //' in file ''', file_name, &
               ''': [', group_name, ']. Ignoring this block.'
           call warn_flush()
           return
