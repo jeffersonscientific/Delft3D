@@ -362,7 +362,7 @@ class TestSetRunner(ABC):
                     # check type of program
                     if (
                         self.__settings.run_mode == ModeType.REFERENCE
-                        and loc.type == PathType.REFERENCE
+                        and loc.type == PathType.CHECK
                     ) or (
                         self.__settings.run_mode == ModeType.COMPARE
                         and loc.type == PathType.CHECK

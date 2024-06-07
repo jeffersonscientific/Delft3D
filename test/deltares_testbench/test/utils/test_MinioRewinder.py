@@ -284,7 +284,7 @@ class TestMinioRewinder:
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
         fs.create_file("destination/path/bar")
-        minio_client.fget_object.side_effect = fs.create_file("destination/path/foo")
+        minio_client.fget_object.side_effect = self.create_file_side_effect("destination/path/foo")
 
         # Act
         rewinder.download("my-bucket", "source/path", Path("destination/path"))
@@ -295,6 +295,14 @@ class TestMinioRewinder:
         minio_client.fget_object.assert_called_once_with(
             "my-bucket", "source/path/foo", str(Path("destination/path/foo")), version_id="v1"
         )
+
+    def create_file_side_effect(self, filename):
+        def side_effect(*args, **kwargs):
+            # Create the file (you can customize this logic)
+            with open(filename, 'w') as f:
+                f.write('File content')
+            return None  # Return None to mimic the function call
+        return side_effect
 
     def test_download__same_key_multiple_versions__get_latest_versions(
         self, mocker: MockerFixture, fs: FakeFilesystem
