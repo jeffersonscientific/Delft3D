@@ -82,8 +82,6 @@ contains
    logical           :: jawelrestart
 
    double precision  :: upot, ukin, ueaa
-   
-   integer, external :: flow_initexternalforcings
 
    double precision, allocatable :: weirdte_save(:)
       
