@@ -34,7 +34,7 @@
   ! =================================================================================================
   subroutine setpillars()
     use m_flowgeom            , only: ndx, lnx, ba, wu, nd
-    use fm_external_forcing_data, only: pillar, Cpil
+    use fm_external_forcings_data, only: pillar, Cpil
     use m_vegetation          , only: rnveg, diaveg, stemheight
     use gridoperations
     use m_flowparameters      , only: japillar

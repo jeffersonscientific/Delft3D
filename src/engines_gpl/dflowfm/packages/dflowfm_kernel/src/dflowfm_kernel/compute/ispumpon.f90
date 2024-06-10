@@ -31,7 +31,7 @@
 ! 
 
  integer function ispumpon(n,s1k)
- use fm_external_forcing_data
+ use fm_external_forcings_data
  use m_missing
  use m_structures
 

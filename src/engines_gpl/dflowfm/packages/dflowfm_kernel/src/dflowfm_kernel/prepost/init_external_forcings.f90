@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 ! 
-submodule (m_external_forcing) initialisation
+submodule (m_external_forcings) initialisation
 
 implicit none
 
@@ -39,7 +39,7 @@ contains
  use tree_data_types
  use tree_structures
  use messageHandling
- use fm_external_forcing_data
+ use fm_external_forcings_data
  use m_flowgeom
  use timespace_data, only: weightfactors, poly_tim, uniform, spaceandtime, getmeteoerror
  use m_lateral, only : balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
@@ -641,7 +641,7 @@ contains
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
 integer function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
-   use m_external_forcing, only: init_external_forcings, addtimespacerelation_boundaries, adduniformtimerelation_objects
+   use m_external_forcings, only: init_external_forcings, addtimespacerelation_boundaries, adduniformtimerelation_objects
    use m_alloc
    use m_flowparameters
    use m_flowtimes                                     ! Two stages: 1 = collect elsets for which data is provided
@@ -740,7 +740,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
    iresult = DFM_NOERR
 
-   success = .true.    ! default if no valid providers are present in *.ext file (fm_external_forcing_data::success)
+   success = .true.    ! default if no valid providers are present in *.ext file (fm_external_forcings_data::success)
    patm_available = .false.
    tair_available = .false.
    dewpoint_available = .false.

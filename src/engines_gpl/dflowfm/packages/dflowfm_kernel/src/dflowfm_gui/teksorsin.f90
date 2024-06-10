@@ -31,7 +31,7 @@
 ! 
 
 subroutine teksorsin()      ! teksrc
-use fm_external_forcing_data
+use fm_external_forcings_data
 use unstruc_display
 use m_transport, only: isalt, itemp
 

@@ -36,7 +36,7 @@
  subroutine resetFlow()
  use m_wind
  use m_flow
- use fm_external_forcing_data
+ use fm_external_forcings_data
  use m_flowparameters
  use m_statistics
  use m_flowgeom

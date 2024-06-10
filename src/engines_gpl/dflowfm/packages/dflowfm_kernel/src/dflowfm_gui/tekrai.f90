@@ -43,7 +43,7 @@
  use m_missing
  use m_sediment
  use m_strucs
- use fm_external_forcing_data
+ use fm_external_forcings_data
  use kdtree2Factory
 
  implicit none

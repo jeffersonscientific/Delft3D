@@ -38,7 +38,7 @@
  use m_physcoef
  use m_turbulence
  use m_flow
- use fm_external_forcing_data
+ use fm_external_forcings_data
  use m_flowparameters
  use m_flowgeom
  use m_modelbounds

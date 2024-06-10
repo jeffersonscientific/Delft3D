@@ -169,8 +169,8 @@ function initInitialFields(inifilename) result(ierr)
    use m_wind ! |TODO: AvD: reduce amount of uses
    use m_missing
    use timespace
-   use m_external_forcing, only: prepare_lateral_mask
-   use fm_external_forcing_data, only: qid, operand, transformcoef, success
+   use m_external_forcings, only: prepare_lateral_mask
+   use fm_external_forcings_data, only: qid, operand, transformcoef, success
    use network_data
    use m_alloc
    use dfm_error
@@ -1084,7 +1084,7 @@ end subroutine spaceInit1dField
 !> set  friction type (ifrcutp) values
 subroutine set_friction_type_values()
 
-   use fm_external_forcing_data, only : operand, transformcoef
+   use fm_external_forcings_data, only : operand, transformcoef
    use m_flow,                 only : ifrctypuni, ifrcutp, frcu
    use m_flowgeom,             only : lnx
    use m_missing,              only : dmiss

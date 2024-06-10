@@ -33,7 +33,7 @@
    subroutine setwavmubnd()
    use m_flowgeom
    use m_flowparameters
-   use fm_external_forcing_data
+   use fm_external_forcings_data
    use m_flow, only: hu, huvli, wavmubnd, kmx
    use m_waves
    implicit none

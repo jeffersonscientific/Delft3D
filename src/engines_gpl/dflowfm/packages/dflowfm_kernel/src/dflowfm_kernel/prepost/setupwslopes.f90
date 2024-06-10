@@ -40,7 +40,7 @@
  use geometry_module, only: getdx, getdy, dbdistance, spher2locvec
  use stdlib_sorting, only: sort_index
  use m_missing, only: dmiss
- use fm_external_forcing_data
+ use fm_external_forcings_data
 
  implicit none
 

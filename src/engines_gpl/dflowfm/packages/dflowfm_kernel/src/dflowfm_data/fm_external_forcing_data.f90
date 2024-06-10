@@ -31,7 +31,7 @@
 ! 
 
 ! unstruc.f90
- module fm_external_forcing_data
+ module fm_external_forcings_data
  use m_wind
  use m_nudge
  use m_bnd
@@ -525,4 +525,4 @@ subroutine default_fm_external_forcing_data()
     numsrc_nf = 0
 end subroutine default_fm_external_forcing_data
 
-end module fm_external_forcing_data
+end module fm_external_forcings_data
