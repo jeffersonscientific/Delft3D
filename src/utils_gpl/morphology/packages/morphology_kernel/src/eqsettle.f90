@@ -44,7 +44,6 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
         & macro_floc_settling_chassagne, micro_floc_settling_chassagne, floc_chassagne
     use message_module, only: write_error
     use iso_c_binding, only: c_char
-    use m_fm_erosed, only: nflocpop, nflocsizes
     !
     implicit none
 !
@@ -241,11 +240,7 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        !
        ! Settling velocity based on flocculation model by Manning and Dyer
        !
-       if (nflocsizes > 1) then
-          cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
-       else
-          cclay  = real(dll_reals(WS_RP_CFRCB),fp) * 1000.0_fp ! convert kg/m3 to g/m3
-       endif
+       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
        tshear = real(dll_reals(WS_RP_SHTUR),fp)
        call floc_manning( cclay, tshear, wsloc, macro_frac, ws_macro, ws_micro )
        apply_hinset = .true.
@@ -281,11 +276,7 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        !
        ! Settling velocity based on flocculation model by Chassagne and Safar
        !
-       if (nflocsizes > 1) then
-          cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
-       else
-          cclay  = real(dll_reals(WS_RP_CFRCB),fp) * 1000.0_fp ! convert kg/m3 to g/m3
-       endif
+       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
        ag     = real(dll_reals(WS_RP_GRAV ),fp)
        tshear = real(dll_reals(WS_RP_SHTUR),fp)
        tdiss  = real(dll_reals(WS_RP_EPTUR),fp)
