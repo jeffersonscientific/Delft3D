@@ -342,9 +342,10 @@ end subroutine test_get_lateral_volume_per_layer
 !==============================================================================
 !> Test computation of distribution of lateral discharge per layer, which is retrieved from BMI,
 !! to discharge per layer per cell.
-!! This test assumes a model of dimension (nx,ny,nz) = (4,2,3), i.e. 3 layers.
-!! In the last node, the model is shallow meaning it has only 2 active layers.
-!! The model contains 2 laterals.
+!! This test assumes a model of dimension (nx,ny,nz) = (4,2,3). In another word, there are 4 nodes in x-direction, 2 nodes
+!! in y-direction, so that ndx = 8.
+!! There are 3 layers on all nodes, except for the 8th node which has only 2 active layers. So ndkx = (3+1)*8-1 = 31.
+!! The model contains 2 lateralsL: the 1st lateral is on nodes 1 and 2, the 2nd lateral is on nodes 7 and 8.
 subroutine test_distribute_lateral_discharge_per_layer_per_cell
    use m_flow,          only: vol1, kbot, ktop, kmxn, kmx
    use m_alloc,         only: realloc
@@ -363,15 +364,16 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
 
    ! Initialize number of active layers for each cell
    call realloc(kmxn, ndx, stat=ierr, keepExisting=.false., fill=0)
-   call check_allocation_error_write_message(ierr, 'kmxn', 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('kmxn', ierr, ndx, 'test_distribute_lateral_discharge_per_layer_per_cell')
    kmxn = [3,3,3,3,3,3,3,2] ! The 8th cell is assumed shallow and contains only two layers
 
-   ! Initialize water volume per cell, vol1
+   ! Initialize water volume per cell per layer, vol1.
    kmx = 3
    ndkx = ndx * (kmx + 1) - 1 ! one cell is shallow and contains only two layers
    call realloc(vol1, ndkx, stat=ierr, keepExisting=.false., fill=0d0)
-   call check_allocation_error_write_message(ierr, 'vol1', 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('vol1', ierr, ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
+   ! vol1 (ndx+1:ndkx) = [19, 20, 21, ..., 41].
    do i_node = ndx+1, ndkx
       vol1(i_node) = 10 + i_node ! only volume per cell, per layer is needed; the first ndx elements contain 2D volume
                                  ! (i.e. total volume over all layers) and are not needed for the function tested here,
@@ -380,10 +382,10 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
 
    ! Initialize kbot and ktop
    call realloc(kbot, ndx, stat=ierr, keepExisting=.false., fill=0)
-   call check_allocation_error_write_message(ierr, 'kbot', 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('kbot', ierr, ndx, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
    call realloc(ktop, ndx, stat=ierr, keepExisting=.false., fill=0)
-   call check_allocation_error_write_message(ierr, 'ktop', 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('ktop', ierr, ndx, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
    kbot(1) = ndx + 1
    ktop(1) = kbot(1) + kmxn(1) - 1
@@ -395,38 +397,47 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
    ! Initialize laterals administration
    numlatsg = 2
    call realloc(n1latsg, numlatsg, stat=ierr, keepExisting=.false., fill=0)
-   call check_allocation_error_write_message(ierr, 'n1latsg', 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('n1latsg', ierr, numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
    call realloc(n2latsg, numlatsg, stat=ierr, keepExisting=.false., fill=0)
-   call check_allocation_error_write_message(ierr, 'n2latsg', 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('n2latsg', ierr, numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
    call realloc(nnlat,   nlatnd,   stat=ierr, keepExisting=.false., fill=0)
-   call check_allocation_error_write_message(ierr, 'nnlat', 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('nnlat', ierr, nlatnd, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
-
+   ! The 1st lateral is on nodes 1 and 2, the 2nd lateral is on nodes 7 and 8.
    nnlat   = [1,2,7,8]
    n1latsg = [1,3]
    n2latsg = [2,4]
 
+   ! Initialize lateral volume per layer and discharge per layer.
    call realloc(lateral_volume_per_layer, (/ kmx, numlatsg /), stat=ierr, keepExisting=.false., fill=0d0)
-   call check_allocation_error_write_message(ierr, 'lateral_volume_per_layer', &
-                                             'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('lateral_volume_per_layer', ierr, kmx*numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
    call realloc(provided_lateral_discharge_per_layer, (/ kmx, numlatsg /), stat=ierr, keepExisting=.false., fill=0d0)
-   call check_allocation_error_write_message(ierr, 'provided_lateral_discharge_per_layer', &
-                                             'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('provided_lateral_discharge_per_layer', ierr, kmx*numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
    call realloc(lateral_discharge_per_layer_per_cell, (/ kmx, ndkx/), stat=ierr, keepExisting=.false., fill=0d0)
-   call check_allocation_error_write_message(ierr, 'lateral_discharge_per_layer_per_cell', &
-                                             'test_distribute_lateral_discharge_per_layer_per_cell')
+   call aerr('lateral_discharge_per_layer_per_cell', ierr, kmx*ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
-   lateral_volume_per_layer(1:kmx,1) = [100, 300, 250]
-   lateral_volume_per_layer(1:kmx,2) = [200, 250, 330]
-   provided_lateral_discharge_per_layer(1:kmx,1) = [1000, 1500, 2800]
-   provided_lateral_discharge_per_layer(1:kmx,2) = [2000, 3000, 2500]
+   lateral_volume_per_layer(1:kmx,1) = [100, 300, 250] ! Volume for the 1st lateral per layer
+   lateral_volume_per_layer(1:kmx,2) = [200, 250, 330] ! Volume for the 2nd lateral per layer
+   provided_lateral_discharge_per_layer(1:kmx,1) = [1000, 1500, 2800] ! Discharge for the 1st lateral per layer
+   provided_lateral_discharge_per_layer(1:kmx,2) = [2000, 3000, 2500] ! Discharge for the 2nd lateral per layer
 
    ! Distribute the lateral discharge
    call distribute_lateral_discharge_per_layer_per_cell(provided_lateral_discharge_per_layer, lateral_discharge_per_layer_per_cell)
 
-   ! Compare results with reference results
+   ! Compare results with reference results.
+   ! The 2 laterals are applied on 4 nodes, i.e. 1, 2, 7 and 8. Considering the layers, in total 4*3-1=11 cells are involved,
+   ! so below we compare 11 sets of values, for each cell on each layer.
+   ! Take the 1st comparison as an example:
+   ! Target:
+   !  lateral_discharge_per_layer_per_cell(1,9) is for node 9 on layer 1.
+   ! Known:
+   !  a. vo1(9) = 19. Node 9 is above node 1 on layer 1, so it belongs to the 1st lateral. Then we need
+   !  b. lateral_volume_per_layer(1,1) = 100, which is the volume of lateral 1 at layer 1. Then we need
+   !  c. provided_lateral_discharge_per_layer(1,1) = 1000, which is the discharge of lateral 1 at layer 1.
+   ! With a, b. and c, we can compute the target:
+   !   lateral_discharge_per_layer_per_cell(1,9) = 19/100*1000 = 190.
    call assert_comparable(lateral_discharge_per_layer_per_cell(1,9),  190.0d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,9)" // &
                           " is not correct.")
@@ -494,21 +505,5 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
    end if
 
 end subroutine test_distribute_lateral_discharge_per_layer_per_cell
-
-!> Checks the allocation error.
-!! If an error occures, then write an error message.
-subroutine check_allocation_error_write_message(ierr, array_name, subroutine_name)
-   use MessageHandling, only: LEVEL_ERROR, mess
-   use dfm_error,       only: DFM_NOERR
-
-   integer,          intent(in) :: ierr            !< Error flag.
-   character(len=*), intent(in) :: array_name      !< Name of the array that was to be allocated.
-   character(len=*), intent(in) :: subroutine_name !< Name of the subroutine where the allocation was to be done.
-
-   if (ierr /= DFM_NOERR) then
-      call mess(LEVEL_ERROR, &
-               'Error occured when allocating array '''//trim(array_name)//''' in subroutine'''//trim(subroutine_name)//'''.')
-   end if
-end subroutine check_allocation_error_write_message
 
 end module test_lateral
