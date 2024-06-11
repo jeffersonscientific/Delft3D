@@ -1,11 +1,4 @@
 submodule (m_external_forcings) set_external_forcings
-
-implicit none
-
-contains
-   
-   !> set field oriented boundary conditions
-module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use timers,                 only : timstrt, timstop
    use m_flowtimes
    use m_flowgeom
@@ -22,10 +15,7 @@ module subroutine set_external_forcings(time_in_seconds, initialization, iresult
    use m_airdensity,           only : get_airdensity
    use dfm_error
    use m_lateral, only : numlatsg
-
-   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
-   logical,          intent(in   ) :: initialization   !< initialization phase
-   integer,          intent(  out) :: iresult          !< Integer error status: DFM_NOERR==0 if succesful.
+implicit none
 
    integer, parameter              :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
    integer, parameter              :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 2
@@ -43,7 +33,20 @@ module subroutine set_external_forcings(time_in_seconds, initialization, iresult
 
    ! variables for processing the pump with levels, SOBEK style
    logical                         :: success_copy
+   logical                         :: initialization_   !< local copy of initialization phase
+   double precision                :: time_in_seconds_  !< local copy of Time in seconds
 
+
+contains
+   
+   !> set field oriented boundary conditions
+module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
+   logical,          intent(in   ) :: initialization   !< initialization phase
+   integer,          intent(  out) :: iresult          !< Integer error status: DFM_NOERR==0 if succesful.
+
+   time_in_seconds_ = time_in_seconds
+   initialization_ = initialization
    call timstrt('External forcings', handle_ext)
 
    success = .true.
@@ -191,8 +194,8 @@ module subroutine set_external_forcings(time_in_seconds, initialization, iresult
    end if
 
    iresult = DFM_NOERR
-
-contains
+   
+   end subroutine set_external_forcings
 
 !> get_timespace_value_by_item_and_array_and_consider_success_value
 subroutine get_timespace_value_by_item_array_consider_success_value(item, array)
@@ -200,7 +203,7 @@ subroutine get_timespace_value_by_item_array_consider_success_value(item, array)
     integer,          intent(in   ) :: item      !< Item for getting values
     double precision, intent(inout) :: array(:)  !< Array that stores the values
 
-    success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
+    success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds_, array)
 
 end subroutine get_timespace_value_by_item_array_consider_success_value
 
@@ -267,7 +270,7 @@ subroutine get_timespace_value_by_name_and_consider_success_value(name)
 
     character(*), intent(in) :: name
 
-    success = success .and. ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
+    success = success .and. ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds_)
 
 end subroutine get_timespace_value_by_name_and_consider_success_value
 
@@ -276,7 +279,7 @@ subroutine get_timespace_value_by_item_and_consider_success_value(item)
 
     integer, intent(in) :: item
 
-    success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
+    success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds_)
 
 end subroutine get_timespace_value_by_item_and_consider_success_value
 
@@ -287,7 +290,7 @@ subroutine set_wave_parameters()
    
    if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
        
-       if (.not. initialization) then
+       if (.not. initialization_) then
            !
            if (     jawave == 7 .and. waveforcing == 1 ) then
                !
@@ -530,10 +533,10 @@ subroutine retrieve_rainfall()
    ! Retrieve rainfall for ext-file quantity 'rainfall'.
    if (jarain > 0) then
       if (item_rainfall /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall', time_in_seconds)
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall', time_in_seconds_)
       end if
       if (item_rainfall_rate /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall_rate', time_in_seconds)
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'rainfall_rate', time_in_seconds_)
       end if
    end if
 
@@ -580,7 +583,7 @@ subroutine update_subsidence_and_uplift_data()
          subsupl_tp = subsupl
       end if
       if (item_subsiduplift /= ec_undef_int) then
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'bedrock_surface_elevation', time_in_seconds)
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, 'bedrock_surface_elevation', time_in_seconds_)
       end if
       if (sdu_first) then
          ! preserve the first 'bedrock_surface_elevation' field as the initial field
@@ -597,7 +600,7 @@ subroutine get_timespace_value_by_item_and_array(item, array)
     integer,          intent(in   ) :: item     !< Item for getting values
     double precision, intent(inout) :: array(:) !< Array that stores the values
 
-    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
+    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds_, array)
 
 end subroutine get_timespace_value_by_item_and_array
 
@@ -606,10 +609,8 @@ subroutine get_timespace_value_by_item(item)
 
     integer, intent(in) :: item !< Item for getting values
 
-    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
+    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds_)
 
 end subroutine get_timespace_value_by_item
 
-
-end subroutine set_external_forcings
 end submodule set_external_forcings
