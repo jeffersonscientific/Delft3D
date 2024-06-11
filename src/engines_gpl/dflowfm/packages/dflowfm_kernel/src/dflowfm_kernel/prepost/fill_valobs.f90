@@ -490,12 +490,6 @@ subroutine fill_valobs()
                enddo
             enddo
 
-            if (iturbulencemodel >= 2) then
-               call reorder_valobs_array(kmx+1, valobs(i, IPNT_VICWWS:IPNT_VICWWS+kmx), kb, kt, nlayb, dmiss)
-               call getLbotLtop(link_id_nearest, Lb, Lt)
-               call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
-               call reorder_valobs_array(kmx+1, valobs(i, IPNT_VICWWU:IPNT_VICWWU+kmx), Lb, Lt, nlaybL, dmiss)
-            end if
             if (iturbulencemodel >= 3) then
                call reorder_valobs_array(kmx+1, valobs(i,IPNT_TKIN:IPNT_TKIN+kmx), kb, kt, nlayb, dmiss)
                call reorder_valobs_array(kmx+1, valobs(i,IPNT_TEPS:IPNT_TEPS+kmx), kb, kt, nlayb, dmiss)

@@ -1271,13 +1271,13 @@ private
                      'm2 s-2', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write k, eps and vicww to his-file', &
                      nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWS,                                       &
-                     'Wrihis_turbulence', 'vicwws' , 'turbulent vertical eddy viscosity (flow nodes)', '', &
+                     'Wrihis_turbulence', 'vicwws' , 'turbulent vertical eddy viscosity at pressure point', '', &
                      'm2 s-1''', UNC_LOC_STATION, nc_attributes = atts(1:1),                       &
                      nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWU,                                       &
-                     'Wrihis_turbulence', 'vicwwu' , 'turbulent vertical eddy viscosity (flow links)', '', &
+                     'Wrihis_turbulence', 'vicwwu' , 'turbulent vertical eddy viscosity at closest velocity point', '', &
                      'm2 s-1''', UNC_LOC_STATION, nc_attributes = atts(1:1),                       &
-                     nc_dim_ids = station_nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_edge)
       call add_output_config(config_set_his, IDX_HIS_EPS,                                 &
                      'Wrihis_turbulence', 'eps', 'turbulent energy dissipation', '', &
                      'm2 s-3', UNC_LOC_STATION, nc_attributes = atts(1:1),                 &
@@ -1720,7 +1720,7 @@ private
 
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_U0, 'Wrimap_velocity_component_u0', &
-                     'u0', 'Velocity at velocity pointat previous time step, n-component ', '', 'm s-1', UNC_LOC_U, nc_attributes = atts(1:1), &
+                     'u0', 'Velocity at velocity point at previous time step, n-component ', '', 'm s-1', UNC_LOC_U, nc_attributes = atts(1:1), &
                      description='Write velocity component for previous time step to map file')
 
       call add_output_config(config_set_map, IDX_MAP_UCXQ_EULERIAN,                                      &
