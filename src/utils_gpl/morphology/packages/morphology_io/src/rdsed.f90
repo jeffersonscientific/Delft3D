@@ -654,8 +654,11 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           sedpar%sedblock(l) = sedblock_ptr
           !
           if (flocmod /= FLOC_NONE .and. sedtyp(l) == SEDTYP_CLAY) then
+             if (nflocsizes == 1) then ! in case of a single floc size per clay population, set sensible defaults
+                 namclay(l) = namsed(l)
+                 flocsize(l) = 1
+             endif
              call prop_get(sedblock_ptr, '*', 'ClayLabel', namclay(l))
-             if (nflocpop == nclayfrac) namflocpop(l) = namclay(l) ! for now namflocpop is only needed when nflocsizes=1
              call prop_get(sedblock_ptr, '*', 'FlocSize' , flocsize(l))
           endif
           !
@@ -1028,17 +1031,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              return
           endif
           !
-          if (nflocsizes == 1) then
-             isize = 1
-          elseif (nflocsizes > 1) then
-             isize = flocsize(l)
-          else
-             errmsg = 'The number of floc size is invalid.'
-             call write_error(errmsg, unit=lundia)
-             error = .true.
-             return
-          endif
-          !
+          isize = flocsize(l)
           if (isize <= 0) then
              errmsg = 'The floc size of fraction '//trim(namsed(l))//' is invalid.'
              call write_error(errmsg, unit=lundia)
