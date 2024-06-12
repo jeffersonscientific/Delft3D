@@ -76,7 +76,7 @@ implicit none
    module subroutine dealloc_lateraldata()
    
       if (allocated(incoming_lat_concentration)) then
-         deallocate(incoming_lat_concentration, outgoing_lat_concentration)
+         deallocate(incoming_lat_concentration, outgoing_lat_concentration, lateral_volume_per_layer)
       end if
    
 
