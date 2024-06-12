@@ -40,6 +40,7 @@ module m_lateral
       public get_lateral_volume_per_layer
       public reset_outgoing_lat_concentration 
       public finish_outgoing_lat_concentration
+      public distribute_lateral_discharge_per_layer_per_cell
       !!
       !! Laterals
       !!
@@ -166,7 +167,16 @@ module m_lateral
              real(kind=dp), dimension(:,:), intent(out) :: lateral_volume_per_layer  !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
          end subroutine get_lateral_volume_per_layer
       end interface get_lateral_volume_per_layer
-      
+
+      !> Distributes lateral discharge per layer, that is retrieved from BMI, to per layer per cell
+      interface distribute_lateral_discharge_per_layer_per_cell
+         module subroutine distribute_lateral_discharge_per_layer_per_cell(provided_lateral_discharge_per_layer, lateral_discharge_per_layer_per_cell)
+            real(kind=dp), dimension(:,:), intent(in   ) :: provided_lateral_discharge_per_layer !< Provided lateral discharge per
+                                                                                                 !! layer, retrieved from BMI
+            real(kind=dp), dimension(:,:), intent(  out) :: lateral_discharge_per_layer_per_cell !< Real lateral discharge
+                                                                                                 !! per layer per cell
+         end subroutine distribute_lateral_discharge_per_layer_per_cell
+      end interface distribute_lateral_discharge_per_layer_per_cell
    end module m_lateral
    
 

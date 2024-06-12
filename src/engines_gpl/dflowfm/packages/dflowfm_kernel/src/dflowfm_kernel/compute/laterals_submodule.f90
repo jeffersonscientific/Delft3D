@@ -257,5 +257,40 @@ implicit none
       real(kind=dp), intent(in) :: time_interval
       outgoing_lat_concentration = outgoing_lat_concentration/time_interval
    end subroutine finish_outgoing_lat_concentration
-   
+
+   !> Distributes lateral discharge per layer, that is retrieved from BMI, to per layer per cell
+   module subroutine distribute_lateral_discharge_per_layer_per_cell(provided_lateral_discharge_per_layer, &
+                                                                     lateral_discharge_per_layer_per_cell)
+
+      use m_flow,             only: vol1, kmx, kmxn
+      use precision_basics,   only: comparereal
+      use m_GlobalParameters, only: flow1d_eps10
+
+      real(kind=dp), dimension(:,:), intent(in   ) :: provided_lateral_discharge_per_layer !< Provided lateral discharge per
+                                                                                           !! layer, which is retrieved from BMI
+      real(kind=dp), dimension(:,:), intent(  out) :: lateral_discharge_per_layer_per_cell !< Real lateral discharge per layer
+                                                                                           !! per cell
+
+      integer :: i_lateral, i_layer, i_nnlat, i_node, i_flownode
+      integer :: i_node_bottom_layer, i_node_top_layer, i_active_bottom_layer
+
+      lateral_discharge_per_layer_per_cell(:,:) = 0.0_dp
+
+      do i_lateral = 1,numlatsg
+         do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_nnlat)
+            call getkbotktop(i_node, i_node_bottom_layer, i_node_top_layer)
+            i_active_bottom_layer = kmx - kmxn(i_node) + 1
+            i_layer = i_active_bottom_layer
+            do i_flownode = i_node_bottom_layer, i_node_top_layer
+               if (comparereal(lateral_volume_per_layer(i_layer, i_lateral), 0.0_dp, flow1d_eps10) /= 0) then ! Avoid division by 0
+                  lateral_discharge_per_layer_per_cell(i_layer, i_flownode) = vol1(i_flownode) &
+                                                                              / lateral_volume_per_layer(i_layer, i_lateral) &
+                                                                              * provided_lateral_discharge_per_layer(i_layer, i_lateral)
+                  i_layer = i_layer + 1
+               end if
+            end do
+         end do
+      end do
+   end subroutine distribute_lateral_discharge_per_layer_per_cell
 end submodule m_lateral_implementation
