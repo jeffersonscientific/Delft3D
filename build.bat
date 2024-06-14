@@ -5,7 +5,6 @@ rem Default arguments
 set config=all
 set build=
 set vs=0
-set ifort=0
 set coverage=
 set build_type=Debug
 set keep_build=
@@ -13,13 +12,13 @@ set keep_build=
 rem Non-argument variables
 set generator=
 set cmake=cmake
+set ifort=0
 
 rem Argument variables
 set -help=
 set -config=
 set -build=
 set -vs=
-set -ifort=
 set -coverage=
 set -build_type=
 set -keep_build=
@@ -38,10 +37,10 @@ call :check_cmake_installation
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 echo.
-echo     config      : !config!
-echo     generator   : !generator!
 echo     ifort       : !ifort!
 echo     vs          : !vs!
+echo     config      : !config!
+echo     generator   : !generator!
 echo     build_type  : !build_type!
 echo     build       : !build!
 echo     keep_build  : !keep_build!
@@ -86,7 +85,7 @@ rem =================================
     echo Get command line arguments ...
 
     rem Read arguments
-    set "options=-config:!config! -help:!help! -vs:!vs! -ifort:!ifort! -coverage:!coverage! -build:!build! -build_type:!build_type! -keep_build:!keep_build!"
+    set "options=-config:!config! -help:!help! -vs:!vs! -coverage:!coverage! -build:!build! -build_type:!build_type! -keep_build:!keep_build!"
     rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
     for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
     :loop
@@ -189,10 +188,7 @@ rem =================================
         echo Warning: Could not find ifort version in environment.
     )
 
-    if NOT !-ifort! == 0 (
-        echo Overriding automatically found ifort version !ifort! with argument !-ifort!
-        set ifort=!-ifort!
-    ) else if "!ifort!" == "" (
+    if "!ifort!" == "" (
         echo Error: ifort not set. Please ensure that ifort is installed and run build.bat from a prompt with the right environment set.
         set ERRORLEVEL=1
         goto :end
@@ -435,7 +431,6 @@ rem =======================
     echo -coverage: Instrument object files for code-coverage tool (codecov).                  Example: -coverage
     echo -build: Run build and install steps after running cmake.                              Example: -build
     echo -vs: desired visual studio version. Overrides default.                                Example: -vs 2019
-    echo -ifort: desired intel fortran compiler version. Overrides default.                    Example: -ifort 21
     echo -build_type: build optimization level.                                                Example: -build_type Release
 rem extra four spaces required for aligning Example:
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
