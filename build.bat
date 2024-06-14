@@ -1,25 +1,30 @@
 @ echo off
 
 setlocal enabledelayedexpansion
-set config=
-set -config=
-set -help=
+rem Default arguments
+set config=all
 set build=
-set -build=
-set generator=
-set vs=
-set -vs=
-set ifort=
-set -ifort=
+set vs=0
+set ifort=0
 set coverage=
-set -coverage=
-set build_type=
-set -build_type=
+set build_type=Debug
 set keep_build=
-set -keep_build=
+
+rem Non-argument variables
+set generator=
 set cmake=cmake
 
-rem # Jump to the directory where this build.bat script is
+rem Argument variables
+set -help=
+set -config=
+set -build=
+set -vs=
+set -ifort=
+set -coverage=
+set -build_type=
+set -keep_build=
+
+rem Jump to the directory where this build.bat script is
 cd %~dp0
 set root=%CD%
 
@@ -80,7 +85,7 @@ rem =================================
     echo Get command line arguments ...
 
     rem Read arguments
-    set "options=-config:all -help: -vs:0 -ifort:0 -coverage: -build: -build_type:Debug -keep_build:"
+    set "options=-config:!config! -help:!help! -vs:!vs! -ifort:!ifort! -coverage:!coverage! -build:!build! -build_type:!build_type! -keep_build:!keep_build!"
     rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
     for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
     :loop
