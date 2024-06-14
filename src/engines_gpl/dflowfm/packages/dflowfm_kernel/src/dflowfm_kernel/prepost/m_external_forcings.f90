@@ -42,7 +42,7 @@ interface
    end subroutine set_external_forcings_boundaries
 end interface
 
-Interface
+interface
    module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
    logical,          intent(in   ) :: initialization   !< initialization phase
@@ -58,8 +58,8 @@ interface
 end interface
 
 interface
-   module function flow_initexternalforcings() result(iresult)
-   integer                      :: iresult
+   module function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
+      integer :: iresult
    end function flow_initexternalforcings
 end interface
 

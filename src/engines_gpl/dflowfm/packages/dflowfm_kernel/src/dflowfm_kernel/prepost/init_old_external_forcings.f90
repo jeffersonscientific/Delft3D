@@ -1,5 +1,4 @@
 submodule (m_external_forcings) old_initialisation
-   use m_external_forcings, only: init_external_forcings, addtimespacerelation_boundaries, adduniformtimerelation_objects
    use m_alloc
    use m_flowparameters
    use m_flowtimes                                     ! Two stages: 1 = collect elsets for which data is provided
@@ -47,18 +46,18 @@ implicit none
 
    double precision, allocatable :: sah(:)  ! temp
    double precision, allocatable :: grainlayerthickness(:,:) ! help array grain layer thickness
-   integer :: itrac, num_lat_ini_blocks
+   integer                       :: itrac, num_lat_ini_blocks
    logical                       :: patm_available, tair_available, dewpoint_available
    double precision, allocatable :: xdum(:), ydum(:), xy2dum(:,:)
    integer, allocatable          :: kdum(:)
-   double precision, allocatable  :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
+   double precision, allocatable :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer                       :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
 
 contains
    
    !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
-function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
+module function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
    
    integer :: iresult
    logical :: success
