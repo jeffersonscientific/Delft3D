@@ -1,46 +1,5 @@
 submodule (m_external_forcings) old_initialisation
-   use m_alloc
-   use m_flowparameters
-   use m_flowtimes                                     ! Two stages: 1 = collect elsets for which data is provided
-   use m_flowgeom                                      !             2 = add relations between elsets and their providers
-   use m_inquire_flowgeom, only: IFLTP_1D, IFLTP_ALL
-   use m_netw
-   use unstruc_model
-   use unstruc_messages
-   use unstruc_files, only: resolvePath, basename
-   use timespace
-   use m_missing
-   use m_ship
-   use m_flow ! , only : frcu, frculin, jafrculin, viusp, javiusp, diusp, jadiusp, vicouv, dicouv,   &
-            !        ifrcutp, frcuni, ifrctypuni, s1, sa1, tem1, u1, zws, satop, kmx, kmxd, ndkx, kmxn, Cdwusp, &
-            !        frcInternalTides2D, lnkx
-   use m_observations
-   use m_alloc
-   use m_structures
-   use m_meteo
-   use m_ec_instance
-   use m_grw
-   use m_alloc
-   use m_sediment
-   use m_transport
-   use m_mass_balance_areas
-   use m_fm_wq_processes
-   use m_strucs
-   use dfm_error
-   use m_sobekdfm
-   use m_partitioninfo
-   use m_storage
-   use m_crosssections
-   use m_ec_spatial_extrapolation, only : init_spatial_extrapolation
-   use m_sferic, only: jsferic
-   use m_trachy, only: trachy_resistance
-   use unstruc_inifields, only: initInitialFields, set_friction_type_values
-   use Timers
-   use m_subsidence
-   use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-   use mass_balance_areas_routines, only : get_mbainputname
-   use m_lateral, only : numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids
-   use m_lateral, only : initialize_lateraldata, apply_transport
+   use fm_external_forcings_data
    
 implicit none
 
@@ -58,7 +17,7 @@ contains
    !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
 module function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
-   
+   use unstruc_model, only: md_extfile_new
    integer :: iresult
    logical :: success
 
@@ -75,10 +34,25 @@ module function flow_initexternalforcings() result(iresult)              ! This 
 end function flow_initexternalforcings
    
 subroutine initialize_setup(iresult)
+use dfm_error, only: DFM_NOERR
+use m_transport, only: const_names
+use m_fm_wq_processes, only: wqbotnames
+use m_mass_balance_areas, only: mbaname
+use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, btempforcingtypl, ja_friction_coefficient_time_dependent
+use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
+use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta, xu, yu 
+use m_netw, only: xe, ye, zk, numk, numl
+use unstruc_model, only: md_inifieldfile
+use m_meteo
+use m_sediment, only: jaceneqtr, grainlay, mxgr, sedh
+use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
+use dfm_error, only: dfm_extforcerror, dfm_wronginput, dfm_noerr
+use unstruc_inifields, only: initInitialFields
+
    integer, intent(out) :: iresult
 
    integer :: ierr
-   logical                       :: exist
+   logical                       :: exist, success
    integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx
    integer :: n4 = 6
    character (len=256)           :: fnam, rec
@@ -742,31 +716,29 @@ subroutine initialize_setup(iresult)
    
    end subroutine
    
-   !subroutine initialize_new_wrapper()
-   !   ! First initialize new-style ExtForceFileNew quantities.
-   !num_lat_ini_blocks = 0
-   !if (len_trim(md_extfile_new) > 0) then
-   !   success = init_external_forcings(md_extfile_new)
-   !   if (.not. success) then
-   !      iresult = DFM_WRONGINPUT
-   !      call mess(LEVEL_WARN, 'Error in external forcings file '''//trim(md_extfile_new)//'''.')
-   !      call qnerror('Error occurred while running, please inspect your diagnostic output.',' ', ' ')
-   !      return
-   !   end if
-   !   num_lat_ini_blocks = numlatsg ! nr of [Lateral] providers in new extforce file
-   !   if (.false.) then ! DEBUG
-   !      call ecInstancePrintState(ecInstancePtr,callback_msg,LEVEL_DEBUG)
-   !   end if
-   !endif
-   
-   !end subroutine initialize_new_wrapper
-   
    subroutine initialize_old(iresult)
+   use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
+   use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, kcsini, ndxi, lnx1d, grounlay, jagrounlay, kcs, ln
+   use m_inquire_flowgeom, only: IFLTP_1D, IFLTP_ALL
+   use m_netw, only: xk, yk, zk, numk, numl
+   use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile
+   use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, getmeteoerror
+   use m_structures, only: jaoldstr, network
+   use m_meteo
+   use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
+   use m_transport, only: ised1, numconst, const_names, constituents, itrac2const
+   use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
+   use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbot
+   use dfm_error, only: dfm_noerr, dfm_extforcerror
+   use m_sferic, only: jsferic
+   use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+   use m_lateral, only : numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+   
    integer, intent(out) :: iresult
    integer :: ja, method, lenqidnam, ierr, ilattype, inivelx, inively, isednum, kk, k, kb, kt, iconst
    integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba
     integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
-   real(kind=dp)                  :: maxSearchRadius
+   double precision               :: maxSearchRadius
    character(len=256)             :: filename, sourcemask
    character (len=64)             :: varname
    character (len=NAMTRACLEN)     :: tracnam, qidnam
@@ -2053,6 +2025,18 @@ subroutine initialize_setup(iresult)
    end subroutine
    
    subroutine initialize_misc(iresult)
+      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, ndx, lnx, csu, ndx, lnx
+      use unstruc_model, only: md_extfile_dir
+      use timespace, only: uniform, spaceandtime
+      use m_structures, only: jaoldstr, network
+      use m_meteo
+      use m_transport, only: numconst
+      use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateopeningwidth
+      use dfm_error, only: dfm_extforcerror
+      use m_sobekdfm, only: nbnd1d2d
+      use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank
+      use m_lateral, only : numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      
       integer, intent(out) :: iresult
       integer :: ierr
       integer :: k, L, LF, KB, KBI, N, K2, ja, method, filetype0, num_layers
@@ -2451,6 +2435,18 @@ subroutine initialize_setup(iresult)
    end subroutine initialize_misc
    
    subroutine initialize_cleanup()
+   use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz, kcsini
+   use m_flowtimes, only: ti_mba
+   use m_storage, only: t_storage, get_surface
+   use m_structures, only: network
+   use m_meteo
+   use m_sediment, only: mxgr, grainlay, uniformerodablethickness, jagrainlayerthicknessspecified
+   use m_transport, only: numconst_mdu, numconst
+   use m_mass_balance_areas, only: mbaname, nomba, mbadef, mbadefdomain
+   use m_partitioninfo, only: jampi, idomain, my_rank
+   use m_crosssections, only: cs_type_normal
+   use m_trachy, only: trachy_resistance
+   
    integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstpr, nstor, i, ja
    integer                       :: imba, needextramba, needextrambar
    logical :: hyst_dummy(2)
