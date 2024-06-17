@@ -2778,7 +2778,7 @@ use timers, only: timstop, timstrt
    
    integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstpr, nstor, i, ja
    integer                       :: imba, needextramba, needextrambar
-   logical :: hyst__extmy(2)
+   logical :: hyst_dummy(2)
    double precision              :: area, width, hdx, factor
    type(t_storage), pointer      :: stors(:)
 
@@ -3053,8 +3053,8 @@ use timers, only: timstop, timstrt
                ! For this reason the total width is used and also the area of the storage nodes is added tot BARE.
                ! Since BA contains the flow area only and not the total area or the area of the storage nodes, BARE has to be recalculated.
              
-               hyst__extmy = .false.
-               call GetCSParsTotal(network%adm%line2cross(L,2), network%crs%cross, 1d3, area, width, CS_TYPE_NORMAL,hyst__extmy)
+               hyst_dummy = .false.
+               call GetCSParsTotal(network%adm%line2cross(L,2), network%crs%cross, 1d3, area, width, CS_TYPE_NORMAL,hyst_dummy)
 
                hdx = 0.5d0*dx(L)
                if (k1 > ndx2d) bare(k1) = bare(k1) + hdx*width

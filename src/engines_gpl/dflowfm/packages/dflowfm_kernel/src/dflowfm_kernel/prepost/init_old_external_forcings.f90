@@ -31,7 +31,7 @@ implicit none
    
    integer, intent(out) :: iresult
    integer :: ja, method, lenqidnam, ierr, ilattype, inivelx, inively, isednum, kk, k, kb, kt, iconst
-   integer :: ec_item, iwqbot, layer, ktmax, i_ext, mx, imba, itrac
+   integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
    integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
    double precision               :: maxSearchRadius
    character(len=256)             :: filename, sourcemask
@@ -622,7 +622,7 @@ implicit none
                if (stemheightstd > 0d0) then
                   do k = 1,ndx
                      if (stemheightstd .ne. dmiss) then
-                        stemheight(k) = stemheight(k)*( 1d0 + stemheightstd*( ran0(i_ext) - 0.5d0 ) )
+                        stemheight(k) = stemheight(k)*( 1d0 + stemheightstd*( ran0(idum) - 0.5d0 ) )
                      endif
                   enddo
                endif
