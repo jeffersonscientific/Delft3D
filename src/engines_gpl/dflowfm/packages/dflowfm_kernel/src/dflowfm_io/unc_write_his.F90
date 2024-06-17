@@ -1008,7 +1008,7 @@ contains
 
       call get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
 
-      call check_netcdf_error( nf90_def_dim(ihisfile, trim(prefix), count, id_strdim))
+      call check_netcdf_error( nf90_def_dim(ihisfile, trim(prefix)//'s', count, id_strdim))
       call check_netcdf_error( nf90_def_var(ihisfile, trim(prefix)//'_name',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid))
       call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'cf_role',   'timeseries_id'))
       call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'long_name', 'name of '//trim(name)))
