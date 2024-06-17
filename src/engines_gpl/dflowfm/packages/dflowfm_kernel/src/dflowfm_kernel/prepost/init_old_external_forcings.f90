@@ -3,15 +3,6 @@ submodule (m_external_forcings) old_initialisation
    
 implicit none
 
-   double precision, allocatable :: sah(:)  ! temp
-   double precision, allocatable :: grainlayerthickness(:,:) ! help array grain layer thickness
-   integer                       :: itrac, num_lat_ini_blocks
-   logical                       :: patm_available, tair_available, dewpoint_available
-   double precision, allocatable :: xdum(:), ydum(:), xy2dum(:,:)
-   integer, allocatable          :: kdum(:)
-   double precision, allocatable :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
-   integer                       :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
-
 contains
    
    !> Initializes boundaries and meteo for the current model.
@@ -56,7 +47,7 @@ use timers, only: timstop, timstrt
 
    integer :: ierr
    logical                       :: exist, success
-   integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx
+   integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
    integer :: n4 = 6
    character (len=256)           :: fnam, rec
    logical, external             :: flow_init_structurecontrol
@@ -92,10 +83,10 @@ use timers, only: timstop, timstrt
 
    ja_friction_coefficient_time_dependent = 0
 
-   if (allocated(xdum  )) deallocate(xdum, ydum, kdum, xy2dum)
-   allocate ( xdum(1), ydum(1), kdum(1), xy2dum(2,1) , stat=ierr)
-   call aerr('xdum(1), ydum(1), kdum(1), xy2dum     ', ierr, 3)
-   xdum = 1d0 ; ydum = 1d0; kdum = 1; xy2dum = 0d0
+   if (allocated(x_ext  )) deallocate(x_ext, y_ext, k_ext, xy2_ext)
+   allocate ( x_ext(1), y_ext(1), k_ext(1), xy2_ext(2,1) , stat=ierr)
+   call aerr('x_ext(1), y_ext(1), k_ext(1), xy2_ext     ', ierr, 3)
+   x_ext = 1d0 ; y_ext = 1d0; k_ext = 1; xy2_ext = 0d0
    if (.not. allocated(sah) ) then
       allocate ( sah(ndx) , stat=ierr)
       call aerr('sah(ndx)', ierr, ndx)
@@ -744,8 +735,8 @@ use timers, only: timstop, timstrt
    
    integer, intent(out) :: iresult
    integer :: ja, method, lenqidnam, ierr, ilattype, inivelx, inively, isednum, kk, k, kb, kt, iconst
-   integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba
-    integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
+   integer :: ec_item, iwqbot, layer, ktmax, i_ext, mx, imba, itrac
+   integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
    double precision               :: maxSearchRadius
    character(len=256)             :: filename, sourcemask
    character (len=64)             :: varname
@@ -1118,7 +1109,7 @@ use timers, only: timstop, timstrt
                   iconst = findname(NUMCONST, const_names, sfnam)
                end if
                if (iconst>0) then
-                  if ( allocated(viuh) ) deallocate(viuh)     ! dummy array
+                  if ( allocated(viuh) ) deallocate(viuh)     ! _extmy array
                   allocate(viuh(Ndkx))
 
                   !          copy existing values (if they existed) in temp array
@@ -1335,7 +1326,7 @@ use timers, only: timstop, timstrt
                if (stemheightstd > 0d0) then
                   do k = 1,ndx
                      if (stemheightstd .ne. dmiss) then
-                        stemheight(k) = stemheight(k)*( 1d0 + stemheightstd*( ran0(idum) - 0.5d0 ) )
+                        stemheight(k) = stemheight(k)*( 1d0 + stemheightstd*( ran0(i_ext) - 0.5d0 ) )
                      endif
                   enddo
                endif
@@ -1810,7 +1801,7 @@ use timers, only: timstop, timstrt
                kx = 2
                nshiptxy = nshiptxy + 1
                ! Converter will put 'x' in array(2*nshiptxy-1) and 'y' in array(2*nshiptxy). en welke array is dat?
-               success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand, targetIndex = nshiptxy)
+               success  = ec_addtimespacerelation(qid, x_ext, y_ext, k_ext, kx, filename, filetype, method, operand, targetIndex = nshiptxy)
 
             else if (qid == 'movingstationtxy') then
                kx = 2
@@ -1820,7 +1811,7 @@ use timers, only: timstop, timstrt
                call addMovingObservation(dmiss, dmiss, rec)
 
                ! Converter will put 'x' in array(2*nummovobs-1) and 'y' in array(2*nummovobs).
-               success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand, targetIndex=nummovobs)
+               success  = ec_addtimespacerelation(qid, x_ext, y_ext, k_ext, kx, filename, filetype, method, operand, targetIndex=nummovobs)
 
             else if (qid(1:15) == 'massbalancearea' .or. qid(1:18) == 'waqmassbalancearea') then
                if (ti_mba > 0) then
@@ -1864,7 +1855,7 @@ use timers, only: timstop, timstrt
                success  =  .true.
 
             else if (qid(1:11) == 'waqfunction') then
-               success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand)
+               success = ec_addtimespacerelation(qid, x_ext, y_ext, k_ext, kx, filename, filetype, method, operand)
 
             else if (qid(1:18) == 'waqsegmentfunction') then
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
@@ -2120,7 +2111,7 @@ use timers, only: timstop, timstrt
                inquire (file = trim(filename0), exist = exist)
                if (exist) then
                   filetype0 = uniform            ! uniform=single time series vectormax = 1
-                  success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
+                  success  = ec_addtimespacerelation(qid, x_ext, y_ext, k_ext, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity gateloweredgelevel and file ''', trim(filename), '''. Keeping fixed (open) gate level.'
                   call warn_flush()
@@ -2175,7 +2166,7 @@ use timers, only: timstop, timstrt
                inquire (file = trim(filename0), exist = exist)
                if (exist) then
                   filetype0 = uniform            ! uniform=single time series vectormax = 1
-                  success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
+                  success  = ec_addtimespacerelation(qid, x_ext, y_ext, k_ext, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity damlevel and file ''', trim(filename), '''. Keeping fixed (closed) dam level.'
                   call warn_flush()
@@ -2309,7 +2300,7 @@ use timers, only: timstop, timstrt
                inquire (file = trim(filename0), exist = exist)
                if (exist) then
                   filetype0 = uniform            ! uniform=single time series vectormax = kx = 3
-                  success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
+                  success  = ec_addtimespacerelation(qid, x_ext, y_ext, k_ext, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity generalstructure and file ''', trim(filename), '''. Keeping fixed (closed) general structure.'
                   call warn_flush()
@@ -2412,7 +2403,7 @@ use timers, only: timstop, timstrt
                   method = min(1, method)        ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
                   ! Converter will put 'qsrc, sasrc and tmsrc' values in array qstss on positions: (3*numsrc-2), (3*numsrc-1), and (3*numsrc), respectively.
                   call clearECMessage()
-                  if (.not.ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=numsrc)) then
+                  if (.not.ec_addtimespacerelation(qid, x_ext, y_ext, k_ext, kx, filename0, filetype0, method, operand='O', targetIndex=numsrc)) then
                      msgbuf = 'Connecting time series file ''' // trim(filename0) // ''' and polyline file ''' // trim(filename) &
                                                             // '''. for source/sinks failed:' // dumpECMessageStack(LEVEL_WARN,callback_msg)
                      call warn_flush()
@@ -2461,7 +2452,7 @@ use timers, only: timstop, timstrt
    
    integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstpr, nstor, i, ja
    integer                       :: imba, needextramba, needextrambar
-   logical :: hyst_dummy(2)
+   logical :: hyst__extmy(2)
    double precision              :: area, width, hdx, factor
    type(t_storage), pointer      :: stors(:)
 
@@ -2478,7 +2469,7 @@ use timers, only: timstop, timstrt
       call doclose(mext) ! close ext file
    end if
 
-   if (allocated (xdum))     deallocate( xdum, ydum, kdum)
+   if (allocated (x_ext))     deallocate( x_ext, y_ext, k_ext)
    if (allocated (kdz))      deallocate (kdz)
    if (allocated (kdu))      deallocate (kdu)
    if (allocated (kds))      deallocate (kds)
@@ -2499,7 +2490,7 @@ use timers, only: timstop, timstrt
 
    if (allocated (xy2pump) ) deallocate (xy2pump)
 
-   if (allocated (xdum)    ) deallocate( xdum, ydum, kdum, xy2dum)
+   if (allocated (x_ext)    ) deallocate( x_ext, y_ext, k_ext, xy2_ext)
 
    if (mxgr > 0 .and. .not.stm_included) then
       do j = 1,mxgr
@@ -2736,8 +2727,8 @@ use timers, only: timstop, timstrt
                ! For this reason the total width is used and also the area of the storage nodes is added tot BARE.
                ! Since BA contains the flow area only and not the total area or the area of the storage nodes, BARE has to be recalculated.
              
-               hyst_dummy = .false.
-               call GetCSParsTotal(network%adm%line2cross(L,2), network%crs%cross, 1d3, area, width, CS_TYPE_NORMAL,hyst_dummy)
+               hyst__extmy = .false.
+               call GetCSParsTotal(network%adm%line2cross(L,2), network%crs%cross, 1d3, area, width, CS_TYPE_NORMAL,hyst__extmy)
 
                hdx = 0.5d0*dx(L)
                if (k1 > ndx2d) bare(k1) = bare(k1) + hdx*width

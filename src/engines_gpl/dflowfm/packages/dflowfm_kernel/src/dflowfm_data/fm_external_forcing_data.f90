@@ -472,6 +472,15 @@
  double precision, allocatable     :: qlatwaq (:)       !< Cumulative qsrc within current waq-timestep
  double precision, allocatable     :: qlatwaq0 (:)      !< Cumulative qsrc at the beginning of the time step before possible reduction
  double precision                  :: addksources = 0d0 !< Add k of sources to turkin 1/0
+ 
+ double precision, allocatable :: sah(:)  ! temp
+ double precision, allocatable :: grainlayerthickness(:,:) ! help array grain layer thickness
+ integer                       :: num_lat_ini_blocks
+ logical                       :: patm_available, tair_available, dewpoint_available
+ double precision, allocatable :: x_ext(:), y_ext(:), xy2_ext(:,:)
+ integer, allocatable          :: k_ext(:)
+ double precision, allocatable :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
+ integer                       :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
 
  contains
 !> Sets ALL (scalar) variables in this module to their default values.
