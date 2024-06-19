@@ -1728,7 +1728,7 @@ if (ngenstru > 0) then
             end if
             node_count(n) = nNodes
             if (nNodes > 0) then
-               call get_geom_coordinates_of_structure_old(i, nNodes, geom_x, geom_y)
+               call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
                ierr = nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
                ierr = nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
                j = j + nNodes
@@ -1879,7 +1879,7 @@ if (jahisgate > 0 .and. ngategen > 0) then
          end if
          node_count(n) = nNodes
          if (nNodes > 0) then
-            call get_geom_coordinates_of_structure_old(i, nNodes, geom_x, geom_y)
+            call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
             ierr = nf90_put_var(ihisfile, id_gategengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
             ierr = nf90_put_var(ihisfile, id_gategengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
             j = j + nNodes
@@ -1912,7 +1912,7 @@ if (jahisweir > 0 .and. nweirgen > 0) then
             end if
             node_count(n) = nNodes
             if (nNodes > 0) then
-               call get_geom_coordinates_of_structure_old(i, nNodes, geom_x, geom_y)
+               call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
                ierr = nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
                ierr = nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
                j = j + nNodes
