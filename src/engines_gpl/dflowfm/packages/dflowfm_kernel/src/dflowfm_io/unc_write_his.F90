@@ -771,7 +771,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
            if (jahispump > 0 .and. npumpsg > 0) then
               do i=1,npumpsg
-                 ierr = nf90_put_var(ihisfile, id_pump_id,  trimexact(pump_ids(i), strlen_netcdf),      (/ 1, i /))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_pump_id,  trimexact(pump_ids(i), strlen_netcdf),      (/ 1, i /)))
               end do
            end if
            
@@ -836,7 +836,6 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = unc_put_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
                                                     id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
                                                     id_poly_xmid = id_pump_xmid, id_poly_ymid = id_pump_ymid)
-           call write_old_structure_static_vars()
            if (timon) call timstop ( handle_extra(63))
         end if
     end if
@@ -849,6 +848,8 @@ subroutine unc_write_his(tim)            ! wrihis
 
     if (timon) call timstrt ('unc_write_his time data', handle_extra(64))
 
+    call write_old_structure_static_vars()
+      
     call check_netcdf_error( nf90_put_var(ihisfile, id_time, time_his, (/ it_his /)))
     call check_netcdf_error( nf90_put_var(ihisfile, id_timebds, (/ time_his_prev, time_his /), (/ 1, it_his /)))
     time_his_prev = time_his
@@ -1709,9 +1710,9 @@ if (ngenstru > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
       if (network%sts%numGeneralStructures > 0) then ! new general structure
-         ierr = nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geomXGenstru,     start = (/ 1 /), count = (/ nNodesGenstru /))
-         ierr = nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geomYGenstru,     start = (/ 1 /), count = (/ nNodesGenstru /))
-         ierr = nf90_put_var(ihisfile, id_genstrugeom_node_count,  nodeCountGenstru, start = (/ 1 /), count = (/ network%sts%numGeneralStructures /))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geomXGenstru,     start = (/ 1 /), count = (/ nNodesGenstru /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geomYGenstru,     start = (/ 1 /), count = (/ nNodesGenstru /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_count,  nodeCountGenstru, start = (/ 1 /), count = (/ network%sts%numGeneralStructures /)))
          if (allocated(geomXGenstru))     deallocate(geomXGenstru) ! Deallocate the geometry arrays after writing them to his-file.
          if (allocated(geomYGenstru))     deallocate(geomYGenstru)
          if (allocated(nodeCountGenstru)) deallocate(nodeCountGenstru)
@@ -1729,12 +1730,12 @@ if (ngenstru > 0) then
             node_count(n) = nNodes
             if (nNodes > 0) then
                call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
-               ierr = nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
-               ierr = nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
+               call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
+               call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
                j = j + nNodes
             end if
          end do
-         ierr = nf90_put_var(ihisfile, id_genstrugeom_node_count, node_count, start = (/ 1 /), count = (/ ngenstru /))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_count, node_count, start = (/ 1 /), count = (/ ngenstru /)))
       end if
    end if
 endif
@@ -1743,9 +1744,9 @@ if (jahispump > 0 .and. npumpsg > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
       if (network%sts%numPumps > 0) then ! new pump
-         ierr = nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geomXPump,     start = (/ 1 /), count = (/ nNodesPump /))
-         ierr = nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geomYPump,     start = (/ 1 /), count = (/ nNodesPump /))
-         ierr = nf90_put_var(ihisfile, id_pumpgeom_node_count,  nodeCountPump, start = (/ 1 /), count = (/ network%sts%numPumps /))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geomXPump,     start = (/ 1 /), count = (/ nNodesPump /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geomYPump,     start = (/ 1 /), count = (/ nNodesPump /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_count,  nodeCountPump, start = (/ 1 /), count = (/ network%sts%numPumps /)))
          if (allocated(geomXPump))     deallocate(geomXPump)
          if (allocated(geomYPump))     deallocate(geomYPump)
          if (allocated(nodeCountPump)) deallocate(nodeCountPump)
@@ -1781,12 +1782,12 @@ if (jahispump > 0 .and. npumpsg > 0) then
                      k = k+1
                   end do
                end if
-               ierr = nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
-               ierr = nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
+               call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
+               call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
                j = j + nNodes
             end if
          end do
-         ierr = nf90_put_var(ihisfile, id_pumpgeom_node_count, node_count, start = (/ 1 /), count = (/ npumpsg /))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_count, node_count, start = (/ 1 /), count = (/ npumpsg /)))
       end if
    end if
 end if
@@ -1794,9 +1795,9 @@ end if
 if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
-      ierr = nf90_put_var(ihisfile, id_orifgengeom_node_coordx, geomXOrif,     start = (/ 1 /), count = (/ nNodesOrif /))
-      ierr = nf90_put_var(ihisfile, id_orifgengeom_node_coordy, geomYOrif,     start = (/ 1 /), count = (/ nNodesOrif /))
-      ierr = nf90_put_var(ihisfile, id_orifgengeom_node_count,  nodeCountOrif, start = (/ 1 /), count = (/ network%sts%numOrifices /))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_coordx, geomXOrif,     start = (/ 1 /), count = (/ nNodesOrif /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_coordy, geomYOrif,     start = (/ 1 /), count = (/ nNodesOrif /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_count,  nodeCountOrif, start = (/ 1 /), count = (/ network%sts%numOrifices /)))
       if (allocated(geomXOrif))     deallocate(geomXOrif)
       if (allocated(geomYOrif))     deallocate(geomYOrif)
       if (allocated(nodeCountOrif)) deallocate(nodeCountOrif)
@@ -1808,9 +1809,9 @@ if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
       if (timon) call timstrt('Bridge geom', handle_extra(74))
-      ierr = nf90_put_var(ihisfile, id_bridgegeom_node_coordx, geomXBridge,     start = (/ 1 /), count = (/ nNodesBridge /))
-      ierr = nf90_put_var(ihisfile, id_bridgegeom_node_coordy, geomYBridge,     start = (/ 1 /), count = (/ nNodesBridge /))
-      ierr = nf90_put_var(ihisfile, id_bridgegeom_node_count,  nodeCountBridge, start = (/ 1 /), count = (/ network%sts%numBridges /))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_coordx, geomXBridge,     start = (/ 1 /), count = (/ nNodesBridge /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_coordy, geomYBridge,     start = (/ 1 /), count = (/ nNodesBridge /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_count,  nodeCountBridge, start = (/ 1 /), count = (/ network%sts%numBridges /)))
       if (allocated(geomXBridge))     deallocate(geomXBridge)
       if (allocated(geomYBridge))     deallocate(geomYBridge)
       if (allocated(nodeCountBridge)) deallocate(nodeCountBridge)
@@ -1822,9 +1823,9 @@ if (timon) call timstop(handle_extra(58))
 if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
-      ierr = nf90_put_var(ihisfile, id_culvertgeom_node_coordx, geomXCulv,     start = (/ 1 /), count = (/ nNodesCulv /))
-      ierr = nf90_put_var(ihisfile, id_culvertgeom_node_coordy, geomYCulv,     start = (/ 1 /), count = (/ nNodesCulv /))
-      ierr = nf90_put_var(ihisfile, id_culvertgeom_node_count,  nodeCountCulv, start = (/ 1 /), count = (/ network%sts%numCulverts /))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_coordx, geomXCulv,     start = (/ 1 /), count = (/ nNodesCulv /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_coordy, geomYCulv,     start = (/ 1 /), count = (/ nNodesCulv /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_count,  nodeCountCulv, start = (/ 1 /), count = (/ network%sts%numCulverts /)))
       if (allocated(geomXCulv))     deallocate(geomXCulv)
       if (allocated(geomYCulv))     deallocate(geomYCulv)
       if (allocated(nodeCountCulv)) deallocate(nodeCountCulv)
@@ -1834,9 +1835,9 @@ end if
 if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
-      ierr = nf90_put_var(ihisfile, id_uniweirgeom_node_coordx, geomXUniweir,     start = (/ 1 /), count = (/ nNodesUniweir /))
-      ierr = nf90_put_var(ihisfile, id_uniweirgeom_node_coordy, geomYUniweir,     start = (/ 1 /), count = (/ nNodesUniweir /))
-      ierr = nf90_put_var(ihisfile, id_uniweirgeom_node_count,  nodeCountUniweir, start = (/ 1 /), count = (/ network%sts%numuniweirs /))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordx, geomXUniweir,     start = (/ 1 /), count = (/ nNodesUniweir /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordy, geomYUniweir,     start = (/ 1 /), count = (/ nNodesUniweir /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_count,  nodeCountUniweir, start = (/ 1 /), count = (/ network%sts%numuniweirs /)))
       if (allocated(geomXUniweir))     deallocate(geomXUniweir)
       if (allocated(geomYUniweir))     deallocate(geomYUniweir)
       if (allocated(nodeCountUniweir)) deallocate(nodeCountUniweir)
@@ -1846,9 +1847,9 @@ end if
 if (jahislongculv > 0 .and. nlongculverts > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
-      ierr = nf90_put_var(ihisfile, id_longculvertgeom_node_coordx, geomXLongCulv,     start = (/ 1 /), count = (/ nNodesLongCulv /))
-      ierr = nf90_put_var(ihisfile, id_longculvertgeom_node_coordy, geomYLongCulv,     start = (/ 1 /), count = (/ nNodesLongCulv /))
-      ierr = nf90_put_var(ihisfile, id_longculvertgeom_node_count,  nodeCountLongCulv, start = (/ 1 /), count = (/ nlongculverts /))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_coordx, geomXLongCulv,     start = (/ 1 /), count = (/ nNodesLongCulv /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_coordy, geomYLongCulv,     start = (/ 1 /), count = (/ nNodesLongCulv /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_count,  nodeCountLongCulv, start = (/ 1 /), count = (/ nlongculverts /)))
       if (allocated(geomXLongCulv))     deallocate(geomXLongCulv)
       if (allocated(geomYLongCulv))     deallocate(geomYLongCulv)
       if (allocated(nodeCountLongCulv)) deallocate(nodeCountLongCulv)
@@ -1858,9 +1859,9 @@ end if
 if (jahislateral > 0 .and. numlatsg > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
-      ierr = nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))
-      ierr = nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))
-      ierr = nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat)
+      call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat))
    end if
 end if
 
@@ -1880,12 +1881,12 @@ if (jahisgate > 0 .and. ngategen > 0) then
          node_count(n) = nNodes
          if (nNodes > 0) then
             call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
-            ierr = nf90_put_var(ihisfile, id_gategengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
-            ierr = nf90_put_var(ihisfile, id_gategengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
+            call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
+            call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
             j = j + nNodes
          end if
       end do
-      ierr = nf90_put_var(ihisfile, id_gategengeom_node_count, node_count, start = (/ 1 /), count = (/ ngategen /))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_count, node_count, start = (/ 1 /), count = (/ ngategen /)))
    end if
 end if
 
@@ -1893,9 +1894,9 @@ if (jahisweir > 0 .and. nweirgen > 0) then
    ! write geometry variables at the first time of history output
    if (it_his == 1) then
       if (network%sts%numWeirs > 0) then ! new weir
-         ierr = nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geomXWeir,     start = (/ 1 /), count = (/ nNodesWeir /))
-         ierr = nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geomYWeir,     start = (/ 1 /), count = (/ nNodesWeir /))
-         ierr = nf90_put_var(ihisfile, id_weirgengeom_node_count,  nodeCountWeir, start = (/ 1 /), count = (/ network%sts%numWeirs /))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geomXWeir,     start = (/ 1 /), count = (/ nNodesWeir /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geomYWeir,     start = (/ 1 /), count = (/ nNodesWeir /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_count,  nodeCountWeir, start = (/ 1 /), count = (/ network%sts%numWeirs /)))
          if (allocated(geomXWeir))     deallocate(geomXWeir)
          if (allocated(geomYWeir))     deallocate(geomYWeir)
          if (allocated(nodeCountWeir)) deallocate(nodeCountWeir)
@@ -1913,17 +1914,16 @@ if (jahisweir > 0 .and. nweirgen > 0) then
             node_count(n) = nNodes
             if (nNodes > 0) then
                call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
-               ierr = nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
-               ierr = nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
+               call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
+               call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
                j = j + nNodes
             end if
          end do
-         ierr = nf90_put_var(ihisfile, id_weirgengeom_node_count, node_count, start = (/ 1 /), count = (/ nweirgen /))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_count, node_count, start = (/ 1 /), count = (/ nweirgen /)))
       end if
    end if
 end if
 
-if (timon) call timstop ( handle_extra(62))
 end subroutine write_old_structure_static_vars
    
 end subroutine unc_write_his
