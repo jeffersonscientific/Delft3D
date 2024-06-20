@@ -887,12 +887,15 @@ contains
                case ('leeway_csvfile')
                   if (modtyp /= 1) goto 9408
                   call get_command_argument(0, cbuffer)
-                  ! get path and add the name of the leeway file
-                  cindex = index( cbuffer, '\', back= .true. )
-                  leeway_csvfile = cbuffer( 1 : cindex )//'leewayfactors.csv'
+                  ! get path and add the name of the leeway file, TODO: how to organise the location (debug/release)
+                  cindex = scan( cbuffer, '\/', back=- .true.)
+                  leeway_csvfile = 'leewayfactors.csv'
                   write ( lun2, '(/a)' ) '  Found leeway csvfile.'
                   leeway = .true.
                   apply_wind_drag = .true.
+                  call get_command_argument(0, cbuffer)
+                  write(*,*)TRIM(cbuffer(:cindex))
+                  leeway_csvfile = TRIM(cbuffer(:cindex)//'../share/delft3d/' // leeway_csvfile)
                   write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
                   open( newunit = lunfil, file = leeway_csvfile )
                   read( lunfil, '(256a)') line

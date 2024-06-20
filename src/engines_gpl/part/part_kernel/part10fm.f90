@@ -49,6 +49,7 @@ subroutine part10fm()
     use random_generator
     use timers
     use m_part_modeltypes
+    use spec_feat_par
 
     !locals
     logical          :: partdomain, skip_pt, openbound, mirror
@@ -72,7 +73,8 @@ subroutine part10fm()
     double precision      :: t0              ! helpvariable with initial time step buoyant spreading
     double precision      :: tp              ! real value of iptime(ipart)
     double precision      :: trp             ! horizontal random walk
-    real(sp)              :: wdirr           ! is wind direction in radians
+    real(sp)              :: wdirr           ! is wind direction in radians      
+    real(sp)              :: leeway_ang_sign
     integer               :: mpartold,iedge, i, maxiter, npbounce
     double precision      :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
     double precision      :: dpxwind, dpywind, windcurratio, dwx, dwy, daz, xcr, ycr
@@ -235,10 +237,11 @@ subroutine part10fm()
                     ! stays in model due to dispersion, now check on the wind and recalculate x, y,
                     ! but only for the oil model (surface floating), to be consistent with the delft3d approach
                     ! for all oil fractions. If it hits mpart=0 due to dispersion the particle will not stick but resamples.
-                    if (oil) then
+                    ! drag should also be used when the wind_drag_option is used (ie particles near surface subject to drag, for example leeway)
+                    if (oil .or. apply_wind_drag) then
                         do ifract = 1 , nfract
                             if ( wpart(1 + 3 * (ifract - 1), ipart) > 0.0 ) then
-                                call part10fm_pdrag(ipart, ifract, rseed) ! only for floating oil
+                                call part10fm_pdrag(ipart, ifract, rseed) ! only for floating oil and particles near surface when winddrag option is used
                             endif
                         enddo
                     endif
@@ -324,6 +327,7 @@ subroutine part10fm()
     use random_generator
     use timers
     use m_part_modeltypes
+    use spec_feat_par
 
     !locals
     logical               :: partdomain, openbound
@@ -337,7 +341,7 @@ subroutine part10fm()
     logical               :: dstick                  ! logical that determines sticking
     logical               :: twolay                  ! = modtyp .eq. model_two_layer_temp
     double precision      :: abuac                   ! actual value of abuoy(ipart) ( * sqrt(ddfac)
-    double precision      :: cdrag                   ! local drag coefficient (converted from persentage)
+    double precision      :: cdrag                   ! local drag coefficient (converted from percentage)
     double precision      :: dax                     ! delta of diffusive spreading x
     double precision      :: day                     ! delta of diffusive spreading y
     real(sp)              :: ddfac                   ! control variable for smooth loading
@@ -372,6 +376,14 @@ subroutine part10fm()
     !partdomain = .FALSE.    ! if false the particle is in the domain
     niter = 0
     cdrag  = drand(3) / 100.0          !  wind drag as a fraction
+    ! note that the leeway is not using the oil module, but in combination with the apply_wind_drag option (see also part10, for the d3dV4 application))
+    if ( oil ) then 
+        defang = defang * twopi / 360.0    !  deflection angle oil modelling
+    elseif ( leeway ) then
+        defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
+        cdrag  = leeway_multiplier          !  windage (leeway), given as a fraction
+    endif
+
     ! the next section is taken from the oildsp routine to allow access to the stickyness (if oilmod).
     if ( oil ) then
         npadd = 0
@@ -381,6 +393,24 @@ subroutine part10fm()
         endif
         fstick(ifract) = const((ifract - 1)*nfcons+npadd+ 4)      ! stickiness probability [0,1], this part is taken from the delf3d oildsp code
     endif
+! TODO implement the drag for near surface particles, in part10 this is resolved by, this needs to be done for fm:
+!             if (apply_wind_drag) then
+!               if (kp==ktopp) then laytop?
+!                  zpabs = zp * locdep(n0, kp)
+!                  if (zpabs .lt. max_wind_drag_depth) then
+!                     leeway_ang_sign = float(mod(ipart, 3) - 1)
+!!                     write(*,*) 'particle nr: ',ipart, ' sign: ',  leeway_ang_sign ! to distribute negative positive and 0 angle over the particles
+!                     vxw  = - wvelo(n0) * sin( wdirr + leeway_ang_sign * defang + sangl )
+!                     vyw  = - wvelo(n0) * cos( wdirr + leeway_ang_sign * defang + sangl )
+!                     vw_net = sqrt((vxw-vxr)**2 + (vyw-vyr)**2)  ! net wind for drag (to accommodate scaling the modifier)
+!!                    drag on the difference vector: cd * (wind - flow)
+!                     if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen 
+!                         xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier * sin ((vxw-vxr)/vw_net))/dxp) * itdelt    ! THis modifier may need to be adjusted de to the angle
+!                         ynew = ynew  + ((cdrag*(vyw-vyr) + leeway_modifier * cos ((vyw-vyr)/vw_net))/dyp) * itdelt    !
+!                     endif
+!                  end if
+!               end if
+!            end if
 
     wdirr    = wdir(mpart(ipart)) * twopi / 360.0d0
     dpxwind  = - wvelo(mpart(ipart)) * sin( wdirr) !TODO check the angles . for both sferical as wel as cartesian grids.
@@ -420,7 +450,7 @@ subroutine part10fm()
     call part_findcell(1,xx(1),yy(1),mpart(ipart:ipart),ierror)
     call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
 
-    ! if the particle goes outside the domain due to wind, use the current angle to transport, otherwise it sticks
+    ! if the particle goes outside the domain due to wind, use the current angle to transport, otherwise it sticks, not relevant for apply wind option
     dstick = rnd(rseed) > fstick(ifract) ! if dstick is true then the particle will not stick
     if ( (mpart(ipart) == 0 .or. .not.openbound) .and. dstick) then
         ! here we can use the fstick parameter to select whether to take the
@@ -435,7 +465,7 @@ subroutine part10fm()
         dpywind = windcurratio * uy0old
         dpxwind = windcurratio * ux0old
 
-        !now we can calculate the new displacement in the direction of hte flow
+        !now we can calculate the new displacement in the direction of the flow
         dwx = (cdrag*(dpxwind-ux0old)) * dts
         dwy = (cdrag*(dpywind-uy0old)) * dts
         xpart(ipart) = xpartold  + dwx
