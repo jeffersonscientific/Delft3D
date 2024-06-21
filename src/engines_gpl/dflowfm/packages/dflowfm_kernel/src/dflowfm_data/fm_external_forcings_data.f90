@@ -476,7 +476,7 @@
  double precision, allocatable :: sah(:)  ! temp
  double precision, allocatable :: grainlayerthickness(:,:) ! help array grain layer thickness
  integer                       :: num_lat_ini_blocks
- logical                       :: patm_available, tair_available, dewpoint_available
+ logical                       :: tair_available, dewpoint_available
  double precision, allocatable :: x_ext(:), y_ext(:), xy2_ext(:,:)
  integer, allocatable          :: k_ext(:)
  double precision, allocatable :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.

@@ -745,7 +745,6 @@ implicit none
                if (success) then
                   jawind = 1
                   japatm = 1
-                  patm_available = .true.
                endif
 
             else if (qid == 'charnock') then
@@ -850,7 +849,6 @@ implicit none
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
                   japatm = 1
-                  patm_available = .true.
                endif
 
             else if (qid == 'air_temperature') then

@@ -1644,7 +1644,6 @@ use unstruc_inifields, only: initinitialfields
    iresult = DFM_NOERR
 
    success = .true.    ! default if no valid providers are present in *.ext file (fm_external_forcings_data::success)
-   patm_available = .false.
    tair_available = .false.
    dewpoint_available = .false.
    
@@ -2798,7 +2797,7 @@ use unstruc_inifields, only: initinitialfields
    endif
 
    if (ja_computed_airdensity == 1) then
-      if (.not. (patm_available .and. tair_available .and. dewpoint_available)) then
+      if (.not. ((japatm == 1) .and. tair_available .and. dewpoint_available)) then
          call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
       else
          if (ja_airdensity == 1) then
