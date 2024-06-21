@@ -1718,7 +1718,6 @@ use unstruc_inifields, only: initinitialfields
 
    if (allocated(ec_pwxwy_x))   deallocate(ec_pwxwy_x)
    if (allocated(ec_pwxwy_y))   deallocate(ec_pwxwy_y)
-   if (allocated(kcw))          deallocate(kcw)
    if (allocated(patm))         deallocate(patm)
    if (allocated(kbndz))        deallocate(xbndz,ybndz,xy2bndz,zbndz,kbndz,zbndz0)
    if (allocated(zkbndz))       deallocate(zkbndz)
@@ -3035,10 +3034,6 @@ use unstruc_inifields, only: initinitialfields
       enddo
       a1ini = sum(bare(1:ndxi))
    endif
-
-   if (allocated(kcsini)) then
-      deallocate(kcsini)
-   end if
    deallocate (sah)
 
    !  Check if there are any cells left that are not part of a mass balance area, and if we need an extra area.

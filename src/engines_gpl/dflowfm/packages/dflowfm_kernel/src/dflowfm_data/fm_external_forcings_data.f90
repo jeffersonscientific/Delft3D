@@ -481,7 +481,7 @@
  integer, allocatable          :: k_ext(:)
  double precision, allocatable :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
  integer                       :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
-
+ 
  contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For external forcings it is equivalent with default_fm_external_forcing_data().
