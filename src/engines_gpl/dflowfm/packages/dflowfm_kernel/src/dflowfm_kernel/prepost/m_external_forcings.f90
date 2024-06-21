@@ -36,8 +36,8 @@ character(len=max_registered_item_id), allocatable :: registered_items(:)
 integer            :: num_registered_items = 0
 
 interface
-   module subroutine set_external_forcings_boundaries(tim,iresult)
-   double precision, intent(in)    :: tim     !< (s)
+   module subroutine set_external_forcings_boundaries(time,iresult)
+   double precision, intent(in)    :: time    !< current simulation time (s)
    integer,          intent(out)   :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
    end subroutine set_external_forcings_boundaries
 end interface

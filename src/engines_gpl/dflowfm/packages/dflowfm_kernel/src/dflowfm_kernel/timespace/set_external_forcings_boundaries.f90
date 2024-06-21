@@ -34,7 +34,7 @@ implicit none
 contains
 
 !> set boundary conditions
-module subroutine set_external_forcings_boundaries(tim, iresult)
+module subroutine set_external_forcings_boundaries(time, iresult)
    use timers
    use m_flowtimes
    use m_flowgeom
@@ -55,8 +55,8 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
 
    implicit none
 
-   double precision, intent(in)    :: tim ! (s)
-   integer,          intent(out)   :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
+   double precision, intent(in)    :: time    !< Current simulation time (s)
+   integer,          intent(out)   :: iresult !< Integer error status
 
    integer :: i, n, k, k2, kb, kt, ki, L, itrac, isf
    double precision :: timmin
@@ -70,7 +70,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
    call setsigmabnds()                                 ! our side of preparation for 3D ec module
 
    if (nzbnd > nqhbnd) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_waterlevelbnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_waterlevelbnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
@@ -108,7 +108,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
          q_org(i) = atqh_all(i)
          atqh_all(i) = q_org(i) + max(min(0.001d0*abs(q_org(i)),1d0),0.001d0)
       enddo
-      success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
@@ -118,7 +118,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
       do i = 1, nqhbnd
          atqh_all(i) = q_org(i) - max(min(0.001d0*abs(q_org(i)),1d0),0.001d0)
       enddo
-      success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
@@ -135,7 +135,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
          atqh_all(i) = q_org(i)
       enddo
 
-      success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
@@ -149,35 +149,35 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
    endif
 
    if (item_velocitybnd /= ec_undef_int) then
-       success = ec_gettimespacevalue(ecInstancePtr, item_velocitybnd, irefdate, tzone, tunit, tim)
+       success = ec_gettimespacevalue(ecInstancePtr, item_velocitybnd, irefdate, tzone, tunit, time)
        if (.not. success) then
           goto 888
        end if
    end if
 
    if (item_dischargebnd /= ec_undef_int) then
-       success = ec_gettimespacevalue(ecInstancePtr, item_dischargebnd, irefdate, tzone, tunit, tim)
+       success = ec_gettimespacevalue(ecInstancePtr, item_dischargebnd, irefdate, tzone, tunit, time)
        if (.not. success) then
           goto 888
        end if
    end if
 
    if (nbnds > 0) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_salinitybnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_salinitybnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       endif
    endif
 
    if (nbndTM > 0) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_temperaturebnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_temperaturebnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       endif
    endif
 
    if (nbndsd > 0) then
-       success = ec_gettimespacevalue(ecInstancePtr, item_sedimentbnd, irefdate, tzone, tunit, tim)
+       success = ec_gettimespacevalue(ecInstancePtr, item_sedimentbnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
@@ -185,7 +185,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
 
    do itrac=1,numtracers
       if (nbndtr(itrac) > 0) then
-         success = ec_gettimespacevalue(ecInstancePtr, item_tracerbnd(itrac), irefdate, tzone, tunit, tim)
+         success = ec_gettimespacevalue(ecInstancePtr, item_tracerbnd(itrac), irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
          end if
@@ -195,7 +195,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
    if (stm_included) then
       do isf=1,numfracs          ! numfracs okay, is number of fractions with bc
          if (nbndsf(isf) > 0) then
-            success = ec_gettimespacevalue(ecInstancePtr, item_sedfracbnd(isf), irefdate, tzone, tunit, tim)
+            success = ec_gettimespacevalue(ecInstancePtr, item_sedfracbnd(isf), irefdate, tzone, tunit, time)
             if (.not. success) then
                goto 888
             end if
@@ -204,21 +204,21 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
    end if
 
    if (nbndt > 0) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_tangentialvelocitybnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_tangentialvelocitybnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
    end if
 
    if (nbnduxy > 0) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_uxuyadvectionvelocitybnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_uxuyadvectionvelocitybnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
    end if
 
    if (nbndn > 0) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_normalvelocitybnd, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_normalvelocitybnd, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       end if
@@ -229,14 +229,14 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
    end if
 
    if (nshiptxy > 0) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_shiptxy, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_shiptxy, irefdate, tzone, tunit, time)
       if (.not. success) then
          goto 888
       endif
    endif
 
    if (nummovobs > 0) then
-      success = ec_gettimespacevalue(ecInstancePtr, item_movingstationtxy, irefdate, tzone, tunit, tim)
+      success = ec_gettimespacevalue(ecInstancePtr, item_movingstationtxy, irefdate, tzone, tunit, time)
       if (success) then
           do i=1,nummovobs
               call updateObservationXY(numobs+i, xyobs(2*(i-1)+1), xyobs(2*(i-1)+2))
@@ -252,7 +252,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
    endif
 
    if (ngatesg > 0) then
-      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_gateloweredgelevel, irefdate, tzone, tunit, tim, zgate)
+      success = success .and. ec_gettimespacevalue(ecInstancePtr, item_gateloweredgelevel, irefdate, tzone, tunit, time, zgate)
    endif
 
    !dambreak
@@ -262,7 +262,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
       ! on the current subdomain (i.e. ndambreaklinks == 0), because this subroutine calls function
       ! getAverageQuantityFromLinks, which involves mpi communication among all subdomains. However, in this special situation,
       ! all the necessary variables will be set to 0 and will not participate the dambreak related computation in this subroutine.
-      call update_dambreak_breach(tim, dts)
+      call update_dambreak_breach(time, dts)
    endif
 
    if (network%rgs%timeseries_defined) then
@@ -271,7 +271,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_frcutim, irefdate, tzone, tunit, times_update_roughness(1))
          call reCalculateConveyanceTables(network)
       endif
-      if (tim >= times_update_roughness(2)) then
+      if (time >= times_update_roughness(2)) then
          ! Shift the time dependent roughness values and collect the values for the new time instance
          times_update_roughness(1) = times_update_roughness(2)
          times_update_roughness(2) = times_update_roughness(2) + dt_UpdateRoughness ! (e.g., 86400 s)
@@ -281,7 +281,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
          ! update conveyance tables
          call reCalculateConveyanceTables(network)
       endif
-      call interpolateRoughnessParameters(network%rgs, times_update_roughness, tim)
+      call interpolateRoughnessParameters(network%rgs, times_update_roughness, time)
    endif
 
    iresult = DFM_NOERR
@@ -292,7 +292,7 @@ module subroutine set_external_forcings_boundaries(tim, iresult)
 888 continue
    msgbuf = dumpECMessageStack(LEVEL_WARN, callback_msg)
    iresult = DFM_EXTFORCERROR
-   write(msgbuf,'(a,f13.3)')  'Error while updating boundary forcing at time=', tim
+   write(msgbuf,'(a,f13.3)')  'Error while updating boundary forcing at time=', time
    call mess(LEVEL_WARN, trim(msgbuf))
 
 999 continue
