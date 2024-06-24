@@ -854,6 +854,9 @@ contains
                     fluxsys(ifluxsys) = iflx
                 endif
             enddo
+            if (isys < notot) then
+                ipfluxsys(isys+1) = ipfluxsys(isys) + nfluxsys(isys)
+            endif
         enddo
 
         ! nrvart is in the boot sysn common

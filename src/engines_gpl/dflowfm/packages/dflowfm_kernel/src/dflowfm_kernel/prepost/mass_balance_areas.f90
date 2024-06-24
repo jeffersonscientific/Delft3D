@@ -896,7 +896,6 @@ contains
    integer                     :: isys
    integer                     :: iflux
    integer                     :: jflux
-   integer                     :: ifluxsys
 
    call getfullversionstring_dflowfm(version_id)
 
@@ -965,15 +964,12 @@ contains
       write (lunbal, '( "total number of substances fluxes               :",I8)') totfluxsys
       write (lunbal, '(/"Substance      Process        Flux        Stochiometry factor")')
       write (lunbal, '( "-------------------------------------------------------------")')
-      ifluxsys = 0
       do isys = 1, notot
-         ipfluxsys(isys) = ifluxsys
          if (nfluxsys(isys) > 0) then
-            do iflux = ifluxsys + 1, ifluxsys + nfluxsys(isys)
+            do iflux = ipfluxsys(isys) + 1, ipfluxsys(isys) + nfluxsys(isys)
                jflux = fluxsys(iflux)
                write (lunbal, '(A10,5X,A10,5X,A10,ES20.6)') syname_sub(isys), fluxprocname(jflux), fluxname(jflux), stochi(isys,jflux)
             end do
-            ifluxsys = ifluxsys + nfluxsys(isys)
          end if
       end do
    end if
@@ -2038,7 +2034,7 @@ contains
       if (nfluxsys(isys) > 0) then
          do iflux = ipfluxsys(isys) + 1, ipfluxsys(isys) + nfluxsys(isys)
             jflux = fluxsys(iflux)
-            if(stochi(isys,jflux) >= 0.0) then
+            if (stochi(isys,jflux) >= 0.0) then
                flux(1) =  dble(stochi(isys,jflux)) * sum(p_flxdmp(1,jflux,:))
                flux(2) =  dble(stochi(isys,jflux)) * sum(p_flxdmp(2,jflux,:))
             else
