@@ -232,7 +232,7 @@ implicit none
                   ilattype = ILATTP_2D
                   call prepare_lateral_mask(mask, ilattype)
                case default
-                  mask = 1
+                  mask(:) = 1
                end select
 
                success = timespaceinitialfield(xz, yz, s1, ndx, filename, filetype, method, operand, transformcoef, 2, mask) ! zie meteo module
@@ -767,8 +767,7 @@ implicit none
                ! Meteo1
                kx = 3 ; itempforcingtyp = 1
                if (allocated (mask) ) deallocate(mask)
-               allocate( mask(ndx) )
-               mask = 1
+               allocate(mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax=3
 
@@ -803,8 +802,7 @@ implicit none
                ! Meteo1
                kx = 4 ; itempforcingtyp = 4
                if (allocated (mask) ) deallocate(mask)
-               allocate( mask(ndx) )
-               mask = 1
+               allocate(mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
@@ -818,9 +816,8 @@ implicit none
                pkbot => kbot
                pktop => ktop
 
-               if (allocated (mask) ) deallocate(mask)
-               allocate( mask(ndx) )
-               mask = 1
+               if (allocated(mask)) deallocate(mask)
+               allocate(mask(ndx), source=1)
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, z=zcs, pkbot=pkbot, pktop=pktop, varname=varname)
 
                if ( success ) then
@@ -1176,9 +1173,8 @@ implicit none
 
                   case (2)
                      if (allocated(mask)) deallocate(mask)
-                     allocate(mask(lnx), stat=ierr)
+                     allocate(mask(lnx), source=1, stat=ierr)
                      call aerr('mask(lnx)', ierr, lnx)
-                     mask = 1
                      allocate ( subsupl(lnx) , stat=ierr)
                      call aerr('subsupl(lnx)', ierr, lnx)
                      subsupl = 0d0
@@ -1195,9 +1191,8 @@ implicit none
 
                   case (3,4,5,6)
                      if (allocated(mask)) deallocate(mask)
-                     allocate(mask(numk), stat=ierr)
+                     allocate(mask(numk), source=1, stat=ierr)
                      call aerr('mask(numk)', ierr, numk)
-                     mask = 1
                      allocate ( subsupl(numk) , stat=ierr)
                      call aerr('subsupl(numk)', ierr, numk)
                      subsupl = 0d0
