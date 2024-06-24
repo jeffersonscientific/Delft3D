@@ -2482,7 +2482,7 @@ private
                temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_TEPS:IPNT_TEPS+kmx)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS),temp_pointer)
             end if
-            if (iturbulencemodel > 1) then
+            if (iturbulencemodel >= 2) then
                temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_VICWWS:IPNT_VICWWS+kmx)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS),temp_pointer)
                temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_VICWWU:IPNT_VICWWU+kmx)

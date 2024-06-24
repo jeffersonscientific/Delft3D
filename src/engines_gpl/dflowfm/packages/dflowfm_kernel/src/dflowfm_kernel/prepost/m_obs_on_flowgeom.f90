@@ -37,17 +37,21 @@ module m_obs_on_flowgeom
    
    contains
 
+!> Snap observation stations to nearest flow nodes and links.
+!! Results are stored in `m_observations` state arrays.
 subroutine obs_on_flowgeom(iobstype)
 
    use m_observations, only: numobs, nummovobs, kobs, namobs
    use unstruc_messages, only: loglevel_StdOut, LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
    use m_flowgeom, only: ndx2D, ndxi
-
+   use unstruc_caching, only: cacheRetrieved, copyCachedObservations
+   
    implicit none
 
    integer, intent(in) :: iobstype !< Which obs stations to update: 0=normal, 1=moving, 2=both
    
    integer                    :: n1, n2, iobs
+   logical                    :: cache_success
 
    if (iobstype == 0) then
       ! Only normal stations
@@ -63,7 +67,23 @@ subroutine obs_on_flowgeom(iobstype)
       n2 = numobs+nummovobs
    end if
 
-   call find_flownodes_and_links_for_all_observation_stations(n1, n2)
+   ! Try to read normal (non-moving) stations from cache file
+   cache_success = .false.
+   if (iobstype == 0 .or. iobstype == 2) then
+      if ( cacheRetrieved() ) then
+         call copyCachedObservations( cache_success )
+      endif
+   end if
+
+   if (cache_success) then
+      ! When necessary, process also the moving observation points (which are not in cache file)
+      if ((iobstype == 1 .or. iobstype == 2) .and. nummovobs > 0) then
+         call find_flownodes_and_links_for_all_observation_stations(numobs+1, numobs+nummovobs)
+      end if
+   else
+      ! No cache, so process all requested observation points.
+      call find_flownodes_and_links_for_all_observation_stations(n1, n2)
+   endif
 
    if (loglevel_StdOut == LEVEL_DEBUG) then
       do iobs = n1, n2
