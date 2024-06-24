@@ -1308,7 +1308,9 @@ implicit none
 
       enddo
       call timstop(handle_extra(50)) ! extforcefile old
-
+      
+      call init_misc(iresult)
+      
    end subroutine init_old
    
       !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings

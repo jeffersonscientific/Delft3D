@@ -1614,7 +1614,6 @@ function flow_initexternalforcings() result(iresult)              ! This is the 
    if (iresult == DFM_NOERR) then
       call init_new(md_extfile_new, iresult)
       call init_old(iresult)
-      call init_misc(iresult)
    end if
    call finalize()
    
