@@ -829,18 +829,12 @@ subroutine get_var_location(c_var_name, c_location)  bind(C, name="get_var_locat
 
 end subroutine get_var_location
 
-subroutine get_var_role(c_var_name, role) bind(C, name="get_var_role")
-   character(kind=c_char), intent(in) :: c_var_name(*)
-   character(kind=c_char)             :: role(*) ! TODO: UNST-7403: implement 2.0 version of this function.
-   ! Roles:
-   ! BMI_INPUT
-   ! BMI_OUTPUT
-   ! BMI_INPUTOUTPUT
-end subroutine get_var_role
+!> Get the units of the given variable.
+subroutine get_var_units(c_var_name, unit)  bind(C, name="get_var_units")
+   character(kind=c_char), intent(in)  :: c_var_name(*)
+   character(kind=c_char), intent(out) :: unit(MAXSTRLEN)
 
-subroutine get_var_units( c_var_name, unit )  bind(C, name="get_var_units")
-   character(kind=c_char), intent(in) :: c_var_name(*)
-   character(kind=c_char)             :: unit(*) ! TODO: UNST-7403: implement 2.0 version of this function.
+   unit(:) = ''  ! TODO: UNST-7403: implement 2.0 version of this function.
 end subroutine get_var_units
 
 !> Returns the rank of a variable, i.e., its dimensionality.
