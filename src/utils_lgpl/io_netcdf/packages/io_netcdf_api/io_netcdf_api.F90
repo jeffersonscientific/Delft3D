@@ -321,7 +321,7 @@ function ionc_get_edge_nodes_dll(ioncid, meshid, c_edge_nodes_ptr, nedge, start_
    integer(kind=c_int), intent(in)    :: ioncid  !< The IONC data set id.
    integer(kind=c_int), intent(in)    :: start_index !< The requested start index
    integer(kind=c_int), intent(in)    :: meshid  !< The mesh id in the specified data set.
-   type(c_ptr),         intent(  out) :: c_edge_nodes_ptr !< Pointer to array for the edge-node connectivity table.
+   type(c_ptr),         intent(in)    :: c_edge_nodes_ptr !< Pointer to array for the edge-node connectivity table.
    integer(kind=c_int), intent(in)    :: nedge  !< The number of edges in the mesh.
    integer(kind=c_int)                :: ierr    !< Result status, ionc_noerr if successful.
 
