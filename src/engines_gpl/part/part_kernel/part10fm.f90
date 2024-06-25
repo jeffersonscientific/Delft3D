@@ -49,6 +49,7 @@ subroutine part10fm()
     use random_generator
     use timers
     use m_part_modeltypes
+    use spec_feat_par
 
     !locals
     logical          :: partdomain, skip_pt, openbound, mirror
@@ -320,20 +321,21 @@ subroutine part10fm()
 !
 !   system administration : frank kleissen
     use partmem
-    use m_particles
+    use m_particles, laypart => kpart
     use m_part_times
     use m_part_recons
     use m_sferic
     use m_sferic_part,only: ptref
     use m_part_flow, only: h0, kmx
 
-    use m_part_mesh, only: xzwcell, yzwcell, zzwcell
+    use m_part_mesh, only: xzwcell, yzwcell, zzwcell, cell2nod
     use geometry_module, only: Cart3Dtospher, sphertocart3D
     use physicalconsts, only: earth_radius
     use mathconsts, only: raddeg_hp
     use random_generator
     use timers
     use m_part_modeltypes
+    use spec_feat_par
 
     !locals
     logical               :: partdomain, openbound
@@ -344,6 +346,7 @@ subroutine part10fm()
     integer(int_wp )      :: ifract                  ! loop counter for nfract
     integer(int_wp )      :: itdelt                  ! delta-t of the particle for smooth loading
     integer(int_wp )      :: kp                      ! k of the particle
+    integer(int_wp )      :: ilay                    ! loop counter for noslay
     logical               :: dstick                  ! logical that determines sticking
     logical               :: twolay                  ! model type is "two layers"
     real(kind=dp)         :: abuac                   ! actual value of abuoy(ipart) ( * sqrt(ddfac)
@@ -359,12 +362,18 @@ subroutine part10fm()
     real(kind=dp)         :: tp                      ! real value of iptime(ipart)
     real(kind=dp)         :: trp                     ! horizontal random walk
     real(kind=dp)         :: wdirr                        ! is wind direction in radians
+    real(kind=dp), dimension(noslay)  :: totdepthlay             ! total depth (below water surface) of bottom of layers
+    real(kind=dp)         :: thicknessl, depthp              ! layerthickness, depth particle
     integer               :: mpartold, npadd, mparttemp
+    integer               :: partcel,  partcellay, partlay        !particle cell number in layer 1, particle cell number, particle layer number
     integer               :: nfcons = 10
     real(kind=dp)         :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
     real(kind=dp), dimension(1) :: xx, yy
     real(kind=dp)         :: dpxwind, dpywind, windcurratio, wvel_sf, dwx, dwy, ux0, uy0, ux0old, uy0old, xcr, ycr
+    real(sp)              :: vxw, vyw, vw_net        ! particle velocity in x and y dir., winddriven, net wind speed (ie wind minus current)
+
     real(kind=dp)         :: ioptev(nfract)
+    real(kind=dp)         :: leeway_ang_sign ! leeway divergence angle sign (angle left is <0, right >0)
     integer(kind=int_wp), save :: ithndl = 0              ! handle to time this subroutine
 
     if ( timon ) then
@@ -420,15 +429,15 @@ subroutine part10fm()
         partlay = laypart(ipart)
 
         totdepthlay(1) = h0(partcel)
-        pc             = partcel + (partlay-1) * hyd%nosegl
-        pb             = laybot(1, mpart(ipart))
+        partcellay             = partcel + (partlay-1) * hyd%nosegl
+        !partbottomlay             = laybot(1, mpart(ipart))
         do ilay = 2, noslay
            if (ilay <= kmx) then
               totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
            end if
         enddo
 
-        thicknessl = h0(pc)
+        thicknessl = h0(partcellay)
         ! depth of the particle from water surface
         if ( laypart(ipart) == 1 ) then
             depthp = thicknessl * hpart(ipart)
