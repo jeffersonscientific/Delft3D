@@ -23,6 +23,7 @@
 
 module part10fm_mod
     use m_fm_particles_in_grid
+    use m_waq_precision
 
     implicit none
 
@@ -33,9 +34,7 @@ subroutine part10fm()
 !                 (per time step)
 !
 !     system administration : frank kleissen
-    use m_waq_precision
-    use partmem, only: nopart, modtyp, drand, oil, nfract, wpart, iptime, idelt, &
-        abuoy, t0buoy, ldiffh, nosubs, mpart, lsettl, noslay
+    use partmem, only: nopart, modtyp, drand, oil, nfract, wpart, iptime, abuoy, t0buoy, ldiffh, nosubs, mpart, use_settling, noslay
     use m_part_mesh
     use m_particles, laypart => kpart
     use m_part_times
@@ -50,43 +49,43 @@ subroutine part10fm()
     use random_generator
     use timers
     use m_part_modeltypes
-    use spec_feat_par
 
     !locals
     logical          :: partdomain, skip_pt, openbound, mirror
     integer          :: ipart, ifract, niter
-    double precision :: rseed  =  0.5d+00
+    real(kind=dp) :: rseed  =  0.5d+00
 
-    integer(int_wp )   :: ierror                  ! needed to call part07
-    integer(int_wp )   :: isub                    ! loop counter nosubs
-    integer(int_wp )   :: itdelt                  ! delta-t of the particle for smooth loading
-    integer(int_wp )   :: kp                      ! k of the particle
-    logical            :: twolay                  ! = modtyp .eq. model_two_layer_temp
-    double precision      :: abuac           ! actual value of abuoy(ipart) ( * sqrt(ddfac)
-    double precision      :: cdrag           ! local drag coefficient (converted from persentage)
-    double precision      :: dax             ! delta of diffusive spreading x
-    double precision      :: day             ! delta of diffusive spreading y
+    integer(int_wp )   :: ierror          ! needed to call part07
+    integer(int_wp )   :: isub            ! loop counter nosubs
+    integer(int_wp )   :: itdelt          ! delta-t of the particle for smooth loading
+    integer(int_wp )   :: kp              ! k of the particle
+    logical            :: twolay          ! = model type is "two layers"
+    real(kind=dp)      :: abuac           ! actual value of abuoy(ipart) ( * sqrt(ddfac)
+    real(kind=dp)      :: cdrag           ! local drag coefficient (converted from persentage)
+    real(kind=dp)      :: dax             ! delta of diffusive spreading x
+    real(kind=dp)      :: day             ! delta of diffusive spreading y
     real(sp)              :: ddfac           ! control variable for smooth loading
-    double precision      :: dran1           ! actual value of drand(1) or drand(1)*sqrt(ddfac)
-    double precision      :: dradius         ! horizontal diffusion step distance
-    double precision      :: dpangle         ! horizontal diffusion step angle
-    double precision      :: sq6             ! = sqrt(6.0)
-    double precision      :: t0              ! helpvariable with initial time step buoyant spreading
-    double precision      :: tp              ! real value of iptime(ipart)
-    double precision      :: trp             ! horizontal random walk
-    real(sp)              :: wdirr           ! is wind direction in radians      
+    real(kind=dp)      :: dran1           ! actual value of drand(1) or drand(1)*sqrt(ddfac)
+    real(kind=dp)      :: dradius         ! horizontal diffusion step distance
+    real(kind=dp)      :: dpangle         ! horizontal diffusion step angle
+    real(kind=dp)      :: sq6             ! = sqrt(6.0)
+    real(kind=dp)      :: t0              ! helpvariable with initial time step buoyant spreading
+    real(kind=dp)      :: tp              ! real value of iptime(ipart)
+    real(kind=dp)      :: trp             ! horizontal random walk
+    real(sp)              :: wdirr           ! is wind direction in radians
     real(sp)              :: leeway_ang_sign
     integer               :: mpartold,iedge, i, maxiter, npbounce
-    double precision      :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
-    double precision      :: dpxwind, dpywind, windcurratio, dwx, dwy, daz, xcr, ycr
-    double precision, dimension(1)      :: xx, yy
-    integer(4) ithndl              ! handle to time this subroutine
-    data       ithndl / 0 /
+    real(kind=dp)      :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
+    real(kind=dp)      :: dpxwind, dpywind, windcurratio, dwx, dwy, daz, xcr, ycr
+    real(kind=dp), dimension(1)      :: xx, yy
+    integer(kind=int_wp), save :: ithndl = 0             ! handle to time this subroutine
 
-    if ( timon ) call timstrt( "part10fm", ithndl )
+    if ( timon ) then
+        call timstrt( "part10fm", ithndl )
+    endif
 
     maxiter = 100
-    twolay = modtyp .eq. model_two_layer_temp
+    twolay = modtyp == model_two_layer_temp
     sq6    = sqrt( 6.0 )
     ddfac  = 2.0
     dran1  = drand(1)
@@ -147,7 +146,7 @@ subroutine part10fm()
         ! Settled particles should not be moved via horizontal dispersion
         ! Also for sticky "oil" particles
         !
-        if ( lsettl .and. laypart(ipart) == noslay ) then
+        if ( use_settling .and. laypart(ipart) == noslay ) then
             skip_pt = .TRUE.
         endif
 
@@ -166,8 +165,7 @@ subroutine part10fm()
             tp = real(iptime(ipart), kind=kind(tp))
             abuac  = abuoy(ipart)
             dran1  = drand(1)
-            itdelt = idelt
-            if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading
+            if ( tp < 0.0 ) then           !   adaptations because of smooth loading
                 tp     = 0.0
                 itdelt = dts + iptime(ipart)
                 ddfac  = float(itdelt)/dts
@@ -182,7 +180,7 @@ subroutine part10fm()
             if ( ldiffh ) then
                 trp = dran1 * tp ** drand(2) ! Effectively 2.0 sqrt( D delta-t )
                 t0  = t0buoy(ipart)
-                if ( twolay .and. t0 .gt. 0.0 .and. kp .eq. 1 ) then
+                if ( twolay .and. t0 > 0.0 .and. kp == 1 ) then
                     trp = max( trp , abuac * (tp+t0)**(-0.125) )     ! bouyancy spreading parameter
                 endif
                 if (mirror) then
@@ -239,7 +237,6 @@ subroutine part10fm()
                     ! stays in model due to dispersion, now check on the wind and recalculate x, y,
                     ! but only for the oil model (surface floating), to be consistent with the delft3d approach
                     ! for all oil fractions. If it hits mpart=0 due to dispersion the particle will not stick but resamples.
-                    ! drag should also be used when the wind_drag_option is used (ie particles near surface subject to drag, for example leeway)
                     if (oil ) then
                         do ifract = 1 , nfract
                             if ( wpart(1 + 3 * (ifract - 1), ipart) > 0.0 ) then
@@ -310,9 +307,10 @@ subroutine part10fm()
     write(      *, * ) 'Number of particles reaching maximum bouncing iterations: ', npbounce
     write( lun(2), * ) 'Number of particles reaching maximum bouncing iterations: ', npbounce
 
-    if ( timon ) call timstop ( ithndl )
+    if ( timon ) then
+        call timstop ( ithndl )
+    endif
 
-    return
     end subroutine
 
     subroutine part10fm_pdrag(ipart, ifract, rseed)
@@ -322,65 +320,58 @@ subroutine part10fm()
 !
 !   system administration : frank kleissen
     use partmem
-    use m_particles, laypart => kpart
+    use m_particles
     use m_part_times
     use m_part_recons
     use m_sferic
     use m_sferic_part,only: ptref
     use m_part_flow, only: h0, kmx
 
-    use m_part_mesh, only: xzwcell, yzwcell, zzwcell, cell2nod
+    use m_part_mesh, only: xzwcell, yzwcell, zzwcell
     use geometry_module, only: Cart3Dtospher, sphertocart3D
     use physicalconsts, only: earth_radius
     use mathconsts, only: raddeg_hp
     use random_generator
     use timers
     use m_part_modeltypes
-    use spec_feat_par
 
     !locals
     logical               :: partdomain, openbound
     integer               :: ipart, niter
-    double precision      :: rseed
+    real(kind=dp)      :: rseed
 
     integer(int_wp )      :: ierror                  ! needed to call part07
     integer(int_wp )      :: ifract                  ! loop counter for nfract
+    integer(int_wp )      :: itdelt                  ! delta-t of the particle for smooth loading
     integer(int_wp )      :: kp                      ! k of the particle
     logical               :: dstick                  ! logical that determines sticking
-    logical               :: twolay                  ! = modtyp .eq. model_two_layer_temp
-    double precision      :: abuac                   ! actual value of abuoy(ipart) ( * sqrt(ddfac)
-    double precision      :: cdrag                   ! local drag coefficient (converted from percentage)
-    double precision      :: dax                     ! delta of diffusive spreading x
-    double precision      :: day                     ! delta of diffusive spreading y
+    logical               :: twolay                  ! model type is "two layers"
+    real(kind=dp)         :: abuac                   ! actual value of abuoy(ipart) ( * sqrt(ddfac)
+    real(kind=dp)         :: cdrag                   ! local drag coefficient (converted from persentage)
+    real(kind=dp)         :: dax                     ! delta of diffusive spreading x
+    real(kind=dp)         :: day                     ! delta of diffusive spreading y
     real(sp)              :: ddfac                   ! control variable for smooth loading
-    double precision      :: dran1                   ! actual value of drand(1) or drand(1)*sqrt(ddfac)
-    double precision      :: dradius                 ! horizontal diffusion step distance
-    double precision      :: dpangle                 ! horizontal diffusion step angle
-    double precision      :: sq6                     ! = sqrt(6.0)
-    double precision      :: t0                      ! helpvariable with initial time step buoyant spreading
-    double precision      :: tp                      ! real value of iptime(ipart)
-    double precision      :: trp                     ! horizontal random walk
-    double precision      :: wdirr                        ! is wind direction in radians
+    real(kind=dp)         :: dran1                   ! actual value of drand(1) or drand(1)*sqrt(ddfac)
+    real(kind=dp)         :: dradius                 ! horizontal diffusion step distance
+    real(kind=dp)         :: dpangle                 ! horizontal diffusion step angle
+    real(kind=dp)         :: sq6                     ! = sqrt(6.0)
+    real(kind=dp)         :: t0                      ! helpvariable with initial time step buoyant spreading
+    real(kind=dp)         :: tp                      ! real value of iptime(ipart)
+    real(kind=dp)         :: trp                     ! horizontal random walk
+    real(kind=dp)         :: wdirr                        ! is wind direction in radians
     integer               :: mpartold, npadd, mparttemp
     integer               :: nfcons = 10
-    double precision      :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
-    double precision, dimension(1) :: xx, yy
-    double precision      :: dpxwind, dpywind, windcurratio, wvel_sf, dwx, dwy, ux0, uy0, ux0old, uy0old, xcr, ycr
-    double precision      :: vxw, vyw, vw_net      ! wind drift in x, y and net wind for drag
-    double precision      :: ioptev(nfract)
-    integer(int_wp)              :: partcel, partlay, pc, pcnew
-    real(dp), dimension(noslay)  :: totdepthlay             ! total depth (below water surface) of bottom of layers
-    real(sp)      :: leeway_ang_sign
-    integer(int_wp)              :: pb                      ! lowest waterlayer at particle position
-    integer(int_wp)              :: ilay
-    real(dp)                     :: dhpart, thicknessl, depthp
-    
+    real(kind=dp)         :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
+    real(kind=dp), dimension(1) :: xx, yy
+    real(kind=dp)         :: dpxwind, dpywind, windcurratio, wvel_sf, dwx, dwy, ux0, uy0, ux0old, uy0old, xcr, ycr
+    real(kind=dp)         :: ioptev(nfract)
+    integer(kind=int_wp), save :: ithndl = 0              ! handle to time this subroutine
 
-    integer(4), save      :: ithndl = 0              ! handle to time this subroutine
+    if ( timon ) then
+        call timstrt( "part10fm_pdrag", ithndl )
+    endif
 
-    if ( timon ) call timstrt( "part10fm_pdrag", ithndl )
-
-    twolay = modtyp .eq. model_two_layer_temp
+    twolay = modtyp == model_two_layer_temp
     sq6    = sqrt( 6.0 )
     ddfac  = 2.0
     twopi  = 8.0 * atan(1.0)
@@ -400,7 +391,6 @@ subroutine part10fm()
         defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
         cdrag  = leeway_multiplier          !  windage (leeway), given as a fraction
     endif
-
     ! the next section is taken from the oildsp routine to allow access to the stickyness (if oilmod).
     if ( oil ) then
         npadd = 0
@@ -458,7 +448,7 @@ subroutine part10fm()
             endif
         end if
     end if
-    xpart(ipart) = xpartold  + dwx    !here it is all in m.
+    xpart(ipart) = xpartold  + dwx    !!cartesian.
     ypart(ipart) = ypartold  + dwy    !
     ! write(*,*)'Displacement x and y in fragfm routine: ', dwx, dwy
     ! the z-coordinate needs to be updated
@@ -485,11 +475,10 @@ subroutine part10fm()
     call part_findcell(1,xx(1),yy(1),mpart(ipart:ipart),ierror)
     call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
 
-    ! if the particle goes outside the domain due to wind, use the current angle to transport, otherwise it sticks, not relevant for apply wind option
+    ! if the particle goes outside the domain due to wind, use the current angle to transport, otherwise it sticks
     dstick = rnd(rseed) > fstick(ifract) ! if dstick is true then the particle will not stick
     if ( (mpart(ipart) == 0 .or. .not.openbound) .and. dstick) then
-        ! here we can use the fstick parameter to select whether to take the
-        ! particle out (kpart-0), ie sticks. Question is that this will not work in case of an internal boundary
+        ! here we can use the fstick parameter to select whether to take the ! particle out, ie sticks.
         fangle  = datan2( ux0old , uy0old)
         fanglew = datan2(dpywind,dpxwind)
         difangle = min( twopi - abs(fangle - fanglew), abs(fangle - fanglew))
@@ -500,7 +489,7 @@ subroutine part10fm()
         dpywind = windcurratio * uy0old
         dpxwind = windcurratio * ux0old
 
-        !now we can calculate the new displacement in the direction of the flow
+        !now we can calculate the new displacement in the direction of hte flow
         dwx = (cdrag*(dpxwind-ux0old)) * dts
         dwy = (cdrag*(dpywind-uy0old)) * dts
         xpart(ipart) = xpartold  + dwx
@@ -514,10 +503,9 @@ subroutine part10fm()
         call part_findcell(1,xx(1),yy(1),mpart(ipart:ipart),ierror)
         call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
 
-    elseif ( (mpart(ipart) == 0 .or. .not.openbound) .and. .not. dstick .and. wpart(1 + 3 * (ifract - 1), ipart)>0.0 ) then
+    elseif ( (mpart(ipart) == 0 .or. .not.openbound) .and. .not. dstick .and. wpart(1 + 3 * (ifract - 1), ipart) > 0.0 ) then
         ! now it sticks and the floating mass is transferred to sticky mass and
         ! put the particles in their old position, so that they show up in concentrations
-        ! if mpart= 0 here then the transport is across an open boundary ?
         if (.not.openbound) then
             wpart(3 + 3 * (ifract - 1), ipart) = wpart(1 + 3 * (ifract - 1), ipart)
             wpart(1 + 3 * (ifract - 1), ipart) = 0.0d0
@@ -538,9 +526,10 @@ subroutine part10fm()
             zpart(ipart) = zpartold
         endif
     endif
-    if ( timon ) call timstop ( ithndl )
+    if ( timon ) then
+        call timstop ( ithndl )
+    endif
 
-    return
     end subroutine
 
     subroutine checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)
@@ -556,36 +545,35 @@ subroutine part10fm()
     use geometry_module
     use network_data
 
-    integer          :: ipart
-    integer          :: i, k, k1, k2, L!, kpartold
-    integer          :: ja, jacros
-    integer          :: Lexit
-    double precision :: sl
-    double precision :: sm, xcr, ycr, crp
+    integer                  :: ipart
+    integer                  :: i, k, k1, k2, L
+    integer                  :: ja, jacros
+    integer                  :: Lexit
+    real(kind=dp)            :: sl
+    real(kind=dp)            :: sm, xcr, ycr, crp
 
     ! locals
 
-    double precision            :: d, un
-    double precision            :: t, tex, dt
-    double precision            :: ux0, uy0, cs, sn, xpartold, ypartold, txk, tyk
+    real(kind=dp)            :: d, un
+    real(kind=dp)            :: t, tex, dt
+    real(kind=dp)            :: ux0, uy0, cs, sn, xpartold, ypartold, txk, tyk
     integer                     :: mpartold, mpart_tmp
-    double precision            :: xn, yn, zn, rl
-    double precision            :: dvar, dis, dn
+    real(kind=dp)            :: xn, yn, zn, rl
+    real(kind=dp)            :: dvar, dis, dn
 
-    double precision, dimension(3) :: ddn
+    real(kind=dp), dimension(3) :: ddn
 
-    logical                     :: isboundary
-    logical, intent(out)        :: openbound !! true then the particle crosses an openboundary (ie no sticking)
+    logical                  :: isboundary
+    logical, intent(out)     :: openbound !! true then the particle crosses an openboundary (ie no sticking)
 
-    double precision, parameter :: DTOL = 1d-4
-    double precision, parameter :: DTOLd  = 1d-4
-    double precision, parameter :: DTOLun_rel = 1d-4
-    double precision, parameter :: DTOLun = 1e-14
-    double precision, parameter :: dmiss = -999.D0
-    double precision            :: tolx, toly
+    real(kind=dp), parameter :: DTOL = 1d-4
+    real(kind=dp), parameter :: DTOLd  = 1d-4
+    real(kind=dp), parameter :: DTOLun_rel = 1d-4
+    real(kind=dp), parameter :: DTOLun = 1e-14
+    real(kind=dp), parameter :: dmiss = -999.D0
+    real(kind=dp)            :: tolx, toly
     integer,          parameter :: MAXNUMZERO = 10
 
-    integer(4), save            :: ithndl = 0             ! handle to time this subroutine
     integer                     :: j, iq
 
     if ( mpartold == 0 ) then

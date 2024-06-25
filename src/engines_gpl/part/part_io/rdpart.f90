@@ -202,11 +202,11 @@ contains
       if ( gettoken( idummy, ierr2 ) .ne. 0 ) goto 11
       if ( gettoken( ioption, ierr2 ) .ne. 0 ) goto 11
       if ( ioption .eq. 0 ) then
-         lsettl = .false.
+         use_settling = .false.
          write ( lun2, * ) ' Sedimentation-erosion processes are inactive'
          noslay = nolayp
       else
-         lsettl = .true.
+         use_settling = .true.
          write ( lun2, * ) ' Sedimentation-erosion processes are enabled'
          noslay = nolayp + 1
       endif
@@ -687,7 +687,7 @@ contains
       abmstagedev = ""
       chronrev = .false.
       selstage = 0.0
-      leeway = .false. 
+      leeway = .false.
       leeway_csvfile = ""
       leeway_multiplier = 0.
       leeway_modifier = 0.
@@ -899,7 +899,7 @@ contains
                   open( newunit = lunfil, file = leeway_csvfile )
                   read( lunfil, '(256a)') line
                   read(line,*)leeway_id
-                  do while ( substi(1) .ne. leeway_id ) 
+                  do while ( substi(1) .ne. leeway_id )
                     read( lunfil, '(256a)' ) line
                     read(line,*)leeway_id
                   enddo
@@ -1517,7 +1517,7 @@ contains
             write ( lun2, 3323 )
             ierr = ierr + 1
          endif
-         
+
          if ( nolayp .eq. 1 ) then
             write ( lun2, 2280 ) xwaste(i), ywaste(i), zwaste(i)
          else
@@ -1766,7 +1766,7 @@ contains
             write ( lun2, 3323 )
             ierr = ierr + 1
          endif
-         
+
          write ( lun2, 2316) i, ndprt(i+nodac), wparm(i+nodac), uscal(i)
 
 !       read time for delpar release, and substance number
@@ -1918,7 +1918,7 @@ contains
 !       chezy and the density of water in g/l
 
       chezy = 50.0
-      if ( lsettl ) then
+      if ( use_settling ) then
          if ( gettoken( taucs, ierr2 ) .ne. 0 ) goto 4063
          if ( gettoken( tauce, ierr2 ) .ne. 0 ) goto 4063
          if ( gettoken( chezy, ierr2 ) .ne. 0 ) goto 4063
@@ -1929,7 +1929,7 @@ contains
 !..  for output routines part12, part13 and parths
 !..  for plot routine part13 also extra subsyances names are created
 
-      if ( lsettl ) then
+      if ( use_settling ) then
          i = nolayp*nosubs
          write ( lun2, * ) ' Substances defined in bed layer (sed/erosion): '
          do isb = 1, nosubs
@@ -1943,9 +1943,9 @@ contains
 
 !     close input file
 
-      if ( alone ) then     
+      if ( alone ) then
           close ( ilun(1) )
-      endif 
+      endif
 
 !     check on the total number of particles:
 
@@ -2306,7 +2306,7 @@ contains
                   ' order or at the same time as previous!'       )
  3323 format('  Error 2003. Particle percentaage should be positive')
 
-                  
+
  3500 format('  Found plastics_parameters keyword '       )
  3501 format(/'  Plastics name                      : ',A)
  3502 format( '  Plastics density            [g/m3] : ',F14.2)
