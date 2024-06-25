@@ -38,6 +38,7 @@ if (WIN32)
 
     # Store debug info inside objects instead of pdbs when building, pbds are created by linker after.
     # Since we build with /MP, multiple processes might write into the same PDB otherwise, causing corrupt PDB errors.
+    # CMAKE_Fortran_FLAGS_DEBUG contains /debug:full by default, which creates a PDB before linking, but specifying /Z7 after overrides this behavior.
     set(debug_information_flag                /Z7)
 
     # Set debug flags:
