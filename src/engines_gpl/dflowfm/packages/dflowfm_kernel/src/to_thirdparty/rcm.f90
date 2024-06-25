@@ -5434,7 +5434,7 @@ END IF
 bnd = x
 
 ! compute the derivative as the intial k polynomial
-! and do 5 steps with no shift
+! and do steps with no shift
 nm1 = n - 1
 DO  i = 2, n
   k(i) = (nn-i) * p(i) / n

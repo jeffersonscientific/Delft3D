@@ -169,7 +169,7 @@
             end if
          end do
       else  !  non kdtree
-      DO 10 I = 1,NS-1
+      do I = 1,NS-1
          ISAM = IPSAM(I)
          IF (XS(ISAM) .NE. XYMIS .and. ZS(ISAM) .NE. DMISS) THEN
             J = I
@@ -186,7 +186,7 @@
                ENDIF
             ENDIF
          ENDIF
-   10 CONTINUE
+end do
 
       end if
 
@@ -195,7 +195,7 @@
 !     remove double samples
       K = 0
       newnode = 0
-      DO 20 I = 1,NS
+      do i = 1,NS
          IF (XS(I) .NE. XYMIS .and. ZS(I) .NE. DMISS) THEN
             K = K + 1
             XS(K) = XS(I)
@@ -203,7 +203,7 @@
             ZS(K) = ZS(I)
             newnode(i) = k   ! old-to-new sample number
          ENDIF
-   20 CONTINUE
+end do
 
       call klok(t2)
 
