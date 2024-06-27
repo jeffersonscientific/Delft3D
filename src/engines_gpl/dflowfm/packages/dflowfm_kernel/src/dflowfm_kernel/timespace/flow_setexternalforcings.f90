@@ -1,53 +1,4 @@
-!----- AGPL --------------------------------------------------------------------
-!
-!  Copyright (C)  Stichting Deltares, 2017-2024.
-!
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).
-!
-!  Delft3D is free software: you can redistribute it and/or modify
-!  it under the terms of the GNU Affero General Public License as
-!  published by the Free Software Foundation version 3.
-!
-!  Delft3D  is distributed in the hope that it will be useful,
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!  GNU Affero General Public License for more details.
-!
-!  You should have received a copy of the GNU Affero General Public License
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-!
-!  contact: delft3d.support@deltares.nl
-!  Stichting Deltares
-!  P.O. Box 177
-!  2600 MH Delft, The Netherlands
-!
-!
-!  All indications and logos of, and references to, "Delft3D",
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!
-!-------------------------------------------------------------------------------
-
-!
-!
-module m_external_forcings
-implicit none
-public :: set_external_forcings
-public :: calculate_wind_stresses
-
-  procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
-  
-  abstract interface
-     subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
-        integer, intent(in) :: number_of_links      !< number of links
-        integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
-     end subroutine
-  end interface
-  
-contains
-
-!> set field oriented boundary conditions
-subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+submodule (m_external_forcings) set_external_forcings
    use timers,                 only : timstrt, timstop
    use m_flowtimes
    use m_flowgeom
@@ -64,10 +15,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use m_airdensity,           only : get_airdensity
    use dfm_error
    use m_lateral, only : numlatsg
-
-   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
-   logical,          intent(in   ) :: initialization   !< initialization phase
-   integer,          intent(  out) :: iresult          !< Integer error status: DFM_NOERR==0 if succesful.
+implicit none
 
    integer, parameter              :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
    integer, parameter              :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 2
@@ -86,6 +34,14 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    ! variables for processing the pump with levels, SOBEK style
    logical                         :: success_copy
 
+contains
+   
+   !> set field oriented boundary conditions
+module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
+   logical,          intent(in   ) :: initialization   !< initialization phase
+   integer,          intent(  out) :: iresult          !< Integer error status: DFM_NOERR==0 if succesful.
+
    call timstrt('External forcings', handle_ext)
 
    success = .true.
@@ -96,15 +52,15 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
       patm = PavBnd
    end if
 
-   call retrieve_icecover()
+   call retrieve_icecover(time_in_seconds)
    
    if (ja_airdensity > 0) then
-      call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
+      call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity, time_in_seconds)
    end if
    if (ja_computed_airdensity==1) then 
-      call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm)
-      call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair)
-      call get_timespace_value_by_item_array_consider_success_value(item_humidity, rhum)
+      call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm, time_in_seconds)
+      call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair, time_in_seconds)
+      call get_timespace_value_by_item_array_consider_success_value(item_humidity, rhum, time_in_seconds)
       call get_airdensity(patm, tair, rhum, airdensity, ierr)
    end if
 
@@ -117,40 +73,40 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    end if
 
    if (jatem > 1) then
-      call set_temperature_models()
+      call set_temperature_models(time_in_seconds)
    end if 
 
    if (ja_friction_coefficient_time_dependent > 0) then
-       call set_friction_coefficient()
+      call get_timespace_value_by_item_and_array(item_frcu, frcu, time_in_seconds)
    end if
 
    call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
 
-   call set_wave_parameters()
+   call set_wave_parameters(initialization)
 
-   call retrieve_rainfall()
+   call retrieve_rainfall(time_in_seconds)
 
    if (ncdamsg > 0) then
-      call get_timespace_value_by_item_array_consider_success_value(item_damlevel, zcdam)
+      call get_timespace_value_by_item_array_consider_success_value(item_damlevel, zcdam, time_in_seconds)
    end if
 
    if (ncgensg > 0) then
-      call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen)
+      call get_timespace_value_by_item_array_consider_success_value(item_generalstructure, zcgen, time_in_seconds)
       call update_zcgen_widths_and_heights() ! TODO: replace by Jan's LineStructure from channel_flow
    end if
 
    if (npumpsg > 0) then
-      call get_timespace_value_by_item_array_consider_success_value(item_pump, qpump)
+      call get_timespace_value_by_item_array_consider_success_value(item_pump, qpump, time_in_seconds)
    end if
 
-   call update_network_data()
+   call update_network_data(time_in_seconds)
 
    if (nlongculverts > 0) then
-       call get_timespace_value_by_item_and_consider_success_value(item_longculvert_valve_relative_opening)
+       call get_timespace_value_by_item_and_consider_success_value(item_longculvert_valve_relative_opening, time_in_seconds)
    end if
 
    if (nvalv > 0) then
-       call get_timespace_value_by_item_and_consider_success_value(item_valve1D)
+       call get_timespace_value_by_item_and_consider_success_value(item_valve1D, time_in_seconds)
    end if
 
    if (jatidep > 0 .or. jaselfal > 0) then
@@ -173,7 +129,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    end if
 
    if (jasubsupl > 0) then
-     call update_subsidence_and_uplift_data()
+     call update_subsidence_and_uplift_data(time_in_seconds)
    end if
 
    if (nearfield_mode == NEARFIELD_UPDATED) then
@@ -233,22 +189,23 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    end if
 
    iresult = DFM_NOERR
-
-contains
-
+   
+   end subroutine set_external_forcings
 
 !> get_timespace_value_by_item_and_array_and_consider_success_value
-subroutine get_timespace_value_by_item_array_consider_success_value(item, array)
+subroutine get_timespace_value_by_item_array_consider_success_value(item, array, time_in_seconds)
 
     integer,          intent(in   ) :: item      !< Item for getting values
     double precision, intent(inout) :: array(:)  !< Array that stores the values
+    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
     success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
 end subroutine get_timespace_value_by_item_array_consider_success_value
 
 !> set_temperature_models
-subroutine set_temperature_models()
+subroutine set_temperature_models(time_in_seconds)
+    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
     logical :: foundtempforcing
 
@@ -256,37 +213,37 @@ subroutine set_temperature_models()
     ! Nothing happens in case quantity 'humidity_airtemperature_cloudiness' has never been added through ec_addtimespacerelation.
     select case (itempforcingtyp)
     case (HUMIDITY_AIRTEMPERATURE_CLOUDINESS)
-        call get_timespace_value_by_name_and_consider_success_value('humidity_airtemperature_cloudiness')
+        call get_timespace_value_by_name_and_consider_success_value('humidity_airtemperature_cloudiness', time_in_seconds)
     case (HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION)
-        call get_timespace_value_by_name_and_consider_success_value('humidity_airtemperature_cloudiness_solarradiation')
+        call get_timespace_value_by_name_and_consider_success_value('humidity_airtemperature_cloudiness_solarradiation', time_in_seconds)
     case (DEWPOINT_AIRTEMPERATURE_CLOUDINESS)
-        call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness')
+        call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness', time_in_seconds)
     case (DEWPOINT_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION)
-        call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness_solarradiation')
+        call get_timespace_value_by_name_and_consider_success_value('dewpoint_airtemperature_cloudiness_solarradiation', time_in_seconds)
     case (DEWPOINT)
-        call get_timespace_value_by_name_and_consider_success_value('dewpoint')
+        call get_timespace_value_by_name_and_consider_success_value('dewpoint', time_in_seconds)
     end select
 
     foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
 
     if (btempforcingtypH) then
-        call get_timespace_value_by_item_and_consider_success_value(item_humidity)
+        call get_timespace_value_by_item_and_consider_success_value(item_humidity, time_in_seconds)
         foundtempforcing = .true.
     end if
     if (btempforcingtypA) then
-        call get_timespace_value_by_item_and_consider_success_value(item_airtemperature)
+        call get_timespace_value_by_item_and_consider_success_value(item_airtemperature, time_in_seconds)
         foundtempforcing = .true.
     end if
     if (btempforcingtypS) then
-        call get_timespace_value_by_item_and_consider_success_value(item_solarradiation)
+        call get_timespace_value_by_item_and_consider_success_value(item_solarradiation, time_in_seconds)
         foundtempforcing = .true.
     end if
     if (btempforcingtypC) then
-        call get_timespace_value_by_item_and_consider_success_value(item_cloudiness)
+        call get_timespace_value_by_item_and_consider_success_value(item_cloudiness, time_in_seconds)
         foundtempforcing = .true.
     end if
     if (btempforcingtypL) then
-        call get_timespace_value_by_item_and_consider_success_value(item_longwaveradiation)
+        call get_timespace_value_by_item_and_consider_success_value(item_longwaveradiation, time_in_seconds)
         foundtempforcing = .true.
     end if
 
@@ -298,34 +255,51 @@ subroutine set_temperature_models()
 
 end subroutine set_temperature_models
 
-!> set friction coefficient values at this time moment
-subroutine set_friction_coefficient()
-
-   call get_timespace_value_by_item_and_array(item_frcu, frcu)
-
-end subroutine set_friction_coefficient
-
 !> get_timespace_value_by_name_and_consider_success_value
-subroutine get_timespace_value_by_name_and_consider_success_value(name)
-
-    character(*), intent(in) :: name
+subroutine get_timespace_value_by_name_and_consider_success_value(name, time_in_seconds)
+   character(*),     intent(in)    :: name
+   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
     success = success .and. ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
 
 end subroutine get_timespace_value_by_name_and_consider_success_value
 
 !> get_timespace_value_by_item_and_consider_success_value
-subroutine get_timespace_value_by_item_and_consider_success_value(item)
+subroutine get_timespace_value_by_item_and_consider_success_value(item, time_in_seconds)
 
-    integer, intent(in) :: item
+    integer,          intent(in)    :: item
+    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
     success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
 end subroutine get_timespace_value_by_item_and_consider_success_value
+   
+   !> get_timespace_value_by_item_and_array
+subroutine get_timespace_value_by_item_and_array(item, array, time_in_seconds)
+
+    integer,          intent(in   ) :: item     !< Item for getting values
+    double precision, intent(inout) :: array(:) !< Array that stores the values
+    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
+
+    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
+
+end subroutine get_timespace_value_by_item_and_array
+
+!> get_timespace_value_by_item
+subroutine get_timespace_value_by_item(item, time_in_seconds)
+
+    integer, intent(in) :: item !< Item for getting values
+    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
+
+    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
+
+end subroutine get_timespace_value_by_item
 
 !> set_wave_parameters
-subroutine set_wave_parameters()
-   !
+subroutine set_wave_parameters(initialization)
+
+   logical,          intent(in   ) :: initialization   !< initialization phase
+
    logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary
    
    if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
@@ -551,24 +525,26 @@ elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wa
 end function convert_wave_direction_from_nautical_to_cartesian
 
 !> retrieve icecover
-subroutine retrieve_icecover()
+subroutine retrieve_icecover(time_in_seconds)
    use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ICECOVER_EXT
+    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
    if (ja_icecover == ICECOVER_EXT) then
       ice_af = 0.d0
       ice_h  = 0.d0
       if (item_sea_ice_area_fraction /= ec_undef_int) then
-         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_area_fraction)
+         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_area_fraction, time_in_seconds)
       endif
       if (item_sea_ice_thickness /= ec_undef_int) then
-         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_thickness)
+         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_thickness, time_in_seconds)
       endif
    endif
 
 end subroutine retrieve_icecover
 
 !> retrieve_rainfall
-subroutine retrieve_rainfall()
+subroutine retrieve_rainfall(time_in_seconds)
+   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
    ! Retrieve rainfall for ext-file quantity 'rainfall'.
    if (jarain > 0) then
@@ -583,40 +559,42 @@ subroutine retrieve_rainfall()
 end subroutine retrieve_rainfall
 
 !> update_network_data
-subroutine update_network_data()
+subroutine update_network_data(time_in_seconds)
+   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
    logical :: success_previous
 
    success_previous = success
 
    if (network%sts%numPumps > 0) then
-      call get_timespace_value_by_item(item_pump_capacity)
+      call get_timespace_value_by_item(item_pump_capacity, time_in_seconds)
    end if
 
    if (network%sts%numCulverts > 0) then
-      call get_timespace_value_by_item(item_culvert_valveOpeningHeight)
+      call get_timespace_value_by_item(item_culvert_valveOpeningHeight, time_in_seconds)
    end if
 
    if (network%sts%numWeirs > 0) then
-      call get_timespace_value_by_item(item_weir_crestLevel)
+      call get_timespace_value_by_item(item_weir_crestLevel, time_in_seconds)
    end if
 
    if (network%sts%numOrifices > 0) then
-      call get_timespace_value_by_item(item_orifice_crestLevel)
-      call get_timespace_value_by_item(item_orifice_gateLowerEdgeLevel)
+      call get_timespace_value_by_item(item_orifice_crestLevel, time_in_seconds)
+      call get_timespace_value_by_item(item_orifice_gateLowerEdgeLevel, time_in_seconds)
    end if
 
    if (network%sts%numGeneralStructures > 0) then
-      call get_timespace_value_by_item(item_general_structure_crestLevel)
-      call get_timespace_value_by_item(item_general_structure_gateLowerEdgeLevel)
-      call get_timespace_value_by_item(item_general_structure_crestWidth)
-      call get_timespace_value_by_item(item_general_structure_gateOpeningWidth)
+      call get_timespace_value_by_item(item_general_structure_crestLevel, time_in_seconds)
+      call get_timespace_value_by_item(item_general_structure_gateLowerEdgeLevel, time_in_seconds)
+      call get_timespace_value_by_item(item_general_structure_crestWidth, time_in_seconds)
+      call get_timespace_value_by_item(item_general_structure_gateOpeningWidth, time_in_seconds)
    end if
 
 end subroutine update_network_data
 
 !> update_subsidence_and_uplift_data
-subroutine update_subsidence_and_uplift_data()
+subroutine update_subsidence_and_uplift_data(time_in_seconds)
+   double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
 
  if (.not. sdu_first) then
          ! preserve the previous 'bedrock_surface_elevation' for computing the subsidence/uplift rate
@@ -634,350 +612,4 @@ subroutine update_subsidence_and_uplift_data()
 
 end subroutine update_subsidence_and_uplift_data
 
-!> get_timespace_value_by_item_and_array
-subroutine get_timespace_value_by_item_and_array(item, array)
-
-    integer,          intent(in   ) :: item     !< Item for getting values
-    double precision, intent(inout) :: array(:) !< Array that stores the values
-
-    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
-
-end subroutine get_timespace_value_by_item_and_array
-
-!> get_timespace_value_by_item
-subroutine get_timespace_value_by_item(item)
-
-    integer, intent(in) :: item !< Item for getting values
-
-    success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
-
-end subroutine get_timespace_value_by_item
-
-
-end subroutine set_external_forcings
-
-
-
-
-!> print_error_message
-subroutine print_error_message(time_in_seconds)
-   use m_ec_message, only: dumpECMessageStack
-   use MessageHandling, only: LEVEL_WARN, mess
-   use unstruc_messages, only: callback_msg
-
-   double precision, intent(in) :: time_in_seconds !< Current time when doing this action
-
-   character(len=255)           :: tmpstr
-
-   write(tmpstr,'(f22.11)') time_in_seconds
-   call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time=' // trim(tmpstr))
-   tmpstr = dumpECMessageStack(LEVEL_WARN,callback_msg)
-end subroutine print_error_message
-
-!> prepare_wind_model_data
-subroutine prepare_wind_model_data(time_in_seconds, iresult)
-   use m_wind
-   use m_flowparameters, only: jawave, flowWithoutWaves
-   use m_flow, only: wind_speed_factor
-   use m_meteo
-   use m_flowgeom, only: ln, lnx, ndx
-   use precision_basics
-   use m_flowparameters, only: eps10
-   use dfm_error
-
-   double precision, intent(in   ) :: time_in_seconds !< Current time when setting wind data
-   integer,          intent(  out) :: iresult         !< Error indicator
-
-   double precision, parameter  :: SEA_LEVEL_PRESSURE = 101325d0
-   integer                      :: ec_item_id, first, last, link, i, k
-   logical                      :: first_time_wind
-
-   wx = 0.d0
-   wy = 0.d0
-   wdsu_x = 0.d0
-   wdsu_y = 0.d0
-   wcharnock = 0.d0
-   call initialize_array_with_zero(ec_pwxwy_x)
-   call initialize_array_with_zero(ec_pwxwy_y)
-
-   first_time_wind = (id_last_wind < 0)
-   if (first_time_wind) then
-      first = 1
-      last  = get_ec_number_of_items()
-   else
-      first = id_first_wind
-      last  = id_last_wind
-   end if
-   do i = first, last
-      ec_item_id = get_ec_item_id(i)
-      ! Retrieve wind's x- and y-component for ext-file quantity 'windxy'.
-      if (ec_item_id == item_windxy_x .and. item_windxy_y /= ec_undef_int) then
-         call get_timespace_value_by_item(item_windxy_x)
-      ! Retrieve stress's x- and y-component for ext-file quantity 'stressxy'.
-      elseif (ec_item_id == item_stressxy_x .and. item_stressxy_y /= ec_undef_int) then
-         call get_timespace_value_by_item(item_stressxy_x)
-      ! Retrieve wind's p-, x- and y-component for ext-file quantity 'airpressure_windx_windy'.
-      else if (ec_item_id == item_apwxwy_p .and. item_apwxwy_x /= ec_undef_int .and. item_apwxwy_y /= ec_undef_int) then
-         if (item_apwxwy_c /= ec_undef_int) then
-            call get_timespace_value_by_name('airpressure_windx_windy_charnock')
-         else
-            call get_timespace_value_by_name('airpressure_windx_windy')
-         end if
-      ! Retrieve wind's charnock-component for ext-file quantity 'charnock'.
-      else if (ec_item_id == item_charnock) then
-         call get_timespace_value_by_item(item_charnock)
-      ! Retrieve wind's x-component for ext-file quantity 'windx'.
-      else if (ec_item_id == item_windx) then
-         call get_timespace_value_by_item(item_windx)
-      ! Retrieve wind's y-component for ext-file quantity 'windy'.
-      else if (ec_item_id == item_windy) then
-         call get_timespace_value_by_item(item_windy)
-      ! Retrieve stress's x-component for ext-file quantity 'stressx'.
-      else if (ec_item_id == item_stressx) then
-         call get_timespace_value_by_item(item_stressx)
-      ! Retrieve stress's y-component for ext-file quantity 'stressy'.
-      else if (ec_item_id == item_stressy) then
-         call get_timespace_value_by_item(item_stressy)
-      ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
-      else if (ec_item_id == item_atmosphericpressure) then
-         call get_timespace_value_by_item(item_atmosphericpressure)
-      else
-         cycle  ! avoid updating id_first_wind and id_last_wind
-      end if
-      if (.not. success) then
-         iresult = DFM_EXTFORCERROR
-         call print_error_message(time_in_seconds)
-         return
-      end if
-      if (first_time_wind) then
-         id_first_wind = min(i, id_first_wind)
-         id_last_wind  = max(i, id_last_wind)
-      end if
-   end do
-
-   if (jawindstressgiven > 0) then 
-      if (item_stressx /= ec_undef_int .and. item_stressy /= ec_undef_int) then
-         call get_timespace_value_by_item_and_array(item_stressx, wdsu_x)
-         call get_timespace_value_by_item_and_array(item_stressy, wdsu_y)
-      else if (item_stressxy_x /= ec_undef_int .and. item_stressxy_y /= ec_undef_int) then
-         call get_timespace_value_by_item_and_array(item_stressxy_x, wdsu_x)
-         call get_timespace_value_by_item_and_array(item_stressxy_y, wdsu_y)
-      end if
-   end if
-
-   if (allocated(ec_pwxwy_x) .and. allocated( ec_pwxwy_y)) then
-      if (jawindstressgiven == 1) then 
-         call perform_additional_spatial_interpolation(wdsu_x, wdsu_y)
-      else
-         call perform_additional_spatial_interpolation(wx, wy)
-      end if
-      if (allocated(ec_pwxwy_c)) then
-         do link  = 1, lnx
-            wcharnock(link) = wcharnock(link) + 0.5d0*( ec_pwxwy_c(ln(1,link)) + ec_pwxwy_c(ln(2,link)) )
-         end do
-      end if
-   end if
-   if (allocated(ec_charnock)) then
-      do link  = 1, lnx
-         wcharnock(link) = wcharnock(link) + 0.5d0*( ec_charnock(ln(1,link)) + ec_charnock(ln(2,link)) )
-      end do
-   end if
-
-   if (ja_wind_speed_factor > 0) then
-      do link = 1, lnx
-         if (wind_speed_factor(link) /= dmiss) then
-            wx(link) = wx(link) * wind_speed_factor(link)
-            wy(link) = wy(link) * wind_speed_factor(link)
-         end if
-      end do
-   end if
-
-   if (item_atmosphericpressure /= ec_undef_int) then
-      do k = 1, ndx
-         if (comparereal(patm(k), dmiss, eps10) == 0) then
-            patm(k) = SEA_LEVEL_PRESSURE
-         end if
-      end do
-   end if
-
-   if (jawave == 1 .or. jawave == 2 .and. .not. flowWithoutWaves) then
-      call tauwavefetch(time_in_seconds)
-   end if
-
-   iresult = DFM_NOERR
-contains
-
-!> get_ec_item_id
-integer function get_ec_item_id(i)
-   integer, intent(in) :: i !< Input index
-
-   get_ec_item_id = ecInstancePtr%ecItemsPtr(i)%ptr%id
-
-end function get_ec_item_id
-
-!> ec_number_of_items
-integer function get_ec_number_of_items()
-
-   get_ec_number_of_items = ecInstancePtr%nItems
-
-end function get_ec_number_of_items
-
-!> get_timespace_value_by_name
-subroutine get_timespace_value_by_name(name)
-
-   character(*), intent(in) :: name !< Input name
-
-   success = ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
-
-end subroutine get_timespace_value_by_name
-
-!> get_timespace_value_by_item_and_array
-subroutine get_timespace_value_by_item_and_array(item, array)
-   use m_flowtimes, only: irefdate, tzone, tunit
-
-   integer,          intent(in   ) :: item             !< Input item
-   double precision, intent(inout) :: array(:)         !< Array that stores the obatained values
-
-   success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
-
-end subroutine get_timespace_value_by_item_and_array
-
-!> perform_additional_spatial_interpolation, the size of array_x and array_y is lnx.
-subroutine perform_additional_spatial_interpolation(array_x, array_y)
-
-   double precision, intent(inout) :: array_x(:) !< Array of X-components for interpolation
-   double precision, intent(inout) :: array_y(:) !< Array of Y-components for interpolation
-
-   do link  = 1, lnx
-       array_x(link) = array_x(link) + 0.5d0*( ec_pwxwy_x(ln(1,link)) + ec_pwxwy_x(ln(2,link)) )
-       array_y(link) = array_y(link) + 0.5d0*( ec_pwxwy_y(ln(1,link)) + ec_pwxwy_y(ln(2,link)) )
-   end do
-
-end subroutine perform_additional_spatial_interpolation
-
-!> get_timespace_value_by_item
-subroutine get_timespace_value_by_item(item)
-   use m_flowtimes, only: irefdate, tzone, tunit
-   integer, intent(in) :: item !< Input item
-
-   success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
-
-end subroutine get_timespace_value_by_item
-
-!> initialize_array_with_zero
-subroutine initialize_array_with_zero(array)
-
-   double precision, allocatable, intent(inout) :: array(:) !< Array that will be initialized
-
-   if (allocated(array)) then
-        array(:) = 0.d0
-   end if
-
-end subroutine initialize_array_with_zero
-
-end subroutine prepare_wind_model_data
-
-!> Gets windstress (and air pressure) from input files, and sets the windstress
-subroutine calculate_wind_stresses(time_in_seconds, iresult)
-   use m_wind, only: jawind, japatm
-   use dfm_error, only: DFM_NOERR
-
-   double precision, intent(in   ) :: time_in_seconds !< Current time when getting and applying winds
-   integer,          intent(  out) :: iresult         !< Error indicator
-   if (jawind == 1 .or. japatm > 0) then
-      call prepare_wind_model_data(time_in_seconds, iresult)
-      if (iresult /= DFM_NOERR) then
-         return
-      end if
-   end if
-
-   if (jawind > 0) then
-      call setwindstress()
-   end if
-
-   iresult = DFM_NOERR
-
-end subroutine calculate_wind_stresses
-
-
-
-!> select_wave_variables_subgroup
-!! select routine depending on whether all or a subgroup of wave variables are allocated
-subroutine select_wave_variables_subgroup(all_wave_variables)
-    
-    logical, intent(in) :: all_wave_variables
-    
-    if (all_wave_variables) then
-        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
-    else
-        fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
-    end if
-    
-end subroutine select_wave_variables_subgroup
-
-!> fill_open_boundary_cells_with_inner_values_all
-subroutine fill_open_boundary_cells_with_inner_values_all(number_of_links, link2cell)
-    use m_waves
-
-    integer, intent(in) :: number_of_links      !< number of links
-    integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
-    
-    integer             :: link !< link counter
-    integer             :: kb   !< cell index of boundary cell
-    integer             :: ki   !< cell index of internal cell
-
-    do link = 1, number_of_links
-        kb   = link2cell(1,link)
-        ki   = link2cell(2,link)
-        hwavcom(kb) = hwavcom(ki)
-        twav(kb)    = twav(ki)
-        phiwav(kb)  = phiwav(ki)
-        uorbwav(kb) = uorbwav(ki)
-        sxwav(kb)   = sxwav(ki)
-        sywav(kb)   = sywav(ki)
-        mxwav(kb)   = mxwav(ki)
-        mywav(kb)   = mywav(ki)
-        sbxwav(kb)  = sbxwav(ki)
-        sbywav(kb)  = sbywav(ki)
-        dsurf(kb)   = dsurf(ki)
-        dwcap(kb)   = dwcap(ki)
-    end do
-
-end subroutine fill_open_boundary_cells_with_inner_values_all
-
-!> fill_open_boundary_cells_with_inner_values_fewer
-subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
-    use m_waves
-    use m_flowparameters, only : jawave, waveforcing
-
-    integer, intent(in) :: number_of_links      !< number of links
-    integer, intent(in) :: link2cell(:,:)       !< indices of cells connected by links
-    
-    integer             :: link !< link counter
-    integer             :: kb   !< cell index of boundary cell
-    integer             :: ki   !< cell index of internal cell
-
-    
-    if (jawave == 7 .and. waveforcing == 2 ) then
-        do link = 1,number_of_links
-            kb   = link2cell(1,link)
-            ki   = link2cell(2,link)
-            distot(kb) = distot(ki)
-        end do
-    endif
-    do link = 1, number_of_links
-        kb   = link2cell(1,link)
-        ki   = link2cell(2,link)
-        hwavcom(kb) = hwavcom(ki)
-        twav(kb)    = twav(ki)
-        phiwav(kb)  = phiwav(ki)
-        uorbwav(kb) = uorbwav(ki)
-        sxwav(kb)   = sxwav(ki)
-        sywav(kb)   = sywav(ki)
-        mxwav(kb)   = mxwav(ki)
-        mywav(kb)   = mywav(ki)
-    end do
- 
-end subroutine fill_open_boundary_cells_with_inner_values_fewer
-
-end module m_external_forcings
+end submodule set_external_forcings
