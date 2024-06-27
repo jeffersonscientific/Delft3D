@@ -1134,6 +1134,21 @@ module m_oned_functions
    qCurLat = 0d0
    num_layers = max(1,kmx)
    ! Don't reset vTotLat
+
+   ! TODO-8090
+   ! change the loop into
+   ! do lat = 1, nlatsg
+   !    i = 0
+   !    do n = n1latsg(lat), n2latsg(lat)
+   !       i = i+1
+   !       inode = nnlat(n)
+   !       if (inode <= ndx2d) then
+   !          cycle   
+   !       endif
+   !       qCurLat(inode) = qCurLat(inode) + qqlat(nlayer, i)
+   !       vTotLat(inode) = vTotLat(inode) + qqlat(nlayer, i)*dts
+   !    enddo   
+   ! enddo   
    if (allocated(qqlat)) then
       do n = ndx2d+1, ndxi ! all 1d nodes
          do nlayer = 1, num_layers !loop on layers

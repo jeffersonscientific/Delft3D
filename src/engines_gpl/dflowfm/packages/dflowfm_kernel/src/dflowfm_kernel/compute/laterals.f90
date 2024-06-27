@@ -51,7 +51,12 @@ module m_lateral
    integer, parameter, public :: ILATTP_2D  = 2  !< Type code for laterals that only apply to 2D nodes.
 
    integer,                         target, public :: numlatsg           !< [-] nr of lateral discharge providers  {"rank": 0}
+   ! TODO-8090
+   ! I see 3 occurences where QPLAT is being allocated. Investigate if this is necessary.
+
    real(kind=dp),      allocatable, target, public :: qplat(:,:)         !< [m3/s] Lateral discharge of provider {"shape": ["num_layers","numlatsg"]}
+   ! TODO-8090
+   ! Dimension QQLAT to maximum number of nodes in a polygon for all laterals.
    real(kind=dp),      allocatable, target, public :: qqlat(:,:)         !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","ndx"]}
    real(kind=dp),      allocatable, target, public :: balat(:)           !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
    character(len=128), allocatable,         public :: lat_ids(:)         !< id of laterals {"shape": ["numlatsg"]}
