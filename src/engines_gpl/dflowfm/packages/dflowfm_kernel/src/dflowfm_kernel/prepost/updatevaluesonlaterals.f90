@@ -56,6 +56,10 @@ subroutine updateValuesOnLaterals(tim1, timestep)
    num_layers = max(1,kmx)
 
    ! Compute realized discharge
+
+   ! TODO-8090
+   ! Change the loop in accordance with s1ini
+
    qLatReal = 0d0
    do i = 1,numlatsg
       do k1=n1latsg(i),n2latsg(i)

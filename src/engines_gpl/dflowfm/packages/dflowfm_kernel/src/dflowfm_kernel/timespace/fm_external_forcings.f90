@@ -1230,6 +1230,11 @@ contains
 
       if (.not. allocated(QQlat)) then                      ! just once
          nlatndguess = ndx2d + 2 * (ndxi - ndx2d)  ! first guess: all 2D + twice all 1D, nnlat *might* be bigger.
+         ! TODO-8090
+         ! indien n1latsg nog niet bekend, verplaats de allocatie van dit array, naar een betere lokatie.
+         ! 
+         ! maxnodes = MAX( (n2latsg(i)+1-n1latsg(i)), i = 1, nlatsg) )
+         ! allocate(QQLat(maxnodes, nlatsg))
          allocate (QQLat(max(1, kmx), ndx), stat=ierr)
          call aerr('QQLAT(ndx)', ierr, ndx)
          QQLat = 0d0

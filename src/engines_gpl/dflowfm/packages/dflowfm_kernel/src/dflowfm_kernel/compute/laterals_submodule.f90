@@ -344,7 +344,7 @@ implicit none
 
 
       lateral_discharge_per_layer_per_cell(:,:) = 0.0_dp
-
+      ! TODO-8090 gebruik if (apply_transport(n)) then
       do i_lateral = 1,numlatsg
          do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_nnlat)

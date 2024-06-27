@@ -175,10 +175,24 @@
        num_layers = max(1,kmx)
 
        ! if apply_transport_is_used: qqlat has been computed in flow_run_sometimesteps already
+       ! TODO-8090: this is not correct. The check must be done for each lateral individually. 
+       !            so use apply_transport(n) as well
+
        if (.not. apply_transport_is_used) then 
-          ! First accumulate all lateral discharges per grid cell
-          QQLat(1:num_layers,1:ndx) = 0d0
-          do n = 1,numlatsg
+         ! First accumulate all lateral discharges per grid cell
+         
+         ! TODO-8090
+         ! change the loop into
+         ! do lat = 1, nlatsg
+         !    i = 0
+         !    do n = n1latsg(lat), n2latsg(lat)
+         !       i = i+1
+         !       inode = nnlat(n)
+         !       QQLat(i, lat) = QQLat(i, lat) + QPlat(1,lat)*ba(n)/baLat(lat)
+         !    enddo   
+         ! enddo   
+         QQLat(1:num_layers,1:ndx) = 0d0
+         do n = 1,numlatsg
              do k1=n1latsg(n),n2latsg(n)
                 k = nnlat(k1)
                 if (k > 0) then
@@ -199,6 +213,9 @@
 
           !DIR$ FORCEINLINE
           isGhost = is_ghost_node(k)
+
+         ! TODO-8090
+         ! change the loop
           do nlayer = 1, num_layers
              if (QQLat(nlayer,k) > 0) then
                 if (.not. isGhost) then ! Do not count ghosts in mass balances

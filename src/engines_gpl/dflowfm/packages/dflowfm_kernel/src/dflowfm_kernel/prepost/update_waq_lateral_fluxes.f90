@@ -50,6 +50,9 @@ integer :: k, k1, ilat
 integer :: ilatwaq, nlayer, num_layers
 
 ! Accumulate lateral discharges for waq
+
+! TODO-8090
+! Change the loop in accordance with s1ini
 ilatwaq = 0
 num_layers = max(1,kmx)
 do ilat = 1,numlatsg
