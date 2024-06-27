@@ -1,4 +1,4 @@
-submodule (m_external_forcings) old_initialisation
+submodule (fm_external_forcings) old_initialisation
    use fm_external_forcings_data
    
 implicit none

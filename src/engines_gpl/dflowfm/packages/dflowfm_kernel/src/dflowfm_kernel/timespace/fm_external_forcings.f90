@@ -27,7 +27,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 ! 
-module m_external_forcings
+module fm_external_forcings
 
 implicit none
 
@@ -2697,4 +2697,4 @@ use unstruc_inifields, only: initialize_initial_fields
 
    end function allocate_patm
     
-end module m_external_forcings
+end module fm_external_forcings

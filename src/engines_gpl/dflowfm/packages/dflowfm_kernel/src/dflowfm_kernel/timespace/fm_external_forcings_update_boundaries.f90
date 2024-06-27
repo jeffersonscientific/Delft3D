@@ -27,7 +27,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-submodule (m_external_forcings) set_external_forcings_boundaries
+submodule (fm_external_forcings) set_external_forcings_boundaries
 
 implicit none
 

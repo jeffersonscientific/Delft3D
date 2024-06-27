@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 !
-submodule(m_external_forcings) initialisation
+submodule(fm_external_forcings) initialisation
 
    implicit none
 

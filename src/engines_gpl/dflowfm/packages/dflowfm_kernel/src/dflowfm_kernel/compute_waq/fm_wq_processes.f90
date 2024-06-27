@@ -901,7 +901,7 @@ end subroutine fm_wq_processes_ini_proc
 
 !! @return Integer result status (0 if successful)
 subroutine dfm_waq_initexternalforcings(iresult)
-    use m_external_forcings
+    use fm_external_forcings
     use m_alloc
     use fm_external_forcings_data
     use m_flowparameters

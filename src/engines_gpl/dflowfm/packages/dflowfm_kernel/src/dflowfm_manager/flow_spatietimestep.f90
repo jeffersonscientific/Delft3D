@@ -35,7 +35,7 @@
  use m_flowgeom,              only: ndx
  use fm_external_forcings_data,  only: nbndz, zbndz
  use m_flowparameters,        only: janudge
- use m_external_forcings
+ use fm_external_forcings
 
  implicit none
  integer :: key, ierr

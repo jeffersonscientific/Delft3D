@@ -46,7 +46,7 @@
  use m_orthosettings
  use m_xbeach_data, only: itheta_view
  use m_heatfluxes
- use m_external_forcings
+ use fm_external_forcings
  use m_partitioninfo
  use dfm_error
  use m_ship

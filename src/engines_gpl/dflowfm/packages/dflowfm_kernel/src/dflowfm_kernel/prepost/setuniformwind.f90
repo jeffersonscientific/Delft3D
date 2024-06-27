@@ -34,7 +34,7 @@
  use m_wind
  use m_sferic
  use m_flowgeom
- use m_external_forcings, only: allocatewindarrays
+ use fm_external_forcings, only: allocatewindarrays
  implicit none
  double precision :: wdir
 

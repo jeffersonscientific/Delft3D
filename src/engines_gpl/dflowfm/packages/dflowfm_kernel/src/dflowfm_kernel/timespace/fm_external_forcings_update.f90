@@ -1,4 +1,4 @@
-submodule (m_external_forcings) set_external_forcings
+submodule (fm_external_forcings) set_external_forcings
    use timers,                 only : timstrt, timstop
    use m_flowtimes
    use m_flowgeom
