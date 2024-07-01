@@ -1315,7 +1315,7 @@ contains
             trim(statcoordstring) // ' zcoordinate_w', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
 
          call definencvar(ihisfile, id_zwu, nc_precision, [id_laydimw, id_statdim, id_timedim], &
-            'zcoordinate_wu', 'vertical coordinate at edge of flow element and at layer interface', 'm', &
+            'zcoordinate_wu', 'vertical coordinate at nearest edge of flow element and at layer interface', 'm', &
             trim(statcoordstring) // ' zcoordinate_wu', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
       end if
    end function unc_def_his_station_coord_vars_z
