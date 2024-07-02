@@ -78,6 +78,9 @@ public :: fm_bott3d
    use m_fm_morstatistics, only: morstats, morstatt0
    use m_tables, only: interpolate
    use Timers
+   use m_flowparameters, only: epshu
+   use m_flowgeom , only: bl
+   use m_flow, only: s1
 
    implicit none
 
@@ -91,6 +94,7 @@ public :: fm_bott3d
    logical, parameter                          :: AVALANCHE_OFF = .false.
    logical, parameter                          :: SLOPECOR_ON  = .true.
    logical, parameter                          :: SLOPECOR_OFF = .false.
+   logical, dimension(:), allocatable :: iswet
    
    !!
    !! Local variables
@@ -190,7 +194,13 @@ public :: fm_bott3d
       
       call fm_change_in_sediment_thickness(dtmor)
 	  
-      call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
+      write(123,*) 'pre-burial'
+      allocate(iswet(ndxi))
+      iswet = (s1(1:ndxi)-bl(1:ndxi)) > epshu
+      call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac, iswet)
+      deallocate(iswet)
+      write(123,*) 'post-burial'
+      write(123,*) ' '
       
       call fm_dry_bed_erosion(dtmor)
             

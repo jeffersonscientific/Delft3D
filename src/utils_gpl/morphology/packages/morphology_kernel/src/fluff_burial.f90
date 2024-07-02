@@ -1,4 +1,4 @@
-subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac)
+subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac, iswet)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -47,6 +47,7 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac)
     real(fp)                                , intent(in)    :: morfac
     real(fp), dimension(1:lsedtot,nmlb:nmub), intent(inout) :: dbodsd
     type (fluffy_type)                      , intent(inout) :: flufflyr
+    integer , dimension(nmlb:nmub)          , intent(in)    :: iswet
 !
 ! Local variables
 !
@@ -62,6 +63,7 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac)
 !
 !! executable statements ------------------
 !
+    write(123,*) 'fluff_burial', flufflyr%iflufflyr
     if (flufflyr%iflufflyr==1) then
        bfluff0 => flufflyr%bfluff0
        bfluff1 => flufflyr%bfluff1
@@ -75,8 +77,15 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac)
           !
           if (mfltot>0.0_fp) then
              do l = 1, lsed
-                fac          = mfluff(l,nm)/mfltot
-                dfluff       = min(fac*min(mfltot*bfluff1(l,nm), bfluff0(l,nm))*dt,mfluff(l,nm))
+                !fac          = mfluff(l,nm)/mfltot
+                !dfluff       = min(fac*min(mfltot*bfluff1(l,nm), bfluff0(l,nm))*dt,mfluff(l,nm))
+                if (iswet(nm)) then
+                    write(123,*) nm, 'wet'
+                    dfluff = 0d0
+                else
+                    write(123,*) nm, 'dry'
+                    dfluff = mfluff(l,nm)
+                endif
                 mfluff(l,nm) = mfluff(l,nm) - dfluff
                 dbodsd(l,nm) = dbodsd(l,nm) + dfluff*morfac
              enddo
