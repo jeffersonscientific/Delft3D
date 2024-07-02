@@ -407,16 +407,16 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
              endif
              vicL = vicL + vicc
 
-             if (ja_timestep_auto_visc == 0) then
-                dxiAu = dxi(L)*hu(L)*wu(L)
-                if ( dxiAu > 0d0 ) then
-                   viscocity_max_limit = 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu
-                   if ( vicL > viscocity_max_limit ) then
-                      vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
-                      number_limited_links = number_limited_links + 1
-                   end if
-                end if
-             end if
+             !if (ja_timestep_auto_visc == 0) then
+             !   dxiAu = dxi(L)*hu(L)*wu(L)
+             !   if ( dxiAu > 0d0 ) then
+             !      viscocity_max_limit = 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu
+             !      if ( vicL > viscocity_max_limit ) then
+             !         vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
+             !         number_limited_links = number_limited_links + 1
+             !      end if
+             !   end if
+             !end if
 
              vicLu(L) = vicL                       ! horizontal eddy viscosity applied in mom eq.
              viu(L) = max(0d0, vicL - vicc)        ! modeled turbulent part
@@ -528,16 +528,16 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
                  endif
              endif
 
-             if (ja_timestep_auto_visc == 0) then
-                dxiAu = dxi(LL)*Au(L)
-                if ( dxiAu > 0d0 ) then
-                   viscocity_max_limit = 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu
-                   if ( vicL > viscocity_max_limit ) then
-                      vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
-                      number_limited_links = number_limited_links + 1
-                   end if
-                end if
-             end if
+             !if (ja_timestep_auto_visc == 0) then
+             !   dxiAu = dxi(LL)*Au(L)
+             !   if ( dxiAu > 0d0 ) then
+             !      viscocity_max_limit = 0.2d0*dti*min( vol1(k1) , vol1(k2) )  / dxiAu
+             !      if ( vicL > viscocity_max_limit ) then
+             !         vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
+             !         number_limited_links = number_limited_links + 1
+             !      end if
+             !   end if
+             !end if
 
              vicLu(L) = vicL                       ! horizontal eddy viscosity applied in mom eq.
              viu(L) = max(0d0, vicL - vicc)        ! modeled turbulent part
@@ -573,11 +573,11 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
      end if
    end if
    
-   if ( number_limited_links > 0 .and. number_steps_limited_visc_flux_links <= MAX_PRINTS_LIMITED_VISC_FLUX_LINKS) then
-      number_steps_limited_visc_flux_links = number_steps_limited_visc_flux_links + 1
-      write(msgbuf,'(a,i0,a)') 'Viscosity coefficient was limited for ', number_limited_links,' links.'
-      call mess(LEVEL_WARN, msgbuf)
-   end if 
+   !if ( number_limited_links > 0 .and. number_steps_limited_visc_flux_links <= MAX_PRINTS_LIMITED_VISC_FLUX_LINKS) then
+   !   number_steps_limited_visc_flux_links = number_steps_limited_visc_flux_links + 1
+   !   write(msgbuf,'(a,i0,a)') 'Viscosity coefficient was limited for ', number_limited_links,' links.'
+   !   call mess(LEVEL_WARN, msgbuf)
+   !end if 
    
  end if
 

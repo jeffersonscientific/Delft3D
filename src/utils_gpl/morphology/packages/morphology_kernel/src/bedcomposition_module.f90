@@ -241,9 +241,9 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
     real(fp)   , dimension(:)     , pointer :: dpsed
     real(fp)   , dimension(:,:,:) , pointer :: msed
     real(fp)   , dimension(:)     , pointer :: rhofrac
-    real(fp)   , dimension(:,:)   , pointer :: sedshort 
+    real(fp)   , dimension(:,:)   , pointer :: sedshort
     real(fp)   , dimension(:,:)   , pointer :: thlyr
-    real(fp)   , dimension(:)     , pointer :: thtrlyr   
+    real(fp)   , dimension(:)     , pointer :: thtrlyr
 !
 !! executable statements -------------------------------------------------------
 !

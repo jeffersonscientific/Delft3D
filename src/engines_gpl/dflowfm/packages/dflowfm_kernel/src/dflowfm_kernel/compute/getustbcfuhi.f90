@@ -34,7 +34,7 @@
    use m_flow
    use m_flowgeom  , only : ln, dxi, csu, snu, acL, lnxi
    use m_flowtimes , only : dti
-   use m_waves     , only : ustokes, vstokes, wblt, hwav
+   use m_waves     , only : ustokes, vstokes, wblt, hwav, jawavevellogprof
    use m_sediment  , only : stm_included
    use m_turbulence, only : tkepro
    use m_flowtimes, only: dts
@@ -68,7 +68,7 @@
    cfuhi3D = 0d0
    ustbLL = 0d0;  cfuhiLL = 0d0;  hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0
 
-   umodeps = 1d-4
+   umodeps = 1d-6
 
    frcn = frcu(LL)
    if (frcn == 0d0 ) return
@@ -147,8 +147,9 @@
                u2dh = umod
             else
                ! here we assume that z0/dzb is small and c9of1==1, ie we use jaustarint==1 approach, cf 3D validation doc Mohamed
-               !u2dh = umod*(log((1d0+hu(LL))/z0urou(LL))-1d0)/(log(dzb/z0urou(LL))-1d0)
-
+               if (jawavevellogprof==0) then
+                  u2dh = umod*(log((1d0+hu(LL))/z0urou(LL))-1d0)/(log(dzb/z0urou(LL))-1d0)
+               else
                ! UNST-6297 formulation above gives u2dh of order too big in very shallow water
 
                ! Delft3D:
@@ -156,9 +157,10 @@
                !     & *((hu(LL) + z0urou(LL))*log(1d0 + hu(LL)/z0urou(LL))     &
                !     & - hu(LL)))/log(1d0 + 0.5d0*(max(dzb,0.01d0))/z0urou(LL))
 
-               ! use available depth-averaged u1, v
-               u2dh = sqrt((u1(LL)-ustokes(LL))**2 + &
+               ! use available depth-averaged u1, v (default)
+                  u2dh = sqrt((u1(LL)-ustokes(LL))**2 + &
                            (v(LL)-vstokes(LL))**2)
+               endif
             endif
             !
             if (cz > 0d0) then
@@ -177,7 +179,6 @@
                sphi = -csw*snu(LL)+snw*csu(LL)
                abscos = abs(cphi*uu + sphi*vv) / umod
                call getsoulsbywci(modind, z00, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
-               ! ustbLL = sqrt(umod*taubpuLL)
             else if (modind == 9) then                            ! wave-current interaction van Rijn (2004)
                call getvanrijnwci(LL, umod, u2dh, taubpuLL, z0urouL)
                taubxuLL = rhoL*(ustc2+ustw2)                      ! depth-averaged, see taubot
@@ -260,10 +261,6 @@
     if (jawave==0 .or. flowWithoutWaves) then
          z0urou(LL) = z0ucur(LL)                                ! morfo, bedforms, trachytopes
     endif
-
-    if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
-         adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
-      endif
 
     else if (ifrctyp == 10) then                                 ! Hydraulically smooth, glass etc
       nit = 0

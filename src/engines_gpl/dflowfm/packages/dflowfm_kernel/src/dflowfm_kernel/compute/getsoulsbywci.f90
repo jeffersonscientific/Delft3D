@@ -44,7 +44,7 @@ subroutine getsoulsbywci(modind, z00, ustc2, ustw2, fw, cdrag, umod, abscos, tau
 
  call getymxpar(modind, tauwav, taucur, fw, cdrag, abscos, ypar, ymxpar)
 
- taubpuLL = ypar   * (taucur + tauwav) / ( umod*rhomean + 1d-4 ) ! umod*ag/C2, (m/s)
+ taubpuLL = ypar   * (taucur + tauwav) / ( umod*rhomean + 1d-8 ) ! umod*ag/C2, (m/s)
  taubxuLL = ymxpar * (taucur + tauwav)                           ! Max shear stress needed in Erosed, (N/m2)
 
 end subroutine getsoulsbywci

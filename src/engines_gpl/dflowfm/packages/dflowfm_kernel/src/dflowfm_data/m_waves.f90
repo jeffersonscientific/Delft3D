@@ -99,6 +99,7 @@ module m_waves
  integer                                    :: jahissigwav          !< 1: sign wave height on his output; 0: hrms wave height on his output.
  integer                                    :: jamapsigwav          !< 1: sign wave height on map output; 0: hrms wave height on map output.
  integer                                    :: jauorbfromswan       !< 1: get uorb from SWAN, compare with Delft3D
+ integer                                    :: jawavevellogprof       !< 1: get uorb from SWAN, compare with Delft3D
  logical                                    :: extfor_wave_initialized !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
 
 contains
@@ -120,6 +121,7 @@ subroutine default_waves()
    fwfac                   = 1d0
    fbreak                  = 1d0
    fwavpendep              = 1.5d0        ! best setting based on sensitivity
+   jawavevellogprof        = 1
 
    call reset_waves()
 end subroutine default_waves

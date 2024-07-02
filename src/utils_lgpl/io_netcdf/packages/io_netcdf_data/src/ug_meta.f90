@@ -27,16 +27,17 @@
 
 module m_ug_meta
 
+   use iso_c_binding
    use m_ug_constants
    implicit none
 
    !! Meta data
-   type ::t_ug_meta
-      character(len=ug_strLenMeta) :: institution
-      character(len=ug_strLenMeta) :: source
-      character(len=ug_strLenMeta) :: references
-      character(len=ug_strLenMeta) :: version
-      character(len=ug_strLenMeta) :: modelname
+   type, BIND(C) ::t_ug_meta
+      character(kind=c_char, len=ug_strLenMeta) :: institution
+      character(kind=c_char, len=ug_strLenMeta) :: source
+      character(kind=c_char, len=ug_strLenMeta) :: references
+      character(kind=c_char, len=ug_strLenMeta) :: version
+      character(kind=c_char, len=ug_strLenMeta) :: modelname
    end type t_ug_meta
 
 end module m_ug_meta

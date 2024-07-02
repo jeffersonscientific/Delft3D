@@ -329,10 +329,9 @@ double precision, external :: setrhofixedp
         advi(Lb) = advi(Lb)  + cfuhi3D
      endif
 
- 
      tkebot   = sqcmukepi * ustb(LL)**2                    ! this has stokes incorporated when jawave>0
      tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+ship contribution
-
+     ieps=3
      if (ieps == 3) then                                   ! as Delft3D
          vicwwu(Lb0) = vonkar*ustb(LL)*z00
      endif
@@ -533,7 +532,7 @@ double precision, external :: setrhofixedp
         if (jawave>0 .and. jawaveStokes>=3 .and. .not. flowWithoutWaves) then  ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
            dijdij(k) = ( ( u1(Lu)-ustokes(Lu) - u1(L)+ustokes(L) ) ** 2 + ( v(Lu)-vstokes(Lu) - v(L)+vstokes(L) ) ** 2 ) / dzw(k)**2
         else
-           dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
+          dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
         endif
 
         if (jarichardsononoutput > 0) then                ! save richardson nr to output
@@ -1039,7 +1038,9 @@ double precision, external :: setrhofixedp
        vicwwu (Lb0:Lt) = min(vicwmax, cmukep*turkin1(Lb0:Lt)*tureps1(Lb0:Lt) )
     endif
 
-    vicwwu(Lt)  = min( vicwwu(Lt)  , vicwwu(Lt-1)*Eddyviscositysurfacmax )
+    if (jawave==0) then
+       vicwwu(Lt)  = min( vicwwu(Lt)  , vicwwu(Lt-1)*Eddyviscositysurfacmax )
+    endif
     vicwwu(Lb0) = min( vicwwu(Lb0) , vicwwu(Lb)  *Eddyviscositybedfacmax )
 
     call vertical_profile_u0( dzu, womegu, Lb, Lt, kxL, LL)

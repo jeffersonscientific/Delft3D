@@ -27,13 +27,14 @@
 
 module m_ug_charinfo
 
+   use iso_c_binding
    use m_ug_constants
    implicit none
 
 !! Meta data for string info
-   type :: t_ug_charinfo
-      character(len=ug_idsLen)            :: id
-      character(len=ug_idsLongNamesLen)   :: longname
+   type, BIND(C) :: t_ug_charinfo
+      character(kind=c_char, len=ug_idsLen)            :: id
+      character(kind=c_char, len=ug_idsLongNamesLen)   :: longname
    end type t_ug_charinfo
 
 end module m_ug_charinfo

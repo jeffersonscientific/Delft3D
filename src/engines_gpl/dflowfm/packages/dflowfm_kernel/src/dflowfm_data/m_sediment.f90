@@ -104,6 +104,8 @@ module m_sediment
  integer                           :: jabndtreatment
  integer                           :: jamorcfl
  double precision                  :: dzbdtmax
+ double precision                  :: difparam     !< scale diffusion below reference level with settling velocity, Default 10.0
+ double precision                  :: difcal       !< scale seddif
  double precision                  :: botcrit       !< mass balance: minimum depth after bottom update to adapt concentrations
  integer                           :: jamormergedtuser
  double precision                  :: upperlimitssc
@@ -172,6 +174,8 @@ module m_sediment
  jamormergedtuser    = 0
  upperlimitssc       = 1d6
  inmorphopol         = 1
+ difparam            = 10.0
+ difcal              = 1.0
  
  end subroutine default_sediment
 

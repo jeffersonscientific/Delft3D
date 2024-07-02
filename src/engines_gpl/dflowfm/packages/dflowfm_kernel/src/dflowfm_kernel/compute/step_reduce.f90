@@ -111,7 +111,7 @@
 
  !-----------------------------------------------------------------------------------------------
 
-444 call s1nod()                                        ! entry point for non-linear continuityc
+444 call s1nod()                                        ! entry point for non-linear continuity
     if (ifixedWeirScheme1d2d == 1) then
        if (last_iteration) then 
           ! Impose previously computed 1d2d discharge on 1d2d fixed weirs to keep mass conservation

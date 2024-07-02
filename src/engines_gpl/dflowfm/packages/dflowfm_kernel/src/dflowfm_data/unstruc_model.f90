@@ -1424,9 +1424,9 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'sediment', 'DzbDtMax',             dzbdtmax, success)                 ! Max bottom level change per timestep
     call prop_get_double (md_ptr, 'sediment', 'MasBalMinDep',         botcrit, success)                  ! Minimum depth *after* bottom update for SSC adaptation mass balance
     call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
-    call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)             ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
-    call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
     call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)            ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+    call prop_get_double (md_ptr, 'sediment', 'DiffusionScaling',     difparam, success)                 ! Scaling factor to increase diffusion below reference level
+    call prop_get_double (md_ptr, 'sediment', 'DiffusionCal',         difcal, success)                   ! Scaling factor to change diffusion for ssc
     
     if (jased > 0 .and. .not. stm_included) then
        call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
@@ -1589,7 +1589,7 @@ subroutine readMDUFile(filename, istat)
     endif
     if (fbreak<0d0) then
        call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0d0, reset to 0d0. Wave breaking contribution to tke switched off.') 
-       fwfac = 0d0  
+       fbreak = 0d0  
     endif
     
     ! using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
@@ -1605,6 +1605,8 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta)     ! Boundary layer formulation. 1: Sana
     call prop_get_integer(md_ptr, 'waves', '3Dwaveforces'        , jawaveforces)    ! Diagnostic mode: apply wave forces (1) or not (0)
     call prop_get_double(md_ptr,  'waves', '3Dwaveturbpendepth'  , fwavpendep)      ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+    call prop_get_integer(md_ptr, 'waves', '3Dwavevellogprof'  , jawavevellogprof)      ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+    
     !
     ! safety
     if (fwavpendep<0d0) then
