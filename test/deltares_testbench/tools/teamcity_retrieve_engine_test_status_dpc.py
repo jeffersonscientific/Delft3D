@@ -30,6 +30,7 @@ teamcity_retrieve_engine_test_status.py --tbroot Delft3DSobek_DimrTestbench  # D
 summarydata_array = []
 global log_file
 global engine_statistics
+TEXT_NOT_IN_XML_MESSAGE = "Text is not in XML format: %s"
 
 
 class SummaryData(object):
@@ -87,7 +88,7 @@ def report_cases(url, given_build_config, username, password, buildname):
     try:
         xml_engine_root = ET.fromstring(engine_req.text)
     except:
-        print("Text is not in XML format: %s" % engine_req.text)
+        print(TEXT_NOT_IN_XML_MESSAGE % engine_req.text)
         return 1
 
     for build_types in xml_engine_root.findall("buildTypes"):
@@ -133,7 +134,7 @@ def report_cases(url, given_build_config, username, password, buildname):
         try:
             xml_case_root = ET.fromstring(case_req.text)
         except:
-            print("Text is not in XML format: %s" % case_req.text)
+            print(TEXT_NOT_IN_XML_MESSAGE % case_req.text)
             return 1
 
         file_name = "TMPdownload_teamcity_retrieve/%s.xml" % case
@@ -198,7 +199,7 @@ def report_cases(url, given_build_config, username, password, buildname):
             try:
                 xml_test_occs = ET.fromstring(test_occs_req.text)
             except:
-                print("Text is not in XML format: %s" % test_occs_req.text)
+                print(TEXT_NOT_IN_XML_MESSAGE % test_occs_req.text)
                 return 1
             for t_occ in xml_test_occs.findall("testOccurrence"):
                 if t_occ.attrib["status"] == "FAILURE":
@@ -213,7 +214,7 @@ def report_cases(url, given_build_config, username, password, buildname):
                     try:
                         xml_test_occ = ET.fromstring(test_occ_req.text)
                     except:
-                        print("Text is not in XML format: %s" % test_occ_req.text)
+                        print(TEXT_NOT_IN_XML_MESSAGE % test_occ_req.text)
                         return 1
                     txt = xml_test_occ.find("details").text
 
@@ -336,7 +337,7 @@ def main(tbroot, given_build_config, username, password, engines):
     try:
         xml_tb_root = ET.fromstring(tbroot_req.text)
     except:
-        print("Text is not in XML format: %s" % tbroot_req.text)
+        print(TEXT_NOT_IN_XML_MESSAGE % tbroot_req.text)
         return 1
 
     print("")
@@ -364,7 +365,7 @@ def main(tbroot, given_build_config, username, password, engines):
         try:
             xml_engine_root = ET.fromstring(engine_req.text)
         except:
-            print("Text is not in XML format: %s" % engine_req.text)
+            print(TEXT_NOT_IN_XML_MESSAGE % engine_req.text)
             return 1
         print("    %s" % xml_engine_root.attrib["name"])
         lprint("    %s" % xml_engine_root.attrib["name"])
@@ -387,7 +388,7 @@ def main(tbroot, given_build_config, username, password, engines):
                 try:
                     ET.fromstring(level_req.text)
                 except:
-                    print("Text is not in XML format: %s" % level_req.text)
+                    print(TEXT_NOT_IN_XML_MESSAGE % level_req.text)
                     return 1
                 report_cases(
                     url_3,
