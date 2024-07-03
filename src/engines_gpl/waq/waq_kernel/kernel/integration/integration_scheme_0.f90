@@ -29,14 +29,16 @@ module m_integration_scheme_0
     use m_hsurf
     use m_dlwqtr
     use m_write_output
+    use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes
 
     implicit none
 
 contains
 
     !> No tranport scheme (0)
-    !! Performs only calculation of new concentrations due processes
-    subroutine integration_scheme_0(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+    !! Performs only calculation of new concentrations due to processes
+    subroutine integration_scheme_0(buffer, file_unit_list, file_name_list, &
+                                    action, dlwqd, gridps)
 
         use m_dlwq18
         use m_dlwq14
@@ -59,25 +61,24 @@ contains
 
         implicit none
 
-        type(waq_data_buffer), target :: buffer                  !< System total array space
-        integer(kind=int_wp), intent(inout) :: file_unit_list(*) !< array with logocal unit numbers
-        character(len=*), intent(in) :: file_name_list(*)                 !< array with file names
-        integer(kind=int_wp), intent(in) :: action               !< span of the run or type of action to perform
-                                                                 !< (run_span = {initialise, time_step, finalise, whole_computation} )
-        type(delwaq_data), target :: dlwqd                       !< delwaq data structure
-        type(GridPointerColl) :: gridps                          !< collection of all grid definitions
+        type(waq_data_buffer), target         :: buffer              !< System total array space
+        integer(kind = int_wp), intent(inout) :: file_unit_list  (*) !< Array with logical unit numbers
+        character(len=*),       intent(in)    :: file_name_list(*)   !< Array with file names
+        integer(kind = int_wp), intent(in)    :: action              !< Span of the run or type of action to perform
+                                                                     !< (run_span = {initialise, time_step, finalise, whole_computation})
+        type(delwaq_data),      target        :: dlwqd               !< DELWAQ data structure
+        type(GridPointerColl)                 :: gridps              !< Collection of all grid definitions
 
-        !     Local declarations
-        logical :: IMFLAG, IDFLAG, IHFLAG
-        logical :: LREWIN
-        real(kind=real_wp) :: RDUMMY(1)
-        integer(kind=int_wp) :: NSTEP
-        integer(kind=int_wp) :: IBND
-        integer(kind=int_wp) :: ISYS
-        integer(kind=int_wp) :: IERROR
+        ! Local declarations
+        logical :: imflag, idflag, ihflag
+        logical :: lrewin
+        real(kind=real_wp) :: rdummy(1)
+        integer(kind=int_wp) :: nstep
+        integer(kind=int_wp) :: ibnd
+        integer(kind=int_wp) :: isys
+        integer(kind=int_wp) :: ierror
 
-        integer(kind=int_wp) :: IDTOLD
-        integer(kind=int_wp) :: sindex
+        integer(kind=int_wp) :: idtold
 
         integer(kind=int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
@@ -165,8 +166,8 @@ contains
             ! They cannot have explicit processes during this time step
             call hsurf(noseg, nopa, c(ipnam), a(iparm:), nosfun, &
                        c(isfna), a(isfun:), surface, file_unit_list(19))
-            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                        a(iarea:), nocons, c(icnam), a(icons:), surface, &
+            call set_dry_cells_to_zero_and_update_volumes(noseg, nosss, nolay, a(ivol:), &
+                        noq1 + noq2, a(iarea:), nocons, c(icnam), a(icons:), surface, &
                         j(iknmr:), iknmkv)
 
             ! user transport processes
@@ -180,7 +181,7 @@ contains
                         c(ipnam), c(ifnam), c(isfna), ldummy, ilflag)
 
             !jvb     Temporary ? set the variables grid-setting for the DELWAQ variables
-            call setset (file_unit_list(19), nocons, nopa, nofun, nosfun, &
+            call setset(file_unit_list(19), nocons, nopa, nofun, nosfun, &
                     nosys, notot, nodisp, novelo, nodef, &
                     noloc, ndspx, nvelx, nlocx, nflux, &
                     nopred, novar, nogrid, j(ivset:))

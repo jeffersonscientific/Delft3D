@@ -68,7 +68,7 @@ contains
    use m_longculverts
    use timers,           only : timstrt, timstop
    use m_sethu
-   use m_external_forcings
+   use fm_external_forcings
    use m_1d2d_fixedweirs, only : n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
    use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
    use fm_manhole_losses, only: init_manhole_losses
@@ -82,8 +82,6 @@ contains
    logical           :: jawelrestart
 
    double precision  :: upot, ukin, ueaa
-   
-   integer, external :: flow_initexternalforcings
 
    double precision, allocatable :: weirdte_save(:)
       
@@ -175,7 +173,7 @@ contains
    ! First call to setexternalforcingsonboundaries, here only for the structure timeseries (prior to adjust_bobs_for_dams_and_structs())
    call setzminmax()                                 ! our side of preparation for 3D ec module
    call setsigmabnds()
-   call flow_setexternalforcingsonboundaries(tstart_user, error)  ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds. 
+   call set_external_forcings_boundaries(tstart_user, error)  ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds. 
    call initialize_structures_actual_params(network%sts)          ! After structure time series, and prior to adjust_bobs, to use proper crest levels.
 
    call adjust_bobs_for_dams_and_structs()
@@ -232,7 +230,7 @@ contains
    end if
 
    ! Actual boundary forcing (now that initial water levels, etc. are also known):
-   call flow_setexternalforcingsonboundaries(tstart_user, error)         ! set bnd   oriented external forcings
+   call set_external_forcings_boundaries(tstart_user, error)         ! set bnd   oriented external forcings
    if( is_error_at_any_processor(error) ) then
        call qnerror('Error occurred when setting external forcings on boundaries.',' ', ' ')
        return
@@ -733,7 +731,7 @@ end subroutine set_internal_tides_friction_coefficient
 subroutine remember_initial_water_levels_at_water_level_boundaries()
    use m_flow,                 only : s1
    use m_flowgeom,             only : bl
-   use m_flowexternalforcings, only : nbndz, kbndz, zbndz0
+   use fm_external_forcings_data, only : nbndz, kbndz, zbndz0
 
    implicit none
 
@@ -854,7 +852,7 @@ end subroutine initialize_morphological_start_time
  
 !> for normal velocity boundaries, also initialise velocity on link
 subroutine initialize_values_at_normal_velocity_boundaries()
-   use m_flowexternalforcings, only : nbndn, kbndn, zbndn
+   use fm_external_forcings_data, only : nbndn, kbndn, zbndn
    use m_flow,                 only : u1
 
    implicit none
@@ -878,7 +876,7 @@ end subroutine initialize_values_at_normal_velocity_boundaries
 !> initialize discharge boundaries
 subroutine initialize_values_at_discharge_boundaries()
    use m_flowparameters,       only : epshu
-   use m_flowexternalforcings, only : nqbnd, L1qbnd, L2qbnd, kbndu
+   use fm_external_forcings_data, only : nqbnd, L1qbnd, L2qbnd, kbndu
    use m_flowgeom,             only : bob
    use m_flow,                 only : s1
 
@@ -1067,7 +1065,7 @@ subroutine set_data_for_ship_modelling()
    use m_ship,                 only : nshiptxy
    use m_flowparameters,       only : jasal
    use m_flow,                 only : kmx, ndkx, sa1
-   use m_flowexternalforcings, only : success
+   use fm_external_forcings_data, only : success
    
    implicit none
 
@@ -1147,37 +1145,38 @@ end subroutine include_ground_water
 !> include_infiltration_model
 subroutine include_infiltration_model()
    use m_hydrology_data, only : infiltrationmodel, DFM_HYD_INFILT_CONST, DFM_HYD_INFILT_DARCY, infiltcap
-   use m_flowgeom,       only : kcsini, prof1D, lnx, ln, lnx1D
+   use m_flowgeom,       only : prof1D, lnx, ln, lnx1D
    use m_cell_geometry,  only : ndx
    use m_alloc!,        only : realloc
 
    implicit none
 
-   integer     :: link
-   integer     :: cell
-   integer     :: left_cell
-   integer     :: right_cell
+   integer               :: link
+   integer               :: cell
+   integer               :: left_cell
+   integer               :: right_cell
+   integer, allocatable  :: mask(:) 
+
 
    if (infiltrationmodel == DFM_HYD_INFILT_CONST .or. &
        infiltrationmodel == DFM_HYD_INFILT_DARCY) then  ! set infiltcap=0 for closed links only
-       call realloc(kcsini, ndx, keepExisting=.false., fill = 0)
+       allocate(mask(ndx), source = 0)
        do link = 1, lnx  ! only one connected open profile will open surface runoff
           left_cell  = ln(1,link)
           right_cell = ln(2,link)
           if (link <= lnx1D) then
              if (prof1D(3,link) < 0) then ! closed profile
              else
-                 kcsini(left_cell)  = 1
-                 kcsini(right_cell) = 1
+                 mask(left_cell)  = 1
+                 mask(right_cell) = 1
              end if
           else
-             kcsini(left_cell)  = 1
-             kcsini(right_cell) = 1
+             mask(left_cell)  = 1
+             mask(right_cell) = 1
           end if
        end do
-       infiltcap(:) = infiltcap(:)*kcsini(:)  ! 0 for all links closed
+       infiltcap(:) = infiltcap(:)*mask(:)  ! 0 for all links closed
 
-       deallocate(kcsini) ! GM: why is it deallocated here?
    end if
  
 end subroutine include_infiltration_model
@@ -2291,7 +2290,7 @@ end subroutine apply_hardcoded_specific_input
 !> restore au and q1 for 3D case for the first write into a history file    
 subroutine restore_au_q1_3D_for_1st_history_record()
    use m_flow,                 only : q1, LBot, kmx, kmxL   
-   use m_flowexternalforcings, only : fusav, rusav, ausav, ncgen
+   use fm_external_forcings_data, only : fusav, rusav, ausav, ncgen
    use m_flowgeom,             only : lnx
 
    implicit none

@@ -38,7 +38,7 @@ program delwaq
 
     implicit none
 
-    character(len = 256), dimension(:), allocatable :: argv
+    character(len=256), dimension(:), allocatable :: argv
     character(:), allocatable :: id_str
     character(len=10) :: log_file_path
 
@@ -55,8 +55,8 @@ program delwaq
 
     if (is_command_arg_specified('--version') .or. &
         is_command_arg_specified('-v')) then
-            call show_command_line_version()
-            stop 0
+        call show_command_line_version()
+        stop 0
     end if
 
     ! initialize logging
@@ -65,7 +65,7 @@ program delwaq
 
     argv = get_arguments()
     call log%log_info('Running: '//trim(id_str))
-    call log%log_info('Provided arguments: '//join_strings(argv(2:), ', '))
+    call log%log_info('Provided arguments: '//join_strings(argv(1:), ', '))
 
     if (.not. delwaq1(argv)) then
         call log%log_error('Error during delwaq pre-processing')
