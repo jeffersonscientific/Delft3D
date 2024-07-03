@@ -54,7 +54,7 @@ class Data(object):
         self.percentage = a
 
 
-def lprint(*args, **kwargs):
+def lprint(*args):
     global log_file
     log_file.write(" ".join(map(str, args)) + "\n")
 
@@ -175,7 +175,6 @@ def report_cases(url, given_build_config, username, password, buildname):
 
         i = build_nr.__len__() - 1
         a = 0
-        b = 0
         if failed[i] != 0:
             cnt = int(build.find("./testOccurrences").attrib["count"])
             href = build.find("./testOccurrences").attrib["href"]
@@ -376,7 +375,7 @@ def main(tbroot, given_build_config, username, password, engines):
                     verify=True,
                 )
                 try:
-                    level_root = ET.fromstring(level_req.text)
+                    ET.fromstring(level_req.text)
                 except:
                     print("Text is not in XML format: %s" % level_req.text)
                     return 1
