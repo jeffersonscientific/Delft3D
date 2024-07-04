@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_inisoi
    use m_waq_precision
-   use m_evaluate_waq_attribute
+   use m_extract_waq_attribute
 
    implicit none
 
