@@ -28,7 +28,7 @@ module m_inisoi
 
 contains
 
-   subroutine INISOI(pmsa, fl, ipoint, increm, noseg, &
+   subroutine inisoi(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 !     D-EM Preprocessor to initialize top soil (Unp)

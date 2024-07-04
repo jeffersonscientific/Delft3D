@@ -27,7 +27,7 @@ module m_hydrau
 
 contains
 
-   subroutine HYDRAU(pmsa, fl, ipoint, increm, noseg, &
+   subroutine hydrau(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 !

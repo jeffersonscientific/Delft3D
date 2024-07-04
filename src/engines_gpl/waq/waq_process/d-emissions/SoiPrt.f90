@@ -28,7 +28,7 @@ module m_soiprt
 
 contains
 
-   subroutine SOIPRT(pmsa, fl, ipoint, increm, noseg, &
+   subroutine soiprt(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 

@@ -27,7 +27,7 @@ module m_diftem
 
 contains
 
-   subroutine DIFTEM(pmsa, fl, ipoint, increm, noseg, &
+   subroutine diftem(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 !     TRANSPORT FOR MULTIMEDIA MODEL

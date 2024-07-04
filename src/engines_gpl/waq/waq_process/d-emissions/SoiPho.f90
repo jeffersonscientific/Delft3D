@@ -27,7 +27,7 @@ module m_soipho
 
 contains
 
-   subroutine SOIPHO(pmsa, fl, ipoint, increm, noseg, &
+   subroutine soipho(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
       !*******************************************************************************

@@ -27,7 +27,7 @@ module m_emlgen
 
 contains
 
-   subroutine EMLGEN(pmsa, fl, ipoint, increm, noseg, &
+   subroutine emlgen(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 !     module is generic, now relies on DELWAQ input in Block 7 for reading EM output

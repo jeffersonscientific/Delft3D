@@ -29,7 +29,7 @@ module m_espgss
 
 contains
 
-   subroutine ESPGSS(pmsa, fl, ipoint, increm, noseg, &
+   subroutine espgss(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 !     D-EM Generic Model

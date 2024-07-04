@@ -28,7 +28,7 @@ module m_setfat
 
 contains
 
-   subroutine SETFAT(pmsa, fl, ipoint, increm, noseg, &
+   subroutine setfat(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 !     D-EM Preprocessor to initialize Nitrogen coefficients

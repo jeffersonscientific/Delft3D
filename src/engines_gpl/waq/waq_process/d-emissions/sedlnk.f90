@@ -27,7 +27,7 @@ module m_sedlnk
 
 contains
 
-   subroutine SEDLNK(pmsa, fl, ipoint, increm, noseg, &
+   subroutine sedlnk(pmsa, fl, ipoint, increm, noseg, &
                      noflux, iexpnt, iknmrk, noq1, noq2, &
                      noq3, noq4)
 !
