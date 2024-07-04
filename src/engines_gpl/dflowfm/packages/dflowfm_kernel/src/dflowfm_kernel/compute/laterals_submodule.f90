@@ -65,17 +65,22 @@ implicit none
       end if
 
       num_layers = max(1, kmx)
-      call realloc(incoming_lat_concentration, (/num_layers, numconst, numlatsg/))
+      call realloc(incoming_lat_concentration, [num_layers, numconst, numlatsg])
       incoming_lat_concentration = 0._dp
-      call realloc(outgoing_lat_concentration, (/num_layers, numconst, numlatsg/))
-
+      call realloc(outgoing_lat_concentration, [num_layers, numconst, numlatsg])
+      call realloc(lateral_volume_per_layer,[num_layers,numlatsg])
+      call realloc(lateral_center_position_per_layer,[num_layers,numlatsg])
+      
    end subroutine initialize_lateraldata
 
    !> deallocate the arrays for laterals on 3d/BMI
    module subroutine dealloc_lateraldata()
    
       if (allocated(incoming_lat_concentration)) then
-         deallocate(incoming_lat_concentration, outgoing_lat_concentration)
+         deallocate(incoming_lat_concentration)
+         deallocate(outgoing_lat_concentration)
+         deallocate(lateral_volume_per_layer)
+         deallocate(lateral_center_position_per_layer)
       end if
    
 
@@ -84,40 +89,64 @@ implicit none
    !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !> In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
-   module subroutine average_concentrations_for_laterals(numconst, kmx, cell_volume, constituents, dt)
+   module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
+
+      use m_alloc
 
       integer,                       intent(in) :: numconst       !< Number or constituents.
       integer,                       intent(in) :: kmx            !< Number of layers (0 means 2D computation).
+      integer, dimension(:),         intent(in) :: kmxn           !< Maximum number of vertical cells per base node n.
       real(kind=dp), dimension(:),   intent(in) :: cell_volume    !< Volume of water in computational cells. 
       real(kind=dp), dimension(:,:), intent(in) :: constituents   !< Concentrations of constituents.
-      real(kind=dp),                 intent(in) :: dt             !< Timestep in seconds
+      real(kind=dp),                 intent(in) :: dt             !< Timestep in seconds.
 
-      integer :: ilat, n, iconst, k, k1, kt, kb
+      integer :: ilat, i_node, iconst, k, k1, kt, kb
+      integer :: num_layers, i_layer
+      integer :: iostat
       
-      real(kind=dp) :: total_volume
+      real(kind=dp), dimension(:), allocatable :: total_volume
 
+      num_layers = max(1, kmx)
+      
+      allocate(total_volume(num_layers), stat=iostat)
+      call aerr('total_volume',iostat,num_layers,'average_concentrations_for_laterals')
+      
       do ilat = 1, numlatsg
-         total_volume = 0_dp
-         do iconst = 1, numconst
-            do k1 = n1latsg(ilat), n2latsg(ilat)
-               n = nnlat(k1)
-               if (n > 0) then
-                  if (kmx < 1) then 
-                     k = n
-                  else
-                     ! For now we only use the top layer
-                     call getkbotktop(n, kb, kt)
-                     k = kt
-                  end if
-                  total_volume = total_volume + cell_volume(k)
-                  outgoing_lat_concentration(1,iconst,ilat) =  outgoing_lat_concentration(1,iconst,ilat) + &
-                                                                 dt*cell_volume(k)*constituents(iconst,k)
+         total_volume = 0.0_dp
+         do k1 = n1latsg(ilat), n2latsg(ilat)
+            i_node = nnlat(k1)
+            if (i_node > 0) then
+               if (kmx < 1) then
+                  total_volume = total_volume + cell_volume(i_node)
+                  do iconst = 1, numconst
+                     outgoing_lat_concentration(1, iconst, ilat) = outgoing_lat_concentration(1, iconst, ilat) + &
+                                                                   dt * cell_volume(i_node) * constituents(iconst, i_node)
+                  end do
+               else
+                  i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer to the index of first active bottom layer of base node(i_node)
+                  call getkbotktop(i_node, kb, kt)
+                  do k = kb, kt ! loop over active layers under base node(i_node)
+                     total_volume(i_layer) = total_volume(i_layer) + cell_volume(k)
+                     do iconst = 1, numconst
+                        outgoing_lat_concentration(i_layer, iconst, ilat) = outgoing_lat_concentration(i_layer, iconst, ilat) + &
+                                                                            dt * cell_volume(k) * constituents(iconst, k)
+                     end do
+                     i_layer = i_layer + 1
+                  end do
                end if
-            end do
+            end if
          end do
-         outgoing_lat_concentration(:,:,ilat)= outgoing_lat_concentration(:,:,ilat) / total_volume
+         do i_layer = 1, num_layers
+            if (total_volume(i_layer) > 0) then
+               outgoing_lat_concentration(i_layer, :, ilat) = outgoing_lat_concentration(i_layer, :, ilat) / total_volume(i_layer)
+            else
+               outgoing_lat_concentration(i_layer, :, ilat) = 0.0_dp
+            end if
+         end do
       end do
-   
+      
+      deallocate(total_volume)
+
    end subroutine average_concentrations_for_laterals
    
    !> Calculate lateral discharges at each of the active grid cells, both source (lateral_discharge_in) and sink (lateral_discharge_out). 
@@ -202,17 +231,85 @@ implicit none
       do i_lateral = 1, numlatsg
          do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_nnlat)
-            call getkbotktop(i_node, index_vol1_bottom_layer, index_vol1_top_layer)
-            index_active_bottom_layer = kmx - kmxn(i_node) + 1
-            i_layer = index_active_bottom_layer
-            do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
-               lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
-               i_layer = i_layer + 1
-            end do
+            if (kmx > 0) then
+               call getkbotktop(i_node, index_vol1_bottom_layer, index_vol1_top_layer)
+               index_active_bottom_layer = kmx - kmxn(i_node) + 1
+               i_layer = index_active_bottom_layer
+               do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
+                  lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
+                  i_layer = i_layer + 1
+               end do
+            else
+               lateral_volume_per_layer(1, i_lateral) = lateral_volume_per_layer(1, i_lateral) + vol1(i_node)
+            end if
          end do
       end do
       
    end subroutine get_lateral_volume_per_layer
+
+   !> Calculate the average cell center positions for each layer for all laterals.
+   module subroutine get_lateral_layer_positions(lateral_center_position_per_layer, cell_center_position)
+   
+      use m_flow, only: cell_center_position, kmx, kmxn
+      
+      real(kind=dp), dimension(:,:), intent(out) :: lateral_center_position_per_layer  !< Lateral center position of each layer, 
+                                                                                       !< dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg).
+      real(kind=dp), dimension(:),   intent(in)  :: cell_center_position               !< Vertical cell center positions.
+      
+      integer, allocatable, target, dimension(:) :: active_cell_count    !< Help array for counting the active cells.
+      integer :: i_node, i_lateral, i_layer, i_nnlat, index_bottom_layer, index_top_layer, index_active_bottom_layer
+      
+      if (kmx == 0) then
+         return
+      end if
+      allocate(active_cell_count(kmx))
+      
+      lateral_center_position_per_layer = 0.0_dp
+      do i_lateral = 1, numlatsg
+
+         ! Totalize the cell center positions and count the number of active cells per layer.
+         active_cell_count = 0
+         do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_nnlat)
+            call getkbotktop(i_node, index_bottom_layer, index_top_layer)
+            index_active_bottom_layer = kmx - kmxn(i_node) + 1
+
+            call accumulate_active_cell_positions(lateral_center_position_per_layer(index_active_bottom_layer :, i_lateral), &
+                                               cell_center_position(index_bottom_layer : index_top_layer), &
+                                               active_cell_count(index_active_bottom_layer : ))
+         end do
+         
+         ! Use the totalized center positions to calculate the average center positions.
+         do i_layer = 1, kmx
+            if (active_cell_count(i_layer) > 0) then
+               lateral_center_position_per_layer(i_layer, i_lateral) = &
+                              lateral_center_position_per_layer(i_layer, i_lateral)/active_cell_count(i_layer)
+            else
+               lateral_center_position_per_layer(i_layer, i_lateral) = huge(1.0_dp)
+            end if
+         end do
+      
+      end do
+      deallocate(active_cell_count)
+      
+   end subroutine get_lateral_layer_positions
+
+   !> Add the cell center positions of 1 node to the lateral_center_position_per_layer and update the active_cell_count.
+   subroutine accumulate_active_cell_positions(lateral_center_position_per_layer, cell_center_position, active_cell_count)
+      real(kind=dp), dimension(:), intent(out)   :: lateral_center_position_per_layer  !< Cumulative cell center positions for 1 lateral.
+      real(kind=dp), dimension(:), intent(in)    :: cell_center_position               !< Cell center positions per layer for the current cell.
+      integer,       dimension(:), intent(inout) :: active_cell_count                  !< Number of active cells per layer.
+
+      integer :: i
+
+      do i = 1, size(cell_center_position)
+         active_cell_count(i) = active_cell_count(i) + 1
+         lateral_center_position_per_layer(i) = lateral_center_position_per_layer(i) + &
+                                                cell_center_position(i)
+      end do
+
+   end subroutine accumulate_active_cell_positions
+            
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
@@ -228,5 +325,41 @@ implicit none
       real(kind=dp), intent(in) :: time_interval
       outgoing_lat_concentration = outgoing_lat_concentration/time_interval
    end subroutine finish_outgoing_lat_concentration
-   
+
+   !> Distributes lateral discharge per layer, that is retrieved from BMI, to per layer per cell
+   module subroutine distribute_lateral_discharge_per_layer_per_cell(provided_lateral_discharge_per_layer, &
+                                                                     lateral_discharge_per_layer_per_cell)
+
+      use m_flow,             only: vol1, kmx, kmxn
+      use precision_basics,   only: comparereal
+      use m_GlobalParameters, only: flow1d_eps10
+
+      real(kind=dp), dimension(:,:), intent(in   ) :: provided_lateral_discharge_per_layer !< Provided lateral discharge per
+                                                                                           !! layer, which is retrieved from BMI
+      real(kind=dp), dimension(:,:), intent(  out) :: lateral_discharge_per_layer_per_cell !< Real lateral discharge per layer
+                                                                                           !! per cell
+
+      integer :: i_lateral, i_layer, i_nnlat, i_node, i_flownode
+      integer :: i_node_bottom_layer, i_node_top_layer, i_active_bottom_layer
+
+
+      lateral_discharge_per_layer_per_cell(:,:) = 0.0_dp
+
+      do i_lateral = 1,numlatsg
+         do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_nnlat)
+            call getkbotktop(i_node, i_node_bottom_layer, i_node_top_layer)
+            i_active_bottom_layer = kmx - kmxn(i_node) + 1
+            i_layer = i_active_bottom_layer
+            do i_flownode = i_node_bottom_layer, i_node_top_layer
+               if (comparereal(lateral_volume_per_layer(i_layer, i_lateral), 0.0_dp, flow1d_eps10) /= 0) then ! Avoid division by 0
+                  lateral_discharge_per_layer_per_cell(i_layer, i_flownode) = vol1(i_flownode) &
+                                                                              / lateral_volume_per_layer(i_layer, i_lateral) &
+                                                                              * provided_lateral_discharge_per_layer(i_layer, i_lateral)
+                  i_layer = i_layer + 1
+               end if
+            end do
+         end do
+      end do
+   end subroutine distribute_lateral_discharge_per_layer_per_cell
 end submodule m_lateral_implementation

@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 from minio import Minio
+from minio.commonconfig import Tags
 from minio.datatypes import Object as MinioObject
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
@@ -41,6 +42,24 @@ def make_object(
         last_modified=last_modified,
         is_delete_marker=is_delete_marker,
         etag=etag,
+    )
+
+
+def minio_objects_equal(this: MinioObject, that: MinioObject) -> bool:
+    """Check equality of many properties of two MinIO objects.
+
+    Does not check equality of `tags`.
+    """
+    return all(
+        [
+            this.bucket_name == that.bucket_name,
+            this.object_name == that.object_name,
+            this.version_id == that.version_id,
+            this.is_delete_marker == that.is_delete_marker,
+            this.last_modified == that.last_modified,
+            this.etag == that.etag,
+            this.size == that.size,
+        ]
     )
 
 
@@ -284,7 +303,7 @@ class TestMinioRewinder:
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
         fs.create_file("destination/path/bar")
-        minio_client.fget_object.side_effect = fs.create_file("destination/path/foo")
+        minio_client.fget_object.side_effect = self.create_file_side_effect("destination/path/foo")
 
         # Act
         rewinder.download("my-bucket", "source/path", Path("destination/path"))
@@ -295,6 +314,14 @@ class TestMinioRewinder:
         minio_client.fget_object.assert_called_once_with(
             "my-bucket", "source/path/foo", str(Path("destination/path/foo")), version_id="v1"
         )
+
+    def create_file_side_effect(self, filename):
+        def side_effect(*args, **kwargs):
+            # Create the file (you can customize this logic)
+            with open(filename, 'w') as f:
+                f.write('File content')
+            return None  # Return None to mimic the function call
+        return side_effect
 
     def test_download__same_key_multiple_versions__get_latest_versions(
         self, mocker: MockerFixture, fs: FakeFilesystem
@@ -1052,25 +1079,37 @@ class TestMinioRewinder:
         assert minio_client.remove_object.call_count == remove_count
         assert minio_client.fput_object.call_count == len(operations) - remove_count
 
-    def test_detect_conflicts__object_didnt_exist_but_now_does__create_drift(self, mocker: MockerFixture) -> None:
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__object_didnt_exist_but_now_does__create_conflict(
+        self, add_tags: bool, mocker: MockerFixture
+    ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
         minio_client = mocker.Mock(spec=Minio)
         rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         prefix = S3Path.from_bucket("my-bucket") / "data"
+        tags = Tags()
+        tags["jira-issue-id"] = "FOO-123"
         new_object = MinioObject("my-bucket", "data/foo", now)
         minio_client.list_objects.return_value = [new_object]
+        minio_client.get_object_tags.return_value = tags
 
         # Act
-        conflict, *conflicts = rewinder.detect_conflicts(prefix, now - timedelta(days=1))
+        conflict, *other_conflicts = rewinder.detect_conflicts(
+            prefix, now - timedelta(days=1), add_tags_to_latest=add_tags
+        )
 
         # Assert
-        assert not conflicts
-        assert conflict == VersionPair(None, new_object)
+        assert not other_conflicts
+        assert conflict.rewinded_version is None
+        assert minio_objects_equal(conflict.latest_version, new_object)
+        assert conflict.latest_version.tags == (tags if add_tags else None)
         assert conflict.update_type == Operation.CREATE
+        minio_client.get_object_tags.call_count == int(add_tags)
 
-    def test_detect_conflicts__object_didnt_exist_but_is_now_a_delete_marker__no_drift(
-        self, mocker: MockerFixture
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__object_didnt_exist_but_is_now_a_delete_marker__no_conflict(
+        self, add_tags: bool, mocker: MockerFixture
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
@@ -1082,12 +1121,16 @@ class TestMinioRewinder:
         ]
 
         # Act
-        conflicts = rewinder.detect_conflicts(prefix, now - timedelta(days=1))
+        conflicts = rewinder.detect_conflicts(prefix, now - timedelta(days=1), add_tags_to_latest=add_tags)
 
         # Assert
         assert not conflicts
+        minio_client.get_object_tags.assert_not_called()
 
-    def test_detect_conflicts__rewinded_object_is_the_latest_version__no_drift(self, mocker: MockerFixture) -> None:
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__rewinded_object_is_the_latest_version__no_conflict(
+        self, add_tags: bool, mocker: MockerFixture
+    ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
         yesterday = now - timedelta(days=1)
@@ -1100,34 +1143,43 @@ class TestMinioRewinder:
         ]
 
         # Act
-        conflicts = rewinder.detect_conflicts(prefix, now)
+        conflicts = rewinder.detect_conflicts(prefix, now, add_tags_to_latest=add_tags)
 
         # Assert
         assert not conflicts
+        minio_client.get_object_tags.assert_not_called()
 
-    def test_detect_conflicts__new_version_exists__update_drift(self, mocker: MockerFixture) -> None:
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__new_version_exists__update_conflict(self, add_tags: bool, mocker: MockerFixture) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
         yesterday = now - timedelta(days=1)
         minio_client = mocker.Mock(spec=Minio)
         rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         prefix = S3Path.from_bucket("my-bucket") / "data"
+        tags = Tags()
+        tags["jira-issue-id"] = "FOO-123"
         objects = [
             MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new!").hexdigest(), version_id="2"),
             MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old").hexdigest(), version_id="1"),
         ]
         minio_client.list_objects.return_value = objects
+        minio_client.get_object_tags.return_value = tags
 
         # Act
-        conflict, *conflicts = rewinder.detect_conflicts(prefix, yesterday)
+        conflict, *conflicts = rewinder.detect_conflicts(prefix, yesterday, add_tags_to_latest=add_tags)
 
         # Assert
         assert not conflicts
-        assert conflict == VersionPair(objects[1], objects[0])
+        assert conflict.rewinded_version is not None
+        assert minio_objects_equal(conflict.latest_version, objects[0])
+        assert minio_objects_equal(conflict.rewinded_version, objects[1])
+        assert conflict.latest_version.tags == (tags if add_tags else None)
         assert conflict.update_type == Operation.UPDATE
 
-    def test_detect_conflicts__new_version_exists_but_content_not_different__no_drift(
-        self, mocker: MockerFixture
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__new_version_exists_but_content_not_different__no_conflict(
+        self, add_tags: bool, mocker: MockerFixture
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
@@ -1142,13 +1194,15 @@ class TestMinioRewinder:
         ]
 
         # Act
-        conflicts = rewinder.detect_conflicts(prefix, yesterday)
+        conflicts = rewinder.detect_conflicts(prefix, yesterday, add_tags_to_latest=add_tags)
 
         # Assert
         assert not conflicts
+        minio_client.get_object_tags.assert_not_called()
 
-    def test_detect_conflicts__new_version_exists_but_is_a_delete_marker__remove_drift(
-        self, mocker: MockerFixture
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__new_version_exists_but_is_a_delete_marker__remove_conflict(
+        self, add_tags: bool, mocker: MockerFixture
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
@@ -1163,38 +1217,48 @@ class TestMinioRewinder:
         minio_client.list_objects.return_value = objects
 
         # Act
-        conflict, *conflicts = rewinder.detect_conflicts(prefix, yesterday)
+        conflict, *conflicts = rewinder.detect_conflicts(prefix, yesterday, add_tags_to_latest=add_tags)
 
         # Assert
         assert not conflicts
         assert conflict == VersionPair(objects[0], objects[1])
         assert conflict.update_type == Operation.REMOVE
+        minio_client.get_object_tags.assert_not_called()
 
-    def test_detect_conflicts__old_version_is_delete_marker_but_new_version_is_not__create_drift(
-        self, mocker: MockerFixture
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__old_version_is_delete_marker_but_new_version_is_not__create_conflict(
+        self, add_tags: bool, mocker: MockerFixture
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
         minio_client = mocker.Mock(spec=Minio)
         rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         prefix = S3Path.from_bucket("my-bucket") / "data"
+        tags = Tags()
+        tags["jira-issue-id"] = "FOO-123"
         objects = [
             MinioObject("my-bucket", "data/foo", now - timedelta(days=2), version_id="1"),
             MinioObject("my-bucket", "data/foo", now - timedelta(days=1), version_id="2", is_delete_marker=True),
             MinioObject("my-bucket", "data/foo", now, version_id="3"),
         ]
         minio_client.list_objects.return_value = objects
+        minio_client.get_object_tags.return_value = tags
 
         # Act
-        conflict, *conflicts = rewinder.detect_conflicts(prefix, now - timedelta(hours=12))
+        conflict, *conflicts = rewinder.detect_conflicts(prefix, now - timedelta(hours=12), add_tags_to_latest=add_tags)
 
         # Assert
         assert not conflicts
-        assert conflict == VersionPair(objects[1], objects[2])
+        assert conflict.rewinded_version is not None
+        assert minio_objects_equal(conflict.latest_version, objects[2])
+        assert minio_objects_equal(conflict.rewinded_version, objects[1])
+        assert conflict.latest_version.tags == (tags if add_tags else None)
         assert conflict.update_type == Operation.CREATE
+        assert minio_client.get_object_tags.call_count == int(add_tags)
 
-    def test_detect_conflicts__old_version_is_delete_marker_and_new_version_is_too__no_drift(
-        self, mocker: MockerFixture
+    @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
+    def test_detect_conflicts__old_version_is_delete_marker_and_new_version_is_too__no_conflict(
+        self, add_tags: bool, mocker: MockerFixture
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
@@ -1208,10 +1272,11 @@ class TestMinioRewinder:
         ]
 
         # Act
-        conflicts = rewinder.detect_conflicts(prefix, now - timedelta(hours=12))
+        conflicts = rewinder.detect_conflicts(prefix, now - timedelta(hours=12), add_tags_to_latest=add_tags)
 
         # Assert
         assert not conflicts
+        minio_client.get_object_tags.assert_not_called()
 
     def test_detect_conflicts__multiple_files_and_versions_randomized(self, mocker: MockerFixture) -> None:
         """It should detect object conflict across a large amount of objects and object versions.

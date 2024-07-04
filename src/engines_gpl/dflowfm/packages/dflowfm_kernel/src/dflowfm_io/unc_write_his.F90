@@ -56,7 +56,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_partitioninfo
     use m_timer
     use m_sediment
-    use m_flowexternalforcings, only: numtracers, trnames
+    use fm_external_forcings_data, only: numtracers, trnames
     use m_transport, only: NUMCONST_MDU, ITRA1, ITRAN, ISED1, ISEDN, const_names, const_units, NUMCONST, itemp, isalt
     use m_structures
     use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
@@ -263,11 +263,11 @@ subroutine unc_write_his(tim)            ! wrihis
 
         if (stm_included .and. jahissed > 0) then
            if ( ISED1 > 0 ) then
-              ! New implementation, sedsus fraction is additional dimension
-              call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim))
               call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim))
-              call definencvar(ihisfile, id_frac_name, nf90_char, (/ id_strlendim, id_sedtotdim /), 'sedfrac_name', 'sediment fraction identifier')
            end if
+           ! New implementation, sedsus fraction is additional dimension
+           call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim))
+           call definencvar(ihisfile, id_frac_name, nf90_char, (/ id_strlendim, id_sedtotdim /), 'sedfrac_name', 'sediment fraction identifier')
            if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr==2) then
               call check_netcdf_error( nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
            end if
@@ -372,11 +372,6 @@ subroutine unc_write_his(tim)            ! wrihis
                                                  id_poly_xmid = id_genstru_xmid, id_poly_ymid = id_genstru_ymid)
 
         ! Pump
-        if (jahispump > 0 .and. npumpsg > 0) then
-            call check_netcdf_error( nf90_def_dim(ihisfile, 'pumps', npumpsg, id_pumpdim))
-            call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_pump_id, nf90_char, (/ id_strlendim, id_pumpdim /), 'pump_id','Id of pump',extra_attributes=attributes(1:1))
-        end if
         ierr = unc_def_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
                                                  id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
                                                  id_poly_xmid = id_pump_xmid, id_poly_ymid = id_pump_ymid)
@@ -1150,8 +1145,6 @@ contains
    !! Computed at half the total length of the snapped flow links
    !! (so, it lies on an edge, not per se on the input polyline)).
    function unc_put_his_structure_static_vars_polyline_midpoints(ncid, struc_type_id, count, id_poly_xmid, id_poly_ymid) result(ierr)
-      use stdlib_kinds, only: dp
-
       integer,           intent(in   ) :: ncid                 !< NetCDF id of already open dataset
       integer,           intent(in   ) :: struc_type_id        !< The id of the type of the structure (e.g. ST_CULVERT)
       integer,           intent(in   ) :: count                !< Number of structures for this structure_type
@@ -1322,7 +1315,7 @@ contains
             trim(statcoordstring) // ' zcoordinate_w', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
 
          call definencvar(ihisfile, id_zwu, nc_precision, [id_laydimw, id_statdim, id_timedim], &
-            'zcoordinate_wu', 'vertical coordinate at edge of flow element and at layer interface', 'm', &
+            'zcoordinate_wu', 'vertical coordinate at nearest edge of flow element and at layer interface', 'm', &
             trim(statcoordstring) // ' zcoordinate_wu', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
       end if
    end function unc_def_his_station_coord_vars_z

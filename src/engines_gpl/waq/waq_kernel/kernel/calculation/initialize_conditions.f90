@@ -332,7 +332,7 @@ contains
                     .TRUE., gridps, DLWQD)
 
             ! Particle tracking
-            call delpar00 (file_name_list(45), noseg, noq, a(ivol:), a(iflow:), &
+            call delpar00 (file_unit_list(19), file_name_list(45), noseg, noq, a(ivol:), a(iflow:), &
                     nosfun, c(isfna:), a(isfun:))
 
             ! New bottomlayer processing
