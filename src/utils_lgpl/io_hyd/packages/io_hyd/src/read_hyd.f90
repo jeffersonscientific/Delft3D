@@ -36,7 +36,7 @@
       use m_hydmod
       use rd_token       ! tokenized reading
       use m_string_utils, only: index_in_array
-      use Ieee_arithmetic, only: ieee_value, ieee_quiet_nan
+      use Ieee_arithmetic, only: ieee_value, ieee_quiet_nan, ieee_is_finite
 
       implicit none
 
@@ -698,14 +698,15 @@
       ! check for ztop and zbot keywords
 
       if ( hyd%layer_type == HYD_LAYERS_Z ) then
-         if ( .not. ieee_is_finite(hyd%zbot) .or. .not. ieee_is_finite(hyd%ztop) ) thn
-            call write_error_message('hyd file should contain values for ztop and zbot')
+         if ( .not. ieee_is_finite(hyd%zbot) .or. .not. ieee_is_finite(hyd%ztop) ) then
+            call write_error_message('Error: hyd file should contain values for ztop and zbot')
          endif
-         if ( hyd%zbot >=  hyd%ztop ) thn
-            call write_error_message('values for ztop in hyd-file should be larger than value for zbot')
+         if ( hyd%zbot >=  hyd%ztop ) then
+            call write_error_message('Error: values for ztop in hyd-file should be larger than value for zbot')
          endif
       endif
 
       return
- 900  call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
+ 900  continue
+      call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
       end subroutine read_hyd
