@@ -75,7 +75,7 @@
    endif
  endif
 
- 111 continue
+ setback: do
 
  time1    = time0 + dts                               ! try to reach time1
  dti      = 1d0/dts
@@ -99,19 +99,21 @@
 
  if ( itstep.ne.4 ) then                                 ! implicit time-step
 
-   222 if (nonlin == 2 .or. (nonlin ==3 .and. .not. firstnniteration)) then                               ! only for pressurised
+wetdry: do                                               ! Entry point for drying- and flooding matrix update
+    if (nonlin == 2 .or. (nonlin ==3 .and. .not. firstnniteration)) then                               ! only for pressurised
        ! Nested newton iteration, start with s1m at bed level.
        s1m(:) = bl(:)
        call volsur()
        difmaxlevm = 0d0 ;  noddifmaxlevm = 0
     endif
 
-333 call s1ini()
+    call s1ini()
     call pack_matrix()
 
  !-----------------------------------------------------------------------------------------------
 
-444 call s1nod()                                        ! entry point for non-linear continuityc
+nonlin: do                                        ! entry point for non-linear continuity
+    call s1nod()
     if (ifixedWeirScheme1d2d == 1) then
        if (last_iteration) then 
           ! Impose previously computed 1d2d discharge on 1d2d fixed weirs to keep mass conservation
@@ -158,7 +160,7 @@
        if (nonlin1D >= 3 .and. firstnniteration) then   ! jposhcheck==-1
          ! Negative depth(s): retry with restarted Nested Newton
          firstnniteration = .false.
-         goto 222
+         cycle wetdry
        endif
 
        if (numsrc > 0) then 
@@ -169,15 +171,11 @@
        endif
                                        
        call setkfs()
-       if (jposhchk == 2 .or. jposhchk == 4) then       ! redo without timestep reduction, setting hu=0 => 333 s1ini
-          if (nonlin >= 2) then
-             goto 222
-          else
-             goto 333
-          endif
+       if (jposhchk == 2 .or. jposhchk == 4) then       ! redo without timestep reduction, setting hu=0 => wetdry s1ini
+          cycle wetdry
        else
           if ( jampi == 1 .and. my_rank == 0) call mess(LEVEL_WARN, 'Redo with timestep reduction.')
-          goto 111
+          cycle setback
        endif
     endif
 
@@ -233,7 +231,7 @@
               return
           endif
           call setkfs()
-          goto 111                                      ! redo with timestep reduction => 111 furu
+          cycle setback                                    ! redo with timestep reduction => furu
        !endif
     endif
 
@@ -251,13 +249,13 @@
 
     if ( difmaxlev > epsmaxlev .and. .not. last_iteration) then
        ccr = ccrsav                                   ! avoid redo s1ini, ccr is altered by solve
-       goto 444                                       ! standard non-lin iteration s1 => 444
+       cycle nonlin                                   ! standard non-lin iteration s1 => nonlin
     else if (ifixedweirscheme1d2d==1 .and. .not. last_iteration) then
       if (check_convergence_1d2d_fixedweirs()) then
          last_iteration = .true. 
       end if
       ccr = ccrsav                                ! avoid redo s1ini, ccr is altered by solve
-      goto 444                                    ! when s1 .ne. s1m again do outer loop
+      cycle nonlin                                ! when s1 .ne. s1m again do outer loop
              
     endif
 
@@ -278,14 +276,18 @@
           nums1mit = nums1mit + 1
           call volsur()
           ccr = ccrsav                                ! avoid redo s1ini, ccr is altered by solve
-          goto 444                                    ! when s1 .ne. s1m again do outer loop
+          cycle nonlin                                ! when s1 .ne. s1m again do outer loop
        endif
 
     endif
 
     dnums1it = dnums1it + nums1it
+    exit nonlin
+ end do nonlin 
+   
+ end do wetdry
  endif
-
+ end do setback
 !-----------------------------------------------------------------------------------------------
 ! TODO: AvD: consider moving everything below to flow_finalize single_timestep?
  call setkbotktop(0)                                 ! bottom and top layer indices and new sigma distribution
