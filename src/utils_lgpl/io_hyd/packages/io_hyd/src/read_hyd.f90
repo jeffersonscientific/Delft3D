@@ -36,6 +36,7 @@
       use m_hydmod
       use rd_token       ! tokenized reading
       use m_string_utils, only: index_in_array
+      use Ieee_arithmetic, only: ieee_value, ieee_quiet_nan
 
       implicit none
 
@@ -227,8 +228,9 @@
       hyd%noq3 = 0
       hyd%noq4 = 0
       hyd%noq  = 0
-      hyd%zbot = -999.0
-      hyd%ztop = -999.0
+
+      hyd%zbot = ieee_value(hyd%zbot, ieee_quiet_nan)
+      hyd%ztop = ieee_value(hyd%ztop, ieee_quiet_nan)
 !
 
       ! loop over all the tokens in the file
@@ -691,6 +693,17 @@
 
       if ( hyd%geometry .eq. HYD_GEOM_UNSTRUC ) then
          hyd%nmax = 1
+      endif
+
+      ! check for ztop and zbot keywords
+
+      if ( hyd%layer_type == HYD_LAYERS_Z ) then
+         if ( .not. ieee_is_finite(hyd%zbot) .or. .not. ieee_is_finite(hyd%ztop) ) thn
+            call write_error_message('hyd file should contain values for ztop and zbot')
+         endif
+         if ( hyd%zbot >=  hyd%ztop ) thn
+            call write_error_message('values for ztop in hyd-file should be larger than value for zbot')
+         endif
       endif
 
       return
