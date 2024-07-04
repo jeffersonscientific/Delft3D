@@ -1531,8 +1531,8 @@ public :: fm_bott3d
    !< Update concentrations in water column to conserve mass because of bottom update
    subroutine fm_update_concentrations_after_bed_level_update()
       
-   use m_flow, only: kmx, hs
-   use m_flowgeom, only: ndx
+   use m_flow, only: kmx, hs, vol1
+   use m_flowgeom, only: ndx, ba
    use m_transport, only: constituents, itra1, itran, isalt, ised1
    use m_sediment
    use m_fm_erosed, only: blchg
@@ -1576,11 +1576,11 @@ public :: fm_bott3d
             enddo
          endif !ITRA1>0
       enddo !k
-   else !kmx==0
+   else !kmx>0
       do ll = 1, stmpar%lsedsus       ! works for sigma only
          do k=1,ndx
             hsk = hs(k)
-            if (hsk<epshs) cycle
+            if (hsk<=epshs) cycle
             botcrit=0.95*hsk
             ddp = hsk/max(hsk-blchg(k),botcrit)
             call getkbotktop(k,kb,kt)

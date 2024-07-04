@@ -68,7 +68,7 @@
    cfuhi3D = 0d0
    ustbLL = 0d0;  cfuhiLL = 0d0;  hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0
 
-   umodeps = 1d-6
+   umodeps = 1d-4
 
    frcn = frcu(LL)
    if (frcn == 0d0 ) return

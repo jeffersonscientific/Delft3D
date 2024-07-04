@@ -331,7 +331,7 @@ double precision, external :: setrhofixedp
 
      tkebot   = sqcmukepi * ustb(LL)**2                    ! this has stokes incorporated when jawave>0
      tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+ship contribution
-     ieps=3
+     !ieps=3
      if (ieps == 3) then                                   ! as Delft3D
          vicwwu(Lb0) = vonkar*ustb(LL)*z00
      endif
@@ -1038,7 +1038,7 @@ double precision, external :: setrhofixedp
        vicwwu (Lb0:Lt) = min(vicwmax, cmukep*turkin1(Lb0:Lt)*tureps1(Lb0:Lt) )
     endif
 
-    if (jawave==0) then
+    if (jawave==0) then  ! we don't do viscosity reduction at the surface for waves
        vicwwu(Lt)  = min( vicwwu(Lt)  , vicwwu(Lt-1)*Eddyviscositysurfacmax )
     endif
     vicwwu(Lb0) = min( vicwwu(Lb0) , vicwwu(Lb)  *Eddyviscositybedfacmax )
