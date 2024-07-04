@@ -28,8 +28,8 @@ module m_integration_scheme_24
     use m_proces
     use m_hsurf
     use m_dlwqtr
+    use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
     use time_dependent_variables, only: initialize_time_dependent_variables
-    use dryfld_mod
 
     implicit none
 
@@ -178,8 +178,8 @@ contains
             ! Determine the volumes and areas that ran dry at start of time step
             call hsurf(nosss, nopa, c(ipnam:), a(iparm:), nosfun, &
                        c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                        a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+            call set_dry_cells_to_zero_and_update_volumes(noseg, nosss, nolay, a(ivol:), &
+                        noq1 + noq2, a(iarea:), nocons, c(icnam:), a(icons:), surface, &
                         j(iknmr:), iknmkv)
 
             ! user transport processes
@@ -312,7 +312,7 @@ contains
             end select
 
             ! update the info on dry volumes with the new volumes
-            call dryfle(noseg, nosss, a(ivol2:), nolay, nocons, &
+            call identify_wet_cells(noseg, nosss, a(ivol2:), nolay, nocons, &
                         c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
 
             ! add the waste loads

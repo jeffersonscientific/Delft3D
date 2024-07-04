@@ -30,6 +30,7 @@ module m_integration_scheme_12
     use m_dlwqtr
     use time_dependent_variables, only: initialize_time_dependent_variables
     use m_write_output
+    use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
 
     implicit none
 
@@ -58,7 +59,7 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use dryfld_mod
+        use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
         use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only: copy_real_array_elements
@@ -187,10 +188,10 @@ contains
 
             ! Determine the volumes and areas that ran dry at start of time step
             call hsurf(nosss, nopa, c(ipnam:), a(iparm:), nosfun, &
-                       c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                        a(iarea:), nocons, c(icnam:), a(icons:), surface, &
-                        j(iknmr:), iknmkv)
+                    c(isfna:), a(isfun:), surface, file_unit_list(19))
+            call set_dry_cells_to_zero_and_update_volumes (noseg, nosss, nolay, a(ivol:), &
+                    noq1 + noq2, a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+                    j(iknmr:), iknmkv)
 
             ! user transport processes
             call dlwqtr(notot, nosys, nosss, noq, noq1, &
@@ -322,7 +323,7 @@ contains
             end select
 
             ! update the info on dry volumes with the new volumes
-            call dryfle(noseg, nosss, a(ivol2:), nolay, nocons, &
+            call identify_wet_cells(noseg, nosss, a(ivol2:), nolay, nocons, &
                         c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
 
             ! add the waste loads

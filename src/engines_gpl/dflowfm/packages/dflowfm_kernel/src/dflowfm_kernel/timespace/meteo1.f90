@@ -27,8 +27,6 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
 module m_itdate
    character(len=8) :: refdat
    integer          :: itdate      !< should be user specified for (asc routines)
@@ -178,7 +176,7 @@ contains
    !! The (external forcing) file is opened elsewhere and read block-by-block
    !! by consecutive calls to this routine.
    subroutine readprovider(minp,qid,filename,filetype,method,operand,transformcoef,ja,varname,smask, maxSearchRadius)
-     use m_flowexternalforcings, only: NTRANSFORMCOEF
+     use fm_external_forcings_data, only: NTRANSFORMCOEF
      use MessageHandling, only : LEVEL_WARN, LEVEL_INFO, mess
      ! globals
      integer,           intent(in)            :: minp             !< File handle to already opened input file.
@@ -782,7 +780,10 @@ contains
    use m_partitioninfo
    use kdtree2Factory
    use unstruc_messages
+   use m_find_flownode, only: find_nearest_flownodes_kdtree
+   
    implicit none
+   
    integer          :: i1, i2, j1, j2, k, k1, LL, i, j, iL, iR, ierr
    integer, save    :: ini = 0
    double precision :: alf, x, y
@@ -824,7 +825,7 @@ contains
                yy(i-i1+1,j-j1+1) = dble(j)
             end do
          end do
-         call find_flowcells_kdtree(treeglob,Ni*Nj,xx,yy,kk,jakdtree,INDTP_2D, ierror)
+         call find_nearest_flownodes_kdtree(treeglob, Ni*Nj, xx, yy, kk, jakdtree, INDTP_2D, ierror)
          if ( ierror.ne.0 ) then
             jakdtree = 0
          end if
@@ -3648,7 +3649,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
    !        --- storage of uc, us
    !
-               do 90 i1 = 1, idim1
+               do i1 = 1, idim1
    
                      rlat  = yzeta(i1)
                      rlong = xzeta(i1)
@@ -3706,7 +3707,7 @@ llnk( 1024  )= -0.2780315803D-02
                      rlslat = rlat
                      rlslon = rlong
    
-      90       continue
+end do
    
          end if
    !
@@ -3755,7 +3756,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
    !     --- computation of the tidal potential at each grid-point:
    !
-            do 190 i1 = 1, idim1
+            do i1 = 1, idim1
    
                   potent = 0d0
                   do nq = 2, 3
@@ -3772,7 +3773,7 @@ llnk( 1024  )= -0.2780315803D-02
                      enddo
                   enddo
                   tidep(i1) = potent
-     190    continue
+end do
    
          ! if (idebug.ge.1 .and. i1dbg.ge.1)    write(6,*) 'tidep=', tidep(i1dbg)
 
@@ -5056,7 +5057,7 @@ contains
    !
    ! ==========================================================================
    !> 
-   subroutine get_extend2D(n, m, x, y, kcs, x_ext, y_ext)
+   subroutine get_extend2D(n, m, x, y, kcs, x_dummy, y_dummy)
    
    
        double precision, dimension(:,:)  :: x
@@ -5064,25 +5065,25 @@ contains
        integer , dimension(:,:)  :: kcs
        integer                 :: n
        integer                 :: m
-       double precision, dimension(:)  :: x_ext
-       double precision, dimension(:)  :: y_ext
+       double precision, dimension(:)  :: x_dummy
+       double precision, dimension(:)  :: y_dummy
    
-       call get_extend1D(n*m, x, y, kcs, x_ext, y_ext)
+       call get_extend1D(n*m, x, y, kcs, x_dummy, y_dummy)
    
    end subroutine get_extend2D
    !
    !
    ! ==========================================================================
    !> 
-   subroutine get_extend1D(n, x, y, kcs, x_ext, y_ext)
+   subroutine get_extend1D(n, x, y, kcs, x_dummy, y_dummy)
    
    
        integer                 :: n
        double precision, dimension(n)  :: x
        double precision, dimension(n)  :: y
        integer , dimension(n)  :: kcs
-       double precision, dimension(4)  :: x_ext
-       double precision, dimension(4)  :: y_ext
+       double precision, dimension(4)  :: x_dummy
+       double precision, dimension(4)  :: y_dummy
        double precision                :: x_min
        double precision                :: x_max
        double precision                :: x_dist
@@ -5120,14 +5121,14 @@ contains
        y_min = y_min - 0.01d0*y_dist
        y_max = y_max + 0.01d0*y_dist
    
-       x_ext(1) = x_min
-       y_ext(1) = y_min
-       x_ext(2) = x_min
-       y_ext(2) = y_max
-       x_ext(3) = x_max
-       y_ext(3) = y_max
-       x_ext(4) = x_max
-       y_ext(4) = y_min
+       x_dummy(1) = x_min
+       y_dummy(1) = y_min
+       x_dummy(2) = x_min
+       y_dummy(2) = y_max
+       x_dummy(3) = x_max
+       y_dummy(3) = y_max
+       x_dummy(4) = x_max
+       y_dummy(4) = y_min
    
    end subroutine get_extend1D
    !
@@ -6075,7 +6076,7 @@ contains
    use m_flowgeom, only : ln2lne, Ln, Lnx, Wu1Duni
    use m_partitioninfo
    use unstruc_netcdf
-   use m_flowexternalforcings, only: qid
+   use fm_external_forcings_data, only: qid
    use m_ec_interpolationsettings
    use m_flowparameters
    use m_missing
@@ -6514,7 +6515,7 @@ module m_meteo
    use m_flow
    use m_waves
    use m_ship
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use processes_input, only: nofun, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
    use m_observations

@@ -30,8 +30,9 @@ module m_integration_scheme_15
     use m_proces
     use m_hsurf
     use m_dlwqtr
-    use time_dependent_variables, only : initialize_time_dependent_variables
+    use time_dependent_variables, only: initialize_time_dependent_variables
     use m_write_output
+    use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
 
     implicit none
 
@@ -61,7 +62,7 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use dryfld_mod
+        use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
         use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
@@ -114,7 +115,7 @@ contains
 
         integer(kind=int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
-        
+
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
             ! SPECIAL REMARKS    : MASS-ARRAY IS USED FOR RHS VECTOR!!
@@ -226,8 +227,8 @@ contains
             ! Determine the volumes and areas that ran dry at start of time step
             call hsurf(noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
                     c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                    a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+            call set_dry_cells_to_zero_and_update_volumes(noseg, nosss, nolay, a(ivol:), &
+                    noq1 + noq2, a(iarea:), nocons, c(icnam:), a(icons:), surface, &
                     j(iknmr:), iknmkv)
 
             ! user transport processes
@@ -368,8 +369,8 @@ contains
                         lstrec, lrewin, a(ivoll:), dlwqd)
             end select
 
-            ! Update the info on dry volumes with the new volumes ( dryfle )
-            call dryfle(noseg, nosss, a(ivol2:), nolay, nocons, &
+            ! Update the info on dry volumes with the new volumes (identify_wet_cells)
+            call identify_wet_cells(noseg, nosss, a(ivol2:), nolay, nocons, &
                     c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
             ! Compute new 'from-to' pointer based on non-zeroflows  ( zflows )
             call zflows(noq, noqt, nolay, nocons, c(icnam:), &

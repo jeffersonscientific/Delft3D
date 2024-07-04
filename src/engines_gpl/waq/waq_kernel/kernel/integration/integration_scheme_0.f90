@@ -29,6 +29,7 @@ module m_integration_scheme_0
     use m_hsurf
     use m_dlwqtr
     use m_write_output
+    use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes
 
     implicit none
 
@@ -41,7 +42,6 @@ contains
 
         use m_dlwq18
         use m_dlwq14
-        use dryfld_mod
         use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only: copy_real_array_elements
@@ -166,8 +166,8 @@ contains
             ! They cannot have explicit processes during this time step
             call hsurf(noseg, nopa, c(ipnam), a(iparm:), nosfun, &
                        c(isfna), a(isfun:), surface, file_unit_list(19))
-            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                        a(iarea:), nocons, c(icnam), a(icons:), surface, &
+            call set_dry_cells_to_zero_and_update_volumes(noseg, nosss, nolay, a(ivol:), &
+                        noq1 + noq2, a(iarea:), nocons, c(icnam), a(icons:), surface, &
                         j(iknmr:), iknmkv)
 
             ! user transport processes

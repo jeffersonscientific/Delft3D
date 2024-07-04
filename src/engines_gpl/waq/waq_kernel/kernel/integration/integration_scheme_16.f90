@@ -30,9 +30,9 @@ module m_integration_scheme_16
     use m_proces
     use m_hsurf
     use m_dlwqtr
-    use time_dependent_variables, only : initialize_time_dependent_variables
+    use time_dependent_variables, only: initialize_time_dependent_variables
     use m_write_output
-    use dryfld_mod
+    use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes, identify_wet_cells
 
     implicit none
 
@@ -109,7 +109,7 @@ contains
         integer(kind = int_wp), save :: ioptpc
         integer(kind = int_wp), save :: iter
         integer(kind = int_wp), save :: iscale
-        
+
         integer(kind=int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
 
@@ -234,8 +234,8 @@ contains
             ! Determine the volumes and areas that ran dry at start of time step
             call hsurf(noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
                     c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                    a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+            call set_dry_cells_to_zero_and_update_volumes(noseg, nosss, nolay, a(ivol:), &
+                    noq1 + noq2, a(iarea:), nocons, c(icnam:), a(icons:), surface, &
                     j(iknmr:), iknmkv)
 
             ! user transport processes
@@ -377,7 +377,7 @@ contains
             end select
 
             ! Update the info on dry volumes with the new volumes
-            call dryfle(noseg, nosss, a(ivol2:), nolay, nocons, &
+            call identify_wet_cells(noseg, nosss, a(ivol2:), nolay, nocons, &
                     c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
             ! Compute new from-topointer on the basis of non-zeroflows
             call zflows(noq, noqt, nolay, nocons, c(icnam:), &

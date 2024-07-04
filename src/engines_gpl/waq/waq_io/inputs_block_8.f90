@@ -47,7 +47,7 @@ contains
         !!       - ASCII without defaults requires 1 keyword and values for
         !!          all volumes per substance, so 12345*2.27 ; substance 1 etc.
         !!          and 11522*0.0 823*3.14  ; for a passive substance in 15 layers.
-        !!          The simulation system (dryfld.f) migrates automatically the
+        !!          The simulation system (set_dry_cells_to_zero_and_update_volumes.f) migrates automatically the
         !!          lowest value to the first active cell in a Z-layer model
         !!       - Binary files not being a .map file are assumed to be in mass/gridcell
         !!       - .map files are scanned for the presence of the mass/m2 token at

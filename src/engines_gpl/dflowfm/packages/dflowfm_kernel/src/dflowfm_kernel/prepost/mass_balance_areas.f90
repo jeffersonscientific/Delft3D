@@ -81,7 +81,7 @@ contains
    use m_flowparameters, only : jambawritecsv, jambawritetxt, jambawritenetcdf
    use m_flowgeom, only : Lnxi, ln, lne2ln
    use unstruc_model, only : md_ident, md_ident_sequential
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_sediment, only : stm_included
    use m_fm_erosed, only : lsedtot, lsed, stmpar, iflufflyr
    use unstruc_files
@@ -408,7 +408,7 @@ contains
    use m_mass_balance_areas
    use m_fm_wq_processes
    use m_partitioninfo
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
    use m_transport, only : numconst
    use m_sediment, only : stm_included
@@ -716,7 +716,7 @@ contains
    subroutine comp_horflowmba()
    use m_flow, only : Lbot, Ltop, q1
    use m_flowtimes, only : dts
-   use m_flowexternalforcings, only : numsrc, ksrc, qsrc
+   use fm_external_forcings_data, only : numsrc, ksrc, qsrc
    use m_mass_balance_areas
    use m_partitioninfo, only : jampi, idomain, my_rank
    use timers
@@ -1184,7 +1184,7 @@ contains
    subroutine mba_prepare_names_flows(imba)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_mass_balance_areas
    
    integer, intent(in) :: imba                                     !< index mass balance area
@@ -1263,7 +1263,7 @@ contains
    subroutine mba_prepare_values_flows(imba, overall_balance)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_mass_balance_areas
    
    integer, intent(in) :: imba                                     !< index mass balance area
@@ -1347,7 +1347,7 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_mass_balance_areas
    
    integer :: jmba                                                 !< index of other mass balance area or open boundary
@@ -1403,7 +1403,7 @@ contains
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_mass_balance_areas
    
    logical, intent(in) :: overall_balance                          !< balance period: use the total begin arrays, or just the last period
@@ -1477,7 +1477,7 @@ contains
 
    subroutine mba_prepare_names_fluxes(imbs, imba)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1628,7 +1628,7 @@ contains
 
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1802,7 +1802,7 @@ contains
 
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1918,7 +1918,7 @@ contains
 
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
