@@ -1,12 +1,13 @@
-set(library_name waq_preprocessor)
+set(library_name waq_proc_preprocess)
 
 create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . recursive TRUE)
 
 # Set dependencies
 set(oss_dependencies
-        waq_io
-        waq_proc_preprocess
-        waq_memory)
+        waq_definition
+        waq_utils_f
+        waq_data
+        waq_hyd_data)
 
 target_link_libraries(${library_name} ${oss_dependencies} ${CMAKE_DL_LIBS})
 
