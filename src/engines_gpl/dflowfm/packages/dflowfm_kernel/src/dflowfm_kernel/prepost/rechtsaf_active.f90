@@ -29,6 +29,11 @@
 
 ! 
 ! 
+module m_RECHTSAF_ACTIVE
+
+implicit none
+
+contains
 
   LOGICAL FUNCTION RECHTSAF_active(K1,K2,K3)
 
@@ -52,3 +57,4 @@
 
   return
   end FUNCTION RECHTSAF_active
+end module

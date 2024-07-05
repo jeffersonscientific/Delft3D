@@ -2063,10 +2063,9 @@
 
    LOGICAL FUNCTION RECHTSAF(K1,K2,K3)
    use network_data
+   use m_RECHTSAF_ACTIVE
    implicit none
    integer :: K1, K2, K3
-
-   logical, external :: rechtsaf_active
 
    double precision :: sig
 
