@@ -1267,7 +1267,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get(md_ptr, 'numerics', 'Oceaneddyvel'        , Oceaneddyvel)
     call prop_get(md_ptr, 'numerics', 'Oceaneddyyoff'       , Oceaneddyyoff)
     call prop_get(md_ptr, 'numerics', 'Oceaneddyxoff'       , Oceaneddyxoff)
-    call prop_get(md_ptr, 'numerics', 'FlowSolver'          , FlowSolver)
+    call prop_get(md_ptr, 'numerics', 'FlowSolver'          , flow_solver)
     
     call prop_get(md_ptr, 'numerics', 'OneDImpomega'        , f1dimppar%omega  )
     call prop_get(md_ptr, 'numerics', 'OneDImppsi'          , f1dimppar%psi    )

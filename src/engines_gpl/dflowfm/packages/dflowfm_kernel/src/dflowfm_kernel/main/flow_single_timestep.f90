@@ -50,13 +50,13 @@
 
  iresult = DFM_GENERICERROR
 
-!V: At this moment we are at time <t>. When using the regular solver (i.e., <FlowSolver>=1), 
+!V: At this moment we are at time <t>. When using the regular solver (i.e., <flow_solver>=1), 
 !the time step is advanced in <flow_run_single_timestep>. This means that the boundary conditions 
 !(constructed when calling <flow_init_single_timestep>) are at time <t>.  When using the
 !implicit 1D solver, the boundary conditions are expected at time <t+1>. Hence, we advance 
 !the time here such that the boundary conditions are at <t+1>. This could be done somewhere
 !else in the code, e.g., <flow_initimestep>. I think that here it is clearer. 
-if (FlowSolver==2) then
+if (flow_solver == FLOW_SOLVER_SRE) then
     !V: During model initialization, the time advances 1 s. This is very annoying when using
     !an implicit solver with fixed time step. Here we take it out considering the case in 
     !which the time step is set to 1 s. This should be done in a better way (not sure how). 

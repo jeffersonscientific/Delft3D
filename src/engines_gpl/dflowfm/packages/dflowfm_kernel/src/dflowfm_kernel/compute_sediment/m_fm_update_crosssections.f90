@@ -48,7 +48,7 @@
    use MessageHandling
    use m_fm_erosed, only: ndxi_mor, ndx_mor, e_sbn, nd_mor, lsedtot
    use m_f1dimp, only: f1dimppar
-   use m_flowparameters, only: flowsolver
+   use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
 
    real(fp), dimension(:), intent(inout) :: blchg         !< Bed level change (> 0 = sedimentation, < 0 = erosion)
 
@@ -214,7 +214,7 @@
    !
    !junction node FM1DIMP
    !
-   if (flowsolver.eq.2) then
+   if (flow_solver == FLOW_SOLVER_SRE) then
        do kd=ndx+1,ndx_mor !loop on multivalued-ghost nodes
            !there can only be two links connected to the flownode
            idx_l1=abs(nd_mor(kd)%ln(1))
@@ -230,7 +230,7 @@
                blchg(kd)=blchg(idx_ns)
            endif
        enddo !kd    
-   endif !flowsolver
+   endif !flow_solver
    
    end subroutine fm_update_crosssections
 

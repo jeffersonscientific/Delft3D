@@ -53,10 +53,10 @@ integer :: N, L
 
  if (itstep >= 2) then
     call timstrt('step_reduce', handle_extra(51)) ! step_reduce
-    select case (FlowSolver)
-        case (1)
+    select case (flow_solver)
+        case (FLOW_SOLVER_FM)
             call step_reduce_hydro(key)                            ! set a computational timestep implicit, reduce, elim conj grad substi
-        case (2)
+        case (FLOW_SOLVER_SRE)
             !time1=time0+dts !time step advanced in <flow_single_timestep>.
             call flow_initialize_fm1dimp_timestep(iresult,time1) !in kernel, can access everything
             call SOFLOW_wrap(time1) !in module, only accesses SRE variables

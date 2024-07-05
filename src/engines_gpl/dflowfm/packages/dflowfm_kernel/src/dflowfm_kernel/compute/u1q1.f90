@@ -34,7 +34,7 @@
  use m_flow                                          ! substitute u1 and q1
  use m_flowgeom
  use m_flowtimes
- use m_flowparameters, only: FlowSolver
+ use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
  use m_partitioninfo
  use m_timer
  use unstruc_channel_flow
@@ -60,7 +60,7 @@
        do L = 1,lnx
           if (hu(L) > 0d0) then 
              k1 = ln(1,L) ; k2 = ln(2,L)
-             if (FlowSolver.eq.2) then !SRE solver
+             if (flow_solver == FLOW_SOLVER_SRE) then 
                  !FM1DIMP2DO remove this and simply cicle this entire function in case we use this solver?
                  !u1(L)=u1(L) !not necessary, it is already available
                  !q1(L)=au(L)*u1(L) 

@@ -379,8 +379,10 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
 
  integer                           :: jaZerozbndinflowadvection=0 !< set zero advection velocity on inflow at z boundaries 0=no, 1=yes
  
- integer                           :: FlowSolver !< 1=stepreduce, 2=1d implicit
-
+ integer                           :: flow_solver !< 1=stepreduce, 2=1d implicit
+ integer, parameter                :: FLOW_SOLVER_FM = 1
+ integer, parameter                :: FLOW_SOLVER_SRE = 2
+ 
  integer                           :: jabaroctimeint    !< time integration baroclini pressure, 1 = Euler, abs() = 2; rho at n+1/2, 3: AdamsB
 
  integer                           :: jabarocterm       !< 1 or 2 for original or revised term, we only document the revised term, keep org for backw. comp.
@@ -935,7 +937,7 @@ subroutine default_flowparameters()
     JaZlayercenterbedvel      = 1
     jastructurelayersactive   = 1
     JaZerozbndinflowadvection = 0
-    FlowSolver = 1       !< 1=stepreduce, 2=1d implicit
+    flow_solver = FLOW_SOLVER_FM       !< 1=stepreduce, 2=1d implicit
     
     jabaroctimeint = -4  !< time integration baroclini pressure, 1 = expl., 2=AB rho , 3 = AB barocterm, 4=3dryfloodproof 5 = advect rho (n+1/2)
     jabarocterm    = 4   !  revised baroc term

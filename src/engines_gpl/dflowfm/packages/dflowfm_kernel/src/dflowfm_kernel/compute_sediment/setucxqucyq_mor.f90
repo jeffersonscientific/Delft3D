@@ -34,7 +34,7 @@
    use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
    use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, ndxi, lnx1D, kcs
    use m_flow, only: hs, hu, zws, kmx, kmxL, au, q1, ucx_mor, ucy_mor, lnkx, ndkx
-   use m_flowparameters ,only: jacstbnd, epshs, eps10, flowsolver
+   use m_flowparameters ,only: jacstbnd, epshs, eps10, flow_solver, FLOW_SOLVER_FM
    use m_sediment, only: stmpar
    use m_turbulence, only:ln0
    use m_CrossSections, only: GetCSParsFlow
@@ -77,7 +77,7 @@
    ! FM solver
    !------------------------------------------
    
-   if (FlowSolver.eq.1) then !FM solver
+   if (flow_solver == FLOW_SOLVER_FM) then !FM solver
        
    ! we define the node as the begin/end point of the first link connected to it
    if (stmpar%morpar%mornum%pure1d) then
@@ -292,6 +292,6 @@
        
        enddo !kd
        
-    endif !flowsolver
+    endif !flow_solver
     
    end subroutine setucxqucyq_mor

@@ -521,7 +521,7 @@ public :: fm_bott3d
    use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
    use m_flowgeom , only: ndxi, nd, wu_mor
    use m_flow, only: u1, qa
-   use m_flowparameters, only: flowsolver
+   use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
    use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
    use m_sediment, only: stmpar
    use m_ini_noderel, only: get_noderel_idx
@@ -625,7 +625,7 @@ public :: fm_bott3d
             wb1d = wu_mor(L)
             do ised = 1, lsedtot
                sb1d = e_sbcn(L, ised) * Ldir  ! first compute all outgoing sed. transport.
-               if (flowsolver.eq.1) then !standard
+               if (flow_solver == FLOW_SOLVER_FM) then !standard
                !V: In the standard scheme, at the <e_sbcn> of the outgoing links we have the upwind transport, i.e., 
                !part of the transport in the junction node. By summing over all of them we have the total transport at
                !the junction node, which we then redistribute.

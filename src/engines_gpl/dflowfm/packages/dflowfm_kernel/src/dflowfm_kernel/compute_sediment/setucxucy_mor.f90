@@ -39,7 +39,7 @@
    use m_sobekdfm
    use m_sediment, only: jased, stm_included
    use m_missing
-   use m_flowparameters, only: jabarrieradvection, flowsolver
+   use m_flowparameters, only: jabarrieradvection, flow_solver
    use m_sferic
    use m_f1dimp, only: f1dimppar
    implicit none
@@ -61,7 +61,7 @@
    ! FM solver
    !------------------------------------------
    
-  ! if (FlowSolver.eq.1) then !FM solver
+  ! if (flow_solver.eq.1) then !FM solver
        
    if (kmx < 1) then                                   ! original 2D coding
       do L = 1,lnx1D

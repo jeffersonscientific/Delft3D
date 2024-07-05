@@ -32,7 +32,7 @@
 
 subroutine setdt()
    use m_partitioninfo
-   use m_flowparameters, only: jawave, FlowSolver
+   use m_flowparameters, only: jawave, flow_solver, FLOW_SOLVER_SRE
    use m_xbeach_data,    only: swave, instat
    use m_flowtimes
    use m_flow,           only: kkcflmx
@@ -132,7 +132,7 @@ subroutine setdt()
       end if
    end if
 
-   if (FlowSolver .eq. 2) then
+   if (flow_solver == FLOW_SOLVER_SRE) then
       dts=dt_max
    endif
     

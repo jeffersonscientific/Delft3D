@@ -48,7 +48,7 @@
  use unstruc_files, only: mdia
  use unstruc_netcdf
  use MessageHandling
- use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, FlowSolver
+ use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE
  use dfm_error
  use m_fm_wq_processes, only: jawaqproc
  use m_vegetation
@@ -521,7 +521,7 @@
  endif
 
  !Initialize flow1d_implicit
- if (FlowSolver==2) then
+ if (flow_solver == FLOW_SOLVER_SRE) then
      call initialize_flow1d_implicit(iresult)
      if (iresult /= DFM_NOERR) then
        call mess(LEVEL_WARN,'Error initializing 1D implicit.')
