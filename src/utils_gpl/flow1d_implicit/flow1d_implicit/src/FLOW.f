@@ -298,8 +298,8 @@ c***********************************************************************
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
-      include '..\include\sobcon.i'
+      include '../include/sobdim.i'
+      include '../include/sobcon.i'
 c
 c     Declaration of parameters:
 c
@@ -381,7 +381,7 @@ c     FM1DIMP2DO: remove debug
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
       g      =  flwpar( 1 )
       psi    =  flwpar( 2 )

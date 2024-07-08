@@ -153,8 +153,8 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
-      include '..\include\sobcon.i'
+      include '../include/errcod.i'
+      include '../include/sobcon.i'
 c
 c     Declaration of external functions
 c

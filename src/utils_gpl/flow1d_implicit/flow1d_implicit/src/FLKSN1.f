@@ -140,7 +140,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     Calculate r.h.s. = G * MUw and add to array v1 and v2.
 c

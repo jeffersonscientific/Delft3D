@@ -59,7 +59,7 @@ c
 c     Declaration of Parameters:
 c
       use       gadata
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
       integer   lunhis  ,nstepsim  ,nreeks   ,nrinbuf ,juer  ,ker
       integer   outframe(3)        ,dattimsim(2)      ,

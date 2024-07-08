@@ -73,7 +73,7 @@ c-----------------------------------------------------------------------
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters:
 c
@@ -93,8 +93,8 @@ c
 c
 c     Include sobek constants and error codes
 c
-      include '..\include\errcod.i'
-      include '..\include\sobcon.i'
+      include '../include/errcod.i'
+      include '../include/sobcon.i'
 
       do istru=1,nstru
          if ( strtyp(1,istru) .eq. cdtbst ) then

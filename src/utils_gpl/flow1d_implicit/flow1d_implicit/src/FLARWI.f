@@ -199,7 +199,7 @@ c     FM1DIMP2DO: remove debug
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     Computation of
 c          - actual total width wt(1:ngrid) at h=h(n+1  )

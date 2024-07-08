@@ -233,8 +233,8 @@ c
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
-      include '..\include\erradm.i'
+      include '../include/sobdim.i'
+      include '../include/erradm.i'
 c
 c     Declaration of parameters:
 c
@@ -267,7 +267,7 @@ c
 
       COMMON  /UITPUT/uitput
 
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 
       gdub   = g
       lamdub = lambda

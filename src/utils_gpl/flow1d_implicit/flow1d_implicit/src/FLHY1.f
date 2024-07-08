@@ -179,7 +179,7 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
       data  usrord /1/
 c

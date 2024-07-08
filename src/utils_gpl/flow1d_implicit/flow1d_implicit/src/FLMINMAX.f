@@ -39,7 +39,7 @@ c NAME    DESCRIPTION
 c
 c=======================================================================
 c
-      include '..\include\filsim.i'
+      include '../include/filsim.i'
 c      
 c     Declaration of Parameters:
 c

@@ -156,7 +156,7 @@ c***********************************************************************
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Parameters
 c
@@ -190,7 +190,7 @@ c
 c
 c     Include error codes
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
 c     In case of fatal error write step annotation as there is probably
 c     written a buffer. After that return to caller.

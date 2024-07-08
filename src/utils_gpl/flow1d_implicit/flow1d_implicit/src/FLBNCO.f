@@ -174,7 +174,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     nx = node number at begin or end of branch
 c     ix = grid point number at node nx

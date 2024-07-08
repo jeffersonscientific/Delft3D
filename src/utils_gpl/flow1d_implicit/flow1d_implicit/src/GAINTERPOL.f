@@ -47,7 +47,7 @@ c
 c     Declaration of Parameters:
 c
       use gadata
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
       integer   nreeks ,juer  ,ker
       real      tstart ,tstep ,tstepi, hisstart  

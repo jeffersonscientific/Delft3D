@@ -94,7 +94,7 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
 c     Check if water level > bottom in main and subsection
 c

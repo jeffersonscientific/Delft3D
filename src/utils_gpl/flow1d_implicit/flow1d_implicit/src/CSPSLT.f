@@ -317,8 +317,8 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
-      include '..\include\sobcon.i'
+      include '../include/errcod.i'
+      include '../include/sobcon.i'
 c
 c     Set lslot to false to use original profile
 c

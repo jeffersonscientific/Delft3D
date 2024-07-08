@@ -180,7 +180,7 @@ c
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters:
 c
@@ -418,7 +418,7 @@ c     Calculate wetted area in simple weir above crest
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters:
 c

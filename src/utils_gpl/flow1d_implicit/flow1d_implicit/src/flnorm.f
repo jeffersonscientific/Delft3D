@@ -218,8 +218,8 @@ c***********************************************************************
 c
 c    Include sobek constants
 c
-      include '..\include\sobcon.i'
-      include '..\include\sobdim.i'
+      include '../include/sobcon.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of Parameters:
 c

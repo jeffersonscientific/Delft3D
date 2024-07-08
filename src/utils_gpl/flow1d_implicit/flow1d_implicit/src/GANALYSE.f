@@ -55,7 +55,7 @@ c
 c     Declaration of Parameters:
 c
       use       gadata
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c      
       integer   nstepsim ,juer        ,ker 
       integer   dattimsim(2)          ,flowframe(3) ,saltframe(3)

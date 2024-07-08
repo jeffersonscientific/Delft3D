@@ -183,7 +183,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       dt = real(dt1)
 c

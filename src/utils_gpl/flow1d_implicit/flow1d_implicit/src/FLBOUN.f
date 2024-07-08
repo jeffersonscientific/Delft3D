@@ -161,8 +161,8 @@ c
 
 c     Include sobek constants
 c
-      include '..\include\mempool.i'
-      include '..\include\sobcon.i'
+      include '../include/mempool.i'
+      include '../include/sobcon.i'
 c
 c     ****************************************
 c     * Computation of H-boundary conditions *

@@ -85,7 +85,7 @@ c
 c
 c     Include sobek constant file
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       xxs = sngl(xs)
 c     Period defined ?

@@ -133,8 +133,8 @@ c
 c
 c     Include constants for array dimensions
 c
-      include '..\include\mempool.i'
-      include '..\include\sobdim.i'
+      include '../include/mempool.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters
 c
@@ -153,8 +153,8 @@ c
 c     Include sobek constants and error codes constants for 
 c     array dimensions
 c
-      include '..\include\errcod.i'
-      include '..\include\sobcon.i'
+      include '../include/errcod.i'
+      include '../include/sobcon.i'
 
       icpnum = abs(icpnumsgn)  
       if ( putget.eq.1 ) then

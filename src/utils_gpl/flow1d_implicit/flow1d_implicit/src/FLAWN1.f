@@ -144,7 +144,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     Computation of
 c          - actual flow  width     wf(1:ngrid) at h=h(n+1)

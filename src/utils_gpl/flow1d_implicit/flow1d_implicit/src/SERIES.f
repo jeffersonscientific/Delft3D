@@ -75,7 +75,7 @@ c
       real    a0, ai, w0, wi, gammai
       double  precision  arg
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       if (iopt .eq. cbfour) then
 c

@@ -211,7 +211,7 @@ c***********************************************************************
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Parameters
 c
@@ -263,7 +263,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     Determine avaraged water depth based on h-boundaries
 c

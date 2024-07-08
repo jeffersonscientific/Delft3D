@@ -42,7 +42,7 @@ c***********************************************************************
 
 c
 c declare include files
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c declare arguments
       integer il   , ir    , ngrid , istru , nstru

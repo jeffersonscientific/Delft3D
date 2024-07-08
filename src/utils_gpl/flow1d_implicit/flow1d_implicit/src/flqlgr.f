@@ -58,7 +58,7 @@ c***********************************************************************
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters
 c
@@ -86,8 +86,8 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
-      include '..\include\sobcon.i'
+      include '../include/errcod.i'
+      include '../include/sobcon.i'
 c
 c     Compute water levels as the mean value of water level at grid points
 c

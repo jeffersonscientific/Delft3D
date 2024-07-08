@@ -244,7 +244,7 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
       
 c     FM1DIMP2DO: remove debug
       double precision dbg1      

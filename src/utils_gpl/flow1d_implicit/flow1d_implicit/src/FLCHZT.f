@@ -206,7 +206,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c      
       real    chlim(3)
       data    chlim/10.,1.,1./

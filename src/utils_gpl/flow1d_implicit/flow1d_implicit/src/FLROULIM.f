@@ -24,7 +24,7 @@ c
       common     /roughmin/chlow(3),chcur(3)
       save       /roughmin/
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
 c     Declaration of local variables:
 c

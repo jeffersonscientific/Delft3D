@@ -55,7 +55,7 @@ c
 c
 c     Include memory pool
 c
-      include '..\include\mempool.i'
+      include '../include/mempool.i'
 
       nbran  = ip(gtipnt('NBRAN' ))
       branch =    gtipnt('BRANCH')

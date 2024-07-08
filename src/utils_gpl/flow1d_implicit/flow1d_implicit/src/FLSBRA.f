@@ -63,7 +63,7 @@ c
 c
 c include sobek constants 
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 
       if ( steady ) then
         dt = 1.0E6

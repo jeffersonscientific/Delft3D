@@ -81,8 +81,8 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\erradm.i'
-      include '..\include\filsim.i'
+      include '../include/erradm.i'
+      include '../include/filsim.i'
 c
 c     Local variables
 c
@@ -90,7 +90,7 @@ c
       integer    modnr, errnr, irec, ios, lendis, lutemp, fnr, i
       logical    templt
 
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 
       if (nr .eq. 0 ) then
 c

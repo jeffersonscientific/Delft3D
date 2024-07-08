@@ -349,8 +349,8 @@ c
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
-      include '..\include\errcod.i'
+      include '../include/sobdim.i'
+      include '../include/errcod.i'
 c
 c     Declaration of parameters
 c
@@ -421,7 +421,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 
 c
 c     Set initial his-file flags to zero

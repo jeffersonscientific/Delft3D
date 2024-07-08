@@ -298,8 +298,8 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
-      include '..\include\errcod.i'
+      include '../include/sobcon.i'
+      include '../include/errcod.i'
 c
       do 200 ibr = 1, nbran
 c

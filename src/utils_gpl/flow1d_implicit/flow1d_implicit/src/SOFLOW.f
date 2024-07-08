@@ -226,7 +226,7 @@ c
 c     Maybe better is to copy the code in <sobdim.i> here. But be aware
 c     that this statement is in several parts of the code. 
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Extract parameters from flwpar
 c

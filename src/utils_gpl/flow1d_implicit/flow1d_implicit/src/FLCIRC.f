@@ -84,7 +84,7 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
 c     Function: Calculate Af, Wf and O for circle cross section
 c

@@ -49,7 +49,7 @@ c=======================================================================
 c
 c     Declaration of Parameters:
 c
-      include '..\include\filsim.i'
+      include '../include/filsim.i'
 c      
       integer   nhytim         ,nsatim        ,juer   ,ker 
       integer   hyrtim(nhytim) ,saltim(*)

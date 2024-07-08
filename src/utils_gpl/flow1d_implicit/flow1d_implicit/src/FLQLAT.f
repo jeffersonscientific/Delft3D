@@ -349,8 +349,8 @@ c
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
-      include '..\include\mempool.i'
+      include '../include/sobdim.i'
+      include '../include/mempool.i'
 c
 c     Declaration of parameters
 c
@@ -397,8 +397,8 @@ c     Koppeling Mozart
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
-      include '..\include\sobcon.i'
+      include '../include/errcod.i'
+      include '../include/sobcon.i'
 c
 c     ***********************************
 c     * Computation of Qlat in stations *

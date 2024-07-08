@@ -172,7 +172,7 @@ c     Adjust actual model time when running in DATools-wrapper
 c=======================================================================
       function da_check_model_start_time(itim, juer) result(success)
       implicit none
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
 c     return value: success = .true. if start time is OK
       logical :: success

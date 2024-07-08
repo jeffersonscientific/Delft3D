@@ -12,7 +12,7 @@ c
 c
 c     Include sobek constants and error codes
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
       do 20 j = 1, nexres
 c

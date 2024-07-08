@@ -154,8 +154,8 @@ c
 c
 c     Include sobek error code file
 c
-      include '..\include\errcod.i'
-      include '..\include\sobcon.i'
+      include '../include/errcod.i'
+      include '../include/sobcon.i'
 c
       eps = .0001D0
       do 200 ibr = 1, nbran

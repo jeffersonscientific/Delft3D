@@ -133,7 +133,7 @@ c***********************************************************************
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters:
 c
@@ -148,7 +148,7 @@ c
 c     
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     Determine pump parameters: condir, itab, cap, capold, hstart/stop
 c     -----------------------------------------------------------------

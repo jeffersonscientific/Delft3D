@@ -116,7 +116,7 @@ c***********************************************************************
 c
 c     Include constants 
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of Parameters:
 c

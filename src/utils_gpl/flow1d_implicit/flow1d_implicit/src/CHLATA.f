@@ -114,7 +114,7 @@ c
 c
 c     Include sobek constant file
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       do 10  istat = 1, nqlat
          if (int(qltpar(4,istat)) .eq. cpd1gp) then

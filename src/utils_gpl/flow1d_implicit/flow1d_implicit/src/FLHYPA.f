@@ -176,8 +176,8 @@ c***********************************************************************
 c
 c     Include constants 
 c
-      include '..\include\errcod.i'
-      include '..\include\sobdim.i'
+      include '../include/errcod.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of Parameters:
 c

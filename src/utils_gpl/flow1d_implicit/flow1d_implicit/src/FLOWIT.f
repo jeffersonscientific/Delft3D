@@ -278,8 +278,8 @@ c      !DEC$ IF DEFINED (_DLL)
 c      use SobekRE_OpenMI
 c      !DEC$ ENDIF
 
-      include '..\include\sobdim.i'
-c      include '..\include\mempool.i'
+      include '../include/sobdim.i'
+c      include '../include/mempool.i'
       
       integer    ok
       integer    info
@@ -370,7 +370,7 @@ c      external gtcpnt
 c
 c     Include sobek error codes:
 c
-c      include '..\include\errcod.i'
+c      include '../include/errcod.i'
 c
 c     Debug variables FM1DIMP2DO: remove
 c      

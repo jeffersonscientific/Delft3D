@@ -127,7 +127,7 @@ c
 c
 c     Include sobek constant file
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     Lateral discharges stations are completely defined in array
 c     QLTPAR.

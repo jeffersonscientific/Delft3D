@@ -174,7 +174,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       do 10 icont=1,ncontr
          contyp = int(contrl(1,icont))

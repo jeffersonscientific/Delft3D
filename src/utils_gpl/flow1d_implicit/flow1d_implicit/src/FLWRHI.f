@@ -143,7 +143,7 @@ c
 c
 c     Include constants for sobek dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Parameters
 c
@@ -181,8 +181,8 @@ c
      +             parqlt(npqlt)
       save         istepf, istphf, istplf, istpsf,scudt
 c
-      include '..\include\sobcon.i'
-      include '..\include\filsim.i'
+      include '../include/sobcon.i'
+      include '../include/filsim.i'
 c
 c     Declaration of external functions
 c

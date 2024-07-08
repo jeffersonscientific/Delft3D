@@ -44,7 +44,7 @@ c                         warnng (2) : Warning
 c                         fatal  (3) : Fatal error (processing stops)
 c=======================================================================
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
 c     Declaration of Parameters:
 c

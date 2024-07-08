@@ -39,7 +39,7 @@ c
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c declare arguments
       integer istru , nstru

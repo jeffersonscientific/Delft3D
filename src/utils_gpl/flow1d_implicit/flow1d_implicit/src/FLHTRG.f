@@ -170,7 +170,7 @@ c***********************************************************************
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters:
 c
@@ -192,7 +192,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     For an hydraulic trigger the controller will be switched ON in
 c     case of exceedance c.q. underexceedance of a selected hydraulic

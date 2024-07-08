@@ -30,7 +30,7 @@ c error           Error messages
 c=======================================================================
 c
       use        gadata
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c
 c     Declaration of parameters
 c

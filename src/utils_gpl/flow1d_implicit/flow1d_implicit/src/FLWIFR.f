@@ -128,7 +128,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       pi = atan(1.D0) * 4.D0
 c

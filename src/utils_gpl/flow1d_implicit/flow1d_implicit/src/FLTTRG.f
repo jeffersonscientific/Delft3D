@@ -116,7 +116,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
 c     itab : table number time table
 c     timtrg: true/false - time trigger on/off

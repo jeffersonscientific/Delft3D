@@ -100,7 +100,7 @@ c-----------------------------------------------------------------------
 c
 c     Include constants for array dimensions
 c
-      include '..\include\sobdim.i'
+      include '../include/sobdim.i'
 c
 c     Declaration of parameters:
 c
@@ -125,7 +125,7 @@ c
 c
 c     Include sobek constants and error codes
 c
-      include '..\include\errcod.i'
+      include '../include/errcod.i'
 c      
       nh1     = nint(strpar(4,istru))
       nh2     = nint(strpar(5,istru))

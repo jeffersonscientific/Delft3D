@@ -65,7 +65,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       do 20 ibr = 1, nbran
          if (wfrict(1,ibr) .eq. cywndf) then

@@ -46,7 +46,7 @@ c
 c
 c     Include sobek constants
 c
-      include '..\include\sobcon.i'
+      include '../include/sobcon.i'
 c
       if      ( ind .eq. ccpcrh ) then
          FLIHIS = 2
