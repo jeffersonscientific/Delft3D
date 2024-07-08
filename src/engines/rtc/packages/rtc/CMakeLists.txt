@@ -8,8 +8,8 @@ set(src_path src)
 get_fortran_source_files(${src_path} source_files)
 
 # Set version file variables
-set(ini_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/version_number.ini)
-set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.rc)
+#set(ini_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/version_number.ini)
+#set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.rc)
 set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.F90)
 
 # Set default files to be included in distribution
@@ -19,12 +19,12 @@ set(default_files ${CMAKE_CURRENT_SOURCE_DIR}/../../default/RTC.DAT
                   ${CMAKE_CURRENT_SOURCE_DIR}/../../default/RTC.RTN)
 
 # Generate the version files
-generate_version_files(${rc_version_file} 
-                       ${ini_version_file} 
-                       ON)
-generate_version_files(${fortran_version_file} 
-                       ${ini_version_file} 
-                       ON)
+# generate_version_files(${rc_version_file} 
+                       # ${ini_version_file} 
+                       # ON)
+# generate_version_files(${fortran_version_file} 
+                       # ${ini_version_file} 
+                       # ON)
 
 
 add_executable(${executable_name} ${source_files}
@@ -32,15 +32,15 @@ add_executable(${executable_name} ${source_files}
                                 ${fortran_version_file})
 
 # Define prebuild events
-prebuild_version_number(${executable_name} ${rc_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file}
-                                        ON)
+# prebuild_version_number(${executable_name} ${rc_version_file} 
+                                        # ${checkout_src_root}
+                                        # ${ini_version_file}
+                                        # ON)
 
-prebuild_version_number(${executable_name} ${fortran_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file}
-                                        ON)
+# prebuild_version_number(${executable_name} ${fortran_version_file} 
+                                        # ${checkout_src_root}
+                                        # ${ini_version_file}
+                                        # ON)
 
 set_source_files_properties(
                     src/rtc_main.F90
@@ -98,5 +98,5 @@ oss_include_libraries(${executable_name} oss_dependencies)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines/rtc)
 
-install(TARGETS ${executable_name} DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(FILES ${default_files} DESTINATION share/delft3d)
