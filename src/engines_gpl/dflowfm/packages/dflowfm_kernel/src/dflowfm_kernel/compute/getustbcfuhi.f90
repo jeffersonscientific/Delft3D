@@ -191,7 +191,7 @@
                   taubxuLL = 0d0
                endif
             else if (modind==0) then    ! exception where you don't want wave influence on bed shear stress with jawave>0
-               if (sqcf>0d0) then                  
+               if (sqcf>0d0) then
                   z0urouL  = dzb*exp(-vonkar/sqcf - 1d0)            ! inverse of jaustarint == 1 above  
                   taubpuLL = ustbLL*ustbLL/umod                     ! use flow ustar
                   taubxuLL = rhoL*taubpuLL*umod
@@ -204,7 +204,10 @@
             ustbLL = sqrt(umod*taubpuLL)                           ! taubpu = (g*U)/C**2 = tau/rho/u
             sqcf   = max(sqcf,ustbLL / umod )                      ! waveps not needed, see umod = max(umod, 1d-5) line above
             !
-            taubu(LL)  = taubpuLL*rhoL*(u1Lb+ustokes(Lb))          ! bed shear stress for output. Plus ustokes!
+            taubu(LL)  = taubpuLL*rhoL*(u1Lb-ustokes(Lb))          ! bed shear stress for output. Plus ustokes!
+            if (abs(taubu(LL))>50) then
+               continue
+            endif
             taubxu(LL) = taubxuLL
             !
             ! set wave enhanced z0 for turbulence and morphology
