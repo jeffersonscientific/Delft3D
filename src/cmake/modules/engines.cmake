@@ -1,8 +1,5 @@
 # File to define the engines components and their corresponding tests
-set(engines_path engines)
-
-# D-Flow Flexible Mesh
-set(dflowfm_interacter_module ${engines_path}/dflowfm/packages/dflowfm_interacter)
+set(engines_path engines_gpl)
 
 # RR Rainfall Runoff
 set(rr_module_path "${engines_path}/rr/packages")
