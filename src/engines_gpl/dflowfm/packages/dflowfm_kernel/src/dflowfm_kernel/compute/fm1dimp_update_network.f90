@@ -27,14 +27,13 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> Updates the variables of flow1d implicit solver that
 !change every time step
 subroutine fm1dimp_update_network(iresult)
 
-!use m_flowparameters
 use m_f1dimp, only: f1dimppar, reallocate_fill
 use unstruc_channel_flow, only: network
 use m_CrossSections, only: createTablesForTabulatedProfile
@@ -43,10 +42,7 @@ use m_oned_functions, only: gridpoint2cross
 use m_flow, only: hu
 use m_flowgeom, only: lnx 
 
-!use unstruc_messages
-
 implicit none
-
 
 !
 !pointer
@@ -95,9 +91,6 @@ bedlevel               => f1dimppar%bedlevel
 
 hlev                   => f1dimppar%hlev
 
-
-
-
 !!
 !! CALC
 !!
@@ -115,33 +108,12 @@ do kd=1,ngrid
     !two SRE gridpoints but just one FM index. In this situation the SRE gridpoint and associated
     !cross-section are not updated. As a consequence, an independent mapping variable (<grd_sre_cs>)
     !is needed
-    
-    !skip the boundary-ghost flownodes, for which there is no cross-section
-    !idx_sre=f1dimppar%grd_fm_sre(kd)
-    !if (gridpoint2cross(kd)%NUM_CROSS_SECTIONS.eq.0) then
-    !    cycle
-    !endif
-    !idx_crs=gridpoint2cross(kd)%cross(1)
-    
+        
     idx_sre=kd
     idx_crs=grd_sre_cs(idx_sre)
     
-    
-    !update cross-section flow variables after bed level changes
-    !FM1DIMP2DO: remove debug
-    !if (idx_crs.eq.1) then
-    !write(42,*) network%CRS%CROSS(idx_crs)%TABDEF%FLOWAREA(5), network%CRS%CROSS(idx_crs)%TABDEF%height(1)
-    !endif
-    
+    !update cross-section flow variables after bed level changes    
     call createTablesForTabulatedProfile(network%CRS%CROSS(idx_crs)%TABDEF)
-    
-    !FM1DIMP2DO: remove debug
-    !if (idx_crs.eq.1) then
-    !write(42,*) network%CRS%CROSS(idx_crs)%TABDEF%FLOWAREA(5), network%CRS%CROSS(idx_crs)%TABDEF%height(1)
-    !endif
-    
-    !copy values to <fm1dimppar>
-    !FM1DIMP2DO: move to a subroutine?
     
     !nlev
     f1dimppar%nlev(idx_sre)=network%CRS%CROSS(idx_crs)%TABDEF%LEVELSCOUNT
@@ -156,16 +128,6 @@ do kd=1,ngrid
 
     !bed level
     bedlevel(idx_sre)=network%crs%cross(idx_crs)%bedLevel
-    
-        !FM1DIMP2DO: remove debug
-    !write(42,*) idx_sre, idx_crs
-    !write(42,*) f1dimppar%wft (idx_sre,:)
-    !write(42,*) f1dimppar%aft (idx_sre,:)
-    !write(42,*) f1dimppar%wtt (idx_sre,:)
-    !write(42,*) f1dimppar%att (idx_sre,:)
-    !write(42,*) f1dimppar%of (idx_sre,:)
-    !write(42,*) f1dimppar%hlev (idx_sre,:)
-    !write(42,*) f1dimppar%bedlevel (idx_sre)
     
 enddo !kd
 
