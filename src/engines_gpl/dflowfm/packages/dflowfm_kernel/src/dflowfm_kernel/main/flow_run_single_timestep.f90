@@ -41,7 +41,6 @@ use m_timer
 use unstruc_display, only : jaGUI
 use dfm_error
 
-!use m_f1dimp !useful to get the logical for doing it or not? or storing that logical in a different structure?
 implicit none
 
 integer :: key
@@ -57,7 +56,7 @@ integer :: N, L
         case (FLOW_SOLVER_FM)
             call step_reduce_hydro(key)                            ! set a computational timestep implicit, reduce, elim conj grad substi
         case (FLOW_SOLVER_SRE)
-            !time1=time0+dts !time step advanced in <flow_single_timestep>.
+            !time step advanced in <flow_single_timestep>.
             call flow_initialize_fm1dimp_timestep(iresult,time1) !in kernel, can access everything
             call SOFLOW_wrap(time1) !in module, only accesses SRE variables
             call flow_finalize_fm1dimp_timestep() !in kernel, can access everything

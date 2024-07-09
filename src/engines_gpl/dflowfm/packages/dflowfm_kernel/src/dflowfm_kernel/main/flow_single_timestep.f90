@@ -60,8 +60,7 @@ if (flow_solver == FLOW_SOLVER_SRE) then
     !V: During model initialization, the time advances 1 s. This is very annoying when using
     !an implicit solver with fixed time step. Here we take it out considering the case in 
     !which the time step is set to 1 s. This should be done in a better way (not sure how). 
-    !if ((comparereal(time0,1d0,1e-10)==0).and.(comparereal(dts,1d0,1e-10)/=0)) then !FM1DIMP2DO: problem when using <comparereal>
-    if ((time0.eq.1d0).and.(dts/=1d0)) then
+    if ((time0==1d0).and.(dts/=1d0)) then
         time0=0d0
     endif
     time1=time0+dts

@@ -27,8 +27,8 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! $Id$
-! $HeadURL$
+! 
+! 
 
 !> Updates the flow variables of FM when the Sobek-RE kernel is used. 
 
@@ -41,37 +41,22 @@ subroutine flow_initialize_fm1dimp_timestep(iresult,time1)
 !MODULES
 !
 
-!use m_flowgeom, only: ndxi
-!use unstruc_channel_flow, only: network
-!use m_CrossSections, only: CalcConveyance
-!use m_f1dimp 
-
 implicit none
 
 !
 !DECLARATION
 !
 
-!pointer
-
 !input
 double precision, intent(in) :: time1
 
 !output
-
 integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
-
-!locals
-
-!integer :: L, N, n1, n2, nint, nout
-
-!
-!SET POINTERS
-!
 
 !
 !CALC
 !
+
 call fm1dimp_update_network(iresult) !update of the flow variables (change every time step)
 call fm1dimp_update_bc(iresult,time1) !update of the boundary conditions
 
