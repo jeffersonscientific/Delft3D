@@ -465,10 +465,10 @@ contains
                   if (success) then
                      do kk = 1, Ndx
                         if (viuh(kk) /= dmiss) then
-                           constitents(iconst, kk) = viuh(kk)
+                           constituents(iconst, kk) = viuh(kk)
                            call getkbotktop(kk, kb, kt)
                            do k = kb, kb + kmxn(kk) - 1
-                              constitents(iconst, k) = constituents(iconst, kk)     ! fill array with vertically uniform values
+                              constituents(iconst, k) = constituents(iconst, kk)     ! fill array with vertically uniform values
                            end do
                         end if
                      end do
