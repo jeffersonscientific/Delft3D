@@ -47,7 +47,7 @@ contains
         !!       - ASCII without defaults requires 1 keyword and values for
         !!          all volumes per substance, so 12345*2.27 ; substance 1 etc.
         !!          and 11522*0.0 823*3.14  ; for a passive substance in 15 layers.
-        !!          The simulation system (dryfld.f) migrates automatically the
+        !!          The simulation system (set_dry_cells_to_zero_and_update_volumes.f) migrates automatically the
         !!          lowest value to the first active cell in a Z-layer model
         !!       - Binary files not being a .map file are assumed to be in mass/gridcell
         !!       - .map files are scanned for the presence of the mass/m2 token at
@@ -66,7 +66,7 @@ contains
         !!                 file_unit_list(18) = unit intermediate file (initials)
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use m_grid_utils_external   ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
@@ -282,7 +282,7 @@ contains
         ierr2 = 0
         10 if (ierr2 > 0) call status%increase_error_count()
         if (ierr2 > 0) write (file_unit, 2050)
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         if (old_input) then
             call check_error(cdummy, iwidth, 8, ierr2, status)
         endif

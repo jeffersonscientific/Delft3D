@@ -81,7 +81,7 @@ contains
    use m_flowparameters, only : jambawritecsv, jambawritetxt, jambawritenetcdf
    use m_flowgeom, only : Lnxi, ln, lne2ln
    use unstruc_model, only : md_ident, md_ident_sequential
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_sediment, only : stm_included
    use m_fm_erosed, only : lsedtot, lsed, stmpar, iflufflyr
    use unstruc_files
@@ -408,7 +408,7 @@ contains
    use m_mass_balance_areas
    use m_fm_wq_processes
    use m_partitioninfo
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
    use m_transport, only : numconst
    use m_sediment, only : stm_included
@@ -716,7 +716,7 @@ contains
    subroutine comp_horflowmba()
    use m_flow, only : Lbot, Ltop, q1
    use m_flowtimes, only : dts
-   use m_flowexternalforcings, only : numsrc, ksrc, qsrc
+   use fm_external_forcings_data, only : numsrc, ksrc, qsrc
    use m_mass_balance_areas
    use m_partitioninfo, only : jampi, idomain, my_rank
    use timers
@@ -896,7 +896,6 @@ contains
    integer                     :: isys
    integer                     :: iflux
    integer                     :: jflux
-   integer                     :: ifluxsys
 
    call getfullversionstring_dflowfm(version_id)
 
@@ -965,15 +964,12 @@ contains
       write (lunbal, '( "total number of substances fluxes               :",I8)') totfluxsys
       write (lunbal, '(/"Substance      Process        Flux        Stochiometry factor")')
       write (lunbal, '( "-------------------------------------------------------------")')
-      ifluxsys = 0
       do isys = 1, notot
-         ipfluxsys(isys) = ifluxsys
          if (nfluxsys(isys) > 0) then
-            do iflux = ifluxsys + 1, ifluxsys + nfluxsys(isys)
+            do iflux = ipfluxsys(isys) + 1, ipfluxsys(isys) + nfluxsys(isys)
                jflux = fluxsys(iflux)
                write (lunbal, '(A10,5X,A10,5X,A10,ES20.6)') syname_sub(isys), fluxprocname(jflux), fluxname(jflux), stochi(isys,jflux)
             end do
-            ifluxsys = ifluxsys + nfluxsys(isys)
          end if
       end do
    end if
@@ -1188,7 +1184,7 @@ contains
    subroutine mba_prepare_names_flows(imba)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_mass_balance_areas
    
    integer, intent(in) :: imba                                     !< index mass balance area
@@ -1267,7 +1263,7 @@ contains
    subroutine mba_prepare_values_flows(imba, overall_balance)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_mass_balance_areas
    
    integer, intent(in) :: imba                                     !< index mass balance area
@@ -1351,7 +1347,7 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_mass_balance_areas
    
    integer :: jmba                                                 !< index of other mass balance area or open boundary
@@ -1407,7 +1403,7 @@ contains
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_mass_balance_areas
    
    logical, intent(in) :: overall_balance                          !< balance period: use the total begin arrays, or just the last period
@@ -1481,7 +1477,7 @@ contains
 
    subroutine mba_prepare_names_fluxes(imbs, imba)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1632,7 +1628,7 @@ contains
 
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1806,7 +1802,7 @@ contains
 
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1922,7 +1918,7 @@ contains
 
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -2038,7 +2034,7 @@ contains
       if (nfluxsys(isys) > 0) then
          do iflux = ipfluxsys(isys) + 1, ipfluxsys(isys) + nfluxsys(isys)
             jflux = fluxsys(iflux)
-            if(stochi(isys,jflux) >= 0.0) then
+            if (stochi(isys,jflux) >= 0.0) then
                flux(1) =  dble(stochi(isys,jflux)) * sum(p_flxdmp(1,jflux,:))
                flux(2) =  dble(stochi(isys,jflux)) * sum(p_flxdmp(2,jflux,:))
             else

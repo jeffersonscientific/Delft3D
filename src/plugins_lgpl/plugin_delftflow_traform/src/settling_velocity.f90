@@ -65,6 +65,9 @@ character(kind=c_char), intent(out) :: error_message_c(*) ! not empty: echo and 
 !
 character(len=256) :: error_message
 !
+! Initialize the output argument error_message since it MUST have value ' ' to continue the calculation.
+error_message = ' '
+!
 call core_function() ! Core function call 
 !
 call message2c(error_message, error_message_c)
@@ -146,7 +149,7 @@ vicmol  = dll_reals(17)    ! molecular viscosity of water [m2/s]
 h       = dll_reals(18)    ! water depth [m]
 um      = dll_reals(19)    ! m component of effective depth-averaged velocity [m/s]
 vm      = dll_reals(20)    ! n component of effective depth-averaged velocity [m/s]
-chezy   = dll_reals(21)    ! local Chézy value [m1/2/s]
+chezy   = dll_reals(21)    ! local ChÃ©zy value [m1/2/s]
 !
 if (max_strings < 2) then
    error_message = 'Insufficient strings provided by delftflow'
@@ -164,9 +167,6 @@ if (write_count < 100) then
       write(*,*) 'plugin_delftflow_traform.dll : message suppressed'
    endif
 endif
-! The output argument error_message MUST have value ' ' to continue the calculation.
-!
-error_message = ' '
 !
 ! If you want to indicate that this subroutine has encountered some invalid input or
 ! encountered some unexpected situation, you can set the error_message to a non-empty

@@ -80,6 +80,9 @@ logical               , intent(out) :: sbc_total          ! true: bed load magni
 !
 character(len=256) :: error_message
 !
+! Initialize the output argument error_message since it MUST have value ' ' to continue the calculation.
+error_message = ' '
+!
 call core_function() ! Core function call 
 !
 call message2c(error_message, error_message_c)
@@ -151,7 +154,7 @@ vvv     = dll_reals( 6)    ! n component of characteristic velocity [m/s]
 umod    = dll_reals( 7)    ! magnitude of characteristic velocity [m/s]
 zumod   = dll_reals( 8)    ! height above bed of characteristic velocity [m]
 h       = dll_reals( 9)    ! water depth [m]
-chezy   = dll_reals(10)    ! local Chézy value [m1/2/s]
+chezy   = dll_reals(10)    ! local ChÃ©zy value [m1/2/s]
 hrms    = dll_reals(11)    ! wave height [m]
 tp      = dll_reals(12)    ! wave period [s]
 teta    = dll_reals(13)    ! angle between wave dir and local grid orientation [deg]
@@ -189,9 +192,6 @@ if (write_count < 100) then
       write(*,*) 'plugin_delftflow_traform.dll : message suppressed'
    endif
 endif
-! The output argument error_message MUST have value ' ' to continue the calculation.
-!
-error_message = ' '
 !
 ! If you want to indicate that this subroutine has encountered some invalid input or
 ! encountered some unexpected situation, you can set the error_message to a non-empty
