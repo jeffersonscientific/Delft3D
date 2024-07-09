@@ -1276,7 +1276,7 @@ subroutine readMDUFile(filename, istat)
     case ('implicit1d')
        flow_solver=FLOW_SOLVER_SRE
     case default
-       call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
+       call mess(LEVEL_WARN, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
     end select
     
     !implicit1d
