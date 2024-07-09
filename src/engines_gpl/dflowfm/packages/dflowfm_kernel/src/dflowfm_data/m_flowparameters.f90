@@ -380,7 +380,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jaZerozbndinflowadvection=0 !< set zero advection velocity on inflow at z boundaries 0=no, 1=yes
  
  integer                           :: flow_solver !< 1=stepreduce, 2=1d implicit
- character(len=28)                 :: md_flow_solver           
+ character(len=28)                 :: md_flow_solver='generic1d2d3d'           
  integer, parameter                :: FLOW_SOLVER_FM = 1
  integer, parameter                :: FLOW_SOLVER_SRE = 2
  
