@@ -973,9 +973,10 @@ public :: fm_bott3d
    !!
    
    use sediment_basics_module
-   use m_flowgeom , only: nd, bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
+   use m_flowgeom , only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
    use m_flow, only: kmx, s1, vol1
-   use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, morfac, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor, nd_mor
+   use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, morfac, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
+   use m_fm_erosed, only: nd=>nd_mor
    use m_sediment, only: avalflux, ssccum
    use m_flowtimes, only: dts, dnt
    use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
@@ -1050,8 +1051,8 @@ public :: fm_bott3d
                !
                sumflux = 0d0
                if (kmx>0) then
-                  do ii=1,nd_mor(nm)%lnx
-                     LL = nd_mor(nm)%ln(ii)
+                  do ii=1,nd(nm)%lnx
+                     LL = nd(nm)%ln(ii)
                      Lf = iabs(LL)
                      call getLbotLtop(Lf,Lb,Lt)
                      if (Lt<Lb) cycle
@@ -1063,8 +1064,8 @@ public :: fm_bott3d
                      call fm_sumflux(LL,sumflux,flux)
                   end do
                else
-                  do ii=1,nd_mor(nm)%lnx
-                     LL = nd_mor(nm)%ln(ii)
+                  do ii=1,nd(nm)%lnx
+                     LL = nd(nm)%ln(ii)
                      Lf = iabs(LL)
 
                      flux = fluxhortot(j,Lf)
@@ -1103,8 +1104,8 @@ public :: fm_bott3d
                ! add suspended transport correction vector
                !
                sumflux = 0d0
-               do ii=1,nd_mor(nm)%lnx
-                  LL = nd_mor(nm)%ln(ii)
+               do ii=1,nd(nm)%lnx
+                  LL = nd(nm)%ln(ii)
                   Lf = iabs(LL)
                   flux = e_scrn(Lf,l)*wu(Lf)
                   call fm_sumflux(LL,sumflux,flux)  
@@ -1114,8 +1115,8 @@ public :: fm_bott3d
          endif
          if (bed /= 0.0d0) then
             sumflux = 0d0
-            do ii=1,nd_mor(nm)%lnx
-               LL = nd_mor(nm)%ln(ii)
+            do ii=1,nd(nm)%lnx
+               LL = nd(nm)%ln(ii)
                Lf = iabs(LL)
                flux = e_sbn(Lf,l)*wu_mor(Lf)
                call fm_sumflux(LL,sumflux,flux)
@@ -1125,8 +1126,8 @@ public :: fm_bott3d
          !
          if (duneavalan) then   ! take fluxes out of timestep restriction
             sumflux = 0d0       ! drawback: avalanching fluxes not included in total transports
-            do ii=1,nd_mor(nm)%lnx
-               LL = nd_mor(nm)%ln(ii)
+            do ii=1,nd(nm)%lnx
+               LL = nd(nm)%ln(ii)
                Lf = iabs(LL)
                flux = avalflux(Lf,l)*wu_mor(Lf)
                call fm_sumflux(LL,sumflux,flux)
@@ -1683,7 +1684,8 @@ public :: fm_bott3d
    subroutine sum_current_wave_transport_links()
 
    use sediment_basics_module
-   use m_fm_erosed, only: lnx_mor, lsedtot, e_sbn, e_sbt, e_sbcn, e_sbwn, e_sswn, tratyp, e_sbct, e_sbwt, e_sswt
+   use m_fm_erosed, only: lsedtot, e_sbn, e_sbt, e_sbcn, e_sbwn, e_sswn, tratyp, e_sbct, e_sbwt, e_sswt
+   use m_fm_erosed, only: lnx=>lnx_mor
    
    implicit none
    
@@ -1701,7 +1703,7 @@ public :: fm_bott3d
    e_sbt(:,:) = 0d0
    do l = 1,lsedtot
       if (has_bedload(tratyp(l))) then
-         do nm = 1, lnx_mor
+         do nm = 1, lnx
             e_sbn(nm, l) = e_sbcn(nm, l) + e_sbwn(nm, l) + e_sswn(nm, l)
             e_sbt(nm, l) = e_sbct(nm, l) + e_sbwt(nm, l) + e_sswt(nm, l)
          enddo
