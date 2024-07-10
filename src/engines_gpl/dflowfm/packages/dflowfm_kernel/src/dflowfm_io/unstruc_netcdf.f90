@@ -3682,13 +3682,14 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
            ierr = nf90_put_att(irstfile, id_poros ,  'long_name'    , 'Porosity of layer of the bed in flow cell center')
            ierr = nf90_put_att(irstfile, id_poros ,  'units'        , '-')
          endif
-       end select
-         
-       ierr = nf90_def_var(irstfile, 'sedshort' , nf90_double, (/ id_sedtotdim , id_flowelemdim , id_timedim /) , id_sedshort)
-       ierr = nf90_put_att(irstfile, id_sedshort ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
-       ierr = nf90_put_att(irstfile, id_sedshort ,  'long_name'    , 'Sediment shortage of transport layer in flow cell center')
-       ierr = nf90_put_att(irstfile, id_sedshort ,  'units'        , 'kg m-2')
+      end select
 
+      if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         ierr = nf90_def_var(irstfile, 'sedshort' , nf90_double, (/ id_sedtotdim , id_flowelemdim , id_timedim /) , id_sedshort)
+         ierr = nf90_put_att(irstfile, id_sedshort ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_sedshort ,  'long_name'    , 'Sediment shortage of transport layer in flow cell center')
+         ierr = nf90_put_att(irstfile, id_sedshort ,  'units'        , 'kg m-2')
+      endif 
        ! Fluff layers
        if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
           ierr = nf90_def_var(irstfile, 'mfluff' , nf90_double, (/id_sedsusdim, id_flowelemdim, id_timedim /) , id_mfluff)
@@ -4717,7 +4718,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
           endif
        end select
        ! sedshort
-       ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), (/ 1, 1, itim /), (/ stmpar%lsedtot, ndxi, 1 /))
+       if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+          ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), (/ 1, 1, itim /), (/ stmpar%lsedtot, ndxi, 1 /))
+       endif    
        ! mfluff
        if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
             do l = 1, stmpar%lsedsus
@@ -6027,8 +6030,10 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
                endif
                !
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_preload , nc_precision, UNC_LOC_S, 'preload'  , '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids = (/ mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
-         end select
-         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort' , '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids = (/ mapids%id_tsp%id_sedtotdim, -2, -1 /), jabndnd=jabndnd_)
+            end select
+         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort' , '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids = (/ mapids%id_tsp%id_sedtotdim, -2, -1 /), jabndnd=jabndnd_)
+         endif 
          !
          if (stmpar%morpar%moroutput%taub) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_taub  , nc_precision, UNC_LOC_S, 'taub'  , '', 'Bed shear stress for morphology', 'N m-2', dimids = (/ -2, -1 /), jabndnd=jabndnd_)
@@ -7327,8 +7332,9 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
       case default
          ! do nothing
       end select
-      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sedshort, UNC_LOC_S, stmpar%morlyr%state%sedshort, locdim=2, jabndnd=jabndnd_)
-
+      if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sedshort, UNC_LOC_S, stmpar%morlyr%state%sedshort, locdim=2, jabndnd=jabndnd_)
+      endif
       if (stmpar%morpar%moroutput%taub) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_taub  , UNC_LOC_S, sedtra%taub, jabndnd=jabndnd_)
       endif
