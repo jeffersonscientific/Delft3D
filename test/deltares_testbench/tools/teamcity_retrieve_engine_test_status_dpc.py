@@ -340,7 +340,7 @@ def get_test_result_list(log_file: TextIOWrapper, engine_cases: EngineCaseList) 
                                 test_overview[i].test_result.exception += 1
                                 test_overview[i].exceptions.append(xml_test_occ.attrib["name"])
                     except:
-                        error_message = f"ERROR retrieving data from last build for {engine_cases.list[i].name} : {xml_test_occ.attrib["name"]}."
+                        error_message = f"ERROR retrieving data from last build for {engine_cases.list[i].name} : {xml_test_occ.attrib['name']}."
                         print(error_message)
                         lprint(log_file, error_message)
 
