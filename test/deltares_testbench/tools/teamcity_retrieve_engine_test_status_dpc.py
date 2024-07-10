@@ -11,10 +11,6 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 """
-Author: Jan Mooiman
-E-Mail: jan.mooiman@deltares.nl
-Date  : 10 sep 2017
-
 This script list the test bench results with status: passed, failed, exception, ignored and muted.
 The percentage is computed as follows: the passed tests divide by the total number of tests
 
