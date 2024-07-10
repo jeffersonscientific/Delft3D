@@ -12,7 +12,7 @@ set keep_build=
 rem Non-argument variables
 set generator=
 set cmake=cmake
-set ifort=
+set oneapi=
 
 rem Argument variables
 set -help=
@@ -37,7 +37,7 @@ call :check_cmake_installation
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 echo.
-echo     ifort       : !ifort!
+echo     oneapi      : !oneapi!
 echo     vs          : !vs!
 echo     config      : !config!
 echo     generator   : !generator!
@@ -82,7 +82,7 @@ rem === Command line arguments    ===
 rem =================================
 :get_arguments
     echo.
-    echo Get command line arguments ...
+    echo Get command line arguments...
 
     rem Read arguments
     set "options=-config:!config! -help:!help! -vs:!vs! -coverage:!coverage! -build:!build! -build_type:!build_type! -keep_build:!keep_build!"
@@ -157,39 +157,39 @@ rem === Get environment variables ===
 rem =================================
 :get_environment_vars
     echo.
-    echo Attempting to find latest versions of ifort and Visual Studio based on environment variables ...
+    echo Attempting to find latest versions of Intel OneAPI and Visual Studio based on environment variables...
 
     if NOT "%IFORT_COMPILER16%" == "" (
-        set ifort=16
+        set oneapi=16
         echo Found: Intel Fortran 2016
     )
     if NOT "%IFORT_COMPILER18%" == "" (
-        set ifort=18
+        set oneapi=18
         echo Found: Intel Fortran 2018
     )
     if NOT "%IFORT_COMPILER19%" == "" (
-        set ifort=19
+        set oneapi=19
         echo Found: Intel Fortran 2019
     )
     if NOT "%IFORT_COMPILER21%" == "" (
-        set ifort=21
+        set oneapi=21
         echo Found: Intel Fortran 2021
     )
     if NOT "%IFORT_COMPILER23%" == "" (
-        set ifort=23
+        set oneapi=23
         echo Found: Intel Fortran 2023
     )
     if NOT "%IFORT_COMPILER24%" == "" (
-        set ifort=24
+        set oneapi=24
         echo Found: Intel Fortran 2024
     )
 
-    if "!ifort!" == "" (
-        echo Warning: Could not find ifort version in environment.
+    if "!oneapi!" == "" (
+        echo Warning: Could not find Intel OneAPI version in environment.
     )
 
-    if "!ifort!" == "" (
-        echo Error: ifort not set. Please ensure that ifort is installed and run build.bat from a prompt with the right environment set.
+    if "!oneapi!" == "" (
+        echo Error: oneapi not set. Please ensure that Intel OneAPI is installed and run build.bat from a prompt with the right environment set.
         set ERRORLEVEL=1
         goto :end
     )
@@ -260,7 +260,7 @@ rem ================================
         echo !cmake! version: !var1:~13,20!
     ) else (
 
-        echo !cmake! not found, trying with default path ...
+        echo !cmake! not found, trying with default path...
         set cmake="c:/Program Files/CMake/bin/cmake"
         set count=1
         for /f "tokens=* usebackq" %%f in (`!cmake! --version`) do (
@@ -326,7 +326,7 @@ rem =======================
         set ERRORLEVEL=1
         goto :end
     )
-    echo Calling vcvarsall.bat for VisualStudio %vs% ...
+    echo Calling vcvarsall.bat for VisualStudio %vs%...
     call "!VS%vs%INSTALLDIR!\VC\Auxiliary\Build\vcvarsall.bat" amd64
 
     rem # Execution of vcvarsall results in a jump to the C-drive. Jump back to the script directory
@@ -341,7 +341,7 @@ rem =======================
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
     call :create_cmake_dir build_!config!
-    echo Running CMake for !config! ...
+    echo Running CMake for !config!...
     !cmake! -S .\src\cmake -B build_!config! !cmake_generator_arg! -A x64 -D CONFIGURATION_TYPE:STRING="!config!" -D CMAKE_INSTALL_PREFIX=.\install_!config!\ 1>build_!config!\cmake_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
@@ -361,7 +361,7 @@ rem =======================
     if %build% EQU 0 goto :eof
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
-    echo Building !config! ...
+    echo Building !config!...
     !cmake! --build build_!config! --config !build_type! 1>build_!config!\build_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
@@ -372,7 +372,7 @@ rem =======================
 :create_cmake_dir
     cd /d %root%
     if %keep_build% == 0 (
-        echo Cleaning directories %root%\build_%config% and %root%\install_%config% ...
+        echo Cleaning directories %root%\build_%config% and %root%\install_%config%...
         if exist "%root%\build_%config%\" rmdir /s/q "%root%\build_%config%\" > del.log 2>&1
         if exist "%root%\install_%config%\" rmdir /s/q "%root%\install_%config%\" > del.log 2>&1
     )
@@ -388,7 +388,7 @@ rem =======================
     if !ERRORLEVEL! NEQ 0 goto :eof
 
     echo.
-    echo Installing !config! ...
+    echo Installing !config!...
     !cmake! --install build_%config% --config !build_type! 1>build_!config!\install_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
