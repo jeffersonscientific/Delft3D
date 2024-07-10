@@ -134,7 +134,7 @@ class ConfigurationTestResult(object):
     def __init__(
         self,
         name: str,
-        build_nr: int,
+        build_nr: str,
         passed: int,
         failed: int,
         ignored: int,
@@ -385,9 +385,9 @@ def create_configuration_test_result(build: ET.Element, name: str, status_text: 
     -------
         ConfigurationTestResult: configuration test result from XML.
     """
-    build_nr = 0
+    build_nr = ""
     if "number" in build.attrib:
-        build_nr = int(build.attrib["number"])
+        build_nr = build.attrib["number"]
     if build.find(TEST_OCCURRENCES) is not None:
         passed = get_number_of_tests(build, "passed")
         failed = get_number_of_tests(build, "failed")
@@ -398,7 +398,7 @@ def create_configuration_test_result(build: ET.Element, name: str, status_text: 
         failed = 0
         ignored = 0
         muted = 0
-    return ConfigurationTestResult(name, int(build_nr), passed, failed, ignored, muted, status_text)
+    return ConfigurationTestResult(name, build_nr, passed, failed, ignored, muted, status_text)
 
 
 def get_configuration_info(xml_engine_root: ET.Element, given_build_config: str) -> List[ConfigurationInfo]:
