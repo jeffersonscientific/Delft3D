@@ -36,6 +36,7 @@
       use m_hydmod
       use rd_token       ! tokenized reading
       use m_string_utils, only: index_in_array
+      use Ieee_arithmetic, only: ieee_value, ieee_quiet_nan, ieee_is_finite
 
       implicit none
 
@@ -227,9 +228,9 @@
       hyd%num_exchanges_z_dir = 0
       hyd%num_exchanges_bottom_dir = 0
       hyd%num_exchanges  = 0
-      hyd%zbot = -999.0
-      hyd%ztop = -999.0
-!
+
+      hyd%zbot = ieee_value(hyd%zbot, ieee_quiet_nan)
+      hyd%ztop = ieee_value(hyd%ztop, ieee_quiet_nan)
 
       ! loop over all the tokens in the file
 
@@ -693,6 +694,20 @@
          hyd%num_rows = 1
       endif
 
+      ! check for ztop and zbot keywords
+
+      if ( hyd%layer_type == HYD_LAYERS_Z ) then
+         if ( .not. ieee_is_finite(hyd%zbot) .or. .not. ieee_is_finite(hyd%ztop) ) then
+            call write_error_message('Error: hyd-file with z-layers should contain values for '// &
+                     'keywords "z-layers-ztop" and "z-layers-zbot"')
+         endif
+         if ( hyd%zbot >=  hyd%ztop ) then
+            call write_error_message('Error: the value for "z-layers-ztop" in the hyd-file ' // &
+                     'should be larger than the value for "z-layers-bot"')
+         endif
+      endif
+
       return
- 900  call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
+ 900  continue
+      call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
       end subroutine read_hyd
