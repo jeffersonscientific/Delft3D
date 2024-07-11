@@ -457,7 +457,7 @@ rem =======================
     echo.
     echo.
     echo.
-    echo ERROR: Please check the log files in the build_%config% directory.
+    echo ERROR: Please check previous error messages and the CMake output in build_%config%\cmake_%config%.log.
     goto :eof
 
 rem =======================
