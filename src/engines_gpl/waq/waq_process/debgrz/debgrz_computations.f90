@@ -656,8 +656,11 @@ module m_debgrz_computations
         real(kind=real_wp), intent(in   ) :: fpgrosmo !< Growth-based contribution to shell matrix      [-]
         real(kind=real_wp), intent(in   ) :: fpdissmo !< Dissipation-based contribution to shell matrix [-]
         real(kind=real_wp), intent(in   ) :: ycacosmo !< Yield coefficient CaCO3 deposition on matrix   [-]
+
+! AM: for the second round
 !        real(kind=real_wp), intent(in   ) :: satarg   !< aragonite saturation state                           [-]
 !        real(kind=real_wp), intent(in   ) :: ksat     !< half sat const for reduced aragonite precipitation   [-]
+
         real(kind=real_wp), intent(  out) :: ddis     !< Dissipation flux (not the same as respiration!)[J/ind/d]
         real(kind=real_wp), intent(  out) :: pomm     !< Energy flux to organic shell matrix            [J/ind/d]
         real(kind=real_wp), intent(  out) :: pca      !< Energy flux to calcification of shell matrix   [J/ind/d]
