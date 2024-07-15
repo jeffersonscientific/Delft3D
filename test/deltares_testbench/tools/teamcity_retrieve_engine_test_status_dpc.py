@@ -554,7 +554,7 @@ def log_engine(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTe
     log_to_file(log_file, f"        {name}")
     log_to_file(
         log_file,
-        HEADER_FMT.format("total", "passed", "failed", "except", "ignored", "muted", "", "test case name", "build"),
+        HEADER_FMT.format("total", "passed", "failed", "except", "ignored", "muted", "%", "test case name", "build"),
     )
     for configuration_line in engines:
         log_coniguration_line(log_file, configuration_line)
@@ -701,7 +701,7 @@ if __name__ == "__main__":
     if os.path.exists(TEST_RESULT_FOLDER):
         shutil.rmtree(TEST_RESULT_FOLDER)
 
-    log_to_file(log_file, f"Start: {start_time}")
+    log_to_file(log_file, f"\nStart: {start_time}")
     log_to_file(log_file, f"End  : {datetime.now()}")
     log_to_file(log_file, "Ready")
     print(f"\nStart: {start_time}")
