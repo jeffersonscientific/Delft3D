@@ -3032,8 +3032,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_ucxqbnd, id_ucyqbnd, &
         id_fvcoro, &
         id_rho, id_rho_bnd, &
-        id_rhowat, id_rhowat_bnd, & 
-        id_cellidx, id_cellidx_bnd
+        id_rhowat, id_rhowat_bnd
 
     integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
     integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
@@ -3576,19 +3575,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     endif
 
     ndx1d = ndxi - ndx2d
-
-    ! 3D cell index
-    ierr = nf90_def_var(irstfile, 'cellidx',  nf90_double, id1 , id_cellidx)
-    ierr = nf90_put_att(irstfile, id_cellidx,   'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
-    ierr = nf90_put_att(irstfile, id_cellidx,   'long_name'    , 'Cell index')
-    ierr = nf90_put_att(irstfile, id_cellidx,   'units'        , ' ')             
-    if (jarstbnd > 0 .and. ndxbnd > 0) then
-       ierr = nf90_def_var(irstfile, 'cellidx_bnd',  nf90_double, id1_bnd , id_cellidx_bnd) 
-       ierr = nf90_put_att(irstfile, id_cellidx_bnd,   'coordinates'  , 'FlowElem_xbnd FlowElem_ybnd')
-       ierr = nf90_put_att(irstfile, id_cellidx_bnd,   'long_name'    , 'Cell index at boundaries')
-       ierr = nf90_put_att(irstfile, id_cellidx_bnd,   'units'        , ' ')    
-    endif !(jarstbnd > 0 .and. ndxbnd > 0) then    
-    
+   
     if (jased > 0 .and. stm_included) then
        ierr = nf90_def_dim(irstfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
        ierr = nf90_def_dim(irstfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
@@ -4684,7 +4671,6 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
               endif
           endif !(jarstbnd > 0 .and. ndxbnd > 0)
           ! 
-          ierr = unc_put_var_rst(irstfile, id_cellidx, id_cellidx_bnd, cellidx, itim)
           ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
           if (stmpar%morpar%densin) then
              ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
@@ -13171,8 +13157,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
                id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
                id_ucxqbnd, id_ucyqbnd, &
                id_fvcoro, &
-               id_rhobnd, id_rhowatbnd, & 
-               id_cellidxbnd
+               id_rhobnd, id_rhowatbnd
 
     integer :: id_tmp
     integer :: layerfrac, layerthk
@@ -13525,17 +13510,6 @@ subroutine unc_read_map_or_rst(filename, ierr)
         ucxyq_read_rst=.false.
     endif
 
-    cellidx = -999.0 
-    ierr = get_var_and_shift(imapfile, 'cellidx', cellidx, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
-                             um%inode_own, um%inode_merge)
-
-    ierr = nf90_inq_varid(imapfile, 'cellidx_bnd', id_cellidxbnd)
-    if (ierr==0) then
-        ierr = get_var_and_shift(imapfile, 'cellidx_bnd', cellidx, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
-                         um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
-        call check_error(ierr, 'cellidx_bnd')
-    endif
-    
     ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
     rho_read_rst=.true.
 
