@@ -536,7 +536,6 @@ contains
          real(hp) :: max_search_radius
          real(hp), pointer, dimension(:) :: x_array
          real(hp), pointer, dimension(:) :: y_array
-         real(kind=hp) :: max_search_radius
 
          res = .false.
 
@@ -610,7 +609,7 @@ contains
          call prop_get(node_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
 
          filetype = convert_file_type_string_to_integer(forcing_file_type)
-         success = scan_for_heat_quantities(quantity, heat_forcing_type, mask, kx)
+         success = scan_for_heat_quantities(quantity, mask, kx)
          if (.not. success) then
 
             select case (quantity)
