@@ -133,7 +133,7 @@ module m_oned_functions
          call set_structure_grid_numbers()
          call timstop(handle)
       
-         if (jased > 0 .and. stm_included) then
+         if ((jased > 0 .and. stm_included).or.(flow_solver == FLOW_SOLVER_SRE)) then !V: this test is also done in <set_cross_sections_to_gridpoints>. Isn't it redundant?
             ! 
             handle = 0
             call timstrt('Set cross sections to grid points', handle)
@@ -239,6 +239,7 @@ module m_oned_functions
       use m_GlobalParameters, only: INDTP_ALL
       use m_partitioninfo, only: jampi
       use m_inquire_flowgeom
+      use m_find_flownode, only: find_nearest_flownodes
 
       implicit none
 
@@ -277,7 +278,7 @@ module m_oned_functions
       
       if (nxy > 0) then ! find flow nodes for storage nodes that are defined by x-, y-coordinates
          jakdtree = 1
-         call find_flownode(nxy, x_tmp(1:nxy), y_tmp(1:nxy), name_tmp(1:nxy), k_tmp(1:nxy), jakdtree, 0, INDTP_1D)
+         call find_nearest_flownodes(nxy, x_tmp(1:nxy), y_tmp(1:nxy), name_tmp(1:nxy), k_tmp(1:nxy), jakdtree, 0, INDTP_1D)
          do i = 1, nxy
             if (k_tmp(i) > 0) then
                pstor => network%storS%stor(ixy2stor(i))
@@ -300,7 +301,7 @@ module m_oned_functions
    subroutine set_structure_grid_numbers()
       use unstruc_channel_flow
       use m_flowgeom
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_inquire_flowgeom
 
       implicit none
@@ -327,6 +328,7 @@ module m_oned_functions
       use m_flowgeom
       use m_sediment
       use messageHandling
+      use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
 
       implicit none
 
@@ -346,7 +348,7 @@ module m_oned_functions
       ! cross sections (in case of sediment transport every gridpoint requires a unique
       ! cross section)
       line2cross => network%adm%line2cross
-      if (jased > 0 .and. stm_included) then
+      if ((jased > 0 .and. stm_included).or.(flow_solver == FLOW_SOLVER_SRE)) then
          if (allocated(gridpoint2cross)) deallocate(gridpoint2cross)
          allocate(gridpoint2cross(ndxi))
          do i = 1, ndxi

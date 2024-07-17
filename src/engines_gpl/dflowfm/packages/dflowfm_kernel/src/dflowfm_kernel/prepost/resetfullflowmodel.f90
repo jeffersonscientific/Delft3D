@@ -38,7 +38,7 @@
  use m_physcoef
  use m_turbulence
  use m_flow
- use m_flowexternalforcings
+ use fm_external_forcings_data
  use m_flowparameters
  use m_flowgeom
  use m_modelbounds
@@ -71,12 +71,15 @@
  use m_sferic, only : default_sferic
  use m_1d2d_fixedweirs, only : default_1d2d_fixedweirs
  use m_lateral, only : default_lateral
+ use m_f1dimp
+ use fm_statistical_output
+ use fm_deprecated_keywords, only: default_fm_deprecated_keywords
  use m_sediment, only : deallocgrains, default_sediment
  implicit none
 
     ! Only reset counters and other scalars, allocatables should be
     ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
-
+    call default_fm_deprecated_keywords()
 
     call init_unstruc_netcdf()
 
@@ -123,7 +126,7 @@
 
     call default_modelbounds()
 
-    call default_flowexternalforcings()
+    call default_fm_external_forcing_data()
 
     call default_channel_flow()
 
@@ -142,6 +145,11 @@
     call default_xbeach_avgoutput()
 
     call default_save_ugrid_state()
+    
+    call default_fm1dimp()
+    
+    call default_fm_statistical_output()
+
 
     call default_nearfieldData()
     
