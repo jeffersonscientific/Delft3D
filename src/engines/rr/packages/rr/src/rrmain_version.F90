@@ -1,3 +1,4 @@
+#include "rr_version.h"
 module rrmain_version_module
 !----- LGPL --------------------------------------------------------------------
 !
@@ -31,10 +32,10 @@ module rrmain_version_module
 
     implicit none
 
-    character(*),  public, parameter :: rrmain_major        = '3'
-    character(*),  public, parameter :: rrmain_minor        = '216'
-    character(*),  public, parameter :: rrmain_revision     = '65'
-    character(*),  public, parameter :: rrmain_build_number = '78867'
+    character(*),  public, parameter :: rrmain_major        = MAJOR_STR
+    character(*),  public, parameter :: rrmain_minor        = MINOR_STR
+    character(*),  public, parameter :: rrmain_revision     = REVISION_STR
+    character(*),  public, parameter :: rrmain_build_number = BUILD_NR
 
 #if defined(W32)
     character(*),  public, parameter :: rrmain_architecture = '(Win32)'
@@ -48,10 +49,10 @@ module rrmain_version_module
     character(*),  public, parameter :: rrmain_architecture = '(Unknown)'
 #endif
 
-    character(*),  public, parameter :: rrmain_company      = 'Deltares'
-    character(*),  public, parameter :: rrmain_company_url  = 'http://www.deltares.nl'
-    character(*),  public, parameter :: rrmain_program      = 'RainfallRunoff'
-    character(*),  public, parameter :: rrmain_programname  = 'RainfallRunoff'  ! use in about box and window title
+    character(*),  public, parameter :: rrmain_company      = COMPANY_NAME
+    character(*),  public, parameter :: rrmain_company_url  = COMPANY_URL
+    character(*),  public, parameter :: rrmain_program      = PRODUCT_NAME
+    character(*),  public, parameter :: rrmain_programname  = PRODUCT_NAME  ! use in about box and window title
 
     character(*),  public, parameter :: rrmain_version      = rrmain_major//'.'//rrmain_minor//'.'//rrmain_revision//'.'//rrmain_build_number//' '//rrmain_architecture
     character(*),  public, parameter :: rrmain_version_full = 'Deltares, '//rrmain_program//' Version '//rrmain_version//', '//__DATE__//', '//__TIME__
