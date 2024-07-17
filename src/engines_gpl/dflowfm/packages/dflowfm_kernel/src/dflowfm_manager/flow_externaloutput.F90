@@ -129,7 +129,7 @@
            end if
         end if
 
-        if (jaeverydt == 0) then
+        if (jaeverydt == 0 .or. (comparereal(time1, ti_maps, eps10) == 0)) then
            if (jamapFlowAnalysis > 0) then
               ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
               call updateFlowAnalysisParameters()
