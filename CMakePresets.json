@@ -122,7 +122,7 @@
       }
     },
     {
-      "name": "dwaq",
+      "name": "dwaq-visual-studio",
       "inherits": "windows-visual-studio",
       "displayName": "D-WAQ/D-PART IFORT win64",
       "description": "Configure D-WAQ/D-PART using Visual Studio 17 2022 generator",
@@ -131,9 +131,9 @@
       }
     },
     {
-      "name": "dwaq2",
-      "inherits": "linux",
-      "displayName": "D-WAQ/D-PART IFORT linux",
+      "name": "dwaq-ninja",
+      "inherits": "windows-ninja",
+      "displayName": "D-WAQ/D-PART IFORT win64 Ninja",
       "description": "Configure D-WAQ/D-PART using Ninja generator",
       "cacheVariables": {
         "CONFIGURATION_TYPE": "dwaq"
@@ -177,10 +177,16 @@
       "targets": "install"
     },
     {
-      "name": "build-dwaq",
-      "displayName": "Build D-Waq/D-Part",
+      "name": "build-dwaq-visual-studio",
+      "displayName": "Build D-Waq/D-Part with Visual Studio",
       "inherits": "build-base",
-      "configurePreset": "dwaq"
+      "configurePreset": "dwaq-visual-studio"
+    },
+    {
+      "name": "build-dwaq-ninja",
+      "displayName": "Build D-Waq/D-Part with Ninja",
+      "inherits": "build-base",
+      "configurePreset": "dwaq-ninja"
     },
     {
       "name": "build-dimr",
