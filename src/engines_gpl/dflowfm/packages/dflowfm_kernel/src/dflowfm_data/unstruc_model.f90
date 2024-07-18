@@ -732,7 +732,7 @@ subroutine readMDUFile(filename, istat)
     use m_read_statistical_output, only: read_output_parameter_toggle
     use fm_deprecated_keywords, only: deprecated_mdu_keywords
     use m_deprecation, only: check_file_tree_for_deprecated_keywords
-    
+    use m_f1dimp, only: f1dimppar
     use m_map_his_precision
 
     character(*), intent(in)  :: filename !< Name of file to be read (the MDU file must be in current working directory).
