@@ -58,6 +58,7 @@ contains
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -608,8 +609,9 @@ contains
 
          filetype = convert_file_type_string_to_integer(forcing_file_type)
          success = scan_for_heat_quantities(quantity, mask, kx)
-         if (.not. success) then
-
+         if (success) then
+            is_data_on_p_points = .true.
+         else
             select case (quantity)
             case ('airpressure', 'atmosphericpressure')
                kx = 1
@@ -816,12 +818,12 @@ contains
 
    !> Scan the quantity name for heat relatede quantities.
    function scan_for_heat_quantities(quantity, mask, kx) result(success)
+      use precision_basics, only: dp
       use fm_external_forcings_data, only: tair_available, dewpoint_available, solrad_available, longwave_available
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
       use m_wind, only: tair, clou, rhum, qrad, longwave, jatair, jaclou, jarhum
       use m_flowgeom, only: ndx, kcs
       use m_alloc, only: aerr, realloc
-      use m_alloc, only:
 
       character(len=*), intent(in) :: quantity !< Name of the data set.
       integer, dimension(:), intent(inout) :: mask !< Mask array for the quantity.
