@@ -36,7 +36,7 @@
     integer :: mthd, mout
     double precision :: z = 9999d0
     character(len=132) :: rec
-    integer :: m, n, m2, n2, mn, mx, nn, nx, i
+    integer :: m, n
 
 10  read (mthd, '(a)', end=999) rec
 

@@ -1762,7 +1762,6 @@ contains
       !
       integer :: itim !< Time (seconds) since simulation start.
       integer, save :: itim_prev = -1
-      integer :: L
       !
    !! executable statements -------------------------------------------------------
       !

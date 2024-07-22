@@ -644,7 +644,7 @@ contains
       use m_sferic, only: pi
       use m_physcoef, only: ag
       use m_flowtimes, only: dt_user, tfac
-      use m_flow, only: kmx, s1, u1, u0, hs, z0ucur, z0urou, frcu, ifrcutp, hu, ucx_mor, ucy_mor, zws, lnkx
+      use m_flow, only: kmx, s1, u0, hs, z0urou, ucx_mor, ucy_mor, zws, lnkx
       use m_flowgeom, only: ndx, bl, ndxi, lnx, lnxi, wcl, ln
       use m_flowparameters, only: v2dwbl, epshs, jawave, flowWithoutWaves, epsz0
       use m_sediment
@@ -998,8 +998,7 @@ contains
    subroutine fm_advecbedform(thevar, uadv, qadv, bedform_sour, bedform_sink, limityp, ierror)
       use m_transport
       use m_flowgeom, only: Ndx, Lnx, ln, ba, wu ! static mesh information
-      use m_flow, only: Ndkx, Lnkx, qw, zws, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, plotlin, vol1, epshu
-      use m_flowtimes, only: ja_timestep_auto
+      use m_flow, only: Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, kmxn, kmxL, vol1, epshu
       use m_transport
       use m_alloc
       use precision
