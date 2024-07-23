@@ -88,6 +88,7 @@
            hwav = hwavcom
          endif
          hwav = min(hwav, gammax*hs)
+         twav = twavcom
          !
          ! Needed here, because we need wave mass fluxes to calculate stokes drift
          if (jawave==7) then
@@ -117,6 +118,7 @@
           hwav = hwavcom
         endif
         hwav = min(hwav, gammax*hs)
+        twav = twavcom
         call wave_uorbrlabda()                       ! hwav gets depth-limited here
       end if
       !

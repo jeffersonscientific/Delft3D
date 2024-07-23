@@ -1216,7 +1216,6 @@ contains
       use mathconsts, only: sqrt2_hp
       use m_waves                !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
       use m_flowgeom, only: lnx, ln, csu, snu, ndx
-      use m_sferic, only: dg2rd
       use m_physcoef, only: ag
       use m_transform_wave_physics
 
@@ -1294,8 +1293,8 @@ contains
                hh = hu(link)
                hw = 0.5d0 * (hwav(left_node) + hwav(right_node))
                tw = 0.5d0 * (twav(left_node) + twav(right_node))
-               csw = 0.5 * (cos(phiwav(left_node) * dg2rd) + cos(phiwav(right_node) * dg2rd))
-               snw = 0.5 * (sin(phiwav(left_node) * dg2rd) + sin(phiwav(right_node) * dg2rd))
+               csw = 0.5 * (cosd(phiwav(left_node)) + cosd(phiwav(right_node)))
+               snw = 0.5 * (sind(phiwav(left_node)) + sind(phiwav(right_node)))
                call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
                ustokes(link) = ustt * (csu(link) * csw + snu(link) * snw)
                vstokes(link) = ustt * (-snu(link) * csw + csu(link) * snw)
