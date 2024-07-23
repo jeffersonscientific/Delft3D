@@ -162,7 +162,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
       allocate (qout_over_laterals(max(1, kmx), numlatsg, ndxi), stat=iostat)
       call aerr('qout_over_laterals', iostat, numlatsg * ndxi, 'fill_constituents')
 
-      ! TODO ZSF: this can be simplified by using qqlat(numlayer, numlatsg, ndx)
+      ! TODO UNSY-8062: this can be simplified by using qqlat(numlayer, numlatsg, ndx)
       call get_lateral_discharge(qin_over_laterals, qout_over_laterals, vol1)
       call add_lateral_load_and_sink(const_sour, const_sink, qin_over_laterals, qout_over_laterals, vol1, dtol)
 
