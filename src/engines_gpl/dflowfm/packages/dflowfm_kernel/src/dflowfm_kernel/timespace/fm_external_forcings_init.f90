@@ -59,7 +59,7 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT, DFM_NOTIMPLEMENTED
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
@@ -525,10 +525,9 @@ contains
          logical :: res
 
          integer, allocatable :: mask(:)
-         integer, allocatable :: selected_nodes(:)
-         integer :: number_of_selected_nodes, node
+         integer, allocatable :: selected_points(:)
+         integer :: number_of_selected_points, point
          logical :: invert_mask
-         logical :: is_data_on_p_points
          logical :: is_variable_name_available
          logical :: is_extrapolation_allowed
          character(len=INI_KEY_LEN) :: variable_name
@@ -547,13 +546,6 @@ contains
          call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
          if (.not. is_successful) then
             write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-            call warn_flush()
-            return
-         end if
-         ierr = get_quantity_target_properties(quantity, target_location_type, target_num_points, target_x, target_y, target_mask)
-         if (ierr /= DFM_NOERR) then
-            write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
-               ']. Line ''quantity = ', trim(quantity), ''' contains an unknown quantity.'
             call warn_flush()
             return
          end if
@@ -627,7 +619,7 @@ contains
 
          success = scan_for_heat_quantities(quantity, kx)
          if (success) then
-            is_data_on_p_points = .true.
+            continue
          else
             select case (quantity)
             case ('airdensity')
@@ -638,12 +630,10 @@ contains
                end if
             case ('airpressure', 'atmosphericpressure')
                kx = 1
-               is_data_on_p_points = .true.
                ierr = allocate_patm(0._hp)
 
             case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
                kx = 1
-               is_data_on_p_points = .true.
                call allocatewindarrays()
 
                jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
@@ -665,7 +655,6 @@ contains
 
             case ('charnock')
                kx = 1
-               is_data_on_p_points = .true.
                if (.not. allocated(ec_charnock)) then
                   allocate (ec_charnock(ndx), stat=ierr, source=0d0)
                   call aerr('ec_charnock(ndx)', ierr, ndx)
@@ -677,14 +666,13 @@ contains
 
             case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
                kx = 1
-               is_data_on_p_points = .false.
+               target_location_type = UNC_LOC_U
                call allocatewindarrays()
 
                jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
 
             case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
                kx = 1
-               is_data_on_p_points = .true.
                if (.not. allocated(rain)) then
                   allocate (rain(ndx), stat=ierr, source=0d0)
                   call aerr('rain(ndx)', ierr, ndx)
@@ -730,34 +718,6 @@ contains
             end select
          end if
 
-         if (is_data_on_p_points) then
-            x_array => xz(1:ndx)
-            y_array => yz(1:ndx)
-            allocate (mask(ndx), source=0)
-
-            if (len_trim(target_mask_file) > 0) then
-               ! Mask flow nodes based on inside polygon(s), or outside.
-               ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
-               allocate (selected_nodes(ndx), source=0)
-               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_nodes, number_of_selected_nodes, LOCTP_POLYGON_FILE, &
-                                               target_mask_file)
-               do node = 1, number_of_selected_nodes
-                  mask(selected_nodes(node)) = 1
-               end do
-               if (invert_mask) then
-                  mask = ieor(mask, 1)
-               end if
-
-            else
-               ! 100% masking: accept all flow nodes that were already active in kcs.
-               where (kcs /= 0) mask = 1
-            end if
-         else
-            x_array => xu(1:lnx)
-            y_array => yu(1:lnx)
-            allocate (mask(lnx), source=1)
-         end if
-!!!
          ! Derive target element set properties from the quantity's topological location type
          ierr = get_location_target_properties(target_location_type, target_num_points, target_x, target_y, target_mask)
          if (ierr /= DFM_NOERR) then
@@ -767,18 +727,55 @@ contains
             return
          end if
 
+         ! Prepare target mask array for later ec_addtimespacerelation call.
+         allocate (mask(target_num_points), source=0)
+
+         if (len_trim(target_mask_file) > 0) then
+            ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
+            allocate (selected_points(target_num_points), source=0)
+            select case (target_location_type)
+            case (UNC_LOC_S)
+               ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
+               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                                target_mask_file)
+            case (UNC_LOC_U)
+               call selectelset_internal_links(xz, yz, ndx, ln, lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                         target_mask_file)
+            case default
+               ierr = DFM_NOTIMPLEMENTED
+               write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
+                  ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
+               call warn_flush()
+               return
+            end select
+
+            do point = 1, number_of_selected_points
+               mask(selected_points(point)) = 1
+            end do
+            if (invert_mask) then
+               mask = ieor(mask, 1)
+            end if
+         else
+            if (associated(target_mask)) then
+               ! 100% masking: accept all flow locations that were already active in their own mask array.
+               where (target_mask /= 0) mask = 1
+            else
+                mask = 1
+            end if
+         end if
+
 
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
             ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
-            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, target_mask, kx, 'global', filetype, &
+            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
                                                     method, oper, forcingfile=forcing_file)
          case default
             if (is_variable_name_available) then
-               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, target_mask, kx, forcing_file, filetype, &
+               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                        method, oper, varname=variable_name)
             else
-               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, target_mask, kx, forcing_file, filetype, &
+               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                        method, oper)
             end if
          end select
@@ -856,7 +853,7 @@ contains
    !! external forcings quantities.
    function get_location_target_properties(target_location_type, target_num_points, target_x, target_y, target_mask) result(ierr)
       use fm_location_types
-      use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
+      use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu, kcs
       use precision_basics, only: hp
       use dfm_error
       integer, intent(in) :: target_location_type                !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
@@ -872,13 +869,13 @@ contains
       case (UNC_LOC_S)
          target_num_points = ndx
          target_x => xz(1:target_num_points)
-         target_x => xz(1:target_num_points)
-         ! TODO: mask => kcs
+         target_y => xz(1:target_num_points)
+         target_mask => kcs
       case (UNC_LOC_U)
          target_num_points = lnx
          target_x => xu(1:target_num_points)
          target_x => xu(1:target_num_points)
-         ! TODO: mask => mask_u
+         target_mask => null()
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select

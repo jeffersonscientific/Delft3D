@@ -82,18 +82,6 @@ module fm_external_forcings
       end subroutine
    end interface
 
-   interface
-      module function get_quantity_target_properties(quantity, target_location_type, target_num_points, target_x, target_y, target_mask) result(ierr)
-         character(len=*), intent(in) :: quantity                   !< Quantity identifier, as given in external forcings input file.
-         integer, intent(out) :: target_location_type               !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-         integer, intent(out) :: target_num_points                  !< Number of points in target element set.
-         real(hp), dimension(:), pointer, intent(out) :: target_x   !< Pointer to x-coordinates array of target element set.
-         real(hp), dimension(:), pointer, intent(out) :: target_y   !< Pointer to y-coordinates array of target element set.
-         integer, dimension(:), pointer, intent(out) :: target_mask !< Pointer to x-coordinates array of target element set.
-         integer :: ierr                                            !< Result status (DFM_NOERR if succesful, or different if unknown quantity was given).
-      end function get_quantity_target_properties
-   end interface
-
    public :: set_external_forcings
    public :: calculate_wind_stresses
 
