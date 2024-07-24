@@ -1,6 +1,6 @@
 # Specify the modules to be included
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/windows_postbuild_configuration.cmake)
+include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/windows_postbuild_configuration.cmake)
 
 if(NOT TARGET deltares_common)
     add_subdirectory(${CMAKE_SOURCE_DIR}/src/${deltares_common_module} deltares_common)
@@ -49,9 +49,13 @@ if(NOT TARGET flow1d)
     add_subdirectory(${CMAKE_SOURCE_DIR}/src/${flow1d_module} flow1d)
 endif()
 
+if(NOT TARGET flow1d_implicit)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${flow1d_implicit} flow1d_implicit)
+endif()
+
 # Waq
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_base.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_dflowfm_online_coupling.cmake)
+include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/dwaq/dwaq_base.cmake)
+include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
 
 
@@ -140,7 +144,7 @@ endif()
 # proj
 if(WIN32)
     if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+        include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/proj_configuration.cmake)
     endif()
 endif(WIN32)
 

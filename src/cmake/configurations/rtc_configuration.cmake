@@ -60,7 +60,7 @@ endif()
 # proj
 if(WIN32)
     if(NOT TARGET proj)
-        include(${CMAKE_SOURCE_DIR}/src/configurations/include/proj_configuration.cmake)
+        include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/proj_configuration.cmake)
     endif()
 endif(WIN32)
 
