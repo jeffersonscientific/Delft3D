@@ -61,29 +61,29 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
 
-      character(len=*), intent(in) :: external_force_file_name   !< file name for new external forcing boundary blocks
+      character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
       logical :: res
 
       logical :: is_successful
-      type(tree_data), pointer :: bnd_ptr             !< tree of extForceBnd-file's [boundary] blocks
-      type(tree_data), pointer :: node_ptr            !
-      integer :: istat               !
+      type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      type(tree_data), pointer :: node_ptr !
+      integer :: istat !
       integer, parameter :: INI_KEY_LEN = 32 !
       integer, parameter :: INI_VALUE_LEN = 256 !
-      character(len=:), allocatable :: group_name          !
+      character(len=:), allocatable :: group_name !
       character(len=INI_VALUE_LEN) :: property_name
       character(len=INI_VALUE_LEN) :: property_value
       character(len=INI_VALUE_LEN) :: quantity
-      character(len=INI_VALUE_LEN) :: location_file       !
-      character(len=INI_VALUE_LEN) :: forcing_file        !
-      character(len=INI_VALUE_LEN) :: forcing_file_type   !
-      character(len=INI_VALUE_LEN) :: target_mask_file    !
-      integer :: i, j                !
+      character(len=INI_VALUE_LEN) :: location_file !
+      character(len=INI_VALUE_LEN) :: forcing_file !
+      character(len=INI_VALUE_LEN) :: forcing_file_type !
+      character(len=INI_VALUE_LEN) :: target_mask_file !
+      integer :: i, j !
       integer :: method
-      integer :: num_items_in_file   !
+      integer :: num_items_in_file !
       integer :: num_items_in_block
-      character(len=1) :: oper                !
+      character(len=1) :: oper !
       character(len=300) :: rec
       character(len=INI_VALUE_LEN) :: nodeid
       character(len=INI_VALUE_LEN) :: branchid
@@ -92,7 +92,7 @@ contains
       character(len=INI_VALUE_LEN) :: fnam
       character(len=INI_VALUE_LEN) :: base_dir
       double precision :: chainage
-      integer :: ierr               ! error number from allocate function
+      integer :: ierr ! error number from allocate function
       integer :: ilattype, nlat
       integer :: k, n, k1, nini
       integer, dimension(1) :: target_index
@@ -181,7 +181,7 @@ contains
          case ('meteo')
             res = init_meteo_forcings()
 
-         case default       ! Unrecognized item in a ext block
+         case default ! Unrecognized item in a ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
             write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
             call warn_flush()
@@ -233,7 +233,7 @@ contains
 
          logical :: res
 
-         type(tree_data), pointer :: block_ptr           !
+         type(tree_data), pointer :: block_ptr !
 
          res = .false.
          ! First check for required input:
@@ -346,9 +346,9 @@ contains
                else if (property_name == 'operand') then
                   continue
                else if (property_name == 'returntime' .or. property_name == 'return_time') then
-                  continue                   ! used elsewhere to set Thatcher-Harleman delay
+                  continue ! used elsewhere to set Thatcher-Harleman delay
                else if (property_name == 'openboundarytolerance') then
-                  continue                   ! used in findexternalboundarypoints/readlocationfiles... to set search distance. Not relevant here.
+                  continue ! used in findexternalboundarypoints/readlocationfiles... to set search distance. Not relevant here.
                else if (property_name == 'nodeid') then
                   continue
                else if (property_name == 'bndwidth1d') then
@@ -534,10 +534,10 @@ contains
          character(len=INI_VALUE_LEN) :: interpolation_method
          real(kind=hp) :: max_search_radius
          ! generalized properties+pointers to target element grid:
-         integer :: target_location_type               !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-         integer :: target_num_points                  !< Number of points in target element set.
-         real(hp), dimension(:), pointer :: target_x   !< Pointer to x-coordinates array of target element set.
-         real(hp), dimension(:), pointer :: target_y   !< Pointer to y-coordinates array of target element set.
+         integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+         integer :: target_num_points !< Number of points in target element set.
+         real(hp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
+         real(hp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
          integer, dimension(:), pointer :: target_mask !< Pointer to x-coordinates array of target element set.
          integer :: ierr
 
@@ -546,6 +546,13 @@ contains
          call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
          if (.not. is_successful) then
             write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+            call warn_flush()
+            return
+         end if
+         ierr = get_quantity_target_properties(quantity, target_location_type, target_num_points, target_x, target_y, target_mask)
+         if (ierr /= DFM_NOERR) then
+            write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
+               ']. Line ''quantity = ', trim(quantity), ''' contains an unknown quantity.'
             call warn_flush()
             return
          end if
