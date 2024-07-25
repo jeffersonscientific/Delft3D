@@ -47,8 +47,6 @@
          integer :: L, LL
          integer :: ndraw
          double precision :: d1, d2, x, y
-!      double precision :: t0, t1
-         integer :: ie, ip
          logical inview
 
          common / DRAWTHIS / ndraw(50)
