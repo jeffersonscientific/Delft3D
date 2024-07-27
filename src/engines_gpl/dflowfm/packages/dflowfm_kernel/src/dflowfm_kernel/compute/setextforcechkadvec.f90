@@ -361,7 +361,7 @@
                       end if
                    end do
                 end if
-                adve(L) = max(abs(adve(L)),maxfacg*ag)*sign(1d0,adve(L))
+                adve(L) = min(abs(adve(L)),maxfacg*ag)*sign(1d0,adve(L))
              end if
           end do
 
