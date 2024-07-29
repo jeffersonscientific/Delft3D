@@ -101,18 +101,17 @@ function(create_vs_user_files)
 <VisualStudioUserFile>
 	<Configurations>
 		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
-		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
+		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+		<Configuration Name=\"RelWithDebInfo|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+    </Configurations>
+</VisualStudioUserFile>"
 )
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
     file(
         WRITE "${userfilename}"
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
-        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
-        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
-    </PropertyGroup>
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+    <PropertyGroup>
         <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
         <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
     </PropertyGroup>
