@@ -458,7 +458,8 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  
  integer                           :: jadpuopt                  !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean. 
  integer                           :: jaextrapbl                !< option for extrapolating bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate. Necessary for analytical solutions. 
-
+ double precision                  :: facmaxag                  !< set maximum on value of adve of facmaxag*ag
+ 
  ! written to his file yes or no
  integer                           :: jahisbal                  !< Write mass balance/volume totals to his file, 0: no, 1: yes
  integer                           :: jahissourcesink           !< Write discharge/volume at sources/sinks, 0: no, 1: yest
@@ -935,6 +936,8 @@ subroutine default_flowparameters()
     maxitverticalforestertem  = 0     !< 100, max iterations vertical forester
 
     salmax = 0d0                      !< filter if sal > maxsal
+    facmaxag = 10d0
+    
     ! Remaining of variables is handled in reset_flowparameters()
     ! call reset_flowparameters()
 

@@ -103,6 +103,7 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     real(fp)                       :: urms2
     real(fp)                       :: ucrb, ucrs, asb, ass, term1, ceqb, ceqs
     real(fp)                       :: cmax2h
+    real(fp)                       :: alfad50
     !
     !
     !! executable statements -------------------------------------------------------
@@ -122,8 +123,13 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     ag = par(1)
     delta = par(4)
     facua = par(11)
-    facas = par(12)
-    facsk = par(13)
+    if (comparereal(facua,0.0_fp,1e-10_fp)==0) then
+       facas = par(12)
+       facsk = par(13)
+    else
+       facas = facua
+       facsk = facua
+    end if
     waveform = int(par(14))
     sws = int(par(15))
     lws = int(par(16))
@@ -134,6 +140,7 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     smax = par(21)
     reposeangle = par(22)
     cmax = par(23)
+    alfad50 = par(24)
     !
     ! limit input parameters to sensible values
     !
@@ -200,6 +207,11 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
    if(term1>Ucrs .and. h>dtol) then
       ceqs=Ass*(term1-Ucrs)**2.4_fp
    end if
+   !
+   if (alfad50 > 0.0_fp) then
+      ceqb =  ceqb * (0.000225_fp/d50)**alfad50
+      ceqs =  ceqs * (0.000225_fp/d50)**alfad50
+   endif
    !
    cmax2h = cmax*h/2.0_fp
    ceqb  = min(ceqb,   cmax2h)               ! maximum equilibrium bed concentration
