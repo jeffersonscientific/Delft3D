@@ -31,6 +31,7 @@
 !
 
  subroutine s1ini() ! links in continuity eq.
+    use precision_basics, only: dp
     use m_flow
     use m_flowgeom
     use m_flowtimes
@@ -175,9 +176,9 @@
           ! First accumulate all lateral discharges per grid cell
           ! qqlat may have been computed in flow_run_sometimesteps already but only for
           ! laterals with apply_transort(i_lat) > 0
-
           do i_lat = 1, numlatsg
              if (apply_transport(i_lat) == 0) then
+                qqlat(1:num_layers, i_lat, 1:ndx) = 0._dp
                 do k1 = n1latsg(i_lat), n2latsg(i_lat)
                    i_node = nnlat(k1)
                    if (i_node > 0) then
