@@ -60,8 +60,13 @@
 
 !-----------------------------------------------------------------------------------------------
     numnodneg = 0
-    if (wrwaqon .and. allocated(qsrcwaq)) then
-       qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+    last_iteration = .false.
+
+    if (numsrc > 0) then
+       if (wrwaqon .and. size(qsrcwaq) > 0) then
+          qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+          qlatwaq0 = qlatwaq
+       end if
     end if
 
 111 continue
