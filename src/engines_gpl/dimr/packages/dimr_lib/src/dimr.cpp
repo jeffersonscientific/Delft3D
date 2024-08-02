@@ -1809,7 +1809,7 @@ bool Dimr::ReadComputeTimesFile(const char* fileName, dimr_control_block* contro
         controlBlock->tStart = controlBlock->computeTimes->at(0);                       // First  timePoint to do a computation
         controlBlock->tStep = controlBlock->computeTimes->at(1) - controlBlock->tStart; // Second timePoint to do a computation
         controlBlock->computeTimesCurrent = 1;                                          // Index to current timePoint
-        controlBlock->tEnd = 9.9e99;                                                    // Infinity
+        controlBlock->tEnd = std::numeric_limits<double>::infinity();
         return true;
     } else {
         return false;
