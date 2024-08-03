@@ -358,6 +358,7 @@ contains
 
    !! 0c. Prepare arrays and variables for the mesh number, mesh topology dimension.
       call realloc(nMesh, nfiles, keepExisting=.false., fill=0)
+      nMaxMeshes=1
       call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1) ! needed for if statement below when jaugrid=0
       if (jaugrid == 1) then ! UGRID format
          ! Compute nMesh and maximal mesh number.
@@ -372,6 +373,7 @@ contains
          ! fill in the mapping array mesh2topo that is mapping from meshid to topology index
          ! and compute maximal and minimal topology dimensions.
          call realloc(mesh2topo, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1)
+         call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1) 
          maxTopodim = 0
          minTopodim = 999
          do ii = 1, nfiles
