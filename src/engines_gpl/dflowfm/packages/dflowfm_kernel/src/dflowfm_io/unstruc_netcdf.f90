@@ -13651,10 +13651,6 @@ contains
                sqi(kk) = tmp_sqi(j)
                ucxq(kk) = tmp_ucxq(j)
                ucyq(kk) = tmp_ucyq(j)
-             !rho(kk)  = tmp_rho(j)
-             !if (stm_included) then
-             !   rhowat(kk)  = tmp_rhowat(j)
-             !endif
             end do
          end if
       end if
