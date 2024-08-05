@@ -44,6 +44,8 @@
     integer :: n, nq, L, k1, k2, nlowest
     integer :: ierror, ng, Lnu, LL, iup, k
     double precision :: at, ssav, wwav, blowest, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
+    integer upstream_cell
+    integer upstream_cell_index
 
     double precision, parameter :: FAC23 = 0.6666666666667d0
 
@@ -248,9 +250,26 @@
 
           if (jbasqbnddownwindhs == 1) then
              hu(L) = s1(k2) - bl(k2) !  Qbnd_downwind_hs
-          if (hu(L) > 0.0) then 
-              Ltop(L) = Lbot(L) + kmxL(L) - 1
-          endif
+             if (hu(L) > 0.0) then 
+                if (u1(L) == 0) then
+                   if (s0(ln(L,1)) > s0(ln(L,2))) then
+                       upstream_cell = ln(L,1)
+                       upstream_cell_index = 1
+                   else
+                       upstream_cell = ln(L,2)
+                       upstream_cell_index = 2
+                   end if 
+                else
+                   if (u1(L) > 0) then 
+                       upstream_cell = ln(L,1)
+                       upstream_cell_index = 1
+                   else
+                       upstream_cell = ln(L,2)
+                       upstream_cell_index = 2
+                   end if 
+                end if
+                call get_lbot_ltop_upwind(L, upstream_cell, upstream_cell_index)
+             endif
              call addlink2D(L, 1)
              huqbnd(n) = hu(L)
           end if
