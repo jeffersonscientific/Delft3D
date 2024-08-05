@@ -252,19 +252,19 @@
              hu(L) = s1(k2) - bl(k2) !  Qbnd_downwind_hs
              if (hu(L) > 0.0) then
                 if (u1(L) == 0) then
-                   if (s0(ln(L, 1)) > s0(ln(L, 2))) then
-                      upstream_cell = ln(L, 1)
+                   if (s0(ln(1, L)) > s0(ln(2, L))) then
+                      upstream_cell = ln(1, L)
                       upstream_cell_index = 1
                    else
-                      upstream_cell = ln(L, 2)
+                      upstream_cell = ln(2, L)
                       upstream_cell_index = 2
                    end if
                 else
                    if (u1(L) > 0) then
-                      upstream_cell = ln(L, 1)
+                      upstream_cell = ln(1, L)
                       upstream_cell_index = 1
                    else
-                      upstream_cell = ln(L, 2)
+                      upstream_cell = ln(2, L)
                       upstream_cell_index = 2
                    end if
                 end if
