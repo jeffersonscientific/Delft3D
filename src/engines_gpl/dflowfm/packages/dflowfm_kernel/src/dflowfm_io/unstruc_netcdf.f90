@@ -12947,15 +12947,15 @@ contains
                   goto 999
                end if
                ! Then assign the data based on the mapping
-               do i = target_shift_ + 1, target_shift_ + loccount
-                  imap = iloc_merge(i)
-                  targetarr(iloc_own(i)) = tmparray1D(imap)
+               do i = 1, loccount
+                  imap = iloc_merge(target_shift_ + i)
+                  targetarr(iloc_own(target_shift_ + i)) = tmparray1D(imap)
                end do
             else
-               ierr = nf90_get_var(ncid, id_var, tmparr(target_shift_ + 1:target_shift_ + loccount), start=(/locstart, it_read/), count=(/loccount, 1/))
+               ierr = nf90_get_var(ncid, id_var, tmparr(1:loccount), start=(/locstart, it_read/), count=(/loccount, 1/))
                if (ierr /= nf90_noerr) goto 999
-               do i = target_shift_ + 1, target_shift_ + loccount
-                  targetarr(iloc_own(i)) = tmparr(i)
+               do i = 1, loccount
+                  targetarr(iloc_own(target_shift_ + i)) = tmparr(i)
                end do
             end if
          end if
@@ -12981,15 +12981,15 @@ contains
             goto 999
          end if
 
-         do i = target_shift_ + 1, target_shift_ + loccount
+         do i = 1, loccount
             if (jamergedmap /= 1) then
-               is = i
+               is = target_shift_ + i
             else
                if (jamerged_dif == 1) then
-                  is = iloc_own(i)
-                  imap = iloc_merge(i)
+                  is = iloc_own(target_shift_ + i)
+                  imap = iloc_merge(target_shift_ + i)
                else
-                  is = iloc_own(i)
+                  is = iloc_own(target_shift_ + i)
                end if
             end if
 
