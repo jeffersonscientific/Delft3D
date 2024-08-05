@@ -18400,7 +18400,7 @@ contains
    end function unc_put_var_rst_dble
 
 !> Transfrom vector information to matrix for 3D information on cell centres
-   subroutine flow_node_vector_to_matrix(flow_node_array, idx1, idx2, flow_node_matrix)
+   subroutine flow_node_vector_to_matrix(flow_node_array, flow_node_index1, flow_node_index2, flow_node_matrix)
 
       use m_missing, only: dmiss
 
