@@ -12981,7 +12981,7 @@ contains
             goto 999
          end if
 
-      do i=1,loccount
+      do i=target_shift_ + 1, target_shift_ + loccount
             if (jamergedmap /= 1) then
                is = i
             else
@@ -12994,11 +12994,11 @@ contains
             end if
 
             if (loctype == UNC_LOC_S3D .or. loctype == UNC_LOC_W) then
-               call getkbotktop(target_shift_ + is, ib, it) ! TODO: AvD: double check whether this original 3D restart reading was working at all with kb, kt! (no kbotktopmax here?? lbotltopmax)
-               call getlayerindices(target_shift_ + is, nlayb, nrlay)
+               call getkbotktop(is, ib, it) ! TODO: AvD: double check whether this original 3D restart reading was working at all with kb, kt! (no kbotktopmax here?? lbotltopmax)
+               call getlayerindices(is, nlayb, nrlay)
             else if (loctype == UNC_LOC_U3D .or. loctype == UNC_LOC_WU) then
-               call getLbotLtopmax(target_shift_ + is, ib, it)
-               call getlayerindicesLmax(target_shift_ + is, nlayb, nrlay)
+               call getLbotLtopmax(is, ib, it)
+               call getlayerindicesLmax(is, nlayb, nrlay)
                !call getlayerindices(is, nlayb, nrlay)
                ! UNST-976: TODO: does NOT work for links yet. We need some setlbotltop call up in read_map, similar to sethu behavior.
                !if (layertype .ne. 1 .and. jawarn < 100)  then
@@ -18313,7 +18313,7 @@ contains
 
 !> Read sediment data to `constituents` (the indexing prevents passing
 !  another variable).
-   subroutine read_sediment(var, stradd, imapfile, kstart, ndx_own, it_read, um, target_shift)
+   subroutine read_sediment(var, stradd, imapfile, kstart, klength, it_read, um, target_shift)
 
       use m_flow, only: kmx, ndkx
       use m_transport, only: ISED1, ISEDN, const_names
@@ -18323,7 +18323,7 @@ contains
       use m_output_config, only: UNC_LOC_S3D, UNC_LOC_S
 
 !input/output
-      integer, intent(in) :: imapfile, kstart, ndx_own, it_read, target_shift
+      integer, intent(in) :: imapfile, kstart, klength, it_read, target_shift
       double precision, allocatable, dimension(:, :), intent(inout) :: var
       type(t_unc_merged), intent(in) :: um !< struct holding all data for ugrid merged map/rst files
 
@@ -18349,12 +18349,12 @@ contains
          call replace_char(tmpstr, 32, 95)
          call replace_char(tmpstr, 47, 95)
          ! concentrations exists in restart file
-         ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, ndx_own, it_read, um%jamergedmap, um%inode_own, um%inode_merge, target_shift)
+         ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, klength, it_read, um%jamergedmap, um%inode_own, um%inode_merge, target_shift)
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
             call check_error(ierr, const_names(i), LEVEL_WARN)
          else
-            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, ndx_own, um%jamergedmap, um%inode_own, 0, 0, target_shift)
+            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, klength, um%jamergedmap, um%inode_own, 0, 0, target_shift)
          end if
       end do
 
