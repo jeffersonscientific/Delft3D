@@ -45,14 +45,15 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    use dfm_error
    use unstruc_netcdf
    use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+   use fm_deprecated_keywords, only: deprecated_ext_keywords
+   use m_deprecation, only: check_file_tree_for_deprecated_keywords
 
    implicit none
 
    logical, external :: timespaceinitialfield_mpi
 
-   logical :: jawel
    logical :: bl_set_from_zkuni = .false.
-   integer :: mxyb, ja, ja1, ja2, method, iprimpos
+   integer :: ja, ja1, ja2, method, iprimpos
    integer :: k, L, k1, k2, mx
    integer, allocatable :: kcc(:), kc1D(:), kc2D(:)
    integer :: ibathyfiletype
@@ -220,7 +221,10 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
       if (mext /= 0) then
          rewind (mext)
       end if
-
+    
+      call check_file_tree_for_deprecated_keywords(inifield_ptr, deprecated_ext_keywords, istat, prefix='While reading ''' &
+                                                   //trim(md_inifieldfile)//'''')
+    
       ! Clean up *.ini file.
       call tree_destroy(inifield_ptr)
 
