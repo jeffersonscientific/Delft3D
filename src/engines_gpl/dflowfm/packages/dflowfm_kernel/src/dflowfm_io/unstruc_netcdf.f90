@@ -18365,7 +18365,7 @@ contains
    end subroutine read_sediment
 
 !> Write 2D/3D array on cell centres and for boundaries
-function unc_put_var_rst_dble(irstfile,id_var,id_var_bnd,var,itim) result(ierr)
+function unc_put_var_rst_dble(irstfile,id_flow_node_array,id_flow_node_bnd_array,flow_node_array,itim) result(ierr)
 
       use m_flowgeom, only: ndxi, ndx
       use m_flow, only: kmx, work1
@@ -18374,8 +18374,11 @@ function unc_put_var_rst_dble(irstfile,id_var,id_var_bnd,var,itim) result(ierr)
       use m_partitioninfo, only: jampi
 
 !input/output
-integer, intent(in) :: irstfile,id_var,id_var_bnd, itim
-double precision, allocatable, intent(in) :: var(:)
+integer, intent(in) :: irstfile    ! file handle for restart file 
+integer, intent(in) :: id_flow_node_array      ! index of internal cells variable on netcdf file 
+integer, intent(in) :: id_flow_node_bnd_array  ! index of boundary cells variable on netcdf file 
+integer, intent(in) :: itim        ! time index on netcdf file 
+double precision, allocatable, intent(in) :: flow_node_array(:)  !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
 
 !local
       integer :: ierr, ndxbnd
@@ -18387,43 +18390,44 @@ double precision, allocatable, intent(in) :: var(:)
       end if
 
       if (kmx > 0) then !3D
-   call vector_to_matrix_3d_data(var,1,ndxi,work1) !output in `work1`
-   ierr = nf90_put_var(irstfile, id_var, work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
+   call flow_node_vector_to_matrix(flow_node_array,1,ndxi,work1) 
+   ierr = nf90_put_var(irstfile, id_flow_node_array, work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
       else !2D
-   ierr = nf90_put_var(irstfile, id_var, var(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
+   ierr = nf90_put_var(irstfile, id_flow_node_array, flow_node_array(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
       end if !(kmx > 0)
 !var at boundaries
       if (jarstbnd > 0 .and. ndxbnd > 0) then
          if (kmx > 0) then !3D
-      call vector_to_matrix_3d_data(var,ndxi+1,ndx,work1) !output in `work1`
-      ierr = nf90_put_var(irstfile, id_var_bnd, work1(1:kmx,ndxi+1:ndx), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
+      call flow_node_vector_to_matrix(flow_node_array,ndxi+1,ndx,work1) 
+      ierr = nf90_put_var(irstfile, id_flow_node_bnd_array, work1(1:kmx,ndxi+1:ndx), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
          else !2D
-      ierr = nf90_put_var(irstfile, id_var_bnd, var(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
+      ierr = nf90_put_var(irstfile, id_flow_node_bnd_array, flow_node_array(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
          end if !(kmx > 0)
       end if
 
 end function unc_put_var_rst_dble
 
 !> Transfrom vector information to matrix for 3D information on cell centres
-subroutine vector_to_matrix_3d_data(var,idx1,idx2,work1)
+subroutine flow_node_vector_to_matrix(flow_node_array,idx1,idx2,flow_node_matrix)
 
       use m_missing, only: dmiss
 
-double precision, allocatable, intent(in) :: var(:)
-      integer, intent(in) :: idx1, idx2
-      double precision, intent(out) :: work1(:, :)
+double precision, allocatable, intent(in) :: flow_node_array(:)   !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
+      integer, intent(in) :: flow_node_index1  ! start index (1:ndx) for transfer of data from vector to matrix format 
+      integer, intent(in) :: flow_node_index2  ! end index (1:ndx) for transfer of data from vector to matrix format 
+      double precision, intent(out) :: flow_node_matrix(:, :) !< array for information at flow nodes as matrix {"location": "face", "shape": ["num_layers","ndx"]}
 
       integer :: k, kk, kb, kt, nlayb, nrlay
 
-      work1 = dmiss
-      do kk = idx1, idx2
+      flow_node_matrix = dmiss
+      do kk = flow_node_index1, flow_node_index2
          call getkbotktop(kk, kb, kt)
          call getlayerindices(kk, nlayb, nrlay)
          do k = kb, kt
-      work1(k-kb+nlayb,kk) = var(k)
+            flow_node_matrix(k-kb+nlayb,kk) = flow_node_array(k)
          end do
       end do
 
-end subroutine vector_to_matrix_3d_data
+end subroutine flow_node_vector_to_matrix
 
 end module unstruc_netcdf
