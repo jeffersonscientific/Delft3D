@@ -250,26 +250,26 @@
 
           if (jbasqbnddownwindhs == 1) then
              hu(L) = s1(k2) - bl(k2) !  Qbnd_downwind_hs
-             if (hu(L) > 0.0) then 
+             if (hu(L) > 0.0) then
                 if (u1(L) == 0) then
-                   if (s0(ln(L,1)) > s0(ln(L,2))) then
-                       upstream_cell = ln(L,1)
-                       upstream_cell_index = 1
+                   if (s0(ln(L, 1)) > s0(ln(L, 2))) then
+                      upstream_cell = ln(L, 1)
+                      upstream_cell_index = 1
                    else
-                       upstream_cell = ln(L,2)
-                       upstream_cell_index = 2
-                   end if 
+                      upstream_cell = ln(L, 2)
+                      upstream_cell_index = 2
+                   end if
                 else
-                   if (u1(L) > 0) then 
-                       upstream_cell = ln(L,1)
-                       upstream_cell_index = 1
+                   if (u1(L) > 0) then
+                      upstream_cell = ln(L, 1)
+                      upstream_cell_index = 1
                    else
-                       upstream_cell = ln(L,2)
-                       upstream_cell_index = 2
-                   end if 
+                      upstream_cell = ln(L, 2)
+                      upstream_cell_index = 2
+                   end if
                 end if
                 call get_lbot_ltop_upwind(L, upstream_cell, upstream_cell_index)
-             endif
+             end if
              call addlink2D(L, 1)
              huqbnd(n) = hu(L)
           end if

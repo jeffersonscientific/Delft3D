@@ -445,7 +445,7 @@ subroutine fill_valobs()
                end if
             end do
 
-            if (link_id_nearest > 0) then 
+            if (link_id_nearest > 0) then
                call getLbotLtop(link_id_nearest, Lb, Lt)
                call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
                do L = Lb - 1, Lt

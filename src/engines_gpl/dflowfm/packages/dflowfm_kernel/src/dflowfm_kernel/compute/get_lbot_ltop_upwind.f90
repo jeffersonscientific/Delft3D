@@ -36,19 +36,19 @@
 
     implicit none
 
-    integer, intent(in) :: link                    ! flow link index
-    integer, intent(in) :: upstream_cell           ! upstream flow node  
-    integer, intent(in) :: upstream_cell_index     ! index in flowlink to flownode array  
+    integer, intent(in) :: link ! flow link index
+    integer, intent(in) :: upstream_cell ! upstream flow node
+    integer, intent(in) :: upstream_cell_index ! index in flowlink to flownode array
 
-    ! locals 
-    integer :: Lb  ! 3D flow link index at bed 
-    integer :: kt  ! 3D flow node index at top 
-    integer :: kb  ! 3D flow node index at bed
+    ! locals
+    integer :: Lb ! 3D flow link index at bed
+    integer :: kt ! 3D flow node index at top
+    integer :: kb ! 3D flow node index at bed
     integer :: kb0
 
     Lb = Lbot(link)
     kt = ktop(upstream_cell)
     kb = min(ln0(upstream_cell_index, Lb), kt)
     Ltop(link) = Lb + kt - kb
-    
+
  end subroutine get_lbot_ltop_upwind
