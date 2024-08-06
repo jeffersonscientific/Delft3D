@@ -827,38 +827,38 @@
        call newfil(minp, 'system_'//trim(md_ident)//'.m')
        write (minp, "('Numrows = ', I0, ';')") nn
        write (minp, "('%startpointers')")
-       write (minp, "('ia = [', $)")
-       write (minp, "(I0, ' ', $)") (iao(i), i=1, nn + 1)
+       write (minp, "('ia = [')", advance="no")
+       write (minp, "(I0, ' ')", advance="no") (iao(i), i=1, nn + 1)
        write (minp, "('];')")
        write (minp, "('%rowindices')")
-       write (minp, "('ja = [', $)")
-       write (minp, "(I0, ' ', $)") (jao(i), i=1, iao(nn + 1) - 1)
+       write (minp, "('ja = [')", advance="no")
+       write (minp, "(I0, ' ')", advance="no") (jao(i), i=1, iao(nn + 1) - 1)
        write (minp, "('];')")
        write (minp, "('%matrix elements')")
-       write (minp, "('aa = [', $)")
-       write (minp, "(E15.5, $)") (ao(i), i=1, iao(nn + 1) - 1)
+       write (minp, "('aa = [')", advance="no")
+       write (minp, "(E15.5)", advance="no") (ao(i), i=1, iao(nn + 1) - 1)
        write (minp, "('];')")
        write (minp, "('%right-hand side')")
-       write (minp, "('rhs = [', $)")
-       write (minp, "(E15.5, $)") (rhs(i), i=1, nn)
+       write (minp, "('rhs = [')", advance="no")
+       write (minp, "(E15.5)", advance="no") (rhs(i), i=1, nn)
        write (minp, "('];')")
        write (minp, "('%x-coordinates')")
-       write (minp, "('x= [', $)")
+       write (minp, "('x= [')", advance="no")
        nn = 0
        do n = nogauss + 1, nogauss + nocg
           k = noel(n)
           if (k > 0) then
              nn = nn + 1
-             write (minp, "(E15.5, $)") xzw(k)
+             write (minp, "(E15.5)", advance="no") xzw(k)
           end if
        end do
        write (minp, "('];')")
        write (minp, "('%y-coordinates')")
-       write (minp, "('y= [', $)")
+       write (minp, "('y= [')", advance="no")
        do n = nogauss + 1, nogauss + nocg
           k = noel(n)
           if (k > 0) then
-             write (minp, "(E15.5, $)") yzw(k)
+             write (minp, "(E15.5)", advance="no") yzw(k)
           end if
        end do
        write (minp, "('];')")
