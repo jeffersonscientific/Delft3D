@@ -13138,6 +13138,8 @@ contains
 
       integer :: jmax, ndx1d, nCrs
       double precision, dimension(:, :), allocatable :: work1d_z, work1d_n
+      integer, dimension(nf90_max_var_dims) :: rhdims, tmpdims
+      integer numDims
 
       ierr = DFM_GENERICERROR
 
@@ -13970,6 +13972,11 @@ contains
                if (ierr == nf90_noerr) then
                   layerfrac = 0
                   do ksed = 1, sedtot_read
+                     ierr = nf90_inquire_variable(imapfile, id_msed, ndims=numDims, dimids=rhdims)
+                     do i = 1, numDims - 1
+                        ierr = nf90_inquire_dimension(imapfile, rhdims(i), len=tmpdims(i))
+                        if (ierr /= nf90_noerr) goto 999
+                     end do                     
                      ierr = nf90_get_var(imapfile, id_msed, tmpvar2(1:ndxi_global, 1:nlyr_read, ksed), start=(/kstart, 1, ksed, it_read/), count=(/ndxi_global, nlyr_read, 1, 1/))
                   end do
                   !
@@ -13995,6 +14002,7 @@ contains
                      call realloc(tmpvar2, (/ndxi_global, nlyr_read, sedtot_read/), keepExisting=.false.)
                      !
                      do ksed = 1, sedtot_read
+                        ierr = nf90_inquire_variable(imapfile, id_lyrfrac, ndims=numDims, dimids=rhdims)
                         ierr = nf90_get_var(imapfile, id_lyrfrac, tmpvar2(1:ndxi_global, 1:nlyr_read, ksed), start=(/kstart, 1, ksed, it_read/), count=(/ndxi_global, nlyr_read, 1, 1/))
                      end do
                      do kk = 1, um%ndxi_own
