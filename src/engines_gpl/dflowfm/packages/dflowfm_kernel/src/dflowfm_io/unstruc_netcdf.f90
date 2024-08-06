@@ -13105,7 +13105,7 @@ contains
       integer, allocatable :: id_ttrabnd(:), id_ztrabnd(:)
       integer, allocatable :: id_tsedfracbnd(:), id_zsedfracbnd(:)
 
-      integer :: it_read, nt_read, ndxi_read, lnx_read, L, ndxi_global
+      integer :: it_read, nt_read, ndxi_read, lnx_read, L
       integer :: sedtot_read, sedsus_read, nlyr_read
       integer :: kloc, kk, itmp, i, iconst, iwqbot, nm, Lf, j, k
       integer :: iostat
@@ -13129,8 +13129,6 @@ contains
       integer :: jamergedmap_same_bu
       integer :: tmp_loc
       integer :: numl1d
-      integer :: klyr ! counter for bed layers
-      integer :: ksed ! counter for sediment fractions
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -13150,12 +13148,6 @@ contains
       allocate (character(len=0) :: convformat)
       allocate (character(len=0) :: refdat_map)
 
-      if (jampi==1) then
-          ndxi_global = nglobal_s
-      else 
-          ndxi_global = ndxi
-      end if
-      
       call readyy('Reading map data', 0d0)
 
       call prepare_error('Could not read NetCDF restart file '''//trim(filename)//'''. Details follow:')
@@ -13915,7 +13907,7 @@ contains
                allocate (tmpvar(sedsus_read, ndxi))
                allocate (rst_mfluff(stmpar%lsedsus, ndxi))
                ierr = nf90_get_var(imapfile, id_mfluff, tmpvar(1:sedsus_read, 1:um%ndxi_own), start=(/1, kstart, it_read/), count=(/sedsus_read, ndxi, 1/))
-               do kk = 1, um%ndxi_own
+               do kk = 1, ndxi
                   if (um%jamergedmap == 1) then
                      kloc = um%inode_own(kk)
                      rst_mfluff(:, kloc) = tmpvar(:, um%inode_merge(kk))
@@ -13944,7 +13936,7 @@ contains
                allocate (rst_bodsed(sedtot_read, ndxi))
                ierr = nf90_inq_varid(imapfile, 'bodsed', id_bodsed)
                ierr = nf90_get_var(imapfile, id_bodsed, tmpvar(1:sedtot_read, 1:um%ndxi_own), start=(/1, kstart, it_read/), count=(/sedtot_read, ndxi, 1/))
-               do kk = 1, um%ndxi_own
+               do kk = 1, ndxi
                   if (um%jamergedmap == 1) then
                      kloc = um%inode_own(kk)
                      rst_bodsed(:, kloc) = tmpvar(:, um%inode_merge(kk))
@@ -13965,28 +13957,28 @@ contains
                if (allocated(rst_msed)) then
                   deallocate (rst_msed)
                end if
-               call realloc(tmpvar2, (/ndxi_global, nlyr_read, sedtot_read/), keepExisting=.false.)
-               call realloc(rst_msed, (/ndxi, nlyr_read, sedtot_read/), keepExisting=.false.)
+               call realloc(tmpvar2, (/sedtot_read, nlyr_read, ndxi/), keepExisting=.false.)
+               call realloc(rst_msed, (/sedtot_read, nlyr_read, ndxi/), keepExisting=.false.)
                !
                ierr = nf90_inq_varid(imapfile, 'msed', id_msed)
                if (ierr == nf90_noerr) then
                   layerfrac = 0
-                  do ksed = 1, sedtot_read
+                  do l = 1, sedtot_read
                      ierr = nf90_inquire_variable(imapfile, id_msed, ndims=numDims, dimids=rhdims)
                      do i = 1, numDims - 1
                         ierr = nf90_inquire_dimension(imapfile, rhdims(i), len=tmpdims(i))
                         if (ierr /= nf90_noerr) goto 999
                      end do                     
-                     ierr = nf90_get_var(imapfile, id_msed, tmpvar2(1:ndxi_global, 1:nlyr_read, ksed), start=(/kstart, 1, ksed, it_read/), count=(/ndxi_global, nlyr_read, 1, 1/))
+                     ierr = nf90_get_var(imapfile, id_msed, tmpvar2(l, 1:nlyr_read, 1:um%ndxi_own), start=(/l, 1, kstart, it_read/), count=(/1, nlyr_read, ndxi, 1/))
                   end do
                   !
-                  do kk = 1, um%ndxi_own
+                  do kk = 1, ndxi
                      if (um%jamergedmap == 1) then
                         kloc = um%inode_own(kk)
-                        rst_msed(kloc, :, :) = tmpvar2(um%inode_merge(kk), :, :)
+                        rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk))
                      else
                         kloc = kk
-                        rst_msed(kloc, :, :) = tmpvar2(kk, :, :)
+                        rst_msed(:, :, kloc) = tmpvar2(:, :, kk)
                      end if
                   end do
                   call check_error(ierr, 'msed')
@@ -13999,19 +13991,18 @@ contains
                      if (allocated(tmpvar2)) then
                         deallocate (tmpvar2)
                      end if
-                     call realloc(tmpvar2, (/ndxi_global, nlyr_read, sedtot_read/), keepExisting=.false.)
+                     call realloc(tmpvar2, (/sedtot_read, nlyr_read, ndxi/), keepExisting=.false.)
                      !
-                     do ksed = 1, sedtot_read
-                        ierr = nf90_inquire_variable(imapfile, id_lyrfrac, ndims=numDims, dimids=rhdims)
-                        ierr = nf90_get_var(imapfile, id_lyrfrac, tmpvar2(1:ndxi_global, 1:nlyr_read, ksed), start=(/kstart, 1, ksed, it_read/), count=(/ndxi_global, nlyr_read, 1, 1/))
+                     do l = 1, sedtot_read
+                        ierr = nf90_get_var(imapfile, id_lyrfrac, tmpvar2(l, 1:nlyr_read, 1:um%ndxi_own), start=(/l, 1, kstart, it_read/), count=(/1, nlyr_read, ndxi, 1/))
                      end do
-                     do kk = 1, um%ndxi_own
+                     do kk = 1, ndxi
                         if (um%jamergedmap == 1) then
                            kloc = um%inode_own(kk)
-                           rst_msed(kloc, :, :) = tmpvar2(um%inode_merge(kk), :, :)
+                           rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk))
                         else
                            kloc = kk
-                           rst_msed(kloc, :, :) = tmpvar2(kk, :, :)
+                           rst_msed(:, :, kloc) = tmpvar2(:, :, kk) ! no typo, see restart_lyrs.f90
                         end if
                      end do
                      layerfrac = 1
@@ -14030,17 +14021,17 @@ contains
                   if (allocated(rst_thlyr)) then
                      deallocate (rst_thlyr)
                   end if
-                  call realloc(tmpvar, (/ndxi_global, nlyr_read/), keepExisting=.false.)
-                  call realloc(rst_thlyr, (/ndxi, nlyr_read/), keepExisting=.false.)
+                  call realloc(tmpvar, (/nlyr_read, ndxi/), keepExisting=.false.)
+                  call realloc(rst_thlyr, (/nlyr_read, ndxi/), keepExisting=.false.)
                   !
-                  ierr = nf90_get_var(imapfile, id_thlyr, tmpvar(1:ndxi_global, 1:nlyr_read), start=(/kstart, 1, it_read/), count=(/ndxi_global, nlyr_read, 1/))
-                  do kk = 1, um%ndxi_own
+                  ierr = nf90_get_var(imapfile, id_thlyr, tmpvar(1:nlyr_read, 1:um%ndxi_own), start=(/1, kstart, it_read/), count=(/nlyr_read, ndxi, 1/))
+                  do kk = 1, ndxi
                      if (um%jamergedmap == 1) then
                         kloc = um%inode_own(kk)
-                        rst_thlyr(kloc, :) = tmpvar(um%inode_merge(kk), :)
+                        rst_thlyr(:, kloc) = tmpvar(:, um%inode_merge(kk))
                      else
                         kloc = kk
-                        rst_thlyr(kloc, :) = tmpvar(kk, :)
+                        rst_thlyr(:, kloc) = tmpvar(:, kk)
                      end if
                   end do
                end if
@@ -14050,10 +14041,8 @@ contains
                if ((layerfrac >= 0) .and. (layerthk >= 0)) then
                   if (stmpar%morlyr%settings%nlyr >= nlyr_read) then
                      ! copy first layer
-                     thlyr(1, 1:ndxi) = rst_thlyr(1:ndxi, 1)
-                     do ksed = 1, stmpar%lsedtot
-                        msed(ksed, 1, 1:ndxi) = rst_msed(1:ndxi, 1, ksed)
-                     end do
+                     thlyr(1, 1:ndxi) = rst_thlyr(1, 1:ndxi)
+                     msed(1:stmpar%lsedtot, 1, 1:ndxi) = rst_msed(1:stmpar%lsedtot, 1, 1:ndxi)
                      !
                      do k = 2, 1 + stmpar%morlyr%settings%nlyr - nlyr_read
                         thlyr(k, 1:ndxi) = 0.0_fp
@@ -14062,34 +14051,26 @@ contains
                      !
                      ! copy remaining layers
                      !
-                     do klyr = 2, stmpar%morlyr%settings%nlyr
-                        thlyr(stmpar%morlyr%settings%nlyr - nlyr_read + klyr, 1:ndxi) = rst_thlyr(1:ndxi, klyr)
-                        do ksed = 1, stmpar%lsedtot
-                           msed(ksed, stmpar%morlyr%settings%nlyr - nlyr_read + klyr, 1:ndxi) = rst_msed(1:ndxi, klyr, ksed)
-                        end do
-                     end do
+                     thlyr(stmpar%morlyr%settings%nlyr - nlyr_read + 2:stmpar%morlyr%settings%nlyr, 1:ndxi) = rst_thlyr(2:nlyr_read, 1:ndxi)
+                     msed(1:stmpar%lsedtot, stmpar%morlyr%settings%nlyr - nlyr_read + 2:stmpar%morlyr%settings%nlyr, 1:ndxi) = rst_msed(1:stmpar%lsedtot, 2:nlyr_read, 1:ndxi)
                   else
                      !
                      ! more layers in restart file than in simulation
                      !
                      ! copy the first nlyr layers
                      !
-                     do klyr = 1, stmpar%morlyr%settings%nlyr
-                        thlyr(klyr, 1:ndxi) = rst_thlyr(1:ndxi, klyr)
-                        do ksed = 1, stmpar%lsedtot
-                           msed(ksed, klyr, 1:ndxi) = rst_msed(1:ndxi, klyr, ksed)
-                        end do
-                     end do                      
+                     thlyr(1:stmpar%morlyr%settings%nlyr, 1:ndxi) = rst_thlyr(1:stmpar%morlyr%settings%nlyr, 1:ndxi)
+                     msed(1:stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndxi) = rst_msed(1:stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndxi)
                      !
                      !
                      ! add contents of other layers to last layer
                      !
                      do k = stmpar%morlyr%settings%nlyr + 1, nlyr_read
                         thlyr(stmpar%morlyr%settings%nlyr, 1:ndxi) = thlyr(stmpar%morlyr%settings%nlyr, 1:ndxi) &
-                                                                         & + rst_thlyr(1:ndxi, k)
-                        do ksed = 1, stmpar%lsedtot
-                           msed(ksed, stmpar%morlyr%settings%nlyr, 1:ndxi) = msed(ksed, stmpar%morlyr%settings%nlyr, 1:ndxi) &
-                                                                        & + rst_msed(1:ndxi, k, ksed)
+                                                                         & + rst_thlyr(k, 1:ndxi)
+                        do l = 1, stmpar%lsedtot
+                           msed(l, stmpar%morlyr%settings%nlyr, 1:ndxi) = msed(l, stmpar%morlyr%settings%nlyr, 1:ndxi) &
+                                                                        & + rst_msed(l, k, 1:ndxi)
                         end do
                      end do
                   end if
@@ -14098,10 +14079,10 @@ contains
                      !
                      ! msed contains volume fractions
                      if (stmpar%morlyr%settings%iporosity == 0) then
-                        do ksed = 1, stmpar%lsedtot
+                        do l = 1, stmpar%lsedtot
                            do k = 1, stmpar%morlyr%settings%nlyr
                               do nm = 1, ndxi
-                                 msed(ksed, k, nm) = msed(l, k, nm) * thlyr(k, nm) * stmpar%sedpar%cdryb(ksed)
+                                 msed(l, k, nm) = msed(l, k, nm) * thlyr(k, nm) * stmpar%sedpar%cdryb(l)
                               end do
                            end do
                         end do
@@ -14111,13 +14092,13 @@ contains
                               !
                               ! determine mass fractions
                               mfracsum = 0.0_fp
-                              do ksed = 1, stmpar%lsedtot
-                                 mfrac(ksed) = msed(ksed, k, nm) * stmpar%sedpar%rhosol(ksed)
+                              do l = 1, stmpar%lsedtot
+                                 mfrac(l) = msed(l, k, nm) * stmpar%sedpar%rhosol(l)
                                  mfracsum = mfracsum + mfrac(l)
                               end do
                               if (mfracsum > 0.0_fp) then
-                                 do ksed = 1, stmpar%lsedtot
-                                    mfrac(ksed) = mfrac(ksed) / mfracsum
+                                 do l = 1, stmpar%lsedtot
+                                    mfrac(l) = mfrac(l) / mfracsum
                                  end do
                                  !
                                  ! obtain porosity and sediment thickness without pores
@@ -14131,8 +14112,8 @@ contains
                               !
                               ! convert volume fractions to sediment mass
                               !
-                              do ksed = 1, stmpar%lsedtot
-                                 msed(ksed, k, nm) = msed(ksed, k, nm) * sedthick * stmpar%sedpar%rhosol(ksed)
+                              do l = 1, stmpar%lsedtot
+                                 msed(l, k, nm) = msed(l, k, nm) * sedthick * stmpar%sedpar%rhosol(l)
                               end do
                               svfrac(k, nm) = 1.0_fp - poros
                            end do
@@ -14142,8 +14123,8 @@ contains
                      if (stmpar%morlyr%settings%iporosity > 0) then
                         do nm = 1, ndxi
                            sedthick = 0.0_fp
-                           do ksed = 1, stmpar%lsedtot
-                              sedthick = sedthick + msed(ksed, k, nm) / stmpar%sedpar%rhosol(ksed)
+                           do l = 1, stmpar%lsedtot
+                              sedthick = sedthick + msed(l, k, nm) / stmpar%sedpar%rhosol(l)
                            end do
                            svfrac(k, nm) = sedthick / thlyr(k, nm)
                         end do
