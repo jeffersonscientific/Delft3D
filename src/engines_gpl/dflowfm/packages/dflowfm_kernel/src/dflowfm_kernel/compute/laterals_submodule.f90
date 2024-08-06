@@ -155,12 +155,13 @@ contains
 
       real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_in !< Lateral discharge flowing into the model (source)
       real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_out !< Lateral discharge extracted out of the model (sink)
-      real(kind=dp), dimension(:), intent(in) :: cell_volume !< cell_volume !< Volume of water in computational cells [m3].
+      real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3].
 
       integer :: k1, i_cell, i_lateral, i_layer
       real(kind=dp) :: qlat
 
-      ! TODO, UNST-8062: this routine will be elimated, so setting i_layer = 1 is acceptable for the moment. 
+      ! TODO: UNST-8062: this routine will be eliminated in the next issue to be picked up in this sprint, 
+      ! so setting i_layer = 1 is acceptable for the moment. 
       i_layer = 1
       if (numlatsg > 0) then
          lateral_discharge_in = 0._dp
@@ -194,13 +195,13 @@ contains
       real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out
       real(kind=dp), dimension(:, :, :), intent(in) :: discharge_in !< Lateral discharge going into domain (source)
       real(kind=dp), dimension(:, :, :), intent(in) :: discharge_out !< Lateral discharge going out (sink)
-      real(kind=dp), dimension(:), intent(in) :: cell_volume !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
       real(kind=dp), intent(in) :: dtol !< cut off value for cell_volume, to prevent division by zero
 
       real(kind=dp) :: delta_cell_volume
       integer :: i_const, i_lateral, i_cell, k1, i_layer
 
-      ! TODO, in combination with UNST-8062, generalize do i_layer = 1, num_layers
+      ! TODO: UNST-8062: generalize do i_layer = 1, num_layers
       i_layer = 1
       do i_const = 1, numconst
          do i_lateral = 1, numlatsg

@@ -152,7 +152,7 @@ module m_lateral
          real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out
          real(kind=dp), dimension(:, :, :), intent(in) :: discharge_in !< Lateral discharge going into domain (source)
          real(kind=dp), dimension(:, :, :), intent(in) :: discharge_out !< Lateral discharge going out (sink)
-         real(kind=dp), dimension(:), intent(in) :: cell_volume !< cell_volume !< Volume of water in computational cells [m3]
+         real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
          real(kind=dp), intent(in) :: dtol !< cut off value for vol1, to prevent division by zero
       end subroutine add_lateral_load_and_sink
    end interface add_lateral_load_and_sink
@@ -174,7 +174,7 @@ module m_lateral
    end interface get_lateral_volume_per_layer
 
    !> Distributes provided lateral discharge across flow nodes. 
-   !. Input is lateral discharge per layer per lateral, output is per layer per lateral per cell.
+   !> Input is lateral discharge per layer per lateral, output is per layer per lateral per cell.
    interface distribute_lateral_discharge
       module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
          real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per
