@@ -13119,7 +13119,6 @@ contains
       double precision, allocatable :: tmp_s1(:), tmp_bl(:), tmp_s0(:)
       double precision, allocatable :: tmp_sqi(:), tmp_squ(:)
       double precision, allocatable :: tmp_ucxq(:), tmp_ucyq(:)
-      double precision, allocatable :: tmp_rho(:), tmp_rhowat(:)
       double precision, allocatable :: rst_bodsed(:, :), rst_mfluff(:, :), rst_thlyr(:, :)
       double precision, allocatable :: rst_msed(:, :, :)
       integer, allocatable :: itmpvar(:)
@@ -13483,10 +13482,6 @@ contains
             call realloc(tmp_sqi, um%nbnd_read, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucxq, um%nbnd_read, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucyq, um%nbnd_read, stat=ierr, keepExisting=.false.)
-            call realloc(tmp_rho, um%nbnd_read, stat=ierr, keepExisting=.false.)
-            if (stm_included) then
-               call realloc(tmp_rhowat, um%nbnd_read, stat=ierr, keepExisting=.false.)
-            end if
 
             ierr = nf90_inq_varid(imapfile, 's0_bnd', id_s0bnd)
             if (ierr == 0) then
@@ -13589,10 +13584,6 @@ contains
             call realloc(tmp_sqi, ndx - ndxi, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucxq, ndx - ndxi, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucyq, ndx - ndxi, stat=ierr, keepExisting=.false.)
-            call realloc(tmp_rho, ndx - ndxi, stat=ierr, keepExisting=.false.)
-            if (stm_included) then
-               call realloc(tmp_rhowat, ndx - ndxi, stat=ierr, keepExisting=.false.)
-            end if
 
             ierr = get_var_and_shift(imapfile, 's0_bnd', tmp_s0, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
