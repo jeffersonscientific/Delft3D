@@ -64,7 +64,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     logical                             , pointer :: tps_from_com  !  Description and declaration in procs.igs    
     logical                             , pointer :: ubot_from_com !  Description and declaration in procs.igs
     logical                             , pointer :: wlen_from_com !  Description and declaration in procs.igs
-	logical                             , pointer :: skipuniqueid
+	logical                             , pointer :: add_uniqueid
     integer                             , pointer :: numdomains
     integer                             , pointer :: itis
     integer                             , pointer :: rolcorr
@@ -123,6 +123,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     integer        , external :: newlun
     integer                   :: uw
     logical                   :: lhulp  ! Help variable to read logical from MD-file
+    logical                   :: skipuniqueid !< temporary variable for reading the corresponding keyword
     character(20)             :: chulp  ! Help variable to read character from MD-file 
     character(256)            :: filrol
 !
@@ -140,7 +141,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     itis              => gdp%gdrdpara%itis
     rolcorr           => gdp%gdbetaro%rolcorr
     sbkConfigFile     => gdp%gdsobek%sbkConfigFile
-    skipuniqueid      => gdp%gdnfl%skipuniqueid
+    add_uniqueid      => gdp%gdnfl%add_uniqueid
     !
     ! calculate LSTSC
     ! locate 'Sub1' record for 'S'alinity, 'T'emperaure, 'I'secondary flow and 'W'ind
@@ -367,13 +368,14 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
        !
        skipuniqueid = .false.
        call prop_get(gdp%mdfile_ptr, '*', 'SkipUniqueId', skipuniqueid)
+       add_uniqueid = .not.skipuniqueid
        !
        call prop_get(gdp%mdfile_ptr, '*', 'NfTimeout', nf_timeout)
        if (nf_timeout < huge(nf_timeout)) then
           write (lundia, '(a,f8.1,a)') '*** MESSAGE NfTimeout = ', nf_timeout, ' minutes'
        endif
     else
-       skipuniqueid = .true.
+       add_uniqueid = .false.
     endif
     !
     !
