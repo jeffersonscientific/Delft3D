@@ -491,6 +491,7 @@ subroutine flow_sedmorinit()
          kcsmor(kp(k)) = inmorphopol
       end do
    end if
+   call delpol()  ! clean up morphopol polygon - interferes with inifieldfile reader
 
    if (stmpar%morpar%multi) then
       if (initialize_mormerge_mpi(stmpar%morpar, stmpar%lsedtot, ndxi, jampi, my_rank, ndomains, DFM_COMM_DFMWORLD) &
