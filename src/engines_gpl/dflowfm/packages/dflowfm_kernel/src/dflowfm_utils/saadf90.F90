@@ -2567,7 +2567,6 @@ subroutine pgmres(n, im, rhs, sol, vv, eps, maxits, iout, aa, ja, ia, alu, jlu, 
 !
    hh(i, i) = c(i) * hh(i, i) + s(i) * hh(i1, i)
    ro = abs(rs(i1))
-131 format(1h, 2e14.4)
    if (iout > 0) write (iout, 199) its, ro
    if (i < im .and. (ro > eps1)) goto 4
 !

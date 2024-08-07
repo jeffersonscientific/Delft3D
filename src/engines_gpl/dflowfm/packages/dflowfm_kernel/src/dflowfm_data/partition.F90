@@ -5736,45 +5736,44 @@ subroutine print_timings(FNAM, dtime)
 !           print header
          lenstr = 4
          do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ", $)')
+            write (MFILE, '(" ")', advance="no")
          end do
-         write (MFILE, "(A, $)") 'time'
+         write (MFILE, '(A)', advance="no") 'time'
 
          lenstr = 16
          do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ", $)')
+            write (MFILE, '(" ")', advance="no")
          end do
-         write (MFILE, "(A, $)") 'number_of_tsteps'
+         write (MFILE, '(A)', advance="no") 'number_of_tsteps'
 
          do i = 1, Ntvarlist
             lenstr = len_trim(tnams(itvarlist(i)))
             do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_ave', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_ave')", advance="no") trim(tnams(itvarlist(i)))
 
             do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_max', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_max')", advance="no") trim(tnams(itvarlist(i)))
 
             do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_CPU_ave', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_CPU_ave')", advance="no") trim(tnams(itvarlist(i)))
 
             do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_CPU_max', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_CPU_max')", advance="no") trim(tnams(itvarlist(i)))
          end do
 
          lenstr = 8
          do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ", $)')
+            write (MFILE, '(" ")', advance="no")
          end do
-         write (MFILE, "(A, $)") 'cg_iters'
-
+         write (MFILE, "(A)", advance="no") 'cg_iters'
          write (MFILE, *)
       end if
 

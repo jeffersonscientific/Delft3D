@@ -115,7 +115,7 @@ contains
             iunit = -1
          end select
 
-         read (timeunitstr(i + 7:n), '(I4,1H,I2,1H,I2,1H,I2,1H,I2,1H,I2)', iostat=iostat) iyear, imonth, iday, ihour, imin, isec
+         read (timeunitstr(i + 7:n), '(I4,1x,I2,1x,I2,1x,I2,1x,I2,1x,I2)', iostat=iostat) iyear, imonth, iday, ihour, imin, isec
 
       end if
    end function parse_ud_timeunit

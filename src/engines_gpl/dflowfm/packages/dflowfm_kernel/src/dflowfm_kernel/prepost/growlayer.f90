@@ -197,10 +197,10 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
 
       if (dt_other < dt_loc) then
 !         istop = 1
-         write (6, '(A, $)') "--- stop ---"
+         write (6, '(A)', advance="no") "--- stop ---"
          do i = 1, mc
             if (ifrontnew(i) == 0 .and. ifrontold(i) == 1) then
-               write (6, '(I5, ":", $)') i
+               write (6, '(I5, ":")', advance="no") i
             end if
          end do
          write (6, *)
