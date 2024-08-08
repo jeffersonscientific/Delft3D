@@ -1755,7 +1755,7 @@ contains
             lnxbnd(Lf - lnxi) = itpenz(k)
 
             do n = 1, nd(kbi)%lnx
-               L = iabs(nd(kbi)%ln(n))
+               L = abs(nd(kbi)%ln(n))
                teta(L) = 1d0
             end do
 
@@ -1853,7 +1853,7 @@ contains
             lnxbnd(Lf - lnxi) = itpenu(k)
 
             do n = 1, nd(kbi)%lnx
-               L = iabs(nd(kbi)%ln(n))
+               L = abs(nd(kbi)%ln(n))
                teta(L) = 1d0
             end do
 
@@ -2513,7 +2513,7 @@ contains
          jagrounlay = 0
          do L = 1, lnx1D
             itp = prof1D(3, L)
-            if (grounlay(L) > 0d0 .and. iabs(itp) <= 3) then
+            if (grounlay(L) > 0d0 .and. abs(itp) <= 3) then
                call getprof_1D(L, grounlay(L), argr(L), wigr(L), 1, 1, pergr(L))
             end if
          end do

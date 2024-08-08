@@ -394,7 +394,7 @@ c
 c end of square culvert
 
         hulp  = 12. * rc / ks
-        froot = 1. / (2. * ALOG10(hulp))
+        froot = 1. / (2. * LOG10(hulp))
         rnc   = rc**(1./6.) * froot / SQRT(8.*9.81)
 
         scrit = (rnc*qin / (ac*rc**(2./3.)))**2
@@ -815,7 +815,7 @@ c flowtype 4
       endif
 
       hulp  = 12*r/ks
-      froot = 1. / (2 * ALOG10(hulp))
+      froot = 1. / (2 * LOG10(hulp))
       rn    = r**(1./6) * froot / 8.86
       c42   = cc(4) * cc(4)
       rnoem = 1. + 19.62*c42*rn*rn*cullen/r**(4./3.)

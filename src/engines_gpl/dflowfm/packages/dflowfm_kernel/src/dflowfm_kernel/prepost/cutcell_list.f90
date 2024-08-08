@@ -240,7 +240,7 @@
 !    SPvdP: disable flow-links that are associated to disabled net-links
         do Lf = 1, Lnx
            if (kcu(Lf) /= 2) cycle
-           L = iabs(ln2lne(Lf))
+           L = abs(ln2lne(Lf))
            if (L > 0) then
               if (lnn(L) == 0) then
                  wu(Lf) = 0d0

@@ -277,11 +277,11 @@ c
      &               160,170,180) , ie
    10          continue
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
-     &                           uindex  ,usrord ,sngl(h2))
+     &                           uindex  ,usrord , real(h2))
                   goto 200
    20          continue
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
-     &                           uindex  ,usrord ,sngl(q2))
+     &                           uindex  ,usrord , real(q2))
                   goto 200
    30          continue
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
@@ -293,7 +293,7 @@ c
                   goto 200
    50          continue
                   do 55 igr = 1, ngrid
-                     buf(igr) = sngl(q2(igr)) - q2s(igr,1) - q2s(igr,2)
+                     buf(igr) = real(q2(igr)) - q2s(igr,1) - q2s(igr,2)
    55             continue
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,buf    )
@@ -405,12 +405,12 @@ c
      &               340,350,360,370,380,390) ,ie
   220          continue
                   do 225 j=1,hyrtim(1)
-                     buf(j) = sngl( h2(hyrtim(j+1)) )
+                     buf(j) = real( h2(hyrtim(j+1)), kind=kind(buf) )
   225             continue
                   goto 400
   230          continue
                   do 235 j=1,hyrtim(1)
-                     buf(j) = sngl( q2(hyrtim(j+1)) )
+                     buf(j) = real( q2(hyrtim(j+1)), kind=kind(buf) )
   235             continue
                   goto 400
   240          continue

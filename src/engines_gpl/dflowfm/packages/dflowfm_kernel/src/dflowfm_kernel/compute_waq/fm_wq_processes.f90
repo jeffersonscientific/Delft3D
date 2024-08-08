@@ -1845,7 +1845,7 @@ logical function reduce_sum_wq_processes(size_wq_processes_data, wq_processes_da
    if (jampi == 1) then
       mpi_wq_processes_data = dble(wq_processes_data)
       call reduce_double_sum(size_wq_processes_data, mpi_wq_processes_data, mpi_wq_processes_data_reduce)
-      wq_processes_data = sngl(mpi_wq_processes_data_reduce)
+      wq_processes_data = real(mpi_wq_processes_data_reduce)
    end if
 
    reduce_sum_wq_processes = .true.

@@ -48,7 +48,7 @@
     huweir = 0d0; hunoweir = 0d0; wl = 0d0; wlno = 0d0; at = 0d0
 
     do LL = 1, nd(ku)%lnx
-       Ls = nd(ku)%ln(LL); L = iabs(Ls)
+       Ls = nd(ku)%ln(LL); L = abs(Ls)
        if (iadv(L) >= 21 .and. iadv(L) <= 29) then
           huweir = huweir + wu(L) * hu(L)
           wl = wl + wu(L)
@@ -57,7 +57,7 @@
     huweir = huweir / wl
 
     do LL = 1, nd(ku)%lnx
-       Ls = nd(ku)%ln(LL); L = iabs(Ls)
+       Ls = nd(ku)%ln(LL); L = abs(Ls)
        if (Ls < 0) then
           ac1 = acL(L)
           n12 = 1

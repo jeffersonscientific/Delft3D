@@ -78,7 +78,7 @@
      LL = 0
      do kk = 1, nd(n)%lnx
         L = nd(n)%ln(kk)
-        La = iabs(L)
+        La = abs(L)
         Lb = Lbot(La)
         is = 1; if (L < 0) is = -1
         if (is * u1(Lb) > uLx) then ! search link with highest outflow velocity

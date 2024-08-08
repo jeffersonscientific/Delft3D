@@ -455,7 +455,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ncgensg
 
          do k = L1cgensg(n), L2cgensg(n)
-            Lf = iabs(kegen(k))
+            Lf = abs(kegen(k))
             kb = ln(1, Lf)
             kbi = ln(2, Lf)
             if (kegen(k) > 0) then
@@ -862,7 +862,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ngatesg
 
          do k = L1gatesg(n), L2gatesg(n)
-            Lf = iabs(keg(k))
+            Lf = abs(keg(k))
             kb = ln(1, Lf)
             kbi = ln(2, Lf)
             kgate(1, k) = kb
@@ -933,7 +933,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ncdamsg
 
          do k = L1cdamsg(n), L2cdamsg(n)
-            Lf = iabs(ked(k))
+            Lf = abs(ked(k))
             kb = ln(1, Lf) ! TODO: HK: moeten we hier niet altijd de upstream kb pakken (af van sign(ked(k))?
             kbi = ln(2, Lf)
             kcdam(1, k) = kb
@@ -1017,7 +1017,7 @@ function flow_init_structurecontrol() result(status)
 
          do k = L1pumpsg(n), L2pumpsg(n)
             L = kep(k)
-            Lf = iabs(L)
+            Lf = abs(L)
             if (L > 0) then
                kb = ln(1, Lf)
                kbi = ln(2, Lf)
@@ -1070,7 +1070,7 @@ function flow_init_structurecontrol() result(status)
                istrtmp = hashsearch(network%sts%hashlist_pump, strid)
                if (istrtmp == -1) then
                   k = L1pumpsg(n)
-                  istrtmp = addStructure(network%sts, kpump(1, k), kpump(2, k), iabs(kpump(3, k)), -1, "", strid, istrtype)
+                  istrtmp = addStructure(network%sts, kpump(1, k), kpump(2, k), abs(kpump(3, k)), -1, "", strid, istrtype)
                   call readPump(network%sts%struct(istrtmp)%pump, str_ptr, strid, network%forcinglist, success)
                end if
             end if
@@ -1232,7 +1232,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ndambreaksignals
          do k = L1dambreaksg(n), L2dambreaksg(n)
             L = kedb(k)
-            Lf = iabs(L)
+            Lf = abs(L)
             if (L > 0) then
                kb = ln(1, Lf)
                kbi = ln(2, Lf)
@@ -1280,7 +1280,7 @@ function flow_init_structurecontrol() result(status)
                k = L1dambreaksg(n)
                k1 = kdambreak(1, k)
                k2 = kdambreak(2, k)
-               Lf = iabs(kdambreak(3, k))
+               Lf = abs(kdambreak(3, k))
             else
                ! Structure is not active in current grid: use dummy calc points and flow links, not used in computations.
                k1 = 0
@@ -1392,7 +1392,7 @@ function flow_init_structurecontrol() result(status)
          do k = L1dambreaksg(n), L2dambreaksg(n)
             indexLink = indexLink + 1
             ! compute the mid point
-            Lf = iabs(kdambreak(3, k))
+            Lf = abs(kdambreak(3, k))
             k1 = ln(1, Lf)
             k2 = ln(2, Lf)
             xl(indexLink, 1) = xz(k1)
@@ -1420,7 +1420,7 @@ function flow_init_structurecontrol() result(status)
 
          ! compute the normal projections of the start and endpoints of the flow links
          do k = L1dambreaksg(n), L2dambreaksg(n)
-            Lf = iabs(kdambreak(3, k))
+            Lf = abs(kdambreak(3, k))
             if (kcu(Lf) == 3) then ! 1d2d flow link
                dambreakLinksEffectiveLength(k) = wu(Lf)
             else

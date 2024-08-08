@@ -1201,9 +1201,9 @@ module time_module
          GOTO 999
       ELSE if (compareDates([iyear, imonth, iday], justAfterLastJulian) == -1) then
          TEMP2 = JulianYearMonthDayToJulianDateNumber(iyear, imonth, iday)
-         TEMP1  = FLOAT ( IHOUR ) * 3600.0 + &
-                  FLOAT ( IMIN  ) *   60.0 + &
-                  FLOAT ( ISEC  ) - 43200.0
+         TEMP1  = real(IHOUR, kind=kind(TEMP1)) * 3600.0d0 + &
+                  real(IMIN, kind=kind(TEMP1))  *   60.0d0 + &
+                  real(ISEC, kind=kind(TEMP1))  - 43200.0d0
          JULIAN = TEMP2 + ( TEMP1 / 86400.0 )
       ELSE
          TEMP1  = INT (( IMONTH-14.0) / 12.0 )
@@ -1212,9 +1212,9 @@ module time_module
                 INT ( 367.0 * ( IMONTH - 2.0 - TEMP1 * 12.0 ) / 12.0 ) - &
                 INT ( 3.0 * INT ( ( IYEAR + 4900.0 + TEMP1 ) / 100.0 ) / &
                 4.0 )
-         TEMP1  = FLOAT ( IHOUR ) * 3600.0 + &
-                  FLOAT ( IMIN  ) *   60.0 + &
-                  FLOAT ( ISEC  ) - 43200.0
+         TEMP1  = real(IHOUR, kind=kind(TEMP1)) * 3600.0d0 + &
+                  real(IMIN, kind=kind(TEMP1))  *   60.0d0 + &
+                  real(ISEC, kind=kind(TEMP1))  - 43200.0d0
          JULIAN = TEMP2 + ( TEMP1 / 86400.0 )
       ENDIF
   999 RETURN
@@ -1334,8 +1334,9 @@ module time_module
                 INT ( 1461.0 * ( IYEAR + 4800.0 + TEMP1 ) / 4.0 ) + &
                 INT ( 367.0 * ( IMONTH - 2.0 - TEMP1 * 12.0 ) / 12.0 ) - &
                 INT ( 3.0 * INT ( ( IYEAR + 4900.0 + TEMP1 ) / 100.0 ) / 4.0 )
-         TEMP1  = FLOAT ( IHOUR ) * 3600.0 + &
-                  FLOAT ( IMIN  ) *   60.0 + FLOAT ( ISEC  ) - 43200.0
+         TEMP1  = real(IHOUR, kind=kind(TEMP1)) * 3600.0d0 + &
+                  real(IMIN, kind=kind(TEMP1))  *   60.0d0 + &
+                  real(ISEC, kind=kind(TEMP1)) - 43200.0d0
          julian_with_leapyears = TEMP2 + ( TEMP1 / 86400.0 )
       ENDIF
   999 RETURN

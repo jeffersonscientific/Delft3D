@@ -90,10 +90,10 @@
           if (Y >= 89d0) Y = 89.d0
           if (Y <= -89d0) Y = -89.d0
           YY = DG2RD * Y
-          YY = DLOG(1d0 + sin(YY)) / cos(YY)
+          YY = log(1d0 + sin(YY)) / cos(YY)
           XX = DG2RD * X
        else if (MODE == 2) then
-          YY = DATAN(sinh(Y))
+          YY = atan(sinh(Y))
           YY = RD2DG * YY
           XX = RD2DG * X
        end if

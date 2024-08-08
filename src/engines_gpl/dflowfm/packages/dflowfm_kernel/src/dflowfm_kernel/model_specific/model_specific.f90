@@ -813,7 +813,7 @@ subroutine poiseuille(init)
       uu = -c0 * yf * yf + c2
 
       plotlin(k) = ucx(k) - uu
-      avedif = avedif + dabs(ucx(k) - uu) * ba(k)
+      avedif = avedif + abs(ucx(k) - uu) * ba(k)
       sumba = sumba + ba(k)
 
    end do

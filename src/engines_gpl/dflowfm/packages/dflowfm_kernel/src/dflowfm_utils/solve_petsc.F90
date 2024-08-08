@@ -196,7 +196,7 @@ subroutine ini_petsc(Ndx, Ndxi, ierror)
 !            if ( idomain(ndn).ne.my_rank ) then
 !               Lactive = .false.
 !               do i=1,nd(ndn)%lnx
-!                  L = iabs(nd(ndn)%ln(i))
+!                  L = abs(nd(ndn)%ln(i))
 !                  if ( wu(L).ne.0d0 ) then
 !                     Lactive = .true.
 !                  end if

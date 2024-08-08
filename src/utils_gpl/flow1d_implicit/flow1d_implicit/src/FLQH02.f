@@ -238,7 +238,7 @@ c set criterium
 c
 c calculate critical slope
         hulp  =  12 * rcrit / ks
-        fcroot= 1. / (2 * ALOG10(hulp) )
+        fcroot= 1. / (2 * LOG10(hulp) )
         rnc    = rcrit**(1./6.) * fcroot / 8.86
         scrit  = (rnc * q / (acrit * rcrit**(2./3)))**2
 

@@ -111,7 +111,7 @@
     if (jabarrieradvection == 2) then
        do n = 1, ngatesg
           do L = L1gatesg(n), L2gatesg(n)
-             LL = kgate(3, L); LL = iabs(LL)
+             LL = kgate(3, L); LL = abs(LL)
              kd = ln(1, LL); ku = ln(2, LL)
              call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
              call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
@@ -120,7 +120,7 @@
        do n = 1, ngategen
           i = gate2cgen(n)
           do L = L1cgensg(i), L2cgensg(i)
-             LL = kcgen(3, L); LL = iabs(LL)
+             LL = kcgen(3, L); LL = abs(LL)
              kd = ln(1, LL); ku = ln(2, LL)
              call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
              call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))

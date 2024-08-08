@@ -662,7 +662,7 @@ contains
             end where
          end do
          ! Calculate directional spreading based on cosine law
-         Dd = dcos(tempdir)**(2 * nint(scoeff(ip))) ! Robert: apparently nint is needed here, else MATH error
+         Dd = cos(tempdir)**(2 * nint(scoeff(ip))) ! Robert: apparently nint is needed here, else MATH error
          ! Scale directional spreading to have a surface of unity by dividing by its
          ! own surface
          Dd = Dd / (sum(Dd) * specin%dang)
@@ -2152,8 +2152,8 @@ contains
             ! start at x(1,1), y(1,1).
             wp%CompFn(ii, wp%Findex(i)) = wp%A(ii, i) / 2 * exp(par_compi * wp%phigen(i)) * & ! Bas: wp%Findex used in time dimension because t=j*dt in frequency space
                                           exp(-par_compi * wp%kgen(i) * &
-                                              (dsin(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%yb(ii) - waveBoundaryParameters(ibnd)%y0) &
-                                               + dcos(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%xb(ii) - waveBoundaryParameters(ibnd)%x0)))
+                                              (sin(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%yb(ii) - waveBoundaryParameters(ibnd)%y0) &
+                                               + cos(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%xb(ii) - waveBoundaryParameters(ibnd)%x0)))
 
             ! Determine Fourier coefficients beyond Nyquist frequency (equal to
             ! coefficients at negative frequency axis) of relevant wave components for
@@ -2578,10 +2578,10 @@ contains
          do ik = 1, wp%K
             if (wp%PRindex(ik) == 1) then
                do j = 1, npb
-                  wp%zsits(j, it) = wp%zsits(j, it) + wp%A(j, ik) * dsin( &
+                  wp%zsits(j, it) = wp%zsits(j, it) + wp%A(j, ik) * sin( &
                                     +wp%wgen(ik) * wp%tin(it) &
-                                    - wp%kgen(ik) * (dsin(wp%thetagen(ik)) * disty(j) &
-                                                     + dcos(wp%thetagen(ik)) * distx(j) &
+                                    - wp%kgen(ik) * (sin(wp%thetagen(ik)) * disty(j) &
+                                                     + cos(wp%thetagen(ik)) * distx(j) &
                                                      ) &
                                     + wp%phigen(ik) &
                                     )
@@ -2603,17 +2603,17 @@ contains
                do j = 1, npb
                   ! Depth-average velocity in wave direction:
                   U = 1.d0 / hb0 * wp%wgen(ik) * wp%A(j, ik) * &
-                      dsin(wp%wgen(ik) * wp%tin(it) &
-                           - wp%kgen(ik) * (dsin(wp%thetagen(ik)) * disty(j) &
-                                            + dcos(wp%thetagen(ik)) * distx(j)) &
+                      sin(wp%wgen(ik) * wp%tin(it) &
+                           - wp%kgen(ik) * (sin(wp%thetagen(ik)) * disty(j) &
+                                            + cos(wp%thetagen(ik)) * distx(j)) &
                            + wp%phigen(ik) &
                            ) * &
                       1.d0 / wp%kgen(ik)
 
                   ! Eastward component:
-                  wp%uits(j, it) = wp%uits(j, it) + dcos(wp%thetagen(ik)) * U
+                  wp%uits(j, it) = wp%uits(j, it) + cos(wp%thetagen(ik)) * U
                   ! Northward component:
-                  wp%vits(j, it) = wp%vits(j, it) + dsin(wp%thetagen(ik)) * U
+                  wp%vits(j, it) = wp%vits(j, it) + sin(wp%thetagen(ik)) * U
                end do
             end if
          end do
@@ -2728,13 +2728,13 @@ contains
          deltheta(m, 1:K - m) = abs(wp%thetagen(m + 1:K) - wp%thetagen(1:K - m)) + par_pi
 
          ! Determine x- and y-components of wave numbers of difference waves
-         KKy(m, 1:K - m) = wp%kgen(m + 1:K) * dsin(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * dsin(wp%thetagen(1:K - m))
-         KKx(m, 1:K - m) = wp%kgen(m + 1:K) * dcos(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * dcos(wp%thetagen(1:K - m))
+         KKy(m, 1:K - m) = wp%kgen(m + 1:K) * sin(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * sin(wp%thetagen(1:K - m))
+         KKx(m, 1:K - m) = wp%kgen(m + 1:K) * cos(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * cos(wp%thetagen(1:K - m))
 
          ! Determine difference wave numbers according to Van Dongeren et al. 2003
          ! eq. 19
          k3(m, 1:K - m) = sqrt(wp%kgen(1:K - m)**2 + wp%kgen(m + 1:K)**2 + &
-                               2 * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * dcos(deltheta(m, 1:K - m)))
+                               2 * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)))
 
          ! Determine group velocity of difference waves
          cg3(m, 1:K - m) = 2.d0 * par_pi * deltaf / k3(m, 1:K - m)
@@ -2756,10 +2756,10 @@ contains
          chk1 = cosh(wp%kgen(1:K - m) * hb0)
          chk2 = cosh(wp%kgen(m + 1:K) * hb0)
 
-         D(m, 1:K - m) = -par_g * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * dcos(deltheta(m, 1:K - m)) / 2.d0 / term1 + &
+         D(m, 1:K - m) = -par_g * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)) / 2.d0 / term1 + &
                          +term2**2 / (par_g * 2) + par_g * term2 / &
                          ((par_g * k3(m, 1:K - m) * tanh(k3(m, 1:K - m) * hb0) - (term2new)**2) * term1) * &
-                         (term2 * ((term1)**2 / par_g / par_g - wp%kgen(1:K - m) * wp%kgen(m + 1:K) * dcos(deltheta(m, 1:K - m))) &
+                         (term2 * ((term1)**2 / par_g / par_g - wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m))) &
                           - 0.50d0 * ((-wp%wgen(1:K - m)) * wp%kgen(m + 1:K)**2 / (chk2**2) + wp%wgen(m + 1:K) * wp%kgen(1:K - m)**2 / (chk1**2)))
 
          ! Exclude interactions with components smaller than or equal to current
@@ -2835,8 +2835,8 @@ contains
          !
          ! Determine complex description of bound long wave per interaction pair of
          ! primary waves for first y-coordinate along seaside boundary
-         Ftemp(:, :, 1) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * dcos(theta3) ! qx
-         Ftemp(:, :, 2) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * dsin(theta3) ! qy
+         Ftemp(:, :, 1) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * cos(theta3) ! qx
+         Ftemp(:, :, 2) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * sin(theta3) ! qy
          Ftemp(:, :, 3) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 ! qtot
          Ftemp(:, :, 4) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) ! eta
          !

@@ -111,7 +111,7 @@
 !
 !     initialize constants
 !
-         pi = acos(-1.d0) ! 4.0d0*daTAN(1.0d0)
+         pi = acos(-1.d0) ! 4.0d0*atan(1.0d0)
          eps = 1.0d-05
          fe = 5.0d+05
 !     fn     = 1.0E+07
@@ -201,7 +201,7 @@
 !     set final values
 !
          ygeo = fi * 180d0 / pi
-         xgeo = dl * 180d0 / pi + 6d0 * FLOAT(Izone - 1) - 177d0
+         xgeo = dl * 180d0 / pi + 6d0 * real(Izone - 1, kind=kind(xgeo)) - 177d0
          ierr = 0
 !
 900      continue

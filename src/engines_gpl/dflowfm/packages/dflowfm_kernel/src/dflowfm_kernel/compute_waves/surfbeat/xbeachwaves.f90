@@ -1243,7 +1243,7 @@ subroutine xbeach_wave_instationary()
          cost = 0d0
          sint = 0d0
          do L = 1, nd(k)%lnx
-            Lf = iabs(L)
+            Lf = abs(L)
             k1 = ln(1, Lf)
             if (k1 == k) then
                k2 = ln(2, Lf)
@@ -1440,7 +1440,7 @@ subroutine xbeach_wave_maxtimestep()
       do itheta = 1, ntheta
          dum = 0.d0
          do kk = 1, nd(k)%lnx
-            L = iabs(nd(k)%ln(kk))
+            L = abs(nd(k)%ln(kk))
             k1 = ln(1, L)
             k2 = ln(2, L)
 
@@ -2400,7 +2400,7 @@ subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
             ku = klnup(1 + ip, L) ! pointer upwind cel horende bij link L
 
             if (ku /= 0) then
-               kl2s = klnup(2 + ip, L); kl2 = iabs(kl2s) !
+               kl2s = klnup(2 + ip, L); kl2 = abs(kl2s) !
 
                if (ku < 0) then
                   waku = quant(itheta, abs(ku)) ! pointer naar cel negatief?
@@ -2513,7 +2513,7 @@ subroutine advec_upw_bulk(thetamean, quant, veloc, advec)
       sn = -walls(7, nwalls)
       wuL = walls(9, nwalls)
 
-      cwuL = veloc(k1) * (cs * dcos(thetamean(k1)) + sn * dsin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
+      cwuL = veloc(k1) * (cs * cos(thetamean(k1)) + sn * sin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
       fluxvel1 = cwuL * wuL
 
       if (fluxvel1 > 0) then
@@ -2529,7 +2529,7 @@ subroutine advec_upw_bulk(thetamean, quant, veloc, advec)
       sn = -thindam(4, nwalls)
       wuL = thindam(6, nwalls)
 
-      cwuL = veloc(k1) * (cs * dcos(thetamean(k1)) + sn * dsin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
+      cwuL = veloc(k1) * (cs * cos(thetamean(k1)) + sn * sin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
       fluxvel1 = cwuL * wuL
 
       if (fluxvel1 > 0) then
@@ -2643,10 +2643,10 @@ subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
          ku = klnup(1 + ip, L) ! pointer upwind cel horende bij link L
 
          if (ku /= 0) then
-            kl2s = klnup(2 + ip, L); kl2 = iabs(kl2s) !
+            kl2s = klnup(2 + ip, L); kl2 = abs(kl2s) !
 
             if (ku < 0) then
-               waku = quant(iabs(ku)) ! pointer naar cel negatief?
+               waku = quant(abs(ku)) ! pointer naar cel negatief?
             else
                kl1 = ku
                sl1 = slnup(1 + ip, L); sl2 = slnup(2 + ip, L) ! link upwind cell weight
@@ -2679,7 +2679,7 @@ subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
       sn = -walls(7, nwalls)
 
       wuL = walls(9, nwalls)
-      cwuL = veloc(k1) * (cs * dcos(thetamean(k1)) + sn * dsin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
+      cwuL = veloc(k1) * (cs * cos(thetamean(k1)) + sn * sin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
       fluxvel1 = cwuL * wuL
 
       if (fluxvel1 > 0) then
@@ -2695,7 +2695,7 @@ subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
       sn = -thindam(4, nwalls)
       wuL = thindam(6, nwalls)
 
-      cwuL = veloc(k1) * (cs * dcos(thetamean(k1)) + sn * dsin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
+      cwuL = veloc(k1) * (cs * cos(thetamean(k1)) + sn * sin(thetamean(k1))) ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
       fluxvel1 = cwuL * wuL
 
       if (fluxvel1 > 0) then
@@ -3489,7 +3489,7 @@ subroutine xbeach_absgen_bc()
             dbetady = 0d0
             !
             do i = 1, NLNX
-               L = iabs(nd(ki)%ln(i))
+               L = abs(nd(ki)%ln(i))
                !
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -3543,7 +3543,7 @@ subroutine xbeach_absgen_bc()
             alpha2 = (270d0 - dir0) * dg2rd ! first guess, theta0 not set for spectral bc as dir0 not defined
             alphanew = 0.d0
             !
-            cg0 = dsqrt(ag * hum)
+            cg0 = sqrt(ag * hum)
             !
             do jj = 1, 50
                !
@@ -3636,7 +3636,7 @@ subroutine rollerturbulence(k)
 
    hloc = max(s1(k) - bl(k), 0.01d0)
    ! compute mixing length
-   ML = dsqrt(2 * rol * Tw / (rhomean * cw))
+   ML = sqrt(2 * rol * Tw / (rhomean * cw))
    ML = min(ML, hloc); 
    ! exponential decay turbulence over depth
    dcfin = exp(min(100.d0, hloc / max(ML, 1d-10)))
@@ -4071,7 +4071,7 @@ end subroutine borecharacter
 !                ku  = klnup(1+ip,L)                                         ! pointer upwind cel horende bij link L
 !
 !                if (ku .ne. 0 ) then
-!                    kl2s = klnup(2+ip,L) ; kl2 = iabs(kl2s)                 !
+!                    kl2s = klnup(2+ip,L) ; kl2 = abs(kl2s)                 !
 !
 !                    if (ku < 0) then
 !                        waku = quant(itheta,abs(ku))                        ! pointer naar cel negatief?

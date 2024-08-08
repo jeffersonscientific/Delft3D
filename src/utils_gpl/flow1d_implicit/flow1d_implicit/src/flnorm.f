@@ -274,7 +274,7 @@ c
       if ( steady ) then
        dt2    = 1.0E6
       else
-        dt2    = sngl(dt1)
+        dt2    = real(dt1, kind=kind(dt2))
       endif
 c
 c     Calculate 1 - psi and 1 - theta

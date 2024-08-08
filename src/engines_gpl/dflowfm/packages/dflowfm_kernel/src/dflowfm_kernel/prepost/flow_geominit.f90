@@ -348,7 +348,7 @@
        if (KN(3, L) == 1 .or. KN(3, L) >= 3 .and. KN(3, L) <= 7) then
           K1n = KN(1, L); K2n = KN(2, L)
           nc1 = lne(1, L); nc2 = lne(2, L)
-          N1 = IABS(NC1); N2 = IABS(NC2)
+          N1 = abs(NC1); N2 = abs(NC2)
           if (n1 == 0) then
              call dumpnetlink('flownode 1 not found for netlink = ', L)
           end if
@@ -392,7 +392,7 @@
     nlinktoosmall = 0
 
     do L = 1, numl ! count nr of edges that connect cells, ie. have nd1 and nd2
-       n1 = iabs(lne(1, L)); n2 = iabs(lne(2, L))
+       n1 = abs(lne(1, L)); n2 = abs(lne(2, L))
        if (n1 /= 0 .and. n2 /= 0 .and. KN(3, L) /= 0) then ! so that you know the nr of lins to be allocated
 
           isbadlink = .false.
@@ -520,7 +520,7 @@
 
     do L = 1, numl ! again count nr of edges and fill in links
        n1 = lne(1, L); n2 = lne(2, L)
-       n1a = iabs(n1); n2a = iabs(n2)
+       n1a = abs(n1); n2a = abs(n2)
 !    if (n1 .ne. 0 .and. n2 .ne. 0) then              ! L=net, Lf=flow
        if (n1 /= 0 .and. n2 /= 0 .and. KN(3, L) /= 0) then ! L=net, Lf=flow
           Lf = Lf + 1
@@ -868,11 +868,11 @@
        if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
           LL = L
           if (kcu(L) == -1) then ! 1D boundary link, find attached regular link
-             if (iabs(nd(k2)%ln(1)) == L) then
-                LBND1D(L) = iabs(nd(k2)%ln(2))
+             if (abs(nd(k2)%ln(1)) == L) then
+                LBND1D(L) = abs(nd(k2)%ln(2))
              end if
-             if (iabs(nd(k2)%ln(2)) == L) then
-                LBND1D(L) = iabs(nd(k2)%ln(1)) ! and store in LBND1D
+             if (abs(nd(k2)%ln(2)) == L) then
+                LBND1D(L) = abs(nd(k2)%ln(1)) ! and store in LBND1D
              end if
              LL = LBND1D(L) ! LL refers to prof1D
           end if
@@ -958,7 +958,7 @@
        k3 = lncn(1, L)
        k4 = lncn(2, L)
 
-       if (iabs(kcu(L)) == 2 .or. iabs(kcu(L)) == 4) then ! override for 2D
+       if (abs(kcu(L)) == 2 .or. abs(kcu(L)) == 4) then ! override for 2D
 
           !   x34   = 0.5d0*( xk(k3) + xk(k4) )
           !   y34   = 0.5d0*( yk(k3) + yk(k4) )
@@ -1176,7 +1176,7 @@
 
           L1 = 0; L2 = 0
           do LL = 1, nd(k1)%lnx
-             LLL = nd(k1)%ln(LL); LLA = iabs(LLL)
+             LLL = nd(k1)%ln(LL); LLA = abs(LLL)
              if (lncn(1, LLA) == k3 .or. lncn(2, LLA) == k3) then
                 L1 = LLA
                 walls(4, nw) = L1 ! link 1 to which this wall contributes
@@ -1392,8 +1392,8 @@
              rr(ka) = k2
 
              do kk3 = 1, nd(k)%lnx
-                L = iabs(nd(k)%ln(kk3))
-                La = iabs(L)
+                L = abs(nd(k)%ln(kk3))
+                La = abs(L)
                 if (lncn(1, La) == k2 .or. lncn(2, La) == k2) then
                    if (nbanh(3, ka) == 0) then
                       nbanh(3, ka) = La

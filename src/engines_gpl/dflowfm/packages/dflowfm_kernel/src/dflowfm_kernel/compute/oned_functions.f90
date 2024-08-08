@@ -204,7 +204,7 @@ contains
             if (ip2 > ip1) then
                ! For gridpointsequence with 2 or more gridpoints, make sure to add the last one.
                L = ip2 - 1 - (is - 1)
-               k2 = ln(2, iabs(lin(L)))
+               k2 = ln(2, abs(lin(L)))
                grd(ip2) = k2
             else ! ip1 == ip2: singleton/orphan grid point
                k2 = ndx2d + pbr%grd_input(ip2)
@@ -388,7 +388,7 @@ contains
                      dh = (chainage(i) - chainage(i - 1)) / 2d0
                   end if
                   do j = 1, nd(k1)%lnx
-                     if (L == iabs(nd(k1)%ln(j))) then
+                     if (L == abs(nd(k1)%ln(j))) then
                         jpos = j
                      end if
                   end do
@@ -654,7 +654,7 @@ contains
          ! (pump spatial orientation is polyline+righthand rule, or network branch direction).
          ! Note 2: do not account for pumping direction here, that is done in prepareComputePump.
          dir = sign(1, L) ! only includes flow link w.r.t. structure spatial orientation.
-         L = iabs(L)
+         L = abs(L)
          if (dir > 0) then
             k1 = ln(1, L)
             k2 = ln(2, L)
@@ -712,7 +712,7 @@ contains
          do L0 = 1, struct%numlinks
             L = struct%linknumbers(L0)
             dir = int(sign(1d0, L * qp)) ! Includes both pumping direction and flow link w.r.t. structure spatial orientation.
-            L = iabs(L)
+            L = abs(L)
             if (dir > 0) then
                k1 = ln(1, L)
             else
@@ -732,7 +732,7 @@ contains
       end if
 
       do L0 = 1, struct%numlinks
-         L = iabs(struct%linknumbers(L0))
+         L = abs(struct%linknumbers(L0))
          fu(L) = struct%fu(L0)
          ru(L) = struct%ru(L0)
          au(L) = struct%au(L0)

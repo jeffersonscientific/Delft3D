@@ -931,8 +931,8 @@ c     modified 3/93 to return if incx .le. 0.
 c
 c     four phase method     using two built-in constants that are
 c     hopefully applicable to all machines.
-c         cutlo = maximum of  dsqrt(u/eps)  over all known machines.
-c         cuthi = minimum of  dsqrt(v)      over all known machines.
+c         cutlo = maximum of  sqrt(u/eps)  over all known machines.
+c         cuthi = minimum of  sqrt(v)      over all known machines.
 c     where
 c         eps = smallest no. such that eps + 1. .gt. 1.
 c         u   = smallest positive no.   (underflow limit)
@@ -971,14 +971,14 @@ c
       ix = 1
 c                                                 begin main loop
    20    go to next,(30, 50, 70, 110)
-   30 if( dabs(dx(i)) .gt. cutlo) go to 85
+   30 if( abs(dx(i)) .gt. cutlo) go to 85
       assign 50 to next
       xmax = zero
 c
 c                        phase 1.  sum is zero
 c
    50 if( dx(i) .eq. zero) go to 200
-      if( dabs(dx(i)) .gt. cutlo) go to 85
+      if( abs(dx(i)) .gt. cutlo) go to 85
 c
 c                                prepare for phase 2.
       assign 70 to next
@@ -990,20 +990,20 @@ c
       ix = j
       assign 110 to next
       sum = (sum / dx(i)) / dx(i)
-  105 xmax = dabs(dx(i))
+  105 xmax = abs(dx(i))
       go to 115
 c
 c                   phase 2.  sum is small.
 c                             scale to avoid destructive underflow.
 c
-   70 if( dabs(dx(i)) .gt. cutlo ) go to 75
+   70 if( abs(dx(i)) .gt. cutlo ) go to 75
 c
 c                     common code for phases 2 and 4.
 c                     in phase 4 sum is large.  scale to avoid overflow.
 c
-  110 if( dabs(dx(i)) .le. xmax ) go to 115
+  110 if( abs(dx(i)) .le. xmax ) go to 115
          sum = one + sum * (xmax / dx(i))**2
-         xmax = dabs(dx(i))
+         xmax = abs(dx(i))
          go to 200
 c
   115 sum = sum + (dx(i)/xmax)**2
@@ -1018,16 +1018,16 @@ c
 c     for real or d.p. set hitest = cuthi/n
 c     for complex      set hitest = cuthi/(2*n)
 c
-   85 hitest = cuthi/float( n )
+   85 hitest = cuthi / real(n, kind=kind(hitest)) 
 c
 c                   phase 3.  sum is mid-range.  no scaling.
 c
       do 95 j = ix,n
-      if(dabs(dx(i)) .ge. hitest) go to 100
+      if(abs(dx(i)) .ge. hitest) go to 100
          sum = sum + dx(i)**2
          i = i + incx
    95 continue
-      dnrm2 = dsqrt( sum )
+      dnrm2 = sqrt( sum )
       go to 300
 c
   200 continue
@@ -1039,7 +1039,7 @@ c              end of main loop.
 c
 c              compute square root and adjust for scaling.
 c
-      dnrm2 = xmax * dsqrt(sum)
+      dnrm2 = xmax * sqrt(sum)
   300 continue
       return
       end
@@ -1051,21 +1051,21 @@ c
       double precision da,db,c,s,roe,scale,r,z
 c
       roe = db
-      if( dabs(da) .gt. dabs(db) ) roe = da
-      scale = dabs(da) + dabs(db)
+      if( abs(da) .gt. abs(db) ) roe = da
+      scale = abs(da) + abs(db)
       if( scale .ne. 0.0d0 ) go to 10
          c = 1.0d0
          s = 0.0d0
          r = 0.0d0
          z = 0.0d0
          go to 20
-   10 r = scale*dsqrt((da/scale)**2 + (db/scale)**2)
-      r = dsign(1.0d0,roe)*r
+   10 r = scale*sqrt((da/scale)**2 + (db/scale)**2)
+      r = sign(1.0d0,roe)*r
       c = da/r
       s = db/r
       z = 1.0d0
-      if( dabs(da) .gt. dabs(db) ) z = s
-      if( dabs(db) .ge. dabs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
+      if( abs(da) .gt. abs(db) ) z = s
+      if( abs(db) .ge. abs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
    20 da = r
       db = z
       return
@@ -2970,23 +2970,23 @@ c
 c        code for increment not equal to 1
 c
       ix = 1
-      dmax = dabs(dx(1))
+      dmax = abs(dx(1))
       ix = ix + incx
       do 10 i = 2,n
-         if(dabs(dx(ix)).le.dmax) go to 5
+         if(abs(dx(ix)).le.dmax) go to 5
          idamax = i
-         dmax = dabs(dx(ix))
+         dmax = abs(dx(ix))
     5    ix = ix + incx
    10 continue
       return
 c
 c        code for increment equal to 1
 c
-   20 dmax = dabs(dx(1))
+   20 dmax = abs(dx(1))
       do 30 i = 2,n
-         if(dabs(dx(i)).le.dmax) go to 30
+         if(abs(dx(i)).le.dmax) go to 30
          idamax = i
-         dmax = dabs(dx(i))
+         dmax = abs(dx(i))
    30 continue
       return
       end

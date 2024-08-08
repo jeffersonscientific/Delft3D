@@ -68,7 +68,7 @@ c
       if ( steady ) then
         dt = 1.0E6
       else
-        dt = sngl(dt1)
+        dt = real(dt1, kind=kind(dt))
       endif
 
       thetql = 1.0

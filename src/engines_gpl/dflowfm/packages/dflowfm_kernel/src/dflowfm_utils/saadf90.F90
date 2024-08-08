@@ -634,7 +634,7 @@ subroutine ilut(n, a, ja, ia, lfil, droptol, alu, jlu, ju, iwk, w, jw, ierr)
 !     update L-matrix
 !
       lenl = len
-      len = min0(lenl, lfil)
+      len = min(lenl, lfil)
 !
 !     sort by quick-split
 !
@@ -665,7 +665,7 @@ subroutine ilut(n, a, ja, ia, lfil, droptol, alu, jlu, ju, iwk, w, jw, ierr)
          end if
       end do
       lenu = len + 1
-      len = min0(lenu, lfil)
+      len = min(lenu, lfil)
 !
       call qsplit(w(ii + 1), jw(ii + 1), lenu - 1, len)
 !
@@ -1001,7 +1001,7 @@ subroutine ilutp(n, a, ja, ia, lfil, droptol, permtol, mbloc, alu, jlu, ju, iwk,
 !     update L-matrix
 !
       lenl = len
-      len = min0(lenl, lfil)
+      len = min(lenl, lfil)
 !
 !     sort by quick-split
 !
@@ -1034,7 +1034,7 @@ subroutine ilutp(n, a, ja, ia, lfil, droptol, permtol, mbloc, alu, jlu, ju, iwk,
          end if
       end do
       lenu = len + 1
-      len = min0(lenu, lfil)
+      len = min(lenu, lfil)
       call qsplit(w(ii + 1), jw(ii + 1), lenu - 1, len)
 !
 !     determine next pivot --
@@ -6190,7 +6190,7 @@ subroutine dbcg(n, rhs, sol, ipar, fpar, w)
 !     now compute the coefficients u(k) of the last
 !     column of the  l . u  factorization of h .
 !-----------------------------------------------------------------------
-   np = min0(i, lb)
+   np = min(i, lb)
    full = (i >= lb)
    call implu(np, umm, beta, ypiv, u, perm, full)
 !-----------------------------------------------------------------------

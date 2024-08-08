@@ -50,15 +50,15 @@ subroutine dnlfk(m, n, cp)
    integer :: ma, nmms2, i, l
 !
    cp(1) = 0.
-   ma = iabs(m)
+   ma = abs(m)
    if (ma > n) return
    if (n - 1) 2, 3, 5
-2  cp(1) = dsqrt(2.d0)
+2  cp(1) = sqrt(2.d0)
    return
 3  if (ma /= 0) go to 4
-   cp(1) = dsqrt(1.5d0)
+   cp(1) = sqrt(1.5d0)
    return
-4  cp(1) = dsqrt(.75d0)
+4  cp(1) = sqrt(.75d0)
    if (m == -1) cp(1) = -cp(1)
    return
 5  if (mod(n + ma, 2) /= 0) go to 10
@@ -95,7 +95,7 @@ subroutine dnlfk(m, n, cp)
       t2 = fnmh * t2 / (fnmh + pm1)
       fnmh = fnmh + 2.
    end do
-26 cp2 = t1 * dsqrt((n + .5d0) * t2)
+26 cp2 = t1 * sqrt((n + .5d0) * t2)
    fnnp1 = n * (n + 1)
    fnmsq = fnnp1 - 2.d0 * ma * ma
    l = (n + 1) / 2
@@ -119,8 +119,8 @@ subroutine dnlfk(m, n, cp)
 end
 subroutine dnlft(m, n, theta, cp, pb)
    double precision cp(*), pb, theta, cdt, sdt, cth, sth, chh
-   cdt = dcos(theta + theta)
-   sdt = dsin(theta + theta)
+   cdt = cos(theta + theta)
+   sdt = sin(theta + theta)
    nmod = mod(n, 2)
    mmod = mod(m, 2)
    if (nmod) 1, 1, 2
@@ -134,7 +134,7 @@ subroutine dnlft(m, n, theta, cp, pb)
    cth = cdt
    sth = sdt
    do k = 1, kdo
-!     pb = pb+cp(k+1)*dcos(2*k*theta)
+!     pb = pb+cp(k+1)*cos(2*k*theta)
       pb = pb + cp(k + 1) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -149,7 +149,7 @@ subroutine dnlft(m, n, theta, cp, pb)
    cth = cdt
    sth = sdt
    do k = 1, kdo
-!     pb = pb+cp(k)*dsin(2*k*theta)
+!     pb = pb+cp(k)*sin(2*k*theta)
       pb = pb + cp(k) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -162,10 +162,10 @@ subroutine dnlft(m, n, theta, cp, pb)
 !
 13 kdo = (n + 1) / 2
    pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
+   cth = cos(theta)
+   sth = sin(theta)
    do k = 1, kdo
-!     pb = pb+cp(k)*dcos((2*k-1)*theta)
+!     pb = pb+cp(k)*cos((2*k-1)*theta)
       pb = pb + cp(k) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -177,10 +177,10 @@ subroutine dnlft(m, n, theta, cp, pb)
 !
 14 kdo = (n + 1) / 2
    pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
+   cth = cos(theta)
+   sth = sin(theta)
    do k = 1, kdo
-!     pb = pb+cp(k)*dsin((2*k-1)*theta)
+!     pb = pb+cp(k)*sin((2*k-1)*theta)
       pb = pb + cp(k) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -194,8 +194,8 @@ subroutine dnlftd(m, n, theta, cp, pb)
 !
    dimension cp(1)
    double precision cp, pb, theta, cdt, sdt, cth, sth, chh
-   cdt = dcos(theta + theta)
-   sdt = dsin(theta + theta)
+   cdt = cos(theta + theta)
+   sdt = sin(theta + theta)
    nmod = mod(n, 2)
    mmod = mod(abs(m), 2)
    if (nmod) 1, 1, 2
@@ -209,7 +209,7 @@ subroutine dnlftd(m, n, theta, cp, pb)
    cth = cdt
    sth = sdt
    do k = 1, kdo
-!     pb = pb+cp(k+1)*dcos(2*k*theta)
+!     pb = pb+cp(k+1)*cos(2*k*theta)
       pb = pb - 2.d0 * k * cp(k + 1) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -224,7 +224,7 @@ subroutine dnlftd(m, n, theta, cp, pb)
    cth = cdt
    sth = sdt
    do k = 1, kdo
-!     pb = pb+cp(k)*dsin(2*k*theta)
+!     pb = pb+cp(k)*sin(2*k*theta)
       pb = pb + 2.d0 * k * cp(k) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -237,10 +237,10 @@ subroutine dnlftd(m, n, theta, cp, pb)
 !
 13 kdo = (n + 1) / 2
    pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
+   cth = cos(theta)
+   sth = sin(theta)
    do k = 1, kdo
-!     pb = pb+cp(k)*dcos((2*k-1)*theta)
+!     pb = pb+cp(k)*cos((2*k-1)*theta)
       pb = pb - (2.d0 * k - 1) * cp(k) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -252,10 +252,10 @@ subroutine dnlftd(m, n, theta, cp, pb)
 !
 14 kdo = (n + 1) / 2
    pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
+   cth = cos(theta)
+   sth = sin(theta)
    do k = 1, kdo
-!     pb = pb+cp(k)*dsin((2*k-1)*theta)
+!     pb = pb+cp(k)*sin((2*k-1)*theta)
       pb = pb + (2.d0 * k - 1) * cp(k) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -354,7 +354,7 @@ subroutine zfin(isym, nlat, nlon, m, z, i3, wzfin)
    dimension z(1), wzfin(1)
    imid = (nlat + 1) / 2
    lim = nlat * imid
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    labc = ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    iw1 = lim + 1
    iw2 = iw1 + lim
@@ -440,7 +440,7 @@ subroutine zfini1(nlat, nlon, imid, z, abc, cz, work)
    double precision z, abc
    dimension z(imid, nlat, 2), abc(1)
    double precision pi, dt, th, zh, cz(*), work(*)
-   pi = 4.*datan(1.d0)
+   pi = 4.*atan(1.d0)
    dt = pi / (nlat - 1)
    do mp1 = 1, 2
       m = mp1 - 1
@@ -470,7 +470,7 @@ subroutine dnzfk(nlat, m, n, cz, work)
 !
    double precision sum, sc1, t1, t2, work, cz
    lc = (nlat + 1) / 2
-   sc1 = 2.d0 / float(nlat - 1)
+   sc1 = 2.d0 / real(nlat - 1, kind=kind(sc1))
    call dnlfk(m, n, work)
    nmod = mod(n, 2)
    mmod = mod(m, 2)
@@ -544,8 +544,8 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
    dimension cz(1)
    double precision cz, zh, th, cdt, sdt, cth, sth, chh
    zh = 0.
-   cdt = dcos(th + th)
-   sdt = dsin(th + th)
+   cdt = cos(th + th)
+   sdt = sin(th + th)
    lmod = mod(nlat, 2)
    mmod = mod(m, 2)
    nmod = mod(n, 2)
@@ -558,11 +558,11 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
 !
 !     nlat odd n even m even
 !
-3  zh = .5 * (cz(1) + cz(lc) * dcos(2 * lq * th))
+3  zh = .5 * (cz(1) + cz(lc) * cos(2 * lq * th))
    cth = cdt
    sth = sdt
    do k = 2, lq
-!     zh = zh+cz(k)*dcos(2*(k-1)*th)
+!     zh = zh+cz(k)*cos(2*(k-1)*th)
       zh = zh + cz(k) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -575,7 +575,7 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
 4  cth = cdt
    sth = sdt
    do k = 1, ls
-!     zh = zh+cz(k+1)*dsin(2*k*th)
+!     zh = zh+cz(k+1)*sin(2*k*th)
       zh = zh + cz(k + 1) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -586,10 +586,10 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
 !     nlat odd n odd, m even
 !
 2  if (mmod) 5, 5, 6
-5  cth = dcos(th)
-   sth = dsin(th)
+5  cth = cos(th)
+   sth = sin(th)
    do k = 1, lq
-!     zh = zh+cz(k)*dcos((2*k-1)*th)
+!     zh = zh+cz(k)*cos((2*k-1)*th)
       zh = zh + cz(k) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -599,10 +599,10 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
 !
 !     nlat odd n odd m odd
 !
-6  cth = dcos(th)
-   sth = dsin(th)
+6  cth = cos(th)
+   sth = sin(th)
    do k = 1, lq
-!     zh = zh+cz(k+1)*dsin((2*k-1)*th)
+!     zh = zh+cz(k+1)*sin((2*k-1)*th)
       zh = zh + cz(k + 1) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -620,7 +620,7 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
    cth = cdt
    sth = sdt
    do k = 2, lc
-!     zh = zh+cz(k)*dcos(2*(k-1)*th)
+!     zh = zh+cz(k)*cos(2*(k-1)*th)
       zh = zh + cz(k) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -633,7 +633,7 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
 60 cth = cdt
    sth = sdt
    do k = 1, lq
-!     zh = zh+cz(k+1)*dsin(2*k*th)
+!     zh = zh+cz(k+1)*sin(2*k*th)
       zh = zh + cz(k + 1) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -644,11 +644,11 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
 !     nlat even n odd m even
 !
 80 if (mmod) 90, 90, 110
-90 zh = .5 * cz(lc) * dcos((nlat - 1) * th)
-   cth = dcos(th)
-   sth = dsin(th)
+90 zh = .5 * cz(lc) * cos((nlat - 1) * th)
+   cth = cos(th)
+   sth = sin(th)
    do k = 1, lq
-!     zh = zh+cz(k)*dcos((2*k-1)*th)
+!     zh = zh+cz(k)*cos((2*k-1)*th)
       zh = zh + cz(k) * cth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -658,10 +658,10 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
 !
 !     nlat even n odd m odd
 !
-110 cth = dcos(th)
-   sth = dsin(th)
+110 cth = cos(th)
+   sth = sin(th)
    do k = 1, lq
-!     zh = zh+cz(k+1)*dsin((2*k-1)*th)
+!     zh = zh+cz(k+1)*sin((2*k-1)*th)
       zh = zh + cz(k + 1) * sth
       chh = cdt * cth - sdt * sth
       sth = sdt * cth + cdt * sth
@@ -674,7 +674,7 @@ subroutine alin(isym, nlat, nlon, m, p, i3, walin)
    dimension p(1), walin(1)
    imid = (nlat + 1) / 2
    lim = nlat * imid
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    labc = ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    iw1 = lim + 1
    iw2 = iw1 + lim
@@ -755,7 +755,7 @@ subroutine alini1(nlat, nlon, imid, p, abc, cp)
    double precision p, abc
    dimension p(imid, nlat, 2), abc(1), cp(1)
    double precision pi, dt, th, cp, ph
-   pi = 4.*datan(1.d0)
+   pi = 4.*atan(1.d0)
    dt = pi / (nlat - 1)
    do mp1 = 1, 2
       m = mp1 - 1
@@ -780,7 +780,7 @@ subroutine rabcp(nlat, nlon, abc)
 !
    double precision abc
    dimension abc(1)
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    labc = ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    iw1 = labc + 1
    iw2 = iw1 + labc
@@ -794,11 +794,11 @@ subroutine rabcp1(nlat, nlon, a, b, c)
 !
    double precision a, b, c
    dimension a(1), b(1), c(1)
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    do mp1 = 3, mmax
       m = mp1 - 1
       ns = ((m - 2) * (nlat + nlat - m - 1)) / 2 + 1
-      fm = float(m)
+      fm = real(m, kind=kind(fm))
       tm = fm + fm
       temp = tm * (tm - 1.)
       a(ns) = sqrt((tm + 1.) * (tm - 2.) / temp)
@@ -813,7 +813,7 @@ subroutine rabcp1(nlat, nlon, a, b, c)
       do np1 = mp3, nlat
          n = np1 - 1
          ns = ns + 1
-         fn = float(n)
+         fn = real(n, kind=kind(fn))
          tn = fn + fn
          cn = (tn + 1.) / (tn - 3.)
          fnpm = fn + fm

@@ -1411,7 +1411,7 @@ contains
 
          do n = 1, ngatesg
             do k = L1gatesg(n), L2gatesg(n)
-               Lf = iabs(keg(k))
+               Lf = abs(keg(k))
                kb = ln(1, Lf)
                kbi = ln(2, Lf)
                kgate(1, k) = kb
@@ -1472,7 +1472,7 @@ contains
 
          do n = 1, ncdamsg
             do k = L1cdamsg(n), L2cdamsg(n)
-               Lf = iabs(ked(k))
+               Lf = abs(ked(k))
                kb = ln(1, Lf)
                kbi = ln(2, Lf)
                kcdam(1, k) = kb
@@ -1591,7 +1591,7 @@ contains
          do n = 1, ncgensg
             ! Here allocate the structure ids for generalstructuyre
             do k = L1cgensg(n), L2cgensg(n)
-               Lf = iabs(kegen(k))
+               Lf = abs(kegen(k))
                widths(k) = wu(Lf)
                kb = ln(1, Lf)
                kbi = ln(2, Lf)
@@ -1682,7 +1682,7 @@ contains
             pumponoff(5, n) = 0
             do k = L1pumpsg(n), L2pumpsg(n)
                L = kep(k)
-               Lf = iabs(L)
+               Lf = abs(L)
                if (L > 0) then
                   kb = ln(1, Lf)
                   kbi = ln(2, Lf)

@@ -46,7 +46,7 @@
     huweir = 0d0; hunoweir = 0d0; wl = 0d0; wlno = 0d0; at = 0d0
 
     do LL = 1, nd(ku)%lnx
-       Ls = nd(ku)%ln(LL); L = iabs(Ls)
+       Ls = nd(ku)%ln(LL); L = abs(Ls)
        if (iadv(L) < 21 .or. iadv(L) > 29) then ! .ne. structures
           hunoweir = hunoweir + wu(L) * hu(L)
           wlno = wlno + wu(L)
@@ -55,7 +55,7 @@
     if (wlno > 0d0) hunoweir = hunoweir / wlno
 
     do LL = 1, nd(ku)%lnx
-       Ls = nd(ku)%ln(LL); L = iabs(Ls)
+       Ls = nd(ku)%ln(LL); L = abs(Ls)
        if (Ls < 0) then
           ac1 = acL(L)
           n12 = 1

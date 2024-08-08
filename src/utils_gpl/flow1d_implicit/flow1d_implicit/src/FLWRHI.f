@@ -232,15 +232,15 @@ c
                ie = hycpre(hyrmap(i))+hyrmap(i+1)
                do 70 igrid = 1 , ngrid
                   if ( ie .eq. 1 ) then
-                     buffer(ivar,igrid) = sngl( h2(igrid) )
+                     buffer(ivar,igrid) = real( h2(igrid) )
                   elseif ( ie .eq. 2 ) then
-                     buffer(ivar,igrid) = sngl( q2(igrid) )
+                     buffer(ivar,igrid) = real( q2(igrid) )
                   elseif ( ie .eq. 3 ) then
                      buffer(ivar,igrid) = q2s(igrid,1)
                   elseif ( ie .eq. 4 ) then
                      buffer(ivar,igrid) = q2s(igrid,2)
                   elseif ( ie .eq. 5 ) then
-                     buffer(ivar,igrid) = sub2( sngl( q2 (igrid) ),
+                     buffer(ivar,igrid) = sub2( real( q2 (igrid) ),
      +                                                q2s(igrid,1),
      +                                                q2s(igrid,2))
                   elseif ( ie .eq. 6 ) then
@@ -290,7 +290,7 @@ c
                      w2 = sub2 (wf(igrid),wfs(igrid,1),wfs(igrid,2))
                      buffer(ivar,igrid) = depth(a2,w2)
                   elseif ( ie .eq. 25 ) then
-                     buffer(ivar,igrid) = velocity(sngl (q2(igrid)),
+                     buffer(ivar,igrid) = velocity(real (q2(igrid)),
      +                                                   af(igrid))
                   elseif ( ie .eq. 26 ) then
                      buffer(ivar,igrid) = velocity(q2s(igrid,1),
@@ -299,7 +299,7 @@ c
                      buffer(ivar,igrid) = velocity(q2s(igrid,2),
      +                                             afs(igrid,2))    
                   elseif ( ie .eq. 28 ) then
-                     q22= sub2 (sngl(q2(igrid)),q2s(igrid,1),
+                     q22= sub2 (real(q2(igrid)),q2s(igrid,1),
      +                                          q2s(igrid,2))
                      a2 = sub2 (af(igrid),afs(igrid,1),afs(igrid,2))
                      buffer(ivar,igrid) = velocity(q22,a2)
@@ -312,7 +312,7 @@ c
                   elseif ( ie .eq. 32 ) then
                      buffer(ivar,igrid) = rs(igrid,3)
                   elseif ( ie .eq. 33 ) then
-                     buffer(ivar,igrid) = froude( sngl(q2(igrid)),
+                     buffer(ivar,igrid) = froude( real(q2(igrid)),
      +                                                 af(igrid),
      +                                                 wt(igrid),g)      
                   endif  
@@ -390,15 +390,15 @@ c
                do 20 igrid = 1 , hyrtim(1)
                   igr1 = hyrtim(igrid+1)
                   if ( ie .eq. 1 ) then
-                     buffer(ivar,igrid) = sngl( h2(igr1) )
+                     buffer(ivar,igrid) = real( h2(igr1) )
                   elseif ( ie .eq. 2 ) then
-                     buffer(ivar,igrid) = sngl( q2(igr1) )
+                     buffer(ivar,igrid) = real( q2(igr1) )
                   elseif ( ie .eq. 3 ) then
                      buffer(ivar,igrid) = q2s(igr1,1)
                   elseif ( ie .eq. 4 ) then
                      buffer(ivar,igrid) = q2s(igr1,2)
                   elseif ( ie .eq. 5 ) then
-                     buffer(ivar,igrid) = sub2( sngl( q2 (igr1)),
+                     buffer(ivar,igrid) = sub2( real( q2 (igr1)),
      +                                                q2s(igr1,1),
      +                                                q2s(igr1,2))
                   elseif ( ie .eq. 6 ) then
@@ -447,7 +447,7 @@ c
                      w2 = sub2 (wf(igr1),wfs(igr1,1),wfs(igr1,2))
                      buffer(ivar,igrid) = depth(a2,w2)
                   elseif ( ie .eq. 25 ) then
-                     buffer(ivar,igrid) = velocity( sngl( q2(igr1)),
+                     buffer(ivar,igrid) = velocity(q2(igr1),
      +                                                    af(igr1))
                   elseif ( ie .eq. 26 ) then
                      buffer(ivar,igrid) = velocity(q2s(igr1,1),
@@ -456,7 +456,7 @@ c
                      buffer(ivar,igrid) = velocity(q2s(igr1,2),
      +                                             afs(igr1,2))    
                   elseif ( ie .eq. 28 ) then
-                     q22= sub2 (sngl(q2(igr1)),q2s(igr1,1),
+                     q22= sub2 (real(q2(igr1)),q2s(igr1,1),
      +                                         q2s(igr1,2))
                      a2 = sub2 (af(igr1),afs(igr1,1),afs(igr1,2))
                      buffer(ivar,igrid) = velocity(q22,a2)
@@ -469,7 +469,7 @@ c
                   elseif ( ie .eq. 32 ) then
                      buffer(ivar,igrid) = rs(igr1,3)
                   elseif ( ie .eq. 33 ) then
-                     buffer(ivar,igrid) = froude( sngl(q2(igr1)),
+                     buffer(ivar,igrid) = froude( real(q2(igr1)),
      +                                                 af(igr1),
      +                                                 wt(igr1),g)
                   else

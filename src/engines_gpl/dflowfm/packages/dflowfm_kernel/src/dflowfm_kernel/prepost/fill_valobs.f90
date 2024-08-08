@@ -158,7 +158,7 @@ subroutine fill_valobs()
             valobs(i, IPNT_wx) = 0d0
             valobs(i, IPNT_wy) = 0d0
             do LL = 1, nd(k)%lnx
-               LLL = iabs(nd(k)%ln(LL))
+               LLL = abs(nd(k)%ln(LL))
                k1 = ln(1, LLL); k2 = ln(2, LLL)
                k3 = 1; if (nd(k)%ln(LL) > 0) k3 = 2
                valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)

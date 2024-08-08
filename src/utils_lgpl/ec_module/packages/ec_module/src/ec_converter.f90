@@ -2690,7 +2690,7 @@ module m_ec_converter
          integer, dimension(2)          :: idx
 
          !
-         PI = datan(1.d0)*4.d0
+         PI = atan(1.d0)*4.d0
          success = .false.
          targetField => null()
          sourceT0Field => null()
@@ -2832,7 +2832,7 @@ module m_ec_converter
                                             comparereal(phase0, sourceMissing, .true.)==0 ) then
                                             sourceT0Field%arr1d(ipt) = sourceMissing
                                         else
-                                            sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                            sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                         end if
                                     end do
                                 end if
@@ -2851,7 +2851,7 @@ module m_ec_converter
                                                 comparereal(phase0, sourceMissing, .true.)==0 ) then
                                                 sourceT0Field%arr1d(ipt) = sourceMissing
                                             else
-                                                sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                                sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                             end if
                                         end do
                                     end do

@@ -150,8 +150,8 @@ c determine r's and w's for friction terms
 
 c
 c calculate friction for Yco
-         hf1i = FLFRST(sngl(qin), lw, r1, a1, ksa, ri, ai, ks)
-         hfig = FLFRST(sngl(qin), li, ri, ai, ks, ri, ai, ks)
+         hf1i = FLFRST(real(qin), lw, r1, a1, ksa, ri, ai, ks)
+         hfig = FLFRST(real(qin), li, ri, ai, ks, ri, ai, ks)
 
 c
 c calculate yco iteratively. Initial value is yco = 2/3*(hnrg-Le)
@@ -166,7 +166,7 @@ c calculate yco iteratively. Initial value is yco = 2/3*(hnrg-Le)
                ao = w2 * ro / ( w - 2 * ro * (npier + 1) )
             endif
 
-         hfgo  = FLFRST(sngl(qin), lo, ro, ao, ks, ro, ao, ks)
+         hfgo  = FLFRST(real(qin), lo, ro, ao, ks, ro, ao, ks)
          hfric = hf1i + hfgo + hfig
  
             ycoi  = (deltah - hfric) * 2. / 3

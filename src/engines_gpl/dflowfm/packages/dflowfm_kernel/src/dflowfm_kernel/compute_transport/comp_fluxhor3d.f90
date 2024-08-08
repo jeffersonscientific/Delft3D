@@ -160,18 +160,18 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
          sl3R = slnup(6, LL)
 
 !        make cell indices safe
-!         kk1L = max(iabs(kk1L),1)
-!         kk2L = max(iabs(kk2L),1)
+!         kk1L = max(abs(kk1L),1)
+!         kk2L = max(abs(kk2L),1)
 !
-!         kk1R = max(iabs(kk1R),1)
-!         kk2R = max(iabs(kk2R),1)
+!         kk1R = max(abs(kk1R),1)
+!         kk2R = max(abs(kk2R),1)
 
 !        make cell indices safe
-         kk1L = iabs(kk1L)
-         kk2L = iabs(kk2L)
+         kk1L = abs(kk1L)
+         kk2L = abs(kk2L)
 
-         kk1R = iabs(kk1R)
-         kk2R = iabs(kk2R)
+         kk1R = abs(kk1R)
+         kk2R = abs(kk2R)
       end if
 
 !     loop over vertical flowlinks

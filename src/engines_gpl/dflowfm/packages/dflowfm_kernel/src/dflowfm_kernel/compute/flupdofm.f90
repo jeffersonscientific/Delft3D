@@ -93,14 +93,14 @@ subroutine flupdofm(m, il, ir, istru, velheight, rholeft, rhoright, crest, &
    if (velheight) then
       uu = 0d0; ud = 0d0
       do k = 1, nd(il)%lnx
-         LL = iabs(nd(il)%ln(k))
+         LL = abs(nd(il)%ln(k))
          if (iadv(LL) /= 22) then ! any non-structure point
             uu = max(uu, abs(u1(LL)))
          end if
       end do
 
       do k = 1, nd(ir)%lnx
-         LL = iabs(nd(ir)%ln(k))
+         LL = abs(nd(ir)%ln(k))
          if (iadv(LL) /= 22) then ! any non-structure point
             ud = max(ud, abs(u1(LL)))
          end if

@@ -1432,8 +1432,8 @@ subroutine amuxd(n, x, y, diag, ndiag, idiag, ioff)
    end do
    do j = 1, idiag
       io = ioff(j)
-      i1 = max0(1, 1 - io)
-      i2 = min0(n, n - io)
+      i1 = max(1, 1 - io)
+      i2 = min(n, n - io)
       do k = i1, i2
          y(k) = y(k) + diag(k, j) * x(k + io)
       end do
@@ -2096,7 +2096,7 @@ double precision function dasum(n, dx, incx)
 !
    nincx = n * incx
    do i = 1, nincx, incx
-      dtemp = dtemp + dabs(dx(i))
+      dtemp = dtemp + abs(dx(i))
    end do
    dasum = dtemp
    return
@@ -2109,13 +2109,13 @@ double precision function dasum(n, dx, incx)
 20 m = mod(n, 6)
    if (m == 0) go to 40
    do i = 1, m
-      dtemp = dtemp + dabs(dx(i))
+      dtemp = dtemp + abs(dx(i))
    end do
    if (n < 6) go to 60
 40 mp1 = m + 1
    do i = mp1, n, 6
-      dtemp = dtemp + dabs(dx(i)) + dabs(dx(i + 1)) + dabs(dx(i + 2))&
-      &+ dabs(dx(i + 3)) + dabs(dx(i + 4)) + dabs(dx(i + 5))
+      dtemp = dtemp + abs(dx(i)) + abs(dx(i + 1)) + abs(dx(i + 2))&
+      &+ abs(dx(i + 3)) + abs(dx(i + 4)) + abs(dx(i + 5))
    end do
 60 dasum = dtemp
    return
@@ -2184,8 +2184,8 @@ double precision function dnrm2XXX(n, dx, incx)
 !
 !     four phase method     using two built-in constants that are
 !     hopefully applicable to all machines.
-!         cutlo = maximum of  dsqrt(u/eps)  over all known machines.
-!         cuthi = minimum of  dsqrt(v)      over all known machines.
+!         cutlo = maximum of  sqrt(u/eps)  over all known machines.
+!         cuthi = minimum of  sqrt(v)      over all known machines.
 !     where
 !         eps = smallest no. such that eps + 1. .gt. 1.
 !         u   = smallest positive no.   (underflow limit)
@@ -2224,14 +2224,14 @@ double precision function dnrm2XXX(n, dx, incx)
 !                                                 begin main loop
    i = 1
 20 go to next, (30, 50, 70, 110)
-30 if (dabs(dx(i)) > cutlo) go to 85
+30 if (abs(dx(i)) > cutlo) go to 85
    assign 50 to next
    xmax = zero
 !
 !                        phase 1.  sum is zero
 !
 50 if (dx(i) == zero) go to 200
-   if (dabs(dx(i)) > cutlo) go to 85
+   if (abs(dx(i)) > cutlo) go to 85
 !
 !                                prepare for phase 2.
    assign 70 to next
@@ -2242,20 +2242,20 @@ double precision function dnrm2XXX(n, dx, incx)
 100 i = j
    assign 110 to next
    sum = (sum / dx(i)) / dx(i)
-105 xmax = dabs(dx(i))
+105 xmax = abs(dx(i))
    go to 115
 !
 !                   phase 2.  sum is small.
 !                             scale to avoid destructive underflow.
 !
-70 if (dabs(dx(i)) > cutlo) go to 75
+70 if (abs(dx(i)) > cutlo) go to 75
 !
 !                     common code for phases 2 and 4.
 !                     in phase 4 sum is large.  scale to avoid overflow.
 !
-110 if (dabs(dx(i)) <= xmax) go to 115
+110 if (abs(dx(i)) <= xmax) go to 115
    sum = one + sum * (xmax / dx(i))**2
-   xmax = dabs(dx(i))
+   xmax = abs(dx(i))
    go to 200
 !
 115 sum = sum + (dx(i) / xmax)**2
@@ -2270,15 +2270,15 @@ double precision function dnrm2XXX(n, dx, incx)
 !     for real or d.p. set hitest = cuthi/n
 !     for complex      set hitest = cuthi/(2*n)
 !
-85 hitest = cuthi / float(n)
+85 hitest = cuthi / real(n, kind=kind(hitest))
 !
 !                   phase 3.  sum is mid-range.  no scaling.
 !
    do j = i, nn, incx
-      if (dabs(dx(j)) >= hitest) go to 100
+      if (abs(dx(j)) >= hitest) go to 100
       sum = sum + dx(j)**2
    end do
-   dnrm2XXX = dsqrt(sum)
+   dnrm2XXX = sqrt(sum)
    go to 300
 !
 200 continue
@@ -2289,7 +2289,7 @@ double precision function dnrm2XXX(n, dx, incx)
 !
 !              compute square root and adjust for scaling.
 !
-   dnrm2XXX = xmax * dsqrt(sum)
+   dnrm2XXX = xmax * sqrt(sum)
 300 continue
    return
 end
@@ -2408,23 +2408,23 @@ integer function idamaxXXX(n, dx, incx)
 !        code for increment not equal to 1
 !
    ix = 1
-   dmax = dabs(dx(1))
+   dmax = abs(dx(1))
    ix = ix + incx
    do i = 2, n
-      if (dabs(dx(ix)) <= dmax) go to 5
+      if (abs(dx(ix)) <= dmax) go to 5
       idamaxXXX = i
-      dmax = dabs(dx(ix))
+      dmax = abs(dx(ix))
 5     ix = ix + incx
    end do
    return
 !
 !        code for increment equal to 1
 !
-20 dmax = dabs(dx(1))
+20 dmax = abs(dx(1))
    do i = 2, n
-      if (dabs(dx(i)) <= dmax) cycle
+      if (abs(dx(i)) <= dmax) cycle
       idamaxXXX = i
-      dmax = dabs(dx(i))
+      dmax = abs(dx(i))
    end do
    return
 end
@@ -2476,20 +2476,20 @@ subroutine drotgXXX(da, db, c, s)
    no_warning_unused_dummy_argument(c)
    
    roe = db
-   if (dabs(da) > dabs(db)) roe = da
-   scale = dabs(da) + dabs(db)
+   if (abs(da) > abs(db)) roe = da
+   scale = abs(da) + abs(db)
    if (scale /= 0.0d0) go to 10
 !        c = 1.0d0
    s = 0.0d0
    r = 0.0d0
    go to 20
-10 r = scale * dsqrt((da / scale)**2 + (db / scale)**2)
-   r = dsign(1.0d0, roe) * r
+10 r = scale * sqrt((da / scale)**2 + (db / scale)**2)
+   r = sign(1.0d0, roe) * r
 !     c = da/r
    s = db / r
 20 z = 1.0d0
-   if (dabs(da) > dabs(db)) z = s
-!     if( dabs(db) .ge. dabs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
+   if (abs(da) > abs(db)) z = s
+!     if( abs(db) .ge. abs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
    da = r
    db = z
    return
@@ -3583,7 +3583,7 @@ subroutine csrell(nrow, a, ja, ia, maxcol, coef, jcoef, ncoef,&
    ndiag = 0
    do i = 1, nrow
       k = ia(i + 1) - ia(i)
-      ndiag = max0(ndiag, k)
+      ndiag = max(ndiag, k)
    end do
 !----- check whether sufficient columns are available. -----------------
    if (ndiag > maxcol) then
@@ -8193,7 +8193,7 @@ subroutine extbdg(n, a, ja, ia, bdiag, nblk, ao, jao, iao)
 !-------------------------
    do jj = 1, m
       j1 = (jj - 1) * nblk + 1
-      j2 = min0(n, j1 + nblk - 1)
+      j2 = min(n, j1 + nblk - 1)
       do j = j1, j2
          do i = ia(j), ia(j + 1) - 1
             k = ja(i)
@@ -9245,7 +9245,7 @@ subroutine csrkvstc(n, ia, ja, nc, kvstc, iwk)
             end if
          end do
          iwk(j + 1) = 1
-         ncol = max0(ncol, j)
+         ncol = max(ncol, j)
       end if
    end do
 !---------------------------------

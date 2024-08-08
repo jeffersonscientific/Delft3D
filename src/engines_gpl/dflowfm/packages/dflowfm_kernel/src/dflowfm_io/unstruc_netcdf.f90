@@ -10724,8 +10724,8 @@ contains
             !
             if (nd(n)%lnx > 0) then
                do i = 1, nd(n)%lnx
-                  windx(n) = windx(n) + wx(iabs(nd(n)%ln(i)))
-                  windy(n) = windy(n) + wy(iabs(nd(n)%ln(i)))
+                  windx(n) = windx(n) + wx(abs(nd(n)%ln(i)))
+                  windy(n) = windy(n) + wy(abs(nd(n)%ln(i)))
                end do
                windx(n) = windx(n) / nd(n)%lnx
                windy(n) = windy(n) / nd(n)%lnx

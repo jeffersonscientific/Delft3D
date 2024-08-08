@@ -1834,7 +1834,7 @@
 !       do k = 1, nd(nn)%lnx
 !          ff    = dts/a1(nn)
 !          l     = nd(nn)%ln(k)
-!          il    = iabs(l)
+!          il    = abs(l)
 
 !          if ( hu(L) > 0 ) then
 !             if (l>0) then

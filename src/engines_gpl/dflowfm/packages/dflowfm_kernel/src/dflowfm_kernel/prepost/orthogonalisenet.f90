@@ -531,7 +531,7 @@ subroutine ORTHOGONALISENET(jarerun)
                         DUM(2) = wwy * Ra * dg2rd
                      else
                         y1 = yk(k1)
-                        DUM(1) = wwx * dcos(0.5d0 * (y00 + y1) * dg2rd) * Ra * dg2rd
+                        DUM(1) = wwx * cos(0.5d0 * (y00 + y1) * dg2rd) * Ra * dg2rd
                         DUM(2) = wwy * Ra * dg2rd
                      end if
                   else

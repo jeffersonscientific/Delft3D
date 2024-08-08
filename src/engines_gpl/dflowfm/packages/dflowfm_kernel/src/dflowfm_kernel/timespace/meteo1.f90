@@ -867,7 +867,7 @@ contains
                   if (k <= Ndxi) then
                      k1 = k
                   else ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
-                     LL = iabs(nd(k)%ln(1)) !< only one link connected to boundary node
+                     LL = abs(nd(k)%ln(1)) !< only one link connected to boundary node
                      k1 = ln(1, LL) + ln(2, LL) - k
                   end if
 
@@ -941,7 +941,7 @@ contains
             if (k <= Ndxi) then ! internal nodes
                k1 = k
             else ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
-               LL = iabs(nd(k)%ln(1)) !< only one link connected to boundary node
+               LL = abs(nd(k)%ln(1)) !< only one link connected to boundary node
                k1 = ln(1, LL) + ln(2, LL) - k
             end if
 
@@ -1128,7 +1128,7 @@ contains
       !If avhs is smaller then 0 is chosen at the location of the missing values
       avhs1 = 0d0
       k1 = 0
-      do i = i1, min0(i2, i1 + 360 - 1)
+      do i = i1, min(i2, i1 + 360 - 1)
          do j = j1, j2
             avhs1(j + 90, k1) = avhs(i, j)
          end do
@@ -3391,7 +3391,7 @@ contains
       !     argfct         multiplication factor needed to compute argument
       !     argum          argument for time-dependent harmonic components ca,sa
       !     can            table with scaled harmonic components
-      !                    dcos(argument) * amp(i)
+      !                    cos(argument) * amp(i)
       !     cansum         selected sum of elements of can for fixed mq,nq
       !     cm1            cosine-component of potential
       !     d2r            conversion factor pi/180
@@ -3438,7 +3438,7 @@ contains
       !     rlslon         previous value of rlong
       !     rmu            gravitational constant (3.9860044d14)
       !     san            table with scaled harmonic components
-      !                    dsin(argument) * amp(i)
+      !                    sin(argument) * amp(i)
       !     sansum         selected sum of elements of san for fixed mq,nq
       !     sm1            sine-component of potential
       !
@@ -3498,8 +3498,8 @@ contains
       !     compute arrays can, san:
       !     do (all tidal components)
       !        compute argum
-      !        can(i) = dcos(argum) * amps(i)
-      !        san(i) = dsin(argum) * amps(i)
+      !        can(i) = cos(argum) * amps(i)
+      !        san(i) = sin(argum) * amps(i)
       !     enddo
       !     compute arrays cansum, sansum:
       !     do nq = 2, 3
@@ -5648,7 +5648,7 @@ contains
          kcs = 1 ! todo make this safe
 
          do m = 1, mnx
-            if (iabs(kc(m)) == 1) then ! point is a possible candidate for a line boundary
+            if (abs(kc(m)) == 1) then ! point is a possible candidate for a line boundary
                call polyindexweight(x(m), y(m), xyen(1, m), xyen(2, m), xs, ys, kcs, ns, kL, wL, kR, wR)
                if (kL > 0 .or. kR > 0) then
                   if (present(rrtolrel)) then

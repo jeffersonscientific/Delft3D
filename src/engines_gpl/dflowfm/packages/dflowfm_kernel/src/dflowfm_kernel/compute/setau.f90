@@ -162,7 +162,7 @@
     end do
 
     do n = 1, nklep ! check valves
-       L = iabs(Lklep(n))
+       L = abs(Lklep(n))
        call getflowdir(L, iup)
        if (iup * Lklep(n) < 0) then
           hu(L) = 0d0; au(L) = 0d0

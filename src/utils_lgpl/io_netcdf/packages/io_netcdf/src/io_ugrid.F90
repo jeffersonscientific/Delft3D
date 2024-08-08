@@ -690,6 +690,8 @@ contains
 !! Does not write the actual data yet.
    function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name, standard_name, long_name, &
                        units, cell_method, cell_measures, crs, ifill, dfill, writeopts, do_deflate) result(ierr)
+      use precision, only: sp
+
       integer, intent(in) :: ncid          !< NetCDF dataset id
       integer, intent(out) :: id_var        !< Created NetCDF variable id.
       integer, dimension(:), intent(in) :: id_dims       !< NetCDF dimension ids for this variable. Example: (/ id_edgedim /) for scalar data on edges, or (/ id_twodim, id_facedim /) for vector data on faces.
@@ -831,7 +833,7 @@ contains
          ierr = nf90_put_att(ncid, id_var, '_FillValue', dfill)
       end if
       if (itype == nf90_float .and. present(dfill)) then
-         ierr = nf90_put_att(ncid, id_var, '_FillValue', SNGL(dfill))
+         ierr = nf90_put_att(ncid, id_var, '_FillValue', real(dfill, sp))
       end if
 
       ! Leave the dataset in the same mode as we got it.

@@ -1286,7 +1286,7 @@ contains
 ! Stephen K. Park and Keith W. Miller
 !
 ! Input parameter j:
-!  j .ne. 0: random sequence is initialised, using iabs(j) as seed
+!  j .ne. 0: random sequence is initialised, using abs(j) as seed
 !            first random number of new series is returned
 !  j .eq. 0: function returns next random number
 !
@@ -1300,7 +1300,7 @@ contains
       save seed
       data seed/1/
       if (j /= 0) then
-         seed = mod(iabs(j), m)
+         seed = mod(abs(j), m)
          ! Seed may not be zero for random number generation
          if (seed == 0) then
             seed = 1
