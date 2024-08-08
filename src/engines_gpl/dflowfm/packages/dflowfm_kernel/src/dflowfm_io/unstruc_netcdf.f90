@@ -13969,13 +13969,13 @@ contains
                         ierr = nf90_inquire_dimension(imapfile, rhdims(i), len=tmpdims(i))
                         if (ierr /= nf90_noerr) goto 999
                      end do                     
-                     ierr = nf90_get_var(imapfile, id_msed, tmpvar2(l, 1:nlyr_read, 1:um%ndxi_own), start=(/l, 1, kstart, it_read/), count=(/1, nlyr_read, ndxi, 1/))
+                     ierr = nf90_get_var(imapfile, id_msed, tmpvar2(l, 1:nlyr_read, 1:ndxi), start=(/l, 1, 1, it_read/), count=(/1, nlyr_read, ndxi, 1/))
                   end do
                   !
-                  do kk = 1, ndxi
+                  do kk = 1, um%ndxi_own
                      if (um%jamergedmap == 1) then
                         kloc = um%inode_own(kk)
-                        rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk))
+                        rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk) - kstart + 1)
                      else
                         kloc = kk
                         rst_msed(:, :, kloc) = tmpvar2(:, :, kk)
