@@ -1128,6 +1128,8 @@ contains
       use kdtree2Factory
       use m_hash_search
       use m_find_flownode, only: find_nearest_flownodes_kdtree
+      
+      implicit none
 
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
@@ -1135,6 +1137,8 @@ contains
       integer :: i, j, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
+      integer :: ierror
+      
       associate (xpl => longculvert%xcoords, ypl => longculvert%ycoords)
 
          longculvert%flowlinks = 0

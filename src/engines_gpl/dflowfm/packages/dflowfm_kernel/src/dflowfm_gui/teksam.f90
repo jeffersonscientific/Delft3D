@@ -142,8 +142,10 @@
       use unstruc_display
       use m_arcinfo
 
+      implicit none
+      
       double precision :: x, y, z, rc, hrc
-      integer :: met, m, n
+      integer :: met, m, n, ndraw, ncol
       
       logical, external :: inview
 

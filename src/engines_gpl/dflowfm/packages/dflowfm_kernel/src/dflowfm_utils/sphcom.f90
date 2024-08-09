@@ -37,17 +37,20 @@
 !     called by some or all of main programs
 !
 subroutine dnlfk(m, n, cp)
+   use precision_basics, only: dp
+
+   implicit none
 !
 !     cp requires n/2+1 double precision locations
 !
    integer, intent(in) :: m, n
-   double precision, intent(out) :: cp(1)
-   double precision :: fnum, fden, fnmh, a1, b1, c1, cp2, fnnp1, fnmsq, fk,&
-   &t1, t2, pm1, sc10, sc20, sc40
+   real(dp), intent(out) :: cp(1)
+   
+   real(dp) :: fnum, fden, fnmh, a1, b1, c1, cp2, fnnp1, fnmsq, fk, t1, t2, pm1, sc10, sc20, sc40
    parameter(sc10=1024.d0)
    parameter(sc20=sc10 * sc10)
    parameter(sc40=sc20 * sc20)
-   integer :: ma, nmms2, i, l
+   integer :: ma, nmms2, i, l, nex
 !
    cp(1) = 0.
    ma = abs(m)
@@ -117,8 +120,18 @@ subroutine dnlfk(m, n, cp)
    cp(l - 1) = -(b1 * cp(l) + c1 * cp(l + 1)) / a1
    go to 30
 end
+
 subroutine dnlft(m, n, theta, cp, pb)
-   double precision cp(*), pb, theta, cdt, sdt, cth, sth, chh
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: m, n
+   real(dp) :: theta, cp(:), pb
+   
+   real(dp) :: cdt, sdt, cth, sth, chh
+   integer :: k, kdo, nmod, mmod 
+   
    cdt = cos(theta + theta)
    sdt = sin(theta + theta)
    nmod = mod(n, 2)
@@ -188,12 +201,21 @@ subroutine dnlft(m, n, theta, cp, pb)
    end do
    return
 end
+
 subroutine dnlftd(m, n, theta, cp, pb)
+   use precision_basics, only: dp
+
+   implicit none
+
 !
 !     computes the derivative of pmn(theta) with respect to theta
 !
-   dimension cp(1)
-   double precision cp, pb, theta, cdt, sdt, cth, sth, chh
+   integer, intent(in) :: m, n
+   real(dp), intent(inout) :: cp(1), pb, theta
+   
+   real(dp) :: cdt, sdt, cth, sth, chh
+   integer :: k, kdo, nmod, mmod 
+   
    cdt = cos(theta + theta)
    sdt = sin(theta + theta)
    nmod = mod(n, 2)
@@ -263,15 +285,25 @@ subroutine dnlftd(m, n, theta, cp, pb)
    end do
    return
 end
+    
+
+!>     this subroutine computes legendre polynomials for n=m,...,l-1
+!!     and  i=1,...,late (late=((nlat+mod(nlat,2))/2) gaussian grid
+!!     in pmn(n+1,i,km) using swarztrauber's recursion formula.
+!!     the vector w contains quantities precomputed in shigc.
+!!     legin must be called in the order m=0,1,...,l-1
+!!     (e.g., if m=10 is sought it must be preceded by calls with
+!!     m=0,1,2,...,9 in that order)
 subroutine legin(mode, l, nlat, m, w, pmn, km)
-!     this subroutine computes legendre polynomials for n=m,...,l-1
-!     and  i=1,...,late (late=((nlat+mod(nlat,2))/2)gaussian grid
-!     in pmn(n+1,i,km) using swarztrauber's recursion formula.
-!     the vector w contains quantities precomputed in shigc.
-!     legin must be called in the order m=0,1,...,l-1
-!     (e.g., if m=10 is sought it must be preceded by calls with
-!     m=0,1,2,...,9 in that order)
-   dimension w(1), pmn(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: mode, l, nlat, m, km
+   real(dp), dimension(:), intent(inout) :: w, pmn
+   
+   integer :: late, i1, i2, i3, i4, i5
+   
 !     set size of pole to equator gaussian grid
    late = (nlat + mod(nlat, 2)) / 2
 !     partition w (set pointers for p0n,p1n,abel,bbel,cbel,pmn)
@@ -280,24 +312,23 @@ subroutine legin(mode, l, nlat, m, w, pmn, km)
    i3 = i2 + nlat * late
    i4 = i3 + (2 * nlat - l) * (l - 1) / 2
    i5 = i4 + (2 * nlat - l) * (l - 1) / 2
-   call legin1(mode, l, nlat, late, m, w(i1), w(i2), w(i3), w(i4),&
-   &w(i5), pmn, km)
+   call legin1(mode, l, nlat, late, m, w(i1), w(i2), w(i3), w(i4), w(i5), pmn, km)
    return
 end
-subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel,&
-&pmn, km)
 
-   dimension p0n(nlat, late), p1n(nlat, late)
-   dimension abel(1), bbel(1), cbel(1), pmn(nlat, late, 3)
+subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel, pmn, km)
+   use precision_basics, only: dp
+   implicit none
+
+   integer , intent(inout):: mode, l, nlat, late, m, km
+   real(dp), intent(inout) :: p0n(nlat, late), p1n(nlat, late)
+   real(dp), intent(inout) :: abel(1), bbel(1), cbel(1), pmn(nlat, late, 3)
+   
+   integer :: km0, km1, km2, kmt, ms, ninc, np1, imn, i, n
    data km0, km1, km2/1, 2, 3/
    save km0, km1, km2
 !     define index function used in storing triangular
 !     arrays for recursion coefficients (functions of (m,n))
-!     for 2.le.m.le.n-1 and 2.le.n.le.l-1
-   indx(m, n) = (n - 1) * (n - 2) / 2 + m - 1
-!     for l.le.n.le.nlat and 2.le.m.le.l
-   imndx(m, n) = l * (l - 1) / 2 + (n - l - 1) * (l - 1) + m - 1
-
 !     set do loop indices for full or half sphere
    ms = m + 1
    ninc = 1
@@ -314,8 +345,8 @@ subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel,&
    if (m > 1) then
       do np1 = ms, nlat, ninc
          n = np1 - 1
-         imn = indx(m, n)
-         if (n >= l) imn = imndx(m, n)
+         imn = (n - 1) * (n - 2) / 2 + m - 1
+         if (n >= l) imn = l * (l - 1) / 2 + (n - l - 1) * (l - 1) + m - 1
          do i = 1, late
             pmn(np1, i, km0) = abel(imn) * pmn(n - 1, i, km2)&
             &+ bbel(imn) * pmn(n - 1, i, km0)&
@@ -350,8 +381,15 @@ subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel,&
 end
 
 subroutine zfin(isym, nlat, nlon, m, z, i3, wzfin)
-   double precision z, wzfin
-   dimension z(1), wzfin(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, nlon, m, i3
+   real(dp), dimension(:), intent(inout) :: z, wzfin
+   
+   integer :: imid, lim, mmax, labc, iw1, iw2, iw3, iw4, ihold, i1, i2, i4
+   
    imid = (nlat + 1) / 2
    lim = nlat * imid
    mmax = min(nlat, nlon / 2 + 1)
@@ -363,15 +401,21 @@ subroutine zfin(isym, nlat, nlon, m, z, i3, wzfin)
 !
 !     the length of wzfin is 2*lim+3*labc
 !
-   call zfin1(isym, nlat, m, z, imid, i3, wzfin, wzfin(iw1), wzfin(iw2),&
-   &wzfin(iw3), wzfin(iw4))
+   call zfin1(isym, nlat, m, z, imid, i3, wzfin, wzfin(iw1), wzfin(iw2), wzfin(iw3), wzfin(iw4))
    return
 end
+
 subroutine zfin1(isym, nlat, m, z, imid, i3, zz, z1, a, b, c)
-   double precision z, zz, z1, a, b, c
-   dimension z(imid, nlat, 3), zz(imid, 1), z1(imid, 1),&
-   &a(1), b(1), c(1)
-   save i1, i2
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, m, imid, i3
+   real(dp), intent(inout) :: z(imid, nlat, 3), zz(imid, 1), z1(imid, 1), a(1), b(1), c(1)
+   
+   integer :: i1, i2, ihold, np1, i, ns, nstrt, nstp
+   save i1, i2, ihold
+   
    ihold = i1
    i1 = i2
    i2 = i3
@@ -417,29 +461,43 @@ subroutine zfin1(isym, nlat, m, z, imid, i3, zz, z1, a, b, c)
    end do
 80 return
 end
+    
 subroutine zfinit(nlat, nlon, wzfin, dwork)
-   double precision wzfin
-   dimension wzfin(*)
-   double precision dwork(*)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(in) :: nlat, nlon
+   real(dp), dimension(:), intent(inout) :: wzfin, dwork
+   
+   integer :: imid, iw1
+   
    imid = (nlat + 1) / 2
    iw1 = 2 * nlat * imid + 1
 !
 !     the length of wzfin is 3*((l-3)*l+2)/2 + 2*l*imid
 !     the length of dwork is nlat+2
 !
-   call zfini1(nlat, nlon, imid, wzfin, wzfin(iw1), dwork,&
-   &dwork(nlat / 2 + 1))
+   call zfini1(nlat, nlon, imid, wzfin, wzfin(iw1), dwork, dwork(nlat / 2 + 1))
    return
 end
+
 subroutine zfini1(nlat, nlon, imid, z, abc, cz, work)
 !
 !     abc must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations
 !     where mmax = min0(nlat,nlon/2+1)
 !     cz and work must each have nlat+1 locations
 !
-   double precision z, abc
-   dimension z(imid, nlat, 2), abc(1)
-   double precision pi, dt, th, zh, cz(*), work(*)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, nlon, imid
+   real(dp), intent(inout) :: z(imid, nlat, 2), abc(1), cz(:), work(:)
+   
+   integer :: np1, mp1, m, n, i
+   real(dp) :: pi, dt, th, zh
+   
    pi = 4.*atan(1.d0)
    dt = pi / (nlat - 1)
    do mp1 = 1, 2
@@ -458,17 +516,24 @@ subroutine zfini1(nlat, nlon, imid, z, abc, cz, work)
    call rabcp(nlat, nlon, abc)
    return
 end
+
+!>     dnzfk computes the coefficients in the trigonometric
+!!     expansion of the z functions that are used in spherical
+!!     harmonic analysis.
+!!
 subroutine dnzfk(nlat, m, n, cz, work)
-!
-!     dnzfk computes the coefficients in the trigonometric
-!     expansion of the z functions that are used in spherical
-!     harmonic analysis.
-!
-   dimension cz(1), work(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, m, n
+   real(dp), intent(inout) :: cz(1), work(1)
 !
 !     cz and work must both have nlat/2+1 locations
 !
-   double precision sum, sc1, t1, t2, work, cz
+   integer :: lc, nmod, mmod, kdo, idx, i, kp1, k
+   real(dp) :: sum, sc1, t1, t2
+   
    lc = (nlat + 1) / 2
    sc1 = 2.d0 / real(nlat - 1, kind=kind(sc1))
    call dnlfk(m, n, work)
@@ -540,9 +605,18 @@ subroutine dnzfk(nlat, m, n, cz, work)
    end do
    return
 end
+    
 subroutine dnzft(nlat, m, n, th, cz, zh)
-   dimension cz(1)
-   double precision cz, zh, th, cdt, sdt, cth, sth, chh
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, m, n
+   real(dp), intent(inout) :: th, cz(1), zh
+   
+   integer :: lmod, mmod, nmod, lc, lq, ls, k
+   real(dp) :: cdt, sdt, cth, sth, chh
+   
    zh = 0.
    cdt = cos(th + th)
    sdt = sin(th + th)
@@ -669,9 +743,17 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
    end do
    return
 end
+    
 subroutine alin(isym, nlat, nlon, m, p, i3, walin)
-   double precision p, walin
-   dimension p(1), walin(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, nlon, m, i3
+   real(dp), intent(inout) :: p(1), walin(1)
+   
+   integer :: imid, lim, mmax, labc, iw1, iw2, iw3, iw4
+   
    imid = (nlat + 1) / 2
    lim = nlat * imid
    mmax = min(nlat, nlon / 2 + 1)
@@ -683,15 +765,21 @@ subroutine alin(isym, nlat, nlon, m, p, i3, walin)
 !
 !     the length of walin is ((5*l-7)*l+6)/2
 !
-   call alin1(isym, nlat, m, p, imid, i3, walin, walin(iw1), walin(iw2),&
-   &walin(iw3), walin(iw4))
+   call alin1(isym, nlat, m, p, imid, i3, walin, walin(iw1), walin(iw2), walin(iw3), walin(iw4))
    return
 end
+
 subroutine alin1(isym, nlat, m, p, imid, i3, pz, p1, a, b, c)
-   double precision p, pz, p1, a, b, c
-   dimension p(imid, nlat, 3), pz(imid, 1), p1(imid, 1),&
-   &a(1), b(1), c(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, m, imid, i3
+   real(dp), intent(inout) :: p(imid, nlat, 3), pz(imid, 1), p1(imid, 1), a(1), b(1), c(1)
+   
+   integer :: ihold, i1, i2, i4, mp1, i, np1, ns, nstrt, nstp
    save i1, i2
+   
    ihold = i1
    i1 = i2
    i2 = i3
@@ -737,11 +825,17 @@ subroutine alin1(isym, nlat, m, p, imid, i3, pz, p1, a, b, c)
    end do
 80 return
 end
+
 subroutine alinit(nlat, nlon, walin, dwork)
-   !dimension       walin(*)
-   double precision walin
-   dimension walin(*)
-   double precision dwork(*)
+   use precision_basics, only: dp
+
+   implicit none
+   
+   integer, intent(inout) :: nlat, nlon
+   real(dp), intent(inout) :: walin(:), dwork(:)
+   
+   integer :: imid, iw1
+   
    imid = (nlat + 1) / 2
    iw1 = 2 * nlat * imid + 1
 !
@@ -751,10 +845,18 @@ subroutine alinit(nlat, nlon, walin, dwork)
    call alini1(nlat, nlon, imid, walin, walin(iw1), dwork)
    return
 end
+
 subroutine alini1(nlat, nlon, imid, p, abc, cp)
-   double precision p, abc
-   dimension p(imid, nlat, 2), abc(1), cp(1)
-   double precision pi, dt, th, cp, ph
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, nlon, imid
+   real(dp), intent(inout) :: p(imid, nlat, 2), abc(1), cp(1)
+   
+   integer :: mp1, m, n, np1, i
+   real(dp) :: pi, dt, th, ph
+   
    pi = 4.*atan(1.d0)
    dt = pi / (nlat - 1)
    do mp1 = 1, 2
@@ -772,14 +874,20 @@ subroutine alini1(nlat, nlon, imid, p, abc, cp)
    call rabcp(nlat, nlon, abc)
    return
 end
+
+!>     subroutine rabcp computes the coefficients in the recurrence
+!!     relation for the associated legendre fuctions. array abc
+!!     must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations.
 subroutine rabcp(nlat, nlon, abc)
-!
-!     subroutine rabcp computes the coefficients in the recurrence
-!     relation for the associated legendre fuctions. array abc
-!     must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations.
-!
-   double precision abc
-   dimension abc(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(in) :: nlat, nlon
+   real(dp), intent(inout) :: abc(1)
+   
+   integer :: mmax, labc, iw1, iw2
+   
    mmax = min(nlat, nlon / 2 + 1)
    labc = ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    iw1 = labc + 1
@@ -787,13 +895,22 @@ subroutine rabcp(nlat, nlon, abc)
    call rabcp1(nlat, nlon, abc, abc(iw1), abc(iw2))
    return
 end
+
 subroutine rabcp1(nlat, nlon, a, b, c)
 !
 !     coefficients a, b, and c for computing pbar(m,n,theta) are
 !     stored in location ((m-2)*(nlat+nlat-m-1))/2+n+1
 !
-   double precision a, b, c
-   dimension a(1), b(1), c(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(in) :: nlat, nlon
+   real(dp), intent(inout) :: a(1), b(1), c(1)
+   
+   integer :: mmax, mp1, m, ns, mp3, np1, n
+   real(dp) :: fm, tm, temp, fn, tn, cn, fnpm, fnmm
+   
    mmax = min(nlat, nlon / 2 + 1)
    do mp1 = 3, mmax
       m = mp1 - 1
