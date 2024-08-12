@@ -75,21 +75,26 @@ manually every time. Here's an example using vscode:
 
 ### Installing the dependencies using `pip`
 After activating your virtual environment, you're ready to install the dependencies of the
-testbench:
-```powershell
+testbench. The `pip` directory contains multiple `requirements.txt` files with 'pinned'
+versions of all the dependencies (and sub-dependencies). The full list of dependencies
+may differ slightly between platforms (different python versions and operating systems). So
+please pick the `requirements.txt` file for your platform to install the dependencies.
+
+Notice that there's separate `requirements.txt` and `dev-requirements.txt` files. 
+The `dev-requirements.txt` files not only contain the dependencies needed to run the testbench,
+but also tools that help with development of the testbench code. This includes `pytest`, to run
+the unit tests of testbench code, but also linters and auto-formatters.
+
+Linux: (Choose between dev or non-dev dependencies)
+```bash
+pip install -r pip/lnx-requirements.txt
+pip install -r pip/lnx-dev-requirements.txt
+```
+
+Windows: (Choose between dev or non-dev dependencies)
+```cmd
 pip install -r pip/win-requirements.txt
-```
-
-```bash
-pip install -r pip/lnx-requirements.txt  # Linux
-```
-
-Currently, the `requirements.txt` contains the dependencies needed for running the testbench,
-but also for running the unit tests of the testbench. You can try running them to verify that
-the dependencies have been installed:
-
-```bash
-python -m pytest
+pip install -r pip/win-dev-requirements.txt
 ```
 
 ### Installing and pinning the dependencies using `uv`
