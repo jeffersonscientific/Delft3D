@@ -107,7 +107,7 @@ To install `uv`, follow the installation steps here: https://github.com/astral-s
 python, so it's much faster.
 
 The dependencies listed in `pyproject.toml` can be used by `uv` to generate the pinned
-package versions. You only need to do this after you've adding a new python package to the 
+package versions. You only need to do this after you've added a new python package to the 
 `pyproject.toml` or updated the version constraints of the python packages
 that are already there. If you just want to install the pinned python packages, you can
 skip this step. Use `uv pip compile`:
