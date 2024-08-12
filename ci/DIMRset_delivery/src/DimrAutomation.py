@@ -4,7 +4,6 @@ from helpers.ExcelHelper import ExcelHelper
 from helpers.KernelVersionExtractor import KernelVersionExtractor
 from helpers.PinHelper import PinHelper
 from helpers.SshClient import SshClient
-from helpers.SvnHelper import SvnHelper
 from helpers.TestbankResultParser import TestbankResultParser
 from helpers.PublicWikiHelper import PublicWikiHelper
 from helpers.PreconditionsHelper import PreconditionsHelper
@@ -89,16 +88,6 @@ class DimrAutomation(object):
                                        full_dimr_version=self.__full_dimr_version)
         helper.download_artifacts_to_network_drive()
         helper.install_dimr_on_linux()
-
-    def __tag_in_svn(self) -> None:
-        """ Tags the build in SVN. """
-        config_helper = ConfigReader("../config.ini")
-        svn_url = config_helper.get_section_key("DEFAULT", "svn_release_url")
-        print()
-        print(f"Releasing from {svn_url}")
-        print()
-        helper = SvnHelper(teamcity=self.__teamcity, svn_revision_number=self.__svn_revision_number,dimr_version=self.__dimr_version)
-        helper.tag_in_svn(svn_url)
 
     def __pin_and_tag_builds(self) -> None:
         """ Pin and tag the appropriate builds. """
