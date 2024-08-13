@@ -3216,8 +3216,8 @@ contains
       integer :: ierrint
       integer :: ierrreel
 
-      read (id, '(i)', iostat=ierrint) int
-      read (id, '(g)', iostat=ierrreel) reel
+      read (id, '(i100)', iostat=ierrint) int
+      read (id, '(g100.50)', iostat=ierrreel) reel
 
       if (ierrint == 0 .or. ierrreel == 0) then
          ! id could be read as an integer or real, add prefix
