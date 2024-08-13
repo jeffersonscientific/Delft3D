@@ -2,6 +2,10 @@
 
 IMAGE="containers.deltares.nl/delft3d/legacy/delft3dfm:latest"
 
+MPI_DIR=/opt/apps/intelmpi/2021.10.0/mpi/2021.10.0
+container_PATH=$MPI_DIR/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin 
+container_LD_LIBRARY_PATH=$MPI_DIR/lib:$MPI_DIR/lib/release
+
 # Pull the Docker image
 docker pull $IMAGE
 
@@ -11,9 +15,17 @@ for dir in */; do
     if [ -f "$dir/run_docker.sh" ]; then
 		cd $dir
         echo "Running run_docker.sh in $(pwd)"
-        docker run -v ".:/data" $IMAGE
+        docker run \
+			-v ".:/data" \
+			-v "$MPI_DIR:$MPI_DIR" \
+			-v "/usr/:/host" \
+			-e PATH=$container_PATH \
+			-e LD_LIBRARY_PATH=$container_LD_LIBRARY_PATH \
+			$IMAGE
 		cd ..
     else
         echo "No run script in $(pwd)"
     fi
 done
+
+
