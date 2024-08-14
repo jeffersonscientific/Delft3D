@@ -1860,8 +1860,8 @@ contains
          call prop_get_string(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
          if (success) then
             ti_com = huge(0.0_hp)
-            call set_output_time_vector(md_ctvfile, ti_ctv, ti_ctv_rel)
          end if
+         call set_output_time_vector(md_ctvfile, ti_ctv, ti_ctv_rel)
 
       end if
 
@@ -4147,9 +4147,9 @@ contains
          allocate (ti_tv(je))
          allocate (ti_tv_rel(je))
          rewind (tvfile)
+         acc = 1.0_dp
          do j = 1, je
             read (tvfile, *) ti_tv(j)
-            acc = 1.0_dp
             ti_tv(j) = ceiling(ti_tv(j) * acc) / acc
             if (ti_tv(j) < 0d0) then
                call mess(LEVEL_WARN, 'Negative times demanded in output time vector. Please modify the time values. Output time vector is not applied.')
@@ -4171,6 +4171,8 @@ contains
       end if
       !
       if (warn == 1) then
+         if (allocated(ti_tv)) deallocate (ti_tv)
+         if (allocated(ti_tv_rel)) deallocate (ti_tv_rel)
          allocate (ti_tv(1))
          allocate (ti_tv_rel(1))
          ti_tv = 0.0_dp

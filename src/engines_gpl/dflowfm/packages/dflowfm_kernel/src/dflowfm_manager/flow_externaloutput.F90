@@ -184,10 +184,6 @@
     ! Write com file
     if (jawave == 3) then
        !
-       if (.not. allocated(ti_ctv)) then
-          allocate (ti_ctv(1), ti_ctv_rel(1)); ti_ctv(1) = 0; ti_ctv_rel(1) = 0
-       end if
-       !
        if (ti_com /= dt_user .or. ti_ctv(1) > 0) then
           !
           if (comparereal(tim, time_com, eps10) >= 0) then
