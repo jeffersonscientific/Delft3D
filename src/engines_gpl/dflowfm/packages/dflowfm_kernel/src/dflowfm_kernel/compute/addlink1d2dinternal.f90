@@ -82,7 +82,6 @@
     else
        if (hu(L) > 0d0) then
 
-          !DIR$ INLINE
           hpr1 = get_hpr_nostruc(L)
           frcn = frcu(L)
           ifrctyp = ifrcutp(L)

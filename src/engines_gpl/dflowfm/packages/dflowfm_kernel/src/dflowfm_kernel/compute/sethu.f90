@@ -149,7 +149,6 @@ contains
 
          upstream_water_level = get_upstream_water_level()
 
-         !DIR$ INLINE
          call getblu_from_bob(link, upstream_cell_index, bed_level_at_u_point)
          if (jafullgridoutput > 0) then ! is it possible to move to other subroutine?
             blup(link) = bed_level_at_u_point

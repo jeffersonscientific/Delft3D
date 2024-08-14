@@ -197,7 +197,6 @@
                 idim = 1
              end if
 
-             !DIR$ FORCEINLINE
              isGhost = is_ghost_node(k)
              do i_lat = 1, numlatsg
                 do i_layer = 1, num_layers
@@ -296,7 +295,6 @@
           else
              dd(k) = 0
           end if
-          !DIR$ FORCEINLINE
           isGhost = is_ghost_node(k)
           if (.not. isGhost) then ! Do not count ghosts in mass balances
              qincel = qincel + qin(k)

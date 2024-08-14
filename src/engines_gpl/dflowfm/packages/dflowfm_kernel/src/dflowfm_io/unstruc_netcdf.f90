@@ -6472,7 +6472,6 @@ contains
          call realloc(work1d2, lnkx, keepExisting=.false., fill=dmiss)
          ! work3d2 already sufficiently allocated above.
          do LL = 1, lnx
-            !DIR$ INLINE
             zwu0 = blup(LL) ! cached from latest sethu()
             call getLbotLtopmax(LL, Lb, Ltx)
             call getlayerindicesLmax(LL, nlaybL, nrlayLx)

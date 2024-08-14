@@ -88,7 +88,6 @@
        b21 = BL2 - BL1; ai = b21 / wu2
        k1 = ln(1, L); k2 = ln(2, L)
 
-       !DIR$ INLINE
        hpr1 = get_hpr_nostruc(L)
 
        if (jaconveyance2D > 0) then
