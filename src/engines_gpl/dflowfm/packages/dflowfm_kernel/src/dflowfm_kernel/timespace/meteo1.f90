@@ -5936,10 +5936,10 @@ contains
 
       select case (loc_spec_type)
       case (LOCTP_POLYGON_FILE)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from file
          call oldfil(minp, loc_file)
-         call savepol() ! save state 
-         call delpol() ! clear state 
          call reapol(minp, 0)
       case (LOCTP_POLYGON_XY)
          ! Fill npl, xpl, ypl from input arrays
@@ -5993,7 +5993,7 @@ contains
          end do
       end if
       if (loc_spec_type == LOCTP_POLYGON_FILE) then
-         call restorepol() ! restore state 
+         call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
 
