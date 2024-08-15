@@ -71,14 +71,8 @@ class NetcdfComparer(IComparer):
 
                         # http://docs.scipy.org/doc/numpy/reference/generated/numpy.argmax.html
                         if left_nc_var.ndim == 1:
-                            # 1D array
-                            diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
-                            i_max = np.argmax(diff_arr)
-                            result.maxAbsDiff = float(diff_arr[i_max])
-                            result.maxAbsDiffCoordinates = (i_max,)
-                            result.maxAbsDiffValues = (
-                                left_nc_var[i_max],
-                                right_nc_var[i_max],
+                            result.maxAbsDiff, result.maxAbsDiffCoordinates, result.maxAbsDiffValues = (
+                                self.compare_1d_arrays(left_nc_root, right_nc_root)
                             )
 
                             plot_location = str(variable_name)
@@ -276,6 +270,15 @@ class NetcdfComparer(IComparer):
 
                 self.check_match_for_parameter_name(matchnumber, parameter_name, left_path, filename)
         return results
+
+    def compare_1d_arrays(self, left_nc_var: nc.Dataset, right_nc_var: nc.Dataset):
+        # 1D array
+        diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
+        i_max = np.argmax(diff_arr)
+        max_abs_diff = float(diff_arr[i_max])
+        max_abs_diff_coordinates = (i_max,)
+        max_abs_diff_values = (left_nc_var[i_max], right_nc_var[i_max])
+        return max_abs_diff, max_abs_diff_coordinates, max_abs_diff_values
 
     def check_match_for_parameter_name(
         self, matchnumber: int, parameter_name: str, left_path: str, filename: str
