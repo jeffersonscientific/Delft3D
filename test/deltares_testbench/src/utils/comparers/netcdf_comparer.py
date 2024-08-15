@@ -118,13 +118,11 @@ class NetcdfComparer(IComparer):
 
                     except RuntimeError as e:
                         logger.error(str(e))
-                        local_error = True
                         result.error = True
 
                     except Exception as e:
                         logger.error(f"Could not find parameter: {variable_name}, in file: {filename}")
                         logger.error(str(e))
-                        local_error = True
                         result.error = True
 
                     if np.ma.is_masked(
