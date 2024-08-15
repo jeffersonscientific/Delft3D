@@ -160,27 +160,30 @@ class NetcdfComparer(IComparer):
                                 time_var = search_time_variable(left_nc_root, variable_name)
                                 self.check_time_variable_found(time_var, variable_name)
                                 if cf_role_time_series_vars.__len__() == 0:
+                                    subtitle = self.get_plot_subtitle(time_var, row_id)
+                                    plot_ref_val = left_nc_var[row_id, :]
+                                    plot_cmp_val = right_nc_var[row_id, :]
                                     self.create_2d_plot(
-                                        time_var,
-                                        row_id,
-                                        left_nc_var,
-                                        right_nc_var,
-                                        left_nc_root,
-                                        right_path,
-                                        param_new,
                                         testcase_name,
                                         variable_name,
+                                        plot_ref_val,
+                                        plot_cmp_val,
+                                        right_path,
+                                        left_nc_root,
+                                        left_nc_var,
+                                        param_new,
+                                        subtitle,
                                     )
                                 else:
                                     plot_location = self.determine_plot_location(
                                         left_nc_root, observation_type, column_id
                                     )
                                     self.create_time_series_plot(
-                                        right_path,
                                         testcase_name,
+                                        variable_name,
                                         plot_ref_val,
                                         plot_cmp_val,
-                                        variable_name,
+                                        right_path,
                                         time_var,
                                         plot_location,
                                     )
@@ -342,11 +345,11 @@ class NetcdfComparer(IComparer):
 
     def create_time_series_plot(
         self,
-        right_path: str,
         testcase_name: str,
+        variable_name: str,
         plot_ref_val,
         plot_cmp_val,
-        variable_name: str,
+        right_path: str,
         time_var: nc.Dataset,
         plot_location,
     ):
@@ -376,21 +379,17 @@ class NetcdfComparer(IComparer):
 
     def create_2d_plot(
         self,
-        time_var: nc.Dataset,
-        row_id,
-        left_nc_var: nc.Dataset,
-        right_nc_var: nc.Dataset,
-        left_nc_root,
-        right_path: str,
-        param_new,
         testcase_name: str,
         variable_name: str,
+        plot_ref_val,
+        plot_cmp_val,
+        right_path: str,
+        left_nc_root,
+        left_nc_var: nc.Dataset,
+        param_new,
+        subtitle,
     ):
         """Plot a 2D graph."""
-        subtitle = self.get_plot_subtitle(time_var, row_id)
-
-        plot_ref_val = left_nc_var[row_id, :]
-        plot_cmp_val = right_nc_var[row_id, :]
 
         # search coordinates
         coords = left_nc_var.coordinates.split()
