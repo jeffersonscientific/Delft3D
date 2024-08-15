@@ -113,45 +113,8 @@ class NetcdfComparer(IComparer):
                             column_id = result_2d_array.column_id
 
                         else:
-                            diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
-                            i_max = np.argmax(diff_arr)
-
-                            # Determine block sizes
-                            block_sizes = [1]
-                            for n in reversed(diff_arr.shape):
-                                block_sizes.append(block_sizes[-1] * n)
-                            block_sizes.pop()  # Last block size is irrelevant.
-                            block_sizes.reverse()
-
-                            # Determine coordinates of maximum deviation
-                            coordinates = []
-                            remainder = i_max
-                            for size in block_sizes:
-                                coordinates.append(remainder // size)
-                                remainder %= size
-
-                            maxdiff = diff_arr
-                            left_at_maxdiff = left_nc_var
-                            right_at_maxdiff = right_nc_var
-                            try:
-                                for c in coordinates:
-                                    maxdiff = maxdiff[c]
-                                    left_at_maxdiff = left_at_maxdiff[c]
-                                    right_at_maxdiff = right_at_maxdiff[c]
-                            except Exception as e:
-                                error_msg = (
-                                    "Mismatch dimensions: len maxdiff and coordinates: "
-                                    + str(len(maxdiff))
-                                    + " , "
-                                    + str(len(coordinates))
-                                )
-                                raise RuntimeError(error_msg, e)
-
-                            result.maxAbsDiff = float(maxdiff)
-                            result.maxAbsDiffCoordinates = tuple(coordinates)
-                            result.maxAbsDiffValues = (
-                                left_at_maxdiff,
-                                right_at_maxdiff,
+                            result.maxAbsDiff, result.maxAbsDiffCoordinates, result.maxAbsDiffValues = (
+                                self.compare_nd_arrays(left_nc_var, right_nc_var)
                             )
 
                     except RuntimeError as e:
@@ -231,6 +194,54 @@ class NetcdfComparer(IComparer):
 
                 self.check_match_for_parameter_name(matchnumber, parameter_name, left_path, filename)
         return results
+
+    def compare_nd_arrays(self, left_nc_var: nc.Dataset, right_nc_var: nc.Dataset):
+        """
+        Compare two n-dimensional arrays and find the maximum absolute difference.
+
+        This method computes the absolute differences between corresponding elements
+        of two n-dimensional arrays, identifies the maximum absolute difference, and
+        returns the value of this difference along with its coordinates and the values
+        at these coordinates in the original arrays.
+        """
+        diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
+        i_max = np.argmax(diff_arr)
+
+        # Determine block sizes
+        block_sizes = [1]
+        for n in reversed(diff_arr.shape):
+            block_sizes.append(block_sizes[-1] * n)
+        block_sizes.pop()  # Last block size is irrelevant.
+        block_sizes.reverse()
+
+        # Determine coordinates of maximum deviation
+        coordinates = []
+        remainder = i_max
+        for size in block_sizes:
+            coordinates.append(remainder // size)
+            remainder %= size
+
+        maxdiff = diff_arr
+        left_at_maxdiff = left_nc_var
+        right_at_maxdiff = right_nc_var
+        try:
+            for c in coordinates:
+                maxdiff = maxdiff[c]
+                left_at_maxdiff = left_at_maxdiff[c]
+                right_at_maxdiff = right_at_maxdiff[c]
+        except Exception as e:
+            error_msg = (
+                "Mismatch dimensions: len maxdiff and coordinates: " + str(len(maxdiff)) + " , " + str(len(coordinates))
+            )
+            raise RuntimeError(error_msg, e)
+
+        max_abs_diff = float(maxdiff)
+        max_abs_diff_coordinates = tuple(coordinates)
+        max_abs_diff_values = (
+            left_at_maxdiff,
+            right_at_maxdiff,
+        )
+        return max_abs_diff, max_abs_diff_coordinates, max_abs_diff_values
 
     def compare_1d_arrays(self, left_nc_var: nc.Dataset, right_nc_var: nc.Dataset):
         # 1D array
