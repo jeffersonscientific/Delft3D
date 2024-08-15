@@ -150,7 +150,7 @@ In this manual we will have 2 different sections depending on the use case. As a
 
 \subsection{python}
 \label{ssec:python}
-The testbench for D-Hydro is written for python. The new testbench can be run with python and the necessary requirements installed within the requirements.txt.
+The testbench for D-Hydro is written for python. The new testbench can be run with python and the necessary requirements installed with the pip/win-requirements.txt (on Windows) or the pip/lnx-requirements.txt (on Linux).
 The first thing to do is install python 3 which can be found here: \url{https://www.python.org/downloads/} or within the windows app store by searching python 3.
 Installing the required python packages will be discussed under the Installation section \autoref{ssec:userinstall}
 
@@ -219,7 +219,7 @@ Once this is successfully completed we go to visual studio code and open the com
 
 \Note A common issue is: "Activate.ps1 cannot be loaded because the execution of scripts is disabled on this system." For troubleshooting steps, refer to \autoref{sec:troubleshooting}
 
-Now we need to fill this virtual environment with the required python packages. If the venv is successfully activated your terminal within vscode will show (venv) in front of the terminal. If the venv is successfully activated you can run the command \command{pip install -r requirements.txt} from within the deltares\_testbench folder.
+Now we need to fill this virtual environment with the required python packages. If the venv is successfully activated your terminal within vscode will show (venv) in front of the terminal. If the venv is successfully activated you can run the command \command{pip install -r pip/win-requirements.txt} (on Windows) or \command{pip install -r pip/lnx-requirements.txt} (on Linux) from within the deltares\_testbench folder.
 \newpage
 \subsection{Run testcase}
 Once the installation steps are done you can now use the testbench. To run tests we need engines. They can be build locally or you can get them from TeamCity for windows here: \url{https://dpcbuild.deltares.nl/buildConfiguration/Dimr\_DimrCollectors\_1aDimrCollectorDailyWin64}.
