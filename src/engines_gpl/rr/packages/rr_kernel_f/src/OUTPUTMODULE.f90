@@ -138,8 +138,8 @@ module Output
 !
       IMPLICIT NONE
 
-      CHARACTER*20 NAMTYP(NKND)
-      CHARACTER*10 CDATE, CTIME, CZONE
+      CHARACTER(len=20) NAMTYP(NKND)
+      CHARACTER(len=10) CDATE, CTIME, CZONE
       INTEGER      Time_values(8), I,j, IKKL, IPTYP, IPOPP, idum
       INTEGER      IOUT9, IOUT2, IOUT3, IOUT4, IOUT5, IOUT6,IOUT7,IOUT8
       INTEGER*2    RNDATE(3), RNTIME(4)
@@ -322,7 +322,7 @@ module Output
       IMPLICIT NONE
 
 !
-      CHARACTER*3 MONTH(12)
+      CHARACTER(len=3) MONTH(12)
       INTEGER IOUT2, IOUT3, IOUT4, IOUT5, IOUT6, IOUT7, IOUT8
       INTEGER IEVENT, INODE, IKIND, INr
 
@@ -3377,7 +3377,7 @@ module Output
 
   IMPLICIT NONE
 
-  Character*160 String
+  Character(len=160) String
   Integer       i, TmSize, IYear, Imo, Iday, Ihour, IMin, ISec
   Logical Success
 
@@ -3646,7 +3646,7 @@ module Output
       INTEGER       I
       Integer       NAMLNG, Ievent
       Integer       IYear, Imo, Iday, iHour, IMin, ISec, TmSize
-      CHARACTER*160 Header
+      CHARACTER(len=160) Header
       Logical       WriteOption, Success
 
 ! DIO
@@ -3794,7 +3794,7 @@ module Output
       Integer       IYear, Imo, Iday, IMin, ISec
       Logical       WriteOption
       CHARACTER(Len=CharIdLength) FILNAM
-      CHARACTER*500 NAME, LongName
+      CHARACTER(len=500) NAME, LongName
       CHARACTER(Len=CharIdLength) SERNAM(NMSR), UNIT(NMSR), LongSerNam(NMSR)
 
 ! DIO
@@ -5193,9 +5193,9 @@ module Output
 !     integer       Idebug
       Integer       NAMLNG, I, imap
       Integer       IYear, Imo, Iday, iHour, IMin, ISec, TmSize
-      CHARACTER*20  Name
+      CHARACTER(len=20) Name
       CHARACTER(Len=CharIdLength) FILNAM
-      CHARACTER*160 Header
+      CHARACTER(len=160) Header
 
 ! voorlopig alleen maar voor tijdstap 1; later de check inbouwen voor om de x tijdstappen
 
@@ -5268,7 +5268,7 @@ module Output
 
     Subroutine  WriteT0String (Name, IYear, Imo,Iday,Ihour,Imin,Isec,TmSize)
 
-      Character*160 Name
+      Character(len=160) Name
       Integer       IYear, Imo, Iday, Ihour,Imin,Isec,TmSize
 
       IF (TMSIZE .LT. 10) THEN
@@ -5565,8 +5565,8 @@ module Output
 
     implicit none
 
-    CHARACTER*6  NAME
-    Character*(*)  inName       ! name of input dataset from RTC
+    CHARACTER(len=6)  NAME
+    Character(len=*)  inName       ! name of input dataset from RTC
 
     INTEGER           NLOCHIS, NHISRtc, IDEBUG, ItmStp, Iout1
     INTEGER,Save  ::  NLOCFRtc, NHISPRtc
@@ -5797,8 +5797,8 @@ module Output
 
     implicit none
 
-    CHARACTER*6  NAME
-    Character*(*)  inName       ! name of input dataset from CFSF
+    CHARACTER(len=6)  NAME
+    Character(len=*)  inName       ! name of input dataset from CFSF
     CHARACTER(CharIdLength) IDNODE
 
     INTEGER       NLOCHIS, NHIS, IDEBUG, ItmStp, Iout1
@@ -6005,8 +6005,8 @@ module Output
 
     implicit none
 
-    CHARACTER*6  NAME
-    Character*(*)  inName       ! name of input dataset from WQ - Salt
+    CHARACTER(len=6)  NAME
+    Character(len=*)  inName       ! name of input dataset from WQ - Salt
     CHARACTER(CharIdLength) IDNODE
 
     INTEGER       NLOCHIS, NHIS, IDEBUG, ItmStp, Iout1

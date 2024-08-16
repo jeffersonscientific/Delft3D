@@ -186,7 +186,7 @@ c
       real     afwh ,afwq  ,xh    ,xq   ,epsq2
       logical  EPSEQU
       logical  hcrit  , qcrit2
-      character*40    branam
+      character(len=40) branam
 c
 c     Include error codes
 c

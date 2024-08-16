@@ -359,7 +359,7 @@ c
 c     Koppeling Mozart
       integer istmoz
       logical lmoza
-      character*40 qlatid(*)
+      character(len=40) qlatid(*)
 c
 c
       logical strclo(*)

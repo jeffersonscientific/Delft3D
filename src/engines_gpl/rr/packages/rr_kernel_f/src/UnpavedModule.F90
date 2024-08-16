@@ -305,7 +305,7 @@ module Unpaved
 !
       integer debug_unit, CapsimDebug_unit
       integer message_unit
-      character*132 CapsimDbgfile, CapsimMsgFile
+      character(len=132) CapsimDbgfile, CapsimMsgFile
       integer file_unit
       Double precision    dprz(nxspun, nxte)
       integer NUDPUN(nxspun, nxrz)
@@ -741,7 +741,7 @@ contains
     Double precision          ScurvePercentage(999), SCurveLevel(999), bmaxoldum, binioldum
     real                      c1dum
     Character(Len=CharIdLength), pointer :: STODEF(:), ALFDEF(:), ERNSTDef(:),SEPDEF(:), INFDEF(:), INIDEF(:), SCUDEF(:), H0Def(:), SaltConcDef(:)
-    Character*1   Klteken
+    Character(len=1)   Klteken
 
     Logical, pointer :: AlreadyRead(:)
     Integer, pointer :: ReferenceToDefinition(:)
@@ -2363,7 +2363,7 @@ contains
 
 
   Integer       inode, iovh
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -8028,7 +8028,7 @@ contains
     Integer      ExcDur
     Double precision         ExcCumGwl
     Double precision         GWL, QOpper, QBodem, QRain, GWLMX
-    CHARACTER*3  MONTH(12)
+    CHARACTER(len=3) MONTH(12)
 
         if (.not. associated(OVMGWS)) return    ! If there is nothing, do nothing
 

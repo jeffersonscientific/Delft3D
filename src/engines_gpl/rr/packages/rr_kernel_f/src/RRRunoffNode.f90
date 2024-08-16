@@ -5848,7 +5848,7 @@ enddo
   integer      Infile1, idebug
 
   Integer       inode, iRRRunoff, IRRRunoffSub
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -6004,7 +6004,7 @@ enddo
   integer      Infile1, idebug
 
   Integer       inode, irrRunoff, IRRRunoffSub
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -6151,7 +6151,7 @@ enddo
   integer      Infile1, idebug
 
   Integer       inode, irrRunoff, IRRRunoffSub
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()

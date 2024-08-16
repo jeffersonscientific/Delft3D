@@ -80,10 +80,10 @@
     character(len=*), intent(in) :: ncfile   !< name of the new netcdf-file to be created
     integer                      :: ncid     !< Netcdf ID given to this file
 
-    Character (len=999) :: ncfile_lowercase, modelversion
-    character*8  :: cdate
-    character*10 :: ctime
-    character*5  :: czone
+    Character(len=999) :: ncfile_lowercase, modelversion
+    character(len=8)  :: cdate
+    character(len=10) :: ctime
+    character(len=5)  :: czone
     integer :: ierr
     integer :: oldfillmode
     ierr = nf90_noerr

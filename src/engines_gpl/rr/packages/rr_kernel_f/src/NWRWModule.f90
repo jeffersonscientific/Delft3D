@@ -2991,7 +2991,7 @@ contains
         Integer      INODE, IKIND, INR, IPTyp, IPOpp, i
         Integer      IOUT9, IOUT8
         Integer*2    RNDATE(3), RNTIME(4)
-        CHARACTER*35 STRING(3,4)
+        CHARACTER(len=35) STRING(3,4)
 
 !                              1         2         3
 !                     12345678901234567890123456789012345
@@ -3074,7 +3074,7 @@ contains
 
       Implicit none
       Integer     Iout8, Ievent, Inode, Iplv
-      CHARACTER*3 MONTH(12)
+      CHARACTER(len=3) MONTH(12)
       Integer     Iptyp, ipopp
       Real        RArea, QRin
 

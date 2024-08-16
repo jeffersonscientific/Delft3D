@@ -904,7 +904,7 @@ end subroutine closeBoundaryConditionFiles
 
     Integer      INODE, Ibnd, Iout7, Ievent
     Real         QFlw
-    CHARACTER*3  MONTH(12)
+    CHARACTER(len=3)  MONTH(12)
 
        if (.not. associated(QBNDMX)) return  ! If there is nothing, do nothing
 

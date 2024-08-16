@@ -293,8 +293,8 @@ c
      +        zbmain, wmain, amain, omain, rmain, cmain,
      +        zbsub1, wsub1, asub1, osub1, rsub1, csub1,
      +        xc
-      character*40    branam
-      character*11    xtxt
+      character(len=40) branam
+      character(len=11) xtxt
 c
 c     Include sobek constants
 c

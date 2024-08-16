@@ -105,7 +105,7 @@ contains
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
       double precision :: QQQ, upot, ukin, ueaa
-      character*(*) :: batfile
+      character(len=*) :: batfile
       character(len=256) :: rec, filnam, basemdu, tex
 
       call resetFullFlowModel()

@@ -311,7 +311,7 @@ contains
       use MessageHandling
       real(c_double), intent(in) :: timetarget !< Target time. For now, this is assumed to be equal to upcoming next user time. If not, errorstatus returned.
       integer(c_int) :: iresult !< Result status, DFM_NOERR(=0) if successful.
-      character*(MAXSTRLEN) :: msg
+      character(len=MAXSTRLEN) :: msg
 
       iresult = DFM_NOERR
 
@@ -361,7 +361,7 @@ contains
       real(c_double), intent(in) :: timetarget !< Target time, resulting timestep may (will generally) be smaller. For now, this is assumed to be equal to upcoming next user time. If not, errorstatus returned.
       real(c_double), intent(out) :: dtpredict !< The predicted computational timestep, based on stability criteria. Pass this value (or smaller) on to run_computational_timestep.
       integer(c_int) :: iresult !< Result status, DFM_NOERR(=0) if successful.
-      character*(MAXSTRLEN) :: msg
+      character(len=MAXSTRLEN) :: msg
 
       iresult = DFM_NOERR
 

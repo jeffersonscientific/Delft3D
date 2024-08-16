@@ -880,7 +880,7 @@ end subroutine Link_ReadAscii_ini
     Integer noDown
     Integer, Pointer :: ExistUp(:), ExistDown(:)
     Character(Len=CharIdLength) string
-    Character*999 errorString
+    Character(len=999) errorString
     Integer iDebug
     Logical Err917, Err974, Err920, Success
 
@@ -1869,7 +1869,7 @@ end subroutine Link_ReadAscii_ini
     Subroutine SimSeqAddNodeType(Ikind, Index, Stringoption)
 ! Add all nodes of type =IKIND, or type <= IKIND (depending on StringOption) to SimSeq array
 
-    Character*2 StringOption
+    Character(len=2) StringOption
     Integer Ikind, Index
     Integer Inode, KindNd
 

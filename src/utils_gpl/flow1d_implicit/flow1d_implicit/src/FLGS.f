@@ -257,8 +257,8 @@ c
      +                  qun   ,qunp1 ,wu    ,au    ,qdqu,
      +                  gdub  ,lamdub,reldub,dhsdub,dum1
       real              astr, abran, hcrit, hstr
-      character*8       abrtxt, astrtxt
-      character*40      strnam
+      character(len=8)  abrtxt, astrtxt
+      character(len=40) strnam
 c
       integer     qol
       parameter  (qol=4)

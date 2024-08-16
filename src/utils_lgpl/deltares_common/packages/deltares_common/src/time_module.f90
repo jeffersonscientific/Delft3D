@@ -1284,7 +1284,7 @@ module time_module
       INTEGER          IYEAR , IMONTH, IDAY  , IHOUR , IMIN  , ISEC  , &
                        IDATE , ITIME , MONLEN(12)
       DOUBLE PRECISION TEMP1 , TEMP2
-      CHARACTER*48     LINE
+      character(len=48) LINE
 !
 !***********************************************************************
 !

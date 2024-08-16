@@ -45,7 +45,7 @@ contains
         USE HydroSet           ! for composed hydrodynamics
 
         integer(kind = int_wp), intent(inout) :: file_unit_list(*)          ! logical unitnumbers of files
-        character*(*), intent(in) :: luntxt(*)       ! file names
+        character(len=*), intent(in) :: luntxt(*)       ! file names
         integer(kind = int_wp), intent(in) :: ftype(*)        ! type of the files
         integer(kind = int_wp), intent(in) :: lunout          ! unit number monitor file
         integer(kind = int_wp), intent(in) :: ilun            ! entry in file_unit_list/LUNTXT for this item
