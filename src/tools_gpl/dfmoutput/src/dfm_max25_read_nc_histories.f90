@@ -62,7 +62,7 @@ module read_nc_histories
                                 status = nf90_open(filename, nf90_nowrite, ncid)
       if (status == nf90_noerr) status = nf90_inq_dimid(ncid, "time", timeID)
       if (status == nf90_noerr) status = nf90_inq_dimid(ncid, "name_len", name_lenID)
-      if (status == nf90_noerr) status = nf90_inq_dimid(ncid, "stations", stationsID)
+      if (status == nf90_noerr) status = nf90_inq_dimid(ncid, "station", stationsID)
 
       if (status == nf90_noerr) status = nf90_inquire_dimension(ncid, timeID, len = nTimes)
       if (status == nf90_noerr) status = nf90_inquire_dimension(ncid, name_lenID, len = nNameLength)
