@@ -82,8 +82,6 @@ class NetcdfComparer(IComparer):
                         elif left_nc_var.ndim == 2:
                             # 2D array
                             # Search for the variable name which has cf_role 'timeseries_id'.
-                            # - If it can be found: it is more like a history file, with stations. Plot the time series for the station with the largest deviation.
-                            # - If it cannot be found: it is more like a map-file. Create a 2D plot of the point in time with
                             cf_role_time_series_vars = search_times_series_id(left_nc_root)
 
                             result_2d_array = self.compare_2d_arrays(
@@ -103,6 +101,11 @@ class NetcdfComparer(IComparer):
                             row_id = result_2d_array.row_id
                             column_id = result_2d_array.column_id
 
+                            # - If variable name which has cf_role 'timeseries_id' cannot be found: it is more like a
+                            #   map-file. Create a 2D plot of the point in time with
+                            # - If variable name which has cf_role 'timeseries_id' can be found: it is more like a
+                            #   history file, with stations. Plot the time series for the station with the largest
+                            #   deviation.
                             if cf_role_time_series_vars.__len__() == 0:
                                 observation_type = parameter_name
                                 plot_ref_val = left_nc_var[row_id, :]
@@ -166,6 +169,12 @@ class NetcdfComparer(IComparer):
         return results
 
     def get_max_rel_diff(self, maxAbsDiff, min_ref_value, max_ref_value):
+        """
+        Calculate the maximum relative difference.
+
+        This method converts an absolute difference into a relative difference by dividing it by the difference between
+        the maximum and minimum reference values. It handles edge cases where the differences are very small.
+        """
         # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).
         if maxAbsDiff < 2 * sys.float_info.epsilon:
             # No difference found, so relative difference is set to 0.
@@ -192,6 +201,7 @@ class NetcdfComparer(IComparer):
         param_new,
         observation_type,
     ):
+        """Plot a 2D array or time series based on the provided parameters."""
         try:
             time_var = search_time_variable(left_nc_root, variable_name)
             self.check_time_variable_found(time_var, variable_name)
@@ -276,7 +286,7 @@ class NetcdfComparer(IComparer):
         return max_abs_diff, max_abs_diff_coordinates, max_abs_diff_values
 
     def compare_1d_arrays(self, left_nc_var: nc.Dataset, right_nc_var: nc.Dataset):
-        # 1D array
+        """Compare two 1D arrays datasets and returns the maximum absolute difference."""
         diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
         i_max = np.argmax(diff_arr)
         max_abs_diff = float(diff_arr[i_max])
@@ -293,6 +303,7 @@ class NetcdfComparer(IComparer):
         variable_name: str,
         cf_role_time_series_vars,
     ):
+        """Compare two 2D arrays datasets and returns the comparison result."""
         result = Comparison2DArrayResult()
         # 2D array
         diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
@@ -324,6 +335,7 @@ class NetcdfComparer(IComparer):
             raise Exception(error_msg)
 
     def get_observation_type(self, left_nc_var, cf_role_time_series_vars):
+        """Determine the observation type based on the coordinates attribute of the NetCDF variable."""
         if hasattr(left_nc_var, "coordinates"):
             location_types = left_nc_var.coordinates.split(" ")
             for variable in cf_role_time_series_vars:
@@ -335,6 +347,7 @@ class NetcdfComparer(IComparer):
     def find_column_and_row_id(
         self, parameter_location, cf_role_time_series_vars, left_nc_root, diff_arr, variable_name
     ):
+        """Find the column and row ID based on the given parameter location and difference array."""
         parameter_location_found = False
         column_id = None
         row_id = None
@@ -426,7 +439,6 @@ class NetcdfComparer(IComparer):
         subtitle,
     ):
         """Plot a 2D graph."""
-
         # search coordinates
         coords = left_nc_var.coordinates.split()
         x_coords = left_nc_root.variables[coords[0]][:]
