@@ -2128,12 +2128,12 @@ end subroutine Link_ReadAscii_ini
   ! update upstream gw level, make sure it is below surface; otherwise limit the GWLinkFlow
    GWFlowVol = GwLinkFlow * Timesettings%TimestepSize
    BoBD(iovhup) = BoBD(iovhup) - GWFlowVol
-   GwAreaUp = max (AreaGwComp(iovhUp), 0.0001)
+   GwAreaUp = max (AreaGwComp(iovhUp), 0.0001d0)
    GWLupold = Gwl(iovhup)
    GWL(iovhup) = GWL(iovhup) - 1/BergC(iovhup) * GWFlowVol / GwAreaUp
   ! update downstream gw level, make sure it is below surface, otherwise limit the GWLinkFlow
    BoBD(iovhdown) = BoBD(iovhdown) + GWFlowVol
-   GwAreaDown = max (AreaGwComp(iovhDown), 0.0001)
+   GwAreaDown = max (AreaGwComp(iovhDown), 0.0001d0)
    GWLdownold = Gwl(iovhdown)
    GWL(iovhdown) = GWL(iovhdown) + 1/BergC(iovhDown) * GWFlowVol / GwAreaDown
 

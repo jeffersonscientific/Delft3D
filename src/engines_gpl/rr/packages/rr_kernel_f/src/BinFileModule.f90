@@ -566,7 +566,7 @@ contains
           IF (IKIND .EQ. 1) THEN
              OWMNMA(IOW) = MIN (OWMNMA(IOW), LVLVH(INR))
           ELSEIF (IKIND .EQ. 2) THEN
-             OWMNMA(IOW) = MIN (OWMNMA(IOW), LVLOHMx(INR))
+             OWMNMA(IOW) = MIN (OWMNMA(IOW), real(LVLOHMx(INR)))
           ENDIF
        endif
     ENDDO

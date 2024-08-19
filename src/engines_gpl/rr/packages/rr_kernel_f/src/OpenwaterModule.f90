@@ -1346,7 +1346,7 @@ contains
        if (Rkwel .lt. 0) then
            Vkwel = Rkwel * TimeSettings%TimestepSize
            If (VolOw0(iow) + Vkwel .lt. 0) then
-              Vkwel = max (-1. * max (0.0, VolOw0(iow)), Vkwel)
+              Vkwel = max (-1. * max (0.0, real(VolOw0(iow))), Vkwel)
               Rkwel = Vkwel / TimeSettings%TimestepSize
            Endif
        Endif
