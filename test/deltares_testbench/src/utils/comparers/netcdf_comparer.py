@@ -238,7 +238,7 @@ class NetcdfComparer(IComparer):
             error_msg = (
                 "Mismatch dimensions: len maxdiff and coordinates: " + str(len(maxdiff)) + " , " + str(len(coordinates))
             )
-            raise RuntimeError(error_msg, e)
+            raise RuntimeError(error_msg, e) from e
 
         max_abs_diff = float(maxdiff)
         max_abs_diff_coordinates = tuple(coordinates)
@@ -469,14 +469,14 @@ class NetcdfComparer(IComparer):
         """Ceck if a valid matchnumber is found, otherwise raise exception."""
         if matchnumber == 0:
             error_msg = f"No match for parameter name {parameter_name} in file {os.path.join(left_path, filename)}"
-            raise Exception(error_msg)
+            raise AttributeError(error_msg)
 
     def check_for_dimension_equality(
         self, left_nc_var: nc.Variable, right_nc_var: nc.Variable, variable_name: str
     ) -> None:
         """Check dimension equility and raises exception if not correct."""
         if left_nc_var.shape != right_nc_var.shape:
-            raise Exception(
+            raise ValueError(
                 f"Shapes of parameter {variable_name} not compatible. Shape of reference: "
                 + f"{left_nc_var.shape}. Shape of run data: {right_nc_var.shape}"
             )
@@ -508,7 +508,7 @@ def search_times_series_id(nc_root: nc.Dataset) -> List[str]:
     return keys
 
 
-def interpret_time_unit(time_description):
+def interpret_time_unit(time_description: str):
     """Return a `(start_datetime, timedelta)` tuple.
 
     For instance, `'seconds since 1998-08-01 00:00:00'` yields the
@@ -551,11 +551,11 @@ def interpret_time_unit(time_description):
             int(time_split[2]),
         )
 
-    except Exception:
+    except Exception as e:
         raise ValueError(
             "Can not interpret the following unit: "
             + str(time_description)
             + ". A correct example is: 'seconds since 1998-08-01 00:00:00'."
-        )
+        ) from e
 
     return start_datetime, delta
