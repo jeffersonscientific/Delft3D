@@ -33,11 +33,11 @@ class NetcdfComparer(IComparer):
     ) -> List[Tuple[str, FileCheck, Parameter, ComparisonResult]]:
         """Compare two netCDF files, according to the configuration in file_check."""
         results = []
+        left_nc_root = self.open_netcdf_file(left_path, file_check.name)
+        right_nc_root = self.open_netcdf_file(right_path, file_check.name)
         # For each parameter for this file:
         for parameters in file_check.parameters.values():
             for parameter in parameters:
-                left_nc_root = self.open_netcdf_file(left_path, file_check.name)
-                right_nc_root = self.open_netcdf_file(right_path, file_check.name)
 
                 matchnumber = 0
                 for variable_name in left_nc_root.variables.keys():
