@@ -7904,12 +7904,12 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_veg_stemheight, UNC_LOC_S, stemheight, jabndnd=jabndnd_)
       end if
 
-      if (ndxi - ndx2d > 0 .and. jamapPure1D_debug/=0) then
+      if (ndxi - ndx2d > 0 .and. jamapPure1D_debug /= 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_adve, UNC_LOC_U, adve(:), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_advi, UNC_LOC_U, advi(:), jabndnd=jabndnd_)
       end if
 
-      if (ndxi - ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug/=0) then
+      if (ndxi - ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug /= 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_1, UNC_LOC_U, q1d(1, :), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_2, UNC_LOC_U, q1d(2, :), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_volu1d, UNC_LOC_U, volu1D(:), jabndnd=jabndnd_)
@@ -13102,7 +13102,7 @@ contains
                  id_squbnd, id_sqibnd, &
                  id_morft, &
                  id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
-                 id_ucxqbnd, id_ucyqbnd, & 
+                 id_ucxqbnd, id_ucyqbnd, &
                  id_flowelemdim
 
       integer :: id_tmp
@@ -13976,7 +13976,7 @@ contains
                   do i = 1, numDims - 1
                      ierr = nf90_inquire_dimension(imapfile, rhdims(i), len=tmpdims(i))
                      if (ierr /= nf90_noerr) goto 999
-                  end do                     
+                  end do
                   layerfrac = 0
                   do l = 1, sedtot_read
                      ierr = nf90_get_var(imapfile, id_msed, tmpvar2(l, 1:nlyr_read, 1:ndxi_merge), start=(/l, 1, 1, it_read/), count=(/1, nlyr_read, ndxi_merge, 1/))
@@ -14041,7 +14041,7 @@ contains
                         rst_thlyr(:, kloc) = tmpvar(:, um%inode_merge(kk))
                      else
                         kloc = kk
-                        rst_thlyr(:, kloc) = tmpvar(:, kstart+kk)
+                        rst_thlyr(:, kloc) = tmpvar(:, kstart + kk)
                      end if
                   end do
                end if

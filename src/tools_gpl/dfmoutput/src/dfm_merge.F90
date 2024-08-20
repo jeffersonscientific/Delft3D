@@ -371,7 +371,7 @@ contains
          ! fill in the mapping array mesh2topo that is mapping from meshid to topology index
          ! and compute maximal and minimal topology dimensions.
          call realloc(mesh2topo, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1)
-         call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1) 
+         call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1)
          maxTopodim = 0
          minTopodim = 999
          do ii = 1, nfiles
