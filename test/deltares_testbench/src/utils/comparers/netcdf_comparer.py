@@ -14,10 +14,17 @@ import numpy as np
 import src.utils.plot_differences as plot
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
-from src.utils.comparers.comparison_2d_array_result import Comparison2DArrayResult
 from src.utils.comparers.comparison_result import ComparisonResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
+
+
+class RowColumnIndex:
+    """A set or row and column."""
+
+    def __init__(self, row: int, column: int) -> None:
+        self.row = row
+        self.column = column
 
 
 class NetcdfComparer(IComparer):
@@ -38,7 +45,6 @@ class NetcdfComparer(IComparer):
         # For each parameter for this file:
         for parameters in file_check.parameters.values():
             for parameter in parameters:
-
                 found_parameter_in_file = False
                 for variable_name in left_nc_root.variables.keys():
                     if variable_name != parameter.name:
@@ -89,44 +95,33 @@ class NetcdfComparer(IComparer):
 
             # http://docs.scipy.org/doc/numpy/reference/generated/numpy.argmax.html
             if left_nc_var.ndim == 1:
-                result.max_abs_diff, result.max_abs_diff_coordinates, result.max_abs_diff_values = self.compare_1d_arrays(
-                    left_nc_var, right_nc_var
-                )
+                result = self.compare_1d_arrays(left_nc_var, right_nc_var)
 
                 plot_ref_val = left_nc_var[:]
                 plot_cmp_val = right_nc_var[:]
 
             elif left_nc_var.ndim == 2:
                 cf_role_time_series_vars = search_times_series_id(left_nc_root)
+                diff_arr = self.get_difference(left_nc_var, right_nc_var)
 
-                result_2d_array = self.compare_2d_arrays(
-                    left_nc_var,
-                    right_nc_var,
-                    left_nc_root,
-                    parameter.location,
-                    variable_name,
-                    cf_role_time_series_vars,
+                array_index = self.get_array_index(
+                    parameter.location, cf_role_time_series_vars, left_nc_root, diff_arr, variable_name
                 )
-
-                result.max_abs_diff = result_2d_array.max_abs_diff
-                result.max_abs_diff_coordinates = result_2d_array.max_abs_diff_coordinates
-                result.max_abs_diff_values = result_2d_array.max_abs_diff_values
-                min_ref_value = result_2d_array.min_ref_value
-                max_ref_value = result_2d_array.max_ref_value
-                row_id = result_2d_array.row_id
-                column_id = result_2d_array.column_id
+                min_ref_value = np.min(left_nc_var[:, array_index.column])
+                max_ref_value = np.max(left_nc_var[:, array_index.column])
+                result = self.compare_2d_arrays(left_nc_var, right_nc_var, diff_arr, array_index)
 
                 if cf_role_time_series_vars.__len__() == 0:
                     observation_type = parameter.name
-                    plot_ref_val = left_nc_var[row_id, :]
-                    plot_cmp_val = right_nc_var[row_id, :]
+                    plot_ref_val = left_nc_var[array_index.row, :]
+                    plot_cmp_val = right_nc_var[array_index.row, :]
                 else:
-                    plot_ref_val = left_nc_var[:, column_id]
-                    plot_cmp_val = right_nc_var[:, column_id]
+                    plot_ref_val = left_nc_var[:, array_index.column]
+                    plot_cmp_val = right_nc_var[:, array_index.column]
                     observation_type = self.get_observation_type(left_nc_var, cf_role_time_series_vars)
             else:
-                result.max_abs_diff, result.max_abs_diff_coordinates, result.max_abs_diff_values = self.compare_nd_arrays(
-                    left_nc_var, right_nc_var
+                result.max_abs_diff, result.max_abs_diff_coordinates, result.max_abs_diff_values = (
+                    self.compare_nd_arrays(left_nc_var, right_nc_var)
                 )
 
         except RuntimeError as e:
@@ -166,8 +161,7 @@ class NetcdfComparer(IComparer):
                     cf_role_time_series_vars,
                     left_nc_root,
                     left_nc_var,
-                    row_id,
-                    column_id,
+                    array_index,
                     right_path,
                     parameter.tolerance_absolute,
                     observation_type,
@@ -175,44 +169,32 @@ class NetcdfComparer(IComparer):
 
         return result
 
-    def compare_1d_arrays(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable):
+    def compare_1d_arrays(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable) -> ComparisonResult:
         """Compare two 1D arrays datasets and returns the maximum absolute difference."""
+        result = ComparisonResult()
         diff_arr = self.get_difference(left_nc_var, right_nc_var)
         i_max = np.argmax(diff_arr)
-        max_abs_diff = float(diff_arr[i_max])
-        max_abs_diff_coordinates = (i_max,)
-        max_abs_diff_values = (left_nc_var[i_max], right_nc_var[i_max])
-        return max_abs_diff, max_abs_diff_coordinates, max_abs_diff_values
+        result.max_abs_diff = float(diff_arr[i_max])
+        result.max_abs_diff_coordinates = (i_max,)
+        result.max_abs_diff_values = (left_nc_var[i_max], right_nc_var[i_max])
+        return result
 
     def compare_2d_arrays(
         self,
         left_nc_var: nc.Variable,
         right_nc_var: nc.Variable,
-        left_nc_root: nc.Dataset,
-        parameter_location: Optional[str],
-        variable_name: str,
-        cf_role_time_series_vars: List[str],
-    ) -> Comparison2DArrayResult:
+        diff_arr: np.ndarray,
+        array_index: RowColumnIndex,
+    ) -> ComparisonResult:
         """Compare two 2D arrays datasets and returns the comparison result."""
-        result = Comparison2DArrayResult()
+        result = ComparisonResult()
 
-        diff_arr = self.get_difference(left_nc_var, right_nc_var)
-
-        column_id, row_id = self.get_column_and_row_id(
-            parameter_location, cf_role_time_series_vars, left_nc_root, diff_arr, variable_name
-        )
-
-        result.min_ref_value = np.min(left_nc_var[:, column_id])
-        result.max_ref_value = np.max(left_nc_var[:, column_id])
-
-        result.max_abs_diff = diff_arr[row_id, column_id]
-        result.max_abs_diff_coordinates = (row_id, column_id)
+        result.max_abs_diff = diff_arr[array_index.row, array_index.column]
+        result.max_abs_diff_coordinates = (array_index.row, array_index.column)
         result.max_abs_diff_values = (
-            left_nc_var[row_id, column_id],
-            right_nc_var[row_id, column_id],
+            left_nc_var[array_index.row, array_index.column],
+            right_nc_var[array_index.row, array_index.column],
         )
-        result.row_id = row_id
-        result.column_id = column_id
         return result
 
     def compare_nd_arrays(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable):
@@ -293,8 +275,7 @@ class NetcdfComparer(IComparer):
         cf_role_time_series_vars: List[str],
         left_nc_root: nc.Dataset,
         left_nc_var: nc.Variable,
-        row_id: int,
-        column_id: int,
+        array_index: RowColumnIndex,
         right_path: str,
         tolerance_absolute: float,
         observation_type: str,
@@ -303,7 +284,7 @@ class NetcdfComparer(IComparer):
         try:
             time_var = search_time_variable(left_nc_root, variable_name)
             if cf_role_time_series_vars.__len__() == 0:
-                subtitle = self.get_plot_subtitle(time_var, row_id)
+                subtitle = self.get_plot_subtitle(time_var, array_index.row)
 
                 self.plot_2d(
                     testcase_name,
@@ -317,7 +298,7 @@ class NetcdfComparer(IComparer):
                     subtitle,
                 )
             else:
-                plot_location = self.determine_plot_location(left_nc_root, observation_type, column_id)
+                plot_location = self.determine_plot_location(left_nc_root, observation_type, array_index.column)
                 self.plot_time_series(
                     testcase_name,
                     variable_name,
@@ -407,14 +388,14 @@ class NetcdfComparer(IComparer):
         else:
             return min(1.0, max_abs_diff / (max_ref_value - min_ref_value))
 
-    def get_column_and_row_id(
+    def get_array_index(
         self,
         parameter_location: Optional[str],
         cf_role_time_series_vars: List[str],
         left_nc_root: nc.Dataset,
         diff_arr: np.ndarray,
         variable_name: str,
-    ) -> Tuple[int, int]:
+    ) -> RowColumnIndex:
         """Find the column and row ID based on the given parameter location and difference array."""
         parameter_location_found = False
         column_id = 0
@@ -440,7 +421,7 @@ class NetcdfComparer(IComparer):
             column_id = int(i_max % diff_arr.shape[1])
             row_id = int(i_max / diff_arr.shape[1])
 
-        return column_id, row_id
+        return RowColumnIndex(row_id, column_id)
 
     def get_coordinates_of_max_deviation(self, i_max: np.int64, block_sizes: list) -> list:
         """Calculate the coordinates of the maximum deviation in a multi-dimensional array."""
@@ -551,6 +532,7 @@ def interpret_time_unit(time_description: str):
         ) from e
 
     return start_datetime, delta
+
 
 def get_time_delta(words: list[str]) -> timedelta:
     """Get the timedelta."""
