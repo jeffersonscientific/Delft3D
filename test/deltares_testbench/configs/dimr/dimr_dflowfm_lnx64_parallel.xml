@@ -113,6 +113,6 @@
         </testCase>
     </defaultTestCases>
 
-  <xi:include href="../include/dimr_dflowfm_parallel"/>
+  <xi:include href="../include/dimr_dflowfm_parallel.xml"/>
 
 </deltaresTestbench_v3>
