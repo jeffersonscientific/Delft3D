@@ -37,7 +37,7 @@ if [%1] EQU [] (
 if [%1] EQU [--help] ( goto usage )
 
 if [%1] EQU [-c] (
-    set numpar=%2%
+    set numpar=%2
 )
 
 if [%3] EQU [-m] (
