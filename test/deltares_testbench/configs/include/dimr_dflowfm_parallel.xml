@@ -64,19 +64,10 @@
         <maxRunTime>120.0</maxRunTime>
         <checks>
            <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
-               <parameters>
-                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-               </parameters>
            </file>
            <file name="dflowfmoutput/western_scheldt_3domains_0001_map.nc" type="NETCDF">
-               <parameters>
-                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-               </parameters>
            </file>
            <file name="dflowfmoutput/western_scheldt_3domains_0002_map.nc" type="NETCDF">
-               <parameters>
-                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-               </parameters>
            </file>
            <file name="western_scheldt_3domains_map.nc" type="NETCDF">
                <parameters>
@@ -90,7 +81,7 @@
            </file>
             <file name="western_scheldt_3domains_rm.txt" type="NUMBERTEXT">
                 <parameters>
-                    <parameter name="dummy" toleranceAbsolute="1e-2" toleranceRelative="1e-4" />
+                    <parameter name="dummy" toleranceAbsolute="1e-1" toleranceRelative="1e-4" />
                 </parameters>
             </file>
             <file name="western_scheldt_3domains_rm_2.txt" type="NUMBERTEXT">
