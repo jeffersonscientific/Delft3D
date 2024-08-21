@@ -85,6 +85,86 @@ class NetCdfVariable:
         return np.abs(self.left[:] - self.right[:])
 
 
+class DateTimeDelta:
+    """Data class to parse date time strings and extract more suiteable date time types."""
+
+    def __init__(self, time_description: str) -> None:
+        self.date_time = self.convert_time_description_2_datetime(time_description)
+        self.delta = self.convert_time_description_2_delta(time_description)
+
+    def convert_time_description_2_datetime(self, time_description: str) -> datetime:
+        """Return a `start_datetime`.
+
+        For instance, `'seconds since 1998-08-01 00:00:00'` yields the
+        following tuple: `(datetime(1998, 8, 1, 0, 0, 0)`.
+        """
+        try:
+            words = time_description.lower().strip().split(" ")
+
+            # Deduce start_datetime
+            date_split = words[2].split("-")
+            if len(date_split) != 3:
+                raise ValueError(f"Cannot infer date from: {words[2]}")
+
+            time_split = words[3].split(":")
+            if len(time_split) != 3:
+                raise ValueError(f"Cannot infer time from: {words[3]}")
+
+            start_datetime = datetime(
+                int(date_split[0]),
+                int(date_split[1]),
+                int(date_split[2]),
+                int(time_split[0]),
+                int(time_split[1]),
+                int(time_split[2]),
+            )
+
+        except Exception as e:
+            raise ValueError(
+                "Can not interpret the following unit: "
+                + str(time_description)
+                + ". A correct example is: 'seconds since 1998-08-01 00:00:00'."
+            ) from e
+
+        return start_datetime
+
+    def convert_time_description_2_delta(self, time_description: str) -> timedelta:
+        """Return a `(start_datetime, timedelta)` tuple.
+
+        For instance, `'seconds since 1998-08-01 00:00:00'` yields the
+        following tuple: `(datetime(1998, 8, 1, 0, 0, 0), timedelta(seconds=1))`.
+        """
+        try:
+            words = time_description.lower().strip().split(" ")
+            delta = self.get_time_delta(words)
+        except Exception as e:
+            raise ValueError(
+                "Can not interpret the following unit: "
+                + str(time_description)
+                + ". A correct example is: 'seconds since 1998-08-01 00:00:00'."
+            ) from e
+
+        return delta
+
+    def get_time_delta(self, words: list[str]) -> timedelta:
+        """Get the timedelta."""
+        if "millisecond" in words[0]:
+            delta = timedelta(milliseconds=1)
+        elif "second" in words[0]:
+            delta = timedelta(seconds=1)
+        elif "minute" in words[0]:
+            delta = timedelta(minutes=1)
+        elif "hour" in words[0]:
+            delta = timedelta(hours=1)
+        elif "day" in words[0]:
+            delta = timedelta(days=1)
+        elif "week" in words[0]:
+            delta = timedelta(weeks=1)
+        else:
+            raise ValueError(f"Can not infer timedelta from: {words[0]}")
+        return delta
+
+
 class NetcdfComparer(IComparer):
     """Compare two netCDF files, according to the configuration in file_check."""
 
@@ -239,7 +319,7 @@ class NetcdfComparer(IComparer):
         )
         return result
 
-    def compare_nd_arrays(self, nc_var:NetCdfVariable) -> ComparisonResult:
+    def compare_nd_arrays(self, nc_var: NetCdfVariable) -> ComparisonResult:
         """
         Compare two n-dimensional arrays and find the maximum absolute difference.
 
@@ -360,8 +440,8 @@ class NetcdfComparer(IComparer):
     ) -> None:
         """Plot a time series graph."""
         unit_txt = "".join(time_var.units).strip()
-        start_datetime, delta = interpret_time_unit(unit_txt)
-        datetime_series = [start_datetime + int(t_i) * delta for t_i in time_var[:]]
+        date_time_delta = DateTimeDelta(unit_txt)
+        datetime_series = [date_time_delta.date_time + int(t_i) * date_time_delta.delta for t_i in time_var[:]]
 
         plot.PlotDifferencesTimeSeries(
             plot_data.right_path,
@@ -385,9 +465,9 @@ class NetcdfComparer(IComparer):
     def get_plot_subtitle(self, time_var: nc.Variable, row_id: int) -> str:
         """Compute datetime for which we are making a plot / scalar field."""
         unit_txt = "".join(time_var.units).strip()
-        start_datetime, delta = interpret_time_unit(unit_txt)
 
-        plot_datetime = start_datetime + delta * int(time_var[row_id])
+        date_time_delta = DateTimeDelta(unit_txt)
+        plot_datetime = date_time_delta.date_time + date_time_delta.delta * int(time_var[row_id])
 
         subtitle = datetime.strftime(plot_datetime, "%Y%m%d_%H%M%S")
         return subtitle
@@ -520,61 +600,3 @@ def search_times_series_id(nc_root: nc.Dataset) -> List[str]:
         except Exception:
             pass
     return keys
-
-
-def interpret_time_unit(time_description: str):
-    """Return a `(start_datetime, timedelta)` tuple.
-
-    For instance, `'seconds since 1998-08-01 00:00:00'` yields the
-    following tuple: `(datetime(1998, 8, 1, 0, 0, 0), timedelta(seconds=1))`.
-    """
-    try:
-        words = time_description.lower().strip().split(" ")
-
-        delta = get_time_delta(words)
-
-        # Deduce start_datetime
-        date_split = words[2].split("-")
-        if len(date_split) != 3:
-            raise ValueError(f"Cannot infer date from: {words[2]}")
-
-        time_split = words[3].split(":")
-        if len(time_split) != 3:
-            raise ValueError(f"Cannot infer time from: {words[3]}")
-
-        start_datetime = datetime(
-            int(date_split[0]),
-            int(date_split[1]),
-            int(date_split[2]),
-            int(time_split[0]),
-            int(time_split[1]),
-            int(time_split[2]),
-        )
-
-    except Exception as e:
-        raise ValueError(
-            "Can not interpret the following unit: "
-            + str(time_description)
-            + ". A correct example is: 'seconds since 1998-08-01 00:00:00'."
-        ) from e
-
-    return start_datetime, delta
-
-
-def get_time_delta(words: list[str]) -> timedelta:
-    """Get the timedelta."""
-    if "millisecond" in words[0]:
-        delta = timedelta(milliseconds=1)
-    elif "second" in words[0]:
-        delta = timedelta(seconds=1)
-    elif "minute" in words[0]:
-        delta = timedelta(minutes=1)
-    elif "hour" in words[0]:
-        delta = timedelta(hours=1)
-    elif "day" in words[0]:
-        delta = timedelta(days=1)
-    elif "week" in words[0]:
-        delta = timedelta(weeks=1)
-    else:
-        raise ValueError(f"Can not infer timedelta from: {words[0]}")
-    return delta
