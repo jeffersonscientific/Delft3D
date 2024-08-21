@@ -38,12 +38,10 @@ if [%1] EQU [--help] ( goto usage )
 
 if [%1] EQU [-c] (
     set numpar=%2%
-    echo numpar=%2%
 )
 
 if [%3] EQU [-m] (
     set argfile=%4
-    echo argfile=%4
     goto readyreading
 )
 
