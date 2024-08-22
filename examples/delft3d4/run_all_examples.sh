@@ -75,22 +75,5 @@ cd 11_standard_netcdf
 ./run.sh >screen.log 2>&1
 cd ..
 
-
-echo "Running testcase 12_dflowfm (test_data) e02_f14_c040_westerscheldt"
-cd 12_dflowfm/test_data/e02_f14_c040_westerscheldt
-./run.sh >screen.log 2>&1
-cd ..
-
-echo "Running testcase 12_dflowfm (test_data) e100_f02_c02-FriesianInlet_schematic_FM"
-cd e100_f02_c02-FriesianInlet_schematic_FM
-./run.sh >screen.log 2>&1
-cd ..
-
-echo "Running testcase 12_dflowfm (test_data) e100_f02_c02-FriesianInlet_schematic_FM_wave"
-cd e100_f02_c02-FriesianInlet_schematic_FM_wave
-./run.sh >screen.log 2>&1
-cd ../../..
-
-
 echo ...finished
 
