@@ -1,96 +1,40 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-    <testCase name="e02_f012_c0322" ref="dimr">
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
-         <checks>
-            <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/western_scheldt_3domains_0001_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/western_scheldt_3domains_0002_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e02_f012_c0323_mapmerge" ref="postproc">
+    <testCase name="e02_f012_c0322" ref="postproc">
+        <path version="2024-08-23T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
         <programs>
-          <program ref="dfmoutput">
+          <program ref="dimr" seq="1">
             <arguments>
-              <argument>-d</argument>
-              <argument>mapmerge</argument>
-              <argument>--infile</argument>
-              <argument>western_scheldt_3domains_0000_map.nc </argument>
-              <argument>western_scheldt_3domains_0001_map.nc </argument>
-              <argument>western_scheldt_3domains_0002_map.nc </argument>
-              <argument>--outfile</argument>
-              <argument>western_scheldt_3domains_map.nc </argument>
+              <argument>-c 3 -m dimr.xml</argument>
             </arguments>
           </program>
-        </programs>
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0323_alloutrealistic_f12_e02_mapmerge</path>
-         <checks>
-            <file name="western_scheldt_3domains_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e02_f012_c0324_max25" ref="postproc">
-        <programs>
-          <program ref="dfmoutput">
+          <program ref="dfmoutput" seq="2">
             <arguments>
               <argument>-d</argument>
               <argument>max25</argument>
               <argument>--infile</argument>
-              <argument>western_scheldt_3domains_0000_his.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0000_his.nc </argument>
               <argument>--outfile</argument>
               <argument>western_scheldt_3domains_max25.txt </argument>
             </arguments>
           </program>
-        </programs>
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0324_alloutrealistic_f12_e02_max25</path>
-         <checks>
-            <file name="western_scheldt_3domains_max25.txt" type="NUMBERTEXT">
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e02_f012_c0327_runningmean" ref="postproc">
-        <programs>
-          <program ref="dfmoutput">
+          <program ref="dfmoutput" seq="3">
             <arguments>
               <argument>-d</argument>
-              <argument>max_running_mean</argument>
+              <argument>mapmerge</argument>
               <argument>--infile</argument>
-              <argument>western_scheldt_3domains_0000_his.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0000_map.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0001_map.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0002_map.nc </argument>
               <argument>--outfile</argument>
-              <argument>western_scheldt_3domains_rm.txt </argument>
-              <argument>-l</argument>
-              <argument>7,4,10</argument>
+              <argument>western_scheldt_3domains_map.nc </argument>
             </arguments>
           </program>
-        </programs>
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0327_alloutrealistic_f12_e02_runningmean</path>
-         <checks>
-            <file name="western_scheldt_3domains_rm.txt" type="NUMBERTEXT">
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e02_f012_c0328_runningmean_cross" ref="postproc">
-        <programs>
-          <program ref="dfmoutput">
+          <program ref="dfmoutput" seq="4">
             <arguments>
               <argument>-d</argument>
               <argument>max_running_mean</argument>
               <argument>--infile</argument>
-              <argument>western_scheldt_3domains_0000_his.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0000_his.nc </argument>
               <argument>--varname</argument>
               <argument>cross_section_discharge</argument>
               <argument>--outfile</argument>
@@ -99,16 +43,50 @@
               <argument>7,4,10</argument>
             </arguments>
           </program>
+          <program ref="dfmoutput" seq="5">
+            <arguments>
+              <argument>-d</argument>
+              <argument>max_running_mean</argument>
+              <argument>--infile</argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0000_his.nc </argument>
+              <argument>--outfile</argument>
+              <argument>western_scheldt_3domains_rm_2.txt </argument>
+              <argument>-l</argument>
+              <argument>7,4,10</argument>
+            </arguments>
+          </program>
         </programs>
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0328_alloutrealistic_f12_e02_runningmean_cross</path>
-         <checks>
+        <maxRunTime>120.0</maxRunTime>
+        <checks>
+           <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
+           </file>
+           <file name="dflowfmoutput/western_scheldt_3domains_0001_map.nc" type="NETCDF">
+           </file>
+           <file name="dflowfmoutput/western_scheldt_3domains_0002_map.nc" type="NETCDF">
+           </file>
+           <file name="western_scheldt_3domains_map.nc" type="NETCDF">
+               <parameters>
+                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+               </parameters>
+           </file>
+           <file name="western_scheldt_3domains_max25.txt" type="NUMBERTEXT">
+                <parameters>
+                    <parameter name="max13" toleranceAbsolute="1e-2" toleranceRelative="1e-4" />
+                </parameters>
+           </file>
             <file name="western_scheldt_3domains_rm.txt" type="NUMBERTEXT">
+                <parameters>
+                    <parameter name="dummy" toleranceAbsolute="1e-1" toleranceRelative="1e-4" />
+                </parameters>
+            </file>
+            <file name="western_scheldt_3domains_rm_2.txt" type="NUMBERTEXT">
                 <parameters>
                     <parameter name="dummy" toleranceAbsolute="1e-2" toleranceRelative="1e-4" />
                 </parameters>
             </file>
         </checks>
     </testCase>
+    
     <testCase name="e02_f012_c0325" ref="dimr">
         <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
          <checks>
@@ -187,7 +165,7 @@
         </program>
           <program ref="dimr" seq="2">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
       </programs>
@@ -213,7 +191,7 @@
         </program>
         <program ref="dimr" seq="2">
            <arguments>
-               <argument>4 dimr_config.xml</argument>
+               <argument>-c 4 -m dimr_config.xml</argument>
            </arguments>
         </program>
       </programs>
@@ -233,7 +211,7 @@
       <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>3 dimr.xml</argument>
+                 <argument>-c 3 -m dimr.xml</argument>
              </arguments>
           </program>
       </programs>
@@ -253,7 +231,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -285,7 +263,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -317,7 +295,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -358,7 +336,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>3 dimr.xml</argument>
+                 <argument>-c 3 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -375,7 +353,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>2 dimr.xml</argument>
+                 <argument>-c 2 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>

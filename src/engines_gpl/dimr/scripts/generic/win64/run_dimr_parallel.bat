@@ -36,6 +36,15 @@ if [%1] EQU [] (
     rem --help:
 if [%1] EQU [--help] ( goto usage )
 
+if [%1] EQU [-c] (
+    set numpar=%2
+)
+
+if [%3] EQU [-m] (
+    set argfile=%4
+    goto readyreading
+)
+
     rem number of partitions:
 set numpar=%1
 
