@@ -2,10 +2,10 @@
 enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
-add_library(extra_compiler_warnings INTERFACE)
-set(windows_extra_warning_flags /warn:all)
-set(linux_extra_warning_flags "SHELL:-warn all")
-target_compile_options(extra_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_extra_warning_flags},${linux_extra_warning_flags}>>")
+add_library(all_compiler_warnings INTERFACE)
+set(windows_all_warning_flags /stand /warn:all)
+set(linux_all_warning_flags "SHELL:-stand" "SHELL:-warn all")
+target_compile_options(all_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_all_warning_flags},${linux_all_warning_flags}>>")
 
 add_library(compiler_warnings_as_errors INTERFACE)
 set(windows_warning_error_flag /warn:errors /warn:stderrors)
