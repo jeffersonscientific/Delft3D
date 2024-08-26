@@ -64,9 +64,9 @@ contains
    !todo: optimize by checking for triangle (n=3)/quads (n=4) first, don't switch mode while in those
    subroutine FillPolygon(xs, ys, n)
       implicit none
+      integer, intent(in) :: n !< num vertices
       real(kind=sp), intent(in) :: xs(n)
       real(kind=sp), intent(in) :: ys(n)
-      integer, intent(in) :: n !< num vertices
       integer :: i
 
 #ifdef HAVE_OPENGL
