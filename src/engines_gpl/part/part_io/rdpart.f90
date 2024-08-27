@@ -1579,7 +1579,7 @@ contains
                kwaste(i + nodye) = 1
             else
                if ( gettoken( kwaste(i + nodye), ierr2 ) /= 0 ) goto 4047
-               if (abs(kwaste(i + nodye)) /= nolayp) goto 4067
+               if (abs(kwaste(i + nodye)) > nolayp) goto 4067
                zwaste(i + nodye) = 0.0
             endif
          else
