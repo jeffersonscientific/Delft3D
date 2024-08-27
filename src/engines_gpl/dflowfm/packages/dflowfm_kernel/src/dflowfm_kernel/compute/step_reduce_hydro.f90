@@ -199,7 +199,7 @@
              noiterations(noddifmaxlev) = noiterations(noddifmaxlev) + 1
           end if
 
-          write (msgbuf, '(''No convergence in nonlinear solver at time '', g10.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5d0 * dts
+          write (msgbuf, '(''No convergence in nonlinear solver at time '', g12.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5d0 * dts
           !if (nonlin1D == 2) then
           !   ! Nested Newton
           !   !call err_flush()
