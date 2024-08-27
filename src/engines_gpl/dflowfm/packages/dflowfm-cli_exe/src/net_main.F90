@@ -232,7 +232,7 @@ program unstruc
          !     call axpy(md_M, md_N)
       end do
 !      output timings
-      write (6, '(a,E8.2,a,E8.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
+      write (6, '(a,E9.2,a,E9.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
 
       goto 1234
    end if

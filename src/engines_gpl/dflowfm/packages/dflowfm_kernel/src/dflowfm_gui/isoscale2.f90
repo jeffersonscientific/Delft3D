@@ -78,7 +78,7 @@
      common / VFAC / VFAC, VFACFORCE, NVEC
      character TEXT2 * 10, FMT * 7
      character(LEN=8) :: TEX
-     character(LEN=16) :: MINTEX, MAXTEX
+     character(LEN=32) :: MINTEX, MAXTEX
      real INFOGRAPHICS
 
      if (NDRAW(12) == 1 .or. NDRAW(12) == 4) return ! 1 = isoscale off
@@ -101,10 +101,8 @@
      XSC2 = XSC1 + WI
      YSC1 = Y1 + YSC * (Y2 - Y1)
 
-     MINTEX = 'MIN:            '
-     MAXTEX = 'MAX:            '
-     write (MINTEX(6:16), '(E11.5)') VMIN
-     write (MAXTEX(6:16), '(E11.5)') VMAX
+     write (MINTEX, '("MIN:", E12.5)') VMIN
+     write (MAXTEX, '("MAX:", E12.5)') VMAX
 
      if (VMAX > VMIN .and. NDRAW(11) >= 2) then
         YSC2 = min(YSC1 + (NV / INC + 1d0) * HIC + 2.5d0 * HIC, Y2)

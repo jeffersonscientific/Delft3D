@@ -1843,33 +1843,33 @@ subroutine tekwindvector()
 
       yp = yp - dyp
       tex = 'Areatot:               (m)'
-      write (tex(10:20), '(E11.5)') a1ini
+      write (tex(10:21), '(E12.5)') a1ini
       call GTEXT(tex, xp, yp, ncol)
 
       if (jatem == 5) then
          yp = yp - 2 * dyp
-         tex = 'QSUNav :             (W/m2)'
-         write (tex(10:20), '(E11.5)') Qsunav
+         tex = 'QSUNav :              (W/m2)'
+         write (tex(10:21), '(E12.5)') Qsunav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'QEVAav :             (W/m2)'
-         write (tex(10:20), '(E11.5)') Qevaav
+         tex = 'QEVAav :              (W/m2)'
+         write (tex(10:21), '(E12.5)') Qevaav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'QCONav :             (W/m2)'
-         write (tex(10:20), '(E11.5)') QCONav
+         tex = 'QCONav :              (W/m2)'
+         write (tex(10:21), '(E12.5)') QCONav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'QLongav:             (W/m2)'
-         write (tex(10:20), '(E11.5)') QLongav
+         tex = 'QLongav:              (W/m2)'
+         write (tex(10:21), '(E12.5)') QLongav
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
-         tex = 'Qfreeav:             (W/m2)'
-         write (tex(10:20), '(E11.5)') Qfreeav
+         tex = 'Qfreeav:              (W/m2)'
+         write (tex(10:21), '(E12.5)') Qfreeav
          call GTEXT(tex, xp, yp, ncol)
 
       end if

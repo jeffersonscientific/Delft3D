@@ -317,7 +317,7 @@ contains
 
       if (do_check_bmi_timestep .and. timetarget - time_user /= dt_user) then ! We don't support yet a changing dt_user (may affect input/output, meteo, etc.)
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if
@@ -367,7 +367,7 @@ contains
 
       if (do_check_bmi_timestep .and. timetarget /= time_user) then ! We don't yet support another targettime than upcoming time_user
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if

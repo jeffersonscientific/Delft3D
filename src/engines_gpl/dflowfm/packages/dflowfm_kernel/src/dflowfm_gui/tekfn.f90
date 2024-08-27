@@ -143,7 +143,7 @@
             if (abs(x1) < 1d3) then
                write (TEX, '(F8.3)') X1
             else
-               write (TEX, '(e8.3)') X1
+               write (TEX, '(e10.3)') X1
             end if
             call DRAWTEXT(real(X1), real(Y1 - DYH), TEX)
 
