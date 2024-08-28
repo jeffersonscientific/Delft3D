@@ -1,15 +1,9 @@
-'''
-Description: Path helper
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2024
-'''
-
 import argparse
 import subprocess
 from pathlib import Path
 
 # Get commandline arguments
-parser = argparse.ArgumentParser(description='SVN remove deleted files.')
+parser = argparse.ArgumentParser(description='Directory synchronization and cleanup tool.')
 
 parser.add_argument("--source",
                     default="",
@@ -19,7 +13,7 @@ parser.add_argument("--source",
 parser.add_argument("--target",
                     default="",
                     required=True,
-                    help="Path to source directory",
+                    help="Path to target directory",
                     dest="targetdir")
 
 args = parser.parse_args()
