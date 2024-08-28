@@ -582,7 +582,7 @@ contains
          end if
 
          ! add output config item
-         call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'Wrihis_waqbot3d', trim(waqb_sub_name)//'_3D', &
+         call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'wrihis_wqbot3d', trim(waqb_sub_name)//'_3D', &
                                 trim(wqbotnames(i))//' (3D)', '', unit_string, UNC_LOC_STATION, nc_dim_ids=station_nc_dims_3D_center, nc_attributes=atts)
 
          output_config_set%configs(idx_wqbot3D_stations(i))%input_value = &

@@ -2933,7 +2933,7 @@ contains
       use network_data
       use m_sediment
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units, ifrac2const
-      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot, is_waq_bot_3d
+      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot
       use m_xbeach_data, only: E, thetamean, sigmwav
       use fm_external_forcings_data, only: numtracers
       use m_partitioninfo
@@ -3024,6 +3024,7 @@ contains
       double precision, allocatable, dimension(:) :: tmp_x, tmp_y, tmp_s0, tmp_s1, tmp_bl, tmp_sa1, tmp_tem1
       double precision, allocatable, dimension(:) :: tmp_squ, tmp_sqi
       double precision, allocatable, dimension(:) :: tmp_ucxq, tmp_ucyq
+      logical :: is_wq_bot_3d
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -3505,6 +3506,7 @@ contains
          ITRAN0 = ITRAN
       end if
 
+      is_wq_bot_3d = jahiswqbot3d == 1 .or. jamapwqbot3d == 1
       ! water quality bottom variables
       if (numwqbots > 0) then
          call realloc(id_rwqb, numwqbots, keepExisting=.false., fill=0)
@@ -3513,7 +3515,7 @@ contains
             ! Forbidden chars in NetCDF names: space, /, and more.
             call replace_char(tmpstr, 32, 95)
             call replace_char(tmpstr, 47, 95)
-            if (is_waq_bot_3d) then
+            if (is_wq_bot_3d) then
                ierr = nf90_def_var(irstfile, trim(tmpstr)//'_3D', nf90_double, (/id_laydim, id_flowelemdim, id_timedim/), id_rwqb(j))
             else
                ierr = nf90_def_var(irstfile, trim(tmpstr), nf90_double, (/id_flowelemdim, id_timedim/), id_rwqb(j))
@@ -4562,7 +4564,7 @@ contains
       if (numwqbots > 0) then
          allocate (dum(ndxi))
          do j = 1, numwqbots
-            if (is_waq_bot_3d) then
+            if (is_wq_bot_3d) then
 !           3D
                work1 = dmiss
                do kk = 1, ndxi
@@ -5631,7 +5633,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), nc_precision, UNC_LOC_S, trim(tmpstr), &
                                       '', trim(wqbotnames(j))//' in flow element', wqbotunits(j), jabndnd=jabndnd_)
             end do
-            if (jamapwaqbot3d == 1) then
+            if (jamapwqbot3d == 1) then
                call realloc(mapids%id_wqb3d, (/3, numwqbots/), keepExisting=.false., fill=0)
                do j = 1, numwqbots
                   tmpstr = wqbotnames(j)
@@ -7792,7 +7794,7 @@ contains
                workx(k) = wqbot(j, kb)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), UNC_LOC_S, workx(1:ndxndxi), jabndnd=jabndnd_)
-            if (jamapwaqbot3d == 1) then
+            if (jamapwqbot3d == 1) then
 !         also write 3D
                do kk = 1, ndxndxi
                   call getkbotktop(kk, kb, kt)
@@ -8540,7 +8542,7 @@ contains
                   ierr = nf90_put_att(imapfile, id_wqb(iid, j), 'units', tmpstr)
                   ierr = nf90_put_att(imapfile, id_wqb(iid, j), '_FillValue', dmiss)
                end do
-               if (jamapwaqbot3d == 1) then
+               if (jamapwqbot3d == 1) then
                   call realloc(id_wqb3d, (/3, numwqbots/), keepExisting=.false., fill=0)
                   do j = 1, numwqbots
                      tmpstr = wqbotnames(j)
@@ -10217,7 +10219,7 @@ contains
                end do
                ierr = nf90_put_var(imapfile, id_wqb(iid, j), dum, (/1, itim/), (/NdxNdxi, 1/))
             end do
-            if (jamapwaqbot3d == 1) then
+            if (jamapwqbot3d == 1) then
                do j = 1, numwqbots
                   do kk = 1, ndxndxi
                      work1(:, kk) = dmiss ! For proper fill values in z-model runs.
@@ -13133,6 +13135,7 @@ contains
       integer :: jamergedmap_same_bu
       integer :: tmp_loc
       integer :: numl1d
+      logical :: is_wq_bot_3d
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -13792,7 +13795,8 @@ contains
          end do !iconst
       end if !ITRA1
 
-!   Read the water quality bottom variables
+      ! Read the water quality bottom variables
+      is_wq_bot_3d = jahiswqbot3d .or. jamapwqbot3d
       if (numwqbots > 0) then
          call realloc(tmpvar1D, ndkx, keepExisting=.false., fill=0.0d0)
          do iwqbot = 1, numwqbots
@@ -13800,7 +13804,7 @@ contains
             ! Forbidden chars in NetCDF names: space, /, and more.
             call replace_char(tmpstr, 32, 95)
             call replace_char(tmpstr, 47, 95)
-            if (is_waq_bot_3d) then
+            if (is_wq_bot_3d) then
                tmp_loc = UNC_LOC_S3D
                tmpstr1 = trim(tmpstr)//'_3D'
             else
@@ -13812,7 +13816,7 @@ contains
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr1)//''' from the specified restart file. Skip reading this variable.')
             else
-               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, .not. is_waq_bot_3d)
+               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, kmx, um%ndxi_own, um%jamergedmap, um%inode_own,.not. is_wq_bot_3d)
             end if
          end do
       end if

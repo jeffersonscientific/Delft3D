@@ -1940,11 +1940,11 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success, alternative_key='Wrihis_heatflux')
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', jahisrunupgauge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', jahiswaqbot, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waqbot3d', jahiswaqbot3d, success)
-      if (kmx == 0 .and. jahiswaqbot3d == 1) then
-         jahiswaqbot3d = 0
-         write (msgbuf, '(a)') 'MDU setting "Wrihis_waqbot3d = 1" asks to write 3D water quality bottom quantities to the history output, ' &
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', jahiswqbot, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', jahiswqbot3d, success)
+      if (kmx == 0 .and. jahiswqbot3d == 1) then
+         jahiswqbot3d = 0
+         write (msgbuf, '(a)') 'MDU setting "wrihis_wqbot3d = 1" asks to write 3D water quality bottom quantities to the history output, ' &
             //'but this is ignored since the simulation is 2D.'
          call warn_flush()
       end if
@@ -2089,10 +2089,10 @@ contains
       call prop_get_integer(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
       call prop_get_integer(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
       call prop_get_integer(md_ptr, 'output', 'Wrimap_ice', jamapice, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_waqbot3d', jamapwaqbot3d, success)
-      if (kmx == 0 .and. jamapwaqbot3d == 1) then
-         jamapwaqbot3d = 0
-         write (msgbuf, '(a)') 'MDU setting "Wrimap_waqbot3d = 1" asks to write 3D water quality bottom quantities to the map output, ' &
+      call prop_get_integer(md_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, success)
+      if (kmx == 0 .and. jamapwqbot3d == 1) then
+         jamapwqbot3d = 0
+         write (msgbuf, '(a)') 'MDU setting "wrimap_wqbot3d = 1" asks to write 3D water quality bottom quantities to the map output, ' &
             //'but this is ignored since the simulation is 2D.'
          call warn_flush()
       end if
@@ -3817,8 +3817,8 @@ contains
       if (jamapice > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'Wrimap_ice', jamapice, 'Write output to map file for ice cover, 0=no (default), 1=yes')
       end if
-      if (jamapwaqbot3d > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_waqbot3d', jamapwaqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
+      if (jamapwqbot3d > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
       end if
       if (writeall .or. epswetout /= 0.1d0) then
          call prop_set(prop_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, 'Waterdepth threshold above which a grid point counts as ''wet''. Used for Wrimap_time_water_on_ground.')

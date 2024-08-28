@@ -599,7 +599,7 @@ contains
          i = i + 1; IVAL_HWQ1 = i
          i = i + noout - 1; IVAL_HWQN = i !< All waq history outputs
       end if
-      if (numwqbots > 0 .and. jahiswaqbot3d == 1) then
+      if (numwqbots > 0 .and. jahiswqbot3d == 1) then
          i = i + 1; IVAL_WQB3D1 = i
          i = i + numwqbots - 1; IVAL_WQB3DN = i !< All 3D waqbot history outputs
       end if
