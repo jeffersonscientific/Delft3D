@@ -167,13 +167,13 @@ contains
                 endif
             endif
 
-            if (.not. multigrid) then                 ! still no multigrid chosen
-                select case (ctoken)                   ! num_layers necessary here
-                case ('NOLAY')                      ! Deal with number of layers
+            if (.not. multigrid) then                  ! still no multigrid chosen
+                select case (ctoken)                   ! number of layers necessary here
+                case ('NOLAY')                         ! Deal with number of layers
                     if (gettoken(num_layers, ierr2) > 0) goto 1000
                     write (file_unit, 2020) num_layers
-                case ('MULTIGRID')                  ! Deal with multiple grids
-                    multigrid = .true.                ! Allow an integer to give
+                case ('MULTIGRID')                     ! Deal with multiple grids
+                    multigrid = .true.                 ! Allow an integer to give
                     read_input = .true.                ! number of additional grids
                     if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
                     push = .true.
