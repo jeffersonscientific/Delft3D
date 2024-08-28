@@ -401,6 +401,7 @@ contains
             iboomint = 0
             sq6 = sqrt(6.0)
             twopi = 8.0 * atan(1.0)
+            oilmod = modtyp == model_oil
             if (oilmod) then 
                 defang = defang * twopi / 360.0    !  deflection angle oil modelling
             elseif (leeway) then
@@ -409,7 +410,6 @@ contains
             endif
             coriol = abs(defang) >= 1.0e-6   !  deflection from the equator aparently
             twolay = modtyp == model_two_layer_temp
-            oilmod = modtyp == model_oil
             threed = layt > 1
             cdrag = drand(3) / 100.0          !  wind drag as a fraction
             ptlay = 1.0 - pblay
