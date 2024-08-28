@@ -1549,11 +1549,11 @@ contains
                              '', '-', UNC_LOC_STATION, description='Write tracers to his-file')
 
       call add_output_config(config_set_his, IDX_HIS_WQBOT_ABSTRACT, &
-                             'Wrihis_wqbot', 'station_wqb_abstract', '', &
+                             'wriHis_wqBot', 'station_wqb_abstract', '', &
                              '', '-', UNC_LOC_STATION, description='Write waq bottom substances to his-file')
 
       call add_output_config(config_set_his, IDX_HIS_WQBOT3D_ABSTRACT, &
-                             'Wriwaqbot3Doutput', 'station_wqb3d_abstract', '', &
+                             'wriHis_wqBot3d', 'station_wqb3d_abstract', '', &
                              '', '-', UNC_LOC_STATION, description='Write waq bottom 3D substances to his-file')
 
       ! HIS: Variables on observation cross sections
