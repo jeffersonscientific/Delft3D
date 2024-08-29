@@ -633,7 +633,7 @@ contains
          i = i + 1; IVAL_ZWS = i
          i = i + 1; IVAL_ZWU = i
          i = i + 1; IVAL_BRUV = i
-         if (iturbulencemodel > 0) then
+         if (iturbulencemodel > 0 .and. jahistur > 0) then
             i = i + 1; IVAL_TKIN = i
             i = i + 1; IVAL_TEPS = i
             i = i + 1; IVAL_VICWWS = i
