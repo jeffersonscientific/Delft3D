@@ -54,7 +54,7 @@ if (WIN32)
     set(oss_dependencies deltares_common
                         fortrangis
                         io_netcdf_data
-                        netcdf4
+                        netCDF::netcdf
                         netcdff)
     target_compile_definitions(${library_name} PRIVATE WIN64)
     oss_include_libraries(${library_name} oss_dependencies)

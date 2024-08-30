@@ -31,7 +31,7 @@ if (WIN32)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdf4
+                            netCDF::netcdf
                             netcdff)
     oss_include_libraries(${library_name} oss_dependencies)
 
@@ -59,7 +59,7 @@ if (UNIX)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdf4
+                            netCDF::netcdf
                             netcdff)
 
     oss_include_libraries(${library_name} oss_dependencies)

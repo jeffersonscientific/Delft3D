@@ -32,7 +32,7 @@ endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
+                         netCDF::netcdf
                          netcdff)
 
     oss_include_libraries(${executable_name} oss_dependencies)

@@ -149,7 +149,7 @@ if (UNIX)
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
-                            netcdf4
+                            netCDF::netcdf
                             netcdff
                             polypack
                             trachytopes_io
@@ -197,7 +197,7 @@ set(oss_dependencies    deltares_common
                         morphology_io
                         morphology_kernel
                         morphology_plugins_c
-                        netcdf4
+                        netCDF::netcdf
                         netcdff
                         petsc
                         polypack

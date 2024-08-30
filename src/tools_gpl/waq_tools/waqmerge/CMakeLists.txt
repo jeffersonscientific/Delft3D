@@ -37,7 +37,7 @@ if (WIN32)
                          io_netcdf_data
                          io_hyd
                          waq_hyd_data
-                         netcdf4
+                         netCDF::netcdf
                          netcdff
                          waq_utils_f)
 

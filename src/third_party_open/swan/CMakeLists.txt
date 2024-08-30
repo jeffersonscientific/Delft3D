@@ -43,7 +43,7 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies    netcdf4
+    set(oss_dependencies    netCDF::netcdf
                             netcdff)
     oss_include_libraries(${library_name} ${oss_dependencies})
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies})

@@ -27,7 +27,7 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
+                         netCDF::netcdf
                          netcdff)
 
     oss_include_libraries(${executable_name} oss_dependencies)
@@ -42,7 +42,7 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
+                         netCDF::netcdf
                          netcdff)
 
     oss_include_libraries(${executable_name} oss_dependencies)

@@ -12,7 +12,7 @@ add_library(${library_name} ${source_files})
 if (WIN32)
     set(oss_dependencies    wave_data
                             deltares_common
-                            netcdf4
+                            netCDF::netcdf
                             netcdff) 
     oss_include_libraries(${library_name} oss_dependencies)
 endif(WIN32)
@@ -20,7 +20,7 @@ endif(WIN32)
 if (UNIX)
     set(oss_dependencies    wave_data
                             deltares_common
-                            netcdf4
+                            netCDF::netcdf
                             netcdff) 
     oss_include_libraries(${library_name} oss_dependencies)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")

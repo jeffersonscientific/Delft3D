@@ -60,7 +60,7 @@ endif(UNIX)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netcdf4
+                                            netCDF::netcdf
                                             netcdff)
 endif(WIN32)
 oss_include_libraries(${library_name} oss_dependencies)

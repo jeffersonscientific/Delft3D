@@ -21,7 +21,7 @@ if (WIN32)
                                 kdtree2
                                 io_netcdf
                                 io_netcdf_data
-                                netcdf4
+                                netCDF::netcdf
                                 netcdff
                                 )
 

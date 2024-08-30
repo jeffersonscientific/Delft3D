@@ -7,7 +7,7 @@ add_executable(${executable_name} ${source})
 set(oss_dependencies    fortrangis
                         ftnunit
                         io_netcdf
-                        netcdf4
+                        netCDF::netcdf
                         netcdff)
 
 if (UNIX)
