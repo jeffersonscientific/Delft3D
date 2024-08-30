@@ -7,18 +7,11 @@ include_directories(${library_path}/netcdf-fortran-4.4.4/libsrc)
 set(source_path "${library_path}/netcdf-fortran-4.4.4/fortran")
 
 # Include directories that are necessary references for netcdf4
-message(STATUS ${netcdf_version} " include dir is ${library_path}/${netcdf_version}/include")
-include_directories("${library_path}/${netcdf_version}/include")
-set(c_sources ${source_path}/nf_lib.c)
+# message(STATUS ${netcdf_version} " include dir is ${library_path}/${netcdf_version}/include")
+# include_directories("${library_path}/${netcdf_version}/include")
+# set(c_sources ${source_path}/nf_lib.c)
 
-# Add library
-add_library(netcdf4 ${c_sources})
-
-target_link_libraries(netcdf4 PRIVATE no_compiler_warnings)
-
-# Create the folder structure in vfproj
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${c_sources} )
-set_target_properties (netcdf4 PROPERTIES FOLDER third_party_open)
+find_package(netcdf)
 
 set(fortran_sources ${source_path}/module_netcdf4_nc_interfaces.f90
 					${source_path}/module_netcdf4_nf_interfaces.F90
@@ -54,7 +47,7 @@ target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${check
 target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 # Set dependencies
-set(oss_dependencies netcdf4)
+set(oss_dependencies netcdf)
 oss_include_libraries(${netcdf_library_name} oss_dependencies)
 
 if (WIN32)
@@ -71,10 +64,10 @@ endif()
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortran_sources} )
 set_target_properties (${netcdf_library_name} PROPERTIES FOLDER third_party_open)
 
-if (WIN32)
-	message(STATUS ${netcdf_version} " binary dir is ${library_path}/netCDF 4.6.1/bin/")
-	install (DIRECTORY ${library_path}netCDF\ 4.6.1/bin/ DESTINATION lib
-	FILES_MATCHING
-	PATTERN "*.dll"
-	)
-endif()
+# if (WIN32)
+	# message(STATUS ${netcdf_version} " binary dir is ${library_path}/netCDF 4.6.1/bin/")
+	# install (DIRECTORY ${library_path}netCDF\ 4.6.1/bin/ DESTINATION lib
+	# FILES_MATCHING
+	# PATTERN "*.dll"
+	# )
+# endif()
