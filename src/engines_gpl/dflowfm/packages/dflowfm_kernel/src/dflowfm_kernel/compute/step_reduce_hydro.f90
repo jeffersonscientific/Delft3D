@@ -58,8 +58,13 @@
 
 !-----------------------------------------------------------------------------------------------
     numnodneg = 0
-    if (wrwaqon .and. allocated(qsrcwaq)) then
-       qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+    last_iteration = .false.
+
+    if (numsrc > 0) then
+       if (wrwaqon .and. size(qsrcwaq) > 0) then
+          qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+          qlatwaq0 = qlatwaq
+       end if
     end if
 
     setback: do
@@ -147,9 +152,11 @@
                       cycle wetdry
                    end if
 
-                   if (wrwaqon .and. allocated(qsrcwaq)) then
-                      qsrcwaq = qsrcwaq0 ! restore cumulative qsrc for waq from start of this time step to avoid
-                   end if ! double accumulation and use of incorrect dts in case of time step reduction
+                   if (numsrc > 0) then
+                      if (wrwaqon .and. allocated(qsrcwaq)) then
+                         qsrcwaq = qsrcwaq0 ! restore cumulative qsrc for waq from start of this time step to avoid
+                      end if ! double accumulation and use of incorrect dts in case of time step reduction
+                   end if
                    call setkfs()
                    if (jposhchk == 2 .or. jposhchk == 4) then ! redo without timestep reduction, setting hu=0 => wetdry s1ini
                       cycle wetdry
