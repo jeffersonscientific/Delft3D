@@ -60,6 +60,7 @@ subroutine fill_valobs()
    double precision, external :: setrhofixedp
    double precision, allocatable :: ueux(:)
    double precision, allocatable :: ueuy(:)
+   double precision, allocatable :: work(:) !< Work array
 
    kmx_const = kmx
    nlyrs = 0
@@ -352,8 +353,11 @@ subroutine fill_valobs()
                valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
             end if
             if (jahistur > 0) then
-               call linkstocenterstwodoubles(workx, real(vicLu, kind=8))
-               valobs(i, IPNT_VIU + klay - 1) = workx(kk)
+               if (.not. allocated(work)) then
+                  allocate (work(ndkx))
+               end if
+               call linkstocenterstwodoubles(work, real(vicLu, kind=8))
+               valobs(i, IPNT_VIU + klay - 1) = work(kk)
             end if
             if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                if (density_is_pressure_dependent()) then
