@@ -1649,6 +1649,15 @@ contains
       end select
    end subroutine print_initree
 
+   function has_prop(tree, chapter_in, key_in) result(res)
+      type(tree_data), pointer, intent(in) :: tree !< The property tree
+      character(*), intent(in) :: chapter_in !< Name of the chapter (case-insensitive) or "*" to get any key
+      character(*), intent(in) :: key_in !< Name of the key (case-insensitive)
+      logical :: res
+      character(len=:), allocatable :: local_value
+      call prop_get_alloc_string(tree, chapter_in, key_in, local_value, res)
+   end function has_prop
+
    !> Get the string value for a property
    !!    Go through the list of props to check the
    !!    chapter. When the right chapter is found, check for the key.

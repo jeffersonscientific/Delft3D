@@ -33,7 +33,7 @@ submodule(fm_external_forcings) fm_external_forcings_init
 
 contains
 
-!> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
+   !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_new(external_force_file_name, iresult)
       use properties
       use tree_data_types
@@ -76,7 +76,6 @@ contains
       character(len=INI_VALUE_LEN) :: property_name
       character(len=INI_VALUE_LEN) :: property_value
       character(len=INI_VALUE_LEN) :: quantity
-      character(len=INI_VALUE_LEN) :: location_file !
       character(len=INI_VALUE_LEN) :: forcing_file !
       character(len=INI_VALUE_LEN) :: forcing_file_type !
       character(len=INI_VALUE_LEN) :: target_mask_file !
@@ -86,13 +85,9 @@ contains
       integer :: num_items_in_block
       character(len=1) :: oper !
       character(len=300) :: rec
-      character(len=INI_VALUE_LEN) :: nodeid
-      character(len=INI_VALUE_LEN) :: branchid
-      character(len=INI_VALUE_LEN) :: loc_id
       character(len=INI_VALUE_LEN) :: item_type
       character(len=INI_VALUE_LEN) :: fnam
       character(len=INI_VALUE_LEN) :: base_dir
-      double precision :: chainage
       integer :: ierr ! error number from allocate function
       integer :: ilattype, nlat
       integer :: k, n, k1
@@ -100,9 +95,6 @@ contains
       integer :: ib, ibqh, ibt
       integer :: maxlatsg
       integer :: major, minor
-      integer :: loc_spec_type
-      integer :: numcoordinates
-      double precision, allocatable :: xcoordinates(:), ycoordinates(:)
       character(len=:), allocatable :: file_name
       integer, allocatable :: itpenzr(:), itpenur(:)
 
@@ -229,7 +221,7 @@ contains
 
    contains
 
-!> reads boundary blocks from new external forcings file and makes required initialisations
+      !> reads boundary blocks from new external forcings file and makes required initialisations
       function init_boundary_forcings() result(res)
 
          logical :: res
@@ -370,16 +362,126 @@ contains
 
       end function init_boundary_forcings
 
-      !> reads lateral blocks from new external forcings file and makes required initialisations
-      function init_lateral_forcings() result(res)
+      !> Read the discharge specification by the current [Lateral] block from new external forcings file
+      subroutine read_lateral_discharge_definition(loc_id, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
+      use m_precision_basics, only: dp
+      character(len=INI_VALUE_LEN), intent(in) :: loc_id !< The id of the lateral
+      integer, intent(out) :: loc_spec_type !< Specify how lateral discharge is defined
+      character(len=INI_VALUE_LEN), intent(out) :: node_id
+      character(len=INI_VALUE_LEN), intent(out) :: branch_id
+      real(kind=dp), intent(out) :: chainage
+      integer, intent(out) :: num_coordinates
+      real(kind=dp), allocatable, intent(out) :: x_coordinates(:), y_coordinates(:)
+      character(len=INI_VALUE_LEN), intent(out) :: location_file
+      logical, intent(out) :: is_success !< Flag indicating if the reading was successful
 
-         logical :: res
+      logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
 
-         res = .false.
+      integer :: number_of_discharge_specifications
+      integer, parameter :: maximum_number_of_discharge_specifications = 4
+
+      loc_spec_type = imiss
+      node_id = ''
+      branch_id = ''
+      chainage = dmiss
+      num_coordinates = imiss
+      location_file = ''
+      is_success = .false.
+
+      has_node_id = has_prop(node_ptr, '', 'nodeId')
+      has_branch_id = has_prop(node_ptr, '', 'branchId')
+      has_chainage = has_prop(node_ptr, '', 'chainage')
+      has_num_coordinates = has_prop(node_ptr, '', 'numCoordinates')
+      has_x_coordinates = has_prop(node_ptr, '', 'xCoordinates')
+      has_y_coordinates = has_prop(node_ptr, '', 'yCoordinates')
+      has_location_file = has_prop(node_ptr, '', 'locationFile')
+
+      ! Test if multiple discharge methods were set
+      number_of_discharge_specifications = sum([integer :: i=1, maximum_number_of_discharge_specifications, 1], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
+
+      if (number_of_discharge_specifications < 1) then
+         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numcoor + xcoors + ycoors, or locationFile.')
+         return
+      else if (number_of_discharge_specifications > 1) then
+         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': Multiple discharge specifications found. Use nodeId, branchId + chainage, numcoor + xcoors + ycoors, or locationFile.')
+         return
+      end if
+
+      ! nodeId                  => location_specifier = LOCTP_NODEID
+      ! branchId+chainage       => location_specifier = LOCTP_BRANCH_CHAINAGE
+      ! numcoor+xcoors+ycoors   => location_specifier = LOCTP_XY_POLYGON
+      ! locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
+      if (has_node_id) then
+         call prop_get(node_ptr, '', 'nodeId', node_id)
+         loc_spec_type = LOCTP_NODEID
+         ilattype = ILATTP_1D
+         is_success = .true.
+         return
+      end if
+
+      if (has_branch_id .or. has_chainage) then
+         if (.not. (has_branch_id .and. has_chainage)) then
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': branchId and chainage must be set together.')
+            return
+         end if
+
+         call prop_get(node_ptr, '', 'branchId', branch_id)
+         call prop_get(node_ptr, '', 'chainage', chainage)
+         if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
+            loc_spec_type = LOCTP_BRANCHID_CHAINAGE
+            ilattype = ILATTP_1D
+            is_success = .true.
+            return
+         else
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': values of branchId and chainage are invalid.')
+            return
+         end if
+      end if
+
+      if (has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates) then
+         if (.not. (has_num_coordinates .and. has_x_coordinates .and. has_y_coordinates)) then
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
+            return
+         end if
+         call prop_get(node_ptr, '', 'numCoordinates', num_coordinates)
+         allocate (x_coordinates(num_coordinates), stat=ierr)
+         allocate (y_coordinates(num_coordinates), stat=ierr)
+         call prop_get_doubles(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates)
+         call prop_get_doubles(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates)
+         loc_spec_type = LOCTP_POLYGON_XY
+         is_successful = .true.
+         return
+      end if
+
+      if (has_location_file) then
+         location_file = ''
+         call prop_get(node_ptr, '', 'locationFile', location_file)
+         if (len_trim(location_file) == 0) then
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': locationFile is empty.')
+            return
+         end if
+         call resolvePath(location_file, base_dir)
+         loc_spec_type = LOCTP_POLYGON_FILE
+         is_successful = .true.
+         return
+      end if
+      call err('Programming error, please report: read_lateral_discharge_definition failed to read lateral '''//trim(loc_id)//'''')
+      end function read_lateral_discharge_definition
+
+      !> Read lateral blocks from new external forcings file and makes required initialisations
+      function init_lateral_forcings() result(is_succesful)
+         character(len=INI_VALUE_LEN) :: loc_id
+         integer :: loc_spec_type, num_coordinates
+         character(len=INI_VALUE_LEN) :: node_id, branch_id, location_file
+         real(kind=dp) :: chainage
+         real(kind=dp), allocatable :: x_coordinates(:), y_coordinates(:)
+         logical :: is_succesful, is_read
+
+         is_succesful = .false.
 
          loc_id = ' '
-         call prop_get(node_ptr, '', 'Id', loc_id, is_successful)
-         if (.not. is_successful .or. len_trim(loc_id) == 0) then
+         call prop_get(node_ptr, '', 'Id', loc_id, is_read)
+         if (.not. is_read .or. len_trim(loc_id) == 0) then
             write (msgbuf, '(a,i0,a)') 'Required field ''Id'' missing in lateral (block #', i, ').'
             call warn_flush()
             return
@@ -390,9 +492,9 @@ contains
          ! fileVersion <= 1: Type         = 1d | 2d | 1d2d
          item_type = ' '
          if (major >= 2) then
-            call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
+            call prop_get(node_ptr, '', 'locationType', item_type, is_read)
          else
-            call prop_get(node_ptr, '', 'Type', item_type, is_successful)
+            call prop_get(node_ptr, '', 'Type', item_type, is_read)
          end if
          select case (str_tolower(trim(item_type)))
          case ('1d')
@@ -406,65 +508,9 @@ contains
          end select
 
          call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
-         call prop_get(node_ptr, '', 'applyTransport', apply_transport(numlatsg + 1), is_successful)
+         call prop_get(node_ptr, '', 'applyTransport', apply_transport(numlatsg + 1), is_read)
 
-         ! [lateral]
-         ! fileVersion >= 2: nodeId                  => location_specifier = LOCTP_NODEID
-         !                   branchId+chainage       => location_specifier = LOCTP_BRANCH_CHAINAGE
-         !                   numcoor+xcoors+ycoors   => location_specifier = LOCTP_XY_POLYGON
-         ! fileVersion <= 1: locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
-         loc_spec_type = imiss
-         nodeId = ' '
-         branchid = ' '
-         chainage = dmiss
-         numcoordinates = imiss
-         !
-         if (major >= 2) then
-            call prop_get(node_ptr, '', 'nodeId', nodeId, is_successful)
-            if (is_successful) then
-               loc_spec_type = LOCTP_NODEID
-               ilattype = ILATTP_1D
-            else
-               call prop_get(node_ptr, '', 'branchId', branchid, is_successful)
-               if (is_successful) then
-                  call prop_get(node_ptr, '', 'chainage', chainage, is_successful)
-               end if
-               if (is_successful) then
-                  if (len_trim(branchid) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
-                     loc_spec_type = LOCTP_BRANCHID_CHAINAGE
-                     ilattype = ILATTP_1D
-                  end if
-               else
-                  call prop_get(node_ptr, '', 'numCoordinates', numcoordinates, is_successful)
-                  if (is_successful .and. numcoordinates > 0) then
-                     allocate (xcoordinates(numcoordinates), stat=ierr)
-                     allocate (ycoordinates(numcoordinates), stat=ierr)
-                     call prop_get_doubles(node_ptr, '', 'xCoordinates', xcoordinates, numcoordinates, is_successful)
-                     call prop_get_doubles(node_ptr, '', 'yCoordinates', ycoordinates, numcoordinates, is_successful)
-                     if (is_successful) then
-                        loc_spec_type = LOCTP_POLYGON_XY
-                     end if
-                  end if
-               end if
-            end if
-         else ! fileVersion <= 1
-            loc_spec_type = LOCTP_POLYGON_FILE
-            !
-            location_file = ''
-            call prop_get(node_ptr, '', 'locationFile', location_file, is_successful)
-            if (.not. is_successful .or. len_trim(location_file) == 0) then
-               write (msgbuf, '(a,a,a)') 'Required field ''locationFile'' missing in lateral ''', trim(loc_id), '''.'
-               call warn_flush()
-               return
-            else
-               call resolvePath(location_file, base_dir)
-            end if
-         end if
-         if (loc_spec_type == imiss) then
-            write (msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(loc_id), '''.'
-            call warn_flush()
-            return
-         end if
+         call read_lateral_discharge_specification(loc_id, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_successful)
 
          call ini_alloc_laterals()
 
@@ -487,9 +533,9 @@ contains
          ! Flow = 1.23 | test.tim | REALTIME
          kx = 1
          rec = ' '
-         call prop_get(node_ptr, '', 'discharge', rec, is_successful)
-         if (.not. is_successful .and. major <= 1) then ! Old pre-2.00 keyword 'flow'
-            call prop_get(node_ptr, '', 'flow', rec, is_successful)
+         call prop_get(node_ptr, '', 'discharge', rec, is_read)
+         if (.not. is_read .and. major <= 1) then ! Old pre-2.00 keyword 'flow'
+            call prop_get(node_ptr, '', 'flow', rec, is_read)
          end if
          if (len_trim(rec) > 0) then
             call resolvePath(rec, base_dir)
@@ -500,444 +546,444 @@ contains
          end if
 
          qid = 'lateral_discharge' ! New quantity name in .bc files
-         is_successful = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, &
+         is_read = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, &
                                                         kx, qplat(1, :))
-         if (is_successful) then
+         if (is_read) then
             jaqin = 1
             lat_ids(numlatsg) = loc_id
          end if
 
-         res = .true.
+         is_succesful = .true.
 
-      end function init_lateral_forcings
+         end function init_lateral_forcings
 
-      !> Read the current [Meteo] block from new external forcings file
+         !> Read the current [Meteo] block from new external forcings file
       !! and do required initialisation for that quantity.
-      function init_meteo_forcings() result(res)
-         logical :: res
+         function init_meteo_forcings() result(res)
+            logical :: res
 
-         integer, allocatable :: mask(:)
-         logical :: invert_mask, bla
-         logical :: is_variable_name_available
-         logical :: is_extrapolation_allowed
-         character(len=INI_KEY_LEN) :: variable_name
-         character(len=INI_VALUE_LEN) :: interpolation_method
-         real(hp) :: max_search_radius
-         ! generalized properties+pointers to target element grid:
-         integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-         integer :: target_num_points !< Number of points in target element set.
-         real(hp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
-         real(hp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
-         integer :: ierr
+            integer, allocatable :: mask(:)
+            logical :: invert_mask, bla
+            logical :: is_variable_name_available
+            logical :: is_extrapolation_allowed
+            character(len=INI_KEY_LEN) :: variable_name
+            character(len=INI_VALUE_LEN) :: interpolation_method
+            real(hp) :: max_search_radius
+            ! generalized properties+pointers to target element grid:
+            integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+            integer :: target_num_points !< Number of points in target element set.
+            real(hp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
+            real(hp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
+            integer :: ierr
 
-         res = .false.
+            res = .false.
 
-         call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-            call warn_flush()
-            return
-         end if
-
-         call prop_get(node_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
-               ']. Field ''forcingFileType'' is missing.'
-            call warn_flush()
-            return
-         end if
-
-         call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
-               ']. Field ''forcingFile'' is missing.'
-            call warn_flush()
-            return
-         else
-            call resolvePath(forcing_file, base_dir)
-         end if
-
-         target_mask_file = ''
-         call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file)
-
-         invert_mask = .false.
-         call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
-
-         is_variable_name_available = .false.
-         variable_name = ' '
-         call prop_get(node_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
-
-         call prop_get(node_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
-         if (is_successful) then
-            method = convert_method_string_to_integer(interpolation_method)
-         else
-            method = get_default_method_for_file_type(forcing_file_type)
-         end if
-         if (method == -1) then
-            if (is_successful) then
-               write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', trim(interpolation_method), &
-                  ' in block in file ''', file_name, ''': [', group_name, '].'
-            else
-               write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
-                  '] nor an internal value associated with given ''forcingFileType'':', trim(forcing_file_type), '.'
-            end if
-            call warn_flush()
-            return
-         end if
-
-         is_extrapolation_allowed = .false.
-         call prop_get(node_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
-         call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
-
-         max_search_radius = -1
-         call prop_get(node_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
-
-         oper = 'O'
-         call prop_get(node_ptr, '', 'operand ', oper, is_successful)
-
-         transformcoef = DMISS
-         call prop_get(node_ptr, '', 'averagingType ', transformcoef(4), is_successful)
-         call prop_get(node_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
-         call prop_get(node_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
-         call prop_get(node_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
-
-         filetype = convert_file_type_string_to_integer(forcing_file_type)
-
-         ! Default location type: s-points. Only cases below that need u-points or different, will override.
-         target_location_type = UNC_LOC_S
-
-         success = scan_for_heat_quantities(quantity, kx)
-         if (.not. success) then
-            select case (quantity)
-            case ('airdensity')
-               kx = 1
-               if (.not. allocated(airdensity)) then
-                  allocate (airdensity(ndx), stat=ierr, source=0d0)
-                  call aerr('airdensity(ndx)', ierr, ndx)
-               end if
-            case ('airpressure', 'atmosphericpressure')
-               kx = 1
-               ierr = allocate_patm(0._hp)
-
-            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-               kx = 1
-               call allocatewindarrays()
-
-               jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
-               jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
-
-               ierr = allocate_patm(100000._hp)
-
-               if (.not. allocated(ec_pwxwy_x)) then
-                  allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
-                  call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
-               end if
-
-               if (jaspacevarcharn == 1) then
-                  if (.not. allocated(ec_pwxwy_c)) then
-                     allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
-                     call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
-                  end if
-               end if
-
-            case ('charnock')
-               kx = 1
-               if (.not. allocated(ec_charnock)) then
-                  allocate (ec_charnock(ndx), stat=ierr, source=0d0)
-                  call aerr('ec_charnock(ndx)', ierr, ndx)
-               end if
-               if (.not. allocated(wcharnock)) then
-                  allocate (wcharnock(lnx), stat=ierr)
-                  call aerr('wcharnock(lnx)', ierr, lnx)
-               end if
-
-            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-               kx = 1
-               target_location_type = UNC_LOC_U
-               call allocatewindarrays()
-
-               jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
-
-            case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
-               kx = 1
-               if (.not. allocated(rain)) then
-                  allocate (rain(ndx), stat=ierr, source=0d0)
-                  call aerr('rain(ndx)', ierr, ndx)
-               end if
-
-            case ('qext')
-               ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
-               if (jaQext == 0) then
-                  write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                     '] is missing QExt=1 in MDU. Ignoring this block.'
-                  call warn_flush()
-                  return
-               end if
-               if (.not. strcmpi(forcing_file_type, 'sample')) then
-                  write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
-                     ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
-                  call warn_flush()
-                  return
-               end if
-               method = get_default_method_for_file_type(forcing_file_type)
-               call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
-               select case (str_tolower(trim(item_type)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-               case ('2d')
-                  ilattype = ILATTP_2D
-               case ('1d2d', 'all')
-                  ilattype = ILATTP_ALL
-               case default
-                  ilattype = ILATTP_ALL
-               end select
-
-               mask(:) = 0
-               call prepare_lateral_mask(mask, ilattype)
-
-               res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
-               return ! This was a special case, don't continue with timespace processing below.
-            case default
-               write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                  ']. Ignoring this block.'
+            call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
+            if (.not. is_successful) then
+               write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
                call warn_flush()
                return
-            end select
-         end if
-
-         ! Derive target element set properties from the quantity's topological location type
-         call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
-         if (ierr /= DFM_NOERR) then
-            write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
-               ']. Line ''quantity = ', trim(quantity), ''' has no known target grid properties.'
-            call warn_flush()
-            return
-         end if
-
-         !> Prepare target mask for the quantity's target element set.
-         call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         if (ierr /= DFM_NOERR) then
-            write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
-               ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
-            call warn_flush()
-            return
-         end if
-
-         select case (trim(str_tolower(forcing_file_type)))
-         case ('bcascii')
-            ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
-            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                                    method, oper, forcingfile=forcing_file)
-         case default
-            if (is_variable_name_available) then
-               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                       method, oper, varname=variable_name)
-            else
-               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                       method, oper)
             end if
-         end select
 
-         if (is_successful) then
-            select case (quantity)
-            case ('airdensity')
-               call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
-               ja_airdensity = 1
+            call prop_get(node_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
+            if (.not. is_successful) then
+               write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
+                  ']. Field ''forcingFileType'' is missing.'
+               call warn_flush()
+               return
+            end if
 
-            case ('airpressure', 'atmosphericpressure')
-               japatm = 1
+            call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
+            if (.not. is_successful) then
+               write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
+                  ']. Field ''forcingFile'' is missing.'
+               call warn_flush()
+               return
+            else
+               call resolvePath(forcing_file, base_dir)
+            end if
 
-            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-               jawind = 1
-               japatm = 1
+            target_mask_file = ''
+            call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file)
 
-            case ('charnock')
-               jaspacevarcharn = 1
+            invert_mask = .false.
+            call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
 
-            case ('rainfall', 'rainfall_rate')
-               jarain = 1
-               jaqin = 1
+            is_variable_name_available = .false.
+            variable_name = ' '
+            call prop_get(node_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
 
-            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-               jawind = 1
-            case ('airtemperature')
-               jatair = 1
-               btempforcingtypA = .true.
-               tair_available = .true.
-            case ('cloudiness')
-               jaclou = 1
-               btempforcingtypC = .true.
-            case ('humidity')
-               jarhum = 1
-               btempforcingtypH = .true.
-            case ('dewpoint') ! Relative humidity array used to store dewpoints
-               itempforcingtyp = 5
-               dewpoint_available = .true.
-            case ('solarradiation')
-               btempforcingtypS = .true.
-               solrad_available = .true.
-            case ('longwaveradiation')
-               btempforcingtypL = .true.
-               longwave_available = .true.
-            case ('humidity_airtemperature_cloudiness')
-               itempforcingtyp = 1
-            case ('dewpoint_airtemperature_cloudiness')
-               itempforcingtyp = 3
-               dewpoint_available = .true.
-               tair_available = .true.
-            case ('humidity_airtemperature_cloudiness_solarradiation')
-               itempforcingtyp = 2
-               tair_available = .true.
-               solrad_available = .true.
-            case ('dewpoint_airtemperature_cloudiness_solarradiation')
-               itempforcingtyp = 4
-               dewpoint_available = .true.
-               tair_available = .true.
-               solrad_available = .true.
+            call prop_get(node_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
+            if (is_successful) then
+               method = convert_method_string_to_integer(interpolation_method)
+            else
+               method = get_default_method_for_file_type(forcing_file_type)
+            end if
+            if (method == -1) then
+               if (is_successful) then
+                  write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', trim(interpolation_method), &
+                     ' in block in file ''', file_name, ''': [', group_name, '].'
+               else
+                  write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
+                     '] nor an internal value associated with given ''forcingFileType'':', trim(forcing_file_type), '.'
+               end if
+               call warn_flush()
+               return
+            end if
+
+            is_extrapolation_allowed = .false.
+            call prop_get(node_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
+            call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
+
+            max_search_radius = -1
+            call prop_get(node_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
+
+            oper = 'O'
+            call prop_get(node_ptr, '', 'operand ', oper, is_successful)
+
+            transformcoef = DMISS
+            call prop_get(node_ptr, '', 'averagingType ', transformcoef(4), is_successful)
+            call prop_get(node_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
+            call prop_get(node_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
+            call prop_get(node_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
+
+            filetype = convert_file_type_string_to_integer(forcing_file_type)
+
+            ! Default location type: s-points. Only cases below that need u-points or different, will override.
+            target_location_type = UNC_LOC_S
+
+            success = scan_for_heat_quantities(quantity, kx)
+            if (.not. success) then
+               select case (quantity)
+               case ('airdensity')
+                  kx = 1
+                  if (.not. allocated(airdensity)) then
+                     allocate (airdensity(ndx), stat=ierr, source=0d0)
+                     call aerr('airdensity(ndx)', ierr, ndx)
+                  end if
+               case ('airpressure', 'atmosphericpressure')
+                  kx = 1
+                  ierr = allocate_patm(0._hp)
+
+               case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+                  kx = 1
+                  call allocatewindarrays()
+
+                  jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
+                  jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
+
+                  ierr = allocate_patm(100000._hp)
+
+                  if (.not. allocated(ec_pwxwy_x)) then
+                     allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
+                     call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
+                  end if
+
+                  if (jaspacevarcharn == 1) then
+                     if (.not. allocated(ec_pwxwy_c)) then
+                        allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
+                        call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
+                     end if
+                  end if
+
+               case ('charnock')
+                  kx = 1
+                  if (.not. allocated(ec_charnock)) then
+                     allocate (ec_charnock(ndx), stat=ierr, source=0d0)
+                     call aerr('ec_charnock(ndx)', ierr, ndx)
+                  end if
+                  if (.not. allocated(wcharnock)) then
+                     allocate (wcharnock(lnx), stat=ierr)
+                     call aerr('wcharnock(lnx)', ierr, lnx)
+                  end if
+
+               case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+                  kx = 1
+                  target_location_type = UNC_LOC_U
+                  call allocatewindarrays()
+
+                  jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
+
+               case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
+                  kx = 1
+                  if (.not. allocated(rain)) then
+                     allocate (rain(ndx), stat=ierr, source=0d0)
+                     call aerr('rain(ndx)', ierr, ndx)
+                  end if
+
+               case ('qext')
+                  ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
+                  if (jaQext == 0) then
+                     write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+                        '] is missing QExt=1 in MDU. Ignoring this block.'
+                     call warn_flush()
+                     return
+                  end if
+                  if (.not. strcmpi(forcing_file_type, 'sample')) then
+                     write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
+                        ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
+                     call warn_flush()
+                     return
+                  end if
+                  method = get_default_method_for_file_type(forcing_file_type)
+                  call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
+                  select case (str_tolower(trim(item_type)))
+                  case ('1d')
+                     ilattype = ILATTP_1D
+                  case ('2d')
+                     ilattype = ILATTP_2D
+                  case ('1d2d', 'all')
+                     ilattype = ILATTP_ALL
+                  case default
+                     ilattype = ILATTP_ALL
+                  end select
+
+                  mask(:) = 0
+                  call prepare_lateral_mask(mask, ilattype)
+
+                  res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
+                  return ! This was a special case, don't continue with timespace processing below.
+               case default
+                  write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+                     ']. Ignoring this block.'
+                  call warn_flush()
+                  return
+               end select
+            end if
+
+            ! Derive target element set properties from the quantity's topological location type
+            call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+            if (ierr /= DFM_NOERR) then
+               write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
+                  ']. Line ''quantity = ', trim(quantity), ''' has no known target grid properties.'
+               call warn_flush()
+               return
+            end if
+
+            !> Prepare target mask for the quantity's target element set.
+            call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+            if (ierr /= DFM_NOERR) then
+               write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
+                  ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
+               call warn_flush()
+               return
+            end if
+
+            select case (trim(str_tolower(forcing_file_type)))
+            case ('bcascii')
+               ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
+               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
+                                                       method, oper, forcingfile=forcing_file)
+            case default
+               if (is_variable_name_available) then
+                  is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                          method, oper, varname=variable_name)
+               else
+                  is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                          method, oper)
+               end if
             end select
 
-            res = .true.
+            if (is_successful) then
+               select case (quantity)
+               case ('airdensity')
+                  call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
+                  ja_airdensity = 1
 
-         end if
+               case ('airpressure', 'atmosphericpressure')
+                  japatm = 1
 
-      end function init_meteo_forcings
+               case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+                  jawind = 1
+                  japatm = 1
 
-   end subroutine init_new
+               case ('charnock')
+                  jaspacevarcharn = 1
 
-   !> Get several target grid properties for a given location type.
+               case ('rainfall', 'rainfall_rate')
+                  jarain = 1
+                  jaqin = 1
+
+               case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+                  jawind = 1
+               case ('airtemperature')
+                  jatair = 1
+                  btempforcingtypA = .true.
+                  tair_available = .true.
+               case ('cloudiness')
+                  jaclou = 1
+                  btempforcingtypC = .true.
+               case ('humidity')
+                  jarhum = 1
+                  btempforcingtypH = .true.
+               case ('dewpoint') ! Relative humidity array used to store dewpoints
+                  itempforcingtyp = 5
+                  dewpoint_available = .true.
+               case ('solarradiation')
+                  btempforcingtypS = .true.
+                  solrad_available = .true.
+               case ('longwaveradiation')
+                  btempforcingtypL = .true.
+                  longwave_available = .true.
+               case ('humidity_airtemperature_cloudiness')
+                  itempforcingtyp = 1
+               case ('dewpoint_airtemperature_cloudiness')
+                  itempforcingtyp = 3
+                  dewpoint_available = .true.
+                  tair_available = .true.
+               case ('humidity_airtemperature_cloudiness_solarradiation')
+                  itempforcingtyp = 2
+                  tair_available = .true.
+                  solrad_available = .true.
+               case ('dewpoint_airtemperature_cloudiness_solarradiation')
+                  itempforcingtyp = 4
+                  dewpoint_available = .true.
+                  tair_available = .true.
+                  solrad_available = .true.
+               end select
+
+               res = .true.
+
+            end if
+
+         end function init_meteo_forcings
+
+      end subroutine init_new
+
+      !> Get several target grid properties for a given location type.
    !!
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
    !! external forcings quantities.
-   subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
-      use fm_location_types
-      use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
-      use precision_basics, only: hp
-      use dfm_error
-      integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      integer, intent(out) :: target_num_points !< Number of points in target element set.
-      real(hp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
-      real(hp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
-      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if unknown quantity location was given).
+      subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+         use fm_location_types
+         use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
+         use precision_basics, only: hp
+         use dfm_error
+         integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+         integer, intent(out) :: target_num_points !< Number of points in target element set.
+         real(hp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
+         real(hp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
+         integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if unknown quantity location was given).
 
-      ierr = DFM_NOERR
+         ierr = DFM_NOERR
 
-      select case (target_location_type)
-      case (UNC_LOC_S)
-         target_num_points = ndx
-         target_x => xz(1:target_num_points)
-         target_y => yz(1:target_num_points)
-      case (UNC_LOC_U)
-         target_num_points = lnx
-         target_x => xu(1:target_num_points)
-         target_x => yu(1:target_num_points)
-      case default
-         ierr = DFM_NOTIMPLEMENTED
-      end select
-   end subroutine get_location_target_properties
-
-   !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
-   subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-      use fm_location_types
-      use m_flowgeom, only: ndx, lnx, xz, yz, kcs
-      use timespace_parameters, only: LOCTP_POLYGON_FILE
-      use timespace, only: selectelset_internal_nodes, selectelset_internal_links
-      use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
-
-      integer, dimension(:), allocatable, intent(out) :: mask !< Mask array for the target element set.
-      integer, intent(in) :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
-      character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
-      integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      logical, intent(in) :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
-      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
-
-      integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
-      integer :: number_of_selected_points, point
-
-      ierr = DFM_NOERR
-
-      allocate (mask(target_num_points), source=0)
-
-      if (len_trim(target_mask_file) > 0) then
-         ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
-         allocate (selected_points(target_num_points), source=0)
          select case (target_location_type)
          case (UNC_LOC_S)
-            ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
-            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                            target_mask_file)
+            target_num_points = ndx
+            target_x => xz(1:target_num_points)
+            target_y => yz(1:target_num_points)
          case (UNC_LOC_U)
-            ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
-            call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                            target_mask_file)
+            target_num_points = lnx
+            target_x => xu(1:target_num_points)
+            target_x => yu(1:target_num_points)
          case default
             ierr = DFM_NOTIMPLEMENTED
-            return
          end select
+      end subroutine get_location_target_properties
 
-         do point = 1, number_of_selected_points
-            mask(selected_points(point)) = 1
-         end do
-         if (invert_mask) then
-            mask = ieor(mask, 1)
-         end if
-      else
-         if (target_location_type == UNC_LOC_S) then
-            ! 100% masking: accept all flow locations that were already active in their own mask array.
-            where (kcs /= 0) mask = 1
+      !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
+      subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+         use fm_location_types
+         use m_flowgeom, only: ndx, lnx, xz, yz, kcs
+         use timespace_parameters, only: LOCTP_POLYGON_FILE
+         use timespace, only: selectelset_internal_nodes, selectelset_internal_links
+         use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
+
+         integer, dimension(:), allocatable, intent(out) :: mask !< Mask array for the target element set.
+         integer, intent(in) :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
+         character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
+         integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+         logical, intent(in) :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
+         integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
+
+         integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
+         integer :: number_of_selected_points, point
+
+         ierr = DFM_NOERR
+
+         allocate (mask(target_num_points), source=0)
+
+         if (len_trim(target_mask_file) > 0) then
+            ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
+            allocate (selected_points(target_num_points), source=0)
+            select case (target_location_type)
+            case (UNC_LOC_S)
+               ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
+               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                               target_mask_file)
+            case (UNC_LOC_U)
+               ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
+               call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                               target_mask_file)
+            case default
+               ierr = DFM_NOTIMPLEMENTED
+               return
+            end select
+
+            do point = 1, number_of_selected_points
+               mask(selected_points(point)) = 1
+            end do
+            if (invert_mask) then
+               mask = ieor(mask, 1)
+            end if
          else
-            mask = 1
+            if (target_location_type == UNC_LOC_S) then
+               ! 100% masking: accept all flow locations that were already active in their own mask array.
+               where (kcs /= 0) mask = 1
+            else
+               mask = 1
+            end if
          end if
-      end if
-   end subroutine construct_target_mask
+      end subroutine construct_target_mask
 
-   !> Scan the quantity name for heat relatede quantities.
-   function scan_for_heat_quantities(quantity, kx) result(success)
-      use precision_basics, only: dp
-      use m_wind, only: tair, clou, rhum, qrad, longwave
-      use m_flowgeom, only: ndx
-      use m_alloc, only: aerr, realloc
+      !> Scan the quantity name for heat relatede quantities.
+      function scan_for_heat_quantities(quantity, kx) result(success)
+         use precision_basics, only: dp
+         use m_wind, only: tair, clou, rhum, qrad, longwave
+         use m_flowgeom, only: ndx
+         use m_alloc, only: aerr, realloc
 
-      character(len=*), intent(in) :: quantity !< Name of the data set.
-      integer, intent(out) :: kx !< Number of individual quantities in the data set
-      logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
+         character(len=*), intent(in) :: quantity !< Name of the data set.
+         integer, intent(out) :: kx !< Number of individual quantities in the data set
+         logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
 
-      integer :: ierr
+         integer :: ierr
 
-      kx = 1
-      success = .true.
+         kx = 1
+         success = .true.
 
-      select case (quantity)
+         select case (quantity)
 
-      case ('airtemperature')
-         call realloc(tair, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('tair(ndx)', ierr, ndx)
-      case ('cloudiness')
-         call realloc(clou, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('clou(ndx)', ierr, ndx)
-      case ('humidity')
-         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('rhum(ndx)', ierr, ndx)
-      case ('dewpoint') ! Relative humidity array used to store dewpoints
-         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('rhum(ndx)', ierr, ndx)
-      case ('solarradiation')
-         call realloc(qrad, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('qrad(ndx)', ierr, ndx)
-      case ('longwaveradiation')
-         call realloc(longwave, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('longwave(ndx)', ierr, ndx)
-      case ('humidity_airtemperature_cloudiness')
-         kx = 3
-      case ('dewpoint_airtemperature_cloudiness')
-         kx = 3
-      case ('humidity_airtemperature_cloudiness_solarradiation')
-         kx = 4
-      case ('dewpoint_airtemperature_cloudiness_solarradiation')
-         kx = 4
-      case default
-         success = .false.
-      end select
-   end function scan_for_heat_quantities
+         case ('airtemperature')
+            call realloc(tair, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+            call aerr('tair(ndx)', ierr, ndx)
+         case ('cloudiness')
+            call realloc(clou, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+            call aerr('clou(ndx)', ierr, ndx)
+         case ('humidity')
+            call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+            call aerr('rhum(ndx)', ierr, ndx)
+         case ('dewpoint') ! Relative humidity array used to store dewpoints
+            call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+            call aerr('rhum(ndx)', ierr, ndx)
+         case ('solarradiation')
+            call realloc(qrad, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+            call aerr('qrad(ndx)', ierr, ndx)
+         case ('longwaveradiation')
+            call realloc(longwave, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+            call aerr('longwave(ndx)', ierr, ndx)
+         case ('humidity_airtemperature_cloudiness')
+            kx = 3
+         case ('dewpoint_airtemperature_cloudiness')
+            kx = 3
+         case ('humidity_airtemperature_cloudiness_solarradiation')
+            kx = 4
+         case ('dewpoint_airtemperature_cloudiness_solarradiation')
+            kx = 4
+         case default
+            success = .false.
+         end select
+      end function scan_for_heat_quantities
 
-end submodule fm_external_forcings_init
+   end submodule fm_external_forcings_init
