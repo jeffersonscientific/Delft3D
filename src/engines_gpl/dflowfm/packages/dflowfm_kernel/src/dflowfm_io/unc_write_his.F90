@@ -814,7 +814,7 @@ subroutine unc_write_his(tim) ! wrihis
          ! Write time-independent geometry variables for different structure types
          ierr = unc_put_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
                                                   id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
-                                                  id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
+                                                  id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid, pump_ids)
          if (timon) call timstop(handle_extra(63))
       end if
    end if
@@ -1084,7 +1084,7 @@ contains
 
    !> Write ('put') the static variables for a single structure type.
    function unc_put_his_structure_static_vars(ncid, struc_type_id, output_enabled, count, geom_type, ngeom_node, id_strlendim, &
-                                              id_strdim, id_strid, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
+                                              id_strdim, id_structure_name, structure_names, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
                                               add_latlon, id_geom_coordlon, id_geom_coordlat, id_poly_xmid, id_poly_ymid) result(ierr)
 
       integer, intent(in) :: ncid !< NetCDF id of already open dataset
@@ -1095,7 +1095,8 @@ contains
       integer, intent(in) :: ngeom_node !< Total number of geometry nodes for this structure_type
       integer, intent(in) :: id_strlendim !< Already created NetCDF dimension id for max string length of the character Ids.
       integer, intent(in) :: id_strdim !< NetCDF dimension id created for this structure type
-      integer, intent(in) :: id_strid !< NetCDF variable id created for the character Ids of the structures of this type
+      integer, intent(in) :: id_structure_name !< NetCDF variable id created for the character names of the structures of this type
+      character(len=:) :: structure_names !< Identifying names of the structures
       integer, optional, intent(in) :: id_geom_node_count !< NetCDF variable id created for the node count of the structures of this type
       integer, optional, intent(in) :: id_geom_coordx !< NetCDF variable id created for the node x coordinates for all structures of this type
       integer, optional, intent(in) :: id_geom_coordy !< NetCDF variable id created for the node y coordinates for all structures of this type
@@ -1115,6 +1116,9 @@ contains
          return
       end if
 
+      do i = 1, count
+         ierr = nf90_put_var(ncid, id_structure_name, trimexact(structure_names(i), strlen_netcdf), [1, i])
+      end do
       ! TODO (UNST-7900): actually write structure geometry data here!
 
       ! Polyline midpoint coordinates
