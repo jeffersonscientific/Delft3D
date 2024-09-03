@@ -59,8 +59,6 @@
 
          common / DRAWTHIS / ndraw(50)
 
-         character * 76 FILNAM
-
          if (MC == 0) then
             call QNERROR('First Create or Load a Grid', ' ', ' ')
             NUM = 0
@@ -106,7 +104,7 @@
             MA2 = min(MC - 1, M2)
             NA2 = min(NC - 1, N2)
 
-            call ATPPAR(XR, YR, MA1, NA1, MA2, NA2, ATP, A, B, C, D, E, JDLA)
+            call ATPPAR(XR, YR, MA1, NA1, MA2, NA2, ATP, A, B, C, D, E)
 
 !        JAMMER IN DEZE LOOP, IJC WORDT EERST VERKLOOT IN SOMDIST
 !        CALL SETINTERNALBOUNDARIES(IJC)

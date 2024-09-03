@@ -359,7 +359,7 @@ c
 c     Koppeling Mozart
       integer istmoz
       logical lmoza
-      character*40 qlatid(*)
+      character(len=40) qlatid(*)
 c
 c
       logical strclo(*)
@@ -596,7 +596,7 @@ c
 c
                strsta = .true.
                rhoast = 1.0D0
-               qltstr = sngl(FLQHGS (dble(g),istru  ,strsta ,
+               qltstr = real(FLQHGS (dble(g),istru  ,strsta ,
      +                       strclo         ,dble(hup)      ,
      +                       dble(hdown)    ,dble(uu)       ,
      +                       zsg    ,wstrg  ,w2     ,wsd    ,
@@ -604,7 +604,7 @@ c
      +                       rhoast ,cgf    ,cgd    ,cwf    ,
      +                       cwd    ,mugf   ,dum2   ,formno ,
      +                       dble(lambda)   ,dhsdub )
-     +                     * teken)
+     +                     * teken, kind=kind(qltstr))
 c
 c           Lataral discharge with underrelaxation
 c
@@ -802,7 +802,7 @@ c
 c
                   strsta = .true.
                   rhoast = 1.0D0
-                  qltstr = sngl(FLQHGS (dble(g),istru  ,strsta ,
+                  qltstr = real(FLQHGS (dble(g),istru  ,strsta ,
      +                          strclo         ,dble(hup)      ,
      +                          dble(hdown)    ,dble(uu)       ,
      +                          zsg    ,wstrg  ,w2     ,wsd    ,
@@ -810,13 +810,13 @@ c
      +                          rhoast ,cgf    ,cgd    ,cwf    ,
      +                          cwd    ,mugf   ,dum2   ,formno ,
      +                          dble(lambda)   ,dhsdub )
-     +                        * teken)
+     +                        * teken, kind=kind(qltstr))
 c
                   strhis(8,istru) = formno
                   strhis(4,istru) = qltstr
                   strsta = .false.
 c
-                  qltstr = sngl(FLQHGS (dble(g),istru  ,strsta ,
+                  qltstr = real(FLQHGS (dble(g),istru  ,strsta ,
      +                          strclo         ,dble(hup)+dhsdub,
      +                          dble(hdown)    ,dble(uu)       ,
      +                          zsg    ,wstrg  ,w2     ,wsd    ,
@@ -824,11 +824,11 @@ c
      +                          rhoast ,cgf    ,cgd    ,cwf    ,
      +                          cwd    ,mugf   ,dum2   ,formno ,
      +                          dble(lambda)   ,dhsdub )
-     +                        * teken)
+     +                        * teken, kind=kind(qltstr))
                   qltpls = qltstr
                   dqdhup = (qltpls - strhis(4,istru)) / dhstru
 c
-                  qltstr = sngl(FLQHGS (dble(g),istru  ,strsta ,
+                  qltstr = real(FLQHGS (dble(g),istru  ,strsta ,
      +                          strclo         ,dble(hup)      ,
      +                          dble(hdown)-dhsdub,dble(uu)       ,
      +                          zsg    ,wstrg  ,w2     ,wsd    ,
@@ -836,7 +836,7 @@ c
      +                          rhoast ,cgf    ,cgd    ,cwf    ,
      +                          cwd    ,mugf   ,dum2   ,formno ,
      +                          dble(lambda)   ,dhsdub )
-     +                        * teken)
+     +                        * teken, kind=kind(qltstr))
                   qltmin = qltstr
                   dqdhdn = (strhis(4,istru) - qltmin) /dhstru
 c

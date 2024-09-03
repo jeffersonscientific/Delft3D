@@ -551,10 +551,10 @@ c      qlatgr =     gtrpnt ( 'QLATGR')
 c      nodenm =     gtcpnt ('NODENM')
       
 c      qlatid =     max(1,gtcpnt ('QLATID'))
-      character*40  qlatid
+      character(len=40) qlatid
       
 c      qlatnm =     max(1,gtcpnt ('QLATNM'))
-      character*40  qlatnm
+      character(len=40) qlatnm
       
 c      gridnm =     gtcpnt ( 'GRIDNM')      
       

@@ -293,8 +293,8 @@ c
      +        zbmain, wmain, amain, omain, rmain, cmain,
      +        zbsub1, wsub1, asub1, osub1, rsub1, csub1,
      +        xc
-      character*40    branam
-      character*11    xtxt
+      character(len=40) branam
+      character(len=11) xtxt
 c
 c     Include sobek constants
 c
@@ -412,7 +412,7 @@ c
 c
 c              Define actual number of subsections
 c
-               call FLNSEC(sngl(hi),i,asubsc(i) ,subsec ,secth0 ,secth1,
+               call FLNSEC(real(hi),i,asubsc(i) ,subsec ,secth0 ,secth1,
      +                     wfh0 ,wfh1 ,af     ,afh0   ,afh1   ,ngrid )
 c
                h0  = secth0(i)

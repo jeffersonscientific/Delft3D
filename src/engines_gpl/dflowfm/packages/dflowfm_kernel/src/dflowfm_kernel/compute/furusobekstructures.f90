@@ -35,9 +35,7 @@ subroutine furusobekstructures()
    use m_flowgeom
    use m_strucs
    implicit none
-   integer :: ng, n, L, Ls, LL, Lb, Lt
-   double precision :: zup, bup, a, fac
-
+   integer :: ng, n, L, Ls
    logical :: firstiter = .true., jarea = .false.
 
    firstiter = .true.
@@ -53,7 +51,7 @@ subroutine furusobekstructures()
          end if
 
          if (hu(L) > 0d0) then ! hu is above lowest sill
-            call flgsfm(n, ng, Ls, firstiter, jarea)
+            call flgsfm(n, ng, Ls, jarea)
          else ! after discussion with Jan, this should be done to prevent any non zero in sub velocities u1(1:3) after re-wetting
             fusav(:, n) = 0d0
             rusav(:, n) = 0d0

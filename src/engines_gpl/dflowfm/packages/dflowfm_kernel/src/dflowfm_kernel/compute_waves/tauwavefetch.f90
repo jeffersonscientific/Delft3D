@@ -264,7 +264,7 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
    do cell = 1, ndxi
       if (calculate_for(cell)) then
          do cell_link = 1, nd(cell)%lnx
-            link = iabs(nd(cell)%ln(cell_link))
+            link = abs(nd(cell)%ln(cell_link))
             cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
             if (kcs(cell2) == 2) then ! internal
                cs = u_wind * csu(link) + v_wind * snu(link)
@@ -299,7 +299,7 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
       if (calculate_for(cell)) then
          index = 0
          do cell_link = 1, nd(cell)%lnx
-            link = iabs(nd(cell)%ln(cell_link))
+            link = abs(nd(cell)%ln(cell_link))
             cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
             if (kcs(cell2) == 2) then ! internal
                cs = u_wind * csu(link) + v_wind * snu(link)
@@ -382,7 +382,7 @@ subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)
 
       jaopen = 0
       do cell_link = 1, nd(cell)%lnx
-         link = iabs(nd(cell)%ln(cell_link))
+         link = abs(nd(cell)%ln(cell_link))
          if (ln(1, link) > ndxi) then
             jaopen = 1
             exit

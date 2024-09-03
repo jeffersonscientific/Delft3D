@@ -31,7 +31,7 @@
 !
 
 !> check if a link is close to a land boundary segment
-subroutine linkcrossedbyland(L, jstart, jend, netboundonly, jland, jacross)
+subroutine linkcrossedbyland(L, jstart, jend, jland, jacross)
 
    use m_netw
    use m_landboundary
@@ -43,7 +43,6 @@ subroutine linkcrossedbyland(L, jstart, jend, netboundonly, jland, jacross)
 
    integer, intent(in) :: L !< link number
    integer, intent(in) :: jstart, jend !< start and end point of land boundary segment respectively
-   integer, intent(in) :: netboundonly !< consider only the net boundary (1) or not (0)
    integer, intent(inout) :: jland !< point in land boundary that is (in:) visited first (out:) found
 
    integer, intent(out) :: jacross !< crossed (1) or not (0)
@@ -56,9 +55,9 @@ subroutine linkcrossedbyland(L, jstart, jend, netboundonly, jland, jacross)
    double precision :: x1, y1, x2, y2 !  node coordinates
    double precision :: x3, y3, x4, y4 ! land boundary point coordinates
 
-   double precision :: sl, sm, xcr, ycr, crp, DL, Dm, Dtol, dismin
+   double precision :: sm, DL, Dm, Dtol, dismin
 
-   double precision :: dis, xn, yn, rL, rL1, rL2 ! for dlinedis3
+   double precision :: dis, xn, yn, rL1, rL2 ! for dlinedis3
 
    jacross = 0
 

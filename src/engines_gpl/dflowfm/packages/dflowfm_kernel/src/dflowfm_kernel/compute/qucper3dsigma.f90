@@ -43,7 +43,7 @@
     ! locals
     integer :: La, LLL, LLLL, Lb2, Lt2, Lk ! for links LL,
     integer :: k12, Lkin ! relevant node, 1 or 2, L/R
-    double precision :: ucin, tkein, epsin ! velocity surplus
+    double precision :: ucin ! velocity surplus
 
     double precision :: ucinx, uciny
     integer :: nn12
@@ -56,7 +56,7 @@
     do La = 1, nd(k12)%lnx ! loop over all attached links
        LLL = nd(k12)%ln(La)
        nn12 = 1; if (LLL > 0) nn12 = 2
-       LLLL = iabs(LLL)
+       LLLL = abs(LLL)
 
        Lb2 = Lbot(LLLL); Lt2 = Ltop(LLLL)
        do Lk = LB2, LT2

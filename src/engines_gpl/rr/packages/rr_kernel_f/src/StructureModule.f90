@@ -4981,7 +4981,7 @@ IMPLICIT NONE
         Integer      INODE, IKIND, INR, i, k
         Integer      IOUT9, IOUT6
         Integer*2    RNDATE(3), RNTIME(4)
-        CHARACTER*20 NAMSTR(8)
+        CHARACTER(len=20) NAMSTR(8)
 
         NAMSTR (1) = ' Pumpstation'
         NAMSTR (2) = ' Weir'
@@ -5041,7 +5041,7 @@ IMPLICIT NONE
 
     Integer     INODE, IStr, Iout6, Ievent
     Real        QFlw
-    CHARACTER*3 MONTH(12)
+    CHARACTER(len=3) MONTH(12)
     
            if (.not. associated(QSTRMX)) return  ! If there is nothing, do nothing
     

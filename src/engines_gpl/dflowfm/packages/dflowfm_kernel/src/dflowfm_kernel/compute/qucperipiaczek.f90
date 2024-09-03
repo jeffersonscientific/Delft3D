@@ -51,7 +51,7 @@
  !
  !do LL   = 1, nd(k12)%lnx                            ! loop over all attached links
  !   LLL  = nd(k12)%ln(LL)
- !   LLLL = iabs(LLL)
+ !   LLLL = abs(LLL)
  !
  !   if ( qa(LLLL) == 0d0) then                       ! include own link
  !
@@ -87,8 +87,8 @@
 
     ! locals
     integer :: LL, LLL, LLLL ! for links LL,
-    integer :: k12, kup, ja ! relevant node, 1 or 2, L/R
-    double precision :: cs, sn, ucin, cfl, tet, ucinx, uciny
+    integer :: k12, ja ! relevant node, 1 or 2, L/R
+    double precision :: cs, sn, ucin, ucinx, uciny
 
     integer :: nn12
 
@@ -101,7 +101,7 @@
     k12 = ln(n12, L)
     do LL = 1, nd(k12)%lnx ! loop over all attached links
        LLL = nd(k12)%ln(LL)
-       LLLL = iabs(LLL)
+       LLLL = abs(LLL)
 
        if (qa(LLLL) /= 0d0) then !
 

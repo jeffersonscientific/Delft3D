@@ -221,7 +221,7 @@ contains
       use m_sferic, only: pi
       use m_flowtimes, only: Tudunitstr
       use m_flowparameters, only: jamombal
-      use m_output_config
+      use fm_location_types
 
       implicit none
 
@@ -508,7 +508,7 @@ contains
    end subroutine unc_write_wav_filepointer_ugrid
 
 !> Writes time-averaged spatial wave output to an already opened netCDF dataset.
-   subroutine unc_write_wav_filepointer(imapfile, tim, jaseparate)
+   subroutine unc_write_wav_filepointer(imapfile, tim)
       use m_flow
       use m_flowtimes
       use m_flowgeom
@@ -549,7 +549,6 @@ contains
                        id_sigmwav_mean, id_sigmwav_var, id_sigmwav_min, id_sigmwav_max
 
       integer :: itim, k
-      integer, optional :: jaseparate
 
       double precision, allocatable :: temp(:)
       allocate (temp(1:ndx), stat=ierr)

@@ -608,7 +608,7 @@ contains
                   L = lin(pointscount - 1)
                end if
                do kl = 1, nd_o(idx_fm)%lnx
-                  if (L == iabs(nd_o(idx_fm)%ln(kl))) then
+                  if (L == abs(nd_o(idx_fm)%ln(kl))) then
                      jpos = kl
                   end if
                end do !kl

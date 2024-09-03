@@ -46,18 +46,13 @@
       double precision :: dscr
       double precision :: hrc
       integer :: i, KMOD
-      integer :: jastart
       integer :: key
       integer :: mcs
-      integer :: ncol
       integer :: ncs
-      integer :: ndraw
-      integer :: ns1, m, n
+      integer :: ns1
       double precision :: wpqr
       double precision :: x
-      double precision :: xold
       double precision :: y
-      double precision :: yold
       double precision :: z
       double precision :: zfac
       double precision :: zupw
@@ -65,8 +60,6 @@
 !     TEKEN SAMPLES
       common / PERSPX / WPQR, DELTX, DELTY, DELTZ, ZFAC, DSCR, ZUPW
       common / SAMPLESADM / MCS, NCS, NS1
-      double precision :: VS(4, 4)
-      logical inview
 
       if (MET == 0) return
 
@@ -100,7 +93,7 @@
 
          if (Z == DMISS) cycle ! SPvdP: structured sample data may comprise missing values
 
-         call tek1sample(x, y, z, met, rc, hrc, i, i)
+         call tek1sample(x, y, z, met, hrc, i)
 
       end do
 
@@ -138,21 +131,23 @@
             if (z == dmiss) cycle
             x = x0 + dxa * (m - 1)
             y = y0 + dya * (n - 1)
-            call tek1sample(x, y, z, met, rc, hrc, m, n)
+            call tek1sample(x, y, z, met, hrc, m)
 
          end do
       end do
    end subroutine TEKarc
 
-   subroutine tek1sample(x, y, z, met, rc, hrc, m, n)
+   subroutine tek1sample(x, y, z, met, hrc, m)
       use unstruc_colors
-
-      use unstruc_opengl, only: jaopengl
       use unstruc_display
       use m_arcinfo
 
+      implicit none
+      
       double precision :: x, y, z, rc, hrc
-      integer :: met, m, n
+      integer :: met, m, ndraw, ncol
+      
+      logical, external :: inview
 
       common / DRAWTHIS / ndraw(50)
 

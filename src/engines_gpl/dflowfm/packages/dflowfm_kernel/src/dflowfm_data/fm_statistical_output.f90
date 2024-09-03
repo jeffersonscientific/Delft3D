@@ -5,6 +5,7 @@ module fm_statistical_output
    use messagehandling
    use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
    use precision, only: dp
+   use fm_location_types
 
    implicit none
 
@@ -91,7 +92,7 @@ contains
    end subroutine allocate_and_associate
 
    subroutine transform_qplat(source_input)
-      use m_lateral, only: qplat
+      use m_laterals, only: qplat
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "qplat" item.
       qplat_data = sum(qplat, dim=1)
    end subroutine transform_qplat
@@ -2155,7 +2156,7 @@ contains
       use m_fm_wq_processes, only: jawaqproc, numwqbots
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
-      use m_lateral, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
+      use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       use m_sferic, only: jsferic
       use, intrinsic :: iso_c_binding
 
@@ -2634,7 +2635,7 @@ contains
 
          if (jahissed > 0 .and. jased > 0 .and. stm_included) then
             if (stmpar%morpar%moroutput%taub) then
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(IPNT_TAUB, :))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(1:ntot,IPNT_TAUB))
             end if
             if (stmpar%lsedtot > 0) then
                if (stmpar%morpar%moroutput%sbcuv) then

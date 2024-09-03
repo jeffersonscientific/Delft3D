@@ -33,13 +33,13 @@
 !> Fills in the geometry arrays of laterals for history output.
 !! In parallel models, only process with rank 0 will have the complete geometry arrays filled.
 subroutine fill_geometry_arrays_lateral()
-   use m_lateral, only: numlatsg, nodecountlat, geomXLat, geomYLat, nlatnd, n1latsg, n2latsg, nnlat, nNodesLat, model_has_laterals_across_partitions
+   use m_laterals, only: numlatsg, nodecountlat, geomXLat, geomYLat, nlatnd, n1latsg, n2latsg, nnlat, nNodesLat, model_has_laterals_across_partitions
    use m_alloc
    use m_partitioninfo
    use m_cell_geometry, only: xz, yz
    implicit none
 
-   integer, allocatable :: nodeCountLatGat(:), nlatndGat(:), recvCount(:), displs(:)
+   integer, allocatable :: nodeCountLatGat(:), nlatndGat(:), displs(:)
    double precision, allocatable :: xGat(:), yGat(:) ! Coordinates that are gatherd data from all subdomains
    integer :: i, j, jprev, k, k1, ierror, is, ie, n, nnode, n1gat, n2gat
    integer :: nlatnd_noghosts, nlatndMPI

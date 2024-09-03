@@ -34,6 +34,8 @@ module m_itdate
    double precision :: Tzone ! doubling with "use m_flowtimes, only : tzone"
 end module m_itdate
 
+! ==========================================================================
+
 !>
 module timespace_read
 !!--description-----------------------------------------------------------------
@@ -113,7 +115,7 @@ contains
             iunit = -1
          end select
 
-         read (timeunitstr(i + 7:n), '(I4,1H,I2,1H,I2,1H,I2,1H,I2,1H,I2)', iostat=iostat) iyear, imonth, iday, ihour, imin, isec
+         read (timeunitstr(i + 7:n), '(I4,1x,I2,1x,I2,1x,I2,1x,I2,1x,I2)', iostat=iostat) iyear, imonth, iday, ihour, imin, isec
 
       end if
    end function parse_ud_timeunit
@@ -327,7 +329,7 @@ contains
 
       if (qid == 'generalstructure') then
          call mess(LEVEL_WARN, 'Keyword [generalstructure] is not supported in the external forcing file. &
-  &                               Please use a structure file <*.ini> instead.')
+ &                               Please use a structure file <*.ini> instead.')
          if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) call mess(LEVEL_WARN, 'Not all expected keywords are provided.')
          if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) call mess(LEVEL_WARN, 'More keywords provided than expected.')
          do k = 1, NUMGENERALKEYWRD_OLD
@@ -865,7 +867,7 @@ contains
                   if (k <= Ndxi) then
                      k1 = k
                   else ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
-                     LL = iabs(nd(k)%ln(1)) !< only one link connected to boundary node
+                     LL = abs(nd(k)%ln(1)) !< only one link connected to boundary node
                      k1 = ln(1, LL) + ln(2, LL) - k
                   end if
 
@@ -939,7 +941,7 @@ contains
             if (k <= Ndxi) then ! internal nodes
                k1 = k
             else ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
-               LL = iabs(nd(k)%ln(1)) !< only one link connected to boundary node
+               LL = abs(nd(k)%ln(1)) !< only one link connected to boundary node
                k1 = ln(1, LL) + ln(2, LL) - k
             end if
 
@@ -1126,7 +1128,7 @@ contains
       !If avhs is smaller then 0 is chosen at the location of the missing values
       avhs1 = 0d0
       k1 = 0
-      do i = i1, min0(i2, i1 + 360 - 1)
+      do i = i1, min(i2, i1 + 360 - 1)
          do j = j1, j2
             avhs1(j + 90, k1) = avhs(i, j)
          end do
@@ -3380,7 +3382,7 @@ contains
          dtab, rlslat, rlslon, rlat, rlong, potent
       double precision :: elmnts(6), can(maxdat), san(maxdat)
       double precision :: cansum(0:3, 2:3), sansum(0:3, 2:3)
-      character * 80 record
+      character(len=80) record
       logical permnt
       double precision, save :: FACTORIAL(0:6)
 
@@ -3389,7 +3391,7 @@ contains
       !     argfct         multiplication factor needed to compute argument
       !     argum          argument for time-dependent harmonic components ca,sa
       !     can            table with scaled harmonic components
-      !                    dcos(argument) * amp(i)
+      !                    cos(argument) * amp(i)
       !     cansum         selected sum of elements of can for fixed mq,nq
       !     cm1            cosine-component of potential
       !     d2r            conversion factor pi/180
@@ -3436,7 +3438,7 @@ contains
       !     rlslon         previous value of rlong
       !     rmu            gravitational constant (3.9860044d14)
       !     san            table with scaled harmonic components
-      !                    dsin(argument) * amp(i)
+      !                    sin(argument) * amp(i)
       !     sansum         selected sum of elements of san for fixed mq,nq
       !     sm1            sine-component of potential
       !
@@ -3496,8 +3498,8 @@ contains
       !     compute arrays can, san:
       !     do (all tidal components)
       !        compute argum
-      !        can(i) = dcos(argum) * amps(i)
-      !        san(i) = dsin(argum) * amps(i)
+      !        can(i) = cos(argum) * amps(i)
+      !        san(i) = sin(argum) * amps(i)
       !     enddo
       !     compute arrays cansum, sansum:
       !     do nq = 2, 3
@@ -5259,7 +5261,7 @@ contains
    ! ==========================================================================
    !>
    subroutine xxpolyint(xs, ys, zs, kcs, ns, & ! interpolate in a polyline like way
-                        x, y, z, kc, kx, mnx, jintp, xyen, indxn, wfn)
+                        x, y, z, kx, mnx, jintp, xyen, indxn, wfn)
 
       implicit none
 
@@ -5275,7 +5277,6 @@ contains
       double precision, dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
       double precision, dimension(:), intent(in) :: y
       double precision, dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
-      integer, dimension(:), intent(in) :: kc !< Target (grid) points mask
       integer, intent(in) :: jintp !< (Re-)interpolate if 1 (otherwise use index weights)
 
       double precision, dimension(:, :), intent(in) :: xyen !< cellsize / tol
@@ -5646,7 +5647,7 @@ contains
          kcs = 1 ! todo make this safe
 
          do m = 1, mnx
-            if (iabs(kc(m)) == 1) then ! point is a possible candidate for a line boundary
+            if (abs(kc(m)) == 1) then ! point is a possible candidate for a line boundary
                call polyindexweight(x(m), y(m), xyen(1, m), xyen(2, m), xs, ys, kcs, ns, kL, wL, kR, wR)
                if (kL > 0 .or. kR > 0) then
                   if (present(rrtolrel)) then
@@ -7101,14 +7102,11 @@ contains
          jamapwav_hwav = 1
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
-         dataPtr1 => twavcom
+         dataPtr1 => twav
          jamapwav_twav = 1
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
-         ! wave height needed as the weighting factor for direction interpolation
-         itemPtr2 => item_hrms
-         dataPtr2 => hwavcom
          jamapwav_phiwav = 1
       case ('fx', 'xwaveforce')
          itemPtr1 => item_fx
@@ -7121,11 +7119,11 @@ contains
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
-         jamapwav_sbxwav = 1
+         jamapwav_sxbwav = 1
       case ('wsbv')
          itemPtr1 => item_wsbv
          dataPtr1 => sbywav
-         jamapwav_sbywav = 1
+         jamapwav_sybwav = 1
       case ('mx')
          itemPtr1 => item_mx
          dataPtr1 => mxwav
@@ -7134,7 +7132,7 @@ contains
          itemPtr1 => item_my
          dataPtr1 => mywav
          jamapwav_mywav = 1
-      case ('dissurf', 'wavebreakerdissipation')
+      case ('dissurf', 'freesurfacedissipation')
          itemPtr1 => item_dissurf
          dataPtr1 => dsurf
          jamapwav_dsurf = 1
@@ -7297,7 +7295,7 @@ contains
    !> Replacement function for FM's meteo1 'addtimespacerelation' function.
    logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                             xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                            dtnodal, quiet, varname, varname2, maxSearchRadius, targetMaskSelect, &
+                                            dtnodal, quiet, varname, varname2, targetMaskSelect, &
                                             tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                             tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                             multuni1, multuni2, multuni3, multuni4)
@@ -7310,6 +7308,7 @@ contains
       use string_module, only: str_upper
       use timespace_parameters
       use timespace
+      use fm_external_forcings_utils, only: get_tracername, get_sedfracname
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
       real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
@@ -7333,7 +7332,6 @@ contains
       logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
       character(len=*), optional, intent(in) :: varname !< variable name within filename
       character(len=*), optional, intent(in) :: varname2 !< variable name within filename
-      real(hp), optional, intent(in) :: maxSearchRadius !< max search radius in case method==11
       character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
       real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
       real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -7506,8 +7504,8 @@ contains
                      if (present(varname2)) then
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
                      else
-                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
-                     end if
+                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
+                  end if
                   end if
                   if (.not. success) then
                      ! message = ecGetMessage()
@@ -7751,7 +7749,7 @@ contains
                srcmask%msk = 1
             end if
 
-            success = timespaceinitialfield_int(x, y, srcmask%msk, ndx, srcmaskfile, inside_polygon, ec_method, operand, transformcoef) ! zie meteo module
+            success = timespaceinitialfield_int(x, y, srcmask%msk, ndx, srcmaskfile, inside_polygon, operand, transformcoef) ! zie meteo module
             if (.not. success) then
                write (msgbuf, '(3a)') 'Error while reading mask file ''', trim(srcmaskfile), '''.'
                call err_flush()

@@ -40,20 +40,20 @@
          !COMMON /SFERIC/   JSFERIC, JSFERTEK
          !COMMON /SFERZOOM/ X0,Y0,FAC,X1W,Y1W,X2W,Y2W  ! GRADEN
          !COMMON /MFILES/   MDIA,MINI,MFRM,MRRR,MHLP
-         !real*8 X0,Y0,FAC,X1W,Y1W,X2W,Y2W
+         !real(dp) X0,Y0,FAC,X1W,Y1W,X2W,Y2W
          ! X1W = Links, X2W = Rechts, Y1W = Onder, Y2W = Boven v/h Scherm
          implicit none
          double precision :: asp, x, y, dy, dx, XA, Y1A, y2a
 
          FAC = 1
          call INQASP(ASP)
-         DY = max(DY, 1e-8)
+         DY = max(DY, 1d-8)
          dyh = dy
 
          if (JSFERTEK >= 1) then
             DY = min(DY, 180d0)
-            X = max(-360.0, min(X, 360.0))
-            Y = max(-89.9, min(Y, 89.9))
+            X = max(-360.0d0, min(X, 360.0d0))
+            Y = max(-89.9d0, min(Y, 89.9d0))
          end if
 
          Y0 = Y

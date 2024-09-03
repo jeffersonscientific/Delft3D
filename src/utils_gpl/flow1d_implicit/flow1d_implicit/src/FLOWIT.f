@@ -348,7 +348,7 @@ c
       logical strclo(*)
       logical lfrou
 c     mozart declarations
-      character*40  qlatid(*), qlatnm(*)
+      character(len=40) qlatid(*), qlatnm(*)
       logical       lmoza, lgrwt
       integer       nstmoz
 c

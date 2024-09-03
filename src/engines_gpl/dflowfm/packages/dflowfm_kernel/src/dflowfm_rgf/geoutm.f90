@@ -127,7 +127,7 @@
 !     set fi and dl
 !
          fi = ygeo * pi / 180d0
-         dl = (xgeo + 177d0 - 6d0 * FLOAT(Izone - 1)) * pi / 180d0
+         dl = (xgeo + 177d0 - 6d0 * real(Izone - 1, kind=kind(dl)) ) * pi / 180d0
 !
 !     constants, related to fi
 !

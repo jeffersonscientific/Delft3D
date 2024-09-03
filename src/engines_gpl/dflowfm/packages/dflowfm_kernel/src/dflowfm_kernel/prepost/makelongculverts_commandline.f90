@@ -37,8 +37,9 @@ subroutine makelongculverts_commandline()
    use string_module, only: strsplit
    use m_longculverts
    use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
-   use unstruc_channel_flow, only: network
    use system_utils
+   
+   implicit none
 
    character(len=1024) :: fnamesstring
    character(len=:), allocatable :: converted_fnamesstring
@@ -48,7 +49,8 @@ subroutine makelongculverts_commandline()
    character(len=:), allocatable :: tempstring_netfile
    character(len=200), dimension(:), allocatable :: fnames
    character(len=IdLen) :: temppath, tempname, tempext
-   integer :: dirindex
+   
+   integer :: istat, ifil
 
    if (len_trim(md_1dfiles%structures) > 0) then
 

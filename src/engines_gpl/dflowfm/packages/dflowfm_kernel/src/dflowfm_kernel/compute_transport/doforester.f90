@@ -31,8 +31,8 @@
 !
 
 subroutine doforester()
-   use m_flow, only: sa1, vol1, ndkx, kbot, ktop, kmxn, ndkx, maxitverticalforestersal, maxitverticalforestertem
-   use m_flowgeom, only: ndx, ndxi
+   use m_flow, only: vol1, ndkx, kbot, ktop, kmxn, ndkx, maxitverticalforestersal, maxitverticalforestertem
+   use m_flowgeom, only: ndxi
    use m_turbulence, only: kmxx
    use m_transportdata ! ,  only : constituents, numconst, itemp
    use timers
@@ -42,7 +42,8 @@ subroutine doforester()
    integer :: kk, km, kb
    double precision :: a(kmxx), d(kmxx)
 
-   integer(4) ithndl / 0 /
+   integer(4) ::ithndl = 0
+   
    if (timon) call timstrt("doforester", ithndl)
 
    do kk = 1, ndxi

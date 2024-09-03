@@ -248,8 +248,8 @@ subroutine hrfti1(n, wa, fac)
 107 if (nl /= 1) go to 104
    fac(1) = n
    fac(2) = nf
-   tpi = 8.d0 * datan(1.d0)
-   argh = tpi / float(n)
+   tpi = 8.d0 * atan(1.d0)
+   argh = tpi / real(n, kind=kind(argh))
    is = 0
    nfm1 = nf - 1
    l1 = 1
@@ -263,14 +263,14 @@ subroutine hrfti1(n, wa, fac)
       do j = 1, ipm
          ld = ld + l1
          i = is
-         argld = float(ld) * argh
+         argld = real(ld, kind=kind(argld)) * argh
          fi = 0.
          do ii = 3, ido, 2
             i = i + 2
             fi = fi + 1.
             arg = fi * argld
-            wa(i - 1) = dcos(arg)
-            wa(i) = dsin(arg)
+            wa(i - 1) = cos(arg)
+            wa(i) = sin(arg)
          end do
          is = is + ido
       end do
@@ -671,7 +671,7 @@ subroutine hradfg(mp, ido, ip, l1, idl1, cc, c1, c2, mdimcc,&
    integer :: ipph, ipp2, idp2, nbd, i, j, k, l, m, ik, j2, lc, ic
    integer :: jc, idij, is
    tpi = 2.0d0 * pimach()
-   arg = tpi / float(ip)
+   arg = tpi / real(ip, kind=kind(arg))
    dcp = cos(arg)
    dsp = sin(arg)
    ipph = (ip + 1) / 2
@@ -966,7 +966,7 @@ subroutine hradbg(mp, ido, ip, l1, idl1, cc, c1, c2, mdimcc,&
    double precision :: ar1, ai1, ar2
    integer :: i, j, k, l, m, idp2, nbd, ipp2, ipph, jc, j2, ic, idij, ik, lc, is
    tpi = 2.*pimach()
-   arg = tpi / float(ip)
+   arg = tpi / real(ip, kind=kind(arg))
    dcp = cos(arg)
    dsp = sin(arg)
    idp2 = ido + 2

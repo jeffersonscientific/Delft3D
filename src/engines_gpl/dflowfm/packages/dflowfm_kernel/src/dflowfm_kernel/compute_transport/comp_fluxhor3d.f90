@@ -31,12 +31,12 @@
 !
 
 !> compute horizontal transport fluxes at flowlink
-subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
-                          viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
-   use m_flowgeom, only: Ndx, Lnx, Lnxi, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
-   use m_flowtimes, only: dts, dnt
+subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
+                          viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
+   use m_flowgeom, only: Ndx, Lnx, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
+   use m_flowtimes, only: dts
    use m_flowparameters, only: cflmx
-   use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, hu, epshu, &
+   use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
                      number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
    use m_transport, only: ISALT, ITEMP
    use m_missing
@@ -51,7 +51,6 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
    integer, intent(in) :: Lnkx !< total number of flowlinks (dynamically changing)
    double precision, dimension(Lnkx), intent(in) :: u1 !< flow-field face-normal velocities
    double precision, dimension(Lnkx), intent(in) :: q1 !< flow-field discharges
-   double precision, dimension(Lnkx), intent(in) :: au !< wet area of flowlinks, note: q1=au*u1
    double precision, dimension(Ndkx), intent(in) :: sqi !< total outward-fluxes at flownodes
    double precision, dimension(Ndkx), intent(in) :: vol1 !< volumes
    integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
@@ -63,10 +62,8 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: sed !< transported quantities
    double precision, dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicouv)
    real, dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
-   double precision, intent(in) :: vicouv !< uniform horizontal eddy viscosity
    double precision, dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
    integer, intent(in) :: nsubsteps !< number of substeps
-   integer, dimension(Ndx), intent(in) :: jaupdate !< cell updated (1) or not (0)
    integer, dimension(Lnx), intent(in) :: jaupdatehorflux !< update horizontal flux (1) or not (0)
    integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps between updates
    integer, dimension(NUMCONST), intent(in) :: jaupdateconst !< update constituent (1) or not (0)
@@ -78,15 +75,13 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
 
    double precision :: sl1L, sl2L, sl3L, sl1R, sl2R, sl3R
    double precision :: cf, sedkuL, sedkuR, ds1L, ds2L, ds1R, ds2R
-
-   double precision :: fluxL, fluxR
    double precision :: sedL, sedR
    double precision :: fluxfac, fluxfacMaxL, fluxfacMaxR
    double precision :: dfac1, dfac2
    double precision :: difcoeff, QL, QR, diuspL, ds1, ds2, dsedn, half
    double precision :: dt_loc
 
-   integer :: j, iswitchL, iswitchR, jahigherL, jahigherR
+   integer :: j, iswitchL, iswitchR
    integer :: k1, k2, LL, L, Lb, Lt, laydif, jaL, jaR
    integer :: kk1L, kk2L, kk1R, kk2R, k1L, k2L, k1R, k2R, is, ku
 
@@ -96,7 +91,8 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
    integer :: number_limited_links
    double precision :: flux_max_limit
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl =  0
+   
    if (timon) call timstrt("comp_fluxhor3D", ithndl)
 
    dt_loc = dts
@@ -162,18 +158,18 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
          sl3R = slnup(6, LL)
 
 !        make cell indices safe
-!         kk1L = max(iabs(kk1L),1)
-!         kk2L = max(iabs(kk2L),1)
+!         kk1L = max(abs(kk1L),1)
+!         kk2L = max(abs(kk2L),1)
 !
-!         kk1R = max(iabs(kk1R),1)
-!         kk2R = max(iabs(kk2R),1)
+!         kk1R = max(abs(kk1R),1)
+!         kk2R = max(abs(kk2R),1)
 
 !        make cell indices safe
-         kk1L = iabs(kk1L)
-         kk2L = iabs(kk2L)
+         kk1L = abs(kk1L)
+         kk2L = abs(kk2L)
 
-         kk1R = iabs(kk1R)
-         kk2R = iabs(kk2R)
+         kk1R = abs(kk1R)
+         kk2R = abs(kk2R)
       end if
 
 !     loop over vertical flowlinks

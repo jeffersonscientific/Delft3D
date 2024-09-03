@@ -51,7 +51,6 @@ subroutine fliplinks()
    integer :: k1, k2, kL, kR
    integer :: icellL, icellR
    integer :: kk, LL
-   logical :: Lproceed
    integer :: ntopo ! change in topology functional
    integer :: numchanged ! number of linkes flipped
 

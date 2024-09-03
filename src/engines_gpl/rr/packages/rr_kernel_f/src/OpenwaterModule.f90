@@ -1206,7 +1206,7 @@ contains
   integer      Infile1, idebug
 
   Integer       inode, iow
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -1283,7 +1283,7 @@ contains
     REAL    RKWEL, Vkwel, tQIn, qOutp, rArea, rhelp
     Real    AvLvl, LvlTemp, RDum
     Integer iTmStp, iOW, iMeteo, iNode, iDum1, iDebug, iHour, idim, i
-    Character*40 TempString
+    Character(len=40) TempString
 
     Real PeilArray(6), AreaArray(6), VolumeArray(6)  ! aanname dat NVAL=6 zoals in Conf_Arr.
     Real TotalBergPeilArray(NStorageCurvePoints), TotalBergVolumeArray(NStorageCurvePoints)
@@ -1731,7 +1731,7 @@ end function constant
       INTEGER iknoop, inode, iow, idim, i
       Real    Rdum, RHelp, RHelp2
       Logical Err972
-      Character*40 TempString
+      Character(len=40) TempString
 
       Real PeilArray(6), AreaArray(6), VolumeArray(6)  ! aanname dat NVAL=6 zoals in Conf_Arr.
       Real TotalBergPeilArray(NStorageCurvePoints), TotalBergVolumeArray(NStorageCurvePoints)
@@ -1969,7 +1969,7 @@ end function constant
     Integer     INODE, IOw, Iout5, Ievent
     Integer     ExcDur
     Real        Peil, PeilMx
-    CHARACTER*3 MONTH(12)
+    CHARACTER(len=3) MONTH(12)
 
            if (.not. associated(OWMLVL)) return  ! If there is nothing, do nothing
 

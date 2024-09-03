@@ -1142,9 +1142,9 @@ contains
                    ISecStart, ISecDuration   !, NrsecsRai
       Real         Rdum
       LOGICAL      ENDFIL
-      CHARACTER*1   QUOTE
+      CHARACTER(len=1) QUOTE
       CHARACTER(Len=CharIdLength) DummyName
-      CHARACTER*500 STRING
+      CHARACTER(len=500) STRING
 
       QUOTE = ''''
       iDebug = ConfFil_get_iDebug()
@@ -1321,9 +1321,9 @@ contains
                    ISecStart, ISecDuration
       Real         Rdum
       LOGICAL      ENDFIL
-      CHARACTER*1   QUOTE
+      CHARACTER(len=1) QUOTE
       CHARACTER(Len=CharIdLength) DummyName
-      CHARACTER*500 STRING
+      CHARACTER(len=500) STRING
 
       QUOTE = ''''
       iDebug = ConfFil_get_iDebug()
@@ -1577,9 +1577,9 @@ contains
                    ISecStart, ISecDuration
       Real         Rdum
       LOGICAL      ENDFIL
-      CHARACTER*1   QUOTE
+      CHARACTER(len=1) QUOTE
       CHARACTER(Len=CharIdLength) DummyName
-      CHARACTER*500 STRING
+      CHARACTER(len=500) STRING
 
       QUOTE = ''''
       iDebug = ConfFil_get_iDebug()

@@ -361,7 +361,7 @@ c
       logical strclo(*)
       logical lfrou
 c     mozart declarations
-      character*40  qlatid(*), qlatnm(*)
+      character(len=40) qlatid(*), qlatnm(*)
       logical       lmoza, lgrwt ,lrest
       integer       nstmoz
 c
@@ -373,7 +373,7 @@ c
       real    g      ,psi    ,theta  ,rhow   ,omega  ,lambda ,relstr
       real    dhstru ,cflpse ,overlp ,omcfl  ,dhtyp  ,urelax
       double precision        resid
-      character*18            txt
+      character(len=18)       txt
 c
 c     FM1DIMP2DO: remove debug
       real dbg1

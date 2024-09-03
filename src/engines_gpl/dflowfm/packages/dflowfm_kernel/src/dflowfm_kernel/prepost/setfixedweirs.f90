@@ -53,9 +53,9 @@ subroutine setfixedweirs()
 
    implicit none
 
-   integer :: np, k, kk, n1, n2, n12, n, nn, L, LL, ja, jacros, minp, kint, ierr, nt, nh, nhh, i, Lf
-   integer :: jaweir, Lastfoundk, kf, kL, jarestorepol, Lnt, k1, nna, nnb, nl1, nl2, k3, k4
-   integer, allocatable :: iwu(:), ihu(:)
+   integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
+   integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4
+   integer, allocatable :: ihu(:)
    double precision :: SL, SM, XCR, YCR, CRP, Xa, Ya, Xb, Yb, zc, zh, zhu, zhd, af, dz1, dz2, xn, yn, adjacentbob, cosphi, sig, bobL
    double precision, allocatable :: csh(:), snh(:), zcrest(:), dzsillu(:), dzsilld(:), crestlen(:), taludu(:), taludd(:), vegetat(:), ztoeu(:), ztoed(:)
    integer, allocatable :: iweirtyp(:)
@@ -66,7 +66,7 @@ subroutine setfixedweirs()
    integer, dimension(:), allocatable :: iLcr ! link crossed yes no
    integer, dimension(:), allocatable :: iPol
 
-   integer :: iL, numLL, numcrossedLinks, ii, LLL, LLLa, nx
+   integer :: iL, numcrossedLinks, ii, LLL, LLLa, nx
    integer :: mout, jatabellenboekorvillemonte
    integer :: ierror
 
@@ -486,16 +486,16 @@ subroutine setfixedweirs()
                if (k > 0) then ! flatland on node k
                   nx = nd(k)%lnx
                   do LL = 1, nx ! loop over all attached links
-                     LLL = nd(k)%ln(LL); LLLa = iabs(LLL)
+                     LLL = nd(k)%ln(LL); LLLa = abs(LLL)
                      if (LLLa == L) then
                         LLLa = LL - 1; if (LLLa == 0) LLLa = nx ! left of weir link
-                        LLLa = iabs(nd(k)%ln(LLLa))
+                        LLLa = abs(nd(k)%ln(LLLa))
                         if (ihu(LLLa) == 0) then ! if not already marked as weir
                            bob(1, LLLa) = max(zcrest(L), bob(1, LLLa)) ! raise both bobs
                            bob(2, LLLa) = max(zcrest(L), bob(2, LLLa)) ! raise both bobs
                         end if
                         LLLa = LL + 1; if (LLLa > nx) LLLa = 1 ! right of weir link
-                        LLLa = iabs(nd(k)%ln(LLLa))
+                        LLLa = abs(nd(k)%ln(LLLa))
                         if (ihu(LLLa) == 0) then ! if not already marked as weir
                            bob(1, LLLa) = max(zcrest(L), bob(1, LLLa)) ! raise both bobs
                            bob(2, LLLa) = max(zcrest(L), bob(2, LLLa)) ! raise both bobs o

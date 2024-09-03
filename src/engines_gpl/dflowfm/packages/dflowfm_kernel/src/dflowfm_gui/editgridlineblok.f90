@@ -37,7 +37,7 @@
 
          integer :: mode, nfld, key
          integer :: newmode
-         integer :: ndraw, nlevel, bm, nb, mb2, nb2, npt, npt2, nputo, itype, NCOL
+         integer :: ndraw, nlevel, nb, mb2, nb2, npt, npt2, nputo, itype, NCOL
          integer :: jonce
 
          common / DRAWTHIS / ndraw(50)
@@ -85,7 +85,7 @@
                call TEKB(Xc, Yc, MMAX, NMAX, 0)
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)

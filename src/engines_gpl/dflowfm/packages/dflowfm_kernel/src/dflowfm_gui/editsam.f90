@@ -51,8 +51,8 @@
          integer :: nwhat
          double precision :: ziso
          double precision :: ziso2
-         double precision :: vmax2, vmin2, dv2, val2, ave
-         integer :: ncols2, nv2, nis2, nie2, jaauto2, ierror
+         double precision :: vmax2, vmin2, dv2, val2
+         integer :: ncols2, nv2, nis2, nie2, jaauto2
          common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
          integer :: ndraw
          common / DRAWTHIS / ndraw(50)
@@ -95,7 +95,7 @@
                MODE = NWHAT
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)

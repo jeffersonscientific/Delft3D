@@ -105,7 +105,7 @@ contains
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
       double precision :: QQQ, upot, ukin, ueaa
-      character*(*) :: batfile
+      character(len=*) :: batfile
       character(len=256) :: rec, filnam, basemdu, tex
 
       call resetFullFlowModel()
@@ -138,7 +138,7 @@ contains
          L1 = index(rec, '=') + 1
          read (rec(L1:), *, err=888) NUM, NWHAT
          MODE = 1; KEY = 3
-         call CHOICES(MODE, NUM, NWHAT, KEY)
+         call CHOICES(NUM, NWHAT, KEY)
       end if
 
       if (index(rec, 'START PARAMETERS') > 0) then ! specify new model with only few parameters changed through readmdufile
@@ -184,29 +184,6 @@ contains
       return
 
    end subroutine batch
-
-   integer function boundary_timeseries(location, quantity, t0, t1, dt, target_array) result(iresult)
-      use m_meteo
-      use m_ec_module
-      use MessageHandling, only: LEVEL_ERROR
-      character(len=*), intent(in) :: location
-      character(len=*), intent(in) :: quantity
-      real(hp), intent(in) :: t0
-      real(hp), intent(in) :: t1
-      real(hp), intent(in) :: dt
-      real(hp), dimension(:), allocatable :: target_array
-
-      integer :: itemID
-      itemID = ecFindItemByQuantityLocation(ecInstancePtr, location, quantity)
-      if (itemID > 0) then
-         if (.not. ec_gettimeseries(ecInstancePtr, itemID, t0, t1, dt, target_array)) then
-            call mess(LEVEL_ERROR, 'Retrieving boundary signal (location="'//trim(location)//'", quantity="'//trim(quantity)//'") failed.')
-            return
-         end if
-      else
-         call mess(LEVEL_ERROR, 'No item found (location="'//trim(location)//'", quantity="'//trim(quantity)//'").')
-      end if
-   end function boundary_timeseries
 
    integer function flow() result(iresult)
       use dfm_error
@@ -262,7 +239,7 @@ contains
       use network_data
       use unstruc_files
       use waq
-      use m_lateral, only: numlatsg
+      use m_laterals, only: numlatsg
       use m_wind, only: jawind
       use dfm_error
       use m_partitioninfo, only: jampi
@@ -412,7 +389,7 @@ contains
       use m_ec_module
       use m_meteo, only: ecInstancePtr
       use m_nearfield
-      use m_lateral
+      use m_laterals
       use fm_statistical_output, only: close_fm_statistical_output
 
       call dealloc_nfarrays()

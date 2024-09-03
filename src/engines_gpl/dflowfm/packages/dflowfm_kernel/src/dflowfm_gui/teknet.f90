@@ -30,7 +30,7 @@
 !
 !
 
-      subroutine TEKNET(NCOL, ja)
+      subroutine TEKNET(ja)
 
          use m_netw
          use unstruc_colors
@@ -38,7 +38,7 @@
          use unstruc_display
 
          implicit none
-         integer :: ncol, ja
+         integer :: ja
 
          integer :: k, LMOD
          integer :: k1
@@ -47,8 +47,6 @@
          integer :: L, LL
          integer :: ndraw
          double precision :: d1, d2, x, y
-!      double precision :: t0, t1
-         integer :: ie, ip
          logical inview
 
          common / DRAWTHIS / ndraw(50)

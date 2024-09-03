@@ -156,7 +156,7 @@
           zlin = wdsu_x(LL); jamapwindstress = 1
        end if
     else if (linval == 28) then
-       zlin = dabs(cosphiu(LL))
+       zlin = abs(cosphiu(LL))
     else if (linval == 29) then
        zlin = LL
     else if (linval == 30) then

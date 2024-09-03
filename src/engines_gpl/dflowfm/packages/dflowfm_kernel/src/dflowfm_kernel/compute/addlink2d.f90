@@ -40,12 +40,10 @@
 
     integer :: japerim, L
 
-    integer :: k1, k2, k3, k4, K, jaconv, jaconvu, ifrctyp
-    double precision :: hpr1, ar1, wid1, aconv1, hpr2, ar2, wid2, aconv2, aru, widu, aconvu
+    integer :: k1, k2, k3, k4, jaconv, ifrctyp
+    double precision :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu
     double precision :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
-    double precision :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, bb1, hsmall
-    double precision :: ditcharea, ditchw, ditchconv, Cz, convu
-
+    double precision :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, hsmall
     double precision, external :: cor2linx, cor2liny
     double precision, external :: get_hpr_nostruc
 
@@ -62,7 +60,7 @@
 
        hpr1 = s1(k1) - BL1
        if (hpr1 > 0) then
-          call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+          call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
           dx1 = 0.5d0 * dx(L) * acl(L)
           a1(k1) = a1(k1) + dx1 * wid1
           vol1(k1) = vol1(k1) + dx1 * ar1
@@ -70,7 +68,7 @@
 
        hpr2 = s1(k2) - BL1 ! == 5,6: (ibedlevtyp=3), 2D conveyance, link or node
        if (hpr2 > 0) then
-          call getlinkareawid2D(L, wu2, b21, ai, hpr2, ar2, wid2)
+          call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
           dx2 = 0.5d0 * dx(L) * (1d0 - acl(L))
           a1(k2) = a1(k2) + dx2 * wid2
           vol1(k2) = vol1(k2) + dx2 * ar2
@@ -90,7 +88,6 @@
        b21 = BL2 - BL1; ai = b21 / wu2
        k1 = ln(1, L); k2 = ln(2, L)
 
-       !DIR$ INLINE
        hpr1 = get_hpr_nostruc(L)
 
        if (jaconveyance2D > 0) then

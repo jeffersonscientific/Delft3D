@@ -30,7 +30,7 @@
 !
 !
 
- subroutine tekrai(nsiz, ja)
+ subroutine tekrai(nsiz)
 
     use unstruc_colors
     use m_netw
@@ -48,11 +48,11 @@
 
     implicit none
 
-    integer :: nsiz, ja
+    integer :: nsiz
 
-    double precision :: xx1, xx2, zz
-    integer :: k1, k2, l1, l2, n1, n2
-    double precision :: uu, ww, z1, z2
+    double precision :: xx2, zz
+    integer :: k1, k2, n1, n2
+    double precision :: uu, ww
     double precision :: zfac, zgaten
     integer :: l, k, kk, j, kplotorg, n, ncol
 
@@ -64,7 +64,7 @@
     common / depmax / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
     common / VFAC / VFAC, VFACFORCE, NVEC
     common / drawthis / ndraw(50)
-    integer :: ndraw, kts
+    integer :: ndraw
 
     double precision :: zz1, zz2, xz1, xz2
     double precision :: xmn, xmx, ymx, zmx, zmx2, bot, top, xx, yy, bup, xxu, zzu
@@ -479,7 +479,7 @@
                 uu = ucx(k)
                 ww = 0.5d0 * (ww1(k) + ww1(k - 1))
                 yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
-                call arrowsxyzfac(xp(1), yp(1), uu, ww, VFAC, 0, zfac)
+                call arrowsxyzfac(xp(1), yp(1), uu, ww, VFAC, zfac)
 
              end do
 
@@ -491,12 +491,12 @@
     end if
 
     if (NDRAW(2) >= 1) then
-       call tekrailinesbathy(31, 0, 1) ! bl
+       call tekrailinesbathy(31, 1) ! bl
     end if
 
     if (jased > 0 .and. jased < 4) then
        do j = 1, mxgr
-          call tekrailinesbathy(15, 0, 1 + j) ! grainlay 1,2 etc
+          call tekrailinesbathy(15, 1 + j) ! grainlay 1,2 etc
        end do
     end if
 
@@ -547,7 +547,7 @@
        call lnabs(xmx, 0d0)
        !call htext( 1d0, xmx, 1d0)
     else if (md_IDENT == 'carrier') then
-       call carrier(ndx, time1 - tstart_user)
+       call carrier(time1 - tstart_user)
     else if (md_IDENT(1:6) == 'drybed') then
        call drybed(time1 - tstart_user)
     else if (md_IDENT(1:6) == 'wetbed') then
