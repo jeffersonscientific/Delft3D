@@ -811,10 +811,11 @@ subroutine unc_write_his(tim) ! wrihis
                call check_netcdf_error(nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), (/1, i/)))
             end do
          end if
+
          ! Write time-independent geometry variables for different structure types
          ierr = unc_put_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
-                                                  id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
-                                                  id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid, pump_ids)
+                                                  id_pumpdim, id_pump_id, pump_ids, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
+                                                  id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
          if (timon) call timstop(handle_extra(63))
       end if
    end if
@@ -1096,7 +1097,7 @@ contains
       integer, intent(in) :: id_strlendim !< Already created NetCDF dimension id for max string length of the character Ids.
       integer, intent(in) :: id_strdim !< NetCDF dimension id created for this structure type
       integer, intent(in) :: id_structure_name !< NetCDF variable id created for the character names of the structures of this type
-      character(len=:) :: structure_names !< Identifying names of the structures
+      character(len=*), dimension(:), intent(in) :: structure_names !< Identifying names of the structures
       integer, optional, intent(in) :: id_geom_node_count !< NetCDF variable id created for the node count of the structures of this type
       integer, optional, intent(in) :: id_geom_coordx !< NetCDF variable id created for the node x coordinates for all structures of this type
       integer, optional, intent(in) :: id_geom_coordy !< NetCDF variable id created for the node y coordinates for all structures of this type
@@ -1117,7 +1118,7 @@ contains
       end if
 
       do i = 1, count
-         ierr = nf90_put_var(ncid, id_structure_name, trimexact(structure_names(i), strlen_netcdf), [1, i])
+         ierr = nf90_put_var(ncid, id_structure_name, trim(structure_names(i)), [1, i])
       end do
       ! TODO (UNST-7900): actually write structure geometry data here!
 
