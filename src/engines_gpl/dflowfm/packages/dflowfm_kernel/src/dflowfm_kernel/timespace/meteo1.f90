@@ -5720,7 +5720,7 @@ contains
    !! * branchid+chainage: the one flow link on this location is selected.
    !! * contactid: the one flow link on this mesh contact is selected.
    !! Only one of these methods is tried, based on loc_spec_type input.
-   subroutine selectelset_internal_links(xz, yz, nx, ln, lnx, keg, numg, &
+   subroutine selectelset_internal_links(lnx, keg, numg, &
                                          loc_spec_type, loc_file, nump, xpin, ypin, branchindex, chainage, contactId, linktype, &
                                          xps, yps, nps, lftopol, sortLinks)
       use m_inquire_flowgeom
@@ -5732,10 +5732,6 @@ contains
       implicit none
 
       !inputs
-      double precision, intent(in) :: xz(:) !< Flow nodes center x-coordinates. (Currently unused).
-      double precision, intent(in) :: yz(:) !< Flow nodes center y-coordinates. (Currently unused).
-      integer, intent(in) :: nx !< Number of flow nodes in input. (Currently unused).
-      integer, intent(in) :: ln(:, :) !< Flow link table. (Currently unused).
       integer, intent(in) :: lnx !< Number of flow links in input. (Currently unused).
       integer, intent(out) :: keg(:) !< Output array containing the flow link numbers that were selected.
       !< Size of array is responsability of call site, and filling starts at index 1 upon each call.
@@ -6405,7 +6401,7 @@ contains
    !
    ! ==========================================================================
    !>
-   function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, method, operand, transformcoef) result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
+   function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, operand, transformcoef) result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
       use m_missing
       use m_polygon
       use geometry_module, only: dbpinpol
@@ -6419,7 +6415,6 @@ contains
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
-      integer, intent(in) :: method ! time/space interpolation method
       character(1), intent(in) :: operand ! file name for meteo data file
       double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
@@ -7119,11 +7114,11 @@ contains
       case ('wsbu')
          itemPtr1 => item_wsbu
          dataPtr1 => sbxwav
-         jamapwav_sxbwav = 1
+         jamapwav_sbxwav = 1
       case ('wsbv')
          itemPtr1 => item_wsbv
          dataPtr1 => sbywav
-         jamapwav_sybwav = 1
+         jamapwav_sbywav = 1
       case ('mx')
          itemPtr1 => item_mx
          dataPtr1 => mxwav
