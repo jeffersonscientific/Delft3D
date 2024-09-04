@@ -41,7 +41,7 @@ object Trigger : BuildType({
             name = "Determine Git head"
             command = script {
                 content="""
-                if "merge_request" in "%teamcity.build.branch%":
+                if "merge-request" in "%teamcity.build.branch%":
                     branch_name = "%teamcity.pullRequest.source.branch%".split("/")[0]
                     print("##teamcity[setParameter name='git_head' value='refs/%teamcity.build.branch%/head']")
                     print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
