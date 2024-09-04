@@ -90,3 +90,7 @@ Examples:
   ctest -C debug
 ```
 - For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).
+
+# Conan
+conan install . --profile delft3d_msvc_debug --output-folder build_all --build=missing
+cmake -S .\src\cmake -B build_all -D CONFIGURATION_TYPE:String=all -D BUILD_TYPE=Debug -D CMAKE_INSTALL_PREFIX=.\install_all\ -D CMAKE_TOOLCHAIN_FILE=C:\Checkouts\Delft3D_2\build_all\build\generators\conan_toolchain.cmake

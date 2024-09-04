@@ -70,7 +70,7 @@ if(UNIX)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netcdf4
+                            netCDF::netcdf
                             netcdff
                             polypack
                             trachytopes_io
@@ -115,7 +115,7 @@ if(WIN32)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netcdf4
+                            netCDF::netcdf
                             netcdff
                             petsc
                             polypack

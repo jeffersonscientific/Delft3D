@@ -11,8 +11,6 @@ set(source_path "${library_path}/netcdf-fortran-4.4.4/fortran")
 # include_directories("${library_path}/${netcdf_version}/include")
 # set(c_sources ${source_path}/nf_lib.c)
 
-find_package(netcdf)
-
 set(fortran_sources ${source_path}/module_netcdf4_nc_interfaces.f90
 					${source_path}/module_netcdf4_nf_interfaces.F90
 					${source_path}/module_netcdf_nc_data.F90
@@ -47,7 +45,7 @@ target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${check
 target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 # Set dependencies
-set(oss_dependencies netcdf)
+set(oss_dependencies netCDF::netcdf)
 oss_include_libraries(${netcdf_library_name} oss_dependencies)
 
 if (WIN32)
