@@ -46,7 +46,7 @@ object TriggerMatrix : BuildType({
             }
 
             params {
-                param("git_head", $git_head)
+                param("git_head", "$git_head")
             }
 
             scriptContent = """
