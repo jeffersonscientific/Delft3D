@@ -124,7 +124,7 @@ module m_dfparall
     end subroutine automatic_partitioning
     
     !>Manual partitioning of domain.
-    subroutine manual_partitioning(ierr, lundia, ipown, icom, mmax, nmax)
+    subroutine manual_partitioning(ierr, lundia, ipown, icom, mmax, nmax, partbnd)
     
     !
     ! Local parameters
@@ -135,16 +135,17 @@ module m_dfparall
     !
     ! Global variables
     !
-    integer, intent(in)                             :: lundia !< unit number of diagnostic output file
-    integer, intent(out)                            :: ierr   !< error flag (0=OK, 1=error)
-                                                              
-    integer, intent(in)                             :: mmax   !< number of gridpoints in the x-direction
-    integer, intent(in)                             :: nmax   !< number of gridpoints in the y-direction
-    !                                                         
-    integer, dimension(-1:mmax+2, nmax), intent(in) :: icom   !< mask array for the water level points in global domain
-                                                              !!  = 0 : point is not active
-                                                              !! <> 0 : point is active
-    integer, dimension(mmax,nmax), intent(inout)    :: ipown  !< array giving the subdomain number of each gridpoint   
+    integer, intent(in)                             :: lundia  !< unit number of diagnostic output file
+    integer, intent(out)                            :: ierr    !< error flag (0=OK, 1=error)
+                                                               
+    integer, intent(in)                             :: mmax    !< number of gridpoints in the x-direction
+    integer, intent(in)                             :: nmax    !< number of gridpoints in the y-direction
+    !                                                          
+    integer, dimension(-1:mmax+2, nmax), intent(in) :: icom    !< mask array for the water level points in global domain
+                                                               !!  = 0 : point is not active
+                                                               !! <> 0 : point is active
+    integer, dimension(mmax,nmax), intent(inout)    :: ipown   !< array giving the subdomain number of each gridpoint   
+    integer, dimension(:), intent(in)               :: partbnd !< upper bounds of each partition
     !
     ! Local variables
     !
@@ -155,7 +156,6 @@ module m_dfparall
     integer               :: partlowerbnd   !< lower bound of the considered partition
     character(1)          :: dirstr         !< string naming the partitioning direction
     character(256)        :: txt1           !< auxiliary text string
-    integer               :: partbnd(nproc) !< upper bounds of each partition
     
     ierr=0
     
@@ -292,7 +292,7 @@ module m_dfparall
        write(lundia,'(10x,a)') '"max(mmax,nmax) / num_partitions" must be greater than 3'
        ierr=1
     elseif (partbnd_read) then
-        call manual_partitioning(ierr, lundia, ipown, icom, mmax, nmax)
+        call manual_partitioning(ierr, lundia, ipown, icom, mmax, nmax, partbnd)
     else
         call automatic_partitioning(ipown, icom, mmax, nmax, gdp)    
     endif
