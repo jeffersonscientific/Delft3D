@@ -20,6 +20,7 @@ project {
 }
 
 object TriggerMatrix : BuildType({
+    id = "Dimr_TestbenchMatrix_Trigger"
     name = "Trigger Matrix"
 
     vcs {
@@ -111,6 +112,13 @@ object Linux : BuildType({
             allowMultiple = true,
             options = configs
         )
+    }
+
+    dependencies {
+        snapshot(Dimr_TestbenchMatrix_Trigger) {
+            onDependencyFailure = FailureAction.CANCEL
+            onDependencyCancel = FailureAction.CANCEL
+        }
     }
 
     features {
