@@ -7,10 +7,10 @@ import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
-import Trigger
+import trigger
 
-object Linux : BuildType({
-    name = "Linux"
+object Windows : BuildType({
+    name = "Windows"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
@@ -56,6 +56,6 @@ object Linux : BuildType({
     }
 
     requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
+        equals("teamcity.agent.jvm.os.name", "Windows 10")
     }
 })
