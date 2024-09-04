@@ -124,9 +124,8 @@ module m_dfparall
     end subroutine automatic_partitioning
     
     !>Manual partitioning of domain.
-    subroutine manual_partitioning(ipown, icom, mmax, nmax, gdp)
+    subroutine manual_partitioning(ierr,ipown, icom, mmax, nmax)
     
-    type(globdat), target    :: gdp
     !
     ! Local parameters
     !
@@ -136,6 +135,7 @@ module m_dfparall
     !
     ! Global variables
     !
+    integer, intent(out)                            :: ierr  ! error flag (0=OK, 1=error)
     integer, intent(in)                             :: mmax  ! number of gridpoints in the x-direction
     integer, intent(in)                             :: nmax  ! number of gridpoints in the y-direction
     !
@@ -155,6 +155,9 @@ module m_dfparall
     character(1)          :: dirstr         !< string naming the partitioning direction
     character(256)        :: txt1           !< auxiliary text string
     integer               :: partbnd(nproc) !< upper bounds of each partition
+    
+    ierr=0
+    
     !
     ! determine direction of cutting
     !
@@ -174,21 +177,24 @@ module m_dfparall
     if (partbnd(1) < 4) then
        write(txt1,'(3a,i0,a,i0,a)') 'Partition 1 must be at least 4 cells wide! PartBnd defines it now as ',dirstr,' = 1 to ',partbnd(1),' hence ',max(0,partbnd(1)),' wide'
        call prterr(lundia, 'U021', trim(txt1))
-       call d3stop(1, gdp)
+       ierr=1
+       return
     endif
     ! check partitions 2 to nproc
     do i = 2, nproc
        if (partbnd(i) < partbnd(i-1) + 4) then
           write(txt1,'(a,i0,3a,i0,a,i0,a,i0,a)') 'Partition ',i,' must be at least 4 cells wide! PartBnd defines it now as ',dirstr,' = ',partbnd(i-1)+1,' to ',partbnd(i),' hence ',max(0,partbnd(i)-partbnd(i-1)),' wide'
           call prterr(lundia, 'U021', trim(txt1))
-          call d3stop(1, gdp)
+          ierr=1
+          return
        endif
     enddo
     ! check partition nproc
     if (partbnd(nproc) /= dirmax) then
        write(txt1,'(3a,i0,a,i0)') 'The last partition boundary index should equal ',dirstr,'MAX: ',partbnd(nproc),' /= ',dirmax
        call prterr(lundia, 'U021', trim(txt1))
-       call d3stop(1, gdp)
+       ierr=1
+       return
     endif
     !
     ! stripwise partitioning as specified by user
@@ -246,6 +252,7 @@ module m_dfparall
     !
     ! Local variables
     !
+    integer               :: ierr           !< error flag (0=OK, 1=error)
     integer, pointer      :: iweig(:)       !< partitioning weights
     integer, pointer      :: lundia         !< unit number of diagnostic output file
     integer               :: i              !< loop counter
@@ -282,11 +289,15 @@ module m_dfparall
        write(txt1,'(a,i0,a)') 'Domain is too small to divide in ', nproc, ' partitions'
        call prterr(lundia, 'U021', trim(txt1))
        write(lundia,'(10x,a)') '"max(mmax,nmax) / num_partitions" must be greater than 3'
-       call d3stop(1, gdp)
+       ierr=1
     elseif (partbnd_read) then
-        call manual_partitioning(ipown, icom, mmax, nmax, gdp)
+        call manual_partitioning(ierr,ipown, icom, mmax, nmax)
     else
         call automatic_partitioning(ipown, icom, mmax, nmax, gdp)    
+    endif
+    
+    if (ierr /= 0) then
+        call d3stop(1, gdp)
     endif
     
 end subroutine dfpartit
