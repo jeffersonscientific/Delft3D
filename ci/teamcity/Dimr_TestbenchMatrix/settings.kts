@@ -126,7 +126,53 @@ object Trigger : BuildType({
 
 object Windows : BuildType({
     name = "Windows"
-    description = "WIP"
+
+    val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
+    val lines = File(filePath).readLines()
+    val configs = lines.drop(1).map { line ->
+        line.split(",")[0]
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    params {
+        select("configfile", configs.joinToString(","),
+            allowMultiple = true,
+            options = configs
+        )
+    }
+
+    dependencies {
+        snapshot(Trigger) {
+            onDependencyFailure = FailureAction.CANCEL
+            onDependencyCancel = FailureAction.CANCEL
+        }
+    }
+
+    features {
+        matrix {
+            id = "matrix"
+            param("configfile", configs.map { config ->
+                value(config)
+            })
+        }
+        pullRequests {
+            id = "merge_request"
+            provider = gitlab {
+                authType = token {
+                    token = "%gitlab_private_access_token%"
+                }
+                filterSourceBranch = "+:*"
+                ignoreDrafts = true
+            }
+        }
+    }
+
+    requirements {
+        equals("teamcity.agent.jvm.os.name", "Windows 10")
+    }
 })
 
 object Linux : BuildType({
