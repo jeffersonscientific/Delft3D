@@ -43,5 +43,5 @@ if __name__ == "__main__":
             done = True
 
     if not done:
-        matrix_list = ",".join(branch_config_dict["config"])
+        matrix_list = ",".join(branch_config_dict["#config"])
         print(f"##teamcity[setParameter name='{parameter_name}' value='{matrix_list}']")
