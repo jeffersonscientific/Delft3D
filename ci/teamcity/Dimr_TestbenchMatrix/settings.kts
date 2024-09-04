@@ -45,7 +45,9 @@ object TriggerMatrix : BuildType({
             } else {
                 git_head = "refs/%teamcity.build.branch%"
             }
-            println("##teamcity[setParameter name='git_head' value=$git_head]")
+
+            print("test123")
+            print("##teamcity[setParameter name='git_head' value=$git_head]")
 
             scriptContent = """
                 curl -u %teamcity_user%:%teamcity_pass% \
