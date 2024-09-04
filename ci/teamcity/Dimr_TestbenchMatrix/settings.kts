@@ -20,5 +20,5 @@ project {
     buildType(windows)
     buildType(linux)
 
-    buildTypesOrder = arrayListOf(Trigger, Linux, Windows)
+    buildTypesOrder = arrayListOf(trigger, linux, windows)
 }
