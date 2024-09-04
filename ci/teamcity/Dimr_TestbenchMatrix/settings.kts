@@ -20,7 +20,7 @@ project {
 }
 
 object Trigger : BuildType({
-    name = "Trigger Matrix"
+    name = "Trigger"
 
     vcs {
         root(DslContext.settingsRoot)
