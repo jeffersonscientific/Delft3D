@@ -105,6 +105,35 @@ object Trigger : BuildType({
                 fi
             """.trimIndent()
         }
+
+        script {
+            name = "Start Windows Testbench"
+
+            scriptContent = """
+                curl -u %teamcity_user%:%teamcity_pass% \
+                     -X POST \
+                     -H "Content-Type: application/xml" \
+                     -d '<build branchName="%teamcity.build.branch%">
+                            <buildType id="Dimr_TestbenchMatrix_Windows"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%git_head%">
+                                    <vcs-root-instance vcs-root-id="Delft3dGitlab"/>
+                                </revision>
+                            </revisions>
+                            <properties>
+                                <property name="configfile" value="%matrix_list_windows%"/>
+                            </properties>
+                         </build>' \
+                     "https://build.avi.directory.intra/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Linux Testbench through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
+    }
+
     }
 
     features{
