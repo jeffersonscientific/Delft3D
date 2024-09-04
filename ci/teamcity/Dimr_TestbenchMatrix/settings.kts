@@ -134,8 +134,6 @@ object Trigger : BuildType({
         }
     }
 
-    }
-
     features{
         pullRequests {
             id = "merge_request"
