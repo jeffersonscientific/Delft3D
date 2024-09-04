@@ -3036,11 +3036,11 @@ contains
                   end if
                else
                   if (.not. ecElementSetSetXArray(instancePtr, elementSetId, fgd_data_1d)) then
-                     call setECMessage("Setting latitude array failed for "//trim(fileReaderPtr%filename)//".")     ! this should be longitude
+                     call setECMessage("Setting longitude array failed for "//trim(fileReaderPtr%filename)//".")
                      return
                   end if
                   if (.not. ecElementSetSetYArray(instancePtr, elementSetId, sgd_data_1d)) then
-                     call setECMessage("Setting longitude array failed for "//trim(fileReaderPtr%filename)//".")     ! this should be latitude
+                     call setECMessage("Setting latitude array failed for "//trim(fileReaderPtr%filename)//".")
                      return
                   end if
                end if

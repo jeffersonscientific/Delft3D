@@ -8394,7 +8394,6 @@ contains
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported quantity specified in ext-file (connect source and target): '//trim(target_name)//'.')
          end if
-         !return
       end select
 
       if (sourceItemName /= ' ') then

@@ -66,9 +66,9 @@ subroutine jonswap_mean2peak_period_factor(gamma0, factor, ier)
     !
     ! Global variables
     !
-    integer, intent(out) :: ier
-    real(hp)   , intent(out) :: factor
     real(hp)   , intent(in)  :: gamma0
+    real(hp)   , intent(out) :: factor
+    integer, intent(out) :: ier
     !
     ! Local variables
     !

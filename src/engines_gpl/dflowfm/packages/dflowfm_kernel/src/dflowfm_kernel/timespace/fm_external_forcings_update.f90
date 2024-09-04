@@ -330,6 +330,8 @@ contains
       logical, intent(in) :: initialization   !< initialization phase
 
       logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary
+      
+      integer :: k
 
       if (jawave == 3 .or. jawave == 6 .or. jawave == 7) then
 
@@ -378,7 +380,8 @@ contains
          if (jawave == 7) then
             ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
             ! Correct for this by setting values to zero
-            where(isnan(hwavcom))   ! one check should be enough, everything is collocated
+            do k = 1, ndx
+               if(isnan(hwavcom(k))) then   ! one check should be enough, everything is collocated
                hwavcom = 0d0
                twavcom = 0d0
                sxwav = 0d0
@@ -389,7 +392,8 @@ contains
                dwcap = 0d0
                mxwav = 0d0
                mywav = 0d0
-            end where
+               end if
+            end do
             phiwav = convert_wave_direction_from_nautical_to_cartesian(phiwav)
          end if
 
