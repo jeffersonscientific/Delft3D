@@ -7,154 +7,18 @@ import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
+import testbenchMatrix.trigger
+import testbenchMatrix.linux
+import testbenchMatrix.windows
+
 version = "2024.03"
 
 project {
     description = "contact: BlackOps"
 
-    buildType(Trigger)
-    buildType(Windows)
-    buildType(Linux)
+    buildType(trigger)
+    buildType(windows)
+    buildType(linux)
 
-    buildTypesOrder = arrayListOf(Trigger, Linux, Windows)
+    buildTypesOrder = arrayListOf(trigger, linux, windows)
 }
-
-object Trigger : BuildType({
-    name = "Trigger"
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
-
-    params {
-        param("testbench_table", "ci/teamcity/Dimr_TestbenchMatrix/dimr_testbench_table.csv")
-        param("teamcity_user", "svc_dimr_trigger")
-        password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
-        param("matrix_list", "first,second")
-        param("git_head", "dummy_value")
-        param("branch_name", "dummy_value")
-    }
-
-    steps {
-
-        python {
-            name = "Determine Git head"
-            command = script {
-                content="""
-                if "merge-request" in "%teamcity.build.branch%":
-                    branch_name = "%teamcity.pullRequest.source.branch%".split("/")[0]
-                    print("##teamcity[setParameter name='git_head' value='refs/%teamcity.build.branch%/head']")
-                    print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
-                else:
-                    branch_name = "%teamcity.build.branch%".split("/")[0]
-                    print("##teamcity[setParameter name='git_head' value='refs/heads/%teamcity.build.branch%']")
-                    print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
-                """.trimIndent()
-            }
-        }
-
-        python {
-            name = "Filter Testbench xmls"
-            command = file {
-                filename = "ci/teamcity/scripts/testbench_filter.py"
-                scriptArguments = "%branch_name% %testbench_table%"
-            }
-        }
-
-        script {
-            name = "Start Linux Testbench"
-
-            scriptContent = """
-                curl -u %teamcity_user%:%teamcity_pass% \
-                     -X POST \
-                     -H "Content-Type: application/xml" \
-                     -d '<build branchName="%teamcity.build.branch%">
-                            <buildType id="Dimr_TestbenchMatrix_Linux"/>
-                            <revisions>
-                                <revision version="%build.vcs.number%" vcsBranchName="%git_head%">
-                                    <vcs-root-instance vcs-root-id="Delft3dGitlab"/>
-                                </revision>
-                            </revisions>
-                            <properties>
-                                <property name="configfile" value="%matrix_list%"/>
-                            </properties>
-                         </build>' \
-                     "https://build.avi.directory.intra/app/rest/buildQueue"
-                if (test $? -ne 0)
-                then
-                    echo Start Linux Testbench through TC API failed.
-                    exit 1
-                fi
-            """.trimIndent()
-        }
-    }
-
-    features{
-        pullRequests {
-            id = "merge_request"
-            provider = gitlab {
-                authType = token {
-                    token = "%gitlab_private_access_token%"
-                }
-                filterSourceBranch = "+:*"
-                ignoreDrafts = true
-            }
-        }
-    }
-})
-
-object Windows : BuildType({
-    name = "Windows"
-    description = "WIP"
-})
-
-object Linux : BuildType({
-    name = "Linux"
-
-    val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
-    val lines = File(filePath).readLines()
-    val configs = lines.drop(1).map { line ->
-        line.split(",")[0]
-    }
-
-    vcs {
-        root(DslContext.settingsRoot)
-    }
-
-    params {
-        select("configfile", configs.joinToString(","),
-            allowMultiple = true,
-            options = configs
-        )
-    }
-
-    dependencies {
-        snapshot(Trigger) {
-            onDependencyFailure = FailureAction.CANCEL
-            onDependencyCancel = FailureAction.CANCEL
-        }
-    }
-
-    features {
-        matrix {
-            id = "matrix"
-            param("configfile", configs.map { config ->
-                value(config)
-            })
-        }
-        pullRequests {
-            id = "merge_request"
-            provider = gitlab {
-                authType = token {
-                    token = "%gitlab_private_access_token%"
-                }
-                filterSourceBranch = "+:*"
-                ignoreDrafts = true
-            }
-        }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
-})
