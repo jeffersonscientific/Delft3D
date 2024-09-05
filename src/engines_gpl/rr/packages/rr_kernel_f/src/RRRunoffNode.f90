@@ -1031,7 +1031,7 @@ contains
 
     Character(Len=CharIdLength)  FileName
     Character(Len=1000000)       KeepBufString
-    Integer                      IoUnit
+    Integer                      IoUnit, iCount
 
     Integer  NrHbvNodes, NrExtNodes, NrScsNodes, NrNAMNodes, NrLGSINodes, NrWageningenNodes, NrWalrusNodes
     ! HBV
@@ -2469,28 +2469,40 @@ contains
               else
 ! clean RR files
                 If (CleanRRFiles) then
+                  iCount = 0
                   ! use KeepBufString to write to file
                   ! first till TBLE
                   ! then till < characters
+                  ! then till second table
+                  ! then till < characters
                   ! then till the end of the buffer string
+ 1030             continue
                   lenstring = len_trim(KeepBufString)
                   ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
                   if (ipos .gt. 0) then
+                     iCount = iCount +1
                      write(Iounit,'(A)') KeepBufString (1:ipos+4)
                      KeepBufString(1:) = KeepBufString(ipos+5:)
                   else
-                     ! error: no TBLE found
-                       call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                     ! warning: no TBLE found
+                       call SetMessage(LEVEL_WARN, 'NAMS optional table definitions capt TBLE and/or pert TBLE not found')
+                       goto 1032
                   endif
  1031             continue
                   lenstring = len_trim(KeepBufString)
                   ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
-                  if (ipos .gt. 0) then
+                  ipos1 = FndFrst ('tble ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0 .and. ipos1 .gt. ipos) then
                      write(Iounit,'(A)') KeepBufString (1:ipos+2)
                      KeepBufString(1:) = KeepBufString(ipos+3:)
                      goto 1031
+                  elseif (icount .eq. 1) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos1+4)
+                     KeepBufString(1:) = KeepBufString(ipos1+5:)
+                     goto 1030
                   else
                      ! write remaining part
+ 1032                continue
                      write(Iounit,'(A)') KeepBufString (1:lenstring)
                   endif
                 Endif
@@ -3123,6 +3135,7 @@ contains
               endif
            endif
        ! Verwerk NAM Parameter definition
+           ipos = 0
            if (occurs) then
        ! Read parameters
              Retval = RetVal + GetVAR2 (STRING,' po ',3,' RRRunoff_readAscii',' D-NAM Parameter data',IOUT1, &
@@ -3133,6 +3146,13 @@ contains
                                           CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 puDum = RDUM(1)
                 ptDum = ''
+                if (CleanRRFiles) then
+                  lenstring = len_trim(String)
+                  ipos  = FndFrst (' pt ',String(1:lenstring),.false.)
+                  Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' D-NAM Parameter data',IOUT1, &
+                                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
+                  if (ipos .gt. 0) ptDum = CDUM(1)
+                endif
              else
                ! zet time table name gelijk aan het id
                puDum = 0.
@@ -3146,11 +3166,18 @@ contains
                 call ErrMsgStandard (969, 0, ' Pumping option should be 0 or 1 in D-NAM parameter definition ',NAM_GroundwaterForcingDefinition(iRRRunoffSub))
                 Err969 = .true.
              endif
-             if (poDum .ge. 1) then
+
+             if (CleanRRFiles) then
+                lenstring = len_trim(String)
+                ipos  = FndFrst (' pt ',String(1:lenstring),.false.)
+             endif
+
+             if (poDum .ge. 1 .or. ipos .gt. 0) then    ! when cleaning RR files, also handle case that podum=0 but table is defined in input
                  NrPumpTimeTablesNeeded = NrPumpTimeTablesNeeded+1
              elseif (CleanRRFiles) then
-                 ! cleaning RR files for NAMG record without pump (1 line only)
-                 write(Iounit,'(A)') String (1:len_trim(String))
+                 ! cleaning RR files for NAMG record without pump with closing string namg on same line (1 line only)
+                 ipos  = FndFrst (' namg',String(5:lenstring),.false.)
+                 if (ipos .gt. 0) write(Iounit,'(A)') String (1:len_trim(String))
 !                NAMG records with pump require special treat below
              endif
 
@@ -3188,8 +3215,6 @@ contains
              endif
           Enddo
           If (Err969) call ErrMsgStandard (972, 0, ' Not enough D-NAM Parameters data found', ' Some NAMG Definitions not present in RRRunoff file')
-
-
 
  ! Reading of pumping time table, if somewhere it is defined
          If (NrPumpTimeTablesNeeded .gt. 0) then
