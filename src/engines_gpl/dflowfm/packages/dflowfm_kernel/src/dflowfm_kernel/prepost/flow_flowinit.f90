@@ -75,6 +75,7 @@ contains
       use m_fixedweirs, only: weirdte, nfxw
       use m_setup_structures_and_weirs_list, only: build_structures_and_weirs_list
       use m_qnerror
+      use string_module, only: str_lower
 
       implicit none
 
