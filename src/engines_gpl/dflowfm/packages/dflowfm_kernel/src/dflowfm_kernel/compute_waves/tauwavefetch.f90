@@ -170,7 +170,7 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
    use timers
    use m_waves, only: nwf, fetch, fetdp
    use m_partitioninfo
-   use unstruc_display, only: jagui
+   use m_gui
    use m_wearelt
    use m_missing, only: dmiss
    use m_sferic
@@ -249,6 +249,7 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
    use m_flowgeom
    use m_fetch_local_data
    use m_alloc
+   use m_qnerror
 
    implicit none
 
@@ -337,7 +338,7 @@ subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)
    use m_flowtimes
    use timers
    use m_partitioninfo
-   use unstruc_display, only: jagui
+   use m_gui
    use geometry_module, only: getdx, getdy, dbdistance, cross, normalout, normalin
    use m_missing, only: dmiss
    use m_sferic
@@ -445,9 +446,10 @@ subroutine calculate_fetch_values(nr_cells_done, total_nr_cells)
    use m_flowtimes
    use timers
    use m_partitioninfo
-   use unstruc_display, only: jagui
+   use m_gui
    use m_missing, only: dmiss
    use m_fetch_local_data
+   use m_qnerror
 
    implicit none
 
@@ -520,7 +522,7 @@ end subroutine calculate_fetch_values
 
 !> get phiwav values
 subroutine get_phiwav_values()
-   use m_sediment, only: phiwav
+use m_waves, only : phiwav
    use m_flowgeom
    use m_flow
    use m_sferic, only: pi
@@ -546,7 +548,7 @@ end subroutine get_phiwav_values
 
 !> copy values to boundary nodes
 subroutine copy_values_to_boundary_nodes()
-   use m_sediment, only: phiwav, rlabda
+   use m_waves, only : phiwav, rlabda
    use m_flowgeom
    use m_flow
    use m_waves, only: uorb, twav, hwav

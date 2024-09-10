@@ -57,6 +57,7 @@
       use string_module, only: strcmpi
       use m_setucxcuy_leastsquare, only: reconst2nd
       use m_drawthis
+      use m_qnerror
 
       implicit none
       integer :: NUM, NWHAT, KEY
@@ -65,6 +66,7 @@
       integer :: midp
       integer :: mtek
       integer :: i, ierror
+   integer :: ipli
       logical :: jawel
       logical, external :: read_samples_from_geotiff
 
@@ -319,7 +321,8 @@
             else
                ja = 0
             end if
-            call REAPOL(MLAN, ja) ! Read pol/pli as crs
+         ipli=0
+         CALL reapol_nampli(MLAN, ja,1,ipli) ! Read pol/pli as crs
             call pol_to_crosssections(xpl, ypl, npl, names=nampli)
             if (NPL > 0) call delpol()
             call MESSAGE('YOU LOADED ', filnam, ' ')
