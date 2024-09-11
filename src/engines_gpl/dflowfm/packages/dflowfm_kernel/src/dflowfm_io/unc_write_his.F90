@@ -159,7 +159,6 @@ subroutine unc_write_his(tim) ! wrihis
    character(len=16) :: stat_long_name_postfix
    character(len=16) :: stat_cell_methods
    character(len=43) :: stat_cell_methods_filter_postfix
-   character(len=strlen_netcdf), dimension(:), allocatable :: structure_names
 
    if (jahiszcor > 0) then
       jawrizc = 1
@@ -701,65 +700,7 @@ subroutine unc_write_his(tim) ! wrihis
             end do
          end if
 
-         if (allocated(weir2cgen)) then
-            structure_names = [(trimexact(cgen_ids(weir2cgen(i)), strlen_netcdf), integer :: i=1, nweirgen)]
-         else if (network%sts%numWeirs > 0) then
-            structure_names = [(trimexact(network%sts%struct(network%sts%weirIndices(i))%id, strlen_netcdf), integer :: i=1, nweirgen)]
-         else
-            allocate (structure_names(0))
-         end if
-         ierr = unc_put_his_structure_names(ihisfile, jahisweir, id_weirgen_id, structure_names)
-
-         structure_names = [(trimexact(network%sts%struct(network%sts%orificeIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numOrifices)]
-         ierr = unc_put_his_structure_names(ihisfile, jahisorif, id_orifgen_id, structure_names)
-
-         ! Write time-independent variables for different structure types
-         ierr = unc_put_his_structure_names(ihisfile, jahispump, id_pump_id, pump_ids)
-         ierr = unc_put_his_structure_mid_points(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), &
-                                                 id_pumpdim, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
-                                                 id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
-
-         ierr = unc_put_his_structure_names(ihisfile, jahisgate, id_gate_id, gate_ids)
-
-         if (jaoldstr == 1) then
-            structure_names = cgen_ids(1:ncgensg)
-         else if (network%sts%numGeneralStructures > 0) then
-            structure_names = [(trimexact(network%sts%struct(network%sts%generalStructureIndices(i))%id, strlen_netcdf), integer :: i=1, ngenstru)]
-         else
-            structure_names = cgen_ids(genstru2cgen)
-         end if
-         ierr = unc_put_his_structure_names(ihisfile, jahiscgen, id_genstru_id, structure_names)
-
-         structure_names = [(trimexact(network%sts%struct(network%sts%uniweirIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numuniweirs)]
-         ierr = unc_put_his_structure_names(ihisfile, jahisuniweir, id_uniweir_id, structure_names)
-
-         ierr = unc_put_his_structure_names(ihisfile, jahisdambreak, id_dambreak_id, dambreak_ids)
-
-         structure_names = [(trimexact(network%sts%struct(network%sts%culvertIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numCulverts)]
-         ierr = unc_put_his_structure_names(ihisfile, jahisculv, id_culvert_id, structure_names)
-
-         structure_names = [(trimexact(network%sts%struct(network%sts%bridgeIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numBridges)]
-         ierr = unc_put_his_structure_names(ihisfile, jahisbridge, id_bridge_id, structure_names)
-
-         ierr = unc_put_his_structure_names(ihisfile, jahiscmpstru, id_cmpstru_id, network%cmps%compound(1:network%cmps%count)%id)
-
-         ierr = unc_put_his_structure_names(ihisfile, jahislongculv, id_longculvert_id, longculverts(1:nlongculverts)%id)
-
-         ierr = unc_put_his_structure_names(ihisfile, jahiscdam, id_cdam_id, cdam_ids)
-
-         ierr = unc_put_his_structure_names(ihisfile, 1, id_statname, namobs(1:numobs + nummovobs))
-
-         ierr = unc_put_his_structure_names(ihisfile, 1, id_crs_id, crs(1:ncrs)%name)
-
-         ierr = unc_put_his_structure_names(ihisfile, 1, id_rugname, rug(1:num_rugs)%name)
-
-         ierr = unc_put_his_structure_names(ihisfile, jahissourcesink, id_srcname, srcname(1:numsrc))
-
-         structure_names = cgen_ids(gate2cgen(1:ngategen))
-         ierr = unc_put_his_structure_names(ihisfile, jahisgate, id_gategen_id, structure_names)
-
-         ierr = unc_put_his_structure_names(ihisfile, jahislateral, id_lat_id, lat_ids(1:numlatsg))
-
+         call unc_put_his_structure_static_vars(ihisfile)
          if (timon) call timstop(handle_extra(63))
       end if
    end if
@@ -1027,14 +968,77 @@ contains
       end select
    end subroutine get_prefix_and_name_from_struc_type_id
 
-   !> Write ('put') the static variables for a single structure type.
-   function unc_put_his_structure_names(ncid, output_enabled, nc_id_structure_names, structure_names) result(ierr)
+   subroutine unc_put_his_structure_static_vars(ncid)
+      integer, intent(in) :: ncid !< NetCDF id of already open dataset
 
+      character(len=strlen_netcdf), dimension(:), allocatable :: structure_names
+
+      if (allocated(weir2cgen)) then
+         structure_names = [(trimexact(cgen_ids(weir2cgen(i)), strlen_netcdf), integer :: i=1, nweirgen)]
+      else if (network%sts%numWeirs > 0) then
+         structure_names = [(trimexact(network%sts%struct(network%sts%weirIndices(i))%id, strlen_netcdf), integer :: i=1, nweirgen)]
+      else
+         allocate (structure_names(0))
+      end if
+      call unc_put_his_structure_names(ihisfile, jahisweir, id_weirgen_id, structure_names)
+
+      structure_names = [(trimexact(network%sts%struct(network%sts%orificeIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numOrifices)]
+      call unc_put_his_structure_names(ihisfile, jahisorif, id_orifgen_id, structure_names)
+
+      call unc_put_his_structure_names(ihisfile, jahispump, id_pump_id, pump_ids)
+      call unc_put_his_structure_mid_points(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), &
+                                            id_pumpdim, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
+                                            id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
+
+      call unc_put_his_structure_names(ihisfile, jahisgate, id_gate_id, gate_ids)
+
+      if (jaoldstr == 1) then
+         structure_names = cgen_ids(1:ncgensg)
+      else if (network%sts%numGeneralStructures > 0) then
+         structure_names = [(trimexact(network%sts%struct(network%sts%generalStructureIndices(i))%id, strlen_netcdf), integer :: i=1, ngenstru)]
+      else
+         structure_names = cgen_ids(genstru2cgen)
+      end if
+      call unc_put_his_structure_names(ihisfile, jahiscgen, id_genstru_id, structure_names)
+
+      structure_names = [(trimexact(network%sts%struct(network%sts%uniweirIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numuniweirs)]
+      call unc_put_his_structure_names(ihisfile, jahisuniweir, id_uniweir_id, structure_names)
+
+      call unc_put_his_structure_names(ihisfile, jahisdambreak, id_dambreak_id, dambreak_ids)
+
+      structure_names = [(trimexact(network%sts%struct(network%sts%culvertIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numCulverts)]
+      call unc_put_his_structure_names(ihisfile, jahisculv, id_culvert_id, structure_names)
+
+      structure_names = [(trimexact(network%sts%struct(network%sts%bridgeIndices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numBridges)]
+      call unc_put_his_structure_names(ihisfile, jahisbridge, id_bridge_id, structure_names)
+
+      call unc_put_his_structure_names(ihisfile, jahiscmpstru, id_cmpstru_id, network%cmps%compound(1:network%cmps%count)%id)
+
+      call unc_put_his_structure_names(ihisfile, jahislongculv, id_longculvert_id, longculverts(1:nlongculverts)%id)
+
+      call unc_put_his_structure_names(ihisfile, jahiscdam, id_cdam_id, cdam_ids)
+
+      call unc_put_his_structure_names(ihisfile, 1, id_statname, namobs(1:numobs + nummovobs))
+
+      call unc_put_his_structure_names(ihisfile, 1, id_crs_id, crs(1:ncrs)%name)
+
+      call unc_put_his_structure_names(ihisfile, 1, id_rugname, rug(1:num_rugs)%name)
+
+      call unc_put_his_structure_names(ihisfile, jahissourcesink, id_srcname, srcname(1:numsrc))
+
+      structure_names = cgen_ids(gate2cgen(1:ngategen))
+      call unc_put_his_structure_names(ihisfile, jahisgate, id_gategen_id, structure_names)
+
+      call unc_put_his_structure_names(ihisfile, jahislateral, id_lat_id, lat_ids(1:numlatsg))
+   end subroutine unc_put_his_structure_static_vars
+
+   !> Write ('put') the static variables for a single structure type.
+   subroutine unc_put_his_structure_names(ncid, output_enabled, nc_id_structure_names, structure_names)
+      use netcdf_utils, only: check_netcdf_error
       integer, intent(in) :: ncid !< NetCDF id of already open dataset
       integer, intent(in) :: output_enabled !< Whether or not (1/0) this structure's output must be written.
       integer, intent(in) :: nc_id_structure_names !< NetCDF variable id created for the character names of the structures of this type
       character(len=*), dimension(:), intent(in) :: structure_names !< Identifying names of the structures
-      integer :: ierr !< Result status (NF90_NOERR if successful)
 
       ierr = NF90_NOERR
 
@@ -1043,14 +1047,14 @@ contains
       end if
 
       do i = 1, size(structure_names)
-         ierr = nf90_put_var(ncid, nc_id_structure_names, trim(structure_names(i)), [1, i])
+         call check_netcdf_error(nf90_put_var(ncid, nc_id_structure_names, trim(structure_names(i)), [1, i]))
       end do
-   end function unc_put_his_structure_names
+   end subroutine unc_put_his_structure_names
 
    !> Write ('put') the static variables for a single structure type.
-   function unc_put_his_structure_mid_points(ncid, struc_type_id, output_enabled, count, geom_type, ngeom_node, &
-                                             id_strdim, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
-                                             add_latlon, id_geom_coordlon, id_geom_coordlat, id_poly_xmid, id_poly_ymid) result(ierr)
+   subroutine unc_put_his_structure_mid_points(ncid, struc_type_id, output_enabled, count, geom_type, ngeom_node, &
+                                               id_strdim, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
+                                               add_latlon, id_geom_coordlon, id_geom_coordlat, id_poly_xmid, id_poly_ymid)
 
       integer, intent(in) :: ncid !< NetCDF id of already open dataset
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
@@ -1070,10 +1074,6 @@ contains
       integer, optional, intent(in) :: id_poly_xmid !< NetCDF variable id created for the x-coordinate of the structure's polyline midpoint
       integer, optional, intent(in) :: id_poly_ymid !< NetCDF variable id created for the y-coordinate of the structure's polyline midpoint
 
-      integer :: ierr !< Result status (NF90_NOERR if successful)
-
-      ierr = NF90_NOERR
-
       if (output_enabled == 0 .or. count == 0) then
          return
       end if
@@ -1081,10 +1081,9 @@ contains
 
       ! Polyline midpoint coordinates
       if (strcmpi(geom_type, 'line')) then
-         ierr = unc_put_his_structure_static_vars_polyline_midpoints(ncid, struc_type_id, count, id_poly_xmid, id_poly_ymid)
+         call check_netcdf_error(unc_put_his_structure_static_vars_polyline_midpoints(ncid, struc_type_id, count, id_poly_xmid, id_poly_ymid))
       end if
-
-   end function unc_put_his_structure_mid_points
+   end subroutine unc_put_his_structure_mid_points
 
    !> Write ('put') the static variables for a single structure type.
    !! Store one single representative x/y point for each structure in the his-file,
