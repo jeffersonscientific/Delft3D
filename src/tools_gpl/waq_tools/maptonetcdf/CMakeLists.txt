@@ -32,8 +32,7 @@ endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                         netCDF::netcdf
-                         netcdff)
+                         netcdf-fortran::netcdf-fortran)
 
     oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
@@ -42,10 +41,10 @@ endif(WIN32)
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
 
-if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-endif(UNIX)
+#if(UNIX)
+#    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+#    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+#endif(UNIX)
 
 if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
@@ -53,14 +52,6 @@ endif(WIN32)
 
 target_link_libraries(${executable_name} netcdf)
 if (WIN32)
-    # Set linker properties
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name}
-                          "netcdf.lib")
-
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 

@@ -49,7 +49,7 @@ if (UNIX)
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
-    set(oss_dependencies ${oss_dependencies_general} netcdff)
+    set(oss_dependencies ${oss_dependencies_general} netcdf-fortran::netcdf-fortran)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
@@ -60,8 +60,7 @@ endif(UNIX)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netCDF::netcdf
-                                            netcdff)
+                                            netcdf-fortran::netcdf-fortran)
 endif(WIN32)
 oss_include_libraries(${library_name} oss_dependencies)
 

@@ -1,5 +1,4 @@
 #pragma once
-using namespace std;
 #include <list>
 
 struct keyValueLL {
@@ -12,4 +11,4 @@ struct keyValue {
 	char * val;
 };
 
-typedef list<keyValue>	keyValueList;
+typedef std::list<keyValue>	keyValueList;

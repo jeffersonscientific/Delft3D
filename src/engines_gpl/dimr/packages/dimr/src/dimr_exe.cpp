@@ -56,7 +56,6 @@
 
 
 #include <typeinfo>
-using namespace std;
 
 #include <string>
 #include <sstream>

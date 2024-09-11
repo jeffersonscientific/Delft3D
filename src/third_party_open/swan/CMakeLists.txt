@@ -32,19 +32,19 @@ if (UNIX)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
     target_link_libraries(${library_name} PRIVATE
          PkgConfig::NETCDF
-         netcdff)
+         netcdf-fortran::netcdf-fortran)
 
-    message (${CMAKE_BINARY_DIR}/netcdff)
+    #message (${CMAKE_BINARY_DIR}/netcdff)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${version_include_dir}
-                        ${CMAKE_BINARY_DIR}/netcdff)
+                        #${CMAKE_BINARY_DIR}/netcdff
+                        )
 
     add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies    netCDF::netcdf
-                            netcdff)
+    set(oss_dependencies    netcdf-fortran::netcdf-fortran)
     oss_include_libraries(${library_name} ${oss_dependencies})
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

@@ -31,8 +31,7 @@ add_executable(${executable_name}   ${headers}
 target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netCDF::netcdf
-                         netcdff)
+    set(exe_dependencies netcdf-fortran::netcdf-fortran)
 
     oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
@@ -44,12 +43,10 @@ if (WIN32)
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
+                            "${mpi_library_path}")
 
     target_link_libraries(${executable_name} PRIVATE
-                          "${mpi_fortran_library}"
-                          "netcdf.lib")
+                          "${mpi_fortran_library}")
 
     # disable OpenMP
     string(REPLACE "/MP" "" TEMP "${CMAKE_Fortran_FLAGS}")
@@ -71,9 +68,9 @@ if(UNIX)
 
     target_link_libraries(${executable_name} PRIVATE
          PkgConfig::NETCDF
-         netcdff)
+         netcdf-fortran::netcdf-fortran)
 
-    target_include_directories(${executable_name} PUBLIC netcdff)
+    #target_include_directories(${executable_name} PUBLIC netcdff)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}
                         ${CMAKE_BINARY_DIR}/fortran_module_dir)

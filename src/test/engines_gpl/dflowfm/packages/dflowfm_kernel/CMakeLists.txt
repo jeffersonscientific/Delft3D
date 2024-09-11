@@ -39,8 +39,7 @@ if(UNIX)
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
-                            netCDF::netcdf
-                            netcdff
+                            netcdf-fortran::netcdf-fortran
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -53,8 +52,8 @@ if(UNIX)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
 
     target_link_libraries(${executable_name}
@@ -90,8 +89,7 @@ if(WIN32)
                          morphology_io
                          morphology_kernel
                          morphology_plugins_c
-                         netCDF::netcdf
-                         netcdff
+                         netcdf-fortran::netcdf-fortran
                          petsc
                          polypack
                          trachytopes_io
@@ -107,7 +105,6 @@ if(WIN32)
 
 target_link_directories(${executable_name} PRIVATE
                         "${mpi_library_path}"
-                        "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                         "${petsc_libdir}"
                         "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                         "${checkout_src_root}/third_party_open/Tecplot/lib/x64")

@@ -31,10 +31,6 @@ set(fortrangis_module ${third_party_open_path}/fortrangis/${cmake_directory})
 set(shp_module ${third_party_open_path}/shapelib/${cmake_directory})
 set(proj_module ${checkout_src_root}/third_party_open/proj)
 
-# netcdf
-set(netcdf_module ${third_party_open_path}/netcdf/${cmake_directory})
-set(netcdf_version "netCDF 4.6.1")
-
 # polypack
 set(polypack_module ${third_party_open_path}/polypack)
 

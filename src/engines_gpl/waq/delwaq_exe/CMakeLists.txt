@@ -32,8 +32,8 @@ target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if(UNIX)
         target_include_directories(${executable_name} PRIVATE ${version_include_dir})
-        message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-        target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+        #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+        #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
         target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
@@ -44,7 +44,6 @@ if(WIN32)
         target_link_directories(${executable_name}
                 PRIVATE
                 "${mpi_library_path}"
-                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                 "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
         target_link_libraries(${executable_name}

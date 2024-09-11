@@ -201,7 +201,7 @@ extern "C" {
 
 				if(thisDimr->control->subBlocks[0].unit.component->result != 0)
 				{
-					stringstream ss;
+					std::stringstream ss;
 					ss << thisDimr->control->subBlocks[0].unit.component->result;
 					std::string componentName = thisDimr->control->subBlocks[0].unit.component->name;
 					std::string message = "#### ERROR: dimr initialize ABORT,: " + componentName + " initialize failed, with return value " + ss.str() + " \n";
@@ -253,7 +253,7 @@ extern "C" {
 				int state = (thisDimr->control->subBlocks[0].unit.component->dllUpdate) (tStep);
                 if (state != 0)
                 {
-                    stringstream ss;
+                    std::stringstream ss;
                     ss << state;
                     std::string componentName = thisDimr->control->subBlocks[0].unit.component->name;
                     std::string message = "#### ERROR: dimr update ABORT,: " + componentName + " update failed, with return value " + ss.str() + " \n";
@@ -299,7 +299,7 @@ extern "C" {
 				int state = (thisDimr->control->subBlocks[0].unit.component->dllFinalize) ();
 				if(state != 0)
 				{
-					stringstream ss;
+					std::stringstream ss;
 					ss << state;
 					std::string componentName = thisDimr->control->subBlocks[0].unit.component->name;
 					std::string message = "#### ERROR: dimr finalize ABORT,: " + componentName + " finalize failed, with return value " + ss.str() + " \n";

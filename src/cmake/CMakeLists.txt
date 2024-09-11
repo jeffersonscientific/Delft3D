@@ -135,10 +135,6 @@ if (UNIX)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
 
-    #NetCDF
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
 

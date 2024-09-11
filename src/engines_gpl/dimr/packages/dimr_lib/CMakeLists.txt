@@ -47,8 +47,7 @@ if(UNIX)
                                ${header_path}
                               "${expat_include_path}")
 
-    target_link_libraries(${library_name} ${oss_dependencies})
-    target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies} netCDF::netcdf)
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})
 endif()
 
@@ -71,24 +70,22 @@ if(WIN32)
                                ${header_path}
                                "${expat_include_path}"
                                "${mpi_include_path}"
-                               "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${library_name}   ${oss_dependencies}
-                                            netcdf
-                                            "${mpi_c_library}"
-                                            "libexpat.lib"
-                                            "pthreadVC2.lib"
-                                            "wsock32.lib"
-                                            "netapi32.lib")
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
+                                                  netCDF::netcdf
+                                                  "${mpi_c_library}"
+                                                  "libexpat.lib"
+                                                  "pthreadVC2.lib"
+                                                  "wsock32.lib"
+                                                  "netapi32.lib")
 endif()
 
 # Create the vfproj structure

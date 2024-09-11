@@ -70,8 +70,7 @@ if(UNIX)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netCDF::netcdf
-                            netcdff
+                            netcdf-fortran::netcdf-fortran
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -115,8 +114,7 @@ if(WIN32)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netCDF::netcdf
-                            netcdff
+                            netcdf-fortran::netcdf-fortran
                             petsc
                             polypack
                             trachytopes_io
@@ -144,8 +142,8 @@ endif(WIN32)
 oss_include_libraries(${executable_name} oss_dependencies)
 
 if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
     message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
@@ -179,7 +177,6 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${petsc_libdir}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")

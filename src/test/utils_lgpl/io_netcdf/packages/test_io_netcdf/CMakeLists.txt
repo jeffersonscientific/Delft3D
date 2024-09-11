@@ -7,20 +7,16 @@ add_executable(${executable_name} ${source})
 set(oss_dependencies    fortrangis
                         ftnunit
                         io_netcdf
-                        netCDF::netcdf
-                        netcdff)
+                        netcdf-fortran::netcdf-fortran)
 
 if (UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     target_link_libraries(${executable_name} ${oss_dependencies})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
 if (WIN32)
-    target_link_directories(${executable_name} PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
     oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies} "netcdf.lib")
 endif(WIN32)

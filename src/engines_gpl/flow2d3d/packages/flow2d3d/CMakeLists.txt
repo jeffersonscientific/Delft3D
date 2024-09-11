@@ -130,7 +130,7 @@ if (UNIX)
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
 
     set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
+                         netcdf-fortran::netcdf-fortran)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
@@ -138,8 +138,7 @@ if (UNIX)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netCDF::netcdf
-                        netcdff)
+                        netcdf-fortran::netcdf-fortran)
 
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
@@ -150,7 +149,6 @@ if (WIN32)
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${mpi_library_path}"
                             "${expat_library_path_win}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")

@@ -25,8 +25,7 @@ if (WIN32)
                                 wave_kernel
                                 wave_manager
                                 nefis
-                                netCDF::netcdf
-                                netcdff
+                                netcdf-fortran::netcdf-fortran
                                 triangle_c
                                 swan
                                 ) 
@@ -38,13 +37,12 @@ if (WIN32)
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib"
+                            #"${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${mpi_library_path}")
 
     target_link_libraries(${library_name}                                                   
                             "pthreadVC2.lib"
-                            "netcdf.lib"
                             "${mpi_fortran_library}")
 
     # Set linker options
@@ -58,7 +56,7 @@ if(UNIX)
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
+    #pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
 
     set(library_dependencies    wave_data
                                 delftio
@@ -85,8 +83,8 @@ if(UNIX)
          PkgConfig::NETCDF
          )
 
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+    #target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     
     #target_link_options(${library_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)

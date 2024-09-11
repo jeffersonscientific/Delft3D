@@ -29,8 +29,8 @@ if(UNIX)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
     target_link_libraries(${executable_name}
          ${oss_dependencies}
@@ -52,11 +52,7 @@ if(WIN32)
                          io_netcdf_data
                          kdtree_wrapper
                          kdtree2
-                         netCDF::netcdf
-                         netcdff)
-
-    target_link_directories(${executable_name} PRIVATE
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
+                         netcdf-fortran::netcdf-fortran)
 
     oss_include_libraries(${executable_name}   oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies}

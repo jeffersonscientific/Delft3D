@@ -24,14 +24,14 @@ add_library(${library_name} ${meteo_sources} ${sources})
                          kdtree2
                          kdtree_wrapper
                          io_netcdf
-                         io_netcdf_data
-                         netCDF::netcdf
-                         netcdff)
+                         io_netcdf_data)
 
 oss_include_libraries(${library_name} oss_dependencies)
 
+target_link_libraries(${library_name} PRIVATE netcdf-fortran::netcdf-fortran)
+
 if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 endif(UNIX)
 
 # Set additional compilation properties, specific for Debug mode

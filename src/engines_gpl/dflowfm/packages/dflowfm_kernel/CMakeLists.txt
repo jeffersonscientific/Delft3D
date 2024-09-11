@@ -149,8 +149,7 @@ if (UNIX)
                             morphology_io
                             morphology_kernel
                             morphology_plugins_c
-                            netCDF::netcdf
-                            netcdff
+                            netcdf-fortran::netcdf-fortran
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -197,8 +196,7 @@ set(oss_dependencies    deltares_common
                         morphology_io
                         morphology_kernel
                         morphology_plugins_c
-                        netCDF::netcdf
-                        netcdff
+                        netcdf-fortran::netcdf-fortran
                         petsc
                         polypack
                         trachytopes_io

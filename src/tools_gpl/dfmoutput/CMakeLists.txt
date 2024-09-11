@@ -27,8 +27,7 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netCDF::netcdf
-                         netcdff)
+                         netcdf-fortran::netcdf-fortran)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
@@ -42,15 +41,14 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netCDF::netcdf
-                         netcdff)
+                         netcdf-fortran::netcdf-fortran)
 
     oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
 if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
+    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
     message(STATUS "Setting target_compile_definitions in Unix")
@@ -83,7 +81,6 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 

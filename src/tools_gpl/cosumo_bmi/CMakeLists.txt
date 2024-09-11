@@ -21,8 +21,7 @@ if (WIN32)
                                 kdtree2
                                 io_netcdf
                                 io_netcdf_data
-                                netCDF::netcdf
-                                netcdff
+                                netcdf-fortran::netcdf-fortran
                                 )
 
     oss_include_libraries(${library_name} library_dependencies)
