@@ -88,13 +88,13 @@
                 ! adve(Lt) = adve(Lt) - wdsu(LL) / max( toplayminthick, hu(Lt) - hu(Lt-1)  )
 
                 alf = 1d0
-                if (jawindhuorzwsbased == 0) then
-                   dzt = hu(Lt) - hu(Lt - 1)
-                else
-                   kt1 = ktop(ln(1, LL)); kt2 = ktop(ln(2, LL))
-                   dzt = acL(LL) * (zws(kt1) - zws(kt1 - 1)) + (1d0 - acL(LL)) * (zws(kt2) - zws(kt2 - 1))
-                end if
                 if (Lbot(LL) < Lt) then
+                   if (jawindhuorzwsbased == 0) then
+                      dzt = hu(Lt) - hu(Lt - 1)
+                   else
+                      kt1 = ktop(ln(1, LL)); kt2 = ktop(ln(2, LL))
+                      dzt = acL(LL) * (zws(kt1) - zws(kt1 - 1)) + (1d0 - acL(LL)) * (zws(kt2) - zws(kt2 - 1))
+                   end if
                    dztm = hu(Lt - 1) - hu(Lt - 2)
                    !if ( dzt < 0.8d0*dztm ) then
                    if (dzt < 0.05d0) then
