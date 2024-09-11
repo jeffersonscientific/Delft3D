@@ -1655,23 +1655,24 @@ contains
       use m_statistical_output_types, only: t_output_variable_item
       type(t_output_variable_item), intent(in) :: output_variable_item
 
-      type(t_output_quantity_config) :: local_config
       integer :: local_id_var, station_id_index
       integer, allocatable :: counts(:), starts(:), positions(:)
       double precision, allocatable :: transformed_data(:)
 
-      local_config = output_variable_item%output_config
       local_id_var = output_variable_item%id_var
 
-      if (.not. local_config%nc_dim_ids%statdim) then
-         call err('Programming error, please report: Station NetCDF variable must have the station dimension')
-      end if
+      associate (nc_dim_ids => output_variable_item%output_config%nc_dim_ids)
+         if (.not. nc_dim_ids%statdim) then
+            call err('Programming error, please report: Station NetCDF variable must have the station dimension')
+         end if
 
-      counts = build_nc_dimension_id_count_array(local_config%nc_dim_ids)
-      starts = build_nc_dimension_id_start_array(local_config%nc_dim_ids)
+         counts = build_nc_dimension_id_count_array(nc_dim_ids)
+         starts = build_nc_dimension_id_start_array(nc_dim_ids)
 
-      positions = [(i, integer :: i=1, size(counts))]
-      station_id_index = findloc(build_nc_dimension_id_list(local_config%nc_dim_ids), value=id_statdim, dim=1)
+         positions = [(i, integer :: i=1, size(counts))]
+         station_id_index = findloc(build_nc_dimension_id_list(nc_dim_ids), value=id_statdim, dim=1)
+      end associate
+
       ! Bring the dimension corresponding to stations to the front, because it comes first in valobs
       positions(1) = station_id_index
       positions(station_id_index) = 1

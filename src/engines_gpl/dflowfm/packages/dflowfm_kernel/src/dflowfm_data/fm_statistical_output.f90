@@ -2957,12 +2957,12 @@ contains
    end subroutine flow_init_statistical_output_his
 
    !> Update output quantity configs with information about the simulation model (e.g., do not write layers when simulation is 2D)
-   subroutine process_output_quantity_configs(output_quantity_config_set)
-      type(t_output_quantity_config_set), intent(inout) :: output_quantity_config_set
+   subroutine process_output_quantity_configs(output_set)
+      type(t_output_variable_set), intent(inout) :: output_set
       integer :: i
 
-      do i = 1, output_quantity_config_set%count
-         associate (config => output_quantity_config_set%configs(i))
+      do i = 1, output_set%count
+         associate (config => output_set%statout(i)%output_config)
             if (allocated(config%nc_dim_ids)) then
                call process_nc_dim_ids(config%nc_dim_ids)
             end if
