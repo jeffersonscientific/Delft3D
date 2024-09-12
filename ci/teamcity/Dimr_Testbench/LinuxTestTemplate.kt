@@ -1,4 +1,4 @@
-package testbenchMatrix
+package testbench
 
 import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
@@ -9,11 +9,11 @@ import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
-import Testbench.LinuxBuild
+import Testbench.*
 
 object LinuxTest : template({
 
-    name = "LinuxManual"
+    name = "Linux Test Template"
     buildNumberPattern = "%dep.${Build.id}.build.revisions.short%"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
@@ -35,13 +35,6 @@ object LinuxTest : template({
             options = configs,
             display = ParameterDisplay.PROMPT
         )
-    }
-
-    dependencies {
-        snapshot(LinuxBuild) {
-            onDependencyFailure = FailureAction.CANCEL
-            onDependencyCancel = FailureAction.CANCEL
-        }
     }
 
     features {
