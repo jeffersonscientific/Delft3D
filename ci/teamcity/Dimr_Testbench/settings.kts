@@ -1,6 +1,6 @@
 import jetbrains.buildServer.configs.kotlin.*
 
-import Testbench.*
+import testbench.*
 
 version = "2024.03"
 
