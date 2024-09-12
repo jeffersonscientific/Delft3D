@@ -62,6 +62,8 @@ contains
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_qnerror
+      use m_delpol
+      use m_get_kbot_ktop
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -70,7 +72,7 @@ contains
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
       double precision :: maxSearchRadius
       character(len=256) :: filename, sourcemask
-      character(len=64) :: varname
+      character(len=256) :: varname, varname2
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
@@ -1283,7 +1285,7 @@ contains
                   call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
                   success = .false.
                end if
-            else if (trim(qid) == "freesurfacedissipation") then
+            else if (trim(qid) == "wavebreakerdissipation") then
                ! wave forces based on dissipation at free surface and water column
                if (jawave == 7 .and. waveforcing == 3) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
