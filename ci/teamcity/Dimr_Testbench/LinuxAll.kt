@@ -1,4 +1,4 @@
-package _Self.buildTypes
+package testbench
 
 import jetbrains.buildServer.configs.kotlin.*
 
