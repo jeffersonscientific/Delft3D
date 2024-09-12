@@ -8,7 +8,7 @@ project {
 
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
-    template(TestbenchLinux)
+    template(LinuxTestTemplate)
 
     buildType(LinuxAll, LinuxFm)
 
