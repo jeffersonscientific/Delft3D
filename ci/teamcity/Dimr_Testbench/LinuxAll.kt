@@ -3,7 +3,7 @@ package testbench
 import jetbrains.buildServer.configs.kotlin.*
 
 object LinuxAll : BuildType({
-    templates(LinuxTest)
+    templates(LinuxTestTemplate)
     name = "Linux (all)"
 
     params {

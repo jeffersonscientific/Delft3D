@@ -11,7 +11,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 import testbench.*
 
-object LinuxTest : Template({
+object LinuxTestTemplate : Template({
 
     name = "Linux Test Template"
 
