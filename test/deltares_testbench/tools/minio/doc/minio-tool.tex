@@ -404,4 +404,56 @@ By default, the MinIO tool uses ANSI terminal color codes to add color to the ou
 \subsection{Dealing with testbench config files with 'includes'}
 There are many testbench config files that contain an <include/> XML element, which contains a relative path to a different XML file. This tells the XML parser to find the specified file and include it verbatim, replacing the include tag. The MinIO tool is aware of these includes, and it is able to find and update the version timestamps of test cases that are found in included files. Sometimes, two different testbench config files (say, \texttt{config\_lnx.xml} and \texttt{config\_win.xml}) both have an include element pointing to the same XML file that contains some test cases (say \texttt{test\_cases.xml}). After updating the version timestamp of a test case in the included file (\texttt{test\_cases.xml}), the test case is updated in both testbench configs that included that file (\texttt{config\_lnx.xml} and \texttt{config\_win.xml}). This is confusing, because the location of the case/reference data is sometimes determined in the testbench config (not the included file). In essence, the data for the test case is stored in different places, but they share the same version timestamp. This is mostly used to store separate versions of the test case data for different platforms (Windows and Linux), because the data may be slightly different. Usually, when test case data needs to be updated, both the Windows and Linux versions need to be updated anyway so it should not be a big problem. It is just something to keep in mind.
 
+\newpage
+\subsection{Using vscode to run the MinIO tool}
+Like the testbench the MinIO tool can be run in vscode with a launch.json. We can add multiple configurations for a single project in the .vscode folder.
+
+Here is an example launch.json that has multiple configurations.
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=json]
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch testbench",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "Testbench.py",
+            "console": "integratedTerminal",
+            "args": [
+                ...
+            ],
+            "justMyCode": true
+        }
+        {
+            "name": "Launch miniotool",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "tools.minio",
+            "console": "integratedTerminal",
+            "args": [
+                "pull",
+                "-c",
+                "dimr_dflowfm_lim_waves_win64.xml",
+                "--case",
+                "-n",
+                "e999_f42_c02",
+            ],
+            "justMyCode": true
+        }
+    ]
+}
+\end{lstlisting}
+\caption{VSCode launch json file for testbench parameters.}
+\label{fig:launchjson}
+\end{figure}
+\newpage
+This configuration allows us to switch between Launch testbench and Launch miniotool with the python debugger in vscode. We navigate to the run and debug on the left side menu or by using the shortcut \command{ctrl + shift + D}. Then we can choose the run command we want, either launch testbench or miniotool.
+\begin{figure}[h]
+	\includegraphics[width=0.5\textwidth]{images/vscode_run.png}
+	\caption{A small look at the run menu in vscode.}
+	\label{fig:vscoderun}
+\end{figure}
+
 \end{document}
