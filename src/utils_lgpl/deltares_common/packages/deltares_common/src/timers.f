@@ -292,8 +292,10 @@
       enddo
 
       if ( handle == -1 ) then
-         write( *, * ) 'Programming error: unbalanced calls to timstart/timstop'
-         write( *, * ) 'Found in the context of handle ', ihandl, ncontxt(ihandl)
+         write( *, * ) 'Programming error:' //
+     +                 ' unbalanced calls to timstart/timstop'
+         write( *, * ) 'Found in the context of handle ', 
+     +                 ihandl, ncontxt(ihandl)
          return
       endif
 
@@ -315,9 +317,12 @@
       character*(*) afile
 
       open  ( 912, file=afile, recl=100+maxlvl*5 )
-      write ( 912, '(a,98(a ))' ) ' nr.     times     cpu time      cpu    wall clock      wc',
-     &                            '  level',('     ',i=3,maxlvl),' routine name'
-      write ( 912, '(a,98(i5))' ) '        called    in seconds      %     in seconds       %',
+      write ( 912, '(a,98(a ))' ) ' nr.     times     cpu time' //
+     +                            '      cpu    wall clock      wc',
+     &                            '  level',('     ',i=3,maxlvl)
+     +                           ,' routine name'
+      write ( 912, '(a,98(i5))' ) '        called    in seconds ' //
+     +                            'in seconds       %',
      &                            ( i, i=2,maxlvl)
       do i = 1, nohandl
          if ( level(i) .eq. -1 ) cycle
@@ -343,16 +348,18 @@
       cpfact = 100.0d00/cptime(1)
       wcfact = 100.0d00/wctime(1)
       write ( forchr(32:), '(i4,''x,f6.2,'',i4,''x,a40)'')' )
-     &                                   (level(ihandl)-1)*5+2,(maxlvl-level(ihandl))*5+1
-      write ( 912, forchr ) ihandl,ntimcal(ihandl),cptime(ihandl),cptime(ihandl)*cpfact,
-     &                                    wctime(ihandl),wctime(ihandl)*wcfact,tmsubnm(ihandl)
+     &   (level(ihandl)-1)*5+2,(maxlvl-level(ihandl))*5+1
+      write ( 912, forchr ) ihandl,ntimcal(ihandl),cptime(ihandl),
+     +                     cptime(ihandl)*cpfact,
+     &   wctime(ihandl),wctime(ihandl)*wcfact,tmsubnm(ihandl)
       level(ihandl) = -1
 
       do i = ihandl+1, nohandl
          if ( level(i) .eq. -1 ) cycle
          j = context(1,3,i)
          do k = 1, ncontxt(j)
-            if ( context(k,1,j) .eq. ihandl .and. context(k,2,j) .eq. i ) call timline ( i )
+            if ( context(k,1,j) .eq. ihandl .and. context(k,2,j) .eq. 
+     +      i ) call timline ( i )
          enddo
       enddo
 
