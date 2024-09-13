@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2016.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+!  $Id: MessageHandling.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_lgpl/deltares_common/packages/deltares_common/src/MessageHandling.f90 $
 
 !> Specifies the interface for MessageHandling's callback functionality.
 ! (A bit awkward, but including it in MessageHandling's module header
@@ -39,14 +39,14 @@ module MHCallBack
    end interface
 
    abstract interface
-      subroutine c_callbackiface(level, msg) bind(C)
+      subroutine c_callbackiface(level, msg)
         use iso_c_binding
         use iso_c_utils
         integer(c_int), value, intent(in) :: level !< severity
         character(c_char), intent(in) :: msg(MAXSTRINGLEN) !< c message null terminated
       end subroutine c_callbackiface
    end interface
-
+   
    abstract interface
       subroutine progress_iface(msg, progress)
         character(len=*), intent(in) :: msg !< c message null terminated
@@ -56,7 +56,7 @@ module MHCallBack
 
 
    abstract interface
-      subroutine progress_c_iface(msg, progress) bind(C)
+      subroutine progress_c_iface(msg, progress)
         use iso_c_binding
         use iso_c_utils
         character(c_char), intent(in) :: msg(MAXSTRINGLEN) !< c message null terminated
@@ -64,14 +64,6 @@ module MHCallBack
       end subroutine progress_c_iface
    end interface
 
-!> Shows a message in a GUI dialog.
-!! This interface is to be used by utility libraries that want to call back
-!! a GUI routine in the parent program to display a message box.
-   abstract interface
-      subroutine msgbox_callbackiface(msg)
-        character(len=*), intent(in) :: msg   !< Message string
-      end subroutine msgbox_callbackiface
-   end interface
 
 end module MHCallBack
 
@@ -93,10 +85,6 @@ module MessageHandling
    procedure(progress_iface), pointer :: progress_callback => null()
    procedure(progress_c_iface), pointer :: progress_c_callback => null()
 
-   !> Callback routine invoked upon any mess/err (i.e. SetMessage)
-   procedure(msgbox_callbackiface), pointer :: msgbox_callback => null()
-
-
    integer, parameter, public    :: BUFLEN = 1024
    !> The message buffer allows you to write any number of variables in any
    !! order to a character string. Call msg_flush or err_flush to output
@@ -107,7 +95,6 @@ module MessageHandling
    public SetMessage
    public GetMessageCount
    public SetMessageHandling
-   public FinalizeMessageHandling
    public mess
    public err
    public GetMessage_MH
@@ -116,27 +103,23 @@ module MessageHandling
    public getMaxErrorLevel
    public resetMaxerrorLevel
    public set_logger
-   public set_progress_c_callback
    public set_mh_callback
-   public set_msgbox_callback
-   public msgbox
    public msg_flush
    public dbg_flush
    public warn_flush
    public err_flush
-   public fatal_flush
    public set_progress_callback
    public progress
    public stringtolevel
-
-   integer,parameter, public     :: LEVEL_ALL   = 0
+   
    integer,parameter, public     :: LEVEL_DEBUG = 1
    integer,parameter, public     :: LEVEL_INFO  = 2
    integer,parameter, public     :: LEVEL_WARN  = 3
    integer,parameter, public     :: LEVEL_ERROR = 4
    integer,parameter, public     :: LEVEL_FATAL = 5
    integer,parameter, public     :: LEVEL_NONE  = 6
-   integer,parameter, public     :: Idlen = 256  !< Max string length of Ids. Recommended to use one character less for the actual Id, to allow for a null char at the end, when interfacing with C.
+   integer,parameter, public     :: Charln = 256
+   integer,parameter, public     :: Idlen = 40
    integer,parameter, public     :: max_level = 5
    character(len=12), dimension(max_level), private    :: level_prefix = (/'** DEBUG  : ',  &
                                                                            '** INFO   : ',  &
@@ -160,7 +143,6 @@ module MessageHandling
    module procedure message1char2int
    module procedure message1char3int
    module procedure message1char1double
-   module procedure message2double
    module procedure message2int1char
    module procedure message1char1int1double
    module procedure message1double1int1char
@@ -185,7 +167,7 @@ private
 
    integer               , parameter,              private :: maxMessages = 3000
    integer               ,                         private :: messagecount = 0 !< Number of messages currently in message buffer (queue).
-   character(len=MAXSTRINGLEN) , dimension(maxMessages), private :: Messages
+   character(len=charln) , dimension(maxMessages), private :: Messages
    integer               , dimension(maxMessages), private :: Levels
    integer               ,                         private :: ibuffertail  = 0 !< Index of newest message in message buffer.
 
@@ -196,7 +178,6 @@ private
    integer,                                    public  :: thresholdLvl_log    = 0 !< Threshold level specific for the logging queue channel.
    integer,                                    public  :: thresholdLvl_file   = 0 !< Threshold level specific for the file output channel.
    integer,                                    public  :: thresholdLvl_callback   = LEVEL_WARN !< Threshold level specific for the c callback.
-   character(len=idlen),                       public  :: prefix_callback   = "kernel" !< prefix specific for the c callback.
 
    !> For the above threshold levels to become active, each channel must be separately enabled:
    integer, save                  :: lunMess             = 0       !< The file pointer to be used for the file output channel.
@@ -216,21 +197,19 @@ function stringtolevel(levelname) result(ilevel)
    character(len=*), intent(in) :: levelname !< Name of the level, 'DEBUG'/'INFO', etc.
    integer                      :: ilevel    !< The numeric value of the given level
 
-   ilevel = LEVEL_NONE
+   ilevel = LEVEL_NONE  
 
    select case (trim(levelname))
-   case ('ALL')
-      ilevel = LEVEL_ALL
    case ('DEBUG')
-      ilevel = LEVEL_DEBUG
+      ilevel = LEVEL_DEBUG 
    case ('INFO')
-      ilevel = LEVEL_INFO
+      ilevel = LEVEL_INFO  
    case ('WARN')
-      ilevel = LEVEL_WARN
+      ilevel = LEVEL_WARN  
    case ('ERROR')
-      ilevel = LEVEL_ERROR
+      ilevel = LEVEL_ERROR 
    case ('FATAL')
-      ilevel = LEVEL_FATAL
+      ilevel = LEVEL_FATAL 
    end select
 
 end function stringtolevel
@@ -247,8 +226,7 @@ end function stringtolevel
 !! its own threshold level. Note that the threshold level is only active if the
 !! output channel has been enabled. See the respective input arguments for enabling.
 !!
-subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thresholdLevel, thresholdLevel_stdout, &
-            thresholdLevel_log, thresholdLevel_file, reset_counters, thresholdLevel_callback, prefix_logging)
+subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thresholdLevel, thresholdLevel_stdout, thresholdLevel_log, thresholdLevel_file, reset_counters)
    logical, optional, intent(in)       :: write2screen           !< Enable stdout: print messages to stdout.
    logical, optional, intent(in)       :: useLog                 !< Enable logging queue: store messages in buffer.
    integer, optional, intent(in)       :: lunMessages            !< Enable file output: nonzero file pointer whereto messages can be written.
@@ -257,10 +235,8 @@ subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thres
    integer, optional, intent(in)       :: thresholdLevel_stdout  !< Threshold level specific for stdout channel.
    integer, optional, intent(in)       :: thresholdLevel_log     !< Threshold level specific for the logging queue channel.
    integer, optional, intent(in)       :: thresholdLevel_file    !< Threshold level specific for the file output channel.
-   integer, optional, intent(in)       :: thresholdLevel_callback!< Threshold level specific for the file output channel.
    logical, optional, intent(in)       :: reset_counters         !< If present and True then reset message counters.
                                                                  !< SetMessageHandling is called more than once.
-   character(len=*), optional, intent(in) :: prefix_logging      !< prefix for logging
 
    procedure(mh_callbackiface), optional :: callback
 
@@ -276,7 +252,6 @@ subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thres
       thresholdLvl_stdout = thresholdLevel
       thresholdLvl_log    = thresholdLevel
       thresholdLvl_file   = thresholdLevel
-      thresholdLvl_callback = thresholdLevel
    end if
 
    ! .. but override the threshold level per channel, when given.
@@ -288,12 +263,6 @@ subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thres
    end if
    if (present(thresholdLevel_file) )  then
       thresholdLvl_file = thresholdLevel_file
-   end if
-   if (present(thresholdLevel_callback) )  then
-      thresholdLvl_callback = thresholdLevel_callback
-   end if
-   if (present(prefix_logging))  then
-      prefix_callback = prefix_logging
    end if
 
    if (present(reset_counters)) then
@@ -308,11 +277,6 @@ subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thres
 
 end subroutine SetMessageHandling
 
-subroutine FinalizeMessageHandling()
-  close (lunMess)
-  lunMess = 0
-end subroutine FinalizeMessageHandling
-
 subroutine set_mh_callback(callback)
   procedure(mh_callbackiface) :: callback
   mh_callback => callback
@@ -321,9 +285,7 @@ end subroutine set_mh_callback
 
 
 subroutine set_logger(c_callback) bind(C, name="set_logger")
-#ifdef _WIN32
   !DEC$ ATTRIBUTES DLLEXPORT::set_logger
-#endif
 
   use iso_c_binding
   implicit none
@@ -334,26 +296,6 @@ subroutine set_logger(c_callback) bind(C, name="set_logger")
   call c_f_procpointer(c_callback, c_logger)
 end subroutine set_logger
 
-
-subroutine set_msgbox_callback(callback)
-  procedure(msgbox_callbackiface) :: callback
-  msgbox_callback => callback
-end subroutine set_msgbox_callback
-
-
-!> Displays a (GUI) message box by calling a subroutine in the parent program,
-!! IF a callback subroutine has been registered.
-subroutine msgbox(title, msg, level)
-   character(len=*), intent(in) :: title !< Title string
-   character(len=*), intent(in) :: msg   !< Message string
-   integer,          intent(in) :: level !< Severity level (e.g., LEVEL_ERROR).
-
-   ! call the registered msgbox
-   if (associated(msgbox_callback)) then
-      call msgbox_callback(msg)
-   end if
-
-end subroutine msgbox
 
 
 
@@ -370,7 +312,6 @@ recursive subroutine SetMessage(level, string)
   character(c_char)             :: c_string(MAXSTRINGLEN)
 
   integer :: levelact
-  character(len=MAXSTRINGLEN)   :: msg !< message.
 
 
   levelact = max(1,min(max_level, level))
@@ -385,7 +326,7 @@ recursive subroutine SetMessage(level, string)
         end if
      endif
 
-     if (lunMess /= 0) then
+     if (lunMess > 0) then
         if (level >= thresholdLvl_file) then
            write (lunMess, '(a)') level_prefix(levelact)//trim(string)
         end if
@@ -407,7 +348,7 @@ recursive subroutine SetMessage(level, string)
         write (*, '(a)') trim(string)
      endif
 
-     if (lunMess /= 0) then
+     if (lunMess > 0) then
         write (lunMess, '(a)') trim(string)
      end if
 
@@ -423,8 +364,7 @@ recursive subroutine SetMessage(level, string)
   if (associated(c_logger).and. .not. alreadyInCallback) then
      if (level >= thresholdLvl_callback) then
         alreadyInCallback = .true.
-        msg = trim(prefix_callback)//': '//trim(string)
-        c_string = string_to_char_array(trim(msg))
+        c_string = string_to_char_array(trim(string))
         call c_logger(level, c_string)
         alreadyInCallback = .false.
      endif
@@ -512,10 +452,8 @@ subroutine message1string(level, w1)
     character(MAXSTRINGLEN)                 :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
 
     call setMessage(level, rec)
 end subroutine message1string
@@ -528,16 +466,10 @@ subroutine message2string(level, w1, w2)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
-    l2 = len_trim(w2)
-    if (l2 > 0) then
-        write (rec(2 + l1:), '(a)') w2(:l2)
-    endif
+    l1 = max(1, len_trim(w1))
+    l2 = max(1, len_trim(w2))
+    write (rec(1:), '(a)') w1(:l1)
+    write (rec(2 + l1:), '(a)') w2(:l2)
 
     call SetMessage(level, rec)
 end subroutine message2string
@@ -550,22 +482,12 @@ subroutine message3string(level, w1, w2, w3)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
-    l2 = len_trim(w2)
-    if (l2 > 0) then
-        write (rec(2 + l1:), '(a)') w2(:l2)
-    else
-        l2 = 1
-    endif
-    l3 = len_trim(w3)
-    if (l3 > 0) then
-        write (rec(3 + l1 + l2:), '(a)') w3(:l3)
-    endif
+    l1 = max(1, len_trim(w1))
+    l2 = max(1, len_trim(w2))
+    l3 = max(1, len_trim(w3))
+    write (rec(1:), '(a)') w1(1:l1)
+    write (rec(2 + l1:), '(a)') w2(1:l2)
+    write (rec(3 + l1 + l2:), '(a)') w3(1:l3)
 
     call SetMessage(level, rec)
  end subroutine message3string
@@ -578,28 +500,14 @@ subroutine message4string(level, w1, w2, w3, w4)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
-    l2 = len_trim(w2)
-    if (l2 > 0) then
-        write (rec(2 + l1:), '(a)') w2(:l2)
-    else
-        l2 = 1
-    endif
-    l3 = len_trim(w3)
-    if (l3 > 0) then
-        write (rec(3 + l1 + l2:), '(a)') w3(:l3)
-    else
-        l3 = 1
-    endif
-    l4 = len_trim(w4)
-    if (l4 > 0) then
-        write (rec(4 + l1 + l2 + l3:), '(a)') w4(:l4)
-    endif
+    l1 = max(1, len_trim(w1))
+    l2 = max(1, len_trim(w2))
+    l3 = max(1, len_trim(w3))
+    l4 = max(1, len_trim(w4))
+    write (rec(1:), '(a)') w1(:l1)
+    write (rec(2 + l1:), '(a)') w2(:l2)
+    write (rec(3 + l1 + l2:), '(a)') w3(:l3)
+    write (rec(4 + l1 + l2 + l3:), '(a)') w4(:l4)
 
     call SetMessage(level, rec)
 end subroutine message4string
@@ -615,18 +523,10 @@ subroutine message2char1real(level, w1, w2, r3)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
-    l2 = len_trim(w2)
-    if (l2 > 0) then
-        write (rec(2 + l1:), '(a)') w2(:l2)
-    else
-        l2 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    l2 = max(1, len_trim(w2))
+    write (rec(1:), '(a)') w1(:l1)
+    write (rec(2 + l1:), '(a)') w2(:l2)
     write (rec(3 + l1 + l2:), '(f14.6)') r3
 
     call SetMessage(level, rec)
@@ -642,18 +542,10 @@ subroutine message2char2real(level, w1, w2, r3, r4)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
-    l2 = len_trim(w2)
-    if (l2 > 0) then
-        write (rec(2 + l1:), '(a)') w2(:l2)
-    else
-        l2 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    l2 = max(1, len_trim(w2))
+    write (rec(1:), '(a)') w1(:l1)
+    write (rec(2 + l1:), '(a)') w2(:l2)
     write (rec(3 + l1 + l2:), '(2f14.6)') r3, r4
 
     call SetMessage(level, rec)
@@ -669,12 +561,8 @@ subroutine message1char1real(level, w1, r2)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
     write (rec(2 + l1:), '(F14.6)') r2
 
     call SetMessage(level, rec)
@@ -689,27 +577,12 @@ subroutine message1char1double(level, w1, d2)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
     write (rec(2 + l1:), '(F14.6)') d2
 
     call SetMessage(level, rec)
 end subroutine message1char1double
-
-subroutine message2double(level, d1, d2)
-    double precision, intent(in) :: d1, d2
-    integer         :: level
-
-    character(MAXSTRINGLEN) :: rec
-
-    rec = ' '
-    write (rec,'(2F20.6)') d1,d2
-    call SetMessage(level, rec)
-end subroutine message2double
 
 subroutine message1char1int(level, w1, i2)
     integer :: i2
@@ -721,12 +594,8 @@ subroutine message1char1int(level, w1, i2)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
     write (rec(2 + l1:), '(I14)') i2
 
     call SetMessage(level, rec)
@@ -742,12 +611,8 @@ subroutine message1char2int(level, w1, i2, i3)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
     write (rec(2 + l1:), '(2I14)') i2, i3
 
     call SetMessage(level, rec)
@@ -764,11 +629,10 @@ subroutine message2int1char(level, i1, i2, w3)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
+    l3 = max(1, len_trim(w3))
     write (rec( 1:28), '(2I14)') i1, i2
-    l3 = len_trim(w3)
-    if (l3 > 0) then
-        write (rec(30:), '(a)') w3(:l3)
-    endif
+    write (rec(30:)  , '(a)'   ) w3(:l3)
+
 
     call SetMessage(level, rec)
 
@@ -783,12 +647,8 @@ subroutine message1char3int(level, w1, i2, i3, i4)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
     write (rec(2 + l1:), '(3I14)') i2, i3, i4
 
     call SetMessage(level, rec)
@@ -804,12 +664,8 @@ subroutine message1char2real(level, w1, r2, r3)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
     write (rec(2 + l1:), '(2F14.6)') r2, r3
 
     call SetMessage(level, rec)
@@ -825,12 +681,8 @@ subroutine message1char1int1double(level, w1, i2, d3)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    l1 = len_trim(w1)
-    if (l1 > 0) then
-        write (rec(1:), '(a)') w1(:l1)
-    else
-        l1 = 1
-    endif
+    l1 = max(1, len_trim(w1))
+    write (rec(1:), '(a)') w1(:l1)
     write (rec(2 + l1:), '(i14)') i2
     write (rec(16 + l1:), '(F14.6)') d3
 
@@ -847,12 +699,10 @@ subroutine message1double1int1char(level, d1, i2, w3)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
+    l3 = max(1, len_trim(w3))
     write (rec(1 :16), '(F16.6)') d1
     write (rec(18:31), '(i14)'  ) i2
-    l3 = len_trim(w3)
-    if (l3 > 0) then
-        write (rec(33:), '(a)') w3(:l3)
-    endif
+    write (rec(33:  ), '(a)'    ) w3(:l3)
 
     call SetMessage(level, rec)
 end subroutine message1double1int1char
@@ -940,16 +790,19 @@ end subroutine error1char1int1double
 
 !> Output the current message buffer as a 'debug' message.
 subroutine dbg_flush()
+! We could check on empty buffer, but we omit this to stay lightweight. [AvD]
     call mess(LEVEL_DEBUG,  msgbuf)
 end subroutine dbg_flush
 
 !!> Output the current message buffer as an 'info' message.
 subroutine msg_flush()
+! We could check on empty buffer, but we omit this to stay lightweight. [AvD]
     call mess(LEVEL_INFO,  msgbuf)
 end subroutine msg_flush
 
 !> Output the current message buffer as a 'warning' message.
 subroutine warn_flush()
+! We could check on empty buffer, but we omit this to stay lightweight. [AvD]
     call mess(LEVEL_WARN,  msgbuf)
 end subroutine warn_flush
 
@@ -957,11 +810,6 @@ end subroutine warn_flush
 subroutine err_flush()
     call mess(LEVEL_ERROR, msgbuf)
 end subroutine err_flush
-
-!> Output the current message buffer as a 'fatal' message.
-subroutine fatal_flush()
-    call mess(LEVEL_FATAL, msgbuf)
-end subroutine fatal_flush
 
 !
 !
@@ -998,9 +846,7 @@ subroutine set_progress_callback(callback)
 end subroutine set_progress_callback
 
 subroutine set_progress_c_callback(c_callback) bind(C, name="set_progress_c_callback")
-#ifdef _WIN32
   !DEC$ ATTRIBUTES DLLEXPORT:: set_progress_c_callback
-#endif
 
   use iso_c_binding
   use iso_c_utils

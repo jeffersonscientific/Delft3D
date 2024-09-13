@@ -1,7 +1,7 @@
 subroutine small(string    ,lenstr    )
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ subroutine small(string    ,lenstr    )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: small.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_lgpl/deltares_common/packages/deltares_common/src/small.f90 $
 !!--description-----------------------------------------------------------------
 !
 !  Subroutine obsolete; this routine will be removed.

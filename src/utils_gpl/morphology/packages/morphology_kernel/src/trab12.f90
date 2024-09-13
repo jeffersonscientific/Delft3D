@@ -1,6 +1,9 @@
+subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
+                & dir       ,d50       ,par       ,sbotx     ,sboty     , &
+                & ssusx     ,ssusy     ,ubot      ,vonkar    ,ubot_from_com)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,14 +27,14 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!> computes sediment transport according to the bed load transport formula of Soulsby;
-!! first implementation assumes transport in current direction only.
-subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
-                & dir       ,d50       ,npar      ,par       ,sbotx     , &
-                & sboty     ,ssusx     ,ssusy     ,ubot      ,vonkar    , &
-                & ubot_from_com )
+!  $Id: trab12.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/trab12.f90 $
+!!--description-----------------------------------------------------------------
+! computes sediment transport according to
+! the bed load transport formula of Soulsby;
+! first implementation assumes transport in
+! current direction only.
+! -
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
@@ -40,37 +43,32 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
-    logical                  , intent(in)    :: ubot_from_com
-    integer                  , intent(in)    :: npar
-    real(fp)                 , intent(in)    :: d50
-    real(fp)                 , intent(in)    :: dir
-    real(fp)                                 :: h
-    real(fp)                                 :: hrms  !< Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(npar), intent(in)    :: par
-    real(fp)                                 :: tp    !< Description and declaration in esm_alloc_real.f90
-    real(fp)                 , intent(in)    :: u
-    real(fp)                                 :: ubot  !< Description and declaration in esm_alloc_real.f90
-    real(fp)                 , intent(in)    :: v
-    real(fp)                 , intent(in)    :: vonkar
-    !
-    real(fp)                 , intent(out)   :: sbotx
-    real(fp)                 , intent(out)   :: sboty
-    real(fp)                 , intent(out)   :: ssusx
-    real(fp)                 , intent(out)   :: ssusy
+    real(fp)               , intent(in)  :: d50
+    real(fp)               , intent(in)  :: dir
+    real(fp)                             :: h
+    real(fp)                             :: hrms  !  Description and declaration in esm_alloc_real.f90
+    real(fp)                             :: ubot  !  Description and declaration in esm_alloc_real.f90
+    real(fp)               , intent(out) :: sbotx
+    real(fp)               , intent(out) :: sboty
+    real(fp)               , intent(out) :: ssusx
+    real(fp)               , intent(out) :: ssusy
+    real(fp)                             :: tp    !  Description and declaration in esm_alloc_real.f90
+    real(fp)               , intent(in)  :: u
+    real(fp)               , intent(in)  :: v
+    real(fp), dimension(30), intent(in)  :: par
+    real(fp)               , intent(in)  :: vonkar
+    logical                , intent(in)  :: ubot_from_com
 !
 !
 ! Local variables
 !
-    real(fp), parameter            :: ASTARC  = 30.*pi**2
-    real(fp), parameter            :: EPS = 1.E-6
-    real(fp), parameter            :: WAVEPS = 1.E-4
-    
     integer                        :: modind
     real(fp)                       :: abscos
     real(fp)                       :: acal
     real(fp)                       :: astar
+    real(fp)                       :: astarc
     real(fp)                       :: cdrag
     real(fp)                       :: cj
     real(fp)                       :: coeffb
@@ -78,11 +76,12 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     real(fp)                       :: coeffq
     real(fp)                       :: delta
     real(fp)                       :: dstar
+    real(fp)                       :: eps
     real(fp)                       :: facth
     real(fp)                       :: factr
     real(fp)                       :: fw
-    real(fp)                       :: ag                   !<  gravity acceleration
-    real(fp)                       :: k                    !< wave number
+    real(fp)                       :: ag                   !  gravity acceleration
+    real(fp)                       :: k                    ! wave number
     real(fp)                       :: lfc
     real(fp)                       :: phi
     real(fp)                       :: phicur
@@ -91,7 +90,7 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     real(fp)                       :: phix1
     real(fp)                       :: phix2
     real(fp)                       :: phiy
-    real(fp)                       :: rho                  !<  array with densities [kg/m3]???
+    real(fp)                       :: rho                  !  array with densities [kg/m3]
     real(fp)                       :: rnu
     real(fp)                       :: taucur
     real(fp)                       :: taum
@@ -100,14 +99,15 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     real(fp)                       :: thetaw
     real(fp)                       :: thetcr
     real(fp)                       :: thetmx
-    real(fp)                       :: uorb                 !< orbital velocity at the bottom layer
-    real(fp)                       :: utot                 !< flow velocity
+    real(fp)                       :: uorb                 ! orbital velocity at the bottom layer
+    real(fp)                       :: utot                 ! flow velocity
+    real(fp)                       :: waveps
     real(fp)                       :: xpar
     real(fp)                       :: ypar
     real(fp)                       :: z0
 !
-    real(fp), dimension(8, 4) :: bb, pp, qq
-    real(fp), dimension(8) :: coeffj
+    real(fp), dimension(8, 4) :: aa, bb, mm, nn, pp, qq
+    real(fp), dimension(8) :: coeffi, coeffj
     !
     data bb/0.29, 0.65, 0.27, 0.73, 0.22, 0.32, 0.47, -0.06, 0.55, 0.29, 0.51,  &
        & 0.40, 0.73, 0.55, 0.29, 0.26, -0.10, -0.30, -0.10, -0.23, -0.05, 0.00, &
@@ -122,6 +122,21 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
        & -0.42, 0.25, 0.45, -0.21, -0.28, -0.27, -2.50, 0.00, 0.49, -0.66/
     !
     data coeffj/3.00, 0.50, 2.70, 0.50, 2.70, 3.00, 0.60, 1.50/
+    !-----for Tau_max
+    data aa/ - 0.06, -0.01, -0.07, 0.11, 0.05, 0.00, -0.01, -0.45, 1.70, 1.84,  &
+       & 1.87, 1.95, 1.62, 2.00, 1.58, 2.24, -0.29, -0.58, -0.34, -0.49, -0.38, &
+       & 0.00, -0.52, 0.16, 0.29, -0.22, -0.12, -0.28, 0.25, 0.00, 0.09, -0.09/
+    !
+    data mm/0.67, 0.63, 0.72, 0.65, 1.05, 0.00, 0.65, 0.71, -0.29, -0.09, -0.33,&
+       & -0.22, -0.75, 0.50, -0.17, 0.27, 0.09, 0.23, 0.08, 0.15, -0.08, 0.00,  &
+       & 0.18, -0.15, 0.42, -0.02, 0.34, 0.06, 0.59, 0.00, 0.05, 0.03/
+    !
+    data nn/0.75, 0.82, 0.78, 0.71, 0.66, 0.00, 0.47, 1.19, -0.27, -0.30, -0.23,&
+       & -0.19, -0.25, 0.50, -0.03, -0.66, 0.11, 0.19, 0.12, 0.17, 0.19, 0.00,  &
+       & 0.59, -0.13, -0.02, -0.21, -0.12, -0.15, -0.03, 0.00, -0.50, 0.12/
+    !
+    data coeffi/0.80, 0.67, 0.82, 0.67, 0.82, 1.00, 0.64, 0.77/
+
 !
 !
 !! executable statements -------------------------------------------------------
@@ -130,32 +145,36 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     !     Initialize Transports to zero
     !     in case of small u, small h, very large h, u<ucr
     !
-    sbotx = 0.0_fp
-    sboty = 0.0_fp
-    ssusx = 0.0_fp
-    ssusy = 0.0_fp
-    utot = sqrt(u**2 + v**2)
-    if ( utot < 0.000001_fp .or. h > 200.0_fp .or. h < 0.01_fp ) return
-    
+    sbotx = 0.0
+    sboty = 0.0
     !
     !     Initialisations
     !
-    ag     = par(1)
-    rho    = par(2)
-    delta  = par(4)
-    rnu    = par(5)
-    acal   = par(11)
+    astarc = 30.*pi**2
+    waveps = 1.E-4
+    eps = 1.E-6
+    ag = par(1)
+    rho = par(2)
+    delta = par(4)
+    rnu = par(5)
+    acal = par(11)
     modind = nint(par(12))
-    z0     = d50/par(13)
-    facth  = 1.0_fp / (rho*ag*delta*d50)
+    z0 = d50/par(13)
+    facth = 1./(rho*ag*delta*d50)
+    !
+    !     Velocity magnitude
+    !
+    utot = u**2 + v**2
+    if (utot>0.) utot = sqrt(utot)
+    if (utot<0.000001 .or. h>200. .or. h<0.01) goto 999
     !
     !     Wave number k
     !
-    if ( tp > 1.E-6_fp ) then
+    if (tp>1.E-6) then
        !
        !     Prevent small tp
        !
-       tp = max(tp, 1.0_fp)
+       tp = max(tp,1.0_fp)
        !
        call wavenr(h         ,tp        ,k         ,ag        )
        if (ubot_from_com) then
@@ -173,10 +192,10 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     !
     astar = tp*uorb/z0
     !     Swart
-    if ( astar > ASTARC ) then
-       fw = 0.00251_fp * exp(14.1_fp / (astar**0.19_fp))
+    if (astar>astarc) then
+       fw = 0.00251*exp(14.1/(astar**0.19))
     else
-       fw = 0.3_fp
+       fw = 0.3
     endif
     !     Soulsby
     !            fw=1.39*(astar/2./pi)**(-0.52)
@@ -184,32 +203,32 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     !-----------magnitude of bottom skin friction due to waves alone
     !           and due to current alone
     !
-    tauwav = 0.5_fp*rho*fw*uorb**2
-    cdrag  = (vonkar/(1. + log(z0/h)))**2
+    tauwav = 0.5*rho*fw*uorb**2
+    cdrag = (vonkar/(1. + log(z0/h)))**2
     taucur = rho*cdrag*utot**2
     !
     !           Angle between current and waves
     !
     phiwav = dir*degrad
     phicur = atan2(v, u)
-    phi    = phiwav - phicur
+    phi = phiwav - phicur
     abscos = abs(cos(phi))
     !
     !-----------parameterized models
     !
-    if ( tauwav < 1.0E-8_fp ) then
-       xpar = 1.0_fp
-       ypar = 1.0_fp
+    if (tauwav<1.0E-8) then
+       xpar = 1.
+       ypar = 1.
     else
        xpar = taucur/(taucur + tauwav)
-       if ( xpar < 1.0E-8_fp ) then
-          ypar = 0.0_fp
+       if (xpar<1.0E-8) then
+          ypar = 0.
        else
           lfc = log10(fw/cdrag)
-          if ( abscos > EPS ) then
+          if (abscos>eps) then
              cj = abscos**coeffj(modind)
           else
-             cj = 0.0_fp
+             cj = 0.
           endif
           coeffb = (bb(modind, 1) + bb(modind, 2)*cj)                           &
                  & + (bb(modind, 3) + bb(modind, 4)*cj)*lfc
@@ -217,13 +236,13 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
                  & + (pp(modind, 3) + pp(modind, 4)*cj)*lfc
           coeffq = (qq(modind, 1) + qq(modind, 2)*cj)                           &
                  & + (qq(modind, 3) + qq(modind, 4)*cj)*lfc
-          ypar = xpar*(1.0_fp + coeffb*(xpar**coeffp)*((1.0_fp - xpar)**coeffq))
+          ypar = xpar*(1.0 + coeffb*(xpar**coeffp)*((1.0 - xpar)**coeffq))
        endif
     endif
     !
     !-----------bottom friction for combined waves and current
     !
-    taum   = ypar*(taucur + tauwav)
+    taum = ypar*(taucur + tauwav)
     thetam = taum*facth
     thetaw = tauwav*facth
     !
@@ -231,34 +250,35 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     !                    for ag=9.81, s=2.65, nu=1e-6
     !
     !     dstar  = 25296.*d50
-    dstar = (ag*delta/rnu**2)**(1.0_fp/3.0_fp)*d50
+    dstar = (ag*delta/rnu**2)**(1./3.)*d50
     !
     !           Critical shear stress
     !           Soulsby p. 106, eq. 77
     !
-    thetcr = 0.30_fp/(1.0_fp + 1.2_fp*dstar) + 0.055_fp*(1.0_fp - exp( - 0.020_fp*dstar))
+    thetcr = 0.30/(1. + 1.2*dstar) + 0.055*(1. - exp( - 0.020*dstar))
     !
     !          Tau max needed to check the critical tau
     !          Soulsby  p. 168
     !
     thetmx = sqrt((thetam + thetaw*cos(phi))**2 + (thetaw*sin(phi))**2)
-    if ( thetmx <= thetcr ) then
-    ! critical tau exceeded
-        return
-    end if
+    !
+    !           Check if critical tau exceeded
+    !
+    if (thetmx<=thetcr) goto 999
+    !
     !
     !           Soulsby 167 eq. 129 a-d
     !           Dimensionless transport in current direction
     !
-    phix1 = 12.0_fp*sqrt(thetam + WAVEPS)*(thetam - thetcr)
-    phix2 = 12.0_fp*(0.95_fp + 0.19_fp*cos(2.0_fp*phi))*sqrt(thetaw + WAVEPS)*thetam
+    phix1 = 12.*sqrt(thetam + waveps)*(thetam - thetcr)
+    phix2 = 12.*(0.95 + 0.19*cos(2.*phi))*sqrt(thetaw + waveps)*thetam
     phix = max(phix1, phix2)
     !
     !
     !           Dimensionless transport perpendicular to current direction
     !
-    phiy = 12.0_fp*(0.19_fp*thetam*thetaw**2*sin(2.0_fp*phi))                              &
-         & /((thetaw + WAVEPS)**1.5_fp + 1.5_fp*(thetam + WAVEPS)**1.5_fp)
+    phiy = 12.*(0.19*thetam*thetaw**2*sin(2.*phi))                              &
+         & /((thetaw + waveps)**1.5 + 1.5*(thetam + waveps)**1.5)
     !
     !
     !           Dimensionless transport perpendicular to current direction
@@ -266,5 +286,10 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     factr = sqrt(ag*delta*d50**3)
     sbotx = acal*factr/utot*(phix*u - phiy*v)
     sboty = acal*factr/utot*(phix*v + phiy*u)
-
+    !
+    !     End of routine
+    !
+  999 continue
+    ssusx = 0.
+    ssusy = 0.
 end subroutine trab12

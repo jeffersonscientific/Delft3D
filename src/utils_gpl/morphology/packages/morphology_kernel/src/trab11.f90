@@ -1,9 +1,9 @@
 subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
-                & d50       ,npar      ,par       ,sbotx     ,sboty     , &
-                & ssusx     ,ssusy     ,ubot      ,vonkar    ,ubot_from_com )
+                & d50       ,par       ,sbotx     ,sboty     ,ssusx     , &
+                & ssusy     ,ubot      ,vonkar    ,ubot_from_com        )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: trab11.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/trab11.f90 $
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! the transport formula of Soulsby / Van Rijn
@@ -41,24 +41,22 @@ subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
-    logical                  , intent(in)    :: ubot_from_com
-    integer                  , intent(in)    :: npar
-    real(fp)                 , intent(in)    :: d50
-    real(fp)                                 :: h
-    real(fp)                                 :: hrms   !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(npar), intent(in)    :: par
-    real(fp)                                 :: tp     !  Description and declaration in esm_alloc_real.f90
-    real(fp)                 , intent(in)    :: ubot   !  Description and declaration in esm_alloc_real.f90
-    real(fp)                 , intent(in)    :: u
-    real(fp)                 , intent(in)    :: v
-    real(fp)                 , intent(in)    :: vonkar
-    !
-    real(fp)                 , intent(out)   :: sbotx
-    real(fp)                 , intent(out)   :: sboty
-    real(fp)                 , intent(out)   :: ssusx
-    real(fp)                 , intent(out)   :: ssusy
+    real(fp)               , intent(in)  :: d50
+    real(fp)                             :: h
+    real(fp)                             :: hrms   !  Description and declaration in esm_alloc_real.f90
+    real(fp)               , intent(out) :: sbotx
+    real(fp)               , intent(out) :: sboty
+    real(fp)               , intent(out) :: ssusx
+    real(fp)               , intent(out) :: ssusy
+    real(fp)                             :: tp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)               , intent(in)  :: ubot   !  Description and declaration in esm_alloc_real.f90
+    real(fp)               , intent(in)  :: u
+    real(fp)               , intent(in)  :: v
+    real(fp), dimension(30), intent(in)  :: par
+    real(fp)               , intent(in)  :: vonkar
+    logical                , intent(in)  :: ubot_from_com
 !
 ! Local variables
 !
@@ -79,7 +77,6 @@ subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
     real(fp)                       :: urms
     real(fp)                       :: utot       ! flow velocity
     real(fp)                       :: z0
-    real(fp)                       :: alfaurms   ! Calibration factor wave influence on transport
 !
 !
 !! executable statements -------------------------------------------------------
@@ -100,7 +97,6 @@ subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
     acal = par(11)
     d90 = par(12)*d50
     z0 = par(13)
-    alfaurms = par(14)
     !
     !     Velocity magnitude
     !
@@ -149,7 +145,7 @@ subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
     cd = (vonkar/(log(h/z0) - 1.))**2
     asb = 0.005*h*(d50/h/(delta*ag*d50))**1.2
     ass = 0.012*d50*dstar**( - 0.6)/(delta*ag*d50)**1.2
-    term1 = (utot*utot + alfaurms*0.018/cd*urms*urms)**0.5
+    term1 = (utot*utot + 0.018/cd*urms*urms)**0.5
     if (term1>ucr) then
        term2 = (term1 - ucr)**2.4
     else

@@ -2,7 +2,7 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
                        & nfld      ,ifld      ,dims      )
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -26,8 +26,8 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: depfil_double.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_lgpl/deltares_common/packages/deltares_common_mpi/src/depfil_double.f90 $
 !!--description----------------------------------------------------------------- 
 ! 
 !    Function: Reads the depth values from the attribute file 
@@ -67,9 +67,11 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
 ! Local variables 
 ! 
     integer                               :: iocond ! Help variable for iostat condition  
+    integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
-    real(hp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing values of entire domain 
+    integer                 , external    :: newunit 
+    real(hp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing dp of entire domain 
     character(300)                        :: errmsg ! Character string containing the errormessage to be written to file. The message depends on the error.  
     !
     integer                               :: i
@@ -97,7 +99,7 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
        ! 
        ! allocate temporary array to store data of entire domain read from file 
        ! 
-       ! NOTE: nmaxus and num_columns equal nmaxgl and mmaxgl, respectively (for entire domain)
+       ! NOTE: nmaxus and mmax equal nmaxgl and mmaxgl, respectively (for entire domain) 
        !       in case of parallel runs. Moreover, array is associated with subdomain and 
        !       therefore, data for entire domain is stored in temporary array dtmp 
        !
@@ -105,7 +107,7 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
        ! 
        ! the master opens and reads the depth file 
        ! 
-       if ( inode /= master ) goto 10 
+       if ( inode > master ) goto 10 
        !
        if (associated(dims%aggrtable)) then
           mmaxio = size(dims%aggrtable,1)

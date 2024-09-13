@@ -1,18 +1,14 @@
-!> \page morphology_lib Library of sediment transport formulations
-!! \section eqtran Gateway for all sediment transport formulations
-!! The subroutine \em eqtran provides a standardized interface for calling
-!! any sediment transport in the library.
-
-subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur      , &
+subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
                 & frac      ,sigmol    ,dicww     ,lundia    ,taucr0    , &
                 & rksrs     ,i2d3d     ,lsecfl    ,spirint   ,suspfrac  , &
                 & tetacr    ,concin    , &
                 & dzduu     ,dzdvv     ,ubot      ,tauadd    ,sus       , &
                 & bed       ,susw      ,bedw      ,espir     ,wave      , &
                 & scour     ,ubot_from_com        ,camax     ,eps       , &
-                & iform     ,npar      ,par       ,numintpar ,numrealpar, &
-                & numstrpar ,dllfunc   ,dllhandle ,intpar    ,realpar   , &
-                & strpar    , & !output:
+                & iform     ,par       ,numintpar ,numrealpar,numstrpar , &
+                & dllfunc   ,dllhandle ,intpar    ,realpar   ,strpar    , &
+                & islope    ,ratio_ca_c2d , moveEDtoBED, &
+!output:
                 & aks       ,caks      ,taurat    ,seddif    ,rsedeq    , &
                 & kmaxsd    ,conc2d    ,sbcu      ,sbcv      ,sbwu      , &
                 & sbwv      ,sswu      ,sswv      ,dss       ,caks_ss3d , &
@@ -20,7 +16,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -44,8 +40,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: eqtran.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/eqtran.f90 $
 !!--description-----------------------------------------------------------------
 !
 !
@@ -55,38 +51,39 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     use precision
     use message_module, only: write_error
     use mathconsts, only: pi, ee
-    use iso_c_binding, only: c_char
     use morphology_data_module
+    !use glob_bankPLIC ,only: consistency_ce_Cav,uAXIS,hAXIS,simpleVR84
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
     integer(pntrsize)                   , intent(in)    :: dllhandle
     integer                             , intent(in)    :: i2d3d
     integer                             , intent(in)    :: iform
-    integer                             , intent(in)    :: num_layers_grid     !  Description and declaration in esm_alloc_int.f90
+    integer                             , intent(in)    :: kmax     !  Description and declaration in esm_alloc_int.f90
     integer                             , intent(in)    :: lsecfl   !  Description and declaration in esm_alloc_int.f90
     integer                             , intent(in)    :: ltur     !  Description and declaration in esm_alloc_int.f90
     integer                             , intent(in)    :: lundia   !  Description and declaration in inout.igs
-    integer                             , intent(in)    :: npar
     integer                             , intent(in)    :: numintpar
     integer                             , intent(in)    :: numrealpar
     integer                             , intent(in)    :: numstrpar
+    integer                             , intent(in)    :: islope
     integer      , dimension(numintpar) , intent(inout) :: intpar
     real(fp)                            , intent(in)    :: bed
     real(fp)                            , intent(in)    :: bedw
     real(fp)                            , intent(in)    :: camax
-    real(fp)     , dimension(num_layers_grid)      , intent(inout) :: concin
-    real(fp)     , dimension(0:num_layers_grid)    , intent(in)    :: dicww    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(kmax)           , intent(inout):: concin
+    real(fp)     , dimension(0:kmax)    , intent(in)    :: dicww    !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: dzduu     !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: dzdvv     !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: eps
     real(fp)                            , intent(in)    :: espir
     real(fp)                            , intent(in)    :: frac     !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(npar)      , intent(inout) :: par
+    real(fp)     , dimension(30)        , intent(inout) :: par
+    real(fp)                            , intent(in)    :: ratio_ca_c2d
     real(fp)                            , intent(in)    :: rksrs    !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(num_layers_grid)      , intent(in)    :: sig      !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(kmax)      , intent(in)    :: sig      !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: sigmol   !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: spirint  !  Spiral flow intensity
     real(fp)                            , intent(in)    :: sus
@@ -94,10 +91,11 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     real(fp)                            , intent(in)    :: tauadd
     real(fp)                            , intent(in)    :: taucr0
     real(fp)                            , intent(in)    :: tetacr
-    real(fp)     , dimension(num_layers_grid)      , intent(in)    :: thick    !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(kmax)      , intent(in)    :: thick    !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: ubot     !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(0:num_layers_grid)    , intent(in)    :: ws       !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(0:kmax)    , intent(in)    :: ws       !  Description and declaration in esm_alloc_real.f90
     real(hp)     , dimension(numrealpar), intent(inout) :: realpar
+    logical                             , intent(in)    :: moveEDtoBED
     logical                             , intent(in)    :: scour
     logical                             , intent(in)    :: suspfrac !  suspended sediment fraction
     logical                             , intent(in)    :: ubot_from_com
@@ -113,12 +111,12 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     real(fp)                        , intent(out)  :: caks_ss3d
     real(fp)                        , intent(out)  :: conc2d
     real(fp)                        , intent(out)  :: dss
-    real(fp), dimension(num_layers_grid)       , intent(out)  :: rsedeq
+    real(fp), dimension(kmax)       , intent(out)  :: rsedeq
     real(fp)                        , intent(out)  :: sbcu
     real(fp)                        , intent(out)  :: sbcv
     real(fp)                        , intent(out)  :: sbwu
     real(fp)                        , intent(out)  :: sbwv
-    real(fp), dimension(0:num_layers_grid)     , intent(out)  :: seddif
+    real(fp), dimension(0:kmax)     , intent(out)  :: seddif
     real(fp)                        , intent(out)  :: sswu
     real(fp)                        , intent(out)  :: sswv
     real(fp)                        , intent(out)  :: t_relax
@@ -127,18 +125,17 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
 !
 ! Local variables
 !
-    integer                     :: i
     integer(pntrsize)           :: ierror_ptr
     integer                     :: k
     integer(pntrsize), external :: perf_function_eqtran
     real(fp)                    :: ag
     real(fp)                    :: alphaspir
+    real(fp)                    :: avgu
     real(fp)                    :: bakdif
     real(fp)                    :: cesus
     real(fp)                    :: chezy
     real(fp)                    :: cosa
     real(fp)                    :: d10
-    real(fp)                    :: d15
     real(fp)                    :: d90
     real(fp)                    :: dg
     real(fp)                    :: dgsd
@@ -162,7 +159,6 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     real(fp)                    :: sscv
     real(fp)                    :: taub
     real(fp)                    :: teta
-    real(fp)                    :: timhr
     real(fp)                    :: tp
     real(fp)                    :: txg
     real(fp)                    :: tyg
@@ -179,43 +175,36 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     real(fp)                    :: z0cur
     real(fp)                    :: z0rou
     real(fp)                    :: zumod
-    real(fp)                    :: kwtur
-    real(fp)                    :: dzbdt
-    real(fp)                    :: dzdx
-    real(fp)                    :: dzdy
-    real(fp)                    :: poros
-    real(fp)                    :: ua
-    real(fp)                    :: va
-    real(fp)                    :: wsb
-    real(fp)                    :: zb
+    real(fp)                    :: chezy_islp5 
+    real(fp)                    :: h_islp5 
+    real(fp)                    :: R_islp5
+    real(fp)                    :: f_VR84
+    real(fp)                    :: rmuc
+    real(fp)                    :: fc
     !
     ! Interface to dll is in High precision!
     !
-    real(hp)               :: cesus_dll
-    real(hp)               :: sbc_dll
-    real(hp)               :: sbcu_dll
-    real(hp)               :: sbcv_dll
-    real(hp)               :: sbwu_dll
-    real(hp)               :: sbwv_dll
-    real(hp)               :: ssus_dll
-    real(hp)               :: sswu_dll
-    real(hp)               :: sswv_dll
-    real(hp)               :: t_relax_dll
-    character(1024)        :: errmsg
-    character(256)         :: message        ! Contains message from internal or external transport formula
-    character(kind=c_char) :: message_c(257) ! C- version of "message", including C_NULL_CHAR
-                                             ! Calling perf_function_eqtran with "message" caused problems
-                                             ! Solved by using "message_c"
-    logical                :: equi_conc      ! equilibrium concentration given (instead of susp. transport rate)
-    logical                :: sbc_total      ! total bed load given (instead of m,n components)
-    logical                :: sus_total      ! total suspended load given (instead of m,n components)
+    real(hp)          :: cesus_dll
+    real(hp)          :: sbc_dll
+    real(hp)          :: sbcu_dll
+    real(hp)          :: sbcv_dll
+    real(hp)          :: sbwu_dll
+    real(hp)          :: sbwv_dll
+    real(hp)          :: ssus_dll
+    real(hp)          :: sswu_dll
+    real(hp)          :: sswv_dll
+    real(hp)          :: t_relax_dll
+    character(1024)   :: errmsg
+    character(256)    :: message     ! Contains message from internal or external transport formula
+    logical           :: equi_conc   ! equilibrium concentration given (instead of susp. transport rate)
+    logical           :: sbc_total   ! total bed load given (instead of m,n components)
+    logical           :: sus_total   ! total suspended load given (instead of m,n components)
 !
 !! executable statements -------------------------------------------------------
 !
     ierror_ptr = 0
     error      = .false.
     !
-    timhr     = real(realpar(RP_TIME) ,fp)/3600.0_fp
     utot      = real(realpar(RP_EFVLM),fp)
     u         = real(realpar(RP_EFUMN),fp)
     v         = real(realpar(RP_EFVMN),fp)
@@ -230,19 +219,14 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     teta      = real(realpar(RP_TETA) ,fp)
     rlabda    = real(realpar(RP_RLAMB),fp)
     uorb      = real(realpar(RP_UORB) ,fp)
-    kwtur     = real(realpar(RP_KWTUR),fp)
-    dzbdt     = real(realpar(RP_BLCHG),fp)
-    dzdx      = real(realpar(RP_DZDX) ,fp)
-    dzdy      = real(realpar(RP_DZDY) ,fp)
     di50      = real(realpar(RP_D50)  ,fp)
     dss       = real(realpar(RP_DSS)  ,fp)
     dstar     = real(realpar(RP_DSTAR),fp)
     d10       = real(realpar(RP_D10MX),fp)
-    d15       = real(realpar(RP_D15MX),fp)
     d90       = real(realpar(RP_D90MX),fp)
     mudfrac   = real(realpar(RP_MUDFR),fp)
     hidexp    = real(realpar(RP_HIDEX),fp)
-    wsb       = real(realpar(RP_SETVL),fp)
+    !ws        = real(realpar(RP_SETVL),fp)
     rhosol    = real(realpar(RP_RHOSL),fp)
     rhowat    = real(realpar(RP_RHOWT),fp)
     salinity  = real(realpar(RP_SALIN),fp)
@@ -261,7 +245,6 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     dg        = real(realpar(RP_DG)   ,fp)
     dgsd      = real(realpar(RP_DGSD) ,fp)
     sandfrac  = real(realpar(RP_SNDFR),fp)
-    zb        = real(realpar(RP_ZB)   ,fp)
     !
     cesus  = 0.0_fp
     sbot   = 0.0_fp
@@ -274,8 +257,6 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     sbwv   = 0.0_fp
     sswu   = 0.0_fp
     sswv   = 0.0_fp
-    ua     = 0.0_fp
-    va     = 0.0_fp
     sag    = sqrt(ag)
     bakdif = vicmol / sigmol
     !
@@ -285,16 +266,16 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
           ! By default entrainment and deposition (re)move sediment into/from
           ! the bottom-most layer.
           !
-          kmaxsd = num_layers_grid
+          kmaxsd = kmax  !Alberto: useless, it is overwritten in  factor3d2d
           !
           ! Use diffusivity of turbulence model as vertical sediment diffusion
           ! coefficient. In the future, we may OPTIONALLY enable Van Rijn's
           ! analytical 1984, 1993 or 2004 formulations here.
           !
-          do k = 0, num_layers_grid
+          do k = 0, kmax
               seddif(k) = dicww(k)
           enddo
-          ! seddif(num_layers_grid) = vonkar*z0rou*ustarc
+          ! seddif(kmax) = vonkar*z0rou*ustarc
        endif
     endif
     !
@@ -305,8 +286,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Van Rijn 1993
        !
-       call tram1(numrealpar,realpar   ,wave      ,npar      ,par       , &
-                & num_layers_grid      ,bed       , &
+       call tram1(numrealpar,realpar   ,wave                 ,par       , &
+                & kmax      ,bed       , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
                 & frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      , &
@@ -326,15 +307,15 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        sbc_total = .false.
        sus_total = .false.
-    elseif (iform == -2 .or. iform == -4) then
+    elseif (iform == -2) then
        !
        ! Van Rijn 2004
        !
-       call tram2(numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
-                & par       ,num_layers_grid      ,bed       ,dzduu     ,dzdvv     , &
-                & rksrs     ,tauadd    ,taucr0    ,aks       ,eps       , &
-                & camax     ,frac      ,sig       ,thick     ,ws        , &
-                & dicww     ,ltur      ,aks_ss3d  ,iform     , &
+       call tram2(numrealpar,realpar   ,wave      ,i2d3d     ,par       , &
+                & kmax      ,bed       ,dzduu     ,dzdvv     ,rksrs     , &
+                & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
+                & frac      ,sig       ,thick     ,ws        , &
+                & dicww     ,ltur      ,aks_ss3d  , &
                 & kmaxsd    ,taurat    ,caks      ,caks_ss3d ,concin    , &
                 & seddif    ,sigmol    ,rsedeq    ,scour     ,bedw      , &
                 & susw      ,sbcu      ,sbcv      ,sbwu      ,sbwv      , &
@@ -352,8 +333,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Engelund-Hansen
        !
-       call tranb1(utot      ,di50      ,chezy     ,h1        ,npar      , &
-                 & par       ,sbot      ,ssus      )
+       call tranb1(utot      ,di50      ,chezy     ,h1        ,par        , &
+                 & sbot      ,ssus      )
        !
        sbc_total = .true.
        sus_total = .true.
@@ -361,8 +342,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Meyer-Peter-Muller
        !
-       call tranb2(utot      ,di50       ,d90       ,chezy     ,h1        , &
-                 & npar      ,par        ,hidexp    ,sbot      ,ssus      )
+       call tranb2(utot       ,di50      ,d90       ,chezy     ,h1        , &
+                 & par        ,hidexp    ,sbot      ,ssus      )
        !
        sbc_total = .true.
        sus_total = .true.
@@ -370,8 +351,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Ackers-White
        !
-       call tranb3(utot      ,d90       ,chezy     ,h1        ,npar      , &
-                 & par       ,sbot      ,ssus      )
+       call tranb3(utot      ,d90       ,chezy     ,h1        ,par        , &
+                 & sbot      ,ssus      )
        !
        sbc_total = .true.
        sus_total = .true.
@@ -379,8 +360,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! general relation for bed load
        !
-       call tranb4(utot      ,di50      ,chezy     ,npar      ,par        , &
-                 & hidexp    ,sbot      ,ssus      )
+       call tranb4(utot      ,di50      ,chezy     ,par        ,hidexp    , &
+                 & sbot      ,ssus      )
        !
        sbc_total = .true.
        sus_total = .true.
@@ -388,11 +369,10 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Bijker
        !
-       call tranb5(u         ,v         ,di50      ,d90       ,chezy     , &
-                 & h1        ,hrms      ,tp        ,teta      ,npar      , &
-                 & par       ,dzduu     ,dzdvv     ,vonkar    ,wsb       , &
-                 & poros     ,sbcu      ,sbcv      ,sscu      ,sscv      , &
-                 & cesus     )
+       call tranb5(u         ,v         ,di50      ,d90       ,chezy      , &
+                 & h1        ,hrms      ,tp        ,teta      ,par        , &
+                 & dzduu     ,dzdvv     ,sbcu      ,sbcv      ,sscu       , &
+                 & sscv      ,cesus     ,vonkar    )
        !
        sbc_total = .false.
        sus_total = .false.
@@ -405,10 +385,10 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        error = .true.
        return
        !
-       !call tranb6(utot      ,u         ,v         ,chezy     ,h1        , &
-       !          & hrms      ,tp        ,teta      ,diss      ,dzduu     , &
-       !          & dzdvv     ,npar      ,par       ,sbcu      ,sbcv      , &
-       !          & sscu      ,sscv      )
+       !call tranb6(utot      ,u          ,v         ,chezy     ,h1        , &
+       !          & hrms      ,tp         ,teta      ,diss      ,dzduu     , &
+       !          & dzdvv     ,par        ,sbcu      ,sbcv      ,sscu      , &
+       !          & sscv      )
        !
        sbc_total = .false.
        sus_total = .false.
@@ -416,11 +396,29 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Van Rijn (1984, modified)
        !
-       call tranb7(utot      ,di50       ,d90       ,h1        ,npar      , &
-                 & par       ,sbot      ,ssus       ,vonkar    ,mudfrac   )
+       !if (simpleVR84/=1) then
+          call tranb7(utot      ,di50      ,d90       ,h1        ,par        , &
+                    & sbot      ,ssus      ,vonkar    ,mudfrac   ,i2d3d      , &
+                    & chezy     ,sag       ,f_VR84    ,utot      ,h1         , &  !utot is duplicated on purpose
+                    & rmuc      ,fc        ,ws        ,kmax) 
+       !else !if (simpleVR84==1) then
+       !   call tranb7(uAXIS     ,di50      ,d90       ,hAXIS     ,par        , & !here the value of hAXIS and uAXIS on the axis are used
+       !             & sbot      ,ssus      ,vonkar    ,mudfrac   ,i2d3d      , &
+       !             & chezy     ,sag       ,f_VR84    ,utot      ,h1         , &
+       !             & rmuc      ,fc        ,ws        ,kmax)   
+       !endif
        !
        sbc_total = .true.
        sus_total = .true.
+       if (moveEDtoBED) then
+          t_relax = f_VR84 ! it would be t_relax = 1/ratio with ratio=1/f_VR84, where ratio is >1 while f_VR84 <1 (the former brings C to the bottom and the latter from the bottom to the depth averaged valu
+       endif
+       !if (consistency_ce_Cav.and.kmax>1) then !only 3D
+       !   call write_error('consistency_ce_Cav needs to be reimplemented')
+       !   error = .true.
+       !   return
+       !   !crep    = f_VR84 ! see factor3d2d below
+       !endif
     elseif (iform == 8) then
        !
        ! Van Rijn / Ribberink (1994)
@@ -430,10 +428,10 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        error = .true.
        return
        !
-       !call tranb8(u         ,v         ,hrms      ,h1        ,teta      , &
-       !          & tp        ,di50      ,d90       ,diss      ,dzduu     , &
-       !          & dzdvv     ,npar      ,par       ,sbcu      ,sbcv      , &
-       !          & sscu      ,sscv      )
+       !call tranb8(u         ,v         ,hrms      ,h1         ,teta      , &
+       !          & tp        ,di50      ,d90       ,diss       ,dzduu     , &
+       !          & dzdvv     ,par       ,sbcu      ,sbcv       ,sscu      , &
+       !          & sscv      )
        !
        sbc_total = .false.
        sus_total = .false.
@@ -459,9 +457,9 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        error = .true.
        return
        !
-       !call trab10(utot      ,di50      ,chezy     ,h1        ,cosa      , &
-       !          & sina      ,dzduu     ,dzdvv     ,npar      ,par       , &
-       !          & sbot      ,ssus      )
+       !call trab10(utot      ,di50      ,chezy     ,h1         ,cosa      , &
+       !          & sina      ,dzduu     ,dzdvv     ,par        ,sbot      , &
+       !          & ssus      )
        !
        sbc_total = .true.
        sus_total = .true.
@@ -469,9 +467,9 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Soulsby and Van Rijn
        !
-       call trab11(u         ,v         ,hrms      ,h1        ,tp        , &
-                 & di50      ,npar      ,par       ,sbcu      ,sbcv      , &
-                 & sscu      ,sscv      ,ubot      ,vonkar    ,ubot_from_com)
+       call trab11(u         ,v          ,hrms      ,h1        ,tp        , &
+                 & di50      ,par        ,sbcu      ,sbcv      ,sscu      , &
+                 & sscv      ,ubot       ,vonkar    ,ubot_from_com        )
        !
        sbc_total = .false.
        sus_total = .false.
@@ -479,10 +477,9 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Soulsby
        !
-       call trab12(u         ,v         ,hrms      ,h1        ,tp        , &
-                 & teta      ,di50      ,npar      ,par       ,sbcu      , &
-                 & sbcv      ,sscu      ,sscv      ,ubot      ,vonkar    , &
-                 & ubot_from_com)
+       call trab12(u         ,v         ,hrms       ,h1        ,tp        , &
+                 & teta      ,di50      ,par        ,sbcu      ,sbcv      , &
+                 & sscu      ,sscv      ,ubot       ,vonkar    ,ubot_from_com)
        !
        sbc_total = .false.
        sus_total = .false.
@@ -490,8 +487,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! test transport (Wang) Fredsoe
        !
-       call tran9t(utot      ,di50      ,d90       ,chezy     ,h1        , &
-                 & ustarc    ,npar      ,par       ,sbot      ,ssus      )
+       call tran9t(utot      ,di50       ,d90       ,chezy     ,h1        , &
+                 & ustarc    ,par        ,sbot      ,ssus      )
        !
        sbc_total = .true.
        sus_total = .true.
@@ -499,8 +496,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! generalized Ashida and Michiue
        !
-       call trab14(utot      ,di50      ,chezy     ,npar      ,par        , &
-                 & hidexp    ,sbot      ,ssus      )
+       call trab14(utot      ,di50      ,chezy     ,par        ,hidexp    , &
+                 & sbot      ,ssus      )
        !
        sbc_total = .true.
        sus_total = .true.
@@ -508,8 +505,8 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Wilcock & Crowe
        !
-       call trabwc(utot      ,di50      ,taub      ,npar      ,par       , &
-                 & sbot      ,ssus      ,dg        ,sandfrac  ,chezy     )
+       call trabwc(utot      ,di50      ,taub      ,par       ,sbot      , &
+                 & ssus      ,dg        ,sandfrac  ,chezy     )
        !
        sbc_total = .true.
        sus_total = .true. 
@@ -517,61 +514,20 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        ! Modified Wilcock & Crowe
        !
-       call trabwc2(utot      ,di50      ,taub       ,npar      ,par       , &
-                  & sbot      ,ssus      ,dg        ,dgsd       ,chezy     )
+       call trabwc2(utot       ,di50      ,taub       ,par       ,sbot      , &
+                  & ssus       ,dg        ,dgsd       ,chezy     )
        !
        sbc_total = .true.
        sus_total = .true.
     elseif (iform == 18) then 
        !
-       ! Gaeuman et al. (development of Wilcock & Crowe)
+       ! Gaeuman et al. (development of Wilcock & Crowe
        !
-       call trabg(utot      ,di50      ,taub      ,npar      ,par       , &
-                & sbot      ,ssus      ,dg        ,dgsd      ,chezy     )
-       !
-       sbc_total = .true.
-       sus_total = .true.
-    elseif (iform == 19) then
-       !
-       ! van Thiel / Van Rijn (2008)
-       !
-       equi_conc = .true.
-       call trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h1        ,tp        , &
-                 & di50      ,d15       ,d90       ,npar      ,par       ,dzbdt     ,vicmol    , &
-                 & poros     ,chezy     ,dzdx      ,dzdy      ,sbcu      ,sbcv      ,cesus      , &
-                 & ua        ,va        ,ubot      ,kwtur     ,ubot_from_com )
-       !
-       realpar(RP_UAU) = real(ua      ,hp)  ! needed for suspended transport
-       realpar(RP_VAU) = real(va      ,hp)
-       !
-       sbc_total = .false.
-       sus_total = .false.
-    elseif (iform == 20) then
-       !
-       ! Soulsby / Van Rijn with XBeach adaptations
-       !
-       equi_conc = .true.
-       call trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h1         ,tp        , &
-                 & di50      ,d15       ,d90       ,npar      ,par       ,dzbdt     ,vicmol    , &
-                 & poros     ,chezy     ,dzdx      ,dzdy      ,sbcu      ,sbcv     ,cesus     , &
-                 & ua        ,va        ,ubot      ,kwtur     ,ubot_from_com )
-       !
-       realpar(RP_UAU) = real(ua      ,hp)  ! needed for suspended transport
-       realpar(RP_VAU) = real(va      ,hp)
-       !
-       sbc_total = .false.
-       sus_total = .false.
-    elseif (iform == 22) then
-       !
-       ! ASMITA
-       !
-       call asmita(zb, timhr, npar, par, &
-                 & sbot, cesus, t_relax)
-       cesus = cesus/rhosol
+       call trabg(utot       ,di50      ,taub       ,par       ,sbot      , &
+                & ssus       ,dg        ,dgsd       ,chezy     )
        !
        sbc_total = .true.
        sus_total = .true.
-       equi_conc = .true.
     elseif (iform == 15) then
        !
        ! User defined formula in DLL
@@ -598,10 +554,6 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        sswv_dll    = 0.0_hp
        t_relax_dll = 0.0_hp
        message     = ' '
-       do i=1,256
-          message_c(i) = message(i:i)
-       enddo
-       message_c(257) = C_NULL_CHAR
        !
        ! psem/vsem is used to be sure this works fine in DD calculations
        !
@@ -614,8 +566,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
                                          sbcv_dll , sbwu_dll , sbwv_dll      , &
                                          equi_conc, cesus_dll, ssus_dll      , &
                                          sswu_dll , sswv_dll , t_relax_dll   , &
-                                         message_c)
-       message = transfer(message_c(1:256), message)
+                                         message)
        call vsemlun
        if (ierror_ptr /= 0) then
           errmsg = 'Cannot find function "'//trim(dllfunc)//'" in dynamic library.'
@@ -698,8 +649,16 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
              alphaspir = 0.0_fp
           else
              alphaspir = sqrt(ag) / 0.4_fp / chezy
-             alphaspir = 12.5_fp * espir * (1.0_fp-alphaspir) ! 12.5 = 2.0_fp/(von Karman)^2
+             alphaspir = 12.5_fp * espir * (1.0_fp-0.5_fp*alphaspir)
              alphaspir = alphaspir * spirint / umod
+             if (islope==5)  then
+                chezy_islp5 = 40._fp
+                alphaspir = sqrt(ag) / 0.4_fp / chezy_islp5
+                alphaspir = 12.5_fp * espir * (1.0_fp-0.5_fp*alphaspir)
+                h_islp5 = 1.356910921605423_fp
+                R_islp5 = 60._fp
+                alphaspir = alphaspir * h_islp5 / R_islp5 !SINCE spirint/umod = h/R
+             endif
           endif
           txg  = ust2 * (uuu + alphaspir*vvv) / umod
           tyg  = ust2 * (vvv - alphaspir*uuu) / umod
@@ -736,7 +695,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     else
        caks     = sus * caks
        caks_ss3d= sus * caks_ss3d
-       do k = 1, num_layers_grid
+       do k = 1, kmax
           rsedeq(k) = sus * rsedeq(k)
        enddo
        conc2d   = sus * conc2d
@@ -766,23 +725,31 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
           else
               !
               ! Suspended transport rate given by transport formula,
-              ! derive concentration. 
+              ! derive concentration
               !
-              cesus = ssus / (utot + eps) / h1
+              cesus = ssus / (utot+eps) / h1
           endif
           !
           ! Concentration needs to be multiplied by frac to match Van Rijn
           ! formulae.
           !
-          conc2d    = cesus * frac     ! this is rsedeq used for 2d runs
+          conc2d    = cesus * frac
           !
           ! Convert depth averaged concentration to reference concentration
           ! at distance aks from bed.
           !
-          kmaxsd    = num_layers_grid
-          call factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       , &
-                        & thick     ,seddif    ,ws        ,bakdif    , &
-                        & z0rou     ,h1        ,fac3d2d   )
+          kmaxsd    = kmax ! Alberto: useless, it is overwritten in  factor3d2d
+            !NOTE Alberto: calling factor3d2d is done only for output purposes, since caks is never used but
+            !      only printed as output
+            !Also Alberto: since   seddif(k) = dicww(k), we can have that dicww is zero for 2D simul since its user defined and fac3d2d becomes very small 
+            !Also Alberto: fac3d2d is the depth-averaged concentration, while it should be a dimensionless factor
+
+          call factor3d2d(kmax      ,aks       ,kmaxsd    ,sig       , &
+                      & thick     ,seddif    ,ws        ,bakdif    , &
+                      & z0rou     ,h1        ,fac3d2d   )
+          if (iform == 7) then  
+             fac3d2d = f_VR84
+          endif
           caks      = conc2d / (fac3d2d+eps) / rhosol
           rsedeq    = 0.0_fp
           !
@@ -830,5 +797,4 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
            sbcv = sbcv + sscv
        endif
     endif
-    dss = real(realpar(RP_DSS)  ,fp)
 end subroutine eqtran

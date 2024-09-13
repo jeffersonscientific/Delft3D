@@ -1,8 +1,8 @@
-subroutine trabg(utot      ,di        ,taub      ,npar      ,par       , &
-               & sbot      ,ssus      ,dg        ,dgsd      ,chezy     )
+subroutine trabg(utot      ,di        ,taub      ,par       ,sbot      , &
+               & ssus      ,dg        ,dgsd      ,chezy     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine trabg(utot      ,di        ,taub      ,npar      ,par       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: trabg.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/trabg.f90 $
 !!--description-----------------------------------------------------------------
 !
 !  Computes sediment transport according to the Gaeuman et al modified form of the 
@@ -46,19 +46,17 @@ subroutine trabg(utot      ,di        ,taub      ,npar      ,par       , &
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
-    integer                  , intent(in)    :: npar
-    real(fp)                 , intent(in)    :: chezy  ! local ChÃ©zy value [m1/2/s]
-    real(fp)                 , intent(in)    :: dg     ! geometric mean surface grain size [m]
-    real(fp)                 , intent(in)    :: dgsd   ! geometric standard deviation of particle size mix [m]
-    real(fp)                 , intent(in)    :: di     ! Grain size specified as d50
-    real(fp), dimension(npar), intent(in)    :: par    ! sediment parameter list
-    real(fp)                 , intent(in)    :: taub   ! bed shear stress [N/m2]
-    real(fp)                 , intent(in)    :: utot   ! flow velocity
-    !
-    real(fp)                 , intent(out)   :: sbot   ! bed load transport, magnitude [m3/m/s]
-    real(fp)                 , intent(out)   :: ssus   ! suspended sediment transport
+    real(fp)               , intent(in)  :: utot   ! flow velocity
+    real(fp)               , intent(in)  :: di     ! Grain size specified as d50
+    real(fp)               , intent(in)  :: taub   ! bed shear stress [N/m2]
+    real(fp)               , intent(out) :: sbot   ! bed load transport, magnitude [m3/m/s]
+    real(fp)               , intent(out) :: ssus   ! suspended sediment transport
+    real(fp)               , intent(in)  :: dg     ! geometric mean surface grain size [m]
+    real(fp)               , intent(in)  :: dgsd   ! geometric standard deviation of particle size mix [m]
+    real(fp)               , intent(in)  :: chezy  ! local Chézy value [m1/2/s]
+    real(fp), dimension(30), intent(in)  :: par    ! sediment parameter list
 !
 ! Local variables
 !
@@ -98,7 +96,7 @@ subroutine trabg(utot      ,di        ,taub      ,npar      ,par       , &
     b       = (1.0_fp - ao) / (1.0_fp + exp(1.9_fp - (di / (3.0_fp * dg))))
     ! converts true dgsd back to sigma phi squared consistent with definition in paper
     sigphi  = (log(dgsd) / log(2.0_fp))**2
-    taurm   = (thco + 0.022_fp / (1.0_fp + exp(7.1_fp * sigphi - 11.786_fp))) * (rhosol - rhow) * ag * dg
+    taurm   = (thco + 0.022_fp / (1_fp + exp(7.1_fp * sigphi - 11.786_fp))) * (rhosol - rhow) * ag * dg
     tauri   = taurm * (di / dg)**b
     phi     = taub / tauri
     if (phi < 1.35_fp) then

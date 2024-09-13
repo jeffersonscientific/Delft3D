@@ -1,7 +1,7 @@
 module morphology_data_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module morphology_data_module
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: morphology_data_module.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_data/src/morphology_data_module.f90 $
 !!--module description----------------------------------------------------------
 !
 ! This module defines the data structures for sediment transport and
@@ -34,14 +34,8 @@ module morphology_data_module
 !
 !!--module declarations---------------------------------------------------------
 use precision
-use sediment_basics_module, only: SEDTYP_SILT, SEDTYP_SAND
-use flocculation, only: FLOC_NONE
 use handles, only:handletype
 use properties, only:tree_data
-use m_tables, only:t_table
-
-implicit none
-
 private
 
 !
@@ -53,13 +47,9 @@ public mornumericstype
 public bedbndtype
 public cmpbndtype
 public sedpar_type
-public parfile_type
 public trapar_type
 public sedtra_type
 public fluffy_type
-public t_noderelation
-public t_nodefraction
-public t_nodereldata
 
 !
 ! public routines
@@ -74,123 +64,86 @@ public nullsedtra
 public allocsedtra
 public clrsedtra
 public allocfluffy
-public initmoroutput
-public get_transport_parameters
-public get_one_transport_parameter
 
-! define a missing value consistent with netCDF _fillvalue
-real(fp), parameter, public :: missing_value = 9.9692099683868690e+36_fp
-
-integer, parameter, public :: CHARLEN = 40
-
-integer, parameter, public :: PARSOURCE_UNKNOWN = 0
-integer, parameter, public :: PARSOURCE_FIELD   = 1
-integer, parameter, public :: PARSOURCE_TIME    = 2
-
-integer, parameter, public :: RP_TIME  =  1     ! time since reference date [s]
-integer, parameter, public :: RP_EFUMN =  2     ! U component of effective depth averaged velocity [m/s]
-integer, parameter, public :: RP_EFVMN =  3     ! V component of effective depth averaged velocity [m/s]
-integer, parameter, public :: RP_EFVLM =  4     ! effective depth averaged flow velocity magnitude [m/s]
-integer, parameter, public :: RP_UCHAR =  5     ! U component of characteristic flow velocity [m/s]
-integer, parameter, public :: RP_VCHAR =  6     ! V component of characteristic flow velocity [m/s]
-integer, parameter, public :: RP_VELCH =  7     ! characteristic flow velocity magnitude [m/s]
-integer, parameter, public :: RP_ZVLCH =  8     ! elevation above bed at which characteristic velocity is given [m]
-integer, parameter, public :: RP_DEPTH =  9     ! water depth [m]
-integer, parameter, public :: RP_CHEZY = 10     ! Chezy roughness [m0.5/s]
-integer, parameter, public :: RP_HRMS  = 11     ! wave height [m]
-integer, parameter, public :: RP_TPEAK = 12     ! peak wave period [s]
-integer, parameter, public :: RP_TETA  = 13     ! wave angle [deg pos counter-clockwise relative to U direction]
-integer, parameter, public :: RP_RLAMB = 14     ! wave length [m]
-integer, parameter, public :: RP_UORB  = 15     ! orbital velocity [m/s]
-integer, parameter, public :: RP_D50   = 16     ! D50 of sediment fraction [m]
-integer, parameter, public :: RP_DSS   = 17     ! effective suspended sediment diameter of sediment fraction [m]
-integer, parameter, public :: RP_DSTAR = 18     ! Dstar of sediment fraction [m]
-integer, parameter, public :: RP_D10MX = 19     ! D10 of particle size mix of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_D90MX = 20     ! D90 of particle size mix of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_MUDFR = 21     ! mud fraction of particle size mix of the part of the bed exposed to transport [-]
-integer, parameter, public :: RP_HIDEX = 22     ! hiding-exposure factor correcting the shear stress [-]
-integer, parameter, public :: RP_SETVL = 23     ! settling velocity [m/s]
-integer, parameter, public :: RP_RHOSL = 24     ! solid density of sediment [kg/m3]
-integer, parameter, public :: RP_RHOWT = 25     ! density of water [kg/m3]
-integer, parameter, public :: RP_SALIN = 26     ! salinity [ppt]
-integer, parameter, public :: RP_TEMP  = 27     ! temperature [deg C]
-integer, parameter, public :: RP_GRAV  = 28     ! gravitational acceleration [m2/s]
-integer, parameter, public :: RP_VICML = 29     ! molecular viscosity [m2/s]
-integer, parameter, public :: RP_TAUB  = 30     ! bed shear stress [N/m2]
-integer, parameter, public :: RP_UBED  = 31     ! U component of near-bed velocity [m/s]
-integer, parameter, public :: RP_VBED  = 32     ! V component of near-bed velocity [m/s]
-integer, parameter, public :: RP_VELBD = 33     ! near-bed velocity magnitude [m/s]
-integer, parameter, public :: RP_ZVLBD = 34     ! elevation above bed at which near-bed velocity is given [m]
-integer, parameter, public :: RP_VNKAR = 35     ! von Karman constant [-]
-integer, parameter, public :: RP_Z0CUR = 36     ! current related roughness height [m]
-integer, parameter, public :: RP_Z0ROU = 37     ! wave enhanced roughness height [m]
-integer, parameter, public :: RP_KTUR  = 38     ! flow induced turbulence [m2/s2]
-integer, parameter, public :: RP_DG    = 39     ! geometric mean sediment diameter of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_SNDFR = 40     ! sand fraction of particle size mix of the part of the bed exposed to transport [-]
-integer, parameter, public :: RP_DGSD  = 41     ! geometric standard deviation of particle size mix of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_UMEAN = 42     ! U component of velocity [m/s]
-integer, parameter, public :: RP_VMEAN = 43     ! V component of velocity [m/s]
-integer, parameter, public :: RP_VELMN = 44     ! velocity magnitude [m/s]
-integer, parameter, public :: RP_USTAR = 45     ! effective shear velocity [m/s]
-integer, parameter, public :: RP_KWTUR = 46     ! wave breaking induced turbulence
-integer, parameter, public :: RP_UAU   = 47     ! U component of velocity asymmetry due to short waves [m/s]
-integer, parameter, public :: RP_VAU   = 48     ! V component of velocity asymmetry due to short waves [m/s]
-integer, parameter, public :: RP_BLCHG = 49     ! bed level change rate (needed for dilatancy calculation in van Thiel formulation) [m/s]
-integer, parameter, public :: RP_D15MX = 50     ! D15 of particle size mix of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_POROS = 51     ! porosity of particle size mix of the part of the bed exposed to transport [-]
-integer, parameter, public :: RP_DZDX  = 52     ! U component of bed slope [-]
-integer, parameter, public :: RP_DZDY  = 53     ! V component of bed slope [-]
-integer, parameter, public :: RP_DM    = 54     ! median sediment diameter of particle size mix of the part of the bed exposed to transport [m]
-integer, parameter, public :: RP_ZB    = 55     ! bed level (positive up) [m]
-integer, parameter, public :: RP_DBG   = 56     ! debug array value from eqtran [-]
-integer, parameter, public :: MAX_RP   = 56     ! maximum number of real parameters
+integer, parameter, public :: RP_TIME  =  1
+integer, parameter, public :: RP_EFUMN =  2
+integer, parameter, public :: RP_EFVMN =  3
+integer, parameter, public :: RP_EFVLM =  4
+integer, parameter, public :: RP_UCHAR =  5
+integer, parameter, public :: RP_VCHAR =  6
+integer, parameter, public :: RP_VELCH =  7
+integer, parameter, public :: RP_ZVLCH =  8
+integer, parameter, public :: RP_DEPTH =  9
+integer, parameter, public :: RP_CHEZY = 10
+integer, parameter, public :: RP_HRMS  = 11
+integer, parameter, public :: RP_TPEAK = 12
+integer, parameter, public :: RP_TETA  = 13
+integer, parameter, public :: RP_RLAMB = 14
+integer, parameter, public :: RP_UORB  = 15
+integer, parameter, public :: RP_D50   = 16
+integer, parameter, public :: RP_DSS   = 17
+integer, parameter, public :: RP_DSTAR = 18
+integer, parameter, public :: RP_D10MX = 19
+integer, parameter, public :: RP_D90MX = 20
+integer, parameter, public :: RP_MUDFR = 21
+integer, parameter, public :: RP_HIDEX = 22
+integer, parameter, public :: RP_SETVL = 23
+integer, parameter, public :: RP_RHOSL = 24
+integer, parameter, public :: RP_RHOWT = 25
+integer, parameter, public :: RP_SALIN = 26
+integer, parameter, public :: RP_TEMP  = 27
+integer, parameter, public :: RP_GRAV  = 28
+integer, parameter, public :: RP_VICML = 29
+integer, parameter, public :: RP_TAUB  = 30
+integer, parameter, public :: RP_UBED  = 31
+integer, parameter, public :: RP_VBED  = 32
+integer, parameter, public :: RP_VELBD = 33
+integer, parameter, public :: RP_ZVLBD = 34
+integer, parameter, public :: RP_VNKAR = 35
+integer, parameter, public :: RP_Z0CUR = 36
+integer, parameter, public :: RP_Z0ROU = 37
+integer, parameter, public :: RP_KTUR  = 38
+integer, parameter, public :: RP_DG    = 39
+integer, parameter, public :: RP_SNDFR = 40
+integer, parameter, public :: RP_DGSD  = 41
+integer, parameter, public :: RP_UMEAN = 42
+integer, parameter, public :: RP_VMEAN = 43
+integer, parameter, public :: RP_VELMN = 44
+integer, parameter, public :: RP_USTAR = 45
+integer, parameter, public :: MAX_RP   = 45
 !
-integer, parameter, public :: IP_NM    =  1     ! local (i.e. within partition) cell index
-integer, parameter, public :: IP_N     =  2     ! local (i.e. within partition) fastest dimension index -- only for structured mesh models
-integer, parameter, public :: IP_M     =  3     ! local (i.e. within partition) slowest dimension index -- only for structured mesh models
-integer, parameter, public :: IP_ISED  =  4     ! sediment fraction number
-integer, parameter, public :: IP_NST   =  5     ! time step number -- only for fixed time step models
-integer, parameter, public :: MAX_IP   =  5     ! maximum number of integer parameters
+integer, parameter, public :: IP_NM    =  1
+integer, parameter, public :: IP_N     =  2
+integer, parameter, public :: IP_M     =  3
+integer, parameter, public :: IP_ISED  =  4
+integer, parameter, public :: MAX_IP   =  4
 !
-integer, parameter, public :: SP_RUNID =  1     ! ID of simulation
-integer, parameter, public :: SP_USRFL =  2     ! name of user specified input file
-integer, parameter, public :: MAX_SP   =  2     ! maximum number of strings
+integer, parameter, public :: SP_RUNID =  1
+integer, parameter, public :: SP_USRFL =  2
+integer, parameter, public :: MAX_SP   =  2
 
-integer, parameter, public :: WS_FORM_FUNCTION_SALTEMCON    = 1
-integer, parameter, public :: WS_FORM_FUNCTION_DSS          = 2
-integer, parameter, public :: WS_FORM_FUNCTION_DSS_2004     = -2
-integer, parameter, public :: WS_FORM_MANNING_DYER_MACRO    = 3
-integer, parameter, public :: WS_FORM_MANNING_DYER_MICRO    = 4
-integer, parameter, public :: WS_FORM_MANNING_DYER          = 5
-integer, parameter, public :: WS_FORM_CHASSAGNE_SAFAR_MACRO = 6
-integer, parameter, public :: WS_FORM_CHASSAGNE_SAFAR_MICRO = 7
-integer, parameter, public :: WS_FORM_CHASSAGNE_SAFAR       = 8
-integer, parameter, public :: WS_FORM_USER_ROUTINE          = 15
-
-integer, parameter, public :: WS_RP_TIME  =  1 ! Time
-integer, parameter, public :: WS_RP_ULOC  =  2 ! Horizontal velocity component 1 [m/s]
-integer, parameter, public :: WS_RP_VLOC  =  3 ! Horizontal velocity component 2 [m/s]
-integer, parameter, public :: WS_RP_WLOC  =  4 ! Vertical velocity [m/s]
-integer, parameter, public :: WS_RP_SALIN =  5 ! Salinity [ppt]
-integer, parameter, public :: WS_RP_TEMP  =  6 ! Water temperature [degC]
-integer, parameter, public :: WS_RP_RHOWT =  7 ! Water density [kg/m3]
-integer, parameter, public :: WS_RP_CFRCB =  8 ! Concentration of fraction [kg/m3]
-integer, parameter, public :: WS_RP_CTOT  =  9 ! Total sediment concentration [kg/m3]
-integer, parameter, public :: WS_RP_KTUR  = 10 ! Turbulent kinetic energy [m2/s2]
-integer, parameter, public :: WS_RP_EPTUR = 11 ! Turbulent dissipation [m2/s3]
-integer, parameter, public :: WS_RP_D50   = 12 ! Median grainsize [m]
-integer, parameter, public :: WS_RP_DSS   = 13 ! Median grainsize in suspension [m]
-integer, parameter, public :: WS_RP_RHOSL = 14 ! Mineral density [kg/m3]
-integer, parameter, public :: WS_RP_CSOIL = 15 ! Hindered settling reference density [kg/m3]
-integer, parameter, public :: WS_RP_GRAV  = 16 ! Gravitational acceleration [m/s2]
-integer, parameter, public :: WS_RP_VICML = 17 ! Molecular viscosity
-integer, parameter, public :: WS_RP_WDEPT = 18 ! Water depth [m]
-integer, parameter, public :: WS_RP_UMEAN = 19 ! Depth-averaged flow velocity component 1 [m/s]
-integer, parameter, public :: WS_RP_VMEAN = 20 ! Depth-averaged flow velocity component 2 [m/s]
-integer, parameter, public :: WS_RP_CHEZY = 21 ! Chezy roughness
-integer, parameter, public :: WS_RP_SHTUR = 22 ! Turbulent shear stress [N/m2]
-integer, parameter, public :: WS_RP_CCLAY = 23 ! Clay concenrtration [kg/m3]
-integer, parameter, public :: WS_MAX_RP   = 23
+integer, parameter, public :: WS_RP_TIME  =  1
+integer, parameter, public :: WS_RP_ULOC  =  2
+integer, parameter, public :: WS_RP_VLOC  =  3
+integer, parameter, public :: WS_RP_WLOC  =  4
+integer, parameter, public :: WS_RP_SALIN =  5
+integer, parameter, public :: WS_RP_TEMP  =  6
+integer, parameter, public :: WS_RP_RHOWT =  7
+integer, parameter, public :: WS_RP_CFRCB =  8
+integer, parameter, public :: WS_RP_CTOT  =  9
+integer, parameter, public :: WS_RP_KTUR  = 10
+integer, parameter, public :: WS_RP_EPTUR = 11
+integer, parameter, public :: WS_RP_D50   = 12
+integer, parameter, public :: WS_RP_DSS   = 13
+integer, parameter, public :: WS_RP_RHOSL = 14
+integer, parameter, public :: WS_RP_CSOIL = 15
+integer, parameter, public :: WS_RP_GRAV  = 16
+integer, parameter, public :: WS_RP_VICML = 17
+integer, parameter, public :: WS_RP_WDEPT = 18
+integer, parameter, public :: WS_RP_UMEAN = 19
+integer, parameter, public :: WS_RP_VMEAN = 20
+integer, parameter, public :: WS_RP_CHEZY = 21
+integer, parameter, public :: WS_MAX_RP   = 21
 !
 integer, parameter, public :: WS_IP_NM    =  1
 integer, parameter, public :: WS_IP_N     =  2
@@ -210,96 +163,47 @@ integer,parameter, public  :: FLUX_LIMITER_NONE   = 0
 integer,parameter, public  :: FLUX_LIMITER_MINMOD = 1
 integer,parameter, public  :: FLUX_LIMITER_MC     = 2
 
-integer,parameter, public  :: MOR_STAT_MIN = 1
-integer,parameter, public  :: MOR_STAT_MAX = 2
-integer,parameter, public  :: MOR_STAT_MEAN= 4
-integer,parameter, public  :: MOR_STAT_STD = 8
-integer,parameter, public  :: MOR_STAT_CUM = 16
-
-integer,parameter,public   :: MOR_STAT_TIME= 1
-integer,parameter,public   :: MOR_STAT_BODS= 2
-!
-! Soulsby & Clarke skin friction options
-!
-integer,parameter,public   :: SC_MUDTHC  = 1
-integer,parameter,public   :: SC_MUDFRAC = 2
-!
 ! collection of morphology output options
 !
 type moroutputtype
     integer :: transptype      ! 0 = mass
                                ! 1 = volume including pores
                                ! 2 = volume excluding pores
-    !
-    character(len=30), dimension(4) :: statqnt = (/"H1  ","UV  ","SBUV","SSUV"/)
-    character(len=30), dimension(4) :: statnam = (/"water depth              ", &
-                                                   "velocity                 ", &
-                                                   "total bedload transport  ",  &
-                                                   "total suspended transport"/)
-    character(len=30), dimension(4) :: statunt = (/"m  ","m/s","   ","   "/)
-    !integer, dimension(5,4)         :: statflg  ! 1 = waterdepth, 2 = velocity, 3 = bedload, 4 = suspload
-    integer, dimension(6,4)         :: statflg  ! 1 = waterdepth, 2 = velocity, 3 = bedload, 4 = suspload
-    integer                         :: nstatqnt ! number of quantities for morphology statistics output
-    integer                         :: weightflg ! weighting by time or dbodsd
-    real(fp), dimension(3)          :: avgintv  ! interval, start, stop for writing statistics (FM only)
-    !
     logical :: aks
     logical :: cumavg
-    logical :: morstats
     logical :: dg
     logical :: dgsd
     logical :: dm
-    logical :: dmsedcum
-    logical :: dpbedlyr
     logical :: dzduuvv
     logical :: fixfac
     logical :: hidexp
     logical :: frac
-    logical :: lyrfrac
-    logical :: msed
     logical :: mudfrac
-    logical :: percentiles
-    logical :: poros
-    logical :: rca
-    logical :: rsedeq
     logical :: sandfrac
-    logical :: sbuuvv
+    logical :: percentiles
     logical :: sbcuv
-    logical :: sscuv
     logical :: sbcuuvv
     logical :: sbwuv
     logical :: sbwuuvv
-    logical :: sedpar
-    logical :: seddif
-    logical :: ssuuvv
     logical :: sswuv
     logical :: sswuuvv
     logical :: suvcor
     logical :: sourcesink
-    logical :: taub
     logical :: taurat
     logical :: umod
     logical :: ustar
     logical :: uuuvvv
-    logical :: ws
     logical :: zumod
-    logical :: rawtransports    ! output flag for transports before upwinding/bed slope effects
-    logical :: blave
-    logical :: bamor
-    logical :: wumor
 end type moroutputtype
 
 !
 ! sediment transport and morphology numerical settings
 !
 type mornumericstype
-    logical :: pure1d                   ! temporary switch for 1D treatment in FM
     logical :: upwindbedload            ! switch for upwind bedload in UPWBED
     logical :: laterallyaveragedbedload ! bedload transport laterally averaged in UPWBED
-    logical :: maximumwaterdepth        ! limit minimum water depth at zeta point for morphodynamics 
-    double precision :: maximumwaterdepthfrac   ! if `maximumwaterdepth=.true.`, the minimum water depth
-                                        ! at zeta point is `maximumwaterdepthfrac` times the 
-                                        ! maximum water depth at active velocity points.
+    logical :: maximumwaterdepth        ! water depth at zeta point in DWNVEL given by
+                                        ! at least water depth at active velocity points
     integer :: fluxlim                  ! flux limiter choice
 end type mornumericstype
 
@@ -320,11 +224,11 @@ type bedbndtype
                                                 !  (4) last used record in table
     integer                         :: npnt     ! number points of boundary
     integer , dimension(:), pointer :: idir
-    integer , dimension(:), pointer :: nm       ! outside boundary cell
-    integer , dimension(:), pointer :: nxmx     ! inside boundary cell
-    integer , dimension(:), pointer :: lm       ! "flow link"
+    integer , dimension(:), pointer :: nm
+    integer , dimension(:), pointer :: nxmx
     real(fp), dimension(:), pointer :: alfa_mag
     real(fp), dimension(:), pointer :: alfa_dist
+    real(fp), dimension(:), pointer :: width
 end type bedbndtype
 
 !
@@ -401,20 +305,17 @@ type morpar_type
     real(fp):: alfabn     !  factor for transverse bed load transport
     real(fp):: camax      !  Maximum volumetric reference concentration
     real(fp):: dzmax      !  factor for limiting source and sink term in EROSED (percentage of water depth)
-    real(fp):: sus        !  calibration factor for suspended load transport
-    real(fp):: suscorfac  !  calibration factor for near-bed suspended load transport correction
-    real(fp):: bed        !  calibration factor for bed load transport
+    real(fp):: sus        !  flag for calculating suspended load transport
+    real(fp):: bed        !  flag for calculating bed load transport
     real(fp):: pangle     !  phase lead angle acc. to Nielsen (1992) for TR2004 expression
     real(fp):: fpco       !  coefficient for phase llag effects
     real(fp):: factcr     !  calibration factor on Shields' critical shear stress   
-    real(fp):: ti_sedtrans!  time where calculation for sediment transport computation start (tunit relative to ITDATE,00:00:00)
-    real(fp):: tmor       !  time where calculation for morphological changes start (tunit relative to ITDATE,00:00:00)
-    real(fp):: tcmp       !  time where calculation for bed composition changes start (tunit relative to ITDATE,00:00:00)
-    real(fp):: thetsduni  !  uniform value for dry cell erosion factor
-    real(fp):: susw       !  calibration factor for wave-related suspended sand transport (included in bed-load)
+    real(fp):: tmor       !  time where calculation for morphological changes start (minutes relative to ITDATE,00:00:00)
+    real(fp):: thetsd     !  global dry bank erosion factor
+    real(fp):: susw       !  factor for adjusting wave-related suspended sand transport (included in bed-load)
     real(fp):: sedthr     !  minimum depth for sediment calculations
     real(fp):: hmaxth     !  maximum depth for setting theta for erosion of dry bank
-    real(fp):: bedw       !  calibration factor for wave-related bed-load sand transport (included in bed-load)
+    real(fp):: bedw       !  factor for adjusting wave-related bed-load sand transport (included in bed-load)
     real(fp):: factsd     !  calibration factor for 2D suspended load relaxation time
     real(fp):: rdw
     real(fp):: rdc
@@ -432,14 +333,7 @@ type morpar_type
     real(fp):: ttlalpha   !  transport layer thickness: proportionality factor
     real(fp):: ttlmin     !  transport layer thickness: minimum thickness
     real(fp):: wetslope   !  maximum wet bed slope (used for avalanching)
-    real(fp):: dryslope   !  maximum dry bed slope (used for avalanching)
     real(fp):: avaltime   !  time scale in seconds (used for avalanching)
-    real(fp):: hswitch    !  depth to switch dryslope and wetslope
-    real(fp):: dzmaxdune  !  Maximum bed level change per hydrodynamic time step
-    real(fp):: bermslope       !  Swash zone slope for (semi-) reflective beaches
-    real(fp):: bermslopefac    !  Bed slope transport factor for bermslope model
-    real(fp):: bermslopegamma  !  Wave height - water depth ratio to turn on bermslope swash transport
-    real(fp):: bermslopedepth  !  Depth to turm on berm slope swash transport
     !
     !  (sp)
     !
@@ -448,7 +342,6 @@ type morpar_type
     !
     integer :: mergehandle !  stream handle for communication with mormerge
     integer :: i10         !  index of D10 in the xx array
-    integer :: i15         !  index of D15 in the xx array
     integer :: i50         !  index of D50 in the xx array
     integer :: i90         !  index of D90 in the xx array
     integer :: ihidexp     !  switch for hiding exposure effect
@@ -457,9 +350,7 @@ type morpar_type
                            !  3: Ashida & Michiue (1971), modified Egiazaroff
                            !  4: Soehngen, Kellermann, Loy (1992)
                            !  5: Wu, Wang, Jia (2000)
-    integer :: itmor       !  time step where calculation for bed level updating starts
-    integer :: itcmp       !  time step where calculation for bed composition updating starts
-    integer :: iti_sedtrans!  Sediment transport computation start time step
+    integer :: itmor       !  time step where calculation for morphological changes starts
     integer :: iopkcw
     integer :: iopsus
     integer :: islope      !  switch for bed slope effect, according
@@ -480,6 +371,7 @@ type morpar_type
                            !  3: 
     integer :: telform     !  switch for thickness of exchange layer
                            !  1: fixed (user-spec.) thickness
+    integer :: MAXnpnt     !  MAX number of boundary points (npnt) among all boundaries 
     !
     ! pointers
     !
@@ -492,7 +384,6 @@ type morpar_type
     type (cmpbndtype)     , dimension(:), pointer :: cmpbnd     ! bed composition boundary parameters
     real(hp)              , dimension(:), pointer :: mergebuf   ! buffer array for communcation with mormerge
     real(fp)              , dimension(:), pointer :: xx         ! percentile xx (dxx stored in erosed.ig*)
-    real(fp)              , dimension(:), pointer :: thetsd     ! global dry bank erosion factor
     ! 
     ! logicals
     !
@@ -510,12 +401,6 @@ type morpar_type
     logical :: oldmudfrac          !  true: use the old method for the mud source term calculation (without Frac multiplication)
     logical :: varyingmorfac       !  true: morfac specified in a time serie file
     logical :: multi               !  Flag for merging bottoms of different parallel runs
-    logical :: duneavalan          !  Flag for avalanching using wetslope and dryslope
-    logical :: l_suscor            !  Flag for applying correction to doublecounting of sus/bed transport in 3d
-    logical :: bermslopetransport  !  Flag to turn on bermslope swash transport model
-    logical :: bermslopebed        !  Flag to turn on bermslope swash transport model for bedload
-    logical :: bermslopesus        !  Flag to turn on bermslope swash transport model for suspended load
-    
     !
     ! characters
     !
@@ -524,40 +409,8 @@ type morpar_type
     character(256) :: mmsyncfilnam !  name of output file for synchronisation of mormerge run
     character(256) :: telfil       !  name of file containing exchange layer thickness
     character(256) :: ttlfil       !  name of file containing transport layer thickness
-    character(256) :: flsthetsd    !  name of file containing dry cell erosion factor
     !
 end type morpar_type
-
-type t_noderelation
-   character(len=CHARLEN)                         :: Node       = ' '
-   integer                                        :: NodeIdx    = 0    !< Cell centre index 
-   character(len=CHARLEN)                         :: BranchIn   = ' '
-   integer                                        :: BranchInLn = 0    !< Link index 
-   character(len=CHARLEN)                         :: BranchOut1 = ' '
-   integer                                        :: BranchOut1Ln = 0   !< Link index 
-   character(len=CHARLEN)                         :: BranchOut2 = ' '
-   integer                                        :: BranchOut2Ln = 0   !< Link index 
-   character(len=CHARLEN)                         :: tableName  = ' '
-   character(len=CHARLEN)                         :: Method     = ' '
-   real(fp)                                       :: expQ       = -1.0_fp
-   real(fp)                                       :: expW       = -1.0_fp
-   type(t_table), pointer                         :: Table
-end type t_noderelation
-
-type t_nodefraction
-   character(20)                                   :: Name
-   character(256)                                  :: tableFile      = ' '  ! Name of Table File for Node Relations
-   integer                                         :: nNodeRelations = 0
-   type(t_noderelation), pointer, dimension(:)     :: noderelations
-end type t_nodefraction
-
-type t_nodereldata
-    integer                                     :: nFractions       = 0
-    logical                                     :: NRD_Overall
-    logical                                     :: NRD_Default      = .false.
-    character(256), dimension(:), pointer       :: flnrd            !  Files with Node Relation Data (NRD-Files)
-    type(t_nodefraction), pointer, dimension(:) :: nodefractions
-end type t_nodereldata
 
 type sedpar_type
     !
@@ -566,15 +419,8 @@ type sedpar_type
     real(fp) :: csoil     !  concentration at bed used in hindered settling formulation
     real(fp) :: mdcuni    !  mud content / mud fraction uniform value (non-zero only
                           !  if mud is not included simulation)
-    real(fp) :: kssilt    !  ks value for silt for Soulsby 2004 formulation (used below sc_cmf1)
-    real(fp) :: kssand    !  ks value for sand (used above sc_cmf2)
-    real(fp) :: sc_cmf1   !  lower critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
-    real(fp) :: sc_cmf2   !  upper critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
-    real(fp) :: sc_flcf   !  fraction of ParFluff0/ParFluff1 when the fluff layer fully covers the bed for Soulsby & Clarke (2005)
-    real(fp) :: tbreakup  !  relaxation time scale for break-up of flocs [s]
-    real(fp) :: tfloc     !  relaxation time scale for flocculation [s]
-    real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
-    real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
+    real(fp) :: kssilt    !  ks value for silt for Soulsby 2004 formulation
+    real(fp) :: kssand    !  ks value for sand
     real(fp) :: version   !  interpreter version
     !
     ! reals
@@ -582,22 +428,11 @@ type sedpar_type
     !
     ! integers
     !
-    integer  :: flocmod        !  flocculation model applied to clay fractions
-    integer  :: nflocpop       !  number of floc populations (groups of clay fractions that exchange mass)
-    integer  :: nflocsizes     !  number of floc sizes distinguished in the flocculation model
-    integer  :: nmudfrac       !  number of simulated mud fractions
-    integer  :: sc_mudfac      !  formulation used for determining bed roughness length for Soulsby & Clarke (2005): SC_MUDFRAC, or SC_MUDTHC
-    integer  :: max_mud_sedtyp !  largest sediment type associated with mud
-    integer  :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
+    integer  :: nmudfrac  !  number of simulated mud fractions
     !
     ! pointers
     !
-    type(tree_data)     , dimension(:), pointer :: sedblock => null()  !  Pointer to array of data block per fraction in .sed file (version 2)
-    type(t_nodefraction), dimension(:), pointer :: nodefractions       !  Pointer to array of nodal point relations
-    !
-    logical       , dimension(:)    , pointer :: cmpupdfrac !  Flag for doing composition (underlayer) updates per fraction
-    !
-    real(fp)      , dimension(:)    , pointer :: tpsnumber  !  Turbulent Prandtl-Schmidt number
+    type(tree_data), dimension(:)   , pointer :: sedblock => null()    !  Pointer to array of data block per fraction in .sed file (version 2)
     real(fp)      , dimension(:)    , pointer :: rhosol     !  Soil density
     !
     real(fp)      , dimension(:,:,:), pointer :: logseddia             !  Characteristic sediment diameter table using log scale [%,log(m)]
@@ -624,44 +459,28 @@ type sedpar_type
                                                             !  is not included simulation)
     real(fp)      , dimension(:)    , pointer :: pmcrit     !  Critical mud fraction for non-cohesive behaviour
     integer       , dimension(:)    , pointer :: nseddia    !  Number of characteristic sediment diameters
-    integer       , dimension(:)    , pointer :: sedtyp     !  Sediment type: SEDTYP_CLAY, SEDTYP_SILT, SEDTYP_SAND, SEDTYP_GRAVEL
-    integer       , dimension(:)    , pointer :: tratyp     !  Transport method type: TRA_BEDLOAD, TRA_ADVDIFF, TRA_COMBINE
-    integer       , dimension(:)    , pointer :: flocsize   !  Floc size within floc population
-    integer       , dimension(:,:)  , pointer :: floclist   !  Table of groups of clay fractions that belong together (flocculation)
+    integer       , dimension(:)    , pointer :: sedtyp     !  Sediment type: 0=total/1=noncoh/2=coh
     character(10) , dimension(:)    , pointer :: inisedunit !  'm' or 'kg/m2' : Initial sediment at bed specified as thickness ([m]) or density ([kg/m2])
     character(20) , dimension(:)    , pointer :: namsed     !  Names of all sediment fractions
-    character(20) , dimension(:)    , pointer :: namclay    !  Label of clay floc population to which the sediment fraction belongs
-    character(20) , dimension(:)    , pointer :: namflocpop !  Clay floc population labels
     character(256), dimension(:)    , pointer :: flsdbd     !  File name containing initial sediment mass at bed
     character(256), dimension(:)    , pointer :: flstcg     !  File name calibration factor on critical shear stress in Van Rijn (2004) uniform values
-    character(256), dimension(:)    , pointer :: flnrd      !  File names of Node Relation Data (NRD-Files) for bifurcation points in 1D morphology
+    character(256), dimension(:)    , pointer :: flnrd      !  Files with Node Relation Data (NRD-Files) for Morphology-1D in SOBEK-Kernel
     ! 
     ! logicals
     !
-    logical :: anymud     ! Flag to indicate whether a mud fraction is included in the simulation.
-    logical :: bsskin     ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
+    logical :: anymud     ! Flag to indicate whether a mud fraction
+                          ! is included in the simulation.
+    logical :: bsskin     ! Flag to indicate whether a bed stress should be computed
+                          ! according to soulsby 2004
     !
     ! characters
     !
-    character(256) :: flsdia     ! spatial sediment diameter file (in case of one sediment fraction only)
-    character(256) :: flsmdc     ! mud content / mud fraction file (only if mud is not included in simulation)
+    character(256) :: flsdia     ! spatial sediment diameter file (in case of one sediment
+                                 ! fraction only)
+    character(256) :: flsmdc     ! mud content / mud fraction file (only if mud is not
+                                 ! included in simulation)
     character(256) :: flspmc     ! critical mud fraction for non-cohesive behaviour file
 end type sedpar_type
-
-type parfile_type
-    integer                                   :: source     !< data source for the parameter: time-series or spatial field
-    !
-    integer                                   :: ipar_ts    !< parameter number within the time series object
-    integer                                   :: irec_ts    !< most recently used time series record
-    integer                                   :: itable_ts  !< table nunber within the time series object
-    integer                                   :: npar_ts    !< number of parameter values within time series object (should be 1)
-    integer                                   :: refjulday  !< Julian reference date
-    real(fp)                                  :: timhr      !< time of previous value
-    real(fp)                                  :: par        !< previous parameter value
-    !
-    real(fp), allocatable                     :: parfld(:)  !< spatial field
-    type(handletype)                          :: ts         !< time series object
-end type parfile_type
 
 type trapar_type
     !
@@ -671,50 +490,42 @@ type trapar_type
     !
     ! integers
     !
-    integer                                    :: max_integers_settle !  Maximum number of integers which can be delivered to shared library
-    integer                                    :: max_reals_settle    !  Maximum number of reals which can be delivered to shared library
-    integer                                    :: max_strings_settle  !  Maximum number of character strings which can be delivered to shared library
+    integer                                 :: max_integers_settle !  Maximum number of integers which can be delivered to shared library
+    integer                                 :: max_reals_settle    !  Maximum number of reals which can be delivered to shared library
+    integer                                 :: max_strings_settle  !  Maximum number of character strings which can be delivered to shared library
     !
-    integer                                    :: max_integers        !  Maximum number of integers which can be delivered to shared library
-    integer                                    :: max_reals           !  Maximum number of reals which can be delivered to shared library
-    integer                                    :: max_strings         !  Maximum number of character strings which can be delivered to shared library
-    integer                                    :: npar                !  Maximum number of sediment transport formula parameters
-    integer                                    :: nparfile            !  Number of sediment transport formula parameters specified by file
-    integer                                    :: nouttot             !  Total number of output parameters (sum of noutpar)
+    integer                                 :: max_integers !  Maximum number of integers which can be delivered to shared library
+    integer                                 :: max_reals    !  Maximum number of reals which can be delivered to shared library
+    integer                                 :: max_strings  !  Maximum number of character strings which can be delivered to shared library
+    integer                                 :: npar         !  Maximum number of sediment transport formula parameters
+    integer                                 :: nparfld      !  Number of sediment transport formula 2D field parameters
     !
     ! pointers
     !
-    integer          , dimension(:)  , pointer :: noutpar             !< (lsedtot) Number of output parameters per sediment fraction i1
-    integer          , dimension(:,:), pointer :: ioutpar             !< (max, lsedtot) Index of output parameter i2 of sediment fraction i1 into XX array
-    real(fp)         , dimension(:,:), pointer :: outpar              !< (noutpar,nmmax) Sediment transport parameters spatially varying
-    character(256)   , dimension(:,:), pointer :: outpar_name         !< (max, lsedtot) Name of sediment transport parameter i2 of sediment fraction i1
-    character(256)   , dimension(:,:), pointer :: outpar_longname     !< (max, lsedtot) Long name of sediment transport parameter i2 of sediment fraction i1
+    character(256), dimension(:)  , pointer :: dll_function_settle !  Name of subroutine in DLL that calculates the Settling velocity
+    character(256), dimension(:)  , pointer :: dll_name_settle     !  Name of DLL that contains the Settling velocity subroutine
+    integer(pntrsize), dimension(:)  , pointer :: dll_handle_settle   !  Handle of DLL that contains the Settling velocity subroutine
+    integer       , dimension(:)  , pointer :: dll_integers_settle !  Input integer array to shared library
+    real(hp)      , dimension(:)  , pointer :: dll_reals_settle    !  Input real array to shared library
+    character(256), dimension(:)  , pointer :: dll_strings_settle  !  Input character string array to shared library
+    character(256), dimension(:)  , pointer :: dll_usrfil_settle   !  Name of input file to be passed to subroutine in DLL
+    integer       , dimension(:)  , pointer :: iform_settle        !  Number of sediment settling velocity formula
+    real(fp)      , dimension(:,:), pointer :: par_settle          !  Settling velocity formula parameters
     !
-    character(256)   , dimension(:)  , pointer :: dll_function_settle !< Name of subroutine in DLL that calculates the Settling velocity
-    character(256)   , dimension(:)  , pointer :: dll_name_settle     !< Name of DLL that contains the Settling velocity subroutine
-    integer(pntrsize), dimension(:)  , pointer :: dll_handle_settle   !< Handle of DLL that contains the Settling velocity subroutine
-    integer          , dimension(:)  , pointer :: dll_integers_settle !< Input integer array to shared library
-    real(hp)         , dimension(:)  , pointer :: dll_reals_settle    !< Input real array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_strings_settle  !< Input character string array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_usrfil_settle   !< Name of input file to be passed to subroutine in DLL
-    integer          , dimension(:)  , pointer :: iform_settle        !< Number of sediment settling velocity formula
-    real(fp)         , dimension(:,:), pointer :: par_settle          !< Settling velocity formula parameters
-    !
-    character(256)   , dimension(:)  , pointer :: dll_function        !< Name of subroutine in DLL that calculates the Sediment transport formula
-    character(256)   , dimension(:)  , pointer :: dll_name            !< Name of DLL that calculates the Sediment transport formula
-    integer(pntrsize), dimension(:)  , pointer :: dll_handle          !< DLL containing Sediment transport formula
-    integer          , dimension(:)  , pointer :: dll_integers        !< Input integer array to shared library
-    real(hp)         , dimension(:)  , pointer :: dll_reals           !< Input real array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_strings         !< Input character string array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_usrfil          !< Name of input file to be passed to subroutine in DLL
-    character(256)   , dimension(:)  , pointer :: flstrn              !< Sediment transport formula file names
-    integer          , dimension(:)  , pointer :: iform               !< Sediment transport formula number
-    character(256)   , dimension(:)  , pointer :: name                !< Sediment transport formula names
-    real(fp)         , dimension(:,:), pointer :: par                 !< Sediment transport formula parameter values
-    character(25)    , dimension(:,:), pointer :: parname             !< Sediment transport formula parameter names
-    character(256)   , dimension(:,:), pointer :: parfilename         !< Sediment transport formula file names
-    integer          , dimension(:,:), pointer :: iparfile            !< Index of parameter in parfile array (0 if parameter is a constant)
-    type(parfile_type), dimension(:)  , pointer :: parfile(:)         !< Sediment transport parameter read from file - time- or space-varying data
+    character(256), dimension(:)  , pointer :: dll_function !  Name of subroutine in DLL that calculates the Sediment transport formula
+    character(256), dimension(:)  , pointer :: dll_name     !  Name of DLL that calculates the Sediment transport formula
+    integer(pntrsize), dimension(:)  , pointer :: dll_handle   !  DLL containing Sediment transport formula
+    integer       , dimension(:)  , pointer :: dll_integers !  Input integer array to shared library
+    real(hp)      , dimension(:)  , pointer :: dll_reals    !  Input real array to shared library
+    character(256), dimension(:)  , pointer :: dll_strings  !  Input character string array to shared library
+    character(256), dimension(:)  , pointer :: dll_usrfil   !  Name of input file to be passed to subroutine in DLL
+    character(256), dimension(:)  , pointer :: flstrn       !  Sediment transport formula file names
+    integer       , dimension(:)  , pointer :: iform        !  Sediment transport formula number
+    character(256), dimension(:)  , pointer :: name         !  Sediment transport formula names
+    real(fp)      , dimension(:,:), pointer :: par          !  Sediment transport formula parameters
+    integer       , dimension(:,:), pointer :: iparfld      !  Index of parameter in parfld array (0 if constant)
+    real(fp)      , dimension(:,:), pointer :: parfld       !  Sediment transport formula 2D field parameters
+    character(256), dimension(:,:), pointer :: parfil       !  Sediment transport formula file names
     ! 
     ! logicals
     !
@@ -728,12 +539,12 @@ type sedtra_type
     !
     real(fp)         , dimension(:)      , pointer :: bc_mor_array !(lsedtot*2)
     !
-    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:num_layers_grid)
-    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:num_layers_grid)
-    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:num_layers_grid)
-    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:num_layers_grid)
-    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:num_layers_grid)
-    real(fp)         , dimension(:)      , pointer :: wslc     !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:kmax)
+    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: wslc     !(0:kmax)
     !
     real(fp)         , dimension(:)      , pointer :: e_dzdn   !(nu1:nu2)         dzduu in structured Delft3D-FLOW
     real(fp)         , dimension(:)      , pointer :: e_dzdt   !(nu1:nu2)         dzdvv in structured Delft3D-FLOW
@@ -756,14 +567,14 @@ type sedtra_type
     real(fp)         , dimension(:,:)    , pointer :: e_ssnc   !(nu1:nu2,lsed)    ssuuc in structured Delft3D-FLOW
     real(fp)         , dimension(:,:)    , pointer :: e_sstc   !(nu1:nu2,lsed)    ssvvc in structured Delft3D-FLOW
     !
-    real(fp)         , dimension(:,:)    , pointer :: frac     !< (nc1:nc2,lsedtot) effective fraction of sediment in bed available for transport
-    real(fp)         , dimension(:)      , pointer :: mudfrac  !< (nc1:nc2)         effective mud fraction in the part of the bed exposed to transport
-    real(fp)         , dimension(:)      , pointer :: sandfrac !< (nc1:nc2)         effective sand fraction in the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dm       !< (nc1:nc2)         arithmetic mean sediment diameter of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dg       !< (nc1:nc2)         geometric mean sediment diameter of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dgsd     !< (nc1:nc2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: dxx      !< (nc1:nc2,nxx)     sediment diameter corresponding to percentile xx (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: hidexp   !< (nc1:nc2,lsedtot) hiding-exposure factor correcting the shear stress (sand-gravel mixtures)
+    real(fp)         , dimension(:,:)    , pointer :: frac     !(nc1:nc2,lsedtot) effective fraction of sediment in bed available for transport
+    real(fp)         , dimension(:)      , pointer :: mudfrac  !(nc1:nc2)         effective mud fraction in the part of the bed exposed to transport
+    real(fp)         , dimension(:)      , pointer :: sandfrac !(nc1:nc2)         effective sand fraction in the part of the bed exposed to transport (mud excluded)
+    real(fp)         , dimension(:)      , pointer :: dm       !(nc1:nc2)         arithmetic mean sediment diameter of the part of the bed exposed to transport (mud excluded)
+    real(fp)         , dimension(:)      , pointer :: dg       !(nc1:nc2)         geometric mean sediment diameter of the part of the bed exposed to transport (mud excluded)
+    real(fp)         , dimension(:)      , pointer :: dgsd     !(nc1:nc2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
+    real(fp)         , dimension(:,:)    , pointer :: dxx      !(nc1:nc2,nxx)     sediment diameter corresponding to percentile xx (mud excluded)
+    real(fp)         , dimension(:,:)    , pointer :: hidexp   !(nc1:nc2,lsedtot) hiding-exposure factor correcting the shear stress (sand-gravel mixtures)
     !
     real(fp)         , dimension(:)      , pointer :: uuu      !(nc1:nc2)
     real(fp)         , dimension(:)      , pointer :: vvv      !(nc1:nc2)
@@ -788,26 +599,26 @@ type sedtra_type
     real(fp)         , dimension(:,:)    , pointer :: sswy     !(nc1:nc2,lsedtot) sswv in structured Delft3D-FLOW
     real(fp)         , dimension(:,:)    , pointer :: sxtot    !(nc1:nc2,lsedtot) sutot in structured Delft3D-FLOW
     real(fp)         , dimension(:,:)    , pointer :: sytot    !(nc1:nc2,lsedtot) svtot in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sscx     !(nc1:nc2,lsedtot) svtot in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sscy     !(nc1:nc2,lsedtot) svtot in structured Delft3D-FLOW
-    real(fp)         , dimension(:,:)    , pointer :: sbxcum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta
-    real(fp)         , dimension(:,:)    , pointer :: sbycum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta
-    real(fp)         , dimension(:,:)    , pointer :: ssxcum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta
-    real(fp)         , dimension(:,:)    , pointer :: ssycum   !(nc1:nc2,lsedtot) Cumulative transports in FM in zeta    
     !
     real(fp)         , dimension(:,:)    , pointer :: srcmax   !(nc1:nc2,lsedtot)
     real(fp)         , dimension(:,:)    , pointer :: fixfac   !(nc1:nc2,lsedtot)
-    real(fp)         , dimension(:)      , pointer :: taub     !(nc1:nc2)
     real(fp)         , dimension(:,:)    , pointer :: taurat   !(nc1:nc2,lsedtot)
-    !
-    real(fp)         , dimension(:,:)    , pointer :: statqnt  !(nc1:nc2,nstatistics)
 end type sedtra_type
 
-    contains
-
-!> Nullify/initialize a sedtra_type data structure.
+contains
+!
+!
+!
+!============================================================================== 
 subroutine nullsedtra(sedtra)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Nullify/initialize a sedtra_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    use precision
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -884,31 +695,29 @@ subroutine nullsedtra(sedtra)
     nullify(sedtra%sswy)
     nullify(sedtra%sxtot)
     nullify(sedtra%sytot)
-    nullify(sedtra%sscx)
-    nullify(sedtra%sscy)
-    nullify(sedtra%sbxcum)
-    nullify(sedtra%sbycum)
-    nullify(sedtra%ssxcum)
-    nullify(sedtra%ssycum)    
     !
     nullify(sedtra%srcmax)
     nullify(sedtra%fixfac)
-    nullify(sedtra%taub)
     nullify(sedtra%taurat)
-    !
-    nullify(sedtra%statqnt)
 end subroutine nullsedtra
-
-
-!> Allocate the arrays of sedtra_type data structure.
-subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
+!
+!
+!
+!============================================================================== 
+subroutine allocsedtra(sedtra, kmax, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, iopt)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Allocate the arrays of sedtra_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    use precision
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
     type (sedtra_type)                                       :: sedtra
-    type (moroutputtype)                                     :: moroutput
-    integer                                    , intent(in)  :: num_layers_grid
+    integer                                    , intent(in)  :: kmax
     integer                                    , intent(in)  :: lsed
     integer                                    , intent(in)  :: lsedtot
     integer                                    , intent(in)  :: nc1
@@ -916,12 +725,10 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     integer                                    , intent(in)  :: nu1
     integer                                    , intent(in)  :: nu2
     integer                                    , intent(in)  :: nxx
-    integer                                    , intent(in)  :: nstatqnt
     integer                         , optional , intent(in)  :: iopt
     !
     ! Local variables
     !
-    integer                                                  :: iq
     integer                                                  :: istat
     integer                                                  :: ioptloc
 !
@@ -935,12 +742,12 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     !
     if (istat==0) allocate(sedtra%bc_mor_array (lsedtot*2), STAT = istat)
     !
-    if (istat==0) allocate(sedtra%dcwwlc  (0:num_layers_grid), STAT = istat)
-    if (istat==0) allocate(sedtra%epsclc  (0:num_layers_grid), STAT = istat)
-    if (istat==0) allocate(sedtra%epswlc  (0:num_layers_grid), STAT = istat)
-    if (istat==0) allocate(sedtra%rsdqlc  (1:num_layers_grid), STAT = istat)
-    if (istat==0) allocate(sedtra%sddflc  (0:num_layers_grid), STAT = istat)
-    if (istat==0) allocate(sedtra%wslc    (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%dcwwlc  (0:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%epsclc  (0:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%epswlc  (0:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%rsdqlc  (1:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%sddflc  (0:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%wslc    (0:kmax), STAT = istat)
     !
     if (istat==0) allocate(sedtra%e_dzdn  (nu1:nu2), STAT = istat)
     if (istat==0) allocate(sedtra%e_dzdt  (nu1:nu2), STAT = istat)
@@ -1000,28 +807,10 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     if (istat==0) allocate(sedtra%sswy    (nc1:nc2,lsedtot), STAT = istat)
     if (istat==0) allocate(sedtra%sxtot   (nc1:nc2,lsedtot), STAT = istat)
     if (istat==0) allocate(sedtra%sytot   (nc1:nc2,lsedtot), STAT = istat)
-    if (ioptloc==CODE_DEFAULT) then
-       if (istat==0) allocate(sedtra%sscx   (nc1:nc2,lsedtot), STAT = istat)  ! to have ss output in FM in zeta points
-       if (istat==0) allocate(sedtra%sscy   (nc1:nc2,lsedtot), STAT = istat)  ! dimensioned on sedtot on purpose, see reconstructsedtransports()
-       if (istat==0) allocate(sedtra%sbxcum (nc1:nc2,lsedtot), STAT = istat)  ! Cumulative transports in FM in zeta points
-       if (istat==0) allocate(sedtra%sbycum (nc1:nc2,lsedtot), STAT = istat)  
-       if (istat==0) allocate(sedtra%ssxcum (nc1:nc2,lsedtot), STAT = istat)  
-       if (istat==0) allocate(sedtra%ssycum (nc1:nc2,lsedtot), STAT = istat)         
-    else
-       if (istat==0) allocate(sedtra%sscx   (1,1), STAT = istat)           ! not used in structured Delft3D-FLOW
-       if (istat==0) allocate(sedtra%sscy   (1,1), STAT = istat)           ! not used in structured Delft3D-FLOW
-       if (istat==0) allocate(sedtra%sbxcum (1,1), STAT = istat)  ! Cumulative transports in FM, compare to e_sstc
-       if (istat==0) allocate(sedtra%sbycum (1,1), STAT = istat)  
-       if (istat==0) allocate(sedtra%ssxcum (1,1), STAT = istat)  
-       if (istat==0) allocate(sedtra%ssycum (1,1), STAT = istat)       
-    endif
     !
     if (istat==0) allocate(sedtra%srcmax  (nc1:nc2,lsedtot), STAT = istat)
     if (istat==0) allocate(sedtra%fixfac  (nc1:nc2,lsedtot), STAT = istat)
-    if (istat==0) allocate(sedtra%taub    (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%taurat  (nc1:nc2,lsedtot), STAT = istat)
-    !
-    if (istat==0) allocate(sedtra%statqnt (nc1:nc2,nstatqnt), STAT = istat)
     !
     sedtra%kfsed    = 0
     sedtra%kmxsed   = 0
@@ -1070,6 +859,7 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     sedtra%vvv      = 0.0_fp
     sedtra%umod     = 0.0_fp
     sedtra%zumod    = 0.0_fp
+    sedtra%ust2     = 0.0_fp
     !
     sedtra%aks      = 0.0_fp
     sedtra%rca      = 0.0_fp
@@ -1088,40 +878,29 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     sedtra%sswy     = 0.0_fp
     sedtra%sxtot    = 0.0_fp
     sedtra%sytot    = 0.0_fp
-    sedtra%sscx     = 0.0_fp
-    sedtra%sscy     = 0.0_fp
-    sedtra%sbxcum   = 0.0_fp
-    sedtra%sbycum   = 0.0_fp
-    sedtra%ssxcum   = 0.0_fp
-    sedtra%ssycum   = 0.0_fp    
     !
     sedtra%srcmax   = 0.0_fp
     sedtra%fixfac   = 1.0_fp
-    sedtra%taub     = 0.0_fp
     sedtra%taurat   = 0.0_fp
-    !
-    sedtra%statqnt  = 0.0_fp
-    do iq = 1,4
-        ! min
-        if (moroutput%statflg(2,iq)>0) then
-            sedtra%statqnt(:,moroutput%statflg(2,iq)) = 1e10
-        endif
-        ! max
-        if (moroutput%statflg(3,iq)>0) then
-            sedtra%statqnt(:,moroutput%statflg(3,iq)) = -1e10
-        endif
-    enddo
 end subroutine allocsedtra
-
-
-!> Clear the arrays of sedtra_type data structure.
+!
+!
+!
+!============================================================================== 
 subroutine clrsedtra(istat, sedtra)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Clear the arrays of sedtra_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    use precision
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
-    type (sedtra_type)                         , intent(inout) :: sedtra
-    integer                                    , intent(out)   :: istat
+    type (sedtra_type)                         , pointer     :: sedtra
+    integer                                    , intent(out) :: istat
     !
     ! Local variables
     !
@@ -1194,25 +973,24 @@ subroutine clrsedtra(istat, sedtra)
     if (associated(sedtra%sswy    ))   deallocate(sedtra%sswy    , STAT = istat)
     if (associated(sedtra%sxtot   ))   deallocate(sedtra%sxtot   , STAT = istat)
     if (associated(sedtra%sytot   ))   deallocate(sedtra%sytot   , STAT = istat)
-    if (associated(sedtra%sscx    ))   deallocate(sedtra%sscx    , STAT = istat)
-    if (associated(sedtra%sscy    ))   deallocate(sedtra%sscy    , STAT = istat)
-    if (associated(sedtra%sbxcum  ))   deallocate(sedtra%sbxcum  , STAT = istat)
-    if (associated(sedtra%sbycum  ))   deallocate(sedtra%sbycum  , STAT = istat)
-    if (associated(sedtra%ssxcum  ))   deallocate(sedtra%ssxcum  , STAT = istat)
-    if (associated(sedtra%ssycum  ))   deallocate(sedtra%ssycum  , STAT = istat)    
     !
     if (associated(sedtra%srcmax  ))   deallocate(sedtra%srcmax  , STAT = istat)
     if (associated(sedtra%fixfac  ))   deallocate(sedtra%fixfac  , STAT = istat)
-    if (associated(sedtra%taub    ))   deallocate(sedtra%taub    , STAT = istat)
     if (associated(sedtra%taurat  ))   deallocate(sedtra%taurat  , STAT = istat)
-    !
-    if (associated(sedtra%statqnt ))   deallocate(sedtra%statqnt , STAT = istat)
 end subroutine clrsedtra
-
-
-!> Nullify/initialize a sedpar_type data structure.
+!
+!
+!
+!============================================================================== 
 subroutine nullsedpar(sedpar)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Nullify/initialize a sedpar_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    use precision
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1224,39 +1002,13 @@ subroutine nullsedpar(sedpar)
 !
 !! executable statements -------------------------------------------------------
 !
-    sedpar%csoil    = 1.0e4_fp
     sedpar%mdcuni   = 0.0_fp
-    sedpar%kssilt   = 0.0_fp
-    sedpar%kssand   = 0.0_fp
-    sedpar%sc_cmf1  = 0.01_fp
-    sedpar%sc_cmf2  = 0.01_fp
-    sedpar%sc_flcf  = 0.5_fp
-    sedpar%kssand   = 0.0_fp
-    sedpar%version  = 2.0_fp
-    sedpar%tbreakup = 1e-10_fp
-    sedpar%tfloc    = 1e-10_fp
-    sedpar%d_micro  = 1e-4_fp
-    sedpar%ustar_macro = 0.067_fp
-    !
-    sedpar%flocmod        = FLOC_NONE
-    sedpar%nflocpop       = 1
-    sedpar%nflocsizes     = 1
-    sedpar%nmudfrac       = 0
-    sedpar%sc_mudfac      = SC_MUDTHC
-    sedpar%max_mud_sedtyp = SEDTYP_SILT
-    sedpar%min_dxx_sedtyp = SEDTYP_SAND
-    !
-    sedpar%anymud    = .false.
-    sedpar%bsskin    = .false.
-    !
+    sedpar%nmudfrac = 0
     sedpar%flsdia   = ' '
     sedpar%flsmdc   = ' '
-    sedpar%flspmc   = ' '
+    sedpar%version  = 2.0_fp
     !
     nullify(sedpar%sedblock)
-    !
-    nullify(sedpar%cmpupdfrac)
-    nullify(sedpar%tpsnumber)
     nullify(sedpar%rhosol)
     !
     nullify(sedpar%logseddia)
@@ -1281,23 +1033,23 @@ subroutine nullsedpar(sedpar)
     !
     nullify(sedpar%nseddia)
     nullify(sedpar%sedtyp)
-    nullify(sedpar%tratyp)
-    !
-    nullify(sedpar%namclay)
-    nullify(sedpar%namflocpop)
-    nullify(sedpar%flocsize)
-    nullify(sedpar%floclist)
     !
     nullify(sedpar%inisedunit)
     nullify(sedpar%namsed)
     nullify(sedpar%flsdbd)
     nullify(sedpar%flstcg)
 end subroutine nullsedpar
-
-
-!> Clean up a sedpar_type data structure.
+!
+!
+!
+!========
 subroutine clrsedpar(istat     ,sedpar  )
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Clean up a sedpar_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1307,9 +1059,6 @@ subroutine clrsedpar(istat     ,sedpar  )
 !! executable statements -------------------------------------------------------
 !
     if (associated(sedpar%sedblock))   deallocate(sedpar%sedblock,   STAT = istat) ! the actual data tree should be deleted as part of the whole sed_ptr tree.
-    !
-    if (associated(sedpar%cmpupdfrac)) deallocate(sedpar%cmpupdfrac, STAT = istat)
-    if (associated(sedpar%tpsnumber))  deallocate(sedpar%tpsnumber,  STAT = istat)
     if (associated(sedpar%rhosol))     deallocate(sedpar%rhosol,     STAT = istat)
     !
     if (associated(sedpar%logseddia))  deallocate(sedpar%logseddia,  STAT = istat)
@@ -1333,23 +1082,25 @@ subroutine clrsedpar(istat     ,sedpar  )
     !
     if (associated(sedpar%nseddia))    deallocate(sedpar%nseddia,    STAT = istat)
     if (associated(sedpar%sedtyp))     deallocate(sedpar%sedtyp,     STAT = istat)
-    if (associated(sedpar%tratyp))     deallocate(sedpar%tratyp,     STAT = istat)
-    !
-    if (associated(sedpar%namclay))    deallocate(sedpar%namclay,    STAT = istat)
-    if (associated(sedpar%namflocpop)) deallocate(sedpar%namflocpop, STAT = istat)
-    if (associated(sedpar%flocsize))   deallocate(sedpar%flocsize,   STAT = istat)
-    if (associated(sedpar%floclist))   deallocate(sedpar%floclist,   STAT = istat)
     !
     if (associated(sedpar%inisedunit)) deallocate(sedpar%inisedunit, STAT = istat)
     if (associated(sedpar%namsed))     deallocate(sedpar%namsed,     STAT = istat)
     if (associated(sedpar%flsdbd))     deallocate(sedpar%flsdbd,     STAT = istat)
     if (associated(sedpar%flstcg))     deallocate(sedpar%flstcg,     STAT = istat)
 end subroutine clrsedpar
-
-
-!> Nullify/initialize a morpar_type data structure.
+!
+!
+!
+!============================================================================== 
 subroutine nullmorpar(morpar)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Nullify/initialize a morpar_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    use precision
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1358,9 +1109,7 @@ subroutine nullmorpar(morpar)
     ! Local variables
     !
     integer                              , pointer :: ihidexp
-    integer                              , pointer :: iti_sedtrans
     integer                              , pointer :: itmor
-    integer                              , pointer :: itcmp
     integer                              , pointer :: iopkcw
     integer                              , pointer :: iopsus
     integer                              , pointer :: islope
@@ -1373,6 +1122,7 @@ subroutine nullmorpar(morpar)
     integer                              , pointer :: telform
     real(hp)                             , pointer :: hydrt
     real(hp)                             , pointer :: hydrt0
+    integer                              , pointer :: MAXnpnt
     real(hp)                             , pointer :: morft
     real(hp)                             , pointer :: morft0
     real(fp)                             , pointer :: morfac
@@ -1384,13 +1134,9 @@ subroutine nullmorpar(morpar)
     real(fp)                             , pointer :: camax
     real(fp)                             , pointer :: dzmax
     real(fp)                             , pointer :: sus
-    real(fp)                             , pointer :: suscorfac
     real(fp)                             , pointer :: bed
-    real(fp)                             , pointer :: ti_sedtrans
     real(fp)                             , pointer :: tmor
-    real(fp)                             , pointer :: tcmp
-    real(fp)              , dimension(:) , pointer :: thetsd
-    real(fp)                             , pointer :: thetsduni
+    real(fp)                             , pointer :: thetsd
     real(fp)                             , pointer :: susw
     real(fp)                             , pointer :: sedthr
     real(fp)                             , pointer :: hmaxth
@@ -1415,18 +1161,7 @@ subroutine nullmorpar(morpar)
     real(fp)                             , pointer :: ttlalpha
     real(fp)                             , pointer :: ttlmin
     real(fp)                             , pointer :: wetslope
-    real(fp)                             , pointer :: dryslope
     real(fp)                             , pointer :: avaltime
-    logical                              , pointer :: duneavalan
-    real(fp)                             , pointer :: hswitch
-    real(fp)                             , pointer :: dzmaxdune
-    logical                              , pointer :: bermslopetransport
-    logical                              , pointer :: bermslopebed
-    logical                              , pointer :: bermslopesus
-    real(fp)                             , pointer :: bermslope
-    real(fp)                             , pointer :: bermslopefac
-    real(fp)                             , pointer :: bermslopegamma
-    real(fp)                             , pointer :: bermslopedepth
     real(fp)              , dimension(:) , pointer :: xx
     !
     real(hp)              , dimension(:) , pointer :: mergebuf
@@ -1444,13 +1179,11 @@ subroutine nullmorpar(morpar)
     logical                              , pointer :: multi
     logical                              , pointer :: eulerisoglm
     logical                              , pointer :: glmisoeuler
-    logical                              , pointer :: l_suscor
     character(256)                       , pointer :: bcmfilnam
     character(256)                       , pointer :: flcomp
     character(256)                       , pointer :: mmsyncfilnam
     character(256)                       , pointer :: ttlfil
     character(256)                       , pointer :: telfil
-    character(256)                       , pointer :: flsthetsd
     type (bedbndtype)     , dimension(:) , pointer :: morbnd
     type (cmpbndtype)     , dimension(:) , pointer :: cmpbnd
     !
@@ -1473,13 +1206,9 @@ subroutine nullmorpar(morpar)
     camax               => morpar%camax
     dzmax               => morpar%dzmax
     sus                 => morpar%sus
-    suscorfac           => morpar%suscorfac
     bed                 => morpar%bed
-    ti_sedtrans         => morpar%ti_sedtrans
     tmor                => morpar%tmor
-    tcmp                => morpar%tcmp
     thetsd              => morpar%thetsd
-    thetsduni           => morpar%thetsduni
     susw                => morpar%susw
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
@@ -1501,23 +1230,10 @@ subroutine nullmorpar(morpar)
     ttlalpha            => morpar%ttlalpha
     ttlmin              => morpar%ttlmin
     wetslope            => morpar%wetslope
-    dryslope            => morpar%dryslope
     avaltime            => morpar%avaltime
-    duneavalan          => morpar%duneavalan
-    hswitch             => morpar%hswitch
-    dzmaxdune           => morpar%dzmaxdune
-    bermslopetransport  => morpar%bermslopetransport
-    bermslopebed        => morpar%bermslopebed
-    bermslopesus        => morpar%bermslopesus
-    bermslope           => morpar%bermslope
-    bermslopefac        => morpar%bermslopefac
-    bermslopegamma      => morpar%bermslopegamma
-    bermslopedepth      => morpar%bermslopedepth
     !
     ihidexp             => morpar%ihidexp
-    iti_sedtrans        => morpar%iti_sedtrans
     itmor               => morpar%itmor
-    itcmp               => morpar%itcmp
     iopkcw              => morpar%iopkcw
     iopsus              => morpar%iopsus
     islope              => morpar%islope
@@ -1531,6 +1247,7 @@ subroutine nullmorpar(morpar)
     xx                  => morpar%xx
     ttlform             => morpar%ttlform
     telform             => morpar%telform
+    MAXnpnt             => morpar%MAXnpnt
     !
     bedupd              => morpar%bedupd
     cmpupd              => morpar%cmpupd
@@ -1550,7 +1267,6 @@ subroutine nullmorpar(morpar)
     mmsyncfilnam        => morpar%mmsyncfilnam
     ttlfil              => morpar%ttlfil
     telfil              => morpar%telfil
-    flsthetsd           => morpar%flsthetsd
     !
     istat = 0
     allocate (morpar%moroutput  , STAT = istat)
@@ -1563,15 +1279,38 @@ subroutine nullmorpar(morpar)
     subiw               => morpar%subiw
     eulerisoglm         => morpar%eulerisoglm
     glmisoeuler         => morpar%glmisoeuler
-    l_suscor            => morpar%l_suscor
     !
-    call initmoroutput(morpar%moroutput)
+    morpar%moroutput%transptype  = 2
     !
-    morpar%mornum%pure1d                   = .false.
+    morpar%moroutput%aks         = .false.
+    morpar%moroutput%cumavg      = .false.
+    morpar%moroutput%dg          = .false.
+    morpar%moroutput%dgsd        = .false.
+    morpar%moroutput%dm          = .false.
+    morpar%moroutput%dzduuvv     = .false.
+    morpar%moroutput%fixfac      = .false.
+    morpar%moroutput%hidexp      = .false.
+    morpar%moroutput%frac        = .false.
+    morpar%moroutput%mudfrac     = .false.
+    morpar%moroutput%sandfrac    = .false.
+    morpar%moroutput%percentiles = .false.
+    morpar%moroutput%sbcuv       = .false.
+    morpar%moroutput%sbcuuvv     = .false.
+    morpar%moroutput%sbwuv       = .false.
+    morpar%moroutput%sbwuuvv     = .false.
+    morpar%moroutput%sswuv       = .false.
+    morpar%moroutput%sswuuvv     = .false.
+    morpar%moroutput%suvcor      = .false.
+    morpar%moroutput%sourcesink  = .false.
+    morpar%moroutput%taurat      = .false.
+    morpar%moroutput%umod        = .false.
+    morpar%moroutput%ustar       = .false.
+    morpar%moroutput%uuuvvv      = .false.
+    morpar%moroutput%zumod       = .false.
+    !
     morpar%mornum%upwindbedload            = .true.
     morpar%mornum%laterallyaveragedbedload = .false.
     morpar%mornum%maximumwaterdepth        = .false.
-    morpar%mornum%maximumwaterdepthfrac    = 1.0d0 !by default, if `maximumwaterdepth=.true.`, `hs_mor=max(hs,hu)`, which is the old functionality. 
     !
     rmissval           = -999.0_fp
     imissval           = -999
@@ -1586,7 +1325,6 @@ subroutine nullmorpar(morpar)
     mmsyncfilnam       = ' '
     ttlfil             = ' '
     telfil             = ' '
-    flsthetsd          = ' '
     !
     morfac             = 1.0_fp
     thresh             = 0.1_fp
@@ -1598,15 +1336,13 @@ subroutine nullmorpar(morpar)
     dzmax              = 0.05_fp
     sus                = 1.0_fp
     bed                = 1.0_fp
-    ti_sedtrans        = 0.0_fp
     tmor               = 0.0_fp
-    tcmp               = 0.0_fp
-    thetsduni          = 0.0_fp
+    thetsd             = 0.0_fp
     susw               = 1.0_fp
     sedthr             = 0.5_fp
     hmaxth             = 1.0_fp
     bedw               = 1.0_fp
-    factcr             = 1.0_fp
+    factcr             = 1.0_fp    
     factsd             = 1.0_fp
     rdw                = 0.02_fp
     rdc                = 0.01_fp
@@ -1627,23 +1363,10 @@ subroutine nullmorpar(morpar)
     ttlalpha           = 0.1_fp
     ttlmin             = 0.0_fp
     wetslope           = 10.0_fp
-    dryslope           = 1.0_fp
     avaltime           = 86400.0_fp
-    duneavalan         = .false.
-    hswitch            = 0.1_fp
-    dzmaxdune          = 100.0_fp           ! with Marlies, 20180417
-    bermslopetransport = .false.
-    bermslopebed       = .true.
-    bermslopesus       = .true.
-    bermslope          = 1d-1
-    bermslopefac       = 1d0
-    bermslopegamma     = 1d0
-    bermslopedepth     = 1d0
     !
     ihidexp            = 1
-    iti_sedtrans       = 0
     itmor              = 0
-    itcmp              = 0
     iopkcw             = 1
     iopsus             = 0
     islope             = 2
@@ -1653,6 +1376,7 @@ subroutine nullmorpar(morpar)
     nxx                = 0
     ttlform            = 1
     telform            = 1
+    MAXnpnt            = 0
     !
     bedupd             = .false.
     cmpupd             = .false.
@@ -1660,8 +1384,6 @@ subroutine nullmorpar(morpar)
     eqmbcmud           = .false.
     eulerisoglm        = .false.    
     glmisoeuler        = .false.    
-    l_suscor           = .true.    
-    suscorfac          = 1.0_fp
     densin             = .true.
     rouse              = .false.
     epspar             = .false.
@@ -1675,87 +1397,20 @@ subroutine nullmorpar(morpar)
     nullify(morpar%cmpbnd)
     nullify(morpar%xx)
     nullify(morpar%mergebuf)
-    nullify(morpar%thetsd)
     !
     call initfluffy(morpar%flufflyr)
 end subroutine nullmorpar
-
-
-!> Give the morphological output flags their default value
-subroutine initmoroutput(moroutput, def)
-    type(moroutputtype), intent(inout) :: moroutput !< data structure containing all morphology output flags
-    logical  , optional, intent(in)    :: def       !< optional default value for morphology output flags
-    !
-    logical :: yes ! value assigned to output flags that are .true. by default
-    logical :: no  ! value assigned to output flags that are .false. by default
-    !
-    if (present(def)) then
-        ! if default value is  specified, use it for all flags
-        yes = def
-        no  = def
-    else
-        ! if default value is not specified, use .true. and .false.
-        yes = .true.
-        no  = .false.
-    endif
-    !
-    moroutput%transptype  = 2
-    !
-    moroutput%statflg(:,:) = 0
-    moroutput%nstatqnt     = 0
-    moroutput%weightflg    = 1
-    moroutput%avgintv      = -999d0
-    moroutput%morstats     = .false.
-    !
-    moroutput%aks           = no
-    moroutput%cumavg        = no
-    moroutput%dg            = no
-    moroutput%dgsd          = no
-    moroutput%dm            = no
-    moroutput%dmsedcum      = no
-    moroutput%dpbedlyr      = yes
-    moroutput%dzduuvv       = no
-    moroutput%fixfac        = no
-    moroutput%hidexp        = no
-    moroutput%frac          = no
-    moroutput%lyrfrac       = yes
-    moroutput%msed          = yes
-    moroutput%mudfrac       = no
-    moroutput%percentiles   = no
-    moroutput%poros         = yes
-    moroutput%rca           = yes
-    moroutput%rsedeq        = yes
-    moroutput%sandfrac      = no
-    moroutput%sedpar        = no
-    moroutput%seddif        = no
-    moroutput%sbuuvv        = yes
-    moroutput%sbcuv         = no
-    moroutput%sscuv         = no
-    moroutput%sbcuuvv       = no
-    moroutput%ssuuvv        = yes
-    moroutput%sbwuv         = no
-    moroutput%sbwuuvv       = no
-    moroutput%sswuv         = no
-    moroutput%sswuuvv       = no
-    moroutput%suvcor        = no
-    moroutput%sourcesink    = no
-    moroutput%taub          = no
-    moroutput%taurat        = no
-    moroutput%umod          = no
-    moroutput%ustar         = no
-    moroutput%uuuvvv        = no
-    moroutput%ws            = yes
-    moroutput%zumod         = no
-    moroutput%rawtransports = no
-    moroutput%blave         = no
-    moroutput%bamor         = no
-    moroutput%wumor         = no
-end subroutine initmoroutput
-
-
-!> Initialize a fluff layer data structure
+!
+!
+!
+!============================================================================== 
 subroutine initfluffy(flufflyr)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Initialize a fluff layer data structure.
+!
 !!--declarations----------------------------------------------------------------
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1781,11 +1436,17 @@ subroutine initfluffy(flufflyr)
     flufflyr%bfluff1_fil = ' '
     flufflyr%depfac_fil  = ' '
 end subroutine initfluffy
-
-
-!> Allocate a fluff layer data structure.
+!
+!
+!
+!============================================================================== 
 function allocfluffy(flufflyr, lsed, nmlb, nmub) result(istat)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Allocate a fluff layer data structure.
+!
 !!--declarations----------------------------------------------------------------
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1814,11 +1475,17 @@ function allocfluffy(flufflyr, lsed, nmlb, nmub) result(istat)
        if (istat==0) allocate(flufflyr%depfac(lsed,nmlb:nmub), STAT = istat)
     endselect
 end function allocfluffy
-
-
-!> Clean up a fluff layer data structure.
+!
+!
+!
+!============================================================================== 
 subroutine clrfluffy(istat, flufflyr)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Clean up a fluff layer data structure.
+!
 !!--declarations----------------------------------------------------------------
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1841,12 +1508,19 @@ subroutine clrfluffy(istat, flufflyr)
     if (associated(flufflyr%sourf))       deallocate(flufflyr%sourf,       STAT = istat)
     if (associated(flufflyr%mflfil))      deallocate(flufflyr%mflfil,      STAT = istat)
 end subroutine clrfluffy
-
-
-!> Clean up a morpar_type data structure.
+!
+!
+!
+!============================================================================== 
 subroutine clrmorpar(istat, morpar)
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Clean up a morpar_type data structure.
+!
 !!--declarations----------------------------------------------------------------
     use table_handles
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1867,9 +1541,9 @@ subroutine clrmorpar(istat, morpar)
           if (associated(morbnd(i)%idir))      deallocate(morbnd(i)%idir,      STAT = istat)
           if (associated(morbnd(i)%nm))        deallocate(morbnd(i)%nm,        STAT = istat)
           if (associated(morbnd(i)%nxmx))      deallocate(morbnd(i)%nxmx,      STAT = istat)
-          if (associated(morbnd(i)%lm))        deallocate(morbnd(i)%lm,        STAT = istat)
           if (associated(morbnd(i)%alfa_dist)) deallocate(morbnd(i)%alfa_dist, STAT = istat)
           if (associated(morbnd(i)%alfa_mag))  deallocate(morbnd(i)%alfa_mag,  STAT = istat)
+          if (associated(morbnd(i)%width))     deallocate(morbnd(i)%width,     STAT = istat)
        enddo
        deallocate(morpar%morbnd, STAT = istat)
     endif
@@ -1884,14 +1558,21 @@ subroutine clrmorpar(istat, morpar)
         call clrfluffy(istat, morpar%flufflyr)
         deallocate(morpar%flufflyr, STAT = istat)
     endif
-    if (associated(morpar%thetsd))    deallocate(morpar%thetsd,    STAT = istat)
     !
 end subroutine clrmorpar
-
-
-!> Nullify/initialize a trapar_type data structure.
+!
+!
+!
+!============================================================================== 
 subroutine nulltrapar(trapar  )
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Nullify/initialize a trapar_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    use precision
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1906,8 +1587,8 @@ subroutine nulltrapar(trapar  )
     !
     ! Note: 30 is hardcoded in sediment transport formulae
     !
-    trapar%npar     = 30
-    trapar%nparfile = 0
+    trapar%npar    = 30
+    trapar%nparfld = 0
     !
     nullify(trapar%dll_function_settle)
     nullify(trapar%dll_name_settle)
@@ -1930,15 +1611,23 @@ subroutine nulltrapar(trapar  )
     nullify(trapar%iform)
     nullify(trapar%name)
     nullify(trapar%par)
-    nullify(trapar%parname)
-    nullify(trapar%parfilename)
-    nullify(trapar%iparfile)
+    nullify(trapar%parfil)
+    nullify(trapar%iparfld)
+    nullify(trapar%parfld)
 end subroutine nulltrapar
-
-
-!> Clean up a trapar_type data structure.
+!
+!
+!
+!============================================================================== 
 subroutine clrtrapar(istat     ,trapar  )
+!!--description-----------------------------------------------------------------
+!
+!    Function: - Clean up a trapar_type data structure.
+!
 !!--declarations----------------------------------------------------------------
+    use precision
+    !
+    implicit none
     !
     ! Function/routine arguments
     !
@@ -1985,73 +1674,9 @@ subroutine clrtrapar(istat     ,trapar  )
     if (associated(trapar%iform       )) deallocate(trapar%iform       , STAT = istat)
     if (associated(trapar%name        )) deallocate(trapar%name        , STAT = istat)
     if (associated(trapar%par         )) deallocate(trapar%par         , STAT = istat)
-    if (associated(trapar%parname     )) deallocate(trapar%parname     , STAT = istat)
-    if (associated(trapar%parfilename )) deallocate(trapar%parfilename , STAT = istat)
-    if (associated(trapar%iparfile    )) deallocate(trapar%iparfile    , STAT = istat)
+    if (associated(trapar%parfil      )) deallocate(trapar%parfil      , STAT = istat)
+    if (associated(trapar%iparfld     )) deallocate(trapar%iparfld     , STAT = istat)
+    if (associated(trapar%parfld      )) deallocate(trapar%parfld      , STAT = istat)
 end subroutine clrtrapar
-
-!> return values for all transport formula parameters
-subroutine get_transport_parameters(trapar, l, nm, timhr, localpar)
-    use table_handles, only: gettabledata
-    !
-    type(trapar_type)     , intent(in)  :: trapar       !< transport settings
-    integer               , intent(in)  :: l            !< sediment fraction
-    integer               , intent(in)  :: nm           !< cell index
-    real(fp)              , intent(in)  :: timhr        !< time since reference date [h]
-    real(fp)              , intent(out) :: localpar(:)  !< collection of sediment parameters
-    
-    integer                    :: i            !< parameter index
-
-    do i = 1, trapar%npar
-       call get_one_transport_parameter(localpar(i:i), trapar, l, i, timhr, nm)
-    end do
-end subroutine get_transport_parameters
-
-
-!> return a value for one transport formula parameter
-subroutine get_one_transport_parameter(val, trapar, l, i, timhr, nm)
-    use table_handles, only: gettabledata
-    !
-    real(fp)              , intent(inout) :: val(:)     !< the parameter value at all nm
-    type(trapar_type)     , intent(in)    :: trapar     !< transport settings
-    integer               , intent(in)    :: l          !< sediment fraction
-    integer               , intent(in)    :: i          !< parameter index
-    real(fp)    , optional, intent(in)    :: timhr      !< time since reference date [h]
-    integer     , optional, intent(in)    :: nm         !< spatial index for which value is requested
-    
-    integer                     :: j           !< sediment parameter source file index
-    real(fp)                    :: parvec(1)   !< array to receive the value
-    character(256)              :: message     !< error message
-    type(parfile_type), pointer :: parfile     !< temporary to one trapar%parfile field
-    
-    j = trapar%iparfile(i,l)
-    if (j == 0) then
-        val(:) = trapar%par(i,l)
-        
-    else
-        select case (trapar%parfile(j)%source)
-        case (PARSOURCE_FIELD)
-            if (present(nm)) then
-                val(:) = trapar%parfile(j)%parfld(nm)
-            else
-                val(:) = trapar%parfile(j)%parfld(:)
-            endif
-            
-        case (PARSOURCE_TIME)
-            parfile => trapar%parfile(j)
-            if (present(timhr)) then
-                if (timhr > parfile%timhr) then
-                    message = ' '
-                    call gettabledata(parfile%ts ,parfile%itable_ts, parfile%ipar_ts, parfile%npar_ts, parfile%irec_ts, parvec, timhr, parfile%refjulday, message)
-                    if (message /= ' ') return ! TODO
-                    parfile%par = parvec(1)
-                    parfile%timhr = timhr
-                end if
-            end if
-            val(:) = parfile%par
-            
-        end select
-    end if
-end subroutine get_one_transport_parameter
 
 end module morphology_data_module

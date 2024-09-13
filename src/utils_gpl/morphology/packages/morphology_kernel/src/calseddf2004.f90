@@ -1,13 +1,12 @@
 subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , &
-                      & seddif    ,num_layers_grid      ,sig       ,thick     ,dicww     , &
+                      & seddif    ,kmax      ,sig       ,thick     ,dicww     , &
                       & tauwav    ,tauc      ,ltur      ,delw      ,rhowat    , &
                       & uwbih     ,aks       ,caks      ,caks_ss3d ,deltas    , &
                       & aks_ss3d  ,d50       ,salinity  ,ws0       ,psi       , &
-                      & epspar    ,eps       ,vonkar    ,salmax    ,wave      , &
-                      & epsmax    ,epsmxc    )
+                      & epspar    ,eps       ,vonkar    ,salmax    ,wave      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +30,8 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: calseddf2004.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/calseddf2004.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Compute sediment diffusion coefficient
@@ -47,9 +46,9 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
-    integer                    , intent(in)  :: num_layers_grid   !  Description and declaration in esm_alloc_int.f90
+    integer                    , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                    , intent(in)  :: ltur   !  Description and declaration in esm_alloc_int.f90
     real(fp)                   , intent(in)  :: psi
     real(fp)                   , intent(in)  :: aks
@@ -70,17 +69,15 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     real(fp)                   , intent(in)  :: ustarc
     real(fp)                   , intent(in)  :: uwbih
     real(fp)                   , intent(in)  :: ws0
-    real(fp), dimension(0:num_layers_grid), intent(in)  :: dicww  !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(0:num_layers_grid), intent(out) :: seddif !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(0:num_layers_grid), intent(in)  :: ws     !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(num_layers_grid)  , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(num_layers_grid)  , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(0:kmax), intent(in)  :: dicww  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(0:kmax), intent(out) :: seddif !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(0:kmax), intent(in)  :: ws     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(kmax)  , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(kmax)  , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
     real(fp)                   , intent(in)  :: eps
     real(fp)                   , intent(in)  :: vonkar
     logical                    , intent(in)  :: epspar
     logical                    , intent(in)  :: wave
-    real(fp)                   , intent(out) :: epsmax
-    real(fp)                   , intent(out) :: epsmxc
 !
 ! Local variables
 !
@@ -93,6 +90,8 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     real(fp)                    :: efloc
     real(fp)                    :: epsbed
     real(fp)                    :: epscur
+    real(fp)                    :: epsmax
+    real(fp)                    :: epsmxc
     real(fp)                    :: epstot
     real(fp)                    :: epswav
     real(fp)                    :: fch2
@@ -140,21 +139,22 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     ! calculate vertical sediment diffusion coefficient
     !
     difvr = epspar .and. wave
-    call calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,sig       , &
+    call calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , &
                     & thick     ,dicww     ,tauwav    ,tauc      ,ltur      , &
                     & eps       ,vonkar    ,difvr     ,deltas    ,epsbed    , &
                     & epsmax    ,epsmxc    ,seddif    )
     !
-    ! Determine height cell centre num_layers_grid
+    ! Determine height cell centre kmax
     !
-    zkmax = (1.0_fp+sig(num_layers_grid)) * h1
+    zkmax = (1.0_fp+sig(kmax)) * h1
     if (zkmax>aks .and. caks>1.0e-5_fp) then
        !
-       ! If aks is lower than cell centre of num_layers_grid layer, compute new reference
-       ! concentration in num_layers_grid centre by working upward from aks. This new
+       ! If aks is lower than cell centre of kmax layer, compute new reference
+       ! concentration in kmax centre by working upward from aks. This new
        ! reference concentration will be used in the source and sink terms
        ! but it will not be used in determining the suspended load correction
-       ! in bott3d; for the latter the original reference height is used.
+       ! in bott3d; for the latter the original reference height and
+       ! concentration are used.
        !
        cmaxs = 0.65_fp
        cmax  = min(max(0.05_fp, (d50/dsand)*cmaxs) , cmaxs)

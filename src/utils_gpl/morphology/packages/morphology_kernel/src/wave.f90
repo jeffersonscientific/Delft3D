@@ -2,7 +2,7 @@ subroutine wave(uo        ,t         ,uuvar     ,pi        ,wh        , &
               & c         ,rk        ,h         ,ag        ,wavek     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine wave(uo        ,t         ,uuvar     ,pi        ,wh        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wave.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/wave.f90 $
 !!--description-----------------------------------------------------------------
 ! computes a correction factor to
 ! account for the wave effect on the
@@ -39,7 +39,7 @@ subroutine wave(uo        ,t         ,uuvar     ,pi        ,wh        , &
     use precision
     implicit none
 !
-! Arguments
+! Call variables
 !
     real(fp), intent(in)               :: ag !  Description and declaration in esm_alloc_real.f90
     real(fp), intent(in)               :: c !  Description and declaration in esm_alloc_real.f90

@@ -1,8 +1,8 @@
-subroutine tranb3(utot      ,d35       ,c         ,h         ,npar      , &
-                & par       ,sbot      ,ssus      )
+subroutine tranb3(utot      ,d35       ,c         ,h         ,par       , &
+                & sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine tranb3(utot      ,d35       ,c         ,h         ,npar      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tranb3.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/tranb3.f90 $
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! swanby (ackers white)
@@ -38,30 +38,29 @@ subroutine tranb3(utot      ,d35       ,c         ,h         ,npar      , &
     use precision
     implicit none
 !
-! Arguments
+! Call variables
 !
-    integer                  , intent(in)    :: npar
-    real(fp)                 , intent(in)    :: c
-    real(fp)                 , intent(in)    :: d35
-    real(fp)                 , intent(in)    :: h
-    real(fp), dimension(npar), intent(in)    :: par
-    real(fp)                 , intent(in)    :: utot
-    !
-    real(fp)                 , intent(out)   :: sbot
-    real(fp)                 , intent(out)   :: ssus
+    real(fp), intent(in)               :: c !  Description and declaration in esm_alloc_real.f90
+    real(fp), intent(in)               :: d35
+    real(fp), intent(in)               :: h
+    real(fp), intent(out)              :: sbot
+    real(fp), intent(out)              :: ssus
+    real(fp), intent(in)               :: utot
+    real(fp), dimension(30), intent(in) :: par
 !
 !
 ! Local variables
 !
     real(fp)                       :: a
     real(fp)                       :: acal
-    real(fp)                       :: ag                   ! gravity acceleration
+    real(fp)                       :: ag                   !        gravity acceleration
     real(fp)                       :: cc
     real(fp)                       :: ccc
     real(fp)                       :: cd
     real(fp)                       :: cf
-    real(fp)                       :: delta                ! relative density of sediment particle
+    real(fp)                       :: delta                !     relative density of sediment particle
     real(fp)                       :: dgr
+    real(fp)                       :: dp                   !  depth value at depth points
     real(fp)                       :: f                    ! real help array
     real(fp)                       :: fwc
     real(fp)                       :: rk
@@ -89,16 +88,17 @@ subroutine tranb3(utot      ,d35       ,c         ,h         ,npar      , &
        cc = c
     endif
     cf = ag/cc/cc
-    dgr = 25300*d35
+    dp = d35
+    dgr = 25300*dp
     rn = 1.0 - .2432*log(dgr)
     rm = 9.66/dgr + 1.34
     a = .23/sqrt(dgr) + .14
     ccc = log(dgr)
     ccc = exp(2.86*ccc - .4343*ccc*ccc - 8.128)
-    cd = 18.*log10(12.*h/d35)
+    cd = 18.*log10(12.*h/dp)
     uster = sqrt(cf)*utot
-    f = utot**(1. - rn)*uster**rn/cd**(1. - rn)/ag**(rn/2.)/sqrt(delta*d35)
+    f = utot**(1. - rn)*uster**rn/cd**(1. - rn)/ag**(rn/2.)/sqrt(delta*dp)
     fwc = (f - a)/a
-    if (fwc>0.) sbot = acal*utot*d35*(utot/uster)**rn*ccc*fwc**rm
+    if (fwc>0.) sbot = acal*utot*dp*(utot/uster)**rn*ccc*fwc**rm
     ssus = 0.0
 end subroutine tranb3

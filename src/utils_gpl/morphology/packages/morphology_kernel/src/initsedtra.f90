@@ -1,15 +1,7 @@
-module m_initsedtra
-
-private 
-
-public initsedtra
-
-contains
-
 subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, nmlb, nmub, nmmax, lsed, lsedtot)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -33,8 +25,8 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: initsedtra.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/initsedtra.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initialize the arrays of sedtra_type data structure.
@@ -45,6 +37,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     use precision
     use morphology_data_module, only: sedtra_type, sedpar_type, trapar_type, morpar_type
     use bedcomposition_module, only: getfrac, bedcomp_data
+    use sediment_basics_module, only: SEDTYP_COHESIVE
     !
     implicit none
     !
@@ -87,7 +80,6 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     real(fp)             , dimension(:,:,:), pointer :: logseddia
     real(fp)             , dimension(:)    , pointer :: mudcnt
     real(fp)             , dimension(:)    , pointer :: mudfrac
-    real(fp)             , dimension(:)    , pointer :: sandfrac
     real(fp)                               , pointer :: mwwjhe
     real(fp)             , dimension(:)    , pointer :: rhosol
     real(fp)             , dimension(:)    , pointer :: sedd50
@@ -98,6 +90,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     integer                                          :: ll
     real(fp)                                         :: drho
+    real(fp)                                         :: s
 !
 !! executable statements -------------------------------------------------------
 !
@@ -109,7 +102,6 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     asklhe    => morpar%asklhe
     frac      => sedtra%frac
     mudfrac   => sedtra%mudfrac
-    sandfrac  => sedtra%sandfrac
     anymud    => sedpar%anymud
     logsedsig => sedpar%logsedsig
     logseddia => sedpar%logseddia
@@ -139,7 +131,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     if (lsedtot/=1 .or. sedpar%flsdia==' ') then
        do ll = 1, lsedtot
-          if (sedd50(ll) > 0.0_fp) then
+          if (sedpar%sedtyp(ll) /= SEDTYP_COHESIVE) then
               drho      = (sedpar%rhosol(ll)-rhow) / rhow
               dstar(ll) = sedd50(ll) * (drho*ag/vicmol**2)**0.3333_fp
               if (dstar(ll) < 1.0_fp) then
@@ -183,8 +175,8 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                 & logsedsig ,nseddia   ,logseddia ,nmmax     ,nmlb      , &
-                & nmub      ,xx        ,nxx       ,sedpar%max_mud_sedtyp, sedpar%min_dxx_sedtyp, &
-                & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
+                & nmub      ,xx        ,nxx       ,sedd50fld ,dm        , &
+                & dg        ,dxx       ,dgsd      )
     !
     ! Determine hiding & exposure factors
     !
@@ -195,10 +187,4 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     else
        hidexp = 1.0
     endif
-    !
-    call compsandfrac(frac, sedd50, nmmax, lsedtot, sedtyp, &
-                    & sedpar%max_mud_sedtyp, sandfrac, sedd50fld, &
-                    & nmlb, nmub)  
 end subroutine initsedtra
-
-end module m_initsedtra

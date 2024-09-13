@@ -1,15 +1,16 @@
-subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
+subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
                  & thick0   ,thick1    ,fixfac    ,srcmax   , &
                  & frac     ,oldmudfrac,flmd2l    ,iform    , &
-                 & npar     ,par       ,numintpar ,numrealpar, &
-                 & numstrpar,dllfunc  ,dllhandle ,intpar    , &
-                 & realpar  ,strpar   ,iflufflyr ,mflufftot , &
-                 & fracf    ,maxslope ,wetslope  , & ! output:
+                 & par      ,numintpar ,numrealpar,numstrpar, &
+                 & dllfunc  ,dllhandle ,intpar    ,realpar  , &
+                 & strpar   ,iflufflyr ,mflufftot ,fracf    , &
+                 & maxslope ,wetslope  , &
+! output:
                  & error    ,wstau     ,sinktot   ,sourse   , &
                  & sourf    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -33,8 +34,8 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: erosilt.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/erosilt.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes sediment fluxes for cohesive sediment fractions
@@ -49,7 +50,6 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     use sediment_basics_module
     use morphology_data_module, only: RP_TAUB
     use message_module, only: write_error
-    use iso_c_binding, only: c_char
     !
     implicit none
     !
@@ -58,9 +58,8 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     integer                             , intent(in)    :: numintpar
     integer                             , intent(in)    :: numrealpar
     integer                             , intent(in)    :: numstrpar
-    integer                             , intent(in)    :: num_layers_grid
-    integer                                             :: lundia     !> handle of diagnostics file
-    integer                             , intent(in)    :: npar
+    integer                             , intent(in)    :: kmax
+    integer                                             :: lundia   !  Description and declaration in inout.igs
     integer       , dimension(numintpar), intent(inout) :: intpar
     integer(pntrsize)                   , intent(in)    :: dllhandle
     !
@@ -69,16 +68,16 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
     real(fp)                            , intent(in)    :: fracf
     real(fp)                            , intent(in)    :: maxslope
     real(fp)                            , intent(in)    :: mflufftot
-    real(fp)     , dimension(npar)      , intent(inout) :: par
+    real(fp)     , dimension(30)        , intent(inout) :: par
     real(fp)                            , intent(out)   :: sinktot
     real(fp)                            , intent(out)   :: sourf
     real(fp)                            , intent(out)   :: sourse
     real(fp)                            , intent(in)    :: srcmax
-    real(fp)       , dimension(num_layers_grid)    , intent(in)    :: thick
+    real(fp)       , dimension(kmax)    , intent(in)    :: thick
     real(fp)                            , intent(in)    :: thick0
     real(fp)                            , intent(in)    :: thick1
     real(fp)                            , intent(in)    :: wetslope
-    real(fp)       , dimension(0:num_layers_grid)  , intent(in)    :: ws
+    real(fp)       , dimension(0:kmax)  , intent(in)    :: ws
     real(fp)                            , intent(out)   :: wstau
     !
     real(hp)     , dimension(numrealpar), intent(inout) :: realpar
@@ -91,35 +90,31 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
 !
 ! Local variables
 !
-    real(fp) :: betaslope     !> coefficient in bed slope effect on critical shear stress for bed erosion (-)
-    real(fp) :: sour          !> entrainment flux from bed (kg/m2/s)
-    real(fp) :: sour_fluff    !> entrainment flux from fluff layer (kg/m2/s)
-    real(fp) :: sink          !> dimensionless sedimentation factor (-)
-    real(fp) :: taub          !> (wave enhanced) bed shear stress (N/m2)
-    real(fp) :: taum          !> dimensionless excess bed shear stress for erosion (-)
-    real(fp) :: entr          !> entrainment flux in case of two-layer fluid mud (kg/m2/s)
-    real(fp) :: taucrmin      !> minimim critical shear stress for erosion during bed slope effect computation (N/m2)
-    real(fp) :: tcrdep        !> critical shear stress for deposition (N/m2)
-    real(fp) :: tcrero        !> critical shear stress for erosion from the bed (N/m2)
-    real(fp) :: eropar        !> erosion rate parameter (kg/m2/s)
-    real(fp) :: tcrflf        !> critical shear stress for erosion from the fluff layer (N/m2)
-    real(fp) :: parfl0        !> zero-order erosion rate parameter for the fluff layer (m*s)
-    real(fp) :: parfl1        !> first-order erosion rate parameter for the fluff layer (m*s/kg)
-    real(fp) :: depeff        !> coefficient determining mud sedimentation (to fluff layer or bed) (-)
-    real(fp) :: powern        !> exponent in the erosion rate formulation (-)
+    integer  :: k
+    real(fp) :: betaslope
+    real(fp) :: sour
+    real(fp) :: sour_fluff
+    real(fp) :: sink
+    real(fp) :: taub
+    real(fp) :: taum
+    real(fp) :: entr
+    real(fp) :: taucrmin
+    real(fp) :: tcrdep
+    real(fp) :: tcrero
+    real(fp) :: eropar
+    real(fp) :: tcrflf
+    real(fp) :: parfl0
+    real(fp) :: parfl1
+    real(fp) :: depeff
     !
     ! Interface to dll is in High precision!
     !
-    real(hp)                    :: sink_dll       !> dimensionless deposition flux computed by user dll (-)
-    real(hp)                    :: sour_dll       !> entrainment flux computed by user dll (kg/m2/s)
+    real(hp)                    :: sink_dll
+    real(hp)                    :: sour_dll
     integer(pntrsize)           :: ierror_ptr
     integer(pntrsize), external :: perf_function_erosilt
-    character(1024)             :: errmsg         !> error message from this routine
-    character(256)              :: message        !> error message from user dll
-    character(kind=c_char)      :: message_c(257) !> C-version of "message", including C_NULL_CHAR
-                                                  ! Calling perf_function_erosilt with "message" caused problems
-                                                  ! Solved by using "message_c"
-    integer                     :: i              !> loop index
+    character(1024)             :: errmsg
+    character(256)              :: message     ! Contains message from user dll
 !
 !! executable statements ------------------
 !
@@ -153,9 +148,8 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
        if (tcrdep > 0.0_fp) then
           sink = max(0.0_fp , 1.0_fp-taub/tcrdep)
        else
-          sink = 0.0_fp
+          sink = 0.0
        endif
-       sour_fluff = 0.0_fp
     else
        if (iform == -3) then
           eropar = par(11)
@@ -165,7 +159,6 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
           parfl0 = par(15)
           parfl1 = par(16)
           depeff = par(17)
-          powern = par(18)
           !
           ! Default Partheniades-Krone formula
           !
@@ -181,7 +174,7 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
           endif
           !
           taum = max(0.0_fp, taub/tcrero - 1.0_fp)
-          sour = eropar * taum**powern
+          sour = eropar * taum
           !
           ! Erosion from fluff layer
           !
@@ -201,17 +194,13 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
           else
              sink = max(0.0_fp,min(depeff,1.0_fp))
           endif
-       elseif (iform == 21) then
+       elseif (iform == 15) then
           !
           ! Initialisation of output variables of user defined transport formulae
           !
           sink_dll    = 0.0_hp
           sour_dll    = 0.0_hp
           message     = ' '
-          do i=1,256
-             message_c(i) = message(i:i)
-          enddo
-          message_c(257) = C_NULL_CHAR
           !
           ! psem/vsem is used to be sure this works fine in DD calculations
           !
@@ -222,8 +211,7 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
                                              realpar         , numrealpar        , &
                                              strpar          , numstrpar         , &
                                              sink_dll        , sour_dll          , &
-                                             message_c)
-          message = transfer(message_c(1:256), message)
+                                             message)
           call vsemlun
           if (ierror_ptr /= 0) then
              errmsg = 'Cannot find function "'//trim(dllfunc)//'" in dynamic library.'
@@ -249,7 +237,11 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
           write (errmsg,'(a,i0,a)') 'Invalid transport formula ',iform,' for mud fraction.'
           call write_error(errmsg, unit=lundia)
        endif
-       !
+    endif
+    !
+    wstau         = ws(kmax) * sink ! used for flmd2l
+    !
+    if (.not.flmd2l) then
        if (oldmudfrac) then
           sour       = fixfac * sour
           sour_fluff = 0.0_fp
@@ -258,8 +250,6 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
           sour_fluff =          fracf * sour_fluff
        endif
     endif
-    !
-    wstau         = ws(num_layers_grid) * sink ! used for flmd2l
     !
     sour    = min(sour, srcmax)
     !

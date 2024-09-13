@@ -4,7 +4,7 @@
 subroutine dfbroadc ( iptr, ilen, itype, error, msgstr )
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2016.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -28,8 +28,8 @@ subroutine dfbroadc ( iptr, ilen, itype, error, msgstr )
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dfbroadc.F90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_lgpl/deltares_common/packages/deltares_common_mpi/src/dfbroadc.F90 $
 !!--description-----------------------------------------------------------------
 !
 !   Broadcasts data from the master to all other processes
@@ -70,7 +70,7 @@ subroutine dfbroadc ( iptr, ilen, itype, error, msgstr )
     if (.not.parll) return
     !
 #ifdef HAVE_MPI
-    call mpi_bcast ( iptr, ilen, itype, master-1, engine_comm_world, ierr )
+    call mpi_bcast ( iptr, ilen, itype, master-1, MPI_COMM_WORLD, ierr )
     if ( ierr /= MPI_SUCCESS ) then
        write (msgstr,'(a,i5)') 'MPI produces some internal error - return code is ',ierr
        error = .true.

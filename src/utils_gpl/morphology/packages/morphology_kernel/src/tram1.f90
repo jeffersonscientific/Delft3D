@@ -1,5 +1,5 @@
-subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
-                & num_layers_grid      ,bed       , &
+subroutine tram1 (numrealpar,realpar   ,wave                 ,par       , &
+                & kmax      ,bed       , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
                 & frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      , &
@@ -10,7 +10,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
                 & message   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -34,8 +34,8 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tram1.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/tram1.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
@@ -49,45 +49,44 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
-    logical                         , intent(in)   :: scour
-    logical                         , intent(in)   :: wave
-    integer                         , intent(in)   :: num_layers_grid
-    integer                         , intent(in)   :: ltur     !  Description and declaration in iidim.f90
-    integer                         , intent(in)   :: npar
     integer                         , intent(in)   :: numrealpar
-    real(fp)                        , intent(in)   :: bed
-    real(fp)                        , intent(in)   :: bedw
-    real(fp)                        , intent(in)   :: camax
-    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
-    real(fp)                        , intent(in)   :: eps
-    real(fp)                        , intent(in)   :: frac     !  Description and declaration in rjdim.f90
-    real(fp), dimension(num_layers_grid)       , intent(in)   :: sig      !  Description and declaration in rjdim.f90
-    real(fp)                        , intent(in)   :: sigmol   !  Description and declaration in rjdim.f90
-    real(fp)                        , intent(in)   :: susw
-    real(fp)                        , intent(in)   :: tauadd
-    real(fp)                        , intent(in)   :: taucr0
-    real(fp), dimension(num_layers_grid)       , intent(in)   :: thick    !  Description and declaration in rjdim.f90
-    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: ws       !  Description and declaration in rjdim.f90
-    real(fp), dimension(npar)       , intent(inout):: par
-    !
     real(hp), dimension(numrealpar) , intent(inout):: realpar
     !
-    logical                         , intent(out)  :: error
-    integer                         , intent(out)  :: kmaxsd
+    logical                         , intent(in)   :: wave
+    integer                         , intent(in)   :: kmax
+    real(fp)                        , intent(in)   :: bed
+    real(fp)                        , intent(in)   :: tauadd
+    real(fp)                        , intent(in)   :: taucr0
+    real(fp)                        , intent(in)   :: eps
+    real(fp)                        , intent(in)   :: camax
+    real(fp)                        , intent(in)   :: frac     !  Description and declaration in rjdim.f90
+    real(fp), dimension(kmax)       , intent(in)   :: sig      !  Description and declaration in rjdim.f90
+    real(fp), dimension(kmax)       , intent(in)   :: thick    !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:kmax)     , intent(in)   :: ws       !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:kmax)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
+    integer                         , intent(in)   :: ltur     !  Description and declaration in iidim.f90
+    real(fp)                        , intent(in)   :: sigmol   !  Description and declaration in rjdim.f90
+    logical                         , intent(in)   :: scour
+    real(fp)                        , intent(in)   :: bedw
+    real(fp)                        , intent(in)   :: susw
+    real(fp), dimension(30)         , intent(in)   :: par
+    !
     real(fp)                        , intent(out)  :: aks
+    real(fp), dimension(kmax)       , intent(out)  :: rsedeq   !  Description and declaration in rjdim.f90
+    integer                         , intent(out)  :: kmaxsd
+    real(fp)                        , intent(out)  :: taurat
     real(fp)                        , intent(out)  :: caks
-    real(fp)                        , intent(out)  :: conc2d
-    real(fp), dimension(num_layers_grid)       , intent(out)  :: rsedeq   !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:kmax)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(out)  :: sbcu
     real(fp)                        , intent(out)  :: sbcv
     real(fp)                        , intent(out)  :: sbwu
     real(fp)                        , intent(out)  :: sbwv
-    real(fp), dimension(0:num_layers_grid)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(out)  :: sswu
     real(fp)                        , intent(out)  :: sswv
-    real(fp)                        , intent(out)  :: taurat
+    logical                         , intent(out)  :: error
+    real(fp)                        , intent(out)  :: conc2d
     character(*)                    , intent(out)  :: message     ! Contains error message
 !
 ! Local variables
@@ -129,9 +128,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     integer  :: k
     real(fp) :: avgcu
     real(fp) :: avgu
-    real(fp) :: awb
     real(fp) :: bakdif
-    real(fp) :: betam
     real(fp) :: delr
     real(fp) :: deltas
     real(fp) :: diffbt
@@ -141,6 +138,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     real(fp) :: epsmax
     real(fp) :: epsmxc
     real(fp) :: fact1
+    real(fp) :: gambr
     real(fp) :: hs
     real(fp) :: lci
     real(fp) :: muc
@@ -150,14 +148,11 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     real(fp) :: tauc
     real(fp) :: tauwav
     real(fp) :: u
-    real(fp) :: uoff
-    real(fp) :: uon
     real(fp) :: ustarc
     real(fp) :: usus
     real(fp) :: utot
     real(fp) :: uwb
     real(fp) :: v
-    real(fp) :: vcr
     real(fp) :: z
     real(fp) :: zusus
     logical  :: difvr
@@ -176,7 +171,6 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     rlabda    = real(realpar(RP_RLAMB),fp)
     uorb      = real(realpar(RP_UORB) ,fp)
     di50      = real(realpar(RP_D50)  ,fp)
-    dss       = real(realpar(RP_DSS)  ,fp)
     !realpar(RP_DSS) = real(dss,hp)
     dstar     = real(realpar(RP_DSTAR),fp)
     d10       = real(realpar(RP_D10MX),fp)
@@ -206,7 +200,6 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     rdw    = par(15)
     iopkcw = int(par(16))
     epspar = par(17)>0.0_fp
-    betam  = par(18)
     !
     sag    = sqrt(ag)
     !
@@ -217,14 +210,14 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
                  & tauc      ,taubcw    ,taurat    ,ta        ,caks      , &
                  & dss       ,mudfrac   ,eps       ,aksfac    ,rwave     , &
                  & camax     ,rdc       ,rdw       ,iopkcw    ,iopsus    , &
-                 & vonkar    ,wave      ,tauadd    ,betam     ,awb       )
+                 & vonkar    ,wave      ,tauadd    )
     realpar(RP_DSS)   = real(dss    ,hp)
     !
     ! Find bottom cell for SAND sediment calculations and store for use
     ! in DIFU and DIF_WS
     !
     kmaxsd = 1
-    do k = num_layers_grid - 1, 1, -1
+    do k = kmax - 1, 1, -1
        !
        ! Calculate level of lower cell interface
        !
@@ -256,7 +249,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
        epsmax = 0.0_fp
     endif
     difvr = epspar .and. wave
-    call calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,sig       , &
+    call calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , &
                     & thick     ,dicww     ,tauwav    ,tauc      ,ltur      , &
                     & eps       ,vonkar    ,difvr     ,deltas    ,epsbed    , &
                     & epsmax    ,epsmxc    ,seddif    )
@@ -290,23 +283,23 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
           !
           ! Set diffusion coefficient at bottom of layer
           !
-          dz        = h1 * (sig(k)-sig(k+1))
           diffbt    = seddif(k) + bakdif
-          diffbt    = max(diffbt , 0.1_fp*ws(k)*dz)
+          diffbt    = max(diffbt , 0.1_fp*ws(k)*dz) ! \_ lines should be switched
+          dz        = h1 * (sig(k)-sig(k+1))        ! /
           fact1     = 1.0_fp + dz * ws(k) / diffbt
           rsedeq(k) = rsedeq(k+1) / fact1
        enddo
        !
        ! And then work down
        !
-       do k = kmaxsd + 1, num_layers_grid
+       do k = kmaxsd + 1, kmax
           rsedeq(k) = rsedeq(k-1)
        enddo
     else
        !
        ! if caks <= 1.0e-6
        !
-       do k = 1, num_layers_grid
+       do k = 1, kmax
           rsedeq(k) = 0.0_fp
        enddo
     endif
@@ -321,7 +314,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     avgu     = 0.0_fp
     avgcu    = 0.0_fp
     if (zumod > 0.0_fp) then
-       do k = 1, num_layers_grid
+       do k = 1, kmax
           z     = (1.0_fp + sig(k)) * h1
           u     = log(1.0_fp + z/z0rou)
           avgu  = avgu  + u*thick(k)
@@ -346,32 +339,9 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
                     & dstar     ,ws(1)     ,hrms      ,tp        ,teta      , &
                     & rlabda    ,umod      ,sbcu      ,sbcv      ,sbwu      , &
                     & sbwv      ,sswu      ,sswv      ,rhowat    ,ag        , &
-                    & wave      ,eps       ,uon       ,uoff      ,vcr       , &
-                    & error     ,message   )
+                    & wave      ,eps       ,error     ,message   )
        if (error) return
     else
        error = .false.
-       uon   = missing_value
-       uoff  = missing_value
-       vcr   = missing_value
     endif
-
-    ! van Rijn (1993) specific output
-    par     = missing_value
-    par( 1) = tauc
-    par( 2) = tauwav
-    par( 3) = taubcw
-    par( 4) = usus
-    par( 5) = zusus
-    par( 6) = dss
-    par( 7) = caks
-    par( 8) = aks
-    par( 9) = deltas
-    par(10) = epsmxc
-    par(11) = epsmax
-    par(12) = uon
-    par(13) = uoff
-    par(14) = vcr
-    par(15) = uwb
-    par(16) = awb
 end subroutine tram1

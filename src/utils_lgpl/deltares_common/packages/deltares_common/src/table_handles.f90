@@ -1,7 +1,7 @@
 module table_handles
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -25,8 +25,8 @@ module table_handles
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: table_handles.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_lgpl/deltares_common/packages/deltares_common/src/table_handles.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Handle wrapper for tables module.
@@ -61,24 +61,15 @@ module table_handles
     public CHKTAB_POSITIVE
     public CHKTAB_BLOCK
     public CHKTAB_LOGICAL
-
 !
 !! -----------------------------------------------------------------------------
 !
-    interface gettabletimes
-       module procedure gettabletimes_hp
-       module procedure gettabletimes_sp
-    end interface gettabletimes
-
     interface gettable
        module procedure gettable_vector, gettable_scalar
     end interface
 
     interface gettabledata
-       module procedure gettabledata_vector_hp
-       module procedure gettabledata_vector_sp
-       module procedure gettabledata_scalar_hp
-       module procedure gettabledata_scalar_sp
+       module procedure gettabledata_vector, gettabledata_scalar
     end interface
 
     type tablefiletypehandle
@@ -209,58 +200,19 @@ subroutine gettable_scalar(handle    ,location  ,parname   ,itable    , &
     !
 end subroutine gettable_scalar
 
-subroutine gettabletimes_sp(handle     ,itable     ,times      ,refjulday  , &
+subroutine gettabletimes(handle     ,itable     ,times      ,refjulday  , &
                        & errorstring)
 !
 ! Global variables
 !
     integer                ,intent(in)  :: itable
     integer                ,intent(in)  :: refjulday
-    real(sp), dimension(:) ,intent(out) :: times
+    real(fp), dimension(*) ,intent(out) :: times
     character(256)         ,intent(out) :: errorstring
     type(handletype)       ,intent(in)  :: handle
 !
 ! Local variables
 !
-    integer                             :: i
-    integer                             :: istat
-    real(hp), dimension(:), allocatable :: times_hp
-!
-!! executable statements -------------------------------------------------------
-!
-    allocate(times_hp(size(times,1)), stat=istat)
-    do i=1,size(times,1)
-       times_hp(i) = real(times(i),hp)
-    enddo
-    if (istat /= 0) then
-       errorstring = 'GETDATAFILE: Memory allocation error'
-       return
-    endif
-    call gettabletimes_hp(handle, itable, times_hp, refjulday, &
-                       & errorstring)
-    do i=1,size(times,1)
-       times(i) = real(times_hp(i),sp)
-    enddo
-    deallocate(times_hp, stat=istat)
-end subroutine gettabletimes_sp
-
-
-subroutine gettabletimes_hp(handle     ,itable     ,times      ,refjulday  , &
-                       & errorstring)
-!
-! Global variables
-!
-    integer                ,intent(in)  :: itable
-    integer                ,intent(in)  :: refjulday
-    real(hp), dimension(:) ,intent(out) :: times
-    character(256)         ,intent(out) :: errorstring
-    type(handletype)       ,intent(in)  :: handle
-!
-! Local variables
-!
-    integer                             :: i
-    integer                             :: istat
-    real(fp), dimension(:), allocatable :: times_fp
     type(tablefiletypehandle)           :: tablehandle
 !
 !! executable statements -------------------------------------------------------
@@ -270,87 +222,47 @@ subroutine gettabletimes_hp(handle     ,itable     ,times      ,refjulday  , &
     if (.not.associated(tablehandle%this)) then
        errorstring = 'GetTableTimes call before initialisation'
     else
-       allocate(times_fp(size(times)), stat = istat)
-       if (istat /= 0) then
-          errorstring = 'gettabletimes_hp: Memory allocation error'
-          return
-       endif
-       do i=1,size(times)
-          times_fp(i) = real(times(i),fp)
-       enddo
-       call org_gettabletimes(tablehandle%this       ,itable     ,times_fp   , &
+       call org_gettabletimes(tablehandle%this       ,itable     ,times      , &
                             & refjulday  ,errorstring)
-       do i=1,size(times)
-          times(i) = real(times_fp(i),hp)
-       enddo
-       deallocate(times_fp, stat = istat)
     endif
     !
-end subroutine gettabletimes_hp
+end subroutine gettabletimes
 
 
-subroutine gettabledata_vector_sp(handle     ,ivec       ,values     , &
+subroutine gettabledata_vector(handle     ,ivec       ,values     , &
                              & timhr      ,refjulday  ,errorstring, extrapol_in)
 !
 ! Global variables
 !
     integer, dimension(4)               :: ivec
     integer                ,intent(in)  :: refjulday
-    real(sp), optional     ,intent(in)  :: extrapol_in
-    real(sp)               ,intent(in)  :: timhr
-    real(sp), dimension(:) ,intent(out) :: values
+    real(fp), optional     ,intent(in)  :: extrapol_in
+    real(fp)               ,intent(in)  :: timhr
+    real(fp), dimension(:) ,intent(out) :: values
     character(256)         ,intent(out) :: errorstring
     type(handletype)       ,intent(in)  :: handle
 !
 ! Local variables
 !
-    real(sp)                  :: extrapol
+    real(fp)                  :: extrapol
 !
 !! executable statements -------------------------------------------------------
 !
     if (present(extrapol_in)) then
        extrapol = extrapol_in
     else
-       extrapol = 0.0_sp
+       extrapol = 0.0_fp
     endif
-    call gettabledata_scalar_sp(handle     ,ivec(1)    ,ivec(2)    , &
-                 & ivec(3)    ,ivec(4)    ,values     ,timhr      , &
-                 & refjulday  ,errorstring,extrapol   )
-end subroutine gettabledata_vector_sp
-
-subroutine gettabledata_vector_hp(handle     ,ivec       ,values     , &
-                             & timhr      ,refjulday  ,errorstring, extrapol_in)
-!
-! Global variables
-!
-    integer, dimension(4)               :: ivec
-    integer                ,intent(in)  :: refjulday
-    real(hp), optional     ,intent(in)  :: extrapol_in
-    real(hp)               ,intent(in)  :: timhr
-    real(hp), dimension(:) ,intent(out) :: values
-    character(256)         ,intent(out) :: errorstring
-    type(handletype)       ,intent(in)  :: handle
-!
-! Local variables
-!
-    real(hp)                  :: extrapol
-!
-!! executable statements -------------------------------------------------------
-!
-    if (present(extrapol_in)) then
-       extrapol = extrapol_in
-    else
-       extrapol = 0.0_hp
-    endif
-    call gettabledata_scalar_hp(handle     ,ivec(1)    ,ivec(2)    , &
-                 & ivec(3)    ,ivec(4)    ,values     ,timhr      , &
-                 & refjulday  ,errorstring,extrapol   )
-end subroutine gettabledata_vector_hp
+    call gettabledata_scalar(handle     ,ivec(1)    ,ivec(2)    , &
+               & ivec(3)    ,ivec(4)    ,values     ,timhr      , &
+               & refjulday  ,errorstring,extrapol   )
+    !
+end subroutine gettabledata_vector
 
 
-subroutine gettabledata_scalar_sp(handle     ,itable     ,ipar       , &
-                    & npar       ,irec       ,values     ,timhr      , &
-                    & refjulday  ,errorstring,extrapol_in)
+subroutine gettabledata_scalar(handle     ,itable     ,ipar       , &
+                 & npar       ,irec       ,values     ,timhr      , &
+                 & refjulday  ,errorstring,extrapol_in)
 !
 ! Global variables
 !
@@ -359,20 +271,16 @@ subroutine gettabledata_scalar_sp(handle     ,itable     ,ipar       , &
     integer                             :: irec
     integer                ,intent(in)  :: npar
     integer                ,intent(in)  :: refjulday
-    real(sp), optional     ,intent(in)  :: extrapol_in
-    real(sp)               ,intent(in)  :: timhr
-    real(sp), dimension(:) ,intent(out) :: values
+    real(fp), optional     ,intent(in)  :: extrapol_in
+    real(fp)               ,intent(in)  :: timhr
+    real(fp), dimension(:) ,intent(out) :: values
     character(256)         ,intent(out) :: errorstring
     type(handletype)       ,intent(in)  :: handle
 !
 ! Local variables
 !
-    integer                             :: i
-    integer                             :: istat
-    real(fp)                            :: extrapol
-    real(fp)                            :: timhr_fp
-    real(fp), dimension(:), allocatable :: values_fp
-    type(tablefiletypehandle)           :: tablehandle
+    real(fp)                  :: extrapol
+    type(tablefiletypehandle) :: tablehandle
 !
 !! executable statements -------------------------------------------------------
 !
@@ -382,89 +290,16 @@ subroutine gettabledata_scalar_sp(handle     ,itable     ,ipar       , &
        errorstring = 'GetTableData call before initialisation'
     else
        if (present(extrapol_in)) then
-          extrapol = real(extrapol_in,fp)
+          extrapol = extrapol_in
        else
           extrapol = 0.0_fp
        endif
-       timhr_fp = real(timhr,fp)
-       allocate(values_fp(size(values)), stat = istat)
-       if (istat /= 0) then
-          errorstring = 'gettabledata_scalar: Memory allocation error'
-          return
-       endif
-       do i=1,size(values)
-          values_fp(i) = real(values(i),fp)
-       enddo
        call org_gettabledata(tablehandle%this       ,itable     ,ipar       , &
-                           & npar       ,irec       ,values_fp  ,timhr_fp   , &
+                           & npar       ,irec       ,values     ,timhr      , &
                            & refjulday  ,errorstring,extrapol   )
-       do i=1,size(values)
-          values(i) = real(values_fp(i),hp)
-       enddo
-       deallocate(values_fp, stat = istat)
     endif
     !
-end subroutine gettabledata_scalar_sp
-
-
-subroutine gettabledata_scalar_hp(handle     ,itable     ,ipar       , &
-                    & npar       ,irec       ,values     ,timhr      , &
-                    & refjulday  ,errorstring,extrapol_in)
-!
-! Global variables
-!
-    integer                ,intent(in)  :: itable
-    integer                ,intent(in)  :: ipar
-    integer                             :: irec
-    integer                ,intent(in)  :: npar
-    integer                ,intent(in)  :: refjulday
-    real(hp), optional     ,intent(in)  :: extrapol_in
-    real(hp)               ,intent(in)  :: timhr
-    real(hp), dimension(:) ,intent(out) :: values
-    character(256)         ,intent(out) :: errorstring
-    type(handletype)       ,intent(in)  :: handle
-!
-! Local variables
-!
-    integer                             :: i
-    integer                             :: istat
-    real(fp)                            :: extrapol
-    real(fp)                            :: timhr_fp
-    real(fp), dimension(:), allocatable :: values_fp
-    type(tablefiletypehandle)           :: tablehandle
-!
-!! executable statements -------------------------------------------------------
-!
-    if (.not.validtable(handle, errorstring)) return
-    tablehandle = cast_to_tablehandle(handle)
-    if (.not.associated(tablehandle%this)) then
-       errorstring = 'GetTableData call before initialisation'
-    else
-       if (present(extrapol_in)) then
-          extrapol = real(extrapol_in,fp)
-       else
-          extrapol = 0.0_fp
-       endif
-       timhr_fp = real(timhr,fp)
-       allocate(values_fp(size(values)), stat = istat)
-       if (istat /= 0) then
-          errorstring = 'gettabledata_scalar: Memory allocation error'
-          return
-       endif
-       do i=1,size(values)
-          values_fp(i) = real(values(i),fp)
-       enddo
-       call org_gettabledata(tablehandle%this       ,itable     ,ipar       , &
-                           & npar       ,irec       ,values_fp  ,timhr_fp   , &
-                           & refjulday  ,errorstring,extrapol   )
-       do i=1,size(values)
-          values(i) = real(values_fp(i),hp)
-       enddo
-       deallocate(values_fp, stat = istat)
-    endif
-    !
-end subroutine gettabledata_scalar_hp
-
+end subroutine gettabledata_scalar
 
 subroutine checktable(handle    ,itable    ,ipar      , &
                     & npar      ,chktyp    ,errorstring       )

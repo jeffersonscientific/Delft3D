@@ -1,8 +1,8 @@
 subroutine tranb2(utot      ,d50       ,d90       ,chezy     ,h         , &
-                & npar      ,par       ,hidexp    ,sbot      ,ssus      )
+                & par       ,hidexp    ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine tranb2(utot      ,d50       ,d90       ,chezy     ,h         , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tranb2.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/tranb2.f90 $
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! meyer-peter-muller (comor/rivcom)
@@ -38,19 +38,18 @@ subroutine tranb2(utot      ,d50       ,d90       ,chezy     ,h         , &
     use precision
     implicit none
 !
-! Arguments
+! Call variables
 !
-    integer                  , intent(in)    :: npar
-    real(fp)                 , intent(in)    :: chezy
-    real(fp)                 , intent(in)    :: d50
-    real(fp)                 , intent(in)    :: d90
-    real(fp)                 , intent(in)    :: h
-    real(fp)                 , intent(in)    :: hidexp !< hiding & exposure factor
-    real(fp), dimension(npar), intent(in)    :: par
-    real(fp)                 , intent(in)    :: utot
-    !
-    real(fp)                 , intent(out)   :: sbot
-    real(fp)                 , intent(out)   :: ssus
+    real(fp)               , intent(in)  :: chezy
+    real(fp)               , intent(in)  :: d50
+    real(fp)               , intent(in)  :: d90
+    real(fp)               , intent(in)  :: h
+    real(fp)               , intent(in)  :: hidexp ! hiding & exposure factor
+                                                   ! default value, 1.0, to be used when called from Delft3D-MOR
+    real(fp)               , intent(out) :: sbot
+    real(fp)               , intent(out) :: ssus
+    real(fp)               , intent(in)  :: utot
+    real(fp), dimension(30), intent(in)  :: par
 !
 ! Local variables
 !

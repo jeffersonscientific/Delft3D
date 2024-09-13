@@ -3,7 +3,7 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
                     & sour_ex   ,sour_im   ,sink      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: soursin_2d.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/soursin_2d.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes the sour and sink terms for the 2D case
@@ -40,12 +40,13 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts
+    !use glob_bankPLIC ,only:moveEDtoBED
     !
     implicit none
     !
 
 !
-! Arguments
+! Call variables
 !
     real(fp), intent(in)  :: umod
     real(fp), intent(in)  :: ustarc
@@ -109,12 +110,16 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
           !
        endif
        hots = wsl/(tsd*factsd)
-       sour_ex = rsedeq*hots/h0
-       sour_im = (hots-wsl)/h1
-       sink    = wsl/h1
+       !if (moveEDtoBED) then
+       !   sour_ex = rsedeq*hots/h0
+       !   sour_im = 0._fp
+       !   sink    = hots/h1
+       !else
+          sour_ex = rsedeq*hots/h0
+          sour_im = (hots-wsl)/h1
+          sink    = wsl/h1
+       !endif
     else
-       sour_ex = 0.0_fp
-       sour_im = 0.0_fp
        sink = wsl/h1
     endif
 end subroutine soursin_2d

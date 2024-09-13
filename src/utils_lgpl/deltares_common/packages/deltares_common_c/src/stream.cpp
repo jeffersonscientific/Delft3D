@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2016.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@
 // Stichting Deltares. All rights reserved.
 //
 //------------------------------------------------------------------------------
-// $Id$
-// $HeadURL$
+// $Id: stream.cpp 5717 2016-01-12 11:35:24Z mourits $
+// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_lgpl/deltares_common/packages/deltares_common_c/src/stream.cpp $
 //------------------------------------------------------------------------------
 //  DelftStream
 //  Stream Class Implementation - TCP/IP and MPI
@@ -43,8 +43,6 @@
 
 #include "stream.h"
 
-// The following definition is needed since VisualStudio2015 before including <pthread.h>:
-#define HAVE_STRUCT_TIMESPEC
 
 #include <errno.h>
 #include <pthread.h>
@@ -805,7 +803,7 @@ Stream::lookup_dotaddr (
     if (sscanf (ipdotaddr, "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
         error ("Cannot parse dotted IP address \"%s\"\n", ipdotaddr);
 
-#if defined(linux) || defined(IRIX)
+#if defined(HAVE_CONFIG_H) || defined(IRIX)
     IPaddr addr = a | b << 8 | c << 16 | d << 24;
 #elif defined(WIN32)
     struct in_addr addr;

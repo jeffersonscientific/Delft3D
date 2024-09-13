@@ -3,7 +3,7 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
                & od2b      ,od3b      ,od4b      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: osmom.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/osmom.f90 $
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -47,7 +47,7 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
     integer , save :: itable
     real(fp), dimension(0:40, 0:40, 12), save :: table               ! Table containing the moments
 !
-! Arguments
+! Call variables
 !
     real(fp), intent(in) :: cr
     real(fp), intent(in) :: depth
@@ -75,6 +75,7 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
     integer                        :: it0
     integer                        :: it1
     integer                        :: utab
+    integer, external              :: newunit
     logical                        :: error
     real(fp)                       :: f0
     real(fp)                       :: f1
@@ -114,12 +115,13 @@ subroutine osmom(hrms      ,depth     ,tp        ,g         ,cr        , &
        call getmp(error, pathd)
        if (error) then
           write (*, '(a)') "ERROR: Directory ""default"" not found"
-          call throwexception()
+          stop
        endif
-       open (newunit = utab, file = trim(pathd) // 'tabmom', status='old', action='read', iostat=ierr)
+       utab = newunit()
+       open (utab, file = trim(pathd) // 'tabmom', status='old', action='read', iostat=ierr)
        if (ierr /= 0) then
           write (*, '(3a)') "ERROR: File """,trim(pathd) // 'tabmom', """ not found"
-          call throwexception()
+          stop
        endif
        read (utab, *) iih, iit, dh, tstep
        do it = 1, iit

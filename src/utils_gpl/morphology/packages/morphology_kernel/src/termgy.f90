@@ -1,7 +1,7 @@
 function termgy(n         ,y         ,z         )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ function termgy(n         ,y         ,z         )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: termgy.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/termgy.f90 $
 !!--description-----------------------------------------------------------------
 ! determines termgy
 ! a contribution to the bijker transport
@@ -39,7 +39,7 @@ function termgy(n         ,y         ,z         )
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
     integer, intent(in)   :: n
     real(hp)              :: termgy

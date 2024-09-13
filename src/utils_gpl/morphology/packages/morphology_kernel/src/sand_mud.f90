@@ -1,12 +1,8 @@
-module m_sand_mud
-implicit none
-
-contains
-subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
+subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, pmcrit)
 !
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2012-2024.
+!  Copyright (C)  Stichting Deltares, 2012-2016.
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +26,8 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: sand_mud.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/sand_mud.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes erosion velocities based
@@ -44,19 +40,20 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
+    use sediment_basics_module, only: SEDTYP_COHESIVE
     !
     implicit none
     !
-    integer                                     , intent(in)    :: nfrac          ! number of sediment fractions
-    integer                                     , intent(in)    :: max_mud_sedtyp ! highest sediment type number associated with mud
-    integer     , dimension(nfrac)              , intent(in)    :: sedtyp         ! sediment type
-    real(fp)    , dimension(nfrac)              , intent(in)    :: frac           ! sediment (mass) fraction [-]
-    real(fp)                                    , intent(in)    :: mudfrac        ! mud fraction [-]
-    real(fp)                                    , intent(in)    :: pmcrit         ! critical mud fraction [-]
-    real(fp)    , dimension(nfrac)              , intent(inout) :: E              ! sediment erosion velocity [m/s]
+    integer                                     , intent(in)    :: nfrac    ! number of sediment fractions
+    integer     , dimension(nfrac)              , intent(in)    :: sedtyp   ! sediment type
+    real(fp)    , dimension(nfrac)              , intent(in)    :: frac     ! sediment (mass) fraction [-]
+    real(fp)                                    , intent(in)    :: mudfrac  ! mud fraction [-]
+    real(fp)                                    , intent(in)    :: pmcrit   ! critical mud fraction [-]
+    real(fp)    , dimension(nfrac)              , intent(inout) :: E        ! sediment erosion velocity [m/s]
 !
 ! Local variables
 !
+    integer                         :: istat        ! error flag
     integer                         :: l            ! sediment counter
     real(fp)                        :: Es_avg       ! average erosion velocity for sand fractions [m/s]
     real(fp)                        :: Em_avg       ! average erosion velocity for mud fractions [m/s]
@@ -66,8 +63,8 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
 !
     !            
     ! No sand mud interaction if there is no mud, only mud or pmcrit<0
-    if (pmcrit < 0.0_fp) return
-    if ((mudfrac <= 0.0_fp) .or. (mudfrac >= 1.0_fp)) return
+    if (pmcrit<0.0_fp) return
+    if (mudfrac<=0.0_fp .or. mudfrac>=1.0_fp) return
     !
     Es_avg = 0.0_fp
     Em_avg = 0.0_fp
@@ -75,11 +72,11 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
     ! Compute average erosion velocity for sand fractions
     !
     do l = 1, nfrac
-        if (sedtyp(l) > max_mud_sedtyp) then
+        if (sedtyp(l)/= SEDTYP_COHESIVE) then
             Es_avg = Es_avg + frac(l)*E(l)
         endif
     enddo 
-    Es_avg = Es_avg / (1-mudfrac)
+    Es_avg = Es_avg/(1-mudfrac)
     ! 
     if ( mudfrac <= pmcrit ) then
         !
@@ -87,7 +84,7 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
         ! (mud is proportionally eroded with the sand)
         !
         do l = 1, nfrac
-            if (sedtyp(l) <= max_mud_sedtyp .and. Es_avg > 0.0_fp ) then
+            if (sedtyp(l) == SEDTYP_COHESIVE .and. Es_avg>0.0_fp ) then
                 E(l) = Es_avg
             endif
         enddo
@@ -100,22 +97,21 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
         ! non-cohesive regime: mudfrac = pmcrit  -> E(l) = Es_avg
         !
         do l = 1, nfrac
-            if ( sedtyp(l) <= max_mud_sedtyp .and. E(l) > 0.0_fp ) then  
-                if (Es_avg > 0.0_fp) then
-                    E(l) = E(l) * (Es_avg/E(l))**((1.0_fp-mudfrac)/(1.0_fp-pmcrit))
+            if ( sedtyp(l)==SEDTYP_COHESIVE .and. E(l)>0.0_fp ) then  
+                if (Es_avg>0.0_fp) then
+                    E(l) = E(l)*(Es_avg/E(l))**((1.0_fp-mudfrac)/(1.0_fp-pmcrit))
                 endif
                 Em_avg     = Em_avg + frac(l)*E(l)
             endif
         enddo
-        Em_avg = Em_avg / mudfrac
+        Em_avg = Em_avg/mudfrac
         !
         ! sand is proportionally eroded with the mud
         !
         do l = 1, nfrac
-            if (sedtyp(l) > max_mud_sedtyp) then
+            if (sedtyp(l) /= SEDTYP_COHESIVE) then
                 E(l) = Em_avg
             endif
         enddo
     endif
 end subroutine sand_mud
-end module m_sand_mud

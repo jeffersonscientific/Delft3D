@@ -9,10 +9,10 @@ contains
   ! Make functions pure so they can be used as input arguments.
   integer(c_int) pure function strlen(char_array)
     character(c_char), intent(in) :: char_array(MAXSTRINGLEN)
-    integer :: i
+    integer :: inull, i
     strlen = 0
     do i = 1, size(char_array)
-       if (char_array(i) == C_NULL_CHAR) then
+       if (char_array(i) .eq. C_NULL_CHAR) then
           strlen = i-1
           exit
        end if
@@ -62,10 +62,10 @@ contains
     character(len=*), intent(in) :: string
     character(kind=c_char,len=1) :: char_array(MAXSTRINGLEN)
     integer :: i
-    do i = 1, min(MAXSTRINGLEN, len(string))
+    do i = 1, len(string)
        char_array(i) = string(i:i)
     enddo
-    char_array(min(MAXSTRINGLEN, len(string)+1)) = C_NULL_CHAR
+    char_array(len(string)+1) = C_NULL_CHAR
   end function string_to_char_array
 
 end module iso_c_utils

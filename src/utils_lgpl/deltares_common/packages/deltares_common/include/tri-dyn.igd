@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
+!  $Id: tri-dyn.igd 2392 2013-03-28 14:27:50Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_lgpl/deltares_common/packages/deltares_common/include/tri-dyn.igd $
 real(prec) , dimension(0:0) :: d
 real(fp)   , dimension(0:0) :: r
 real(sp)   , dimension(0:0) :: s

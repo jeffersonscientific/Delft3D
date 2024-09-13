@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2016.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 // Stichting Deltares. All rights reserved.
 //
 //------------------------------------------------------------------------------
-// $Id$
-// $HeadURL$
+// $Id: shared_lib_fallve.c 5717 2016-01-12 11:35:24Z mourits $
+// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_plugins_c/src/shared_lib_fallve.c $
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,7 +39,7 @@
 #  include <windows.h>
 #elif defined(salford32)
 #  include <windows.h>
-#elif defined(linux)
+#elif defined(HAVE_CONFIG_H)
 #  include <dlfcn.h>
 #endif
 
@@ -49,7 +49,7 @@
 #elif defined(salford32)
 #  define PERFORM_FUNCTION_FALLVE  PERF_FUNCTION_FALLVE
 #  define STDCALL __stdcall
-#elif defined(linux)
+#elif defined(HAVE_CONFIG_H)
 #   include "config.h"
 #  define PERFORM_FUNCTION_FALLVE  FC_FUNC(perf_function_fallve,PERFORM_FUNCTION_FALLVE)
 #  define STDCALL
@@ -66,7 +66,7 @@
     typedef HMODULE DllHandle;
 #elif defined(salford32)
     typedef HMODULE DllHandle;
-#elif defined(linux)
+#elif defined(HAVE_CONFIG_H)
     typedef void * DllHandle;
 #endif
 
@@ -84,7 +84,7 @@ void RemoveTrailingBlanks_dll(char * String);
  * ============================================================================
  */
 #if defined(WIN32)
-long STDCALL PERFORM_FUNCTION_FALLVE(long long int  * sharedDLLHandle    ,
+long STDCALL PERFORM_FUNCTION_FALLVE(long   * sharedDLLHandle    ,
                               char   * function           ,
                               long   * dll_integers       ,
                               long   * max_integers       ,
@@ -95,8 +95,8 @@ long STDCALL PERFORM_FUNCTION_FALLVE(long long int  * sharedDLLHandle    ,
                               double * ws                 ,
                               char   * message            ,
                               long     length_function    ,
-                              long     length_dll_strings )
-	                          // message is a c-string: no length specification added
+                              long     length_dll_strings ,
+                              long     length_message     )
 #elif defined(salford32)
 extern "C" PERFORM_FUNCTION_FALLVE(  long   * sharedDLLHandle    ,
                               char   * function           ,
@@ -109,9 +109,9 @@ extern "C" PERFORM_FUNCTION_FALLVE(  long   * sharedDLLHandle    ,
                               double * ws                 ,
                               char   * message            ,
                               long     length_function    ,
-                              long     length_dll_strings)
-	                          // message is a c-string: no length specification added
-#elif defined (linux)
+                              long     length_dll_strings ,
+                              long     length_message     )
+#elif defined (HAVE_CONFIG_H)
 long STDCALL PERFORM_FUNCTION_FALLVE(long   * sharedDLLHandle    ,
                               char   * function           ,
                               long   * dll_integers       ,
@@ -123,8 +123,8 @@ long STDCALL PERFORM_FUNCTION_FALLVE(long   * sharedDLLHandle    ,
                               double * ws                 ,
                               char   * message            ,
                               long     length_function    ,
-                              long     length_dll_strings)
-	                          // message is a c-string: no length specification added
+                              long     length_dll_strings ,
+                              long     length_message     )
 #endif
 {
 
@@ -134,14 +134,12 @@ long STDCALL PERFORM_FUNCTION_FALLVE(long   * sharedDLLHandle    ,
   typedef void * (STDCALL * MyProc)(long   *, long   *,
                                     double *, long   *,
                                     char   *, long   *,
-                                    double *, char   *, long );
-                                    // message is a c-string: no length specification added
-#elif defined (linux)
+                                    double *, char   *, long    , long    );
+#elif defined (HAVE_CONFIG_H)
   typedef void * (STDCALL * MyProc)(long   *, long   *,
                                     double *, long   *,
                                     char   *, long   *,
-                                    double *, char   *, long );
-                                    // message is a c-string: no length specification added
+                                    double *, char   *, long    , long    );
 #endif
   MyProc proc;
   char * fun_name;
@@ -154,7 +152,7 @@ long STDCALL PERFORM_FUNCTION_FALLVE(long   * sharedDLLHandle    ,
   proc = (MyProc) GetProcAddress( sharedDLL->dllHandle, fun_name);
 #elif defined(salford32)
   proc = (MyProc) GetProcAddress( sharedDLL->dllHandle, fun_name);
-#elif defined(linux)
+#elif defined(HAVE_CONFIG_H)
   proc = (MyProc) dlsym( sharedDLL->dllHandle, fun_name);
 #endif
 
@@ -166,15 +164,13 @@ long STDCALL PERFORM_FUNCTION_FALLVE(long   * sharedDLLHandle    ,
                       dll_reals   , max_reals   ,
                       dll_strings , max_strings ,
                       ws          , message     ,
-                      length_dll_strings);
-	                  // message is a c-string: no length specification added
-#elif defined (linux)
+                      length_dll_strings, length_message );
+#elif defined (HAVE_CONFIG_H)
      (void *) (*proc)(dll_integers, max_integers,
                       dll_reals   , max_reals   ,
                       dll_strings , max_strings ,
                       ws          , message     ,
-                      length_dll_strings);
-	                  // message is a c-string: no length specification added
+                      length_dll_strings, length_message );
 #endif
   }
   free(fun_name); fun_name = NULL;

@@ -1,9 +1,9 @@
-subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thick     , &
+subroutine factor3d2d(kmax      ,aks       ,kmaxsd    ,sig       ,thick     , &
                     & seddif    ,ws        ,bakdif    ,z0rou     ,h1        , &
                     & factor    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thi
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: factor3d2d.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/utils_gpl/morphology/packages/morphology_kernel/src/factor3d2d.f90 $
 !!--description-----------------------------------------------------------------
 !
 !   Determine conversion factor between reference concentration caks at aks and
@@ -41,15 +41,15 @@ subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thi
     !
     implicit none
 !
-! Arguments
+! Call variables
 !
-    integer                         , intent(in)   :: num_layers_grid     ! number of layers
+    integer                         , intent(in)   :: kmax     ! number of layers
     integer                         , intent(out)  :: kmaxsd   ! layer above reference height
     real(fp)                        , intent(inout):: aks      ! reference height
-    real(fp), dimension(num_layers_grid)       , intent(in)   :: sig      ! sigma coordinate of layer centre
-    real(fp), dimension(num_layers_grid)       , intent(in)   :: thick    ! layer thickness
-    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: seddif   ! diffusion coefficient at layer interfaces
-    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: ws       ! settling velocity at layer interfaces
+    real(fp), dimension(kmax)       , intent(in)   :: sig      ! sigma coordinate of layer centre
+    real(fp), dimension(kmax)       , intent(in)   :: thick    ! layer thickness
+    real(fp), dimension(0:kmax)     , intent(in)   :: seddif   ! diffusion coefficient at layer interfaces
+    real(fp), dimension(0:kmax)     , intent(in)   :: ws       ! settling velocity at layer interfaces
     real(fp)                        , intent(in)   :: bakdif   ! background diffusivity
     real(fp)                        , intent(in)   :: z0rou    ! wave enhanced bed roughness
     real(fp)                        , intent(in)   :: h1       ! water depth
@@ -73,10 +73,10 @@ subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thi
 !! executable statements -------------------------------------------------------
 !
     !
-    ! Determine first center cell above aks (at most num_layers_grid-1)
+    ! Determine first center cell above aks (at most kmax-1)
     !
     kmaxsd = 1
-    do k = num_layers_grid-1, 1, -1
+    do k = kmax-1, 1, -1
        !
        ! Calculate level of lower cell interface
        !
@@ -138,7 +138,7 @@ subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thi
     ! And then work down
     !
     conc = conck
-    do k = kmaxsd + 1, num_layers_grid
+    do k = kmaxsd + 1, kmax
        !
        ! In the near-bed layers, the sediment concentration slowly increases.
        ! Since seddif will be set to approximately 10*dz*ws in EROSED, we
