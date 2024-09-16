@@ -42,6 +42,7 @@
     use m_xbeach_data, only: Lwave
     use m_fm_icecover, only: ice_p, fm_ice_update_press, ice_apply_pressure, ice_reduce_waves, ice_af, ice_apply_friction, ice_frctp, ice_frcuni, FRICT_AS_DRAG_COEFF
     use m_get_Lbot_Ltop
+    use m_links_to_centers, only: links_to_centers
 
     implicit none
 
@@ -307,12 +308,12 @@
 
        !
        if (kmx < 2) then
-          call linkstocenterstwodoubles(czssf, czusf) ! converting chezy cofficient to the flow nodes
+          call links_to_centers(czssf, czusf) ! converting chezy cofficient to the flow nodes
           if (spirbeta > 0.0d0) then
              call get_spiralforce()
           end if
        else
-          !call linkstocenterstwodoubles( czssf, czusf )
+          !call links_to_centers( czssf, czusf )
           call get_spiral3d() ! compute equivalent secondary flow intensity
        end if
     end if
