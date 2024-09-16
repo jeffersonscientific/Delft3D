@@ -15,7 +15,7 @@
 ;                3 - red tide model
 ;                4 - oil model
 ;                5 - (obsolete option)
-      1      0      0      0  ; type of model          tracks(0/1)    extra output      sed/erosion(0/1)
+      1      1      0      0  ; type of model          tracks(0/1)    extra output      sed/erosion(0/1)
       1    900                ; num. scheme            time_step(s)   (0=flow time step)
       1   0.05      0         ; vert. disp option(*)   scale          disp_coeff.(m2/s)
                               ; (*) 0=constant 1=depth averaged
