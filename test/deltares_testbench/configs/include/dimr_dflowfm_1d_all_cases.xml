@@ -910,14 +910,14 @@
 	<testCase name="e02_f106_c05_Bridge" ref="dimr_default">
 		<path version="2024-01-11T13:00:00">e02_dflowfm/f106_hydraulic-structures/c05_Bridge</path>
 		<checks>
-			<file name="DFM_OUTPUT_flowFM/flowFM_map.nc" type="netCDF">
+			<file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
 				<parameters>
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
 				</parameters>
 			</file>
-			<file name="DFM_OUTPUT_flowFM/flowFM_his.nc" type="netCDF">
+			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
 					<parameter name="bridge_discharge" toleranceAbsolute="0.0001" />
 					<parameter name="bridge_s1up" toleranceAbsolute="0.0001" />
