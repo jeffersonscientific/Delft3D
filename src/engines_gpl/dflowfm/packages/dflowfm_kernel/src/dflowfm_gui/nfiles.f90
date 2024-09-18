@@ -522,15 +522,9 @@
                      call unc_write_net(filnam, janetcell=0, janetbnd=0)
                   end if
                else if (nwhat == 22) then ! _net.nc with extra cell info (for example necessary for Baseline/Bas2FM input)
-                  if (netstat /= NETSTAT_OK) then
-                     call findcells(0)
-                     call find1dcells()
-                  end if
-                  call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
-!               !call unc_write_net_ugrid2(filnam, janetcell = 0, janetbnd = 0)
-
                   !origial call unc_write_net(filnam, janetcell = 1, janetbnd = 0)
                   call unc_write_net('UG'//filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
+                  call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
                else if (nwhat == 24) then
                   call ini_tecplot()
                   call wrinet_tecplot(filnam)

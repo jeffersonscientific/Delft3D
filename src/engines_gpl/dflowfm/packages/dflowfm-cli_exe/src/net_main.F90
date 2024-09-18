@@ -79,7 +79,7 @@ program unstruc
    use gridoperations
    use m_commandline_option
    use unstruc_channel_flow, only: network
-
+   use m_find1dcells, only: find1dcells
    use m_partitioninfo
    use check_mpi_env
 #ifdef HAVE_MPI
