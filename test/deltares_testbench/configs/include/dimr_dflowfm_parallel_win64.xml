@@ -396,6 +396,7 @@
               <argument>str_0002_20151101_001000_rst.nc </argument>
               <argument>--outfile</argument>
               <argument>str_merged_20151101_001000_rst.nc </argument>
+              <argument>--force</argument>
             </arguments>
           </program>
         </programs>
@@ -423,6 +424,7 @@
               <argument>RIJN_0003_20000101_010000_rst.nc </argument>
               <argument>--outfile</argument>
               <argument>RIJN_merged_20000101_010000_rst.nc </argument>
+              <argument>--force</argument>
             </arguments>
           </program>
         </programs>
@@ -459,6 +461,7 @@
             <argument>dflowfmoutput/da3_0001_20050127_060000_rst.nc</argument>
             <argument>--outfile</argument>
             <argument>dflowfmoutput/da3_merged_20050127_060000_rst.nc</argument>
+            <argument>--force</argument>
           </arguments>
         </program>
         <program ref="dimr" seq="4">
@@ -502,6 +505,7 @@
             <argument>dflowfmoutput/da3_0001_20050127_060000_rst.nc</argument>
             <argument>--outfile</argument>
             <argument>dflowfmoutput/da3_merged_20050127_060000_rst.nc</argument>
+            <argument>--force</argument>
           </arguments>
         </program>
         <program ref="dflowfm" seq="4">
@@ -523,6 +527,7 @@
             <argument>dflowfmoutput/da3_rst_0001_20050127_060000_rst.nc</argument>
             <argument>--outfile</argument>
             <argument>dflowfmoutput/da3_rst_merged_20050127_060000_rst.nc</argument>
+            <argument>--force</argument>
           </arguments>
         </program>
       </programs>
@@ -561,6 +566,7 @@
             <argument>dflowfmoutput/da3_0001_20050127_060000_rst.nc</argument>
             <argument>--outfile</argument>
             <argument>dflowfmoutput/da3_merged_20050127_060000_rst.nc</argument>
+            <argument>--force</argument>
           </arguments>
         </program>
         <program ref="dflowfm" seq="4">
@@ -583,6 +589,7 @@
             <argument>dflowfmoutput/da3_rst_0002_20050127_060000_rst.nc</argument>
             <argument>--outfile</argument>
             <argument>dflowfmoutput/da3_rst_merged_20050127_060000_rst.nc</argument>
+            <argument>--force</argument>
           </arguments>
         </program>
       </programs>
@@ -622,6 +629,7 @@
             <argument>dflowfmoutput/da3_0002_20050127_060000_rst.nc</argument>
             <argument>--outfile</argument>
             <argument>dflowfmoutput/da3_merged_20050127_060000_rst.nc</argument>
+            <argument>--force</argument>
           </arguments>
         </program>
         <program ref="dflowfm" seq="4">
@@ -643,6 +651,7 @@
             <argument>dflowfmoutput/da3_rst_0001_20050127_060000_rst.nc</argument>
             <argument>--outfile</argument>
             <argument>dflowfmoutput/da3_rst_merged_20050127_060000_rst.nc</argument>
+            <argument>--force</argument>
           </arguments>
         </program>
       </programs>
