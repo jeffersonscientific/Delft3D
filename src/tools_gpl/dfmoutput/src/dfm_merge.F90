@@ -2273,9 +2273,6 @@ contains
                               if (numkx(iv, itopo) == 2) then
                                  ! read sediment variable which has two sediment dimensions, e.g., msed
                                  ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar3D(:, :, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
-                              else if (var_seddimpos(iv, itopo) /= -1) then
-                                 ! Reading a sediment variable needs to specify the "map" argument in nf90_get_var, because its dimensions are in a different order than other vectormax variables
-                                 ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar2D(:, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie), map=(/count_read(var_kxdimpos(ikx0, iv, itopo)), 1, count_read(var_kxdimpos(ikx0, iv, itopo)) * item_counts(ii)/))
                               else
                                  ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar2D(:, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
                               end if
