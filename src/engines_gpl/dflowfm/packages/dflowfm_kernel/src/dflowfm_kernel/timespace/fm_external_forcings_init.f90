@@ -40,7 +40,7 @@ contains
    module subroutine init_new(external_force_file_name, iresult)
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
-      use messageHandling, only: warn_flush, err_flush, msgbuf
+      use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
       use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, num_lat_ini_blocks
       use m_flowgeom, only: ba
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
@@ -54,10 +54,12 @@ contains
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_alloc, only: realloc
+      use unstruc_messages, only: threshold_abort
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
 
+      integer :: initial_threshold_abort
       logical :: res
       logical :: is_successful
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
@@ -134,6 +136,8 @@ contains
 
       ib = 0
       ibqh = 0
+      initial_threshold_abort = threshold_abort
+      threshold_abort = LEVEL_FATAL
       do i = 1, num_items_in_file
          node_ptr => bnd_ptr%child_nodes(i)%node_ptr
          group_name = trim(tree_get_name(node_ptr))
@@ -151,13 +155,13 @@ contains
          case ('meteo')
             res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
 
-         case default ! Unrecognized item in a ext block
+         case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
             write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
             call warn_flush()
-
          end select
       end do
+      threshold_abort = initial_threshold_abort
 
       if (allocated(itpenzr)) deallocate (itpenzr)
       if (allocated(itpenur)) deallocate (itpenur)
@@ -204,7 +208,7 @@ contains
       use timespace_parameters, only: NODE_ID
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
-      use messageHandling, only: mess, LEVEL_WARN, warn_flush, msgbuf
+      use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
       use string_module, only: strcmpi
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
@@ -222,7 +226,7 @@ contains
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, forcing_file_type, property_name, property_value
       type(tree_data), pointer :: block_ptr
-      character(len=300) :: rec
+      character(len=300) :: error_message
       character(len=1) :: oper
       logical :: is_successful
       integer :: method, num_items_in_block, j
@@ -232,7 +236,7 @@ contains
       call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-         call warn_flush()
+         call err_flush()
          return
       end if
       ib = ib + 1
@@ -251,7 +255,7 @@ contains
          call resolvePath(location_file, base_dir)
       else
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -260,7 +264,7 @@ contains
          call resolvePath(forcing_file, base_dir)
       else
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -349,11 +353,11 @@ contains
          end if
       end do
       if (.not. is_successful) then ! This addtimespace was not successful
-         rec = getmeteoerror()
-         if (len_trim(rec) > 0) then
-            call mess(LEVEL_WARN, trim(rec))
+         error_message = getmeteoerror()
+         if (len_trim(error_message) > 0) then
+            call mess(LEVEL_ERROR, trim(error_message))
          end if
-         call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
+         call mess(LEVEL_ERROR, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
                    '''. Check preceding log lines for details.')
       end if
 
@@ -365,7 +369,7 @@ contains
    !! File version 1 only allowed for a locationFile, file version 2.01 allowed for nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates.
    !! File version 2.02 allows for everything: locationFile, nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates.
    subroutine read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
-      use messageHandling, only: mess, err, LEVEL_WARN
+      use messageHandling, only: mess, err, LEVEL_ERROR
       use precision, only: dp
       use m_missing, only: imiss, dmiss
       use properties, only: has_key, prop_get
@@ -411,10 +415,10 @@ contains
       number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
 
       if (number_of_discharge_specifications < 1) then
-         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
+         call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
          return
       else if (number_of_discharge_specifications > 1) then
-         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': Multiple discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
+         call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': Multiple discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
          return
       end if
 
@@ -432,7 +436,7 @@ contains
 
       if (has_branch_id .or. has_chainage) then
          if (.not. (has_branch_id .and. has_chainage)) then
-            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': branchId and chainage must be set together.')
+            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': branchId and chainage must be set together.')
             return
          end if
 
@@ -444,19 +448,19 @@ contains
             is_success = .true.
             return
          else
-            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': values of branchId and chainage are invalid.')
+            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': values of branchId and chainage are invalid.')
             return
          end if
       end if
 
       if (has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates) then
          if (.not. (has_num_coordinates .and. has_x_coordinates .and. has_y_coordinates)) then
-            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
+            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
             return
          end if
          call prop_get(node_ptr, 'Lateral', 'numCoordinates', num_coordinates)
          if (num_coordinates <= 0) then
-            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': numCoordinates must be greater than 0.')
+            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates must be greater than 0.')
             return
          end if
          allocate (x_coordinates(num_coordinates), stat=ierr)
@@ -472,7 +476,7 @@ contains
          location_file = ''
          call prop_get(node_ptr, 'Lateral', 'locationFile', location_file)
          if (len_trim(location_file) == 0) then
-            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': locationFile is empty.')
+            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': locationFile is empty.')
             return
          end if
          call resolvePath(location_file, base_dir)
@@ -485,7 +489,7 @@ contains
 
    !> Read lateral blocks from new external forcings file and makes required initialisations
    function init_lateral_forcings(node_ptr, base_dir, block_number, major) result(is_successful)
-      use messageHandling, only: warn_flush, msgbuf
+      use messageHandling, only: err_flush, msgbuf
       use string_module, only: str_tolower
       use tree_data_types, only: tree_data
       use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd, apply_transport
@@ -517,7 +521,7 @@ contains
       call prop_get(node_ptr, 'Lateral', 'id', loc_id, is_read)
       if (.not. is_read .or. len_trim(loc_id) == 0) then
          write (msgbuf, '(a,i0,a)') 'Required field ''id'' missing in lateral (block #', block_number, ').'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -577,7 +581,7 @@ contains
          call resolvePath(rec, base_dir)
       else
          write (msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(loc_id), '''.'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -587,6 +591,9 @@ contains
       if (is_read) then
          jaqin = 1
          lat_ids(numlatsg) = loc_id
+      else
+         is_successful = .false.
+         return
       end if
 
       is_successful = .true.
@@ -597,7 +604,7 @@ contains
       !! and do required initialisation for that quantity.
    function init_meteo_forcings(node_ptr, base_dir, file_name, group_name) result(res)
       use string_module, only: strcmpi, str_tolower
-      use messageHandling, only: warn_flush, msgbuf, LEVEL_INFO, mess
+      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
@@ -643,7 +650,7 @@ contains
       call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -651,7 +658,7 @@ contains
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
             ']. Field ''forcingFileType'' is missing.'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -659,7 +666,7 @@ contains
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
             ']. Field ''forcingFile'' is missing.'
-         call warn_flush()
+         call err_flush()
          return
       else
          call resolvePath(forcing_file, base_dir)
@@ -689,7 +696,7 @@ contains
             write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
                '] nor an internal value associated with given ''forcingFileType'':', trim(forcing_file_type), '.'
          end if
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -777,14 +784,14 @@ contains
             ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
             if (jaQext == 0) then
                write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                  '] is missing QExt=1 in MDU. Ignoring this block.'
-               call warn_flush()
+                  '] is missing QExt=1 in MDU.'
+               call err_flush()
                return
             end if
             if (.not. strcmpi(forcing_file_type, 'sample')) then
                write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
-                  ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
-               call warn_flush()
+                  ''': [', group_name, '], quantity=', trim(quantity), '.'
+               call err_flush()
                return
             end if
             method = get_default_method_for_file_type(forcing_file_type)
@@ -807,8 +814,8 @@ contains
             return ! This was a special case, don't continue with timespace processing below.
          case default
             write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-               ']. Ignoring this block.'
-            call warn_flush()
+               '].'
+            call err_flush()
             return
          end select
       end if
@@ -818,7 +825,7 @@ contains
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
             ']. Line ''quantity = ', trim(quantity), ''' has no known target grid properties.'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
@@ -827,7 +834,7 @@ contains
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
             ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
-         call warn_flush()
+         call err_flush()
          return
       end if
 
