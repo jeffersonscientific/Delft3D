@@ -32,6 +32,9 @@
 
       subroutine DISP4C(X, Y, N)
          use M_MISSING
+         use m_halt2
+         use m_movabs
+         use m_lnabs
          implicit none
          integer :: i
          integer :: istart

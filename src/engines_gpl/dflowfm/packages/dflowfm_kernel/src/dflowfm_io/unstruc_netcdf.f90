@@ -1399,7 +1399,11 @@ contains
       use m_missing
       use m_save_ugrid_state
       use fm_location_types
-
+      use m_get_kbot_ktop
+      use m_get_layer_indices
+      use m_get_layer_indices_l_max
+      use m_get_Lbot_Ltop_max
+      
       implicit none
 
       integer, intent(in) :: ncid
@@ -1692,6 +1696,10 @@ contains
       use m_alloc
       use m_missing
       use fm_location_types
+      use m_get_kbot_ktop
+      use m_get_layer_indices
+      use m_get_layer_indices_l_max
+      use m_get_Lbot_Ltop_max
       implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -2807,7 +2815,8 @@ contains
       use m_flowgeom !only Ndxi
       use m_missing
       use m_flowparameters !only jafullgridoutput
-!    use network_data      !
+      use m_get_kbot_ktop
+      use m_get_layer_indices
 
       integer, intent(in) :: imapfile
       integer, intent(in) :: jaseparate
@@ -2950,6 +2959,13 @@ contains
       use m_GlobalParameters
       use m_longculverts
       use m_structures_saved_parameters
+      use m_gettaus
+      use m_gettauswave
+      use m_get_kbot_ktop
+      use m_get_layer_indices
+      use m_get_layer_indices_l_max
+      use m_get_Lbot_Ltop_max
+      use m_reconstruct_ucz
 
       integer, intent(in) :: irstfile
       real(kind=hp), intent(in) :: tim
@@ -5233,6 +5249,17 @@ contains
       use fm_location_types
       use m_map_his_precision
       use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
+      use m_gettaus
+      use m_gettauswave
+      use m_get_kbot_ktop
+      use m_get_Lbot_Ltop
+      use m_get_layer_indices
+      use m_get_layer_indices_l_max
+      use m_get_Lbot_Ltop_max
+      use m_reconstruct_ucz
+      use m_reconstruct_sed_transports
+      use m_get_ucx_ucy_eul_mag
+      use m_get_cz
 
       implicit none
 
@@ -8054,6 +8081,16 @@ contains
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
       use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
+      use m_gettaus
+      use m_gettauswave
+      use m_get_kbot_ktop
+      use m_get_layer_indices
+      use m_get_layer_indices_l_max
+      use m_get_Lbot_Ltop_max
+      use m_reconstruct_ucz
+      use m_reconstruct_sed_transports
+      use m_get_ucx_ucy_eul_mag
+      use m_get_cz
 
       implicit none
 
@@ -10905,6 +10942,7 @@ contains
       use m_partitioninfo
       use geometry_module, only: get_startend, normaloutchk
       use gridoperations
+      use m_copynetboundstopol
 
       integer, intent(in) :: inetfile
 
@@ -11370,6 +11408,7 @@ contains
       use m_sferic, only: jsferic, jasfer3D, rd2dg, ra
       use m_flowgeom, only: xz, yz
       use geometry_module, only: normaloutchk
+      use m_dlinedis2
 
       real(kind=hp), intent(out) :: xtt(:, :) !< array with x-contour points of momentum control volume surrounding each net/flow link
       real(kind=hp), intent(out) :: ytt(:, :) !< array with y-contour points of momentum control volume surrounding each net/flow link
@@ -11510,6 +11549,8 @@ contains
       use m_save_ugrid_state
       use gridoperations
       use fm_location_types
+      use m_find1dcells, only: find1dcells
+      use m_set_nod_adm
 
       implicit none
 
@@ -11530,11 +11571,9 @@ contains
       integer :: i, k, k1, k2, numl2d, numk1d, numk2d, nump1d, L, Lnew, nv, n1, n2, n
       integer :: jaInDefine
       integer :: id_zf
-
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
-
       integer :: n1dedges, n1d2dcontacts, start_index
-      integer, allocatable :: contacttype(:), idomain1d(:), iglobal_s1d(:)
+      integer, dimension(:), allocatable :: contacttype, idomain1d, iglobal_s1d
 
       call readyy('Writing net data', 0d0)
 
@@ -11663,14 +11702,16 @@ contains
          KC(:) = 0
          nump1d = nump1d2d - nump
          if (janetcell_ == 1 .and. nump1d > 0) then
+
             ! Determine 1D net nodes directly from 1D net cells
-            do N1 = nump + 1, nump1d2d
+            do N1 = 1 + nump, nump1d2d
                k1 = netcell(N1)%nod(1)
 
                numk1d = numk1d + 1
                xn(numk1d) = xk(k1)
                yn(numk1d) = yk(k1)
                zn(numk1d) = zk(k1)
+
                kc(k1) = -numk1d ! Remember new node number
             end do
 
@@ -11692,19 +11733,20 @@ contains
 
                   N1 = abs(lne(1, L))
                   N2 = abs(lne(2, L))
+                  K1 = netcell(N1)%nod(1)
+                  K2 = netcell(N2)%nod(1)
 
                   n1d2dcontacts = n1d2dcontacts + 1
                   if (N1 > nump .and. N2 <= nump) then ! First point of 1D link is 1D cell
-                     contacts(1, n1d2dcontacts) = abs(KC(netcell(N1)%nod(1))) ! cell -> orig node -> new node
+                     contacts(1, n1d2dcontacts) = abs(KC(K1)) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N2 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else if (N2 > nump .and. N1 <= nump) then ! First point of 1D link is 1D cell
-                     contacts(1, n1d2dcontacts) = abs(KC(netcell(N2)%nod(1))) ! cell -> orig node -> new node
+                     contacts(1, n1d2dcontacts) = abs(KC(K2)) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N1 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else
                      n1d2dcontacts = n1d2dcontacts - 1
                      cycle
                   end if
-
                   contacttype(n1d2dcontacts) = kn(3, L)
                end if
             end do
@@ -11817,56 +11859,6 @@ contains
                                         crs, -999, dmiss, start_index)
          end if
 
-      !! TODO: AvD: hier verder
-      !! Determine max nr of vertices and contour points
-         !
-      !! NOTE: numk2d = numk - numk1d does not necessarily hold, if input grid illegally connected a 2D net link and 1D netlink to one and the same net node.
-      !! Count 2D net nodes
-         !numNodes   = ndx1d
-         !numContPts = 0
-         !do i=1,ndx1d
-         !   numNodes   = max(numNodes,   size(netcell(ndx2d + i)%NOD))
-         !   numContPts = max(numContPts, size(netcell(ndx2d + i)%NOD))
-         !enddo
-         !
-         !if ( allocated(work2) ) deallocate( work2 )
-         !allocate( work2(numContPts,ndx1d) ) ; work2 = dmiss
-         !
-         !ierr = nf90_def_dim(mapids%ncid, 'nmesh1d_FlowElemContourPts', numContPts,    id_flowelemcontourptsdim)
-         !
-      !! Flow elem contours (plot help)
-      !! Todo: generalize x/y's to 2/3-D coords everywhere else [Avd]
-         !ierr = nf90_def_var(mapids%ncid, 'mesh1d_FlowElemContour_x', nf90_double, (/ id_flowelemcontourptsdim, mapids%id_tsp%meshids1d%dimids(mdim_node) /), id_flowelemcontourx)
-         !ierr = nf90_def_var(mapids%ncid, 'mesh1d_FlowElemContour_y', nf90_double, (/ id_flowelemcontourptsdim, mapids%id_tsp%meshids1d%dimids(mdim_node) /), id_flowelemcontoury)
-         !ierr = unc_addcoordatts(mapids%ncid, id_flowelemcontourx, id_flowelemcontoury, jsferic)
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontourx, 'long_name',     'list of x-coordinates forming flow element')
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontoury, 'long_name',     'list of y-coordinafltes forming flow element')
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontourx, '_FillValue', dmiss)
-         !ierr = nf90_put_att(mapids%ncid, id_flowelemcontoury, '_FillValue', dmiss)
-         !
-         !ierr = nf90_put_att(mapids%ncid, mapids%id_tsp%meshids1d%varids(mid_nodex), 'bounds', 'mesh1d_FlowElemContour_x')
-         !ierr = nf90_put_att(mapids%ncid, mapids%id_tsp%meshids1d%varids(mid_nodey), 'bounds', 'mesh1d_FlowElemContour_y')
-         !
-         !ierr = nf90_enddef(mapids%ncid)
-         !
-         !do i=1,ndx1d
-         !   nn = size(nd(ndx2d + i)%x)
-         !   do n = 1,nn
-         !      work2(n,i)=nd(ndx2d + i)%x(n)
-         !   enddo
-         !enddo
-         !ierr = nf90_put_var(mapids%ncid, id_flowelemcontourx, work2(1:numContPts,1:ndx1d), (/ 1, 1 /), (/ numContPts, ndx1d /) )
-         !
-         !do i=1,ndx1d
-         !   nn = size(nd(ndx2d + i)%x)
-         !   do n = 1,nn
-         !      work2(n,i)=nd(ndx2d + i)%y(n)
-         !   enddo
-         !enddo
-         !ierr = nf90_put_var(mapids%ncid, id_flowelemcontoury, work2(1:numContPts,1:ndx1d), (/ 1, 1 /), (/ numContPts, ndx1d /) )
-         !ierr = nf90_redef(mapids%ncid)
-         !
-         !deallocate( work2 )
          !
          ! Add edge type variable (edge-flowlink relation)
          call write_edge_type_variable(ncid, id_tsp%meshids1d, mesh1dname, edge_type)
@@ -11993,7 +11985,7 @@ contains
          end if
 
          ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
-
+         
          !define 1d2dcontacts only after mesh2d is completly defined
          if (n1d2dcontacts > 0) then
             ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
@@ -12619,8 +12611,6 @@ contains
       integer, intent(out) :: numl_read !< Number of new netlinks read from file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
-      logical :: stringsequalinsens
-
       character(len=:), allocatable :: coordsyscheck
       integer, dimension(:), allocatable :: kn3read
       integer, dimension(:), allocatable :: kn1read
@@ -12733,7 +12723,7 @@ contains
 
       coordsyscheck = ''
       ierr = ncu_get_att(inetfile, id_netnodex, 'standard_name', coordsyscheck)
-      if (stringsequalinsens(coordsyscheck, 'longitude')) then
+      if (strcmpi(coordsyscheck, 'longitude')) then
          jsferic = 1
       else
          jsferic = 0
@@ -12837,11 +12827,11 @@ contains
    end subroutine md5_net_file
 
 !> Assigns the information, that has been read from a restart file and stored in array1, to a 2D array2.
-   subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccount, jamergedmap, iloc_own, write_only_bottom_layer, target_shift)
+   subroutine assign_restart_data_to_local_array(array1, array2, iloc, loccount, jamergedmap, iloc_own, write_only_bottom_layer, target_shift)
+      use m_get_kbot_ktop
       double precision, allocatable, intent(in) :: array1(:) !< Array that contains information read from a restart file
       double precision, allocatable, intent(inout) :: array2(:, :) !< Target 2D array
       integer, intent(in) :: iloc !< Index of one dimension of the 2D array
-      integer, intent(in) :: kmx !< Number of layers
       integer, intent(in) :: loccount !< Spatial count in file to read (e.g. ndxi_own)
       integer, intent(in) :: jamergedmap !< Whether input is from a merged map file (i.e. needs shifting or not) (1/0)
       integer, intent(in) :: iloc_own(:) !< Mapping array from the unique own (i.e. non-ghost) nodes/links to the actual ndxi/lnx numbering. Should be filled from index 1:loccount (e.g. 1:ndxi_own).
@@ -12894,6 +12884,11 @@ contains
    function get_var_and_shift(ncid, varname, targetarr, tmparr, loctype, kmx, locstart, loccount, it_read, jamergedmap, iloc_own, iloc_merge, target_shift) result(ierr)
       use dfm_error
       use fm_location_types
+      use m_get_kbot_ktop
+      use m_get_layer_indices
+      use m_get_layer_indices_l_max
+      use m_get_Lbot_Ltop_max
+      
       integer, intent(in) :: ncid !< Open NetCDF data set
       character(len=*), intent(in) :: varname !< Variable name in file.
       double precision, intent(inout) :: targetarr(:) !< Data will be stored in this array.
@@ -13071,6 +13066,8 @@ contains
       use m_initsedtra, only: initsedtra
       use m_fixedweirs, only: weirdte, nfxwL
       use fm_location_types
+      use m_gettaus
+      use m_set_kbot_ktop
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
@@ -13753,7 +13750,7 @@ contains
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable sa1 from the specified restart file. Skip reading this variable.')
          else
-            call assign_restart_data_to_local_array(sa1, constituents, isalt, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
+            call assign_restart_data_to_local_array(sa1, constituents, isalt, um%ndxi_own, um%jamergedmap, um%inode_own)
          end if
       end if
 
@@ -13771,7 +13768,7 @@ contains
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable tem1 from the specified restart file. Skip reading this variable.')
          else
-            call assign_restart_data_to_local_array(tem1, constituents, itemp, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
+            call assign_restart_data_to_local_array(tem1, constituents, itemp, um%ndxi_own, um%jamergedmap, um%inode_own)
          end if
       end if
 
@@ -13795,7 +13792,7 @@ contains
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//''' from the specified restart file. Skip reading this variable.')
             else
-               call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
+               call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, um%ndxi_own, um%jamergedmap, um%inode_own)
             end if !ierr
          end do !iconst
       end if !ITRA1
@@ -13821,7 +13818,7 @@ contains
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr1)//''' from the specified restart file. Skip reading this variable.')
             else
-               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, kmx, um%ndxi_own, um%jamergedmap, um%inode_own,.not. is_wq_bot_3d)
+               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, um%ndxi_own, um%jamergedmap, um%inode_own,.not. is_wq_bot_3d)
             end if
          end do
       end if
@@ -14383,6 +14380,8 @@ contains
       use m_partitioninfo, only: jampi, my_rank, idomain, ighostlev, sdmn, link_ghostdata, reduce_key, reduce_int_sum
       use m_flowgeom, only: ndxi, lnx, ln, ndx
       use fm_external_forcings_data, only: ibnd_own, kbndz, ndxbnd_own, jaoldrstfile
+      use m_wrisam
+
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(in) :: imapfile
       integer, intent(inout) :: ierr
@@ -16932,6 +16931,7 @@ contains
       use m_sferic, only: jsferic
       use m_samples
       use m_alloc
+      use m_wall_clock_time
 
       implicit none
       type(kdtree_instance) :: treeinst
@@ -16951,7 +16951,7 @@ contains
       character(len=128) :: mesg
       double precision, allocatable :: x_tmp(:), y_tmp(:)
 
-      call klok(t0)
+      call wall_clock_time(t0)
       if (present(inode_merge2loc)) then
          jamerge2own = 1
       else
@@ -17039,7 +17039,7 @@ contains
          end if
       end do
 
-      call klok(t1)
+      call wall_clock_time(t1)
 
       write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
@@ -18349,7 +18349,7 @@ contains
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
             call check_error(ierr, const_names(i), LEVEL_WARN)
          else
-            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, um%inode_own, .false., target_shift)
+            call assign_restart_data_to_local_array(tmpvar1D, var, i, kcount, um%jamergedmap, um%inode_own, .false., target_shift)
          end if
       end do
 
@@ -18402,6 +18402,8 @@ contains
    subroutine flow_node_vector_to_matrix(data_values, flow_node_index1, flow_node_index2, data_values_matrix)
 
       use m_missing, only: dmiss
+      use m_get_kbot_ktop
+      use m_get_layer_indices
 
       double precision, allocatable, intent(in) :: data_values(:) !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
       integer, intent(in) :: flow_node_index1 !< start index (1:ndx) for transfer of data from vector to matrix format

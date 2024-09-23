@@ -32,6 +32,10 @@
 
       subroutine MTEXT(TEX, X, Y, NCOL)
          use unstruc_colors
+         use m_box_nop
+         use m_fbox_nop
+         use m_set_col
+         use m_draw_text
          implicit none
          double precision :: heigth
          integer :: l

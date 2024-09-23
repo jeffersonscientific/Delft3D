@@ -31,7 +31,8 @@
 !
 
       subroutine DPTABS(XD, YD, ZD)
-         use gridoperations
+         use m_three_two
+         use m_ptabs
          implicit none
          double precision :: x
          double precision :: y

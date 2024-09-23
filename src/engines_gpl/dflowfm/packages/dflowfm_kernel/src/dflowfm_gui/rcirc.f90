@@ -32,6 +32,7 @@
 
       subroutine RCIRC(X, Y)
          use m_wearelt
+         use m_movabs
          implicit none
          double precision :: x
          double precision :: y

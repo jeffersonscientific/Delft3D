@@ -62,6 +62,8 @@ contains
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_qnerror
+      use m_delpol
+      use m_get_kbot_ktop
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -70,7 +72,7 @@ contains
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
       double precision :: maxSearchRadius
       character(len=256) :: filename, sourcemask
-      character(len=256) :: varname, varname2
+      character(len=256) :: varname
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput

@@ -32,6 +32,8 @@
 
     subroutine POLYLINE(XR, YR, N)
        use unstruc_opengl
+       use m_movabs_nop
+       use m_lnabs_nop
        implicit none
        integer :: n, I
        real xr(N), yr(N)

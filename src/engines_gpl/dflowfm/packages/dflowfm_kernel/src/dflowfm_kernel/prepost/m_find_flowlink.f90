@@ -44,6 +44,7 @@ contains
       use m_GlobalParameters, only: INDTP_ALL
       use m_partitioninfo, only: jampi
       use mpi
+      use m_inflowcell
 
       real(dp), dimension(:), intent(in) :: xx !< x-coordinate of input points
       real(dp), dimension(:), intent(in) :: yy !< y-coordinate of input points

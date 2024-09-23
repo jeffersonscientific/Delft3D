@@ -37,7 +37,11 @@
          use unstruc_colors
          use m_depmax
          use m_helpnow
-
+         use m_disvalcolors
+         use m_disput
+         use m_set_col
+         use m_help
+         
          implicit none
          integer :: ic
          integer :: key

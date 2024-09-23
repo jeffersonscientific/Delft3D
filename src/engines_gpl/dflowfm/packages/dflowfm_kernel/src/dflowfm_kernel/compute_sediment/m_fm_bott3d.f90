@@ -77,6 +77,7 @@ contains
       use m_fm_morstatistics, only: morstats, morstatt0
       use m_tables, only: interpolate
       use Timers
+      use m_reconstruct_sed_transports
 
       implicit none
 
@@ -291,6 +292,7 @@ contains
       use m_transport, only: fluxhortot, ised1, constituents, numconst
       use m_fm_erosed, only: aks, e_scrn, e_scrt, fixfac, kfsed, lsed, l_suscor, rca, suscorfac, sus, tratyp
       use m_partitioninfo, only: jampi, itype_u, update_ghosts
+      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -781,6 +783,7 @@ contains
       use m_flowtimes, only: julrefdat
       use m_partitioninfo, only: idomain, jampi, my_rank, reduce_sum
       use fm_external_forcings_data, only: nopenbndsect
+      use m_get_tau
 
       implicit none
 
@@ -859,7 +862,7 @@ contains
                   if (.not. (idomain(k2) == my_rank)) cycle ! internal cells at boundary are in the same domain as the link
                end if
                if (u1(lm) < 0.0d0) cycle
-               call gettau(k2, taucurc, czc, jawaveswartdelwaq_local)
+               call get_tau(k2, taucurc, czc, jawaveswartdelwaq_local)
                tausum2(1) = tausum2(1) + taucurc**2 ! sum of the shear stress squared
             end do ! the distribution of bedload is scaled with square stress
             ! for avoiding instability on BC resulting from uniform bedload
@@ -923,7 +926,7 @@ contains
                   li = li + 1
                   !
                   if (morbnd(jb)%ibcmt(3) == lsedbed) then
-                     call gettau(ln(2, lm), taucurc, czc, jawaveswartdelwaq_local)
+                     call get_tau(ln(2, lm), taucurc, czc, jawaveswartdelwaq_local)
                      if (tausum2(1) > 0d0 .and. wu_mor(lm) > 0d0) then ! fix cutcell
                         rate = bc_sed_distribution(li) * taucurc**2 / wu_mor(lm) / tausum2(1)
                      else
@@ -977,6 +980,8 @@ contains
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
       use unstruc_files, only: mdia
+      use m_get_kbot_ktop
+      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -1551,6 +1556,7 @@ contains
       use m_sediment, m_sediment_sed => sed
       use m_fm_erosed, only: blchg
       use m_flowparameters, only: epshs, jasal
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1640,6 +1646,7 @@ contains
       use m_flowgeom, only: lnx, wu_mor
       use m_fm_erosed, only: e_ssn, lsed, e_scrn
       use m_transport, only: fluxhortot, ISED1
+      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -1945,7 +1952,7 @@ contains
 
    subroutine fm_erosion_velocity(dtmor)
 
-      use m_flowgeom, only: ndx, bl
+      use m_flowgeom, only: ndx
       use m_fm_erosed, only: blchg, dzbdt
 
       implicit none

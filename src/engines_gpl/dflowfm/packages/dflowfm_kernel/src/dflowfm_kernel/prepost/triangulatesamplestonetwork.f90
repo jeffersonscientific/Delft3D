@@ -42,6 +42,11 @@
       use m_polygon ! , only: savepol, restorepol
       use m_mergenodes
       use m_readyy
+      use m_makenetnodescoding
+      use m_set_nod_adm
+      use m_set_col
+      use m_movabs
+      use m_lnabs
       implicit none
       integer :: jadoorladen ! ,npl
       !double precision :: xpl(npl),ypl(npl)

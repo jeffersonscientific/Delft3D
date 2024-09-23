@@ -34,6 +34,7 @@ subroutine DISPFLOWNODEVALS(KP)
    use m_flowgeom
    use m_flow
    use M_DEVICES
+   use m_ktext
 
    implicit none
    double precision :: ZNOD
@@ -63,7 +64,7 @@ subroutine DISPFLOWNODEVALS(KP)
    call KTEXT(TEX, IWS - 22, 15, 15)
 
    TEX = 'Z COORD    :           '
-   write (TEX(14:), '(e10.4)') znod(kp)
+   write (TEX(14:), '(e10.3)') znod(kp)
    call KTEXT(TEX, IWS - 22, 16, 15)
 
    TEX = 'link       :           '

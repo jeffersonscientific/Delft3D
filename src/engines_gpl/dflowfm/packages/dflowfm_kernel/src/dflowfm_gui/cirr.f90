@@ -29,10 +29,14 @@
 
 !
 !
-
+module m_cirr
+   implicit none
+contains
       subroutine CIRR(X, Y, NCOL)
          use m_wearelt
-         implicit none
+         use m_set_col
+         use m_movabs
+
          integer :: ncol
          double precision :: x
          double precision :: y
@@ -41,3 +45,4 @@
          call CIR(RCIR)
          return
       end
+end module m_cirr

@@ -39,6 +39,9 @@
       use dflowfm_version_module, only: company, product_name
       use unstruc_model, only: md_dryptsfile
       use m_helpnow
+      use m_save_keys
+      use m_restore_keys
+      use m_help
 
       implicit none
       integer :: i

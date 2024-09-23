@@ -79,7 +79,7 @@ program unstruc
    use gridoperations
    use m_commandline_option
    use unstruc_channel_flow, only: network
-
+   use m_find1dcells, only: find1dcells
    use m_partitioninfo
    use check_mpi_env
 #ifdef HAVE_MPI
@@ -87,6 +87,8 @@ program unstruc
 #endif
    use m_modenow
    use m_qnrgf
+   use m_wall_clock_time
+   use m_draw_nu
    
    implicit none
 
@@ -111,7 +113,7 @@ program unstruc
 
    double precision :: tstartall, tstopall ! just checking...
 
-   call klok(tstartall)
+   call wall_clock_time(tstartall)
 
 !  call checkunesco83()
 
@@ -452,7 +454,7 @@ program unstruc
 !  finalize before exit in case we did "normal" computation
    call partition_finalize()
 
-   call klok(tstopall)
+   call wall_clock_time(tstopall)
 
    !call newfil(mklok, 'wallclock')
    !write(mklok,*) tstopall - tstartall, ' s'

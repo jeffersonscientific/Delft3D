@@ -62,6 +62,7 @@ module bmi
    use m_longculverts
    use m_nearfield
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
+   use m_update_land_nodes
 
    implicit none
 
@@ -814,7 +815,7 @@ contains
       character(kind=c_char), intent(in) :: c_var_name(:)
       character(kind=c_char), intent(out) :: unit(:)
       no_warning_unused_variable(c_var_name)
-      no_warning_unused_variable(unit)
+      unit = ''
    end subroutine get_var_units
 
 !> Returns the rank of a variable, i.e., its dimensionality.
@@ -1062,6 +1063,7 @@ contains
       use m_laterals, only: numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
       use m_laterals, only: qplatCumPre
       use morphology_data_module, only: get_one_transport_parameter
+      use m_get_kbot_ktop
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
       type(c_ptr), intent(inout) :: x
@@ -1789,6 +1791,7 @@ contains
       use m_polygon
       use dfm_error
       use kdtree2Factory
+      use m_find_crossed_links_kdtree2
 
       character(kind=c_char), intent(in) :: c_feat_name(*) !< Name/type of the features set, e.g., 'thindams'
       type(c_ptr), value, intent(in) :: xpli_ptr !< Pointer (by value) to the C-compatible x-coordinates of all features's polyline (one long array).
@@ -3732,6 +3735,7 @@ contains
       use unstruc_files
       use m_netw
       use m_commandline_option
+      use m_reapol
 
       character(kind=c_char), intent(in) :: c_netfile_in(MAXSTRLEN)
       character(kind=c_char), intent(in) :: c_netfile_out(MAXSTRLEN)
@@ -3786,6 +3790,7 @@ contains
       use gridoperations
       use array_module
       use m_missing
+      use m_crosspoly
 
       implicit none
       integer(c_int), intent(in) :: numberOfInputVertices

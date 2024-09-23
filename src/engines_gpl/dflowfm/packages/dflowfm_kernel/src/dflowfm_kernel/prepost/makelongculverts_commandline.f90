@@ -35,7 +35,8 @@ subroutine makelongculverts_commandline()
    use m_longculverts
    use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
    use system_utils
-   
+   use m_set_nod_adm
+  
    implicit none
 
    character(len=1024) :: fnamesstring
@@ -44,7 +45,7 @@ subroutine makelongculverts_commandline()
    character(len=:), allocatable :: tempstring_crsdef
    character(len=:), allocatable :: tempstring_fnames
    character(len=:), allocatable :: tempstring_netfile
-   character(len=200), dimension(:), allocatable :: fnames, crsdefname
+   character(len=200), dimension(:), allocatable :: fnames
    character(len=IdLen) :: temppath, tempname, tempext
    
    integer :: istat, ifil

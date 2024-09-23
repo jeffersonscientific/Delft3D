@@ -32,6 +32,8 @@
 
       subroutine ITEXT(TEX, NX, NY)
          use unstruc_colors
+         use m_set_col
+         use m_draw_text
          implicit none
          integer :: l
          integer :: nx

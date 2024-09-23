@@ -36,9 +36,14 @@
      use unstruc_colors, only: ncolhl
      use geometry_module, only: getdx, getdy, getdxdy
      use m_sferic, only: jsferic
-     use gridoperations
      use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
      use m_howtoview
+     use m_halt2
+     use m_three_two
+     use m_cirr
+     use m_pfiller
+     use m_movabs
+     use m_lnabs
 
      implicit none
      integer :: MET

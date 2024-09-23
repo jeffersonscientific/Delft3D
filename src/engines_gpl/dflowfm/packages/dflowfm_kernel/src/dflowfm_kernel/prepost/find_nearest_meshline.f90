@@ -162,6 +162,9 @@ contains
    subroutine make_path(numseg, num, numrejected)
       use unstruc_colors, only: ncolhl
       use m_qnerror
+      use m_tek_link
+      use m_cirr
+      use m_movabs
 
       implicit none
 
@@ -859,6 +862,7 @@ contains
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: dbpinpol, dbdistance
       use m_sferic, only: jsferic, jasfer3D
+      use m_d_line_dis3
 
       implicit none
 

@@ -46,6 +46,13 @@
     use m_observations
     use m_vfac
     use m_drawthis
+    use m_halt2
+    use m_pfiller
+    use m_gtext
+    use m_set_col
+    use m_inview
+    use m_movabs
+    use m_lnabs
 
     implicit none
 
@@ -61,7 +68,6 @@
     integer :: model24 = 0 ! colourmodel 0/1
     double precision :: uux, uuy
     integer :: n, ja, ja2
-    logical inview
 
     ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
     ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS
