@@ -29,9 +29,6 @@ if(UNIX)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
-    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     target_link_libraries(${executable_name}
          ${oss_dependencies}
          PkgConfig::NETCDF
@@ -55,8 +52,7 @@ if(WIN32)
                          netcdf-fortran::netcdf-fortran)
 
     oss_include_libraries(${executable_name}   oss_dependencies)
-    target_link_libraries(${executable_name} ${oss_dependencies}
-                                             "netcdf.lib")
+    target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ec_module_test.F90

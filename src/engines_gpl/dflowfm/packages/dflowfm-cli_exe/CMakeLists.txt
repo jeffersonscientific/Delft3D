@@ -83,7 +83,7 @@ if(UNIX)
                             waq_utils_f
                             dflowfm_kernel)
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          ${oss_dependencies}
          PkgConfig::PETSC
 )
@@ -131,20 +131,17 @@ if(WIN32)
 
     if(WITH_INTERACTER)
         # Add lib_interacter before adding the other libraries. Sometimes it seems to make a difference
-        target_link_libraries(${executable_name} ${lib_interacter})
+        target_link_libraries(${executable_name} PRIVATE ${lib_interacter})
     else()
         set(oss_dependencies ${oss_dependencies} interacter_stub)
     endif()
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
 
 oss_include_libraries(${executable_name} oss_dependencies)
 
 if(UNIX)
-    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
@@ -159,10 +156,6 @@ endif(WIN32)
 # Define additional compilation flags
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
-
-
-
-target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     include_directories(${mpi_module_path}
@@ -181,7 +174,7 @@ if (WIN32)
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                           "comctl32.lib"
                           "wsock32.lib"
                           "netapi32.lib"
@@ -190,7 +183,6 @@ if (WIN32)
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
-                          "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
                           "libpetsc.lib"
@@ -213,7 +205,7 @@ endif(WIN32)
 target_link_directories(${executable_name} PRIVATE
                         "${mpi_library_path}")
                         
-target_link_libraries(${executable_name} "${mpi_fortran_library}")
+target_link_libraries(${executable_name} PRIVATE "${mpi_fortran_library}")
 
 # Create the folder structure in Visual Studio
 source_group("Resources" FILES  ${icon_file}

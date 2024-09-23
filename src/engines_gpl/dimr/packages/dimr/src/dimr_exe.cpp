@@ -140,7 +140,7 @@ int main (int     argc,
         delete DHE;
         ireturn = 0;
     }
-    catch (exception& ex) {
+    catch (std::exception& ex) {
         printf ("#### ERROR: dimr ABORT: C++ Exception: %s\n", ex.what());
         if (doFinalize) {
             printf("#### ERROR: dimr ABORT: Trying to finalize...\n");

@@ -14,7 +14,6 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(dflowfm_version_header_path ${dflowfm_path}/version)
 set(rc_version_file ${dflowfm_version_header_path}/dflowfm_dll_version.rc)
 
-include_directories(${version_include_dir})
 if(UNIX)
    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/${include_path}")
 endif(UNIX)
@@ -30,6 +29,10 @@ set(library_name dflowfm_dll)
 add_library(${library_name} SHARED  ${source}
                                     ${includes}
                                     ${rc_version_file})
+
+target_include_directories(${library_name} PRIVATE ${dflowfm_version_header_path}
+                                                   ${version_include_dir}
+)
 
 # Add dependencies
 if (UNIX)
@@ -77,7 +80,7 @@ if (UNIX)
 
     oss_include_libraries(${library_name} oss_dependencies)
 
-    target_link_libraries(${library_name}
+    target_link_libraries(${library_name} PRIVATE
          ${oss_dependencies}
          PkgConfig::PETSC)
 endif(UNIX)
@@ -124,7 +127,7 @@ if (WIN32)
 
     oss_include_libraries(${library_name} oss_dependencies)
 
-    target_link_libraries(${library_name} ${oss_dependencies})
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
 
 if(UNIX)
@@ -160,7 +163,7 @@ if (WIN32)
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
 
-    target_link_libraries(${library_name}
+    target_link_libraries(${library_name} PRIVATE
                             "comctl32.lib"
                             "wsock32.lib"
                             "netapi32.lib"
@@ -169,7 +172,6 @@ if (WIN32)
                             "Shlwapi.lib"
                             "Gdi32.lib"
                             "Winspool.lib"
-                            "netcdf.lib"
                             "pthreadVC2.lib"
                             "${mpi_fortran_library}"
                             "libpetsc.lib"
@@ -186,7 +188,7 @@ set_target_properties (${library_name} PROPERTIES OUTPUT_NAME  dflowfm)
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${includes})
-source_group(Resources FILES    ${rc_version_file})
+source_group(Resources FILES ${rc_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 
 # post-build

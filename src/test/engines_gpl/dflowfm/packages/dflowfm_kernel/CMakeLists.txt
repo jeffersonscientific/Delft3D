@@ -52,10 +52,6 @@ if(UNIX)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
-    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
-
     target_link_libraries(${executable_name}
          ${oss_dependencies}
          Threads::Threads
@@ -119,7 +115,6 @@ target_link_libraries(${executable_name} ${oss_dependencies}
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
-                          "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
                           "libpetsc.lib"

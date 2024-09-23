@@ -31,17 +31,11 @@ add_executable(${executable_name}   ${headers}
 target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
+target_link_libraries(${executable_name} PRIVATE netcdf-fortran::netcdf-fortran)
+
 if (WIN32)
-    set(exe_dependencies netcdf-fortran::netcdf-fortran)
-
-    oss_include_libraries(${executable_name} exe_dependencies)
-    target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
-
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir})
-
-    target_link_libraries(${executable_name} PRIVATE
-                            "netcdf.lib")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
@@ -50,16 +44,6 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
-    target_link_libraries(${executable_name} PRIVATE
-         PkgConfig::NETCDF
-         netcdf-fortran::netcdf-fortran)
-
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}
                         ${CMAKE_BINARY_DIR}/fortran_module_dir)

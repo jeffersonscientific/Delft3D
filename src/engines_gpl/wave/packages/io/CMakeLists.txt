@@ -10,20 +10,19 @@ add_library(${library_name} ${source_files})
 
 # Set dependencies
 if (WIN32)
-    set(oss_dependencies    wave_data
-                            deltares_common
-                            netcdf-fortran::netcdf-fortran) 
+    set(oss_dependencies wave_data
+                         deltares_common)
     oss_include_libraries(${library_name} oss_dependencies)
 endif(WIN32)
 
 if (UNIX)
-    set(oss_dependencies    wave_data
-                            deltares_common
-                            netcdf-fortran::netcdf-fortran) 
+    set(oss_dependencies wave_data
+                         deltares_common)
     oss_include_libraries(${library_name} oss_dependencies)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 endif(UNIX)
 
+target_link_libraries(${library_name} PRIVATE netcdf-fortran::netcdf-fortran)
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

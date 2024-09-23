@@ -55,10 +55,7 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
-    message(STATUS "Setting target_compile_definitions in Unix")
+   message(STATUS "Setting target_compile_definitions in Unix")
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 
    include_directories(${version_include_dir}
@@ -104,7 +101,6 @@ if (WIN32)
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
-                          "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
                           "tecio.lib")

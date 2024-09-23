@@ -14,7 +14,6 @@ create_target(
 # Add dependencies
 target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 if (UNIX)
-
     set(oss_dependencies deltares_common
                          io_netcdf
                          io_netcdf_data
@@ -24,9 +23,7 @@ if (UNIX)
 
     oss_include_libraries(${executable_name} oss_dependencies)
 
-    target_link_libraries(${executable_name}
-         ${oss_dependencies}
-         netcdf-fortran::netcdf-fortran)
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(UNIX)
 
 if (WIN32)
@@ -36,23 +33,17 @@ if (WIN32)
                          io_netcdf_data
                          io_hyd
                          waq_hyd_data
-                         netcdf-fortran::netcdf-fortran
                          waq_utils_f)
 
     oss_include_libraries(${executable_name} oss_dependencies)
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
-
-# if(UNIX)
-    # message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    # target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-# endif(UNIX)
 
 if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
 endif(WIN32)
 
-target_link_libraries(${executable_name} netcdf)
+target_link_libraries(${executable_name} PRIVATE netcdf-fortran::netcdf-fortran)
 
 if (WIN32)
     configure_visual_studio_user_file(${executable_name})

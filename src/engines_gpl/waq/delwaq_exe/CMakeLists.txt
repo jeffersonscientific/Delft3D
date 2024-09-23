@@ -20,20 +20,16 @@ set(oss_dependencies waq_external_access_layer
         waq_logging)
 
 if(UNIX)
-        target_link_libraries(${executable_name}
-                ${oss_dependencies}
-                uuid)
+        target_link_libraries(${executable_name} PRIVATE uuid)
 endif(UNIX)
 
-target_link_libraries(${executable_name} ${oss_dependencies})
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if(UNIX)
         target_include_directories(${executable_name} PRIVATE ${version_include_dir})
-        #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-        #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
         target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
@@ -46,7 +42,7 @@ if(WIN32)
                 "${mpi_library_path}"
                 "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-        target_link_libraries(${executable_name}
+        target_link_libraries(${executable_name} PRIVATE
                 "comctl32.lib"
                 "wsock32.lib"
                 "netapi32.lib"
@@ -55,7 +51,6 @@ if(WIN32)
                 "Shlwapi.lib"
                 "Gdi32.lib"
                 "Winspool.lib"
-                "netcdf.lib"
                 "${mpi_fortran_library}"
                 "pthreadVC2.lib")
 

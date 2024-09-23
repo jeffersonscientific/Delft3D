@@ -29,7 +29,7 @@ add_executable(${executable_name}   ${source}
                                     ${header_version_file})
 
 # Common UNIX and WIN32 link library dependency
-target_link_libraries(${executable_name} netcdf)
+target_link_libraries(${executable_name} PRIVATE netCDF::netcdf)
 
 if(UNIX)
    add_definitions(-DD3D_PLUGIN_EXT=".so")
@@ -48,12 +48,11 @@ if(UNIX)
                               "${dimr_lib_path}/include"
                               "${expat_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS}) 
-    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies} ${CMAKE_DL_LIBS})
     
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(${executable_name} Threads::Threads)
+    target_link_libraries(${executable_name} PRIVATE Threads::Threads)
 
 
 endif(UNIX)
@@ -81,10 +80,10 @@ if (WIN32)
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${executable_name}    ${oss_dependencies}
-                                                "${mpi_c_library}"
-                                                "libexpat.lib"
-                                                "pthreadVC2.lib")
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
+                                                     "${mpi_c_library}"
+                                                     "libexpat.lib"
+                                                     "pthreadVC2.lib")
 endif(WIN32)
 
 # Create the folder structure in vfproj

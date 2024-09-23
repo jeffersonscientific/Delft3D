@@ -38,7 +38,6 @@ if(WIN32)
                 "Shlwapi.lib"
                 "Gdi32.lib"
                 "Winspool.lib"
-                "netcdf.lib"
                 "pthreadVC2.lib")
 
         # Set linker options

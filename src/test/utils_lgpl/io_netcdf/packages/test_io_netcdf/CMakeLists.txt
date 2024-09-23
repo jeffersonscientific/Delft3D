@@ -10,15 +10,13 @@ set(oss_dependencies    fortrangis
                         netcdf-fortran::netcdf-fortran)
 
 if (UNIX)
-    #message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    #target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     target_link_libraries(${executable_name} ${oss_dependencies})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
 if (WIN32)
     oss_include_libraries(${executable_name} oss_dependencies)
-    target_link_libraries(${executable_name} ${oss_dependencies} "netcdf.lib")
+    target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
 # Set additional compilation properties, specific for Debug mode
