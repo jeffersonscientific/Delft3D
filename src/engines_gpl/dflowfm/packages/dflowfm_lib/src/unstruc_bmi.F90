@@ -62,6 +62,7 @@ module bmi
    use m_longculverts
    use m_nearfield
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
+   use m_update_land_nodes
 
    implicit none
 
@@ -814,7 +815,7 @@ contains
       character(kind=c_char), intent(in) :: c_var_name(:)
       character(kind=c_char), intent(out) :: unit(:)
       no_warning_unused_variable(c_var_name)
-      no_warning_unused_variable(unit)
+      unit = ''
    end subroutine get_var_units
 
 !> Returns the rank of a variable, i.e., its dimensionality.

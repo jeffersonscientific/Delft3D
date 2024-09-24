@@ -43,6 +43,7 @@
          use m_draw_nu
          use m_tek_num_netcells
          use m_restore_grd
+         use m_tek_grd
          implicit none
          integer :: mode, nfld, key
 

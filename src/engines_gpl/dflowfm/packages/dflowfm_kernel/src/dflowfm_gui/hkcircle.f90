@@ -31,6 +31,8 @@
 !
 
  subroutine hkcircle(x, y, r) ! plotdevice routine interacter is niet goed, zie file fout.bmp
+    use m_movabs
+    use m_lnabs
     implicit none
     double precision :: x, y, r
     double precision :: twopi, phi

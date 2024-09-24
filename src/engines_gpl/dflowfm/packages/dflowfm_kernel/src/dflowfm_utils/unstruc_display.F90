@@ -38,6 +38,8 @@ module unstruc_display
    use m_gui
    use unstruc_display_data
    use m_set_col
+   use m_movabs
+   use m_lnabs
    implicit none
 
    public dis_info_1d_link
@@ -1450,6 +1452,8 @@ end subroutine zoomshift
 subroutine tekship()
    use m_ship
    use m_set_col
+   use m_movabs
+   use m_lnabs
    implicit none
    double precision :: sx2, sy2, css, sns, rr, cr, sr, snum
    integer :: n

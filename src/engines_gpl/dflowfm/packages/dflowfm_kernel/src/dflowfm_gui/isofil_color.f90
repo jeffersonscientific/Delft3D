@@ -39,6 +39,7 @@ contains
       use m_sub_polygon
       use m_pfiller
       use m_set_col
+      use m_ptabs
 
       integer :: n4, ncolr
       double precision :: X(n4), Y(n4), Z(n4)

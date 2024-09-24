@@ -33,6 +33,7 @@
       subroutine DMOVABS(XD, YD, ZD)
          use m_oldz, only: oz
          use m_three_two
+         use m_movabs
          implicit none
          double precision :: x
          double precision :: y

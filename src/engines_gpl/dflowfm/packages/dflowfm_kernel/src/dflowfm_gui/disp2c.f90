@@ -38,6 +38,7 @@ contains
          use m_jgrline8
          use m_set_col
          use m_inview
+         use m_movabs
 
          integer :: n, ncol
          double precision :: X(N), Y(N), rcir

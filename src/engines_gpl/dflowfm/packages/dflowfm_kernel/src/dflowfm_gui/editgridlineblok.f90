@@ -43,6 +43,8 @@
          use m_draw_nu
          use m_cirr
          use m_restore_grd
+         use m_local_refine
+         use m_tek_grd
          implicit none
 
          integer :: mode, nfld, key

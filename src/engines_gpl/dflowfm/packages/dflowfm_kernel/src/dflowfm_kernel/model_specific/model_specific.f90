@@ -233,6 +233,8 @@ subroutine equatorial(t)
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_movabs
+   use m_lnabs
 
    implicit none
 
@@ -672,6 +674,8 @@ subroutine poiseuille(init)
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
    use m_drawthis
+   use m_movabs
+   use m_lnabs
 
    implicit none
 

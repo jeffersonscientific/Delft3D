@@ -37,6 +37,8 @@ contains
          use m_missing, only: xymis
          use m_cirr
          use m_set_col
+         use m_movabs
+         use m_lnabs
 
          integer :: mmax, nmax, m1, n1, m2, n2, ncol
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)

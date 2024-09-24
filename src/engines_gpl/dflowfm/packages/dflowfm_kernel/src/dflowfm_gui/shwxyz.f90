@@ -37,6 +37,8 @@
          use m_locatora
          use m_helpnow
          use m_set_col
+         use m_movabs
+         use m_help
 
          implicit none
 

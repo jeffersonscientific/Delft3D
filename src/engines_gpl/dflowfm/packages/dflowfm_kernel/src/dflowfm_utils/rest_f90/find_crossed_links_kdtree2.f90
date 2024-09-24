@@ -46,6 +46,8 @@ contains
       use geometry_module, only: dbdistance, crossinbox
       use m_readyy
       use m_get_link_neighboring_cell_coords
+      use m_movabs
+      use m_lnabs
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: NPL !< polyline length

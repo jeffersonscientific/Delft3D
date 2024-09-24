@@ -42,6 +42,9 @@
          use m_cirr
          use m_set_col
          use m_inview
+         use m_movabs
+         use m_lnabs
+         use m_ptabs
 
          implicit none
          integer :: ja

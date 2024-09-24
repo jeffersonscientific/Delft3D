@@ -31,6 +31,8 @@
 !
 
       subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, zfac)
+         use m_movabs
+         use m_lnabs
          implicit none
          double precision :: X0, Y0, UX, UY, VFAC, zfac
 

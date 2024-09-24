@@ -32,6 +32,8 @@
 
       subroutine DISPF1(Y, DX, N, NCOL)
          use m_set_col
+         use m_movabs
+         use m_lnabs
          implicit none
          double precision :: dx
          integer :: i

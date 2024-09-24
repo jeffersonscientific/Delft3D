@@ -35,6 +35,7 @@ contains
       subroutine CIRR(X, Y, NCOL)
          use m_wearelt
          use m_set_col
+         use m_movabs
 
          integer :: ncol
          double precision :: x

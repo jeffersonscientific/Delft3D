@@ -51,6 +51,8 @@
     use m_gtext
     use m_set_col
     use m_inview
+    use m_movabs
+    use m_lnabs
 
     implicit none
 

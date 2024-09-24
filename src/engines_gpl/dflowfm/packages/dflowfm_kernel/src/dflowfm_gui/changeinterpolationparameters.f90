@@ -39,6 +39,7 @@
       use m_helpnow
       use m_save_keys
       use m_restore_keys
+      use m_help
 
       implicit none
       integer :: numpar, numfld, numparactual, numfldactual

@@ -41,6 +41,7 @@ subroutine change_samples_refine_param(jacancelled)
    use m_helpnow
    use m_save_keys
    use m_restore_keys
+   use m_help
 
    implicit none
    integer, intent(out) :: jacancelled !< Whether or not (1/0) user has pressed 'Esc' in parameter screen.

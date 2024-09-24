@@ -42,6 +42,8 @@
      use m_three_two
      use m_cirr
      use m_pfiller
+     use m_movabs
+     use m_lnabs
 
      implicit none
      integer :: MET

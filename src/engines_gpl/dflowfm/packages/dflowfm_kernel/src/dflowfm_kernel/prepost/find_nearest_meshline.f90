@@ -164,6 +164,7 @@ contains
       use m_qnerror
       use m_tek_link
       use m_cirr
+      use m_movabs
 
       implicit none
 

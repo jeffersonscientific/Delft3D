@@ -33,6 +33,7 @@
       subroutine CIRR2(X, Y, NCOL, R)
          use m_wearelt
          use m_set_col
+         use m_movabs
          implicit none
          integer :: ncol
          double precision :: x, y, r

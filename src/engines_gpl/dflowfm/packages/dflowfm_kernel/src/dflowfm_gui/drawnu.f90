@@ -41,6 +41,7 @@ contains
       use m_dispos
       use m_plot_dots
       use m_disln
+      use m_tek_grid
 
       integer :: metdraw
       integer :: KEY, nsiz

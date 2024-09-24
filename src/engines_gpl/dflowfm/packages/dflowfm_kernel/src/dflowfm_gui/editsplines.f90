@@ -43,6 +43,7 @@
          use m_dispnode2
          use m_draw_nu
          use m_set_col
+         use m_movabs
          implicit none
          integer, intent(inout) :: mode, key
          integer :: newmode

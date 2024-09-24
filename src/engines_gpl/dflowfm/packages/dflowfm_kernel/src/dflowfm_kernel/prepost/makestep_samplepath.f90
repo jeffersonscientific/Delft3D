@@ -39,6 +39,8 @@ subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
    use m_sferic, only: jsferic, jasfer3D
    use m_cirr
    use m_set_col
+   use m_movabs
+   use m_lnabs
 
    implicit none
 

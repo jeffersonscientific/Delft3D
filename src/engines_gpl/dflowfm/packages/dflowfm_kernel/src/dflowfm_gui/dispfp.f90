@@ -33,6 +33,7 @@
 !
       subroutine DISPFP(X, Y, N, NCOL)
          use m_set_col
+         use m_movabs
          implicit none
          integer :: i
          integer :: n
