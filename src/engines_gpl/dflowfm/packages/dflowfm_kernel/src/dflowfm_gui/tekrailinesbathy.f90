@@ -41,6 +41,8 @@
     use m_polygon
     use m_halt2
     use m_set_col
+    use m_movabs
+    use m_lnabs
 
     implicit none
     integer :: ncol, ITYP

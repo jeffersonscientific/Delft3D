@@ -32,6 +32,8 @@
 
       subroutine ARROWrcir(X0, Y0, cs, sn)
          use M_WEARELT
+         use m_movabs
+         use m_lnabs
          implicit none
          double precision :: cs
          integer :: i

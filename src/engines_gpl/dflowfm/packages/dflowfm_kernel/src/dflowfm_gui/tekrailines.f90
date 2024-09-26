@@ -42,6 +42,8 @@
     use m_netw
     use m_halt2
     use m_set_col
+    use m_movabs
+    use m_lnabs
     implicit none
     integer :: ncol, jaall, ITYP
     integer :: L, k1, k2

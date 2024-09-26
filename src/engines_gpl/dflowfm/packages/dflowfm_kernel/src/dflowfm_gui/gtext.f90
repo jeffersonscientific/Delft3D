@@ -35,6 +35,7 @@ contains
       subroutine GTEXT(TEX, X, Y, NCOL)
          use m_colnow
          use m_set_col
+         use m_draw_text
 
          integer :: ncol
          double precision :: x

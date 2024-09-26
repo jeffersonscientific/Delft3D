@@ -32,6 +32,8 @@
 
       subroutine plotCross(x, y)
          use m_wearelt
+         use m_movabs
+         use m_lnabs
          implicit none
          double precision :: x
          double precision :: y

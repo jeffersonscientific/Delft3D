@@ -44,6 +44,8 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, j, edgevel, dt, xc, yc, ifront, i
    use m_qnerror
    use m_get_lr
    use m_set_col
+   use m_movabs
+   use m_lnabs
 
    integer, intent(in) :: mc !< number of grid points
    integer, intent(in) :: nc !< number of grid layers

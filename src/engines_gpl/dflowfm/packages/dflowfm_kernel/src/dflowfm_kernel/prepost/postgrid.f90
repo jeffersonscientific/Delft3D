@@ -42,6 +42,7 @@ subroutine postgrid()
    use m_sferic, only: jsferic, jasfer3D
    use m_cirr
    use m_get_lr
+   use m_tek_grid
 
    integer, dimension(mc) :: ifront
    double precision :: dcos, dcosR, xn, yn

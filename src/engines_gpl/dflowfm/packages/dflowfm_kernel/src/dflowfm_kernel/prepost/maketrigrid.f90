@@ -38,6 +38,7 @@
     use m_missing, only: dmiss
     use m_increase_grid
     use m_restore_grd
+    use m_tek_grid
     implicit none
 
     double precision, dimension(:, :), allocatable :: x, y ! original grid coordinates

@@ -31,6 +31,8 @@
 !
 
       subroutine ARROWSxy(X0, Y0, UR, VR, VFAC)
+         use m_movabs
+         use m_lnabs
          implicit none
          integer :: i
          double precision :: ur

@@ -37,6 +37,8 @@
     use m_flowparameters
     use m_set_bobs
     use m_inview
+    use m_movabs
+    use m_lnabs
 
     implicit none
     integer :: ndx, ini

@@ -38,6 +38,9 @@
          use m_fbox
          use m_gtext
          use m_set_col
+         use m_movabs
+         use m_lnabs
+         use m_draw_text
          implicit none
          integer, parameter :: MX=366, NX=20
          double precision :: dag

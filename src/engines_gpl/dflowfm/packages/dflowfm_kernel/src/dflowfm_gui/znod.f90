@@ -44,6 +44,7 @@
     use unstruc_display, only: grwhydopt
     use m_drawthis
     use m_get_equilibrium_transport_rates
+    use m_get_tau
 
     implicit none
 
@@ -210,7 +211,7 @@
        else
           jawaveswartdelwaq_local = jawaveswartdelwaq
        end if
-       call gettau(kk, znod, czc, jawaveswartdelwaq_local)
+       call get_tau(kk, znod, czc, jawaveswartdelwaq_local)
 
     else if (nodval == 40) then
 
@@ -300,13 +301,13 @@
           case (4)
              znod = Uorb(kk)
           case (5)
-             call gettau2(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
+             call get_tau(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
              znod = sqrt(ustw2) !ustw
           case (6)
-             call gettau2(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
+             call get_tau(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
              znod = sqrt(taucurc / rhomean) !ustw+c
           case (7)
-             call gettau2(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
+             call get_tau(kk, taucurc, czc, ustw2, jawaveswartdelwaq)
              znod = taucurc ! taus to Delwaq
           case (8)
              znod = dmiss ! Ustokes

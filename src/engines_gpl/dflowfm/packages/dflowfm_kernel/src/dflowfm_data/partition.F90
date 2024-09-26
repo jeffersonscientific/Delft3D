@@ -74,6 +74,7 @@ module m_partitioninfo
    use gridoperations, only: dlinkangle
    use m_qnerror
    use m_delpol
+   use m_find1dcells, only: find1dcells
 
 #ifdef HAVE_MPI
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.

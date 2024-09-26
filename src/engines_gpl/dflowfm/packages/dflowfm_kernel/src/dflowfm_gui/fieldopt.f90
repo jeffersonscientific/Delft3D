@@ -35,6 +35,7 @@ contains
       subroutine FIELDOPT(NFLD)
          use M_GRID
          use m_menuv2
+         use m_local_refine
 
          integer :: nfld
          integer, parameter :: MAXOP = 64

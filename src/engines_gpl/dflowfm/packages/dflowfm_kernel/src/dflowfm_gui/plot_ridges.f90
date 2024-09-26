@@ -38,6 +38,8 @@ subroutine plot_ridges(ierror)
    use m_missing
    use geometry_module, only: dbdistance
    use m_set_col
+   use m_movabs
+   use m_lnabs
 
    implicit none
 

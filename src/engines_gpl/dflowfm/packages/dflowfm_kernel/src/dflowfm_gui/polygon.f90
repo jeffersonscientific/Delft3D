@@ -35,6 +35,8 @@ contains
    subroutine POLYGON(X, Y, N, NCOL)
       use m_colnow
       use m_set_col
+      use m_lnabs
+      use m_ptabs
 
       integer :: i
       integer :: n

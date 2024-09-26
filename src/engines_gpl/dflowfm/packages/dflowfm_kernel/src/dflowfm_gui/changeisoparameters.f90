@@ -37,6 +37,7 @@
          use m_helpnow
          use m_scalepos
          use m_depmax2
+         use m_help
          implicit none
          double precision :: dvi, dvi2
          double precision :: dvnu

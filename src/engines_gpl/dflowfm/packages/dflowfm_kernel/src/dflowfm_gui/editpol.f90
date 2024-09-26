@@ -56,6 +56,9 @@
       use m_draw_nu
       use m_disp2c
       use m_set_col
+      use m_hlcir
+      use m_dropland
+      use m_movabs
       implicit none
       integer :: jaquit, jazoomshift, nshift
       integer :: k

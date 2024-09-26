@@ -35,6 +35,7 @@
          use M_MISSING
          use m_wearelt
          use m_set_col
+         use m_movabs
          implicit none
          integer :: ncol
          double precision :: x

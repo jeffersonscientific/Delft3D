@@ -36,6 +36,9 @@ contains
      use m_netw, only: kn, yk, xk
      use unstruc_colors
      use m_set_col
+     use m_movabs
+     use m_lnabs
+     use m_ptabs
 
      integer :: L, NCOL
      integer :: k1
