@@ -172,7 +172,6 @@ contains
       use unstruc_files, only: resolvePath
       use system_utils, only: split_filename
 
-      use unstruc_model, only: md_extfile
       use timespace_parameters, only: FIELD1D
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
 
@@ -364,7 +363,7 @@ contains
             end if
 
             if (success) then
-               call finish_initialization(target_array, qid)
+               call finish_initialization(qid)
             end if
 
             if (.not. success) then
@@ -1201,12 +1200,12 @@ contains
       use string_module, only: str_tolower
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_3DV
 
-      use fm_external_forcings_data, only: success, sah, transformcoef, numtracers, trnames, uxini, uyini, inivelx, &
+      use fm_external_forcings_data, only: success, transformcoef, numtracers, trnames, uxini, uyini, inivelx, &
                                            inively
       use fm_external_forcings_utils, only: split_qid !, copy_3d_arrays_double_indexed_to_single_indexed
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
-      use m_flowgeom, only: ndx, lnx, ndxi
+      use m_flowgeom, only: ndx, lnx
       use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, jatem, &
                                   initem2D, inivel
 
@@ -1237,7 +1236,7 @@ contains
       integer :: iconst, isednum, itrac, iwqbot
       character(len=idlen) :: qid_base, qid_specific
 
-      integer :: kk, layer, kt, ktmax, k, kb
+      integer :: layer
 
       integer, external :: findname
 
@@ -1498,7 +1497,7 @@ contains
 ! use timespace
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
-      use m_flow, only: frcu
+      use m_flow, only: frcu, h_unsat
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
@@ -1516,7 +1515,6 @@ contains
                                   HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs
-      use m_hydrology_data, only: infiltcap, infiltrationmodel
       use string_module, only: str_tolower
 
       implicit none
@@ -1554,12 +1552,16 @@ contains
          target_array => HortonRecoveryRate
       case ('interceptionlayerthickness')
          target_location_type = UNC_LOC_S
+         call realloc(InterceptHs, ndx, keepExisting=.true., fill=0d0)
+         call realloc(h_unsat, ndx, keepExisting=.true., fill=0d0)
+         call realloc(InterceptThickness, ndx, keepExisting=.false.)
          target_array => InterceptThickness
-         call realloc(InterceptHs, ndx, keepExisting=.true., fill=dmiss)
          interceptionmodel = DFM_HYD_INTERCEPT_LAYER
          jadhyd = 1
       case ('potentialevaporation')
          target_location_type = UNC_LOC_S
+         call realloc(potEvap, ndx, keepExisting=.true., fill=0d0)
+         time_dependent_array = .false.
          target_array => PotEvap
       case ('advectiontype')
          target_location_type = UNC_LOC_U
@@ -1569,6 +1571,7 @@ contains
       case ('groundlayerthickness')
          target_location_type = UNC_LOC_U
          time_dependent_array = .false.
+         target_array => grounlay
          target_array => grounlay
          jagrounlay = 1
       case ('bedrock_surface_elevation')
@@ -1726,7 +1729,7 @@ contains
          end if
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
-            ' Field ''quantity'' does not match (refer to User Manual). Ignoring this block.'
+            ' Field '''//trim(qid)//''' is not a recognized ''[Parameter]'' quantity (refer to User Manual). Ignoring this block.'
          call warn_flush()
          success = .false.
       end select
@@ -1734,7 +1737,7 @@ contains
    end subroutine process_parameter_block
 
    !> Perform finalization after reading the input file.
-   subroutine finish_initialization(target_array, qid)
+   subroutine finish_initialization(qid)
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
@@ -1745,13 +1748,12 @@ contains
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use unstruc_files, only: resolvePath
       use system_utils, only: split_filename
-      use unstruc_model, only: md_extfile
 
       use timespace_parameters, only: FIELD1D
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
 
-      use m_flow, only: s1, hs, evap, h_unsat, kmx
+      use m_flow, only: s1, hs, evap, h_unsat
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap
 
@@ -1766,23 +1768,20 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use string_module, only: str_tolower
 
-      use m_fm_wq_processes, only: wqbot
       use fm_external_forcings_utils, only: split_qid
       implicit none
 
-      double precision, pointer, dimension(:), intent(in) :: target_array
       character(len=*), intent(in) :: qid !< Quantity identifier.
 
       integer :: idum
       double precision, external :: ran0
       character(len=idlen) :: qid_base, qid_specific
-      integer :: kk, ktmax, kb, kt, layer, k, iwqbot
 
       integer, external :: findname
 
       call split_qid(qid, qid_base, qid_specific)
 
-      select case (qid_base)
+      select case (str_tolower(qid_base))
       case ('waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
       case ('infiltrationcapacity')
@@ -1938,32 +1937,12 @@ contains
       real(kind=dp), dimension(:), intent(inout), target :: v2D, v3D
       real(kind=dp), intent(in) :: tr13, tr14
       character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
-
-      real(kind=dp) :: zb, zt, zz
-      integer :: n, k, kb, kt
-      !character(len=1), intent(in)    :: operand !< Operand type, valid values: 'O', 'A', '+', '*', 'X', 'N'.
-
       real(kind=dp), dimension(:, :), pointer :: v3D_tmp
-      integer :: first_index
+   
       v3D_tmp(1:1, 1:size(v3D)) => v3D
+
       call initialfield2Dto3D_dbl_indx(v2D, v3D_tmp, 1, tr13, tr14, operand)
-      !zb = -1d9; if (tr13 /= dmiss) zb = tr13
-      !zt = 1d9; if (tr14 /= dmiss) zt = tr14
-      !do n = 1, ndx
-      !   if (v2D(n) /= dmiss) then
-      !      if (kmx == 0) then
-      !         call operate(v3D(n), v2D(n), operand)
-      !      else
-      !         kb = kbot(n); kt = ktop(n)
-      !         do k = kb, kt
-      !            zz = 0.5d0 * (zws(k) + zws(k - 1))
-      !            if (zz > zb .and. zz < zt) then
-      !               call operate(v3D(k), v2D(n), operand)
-      !            end if
-      !         end do
-      !      end if
-      !   end if
-      !end do
+
    end subroutine initialfield2Dto3D
 
    subroutine initialfield2Dto3D_dbl_indx(v2D, v3D, first_index, tr13, tr14, operand)
