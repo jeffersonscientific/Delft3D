@@ -39,7 +39,8 @@ module unstruc_inifields
    use unstruc_messages
    use properties
    use string_module, only: str_lower, strcmpi
-
+   use precision_basics, only: dp
+   
    implicit none
    private ! Prevent used modules from being exported
 
@@ -340,7 +341,7 @@ contains
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
-               factor = merge(transformcoef(2), 1.0_hp, transformcoef(2) /= -999d0)
+               factor = merge(transformcoef(2), 1.0_dp, transformcoef(2) /= -999d0)
                do k = 1, Ndkx
                   if (target_array(k) /= dmiss) then
                      constituents(iconst, k) = target_array(k) * factor
@@ -1311,7 +1312,6 @@ contains
                target_array_3d => sed
             else
                call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting unknown sediment fraction '''//trim(qid_specific)//''' from QUANTITY '''//trim(qid)//'''.')
-               call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', getting unknown sediment fraction '''//trim(qid_specific)//''' from QUANTITY '''//trim(qid)//'''.', ' ', ' ')
                success = .false.
             end if
          end if
@@ -1517,7 +1517,6 @@ contains
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs
       use m_hydrology_data, only: infiltcap, infiltrationmodel
-      use m_qnerror
       use string_module, only: str_tolower
 
       implicit none
@@ -1723,8 +1722,6 @@ contains
          else
             call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
                       ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
-            call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', &
-                         'QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7', trim(qid))
             success = .false.
          end if
       case default
