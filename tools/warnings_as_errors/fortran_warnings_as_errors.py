@@ -82,8 +82,8 @@ def main():
 
     if args.print_messages:
         for entry in messages:
-            print(f"{f'{args.project_name}: ' if args.project_name else ''}Following {entry.message_type} was fatal:")
-            print(f"{entry.file_path}({entry.line_number}) {entry.message_type} #{entry.message_number}: {entry.message_string}")
+            print(f"{f'{args.project_name}: ' if args.project_name else ''}The following {entry.message_type} was treated as an error:")
+            print(f"{entry.file_path}({entry.line_number}) error #{entry.message_number}: {entry.message_string}")
         print(f"Number of warnings and remarks found: {len(messages)}")
 
     # Exit with a nonzero code if there are any messages
