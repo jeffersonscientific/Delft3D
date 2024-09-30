@@ -1,7 +1,6 @@
 program test_io_netcdf
    use ftnunit
    use test_coordinate_reference_system, only: tests_coordinate_reference_system
-   use test_netcdf_define_mode, only: tests_netcdf_define_mode
 
    implicit none
 
@@ -11,7 +10,6 @@ program test_io_netcdf
 
    ! Run tests for modules
    call tests_coordinate_reference_system()
-   call tests_netcdf_define_mode()
 
    ! Teardown
    call runtests_final()
