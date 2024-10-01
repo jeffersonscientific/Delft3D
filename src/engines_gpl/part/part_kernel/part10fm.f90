@@ -453,7 +453,7 @@ contains
                 vyw  = - wvelo(mpart(ipart)) * cos( wdirr + leeway_ang_sign * defang )
                 vw_net = sqrt((vxw-ux0)**2 + (vyw-uy0)**2)  ! net wind for drag (to accommodate scaling the modifier)
     !           drag on the difference vector: cd * (wind - flow)
-                if ( abs( vw_net .gt. 0 .and. leeway )) then    ! if no net wind velocity (so no drag) then nothing will happen 
+                if ( abs( vw_net ) .gt. 0 .and. leeway ) then    ! if no net wind velocity (so no drag) then nothing will happen 
                     dwx = ((cdrag*(vxw-ux0old) + leeway_modifier * sin ((vxw-ux0old)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
                     dwy = ((cdrag*(vyw-uy0old) + leeway_modifier * cos ((vyw-uy0old)/vw_net))) * dts    !
                 endif
@@ -463,7 +463,7 @@ contains
         xpart(ipart) = xpartold + dwx    !cartesian
         ypart(ipart) = ypartold + dwy    !
 
-        ! the z-coordinate needs to be updated
+        ! the z-coordinate needs to be updatedns,
         if (jsferic == 1) then
             ! if spherical then for an accurate conversion we need to calculate distances
             zpartold = zpart(ipart)
@@ -477,7 +477,7 @@ contains
             dwy = cdrag * (dpywind - uy0old) * dts
             if ( apply_wind_drag .and. depthp .lt. max_wind_drag_depth .and. leeway) then
 !           drag on the difference vector: cd * (wind - flow)
-                if ( abs( wvel_sf .gt. 0 .and. leeway )) then    ! if no net wind velocity (so no drag) then nothing will happen 
+                if ( abs( wvel_sf ) .gt. 0 .and. leeway ) then    ! if no net wind velocity (so no drag) then nothing will happen 
                     dwx = ((cdrag * (dpxwind - ux0old) + leeway_modifier_rad * sin ((dpxwind - ux0old)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
                     dwy = ((cdrag * (dpywind - uy0old) + leeway_modifier_rad * cos ((dpywind - uy0old)/vw_net))) * dts    !
                 endif
