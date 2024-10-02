@@ -1629,7 +1629,7 @@ contains
       end if
       if (fbreak < 0d0) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0d0, reset to 0d0. Wave breaking contribution to tke switched off.')
-         fwfac = 0d0
+         fbreak = 0d0
       end if
 
       if (jawave <= 2) then
@@ -1637,7 +1637,7 @@ contains
          jawaveforces = 0
          jawavestreaming = 0
          jawavedelta = 0
-         jawavebreakturbulence = 0 ! default switch off, but switchable see below
+         jawavebreakerturbulence = 0 ! default switch off, but switchable see below
       end if
 
       call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
@@ -1646,7 +1646,7 @@ contains
          call warn_flush()
       end if
 
-      call prop_get(md_ptr, 'waves', '3Dwavebreakturbulence', jawavebreakturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
       call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
       call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
       call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
@@ -3561,7 +3561,7 @@ contains
          end if
          if (writeall .or. kmx > 0) then
             call prop_set(prop_ptr, 'waves', '3Dstokesprofile', jawaveStokes, 'Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve ')
-            call prop_set(prop_ptr, 'waves', '3Dwavebreakturbulence', jawavebreakturbulence, 'Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes')
+            call prop_set(prop_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence, 'Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes')
             call prop_set(prop_ptr, 'waves', '3Dwavestreaming', jawavestreaming, 'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
             call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta, 'Boundary layer formulation. 1: Sana                                                                                  ')
          end if

@@ -134,7 +134,7 @@ module m_flowparameters
 
    integer :: jawaveStokes !< Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
-   integer :: jawavebreakturbulence !< Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+   integer :: jawavebreakerturbulence !< Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
    integer :: jawavedelta = 1 !< Wave boundary layer formulation: 1=Sana 2007
 
@@ -766,7 +766,7 @@ contains
 
       jawavestokes = 1 ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
-      jawavebreakturbulence = 0 ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      jawavebreakerturbulence = 1 ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
       jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
 

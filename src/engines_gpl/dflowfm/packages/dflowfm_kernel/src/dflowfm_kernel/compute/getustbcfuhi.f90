@@ -118,10 +118,12 @@
 
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
          ! updated ustokes needed before conversion to eulerian velocities
-         if (jawavestokes > 0 .and. .not. flowwithoutwaves) then
+         if (jawave > 0 .and. .not. flowwithoutwaves) then
             ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
-            umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb)))
+            if (jawaveStokes >= 1) then
+               umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb)))
+            end if
          end if
 
          if (umod == 0d0) then ! from dry to wet
@@ -132,7 +134,7 @@
 
          ustbLL = sqcf * umod ! ustar based upon bottom layer/layer integral velocity
 
-         if (jawavestokes > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > 0 .and. .not. flowWithoutWaves) then
             rhoL = rhomean ! for now
             if (ustw2 > 1d-8) then
                !
@@ -259,9 +261,12 @@
          nit = 0
          u1Lb = u1(Lb)
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
-         if (jawavestokes > 0 .and. .not. flowwithoutwaves) then
+         if (jawave > 0 .and. .not. flowwithoutwaves) then
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
-            umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb))) ! was ustokes(LL)
+            ! strictly, not necessary as ust==0 for jawavestokes==0
+            if (jawavestokes > 0) then
+               umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb))) ! was ustokes(LL)
+            end if
          end if
 
          r = umod * hu(Lb) / viskin ! Local re-number:
