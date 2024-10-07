@@ -150,6 +150,7 @@ module m_Universal_Weir
       allowedflowdir = uniweir%allowedflowdir 
       if ((allowedflowdir == 3) .or. (dir == 1 .and. allowedflowdir == 2) .or. (dir == -1 .and. allowedflowdir == 1)) then
          kfum = 0
+         aum = 0.0d0
          fum  = 0.0d0
          rum  = 0.0d0
          u1m  = 0.0d0
@@ -165,6 +166,7 @@ module m_Universal_Weir
 
       if (smax < uniweir%crestlevel_actual) then
          kfum = 1
+         aum = 0.0d0
          fum  = 0.0d0
          rum  = 0.0d0
          u1m  = 0.0d0
