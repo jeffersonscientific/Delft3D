@@ -1075,8 +1075,7 @@ contains
    end subroutine findleftright
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
-      use m_shaec
-      use m_shsec
+      use spherepack, only: shaec, shaeci, shsec, shseci
       implicit none
 
       ! Input\Output parameter
@@ -1146,9 +1145,8 @@ contains
       isym = 0
       nt = 1
       !Spherical harmonic analysis
-      call shaeci(nlat, nlon, wshaec, lshaec, dwork, ldwork, ierror)
-      call shaec(nlat, nlon, isym, nt, avhs1, nlat, nlon, a, b, mdab, ndab, &
-                 wshaec, lshaec, work, lwork, ierror)
+      call shaeci(nlat, nlon, wshaec, ierror)
+      call shaec(nlat, nlon, isym, nt, avhs1, nlat, nlon, a, b, mdab, ndab, wshaec, ierror)
 
       !Multiplication in spherical harmonic space (=convolution)
       if (jaselfal == 2) then
@@ -1165,9 +1163,9 @@ contains
       end if
 
       !Spherical harmonic synthesis
-      call shseci(nlat, nlon, wshsec, lshsec, dwork, ldwork, ierror)
+      call shseci(nlat, nlon, wshsec, ierror)
       call shsec(nlat, nlon, isym, nt, self1, nlat, nlon, a, b, mdab, ndab, &
-                 wshsec, lshsec, work, lwork, ierror)
+                 wshsec, ierror)
 
       !self1 is defined on the same grid than avhs1, we put it back in the same grid than avhs
       self = 0d0
