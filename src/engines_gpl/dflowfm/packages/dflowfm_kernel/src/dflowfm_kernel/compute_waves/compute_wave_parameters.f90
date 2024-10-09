@@ -76,10 +76,8 @@
             end do
          end if
          !
-         if (kmx == 0) then
-            ! get uorb, rlabda
-            call wave_uorbrlabda()
-         end if
+         call wave_uorbrlabda()
+
       end if
 
       ! SWAN
@@ -152,9 +150,8 @@
             end do
          end if
          !
-         if (kmx == 0) then
-            call wave_uorbrlabda()
-         end if
+         call wave_uorbrlabda()
+         !
       end if
 
       ! shortcut to switch off stokes influence
