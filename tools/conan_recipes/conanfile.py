@@ -2,18 +2,19 @@ from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
 from conan.tools.scm import Git
 
+
 class netcdf_fortranRecipe(ConanFile):
     name = "netcdf-fortran"
     version = "4.5.4"
     package_type = "library"
 
     # Optional metadata
-    license = "<Put the package license here>"
-    author = "<Put your name here> <And your email here>"
-    url = "<Package recipe repository url here, for issues about the package>"
-    description = "<Description of netcdf-fortran package here>"
-    topics = ("<Put some tag here>", "<here>", "<and here>")
-
+    license = "MIT"
+    author = "Unidata"
+    url = "https://github.com/Unidata/netcdf-fortran"
+    description = "NetCDF Fortran library for scientific data storage."
+    topics = ("netcdf", "fortran", "scientific", "data")
+    
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
