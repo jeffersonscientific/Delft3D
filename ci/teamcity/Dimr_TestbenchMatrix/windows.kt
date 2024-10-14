@@ -22,7 +22,7 @@ object Windows : BuildType({
     val configs = windowsLines.map { line ->
         line.split(",")[1]
     }
-    val linesForAll = linuxLines.filter { line -> line.split(",")[2] == "TRUE" }
+    val linesForAll = windowsLines.filter { line -> line.split(",")[2] == "TRUE" }
     val selectedConfigs = linesForAll.map { line -> line.split(",")[1] }
 
     vcs {
@@ -60,12 +60,6 @@ object Windows : BuildType({
         dependency(Trigger) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
-            }
-
-            artifacts {
-                id = "TRIGGER_2"
-                artifactRules = "this.txt => stuff"
-                cleanDestination = true
             }
         }
     }
