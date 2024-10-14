@@ -61,12 +61,6 @@ object Linux : BuildType({
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
             }
-
-            artifacts {
-                id = "TRIGGER_1"
-                artifactRules = "this.txt => stuff"
-                cleanDestination = true
-            }
         }
     }
 
