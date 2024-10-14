@@ -1914,6 +1914,7 @@ contains
       use unstruc_messages
       use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
+      use string_module, only: str_tolower
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'
@@ -1931,9 +1932,9 @@ contains
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
       ! Store the name
-      var_name = char_array_to_string(c_var_name)
+      var_name = str_tolower(char_array_to_string(c_var_name))
       item_name = char_array_to_string(c_item_name)
-      field_name = char_array_to_string(c_field_name)
+      field_name = str_tolower(char_array_to_string(c_field_name))
 
       select case (var_name)
          ! PUMPS
