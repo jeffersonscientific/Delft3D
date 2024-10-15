@@ -2054,7 +2054,7 @@ contains
                x = c_loc(zcgen((item_index - 1) * 3 + 3))
             end if
             return
-         case ("gateopeninghorizontaldirection", "gateopeninghorizontaldirection")
+         case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
          end select
