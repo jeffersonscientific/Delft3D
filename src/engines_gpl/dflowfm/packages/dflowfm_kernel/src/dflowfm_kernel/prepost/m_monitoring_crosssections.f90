@@ -77,6 +77,7 @@ contains
 
 !> Returns the index/position of a named crosssection in the global set arrays of this module.
    subroutine getCrosssectionIndex(crsname, index)
+      use string_module, only: strcmpi
       character(len=*), intent(in) :: crsname
       integer, intent(out) :: index !< The position of the (possibly moving) observation station in all set arrays. 0 if not present.
 
@@ -84,7 +85,7 @@ contains
 
       index = 0
       do i = 1, ncrs
-         if (trim(crs(i)%name) == trim(crsname)) then
+         if (strcmpi(crs(i)%name, crsname)) then
             index = i
             exit
          end if

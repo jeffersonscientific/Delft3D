@@ -569,6 +569,8 @@ contains
 
 !> Returns the index/position of a named station in the global set arrays of this module.
    subroutine getObservationIndex(statname, index)
+      use string_module, only: strcmpi
+
       character(len=*), intent(in) :: statname
       integer, intent(out) :: index !< The position of the (possibly moving) observation station in all set arrays. 0 if not present.
 
@@ -576,7 +578,7 @@ contains
 
       index = 0
       do i = 1, numobs + nummovobs
-         if (trim(namobs(i)) == trim(statname)) then
+         if (strcmpi(namobs(i),statname)) then
             index = i
             exit
          end if
