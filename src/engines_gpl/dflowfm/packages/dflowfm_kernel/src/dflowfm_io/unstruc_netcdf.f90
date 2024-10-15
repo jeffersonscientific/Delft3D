@@ -6163,7 +6163,7 @@ contains
             end if
          end if
 
-         if (jamapwav > 0) then
+         if (jawave > 0 .and. jamapwav > 0) then
             if (flowWithoutWaves) then ! Check the external forcing wave quantities and their associated arrays
                if (jamapwav_hwav > 0 .and. allocated(hwav)) then
                   if (jamapsigwav == 0) then
@@ -6181,30 +6181,29 @@ contains
             else ! flow With Waves
                !
                ! First def all common quantities
-               if (jawave > 0) then
-                  if (jamapsigwav == 0) then
-                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_rms_height', 'RMS wave height', 'm', jabndnd=jabndnd_) ! not CF
-                  else
-                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_wave_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
-                  end if
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, nc_precision, UNC_LOC_S, 'uorb', 'sea_surface_wave_orbital_velocity', 'Wave orbital velocity', 'm s-1', jabndnd=jabndnd_) ! not CF
-                  !
-                  if (jawavestokes > 0) then
-                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokes, nc_precision, iLocS, 'ust_cc', 'sea_surface_x_stokes_drift', 'Stokes drift, x-component', 'm s-1', jabndnd=jabndnd_) ! not CF
-                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokes, nc_precision, iLocS, 'vst_cc', 'sea_surface_y_stokes_drift', 'Stokes drift, y-component', 'm s-1', jabndnd=jabndnd_) ! not CF
+               if (jamapsigwav == 0) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_rms_height', 'RMS wave height', 'm', jabndnd=jabndnd_) ! not CF
+               else
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_wave_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
+               end if
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'deg from N', jabndnd=jabndnd_) ! not CF
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', 'sea_surface_wave_period', 'Wave period', 's') ! not CF
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, nc_precision, UNC_LOC_S, 'uorb', 'sea_surface_wave_orbital_velocity', 'Wave orbital velocity', 'm s-1', jabndnd=jabndnd_) ! not CF
+               !
+               if (jawavestokes > 0) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokes, nc_precision, iLocS, 'ust_cc', 'sea_surface_x_stokes_drift', 'Stokes drift, x-component', 'm s-1', jabndnd=jabndnd_) ! not CF
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokes, nc_precision, iLocS, 'vst_cc', 'sea_surface_y_stokes_drift', 'Stokes drift, y-component', 'm s-1', jabndnd=jabndnd_) ! not CF
 
-                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokeslink, nc_precision, iLocU, 'ustokes', '', 'Stokes drift, n-component', 'm s-1', jabndnd=jabndnd_) ! not CF
-                     ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokeslink, nc_precision, iLocU, 'vstokes', '', 'Stokes drift, t-component', 'm s-1', jabndnd=jabndnd_) ! not CF
-                  end if
-                  !
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'deg from N', jabndnd=jabndnd_) ! not CF
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', 'sea_surface_wave_period', 'Wave period', 's') ! not CF
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokeslink, nc_precision, iLocU, 'ustokes', '', 'Stokes drift, n-component', 'm s-1', jabndnd=jabndnd_) ! not CF
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokeslink, nc_precision, iLocU, 'vstokes', '', 'Stokes drift, t-component', 'm s-1', jabndnd=jabndnd_) ! not CF
                end if
                !
                ! Then wave model dependent:
                if ((jawave == 3 .or. jawave == 4 .or. jawave == 7) .and. jawaveforces > 0) then
+                  ! Report wave forces depth-integrated in flow cell center for easier comparison with other models/observations
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Fx, nc_precision, UNC_LOC_S, 'Fx', 'sea_surface_x_wave_force', 'Wave force, x-component', 'N m-2', jabndnd=jabndnd_) ! not CF
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Fy, nc_precision, UNC_LOC_S, 'Fy', 'sea_surface_y_wave_force', 'Wave force, y-component', 'N m-2', jabndnd=jabndnd_) ! not CF
+                  ! Report wave forces depth-dependent in flow links, ie where they are applied
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Fxlink, nc_precision, iLocU, 'wavfu', '', 'Wave force at velocity point, n-component', 'N m-2', jabndnd=jabndnd_) ! not CF
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Fylink, nc_precision, iLocU, 'wavfv', '', 'Wave force at velocity point, t-component', 'N m-2', jabndnd=jabndnd_) ! not CF
 
@@ -7478,14 +7477,16 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
       end if
 
-      if (jamapwav > 0) then
+      if (jawave > 0 .and. jamapwav > 0) then
+         !
+         if (jamapsigwav == 0) then
+            wavfac = 1d0
+         else
+            wavfac = sqrt(2d0)
+         end if
+         !
          if (flowWithoutWaves) then ! Check the external forcing wave quantities and their associated arrays
             if (jamapwav_hwav > 0 .and. allocated(hwav)) then
-               if (jamapsigwav == 0) then
-                  wavfac = 1d0
-               else
-                  wavfac = sqrt(2d0)
-               end if
                if (allocated(wa)) then
                   deallocate (wa, stat=ierr)
                end if
@@ -7500,38 +7501,30 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_phiwav, UNC_LOC_S, phiwav, jabndnd=jabndnd_)
             end if
          else ! flowWithoutWaves
-            ! Regular stuff
-            if (jawave > 0) then
-               if (jamapsigwav == 0) then
-                  wavfac = 1d0
-               else
-                  wavfac = sqrt(2d0)
-               end if
-               if (allocated(wa)) then
-                  deallocate (wa, stat=ierr)
-               end if
-               allocate (wa(1:ndx), stat=ierr)
-               wa = wavfac * hwav
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, UNC_LOC_S, wa, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, UNC_LOC_S, uorb, jabndnd=jabndnd_)
+            if (allocated(wa)) then
+               deallocate (wa, stat=ierr)
+            end if
+            allocate (wa(1:ndx), stat=ierr)
+            wa = wavfac * hwav
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, UNC_LOC_S, wa, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_uorb, UNC_LOC_S, uorb, jabndnd=jabndnd_)
 
-               wa = modulo(270d0 - phiwav, 360d0)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, UNC_LOC_S, wa, jabndnd=jabndnd_)
-               deallocate (wa)
+            wa = modulo(270d0 - phiwav, 360d0)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, UNC_LOC_S, wa, jabndnd=jabndnd_)
+            deallocate (wa)
 
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, UNC_LOC_S, twav)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, UNC_LOC_S, twav)
 
-               if (jawavestokes > 0) then
-                  call realloc(ust_x, ndkx, keepExisting=.false.)
-                  call realloc(ust_y, ndkx, keepExisting=.false.)
-                  call reconstruct_cc_stokesdrift(ndkx, ust_x, ust_y)
+            if (jawavestokes > 0) then
+               call realloc(ust_x, ndkx, keepExisting=.false.)
+               call realloc(ust_y, ndkx, keepExisting=.false.)
+               call reconstruct_cc_stokesdrift(ndkx, ust_x, ust_y)
 
-                  ! then write:
-                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokes, iLocS, ust_x, jabndnd=jabndnd_)
-                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokes, iLocS, ust_y, jabndnd=jabndnd_)
-                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokeslink, iLocU, ustokes, jabndnd=jabndnd_)
-                  ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokeslink, iLocU, vstokes, jabndnd=jabndnd_)
-               end if
+               ! then write:
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokes, iLocS, ust_x, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokes, iLocS, ust_y, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ustokeslink, iLocU, ustokes, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vstokeslink, iLocU, vstokes, jabndnd=jabndnd_)
             end if
 
             if (jawave == 4) then
@@ -7581,10 +7574,12 @@ contains
                         else
                            dzu = hu(LL) - hu(LL - 1)
                         end if
-                        windx(k1) = windx(k1) + wcx1(L) * wavfu(LL) * dzu * rhomean ! consider rhoL here
+                        ! depth-integrated
+                        windx(k1) = windx(k1) + wcx1(L) * wavfu(LL) * dzu * rhomean
                         windx(k2) = windx(k2) + wcx2(L) * wavfu(LL) * dzu * rhomean
                         windy(k1) = windy(k1) + wcy1(L) * wavfu(LL) * dzu * rhomean
                         windy(k2) = windy(k2) + wcy2(L) * wavfu(LL) * dzu * rhomean
+                        ! depth dependent
                         wavout(LL) = wavfu(LL) * hu(L) * rhomean ! stack
                         wavout2(LL) = wavfv(LL) * hu(L) * rhomean
                      end do
