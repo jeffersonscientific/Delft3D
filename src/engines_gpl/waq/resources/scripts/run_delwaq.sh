@@ -18,6 +18,7 @@ function print_usage_info {
     echo "-p <proc_def>       use an alternative process library file instead of ../share/delft3d/proc_def"
     echo "-np                 do not use any Delwaq processes (all substances will be seen as tracers)"
     echo "-eco [<bloom.spe>]  use BLOOM, optionally using an alternative algea database for the default ../share/delft3d/bloom.spe"
+    echo "-dem                use the D-Emissions process library file ../share/d-emissions/em_proc_def"
     echo "-openpb <*.so>      use additional subroutines from an addtional library"
     echo "-validation_mode    only run the validation of the input file, do not run the actual calculation"
     echo "-*                  any other options are also passed on to the delwaq executable"
@@ -36,6 +37,7 @@ ulimit -s unlimited
 inputfile=
 procfile=
 userprocfile=
+dem=
 eco=
 np=
 userspefile=none
@@ -60,6 +62,9 @@ case $key in
     userprocfile="$1"
     shift
     ;;
+    -dem)
+    dem=true
+    echo "Running D-Emissions"
     -np)
     np=true
     ;;
@@ -96,7 +101,12 @@ if [ ! "$userprocfile" == "" ]
     then
     procfile=$userprocfile
 else
-    procfile=$sharedir/proc_def
+   if [ "$dem" == "true" ]
+       then
+       procfile=$D3D_HOME/share/d-emissions/em_proc_def
+   else
+       procfile=$sharedir/proc_def
+   fi
 fi
 
 if [ ! -f $procfile ]; then
