@@ -35,11 +35,12 @@
     use m_flowgeom
     use m_sferic
     use m_flowtimes
+    use precision, only: dp
     use MessageHandling, only: mess, LEVEL_ERROR
     implicit none
 
-    double precision :: h1, h0, stemcos, stemsin, stemh, PL, Pm, Pmi, Bp
-    double precision :: rhodif, buoym, bendm, Fbe, Fbu, Tdti, phi, phit, ep, qsa, qds, ds2
+    real(kind=dp) :: h1, h0, stemcos, stemsin, stemh, PL, Pm, Pmi, Bp
+    real(kind=dp) :: rhodif, buoym, bendm, Fbe, Fbu, Tdti, phi, phit, ep, qsa, qds, ds2
     integer :: kk, k, num, i, L, k1, k2
 
     if (kmx == 0 .and. growthunidicouv > 0.0) then
@@ -150,16 +151,16 @@
     pure function calculate_plant_mass(plant_length, diameter, density) result(mass)
        use precision, only: dp
 
-       double precision, intent(in) :: plant_length, diameter, density
-       double precision :: volume, mass
+       real(kind=dp), intent(in) :: plant_length, diameter, density
+       real(kind=dp) :: volume, mass
        volume = plant_length * (diameter / 2.0_dp)**2 * pi ! Volume = L * (r^2) * pi
        mass = density * volume ! Mass = Density * Volume
     end function calculate_plant_mass
 
     ! Function to calculate plant inertia moment
     pure function calculate_plant_inertia_moment(mass, plant_length) result(inertia_moment)
-       double precision, intent(in) :: mass, plant_length
-       double precision :: inertia_moment
+       real(kind=dp), intent(in) :: mass, plant_length
+       real(kind=dp) :: inertia_moment
        inertia_moment = (1.0d0 / 6.0d0) * mass * plant_length**2 ! Moment of inertia = (1/6) * m * L^2
     end function calculate_plant_inertia_moment
 
