@@ -166,7 +166,7 @@
           end if
        end do
     end if
-
+    ! jre wm67
     if ((jawave == 3 .or. jawave == 6) .and. .not. flowWithoutWaves) then
        ! if a SWAN computation is performed, add wave forces to adve
        ! This part is mainly based on the wave forces formulation (wsu) of Delft3D (cucnp.f90)

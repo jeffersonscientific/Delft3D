@@ -1422,6 +1422,7 @@ contains
          time_dependent_array = .false.
          target_array => Cdwusp
          iCdtyp = 1 ! only 1 coeff
+      ! jre wm67
       case ('wavesignificantheight')
          if (jawave == 6 .or. jawave == 7) then
             target_location_type = UNC_LOC_S
