@@ -1931,7 +1931,7 @@ contains
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
-      ! Store the name
+      ! Store the name and convert var and field to lowercase to make them case-insensitive.
       var_name = str_tolower(char_array_to_string(c_var_name))
       item_name = char_array_to_string(c_item_name)
       field_name = str_tolower(char_array_to_string(c_field_name))
