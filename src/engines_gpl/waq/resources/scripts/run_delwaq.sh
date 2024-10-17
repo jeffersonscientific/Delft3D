@@ -65,6 +65,7 @@ case $key in
     -dem)
     dem=true
     echo "Running D-Emissions"
+    ;;
     -np)
     np=true
     ;;
@@ -89,7 +90,7 @@ done
 scriptdirname=`readlink \-f \$0`
 bindir=`dirname $scriptdirname`
 libdir=$bindir/../lib
-sharedir=$bindir/../share/delft3d
+sharedir=$bindir/../share/
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 echo
 echo "    bin dir          : $bindir"
@@ -103,9 +104,9 @@ if [ ! "$userprocfile" == "" ]
 else
    if [ "$dem" == "true" ]
        then
-       procfile=$D3D_HOME/share/d-emissions/em_proc_def
+       procfile=$sharedir/d-emissions/em_proc_def
    else
-       procfile=$sharedir/proc_def
+       procfile=$sharedir/delft3d/proc_def
    fi
 fi
 
