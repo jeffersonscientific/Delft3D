@@ -23,6 +23,7 @@
 module test_read_property
    use ftnunit
    use precision
+   use m_read_property, only: read_property
 
    implicit none
    real(fp), parameter :: eps = 1.0e-6_fp
@@ -70,27 +71,27 @@ subroutine test_generalstructure_2d3d
    call assert_equal(numblocks,5,'File structures/structures.ini is expected to contain 5 blocks.')
    
    ! read required properties from first block
-   call read_property(str_ptr%child_nodes(1), "id", strvalue, dblvalue, is_double, 'first block structures.ini', success)
+   call read_property(str_ptr%child_nodes(1)%node_ptr, "id", strvalue, dblvalue, is_double, 'first block structures.ini', success)
    call assert_equal(success, .TRUE., "Something is wrong when reading 'id'.") 
    call assert_equal(is_double, .FALSE., "Expected a string.") 
    call assert_equal(strvalue,"full_block", "Another value for 'id' was expected.")
 
    ! try to read a non existing key and check that the return value is .false.
-   call read_property(str_ptr%child_nodes(1), "id_nonexistent", strvalue, dblvalue, is_double, 'first block structures.ini', success)
+   call read_property(str_ptr%child_nodes(1)%node_ptr, "id_nonexistent", strvalue, dblvalue, is_double, 'first block structures.ini', success)
    call assert_equal(success, .FALSE., "Something is wrong when reading 'id_nonexistent'.") 
 
    do i = 1, numblocks
       block_ptr => str_ptr%child_nodes(i)%node_ptr
             
-      call read_property(str_ptr%child_nodes(i), "type", strvalue, dblvalue, is_double, 'block structures.ini', success)
+      call read_property(block_ptr, "type", strvalue, dblvalue, is_double, 'block structures.ini', success)
       call assert_equal(success, .TRUE., "Something is wrong when reading 'type'.") 
       call assert_equal(strvalue,'generalstructure','Type "generalstructures" was expected.')
 
-      call read_property(str_ptr%child_nodes(i), "id", idvalue, dblvalue, is_double, 'block structures.ini', success)
+      call read_property(block_ptr, "id", idvalue, dblvalue, is_double, 'block structures.ini', success)
       call assert_equal(success, .TRUE., "Something is wrong when reading 'id'.") 
 
       ! for each block read GateLowerEdgeLevel either as string or as double
-      call read_property(str_ptr%child_nodes(i), 'GateLowerEdgeLevel', strvalue, dblvalue, is_double, 'first block structures.ini', success)
+      call read_property(block_ptr, 'GateLowerEdgeLevel', strvalue, dblvalue, is_double, 'first block structures.ini', success)
       if (success) then 
          select case(trim(idvalue))
          case ('full_block')
