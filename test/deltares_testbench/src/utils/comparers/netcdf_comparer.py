@@ -11,7 +11,6 @@ from typing import List, Optional, Tuple
 
 import netCDF4 as nc
 import numpy as np
-from netCDF4 import chartostring
 
 import src.utils.plot_differences as plot
 from src.config.file_check import FileCheck
@@ -286,8 +285,8 @@ class NetcdfComparer(IComparer):
         variable_name: str,
         nc_var: NetCdfVariable,
     ) -> ComparisonResult:
-        left_strings = chartostring(nc_var.left[:])
-        right_strings = chartostring(nc_var.right[:])
+        left_strings = nc.chartostring(nc_var.left[:])
+        right_strings = nc.chartostring(nc_var.right[:])
         result = ComparisonResult()
         result.passed = np.array_equal(left_strings, right_strings)
         result.result = "OK" if result.passed else "NOK"
