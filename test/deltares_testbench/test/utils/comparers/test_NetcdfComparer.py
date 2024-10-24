@@ -16,17 +16,26 @@ from src.config.types.file_type import FileType
 from test.utils.test_logger import TestLogger
 
 
-class TestNetcdfComparer:
-    def setup_method(self) -> None:
-        self.testroot = os.path.abspath(os.path.dirname(__file__))
-        self.testdata = os.path.join(self.testroot, "data")
-        self.lp = os.path.join(self.testdata, "left")
-        self.rp = os.path.join(self.testdata, "right")
-        self.filename = "str_map.nc"
+@pytest.fixture
+def testdata() -> str:
+    testroot = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(testroot, "data")
 
+
+@pytest.fixture
+def right_path(testdata: str) -> str:
+    return os.path.join(testdata, "right")
+
+
+@pytest.fixture
+def left_path(testdata: str) -> str:
+    return os.path.join(testdata, "left")
+
+
+class TestNetcdfComparer:
     ##################################################
 
-    def test_compare(self) -> None:
+    def test_compare(self, left_path: str, right_path: str) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.name = "mesh2d_s1"
@@ -39,7 +48,7 @@ class TestNetcdfComparer:
         comparer = nccmp.NetcdfComparer(enable_plotting=False)
         logger = TestLogger()
         path = os.path.join("test")
-        results = comparer.compare(self.lp, self.rp, fc, path, logger)
+        results = comparer.compare(left_path, right_path, fc, path, logger)
         resultstruc = results[0][3]
 
         # perform a set of asserts on the result structure
@@ -50,7 +59,7 @@ class TestNetcdfComparer:
         assert resultstruc.max_abs_diff_coordinates == (1, 0)
         assert pytest.approx(resultstruc.max_rel_diff) == 0.21672465466549
 
-    def test_time_independent_compare(self) -> None:
+    def test_time_independent_compare(self, left_path: str, right_path: str) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.name = "mesh2d_node_x"
@@ -62,18 +71,18 @@ class TestNetcdfComparer:
         comparer = nccmp.NetcdfComparer(enable_plotting=False)
         logger = TestLogger()
         path = os.path.join("test")
-        results = comparer.compare(self.lp, self.rp, fc, path, logger)
+        results = comparer.compare(left_path, right_path, fc, path, logger)
         resultstruc = results[0][3]
         print(resultstruc.result)
 
-    def test_search_time_variable(self) -> None:
-        nc_root = nc.Dataset(os.path.join(self.lp, "str_map.nc"))
+    def test_search_time_variable(self, left_path: str) -> None:
+        nc_root = nc.Dataset(os.path.join(left_path, "str_map.nc"))
         varid = nccmp.search_time_variable(nc_root, "mesh2d_s1")
         stname = varid.getncattr("standard_name")
         assert stname == "time"
 
-    def test_search_times_series_id(self) -> None:
-        nc_root = nc.Dataset(os.path.join(self.lp, "str_his.nc"))
+    def test_search_times_series_id(self, left_path: str) -> None:
+        nc_root = nc.Dataset(os.path.join(left_path, "str_his.nc"))
         tssid = nccmp.search_times_series_id(nc_root)
         assert tssid == ["station_name"]
 
@@ -82,7 +91,7 @@ class TestNetcdfComparer:
         datum = nccmp.DateTimeDelta(time_description)
         assert datum.date_time == datetime.datetime(2015, 11, 1, 0, 0)
 
-    def test_strings_are_equal(self) -> None:
+    def test_strings_are_equal(self, left_path: str, right_path: str) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.name = "pump_name"
@@ -93,12 +102,12 @@ class TestNetcdfComparer:
         comparer = nccmp.NetcdfComparer(enable_plotting=False)
         logger = TestLogger()
         path = os.path.join("test")
-        results = comparer.compare(self.lp, self.rp, fc, path, logger)
+        results = comparer.compare(left_path, right_path, fc, path, logger)
         resultstruc = results[0][3]
         assert resultstruc.passed
         assert resultstruc.result == "OK"
 
-    def test_strings_are_not_equal(self) -> None:
+    def test_strings_are_not_equal(self, left_path: str, right_path: str) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.name = "pump_name"
@@ -109,7 +118,7 @@ class TestNetcdfComparer:
         comparer = nccmp.NetcdfComparer(enable_plotting=False)
         logger = TestLogger()
         path = os.path.join("test")
-        results = comparer.compare(self.lp, self.rp, fc, path, logger)
+        results = comparer.compare(left_path, right_path, fc, path, logger)
         resultstruc = results[0][3]
         assert not resultstruc.passed
         assert resultstruc.result == "NOK"
