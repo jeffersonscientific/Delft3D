@@ -32,10 +32,25 @@ def left_path(testdata: str) -> str:
     return os.path.join(testdata, "left")
 
 
+@pytest.fixture
+def test_path() -> str:
+    return os.path.join("test")
+
+
+@pytest.fixture
+def logger() -> TestLogger:
+    return TestLogger()
+
+
+@pytest.fixture
+def comparer() -> nccmp.NetcdfComparer:
+    return nccmp.NetcdfComparer()
+
+
 class TestNetcdfComparer:
     ##################################################
 
-    def test_compare(self, left_path: str, right_path: str) -> None:
+    def test_compare(self, left_path: str, right_path: str, logger: TestLogger) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.name = "mesh2d_s1"
@@ -46,7 +61,6 @@ class TestNetcdfComparer:
         fc.type = FileType.NETCDF
         fc.parameters = {"par1": [pm]}
         comparer = nccmp.NetcdfComparer(enable_plotting=False)
-        logger = TestLogger()
         path = os.path.join("test")
         results = comparer.compare(left_path, right_path, fc, path, logger)
         resultstruc = results[0][3]
@@ -91,34 +105,36 @@ class TestNetcdfComparer:
         datum = nccmp.DateTimeDelta(time_description)
         assert datum.date_time == datetime.datetime(2015, 11, 1, 0, 0)
 
-    def test_strings_are_equal(self, left_path: str, right_path: str) -> None:
-        fc = FileCheck()
-        pm = Parameter()
-        pm.name = "pump_name"
+    def test_strings_are_equal(
+        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: TestLogger
+    ) -> None:
+        fc = self.create_netcdf_file_check("pump_name", "same_pump_names.nc")
 
-        fc.name = "same_pump_names.nc"
-        fc.type = FileType.NETCDF
-        fc.parameters = {"pump_name": [pm]}
-        comparer = nccmp.NetcdfComparer(enable_plotting=False)
-        logger = TestLogger()
-        path = os.path.join("test")
-        results = comparer.compare(left_path, right_path, fc, path, logger)
+        results = comparer.compare(left_path, right_path, fc, test_path, logger)
+
+        self.assert_comparison_failed()
         resultstruc = results[0][3]
         assert resultstruc.passed
         assert resultstruc.result == "OK"
 
-    def test_strings_are_not_equal(self, left_path: str, right_path: str) -> None:
-        fc = FileCheck()
-        pm = Parameter()
-        pm.name = "pump_name"
+    def test_strings_are_not_equal(
+        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: TestLogger
+    ) -> None:
+        fc = self.create_netcdf_file_check("pump_name", "other_pump_names.nc")
 
-        fc.name = "other_pump_names.nc"
-        fc.type = FileType.NETCDF
-        fc.parameters = {"pump_name": [pm]}
-        comparer = nccmp.NetcdfComparer(enable_plotting=False)
-        logger = TestLogger()
-        path = os.path.join("test")
-        results = comparer.compare(left_path, right_path, fc, path, logger)
+        results = comparer.compare(left_path, right_path, fc, test_path, logger)
+
         resultstruc = results[0][3]
         assert not resultstruc.passed
         assert resultstruc.result == "NOK"
+
+    def create_netcdf_file_check(self, parameter_name: str, file_name: str) -> FileCheck:
+        fc = FileCheck()
+        pm = Parameter()
+        pm.name = parameter_name
+
+        fc.name = file_name
+        fc.type = FileType.NETCDF
+        fc.parameters = {parameter_name: [pm]}
+
+        return fc
