@@ -37,9 +37,10 @@ module m_get_chezy
 contains
 !> Get the Chezy coefficient
 !! This routine is not safe for frcn == 0
-   function get_chezy(h1, frcn, ifrctyp, L) result(cz)
+   pure function get_chezy(h1, frcn, ifrctyp, L) result(cz)
       use m_physcoef, only: sag, vonkar, ee
       use m_flow, only: u1, v
+      use m_hydraulicallysmooth, only: hydraulicallysmooth
       use precision, only: dp
 
       real(kind=dp), intent(in) :: h1 !< hydraulic radius
@@ -55,8 +56,6 @@ contains
       h0 = max(h1, 1e-4_dp)
       if (ifrctyp == 0) then ! Chezy type
          cz = frcn
-      else if (ifrctyp == 1) then ! Manning type
-         cz = (h0**sixth) / frcn
       else if (ifrctyp == 2) then ! White Colebrook Delft3
          z0 = min(frcn / 30.0_dp, h0 * 0.3_dp)
          sqcf = vonkar / log(h0 / (ee * z0))
@@ -64,16 +63,15 @@ contains
       else if (ifrctyp == 3) then ! White Colebrook WAQUA
          hurou = max(0.5_dp, h0 / frcn)
          cz = 18.0_dp * log10(12.0_dp * hurou)
-      else if (ifrctyp == 4 .or. ifrctyp == 5 .or. ifrctyp == 6) then ! also manning, just testing implicitness in furu
+      else if (ifrctyp == 1 .or. ifrctyp == 4 .or. ifrctyp == 5 .or. ifrctyp == 6) then ! manning, just testing implicitness in furu
          cz = (h0**sixth) / frcn
       else
-         cz = 60.0_dp ! dummy
-         umod = sqrt(u1(L) * u1(L) + v(L) * v(L))
-         call hydraulicallysmooth(umod, h0, sqcf)
+         umod = norm2([u1(L), v(L)])
+         sqcf = hydraulicallysmooth(umod, h0)
          if (sqcf > 0.0_dp) then
-            Cz = sag / sqcf
+            cz = sag / sqcf
          else
-            Cz = 0.0_dp
+            cz = 0.0_dp
          end if
       end if
    end function get_chezy
