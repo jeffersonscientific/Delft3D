@@ -42,7 +42,7 @@ contains
    subroutine read_property(prop_ptr, key, strvalue, dblvalue, is_double, typeandid, success)
       use properties
       use unstruc_messages
-      type(TREE_DATA), pointer :: prop_ptr !< Property tree as read from a single .ini block
+      type(TREE_DATA), pointer, intent(in) :: prop_ptr !< Property tree as read from a single .ini block
       character(len=*), intent(in) :: key !< Property key that should be read.
       character(len=*), intent(inout) :: strvalue !< Returned string value for requested property key.
       double precision, intent(inout) :: dblvalue !< Returned scalar double value for requested property key, IF possible.
