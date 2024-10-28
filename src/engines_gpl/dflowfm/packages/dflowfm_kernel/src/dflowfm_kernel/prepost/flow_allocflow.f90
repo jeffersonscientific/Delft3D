@@ -62,7 +62,7 @@
     integer :: ndx1d
 
     double precision :: zmn, zmx, dzm ! for 3D
-    double precision :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
+    double precision :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk, sumcof
     logical :: jawel
 
     if (ndx == 0) return
@@ -295,6 +295,10 @@
        allocate (dzslay(0:mx, mxlaydefs), stat=ierr); dzslay = 0d0
 
        if (iStrchType == STRCH_USER) then
+          sumcof = abs(sum(laycof) - 100d0)
+          if (sumcof > 1d-8) then
+             call mess(LEVEL_ERROR, 'Error : The sum of sigma layer thicknesses must be equal to 100!')
+          end if
           do j = 1, mxlaydefs
              mx = laymx(j)
              do k = 1, mx
@@ -1096,18 +1100,18 @@
        allocate (patm(ndx), stat=ierr)
        call aerr('patm(ndx)', ierr, ndx)
        patm(:) = 0d0
-       
+
        if (allocated(tair)) deallocate (tair)
        allocate (tair(ndx), stat=ierr)
        call aerr('tair(ndx)', ierr, ndx)
        tair(:) = 0d0
-       
+
        if (allocated(rhum)) deallocate (rhum)
        allocate (rhum(ndx), stat=ierr)
        call aerr('rhum(ndx)', ierr, ndx)
        rhum(:) = 0d0
     end if
-    
+
     if (jatem > 0) then
        if (allocated(tem1)) deallocate (tem1)
        allocate (tem1(ndkx), stat=ierr)
