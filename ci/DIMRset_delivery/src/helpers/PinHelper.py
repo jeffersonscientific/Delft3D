@@ -1,7 +1,5 @@
 from lib.TeamCity import TeamCity
-from settings.teamcity_settings import DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID, \
-    DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID, DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID, \
-    DIMR_TO_NGHS_BUILD_TYPE_ID, DIMR_TESTBENCH_RELEASE_TESTS_LINUX, DIMR_TESTBENCH_RELEASE_TESTS_WINDOWS
+from settings.teamcity_settings import TEAMCITY_IDS
     
 
 
@@ -21,19 +19,10 @@ class PinHelper(object):
 
         build_ids_to_pin = []
 
-        build_type_ids = [
-            DIMR_TO_NGHS_BUILD_TYPE_ID,
-            DIMR_TESTBENCH_RELEASE_TESTS_LINUX,
-            DIMR_TESTBENCH_RELEASE_TESTS_WINDOWS,
-            DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID,
-            DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID,
-            DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID,
-        ]
-
-        for build_type_id in build_type_ids:
-            build_info = self.__teamcity.get_build_info_for_latest_build_for_build_type_id(build_type_id)
+        for build_type_id in TEAMCITY_IDS:
+            build_info = self.__teamcity.get_build_info_for_latest_build_for_build_type_id(build_type_id.value)
             build_ids_to_pin.append(build_info["id"])
-            if build_type_id == DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID:
+            if build_type_id == TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID:
                 for dependency in build_info["artifact-dependencies"]["build"]:
                     build_ids_to_pin.append(dependency["id"])
 
