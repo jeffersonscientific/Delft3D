@@ -1522,11 +1522,11 @@ contains
 
       target_array => null()
       target_array_integer => null()
+      time_dependent_array = .false.
 
       select case (str_tolower(qid))
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array => frcu
       case ('hortonmininfcap')
          target_location_type = UNC_LOC_S
@@ -1556,22 +1556,18 @@ contains
             success = .false.
             return
          end if
-         time_dependent_array = .false.
          target_location_type = UNC_LOC_S
          target_array => infiltcap
       case ('potentialevaporation')
          target_location_type = UNC_LOC_S
          call realloc(potEvap, ndx, keepExisting=.true., fill=0d0)
-         time_dependent_array = .false.
          target_array => PotEvap
       case ('advectiontype')
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array_integer => iadv
 
       case ('groundlayerthickness')
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array => grounlay
          target_array => grounlay
          jagrounlay = 1
@@ -1600,7 +1596,6 @@ contains
                cftrtfac = 1d0
             end if
             target_location_type = UNC_LOC_U
-            time_dependent_array = .false.
             target_array => cftrtfac
             jacftrtfac = 1
          end if
@@ -1615,7 +1610,6 @@ contains
             javiusp = 1
          end if
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array => viusp
 
       case ('horizontaleddydiffusivitycoefficient')
@@ -1628,12 +1622,10 @@ contains
             jadiusp = 1
          end if
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array => diusp
 
       case ('ibedlevtype')
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array_integer => ibot
 
       case ('internaltidesfrictioncoefficient')
@@ -1652,12 +1644,10 @@ contains
             jaFrcInternalTides2D = 1
          end if
          target_location_type = UNC_LOC_S
-         time_dependent_array = .false.
          target_array => frcInternalTides2D
 
       case ('linearfrictioncoefficient')
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array => frculin
          jafrculin = 1
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
@@ -1681,7 +1671,6 @@ contains
             stemdiam = dmiss
          end if
          target_location_type = UNC_LOC_S
-         time_dependent_array = .false.
          target_array => stemdiam
 
       case ('stemdensity')
@@ -1692,7 +1681,6 @@ contains
             stemdens = dmiss
          end if
          target_location_type = UNC_LOC_S
-         time_dependent_array = .false.
          target_array => stemdens
 
       case ('stemheight')
@@ -1703,7 +1691,6 @@ contains
             stemheight = dmiss
          end if
          target_location_type = UNC_LOC_S
-         time_dependent_array = .false.
          target_array => stemheight
 
       case ('windstresscoefficient')
@@ -1716,7 +1703,6 @@ contains
             jaCdwusp = 1
          end if
          target_location_type = UNC_LOC_U
-         time_dependent_array = .false.
          target_array => Cdwusp
          iCdtyp = 1 ! only 1 coeff
       case ('wavesignificantheight')
