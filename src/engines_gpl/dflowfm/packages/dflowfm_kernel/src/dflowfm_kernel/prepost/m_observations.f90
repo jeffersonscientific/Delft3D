@@ -868,42 +868,41 @@ contains
 
 !> Reads observation points from an *.xyn file.
 ! Typically called via loadObservations().
-   subroutine loadObservations_from_xyn(filename)
-      use messageHandling
-      use dfm_error
-      implicit none
-      character(len=*), intent(in) :: filename
+subroutine loadObservations_from_xyn(filename)
+    use messageHandling
+    use dfm_error
+    implicit none
+    character(len=*), intent(in) :: filename
 
-      integer :: mobs, L, L2
-      double precision :: xp, yp
-      character(len=256) :: rec
-      character(len=IdLen) :: nam
+    integer :: mobs, n, L, L2
+    double precision :: xp, yp
+    character (len=256) :: rec
+    character (len=IdLen) :: nam
 
-      call oldfil(mobs, filename)
+    call oldfil(mobs,filename)
 
-20    read (mobs, '(a)', end=889) rec
+    n=0
+20  read(mobs,'(a)',end =889) rec
 
-      if (len_trim(rec) > 0) then
-         read (rec, *, err=888) xp, yp, nam
+    read(rec,*,err=888) xp, yp, nam
 
-         L = index(rec, '''')
-         if (L > 0) then
-            L = L + 1
-            L2 = index(rec(L:), '''') - 2 + L
-            nam = rec(L:L2)
-         end if
+    L  = index(rec,'''')
+    if (L > 0) then
+        L  = L + 1
+        L2 = index(rec(L:),'''') - 2 + L
+        nam = rec(L:L2)
+    endif
 
-         call addObservation(xp, yp, nam)
-      end if
+    call addObservation(xp, yp, nam)
+    n = n+1
+    goto 20
 
-      goto 20
+889 call doclose(mobs)
+    return
 
-889   call doclose(mobs)
-      return
+888 call readerror('reading x,y,nam but getting ',rec,mobs)
 
-888   call readerror('reading x,y,nam but getting ', rec, mobs)
-
-   end subroutine loadObservations_from_xyn
+end subroutine loadObservations_from_xyn
 
    subroutine saveObservations(filename)
       use m_sferic, only: jsferic
