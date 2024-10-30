@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -738,15 +738,13 @@ contains
       logical :: dummylog
       character(len=1000) :: charbuf = ' '
       character(len=255) :: tmpstr, fnam, bnam
-      real(kind=dp), allocatable :: tmpdouble(:)
       integer :: ibuf, ifil
-      integer :: i, n, iostat, readerr, ierror
+      integer :: i, iostat, readerr, ierror
       integer :: jadum
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       real(kind=dp), external :: densfm
       real(kind=dp) :: tim
-      real(kind=dp) :: sumlaycof
       real(kind=dp), parameter :: tolSumLay = 1d-12
       integer, parameter :: maxLayers = 300
       integer :: major, minor
@@ -946,23 +944,7 @@ contains
          if (iStrchType == STRCH_USER) then
             call realloc(laycof, kmx)
             call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
-            sumlaycof = sum(laycof)
-            if (comparereal(sumlaycof, 100d0, tolSumLay) /= 0) then
-               call realloc(tmpdouble, maxLayers, fill=0d0)
-               call prop_get(md_ptr, 'geometry', 'StretchCoef', tmpdouble, maxLayers)
-               n = 0
-               do i = 1, maxLayers
-                  if (.not. (tmpdouble(i) > 0)) then
-                     exit
-                  end if
-                  n = n + 1
-               end do
-               if (kmx /= n) then
-                  call mess(LEVEL_ERROR, 'The number of values specified in "StretchCoef" is inconsistent with "Kmx"!')
-               else
-                  call mess(LEVEL_ERROR, 'The values specified in "StretchCoef" do not add up to 100! We got: ', sumlaycof)
-               end if
-            end if
+            
          else if (iStrchType == STRCH_EXPONENT) then
             call realloc(laycof, 3)
             laycof(:) = dmiss

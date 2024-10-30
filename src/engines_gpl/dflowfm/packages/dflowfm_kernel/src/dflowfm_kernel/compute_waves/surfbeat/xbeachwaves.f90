@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -5054,8 +5054,8 @@ subroutine baldock(rho, g, alfa, gamma, hh, H, Hmax, T, opt, Dw)
 end subroutine baldock
 !
 !
-! Copyright (C) 2010-2024 Samuel Ponce', Roxana Margine, Carla Verdi, Feliciano Giustino
-! Copyright (C) 2007-2024 Jesse Noffsinger, Brad Malone, Feliciano Giustino
+! Copyright (C) 2010-2025 Samuel Ponce', Roxana Margine, Carla Verdi, Feliciano Giustino
+! Copyright (C) 2007-2025 Jesse Noffsinger, Brad Malone, Feliciano Giustino
 !
 ! This file is distributed under the terms of the GNU General Public
 ! License. See the file `LICENSE' in the root directory of the

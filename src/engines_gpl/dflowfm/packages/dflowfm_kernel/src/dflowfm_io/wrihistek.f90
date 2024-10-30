@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@ module m_wrihistek
 contains
    subroutine wrihistek(tim)
       use m_observations_data
-      use m_monitoring_crosssections, only: ncrs, crs
+      use m_monitoring_crosssections, only: crs
       use m_flow, only: hs, ucy, ucx, s1, ag
       use m_flowgeom, only: bl
       use m_ship
@@ -97,7 +97,7 @@ contains
          Te = 2 * 400 / ue
 
          !write(mxls,'(13f14.6)') tim/Te ,  ucx(kobs(1)) / ue !   , s1(kobs(1)) - bl(kobs(1))
-         if (numobs >= 2 .and. ncrs >= 1) then ! Hardcoded quantities below require at least 2 obs points and 1 crossection.
+         if (numobs > 0 .and. kobs(1) > 0 ) then
 
             k1 = kobs(1); k2 = kobs(2)
             if (k1 > 0 .and. k2 > 0) then
