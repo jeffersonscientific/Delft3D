@@ -163,7 +163,7 @@
             </file>
         </checks>
         </testCase>
-        <testCase name="e02_f008_c042_bifurcation_varying_length" ref="dflowfm_default">
+        <testCase name="e02_f008_c042_bifurcation_varying_length_pure1d" ref="dflowfm_default">
         <path version="2024-11-01T13:00:00">e02_dflowfm/f008_network/c042_bifurcation_varying_length_pure1d</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
