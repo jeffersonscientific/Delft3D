@@ -33,8 +33,13 @@ module m_setlinktocenterweights
 
    implicit none
 
+    double precision :: wud, wuL1, wuL2, cs, sn
+    integer :: L, n, kk, n12, lnxmax
+    integer :: k1, k2, LL
+    integer :: ilongc, L1dlink
    private
 
+    double precision :: aa1, wcw, alf
    public :: setlinktocenterweights
 
 contains
@@ -53,6 +58,7 @@ contains
       integer :: L, ierr, n, kk, n12, lnxmax
       integer :: k1, k2, LL
       integer :: ilongc, L1dlink
+
 
       real(kind=dp) :: aa1, wcw, alf
       real(kind=dp), allocatable :: wwL(:)

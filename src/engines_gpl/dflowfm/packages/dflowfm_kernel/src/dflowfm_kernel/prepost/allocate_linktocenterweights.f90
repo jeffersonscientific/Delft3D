@@ -40,7 +40,7 @@ module m_allocate_linktocenterweights
 contains
 
    subroutine allocate_linktocenterweights() ! allocate center related linkxy weights
-
+    
       use m_flowgeom
       use m_alloc
 
@@ -48,6 +48,7 @@ contains
 
       if (allocated(wcx1)) deallocate (wcx1, wcy1, wcx2, wcy2)
       if (allocated(wcL)) deallocate (wcL)
+      if (allocated(wcxy)) deallocate (wcxy)
 
       allocate (wcx1(lnx), stat=ierr); 
       call aerr('wcx1(lnx)', ierr, lnx)
@@ -59,6 +60,10 @@ contains
       call aerr('wcy2(lnx)', ierr, lnx)
       allocate (wcL(2, Lnx), stat=ierr); 
       call aerr('wcL  (2,Lnx)', ierr, 2 * Lnx)
+      allocate (wcxy(2, ndx), stat=ierr); 
+      call aerr('wcxy (2,ndx)', ierr, 2 * ndx)
+      allocate (wc(ndx), stat=ierr); 
+      call aerr('wc     (ndx)', ierr, ndx)
 
    end subroutine allocate_linktocenterweights
 
