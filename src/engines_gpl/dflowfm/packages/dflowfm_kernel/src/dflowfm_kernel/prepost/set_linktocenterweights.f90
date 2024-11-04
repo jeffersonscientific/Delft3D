@@ -237,4 +237,4 @@
 
     kfs = 0
 
- end subroutine setlinktocenterweights
+ end subroutine set_linktocenterweights
