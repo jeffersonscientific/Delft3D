@@ -42,7 +42,7 @@
       use m_trachy, only: trachy_resistance
       use unstruc_messages
       use unstruc_display
-      use m_get_chezy
+      use m_get_chezy, only: get_chezy
 
       implicit none
 
@@ -112,9 +112,9 @@
          ! get current related roughness height
          !
          if (frcu(L) > 0d0) then
-            cz = get_chezy(huL, dble(frcu(L)), ifrcutp(L), L)
+            cz = get_chezy(huL, dble(frcu(L)), u1(L), v(L), ifrcutp(L))
          else
-            cz = get_chezy(huL, frcuni, ifrctypuni, L)
+            cz = get_chezy(huL, frcuni, u1(L), v(L), ifrctypuni)
          end if
          z0 = huL / (ee * (exp(vonkar * cz / sag) - 1d0))
 

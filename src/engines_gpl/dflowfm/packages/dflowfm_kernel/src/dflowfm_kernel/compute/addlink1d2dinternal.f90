@@ -36,7 +36,7 @@
     use unstruc_channel_flow, only: network
     use m_get_link_area_wid2D
     use m_get_prof2d
-    use m_get_chezy
+    use m_get_chezy, only: get_chezy
 
     implicit none
 
@@ -101,7 +101,7 @@
           else
              au(L) = hpr1 * wu(L)
              if (frcn > 0) then
-                Cz = get_chezy(hu(L), frcn, ifrctyp, L)
+                Cz = get_chezy(hu(L), frcn, u1(L), v(L), ifrctyp)
                 cfuhi(L) = ag / (hu(L) * Cz * Cz)
              else
                 cfuhi(L) = 0d0

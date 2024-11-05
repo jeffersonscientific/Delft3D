@@ -41,7 +41,7 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
    use unstruc_channel_flow
    use m_cross_helper
    use precision_basics
-   use m_get_chezy
+   use m_get_chezy, only: get_chezy
 
    integer :: L, japerim, calcConv
    double precision :: hprL !< hoogte in profiel
@@ -220,7 +220,7 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
          ! doe hier backup cf
          if (frcn > 0) then
             hydrad = area / perim ! hydraulic radius
-            cz = get_chezy(hydrad, frcn, ifrctyp, L)
+            cz = get_chezy(hydrad, frcn, u1(L), v(L), ifrctyp)
             cf = ag / (hydrad * cz * cz) ! see note on 2D conveyance in sysdoc5
          else
             cf = 0d0
@@ -267,7 +267,7 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
 
          if (frcn > 0) then
             hydrad = area / perim ! hydraulic radius
-            cz = get_chezy(hydrad, frcn, ifrctyp, L)
+            cz = get_chezy(hydrad, frcn, u1(L), v(L), ifrctyp)
             cfuhi(L) = ag / (hydrad * cz * cz) ! see note on 2D conveyance in sysdoc5
          else
             cfuhi(L) = 0d0
@@ -275,7 +275,7 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
 
          if (jagrounlay > 0) then
             if (grounlay(LL) > 0) then
-               czg = get_chezy(hydrad, frcuni1Dgrounlay, ifrctyp, L)
+               czg = get_chezy(hydrad, frcuni1Dgrounlay, u1(L), v(L), ifrctyp)
                alfg = wigr(LL) / perim
                cfuhi(L) = (ag / hydrad) * (alfg / czg**2 + (1d0 - alfg) / cz**2)
             end if
