@@ -43,12 +43,12 @@ contains
       character(len=*), dimension(:), intent(in) :: names !< Array of names to search
       character(len=*), intent(in) :: name !< Name to search for
       integer :: res !< Return the index of the string in the array
-
       integer :: i
 
+      
       res = 0
 
-      do i = 1, len(names)
+      do i = 1, size(names)
          if (trim(name) == trim(names(i))) then
             res = i
             return
