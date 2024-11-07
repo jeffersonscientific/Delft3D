@@ -5,9 +5,11 @@
 
 import datetime
 import os
+import tempfile
 from typing import AnyStr, List, Tuple
 
 import netCDF4 as nc
+import numpy as np
 import pytest
 from pytest_mock import MockerFixture
 
@@ -109,29 +111,50 @@ class TestNetcdfComparer:
         assert datum.date_time == datetime.datetime(2015, 11, 1, 0, 0)
 
     def test_strings_are_equal(
-        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: ILogger
+        self,
+        comparer: nccmp.NetcdfComparer,
+        test_path: str,
+        logger: ILogger,
+        mocker: MockerFixture,
     ) -> None:
-        fc = self.create_netcdf_file_check("pump_name", "same_pump_names.nc")
+        same_strings = ["foo", "bar", "baz"]
+        left = self.make_string_dataset("pump_name", same_strings, row_name="pump", col_name="name_len")
+        right = self.make_string_dataset("pump_name", same_strings, row_name="pump", col_name="name_len")
 
-        results = comparer.compare(left_path, right_path, fc, test_path, logger)
+        dataset_constructor = mocker.patch("src.utils.comparers.netcdf_comparer.nc.Dataset")
+        dataset_constructor.side_effect = [left, right]
+
+        fc = self.create_netcdf_file_check("pump_name")
+
+        results = comparer.compare(left.filepath(), right.filepath(), fc, test_path, logger)
 
         self.assert_comparison_passed(results)
 
     def test_strings_are_not_equal(
-        self, left_path: str, right_path: str, comparer: nccmp.NetcdfComparer, test_path: str, logger: ILogger
+        self,
+        comparer: nccmp.NetcdfComparer,
+        test_path: str,
+        logger: ILogger,
+        mocker: MockerFixture,
     ) -> None:
-        fc = self.create_netcdf_file_check("pump_name", "other_pump_names.nc")
+        left = self.make_string_dataset("pump_name", ["foo", "bar"], row_name="pump", col_name="name_len")
+        right = self.make_string_dataset("pump_name", ["bar", "baz"], row_name="pump", col_name="name_len")
 
-        results = comparer.compare(left_path, right_path, fc, test_path, logger)
+        dataset_constructor = mocker.patch("src.utils.comparers.netcdf_comparer.nc.Dataset")
+        dataset_constructor.side_effect = [left, right]
+
+        fc = self.create_netcdf_file_check("pump_name")
+
+        results = comparer.compare(left.filepath(), right.filepath(), fc, test_path, logger)
 
         self.assert_comparison_failed(results)
 
-    def create_netcdf_file_check(self, parameter_name: str, file_name: str) -> FileCheck:
+    def create_netcdf_file_check(self, parameter_name: str) -> FileCheck:
         fc = FileCheck()
         pm = Parameter()
         pm.name = parameter_name
 
-        fc.name = file_name
+        fc.name = "irrelevant"
         fc.type = FileType.NETCDF
         fc.parameters = {parameter_name: [pm]}
 
@@ -149,3 +172,29 @@ class TestNetcdfComparer:
         result = results[0][3]
         assert result.passed == passed
         assert result.result == message
+
+    @staticmethod
+    def make_string_dataset(
+        var_name: str,
+        strings: list[str],
+        row_name: str = "y",
+        col_name: str = "x",
+    ) -> nc.Dataset:
+        max_len = max(len(s) for s in strings)
+
+        # Create netcdf dataset - somehow this needs a writable (temporary) file location
+        temp_file = tempfile.NamedTemporaryFile(suffix=".nc")
+        ds = nc.Dataset(temp_file.name, "w", diskless=True, persist=False, format="NETCDF4_CLASSIC")
+        ds.createDimension(row_name, len(strings))
+        ds.createDimension(col_name, max_len)
+        variable = ds.createVariable(var_name, "S1", (row_name, col_name))
+
+        # Fill variable with string data.
+        result = np.zeros((len(strings), max_len), dtype="S1")
+        for i, s in enumerate(strings):
+            result[i, 0 : len(s)] = list(s)
+        variable[:] = result
+
+        temp_file.close()
+
+        return ds
