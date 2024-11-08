@@ -34,7 +34,7 @@
       use m_flow
       use m_flowgeom, only: ln, dxi, csu, snu
       use m_flowtimes, only: dti
-      use m_waves, only: ustokes, vstokes, wblt, jawavevellogprof
+      use m_waves, only: ustokes, vstokes, wblt, jawavevellogprof, strlyrfac
       use m_sediment, only: stm_included
       use m_turbulence, only: tkepro
       use m_flowtimes, only: dts
@@ -227,21 +227,21 @@
             if (stm_included) wblt(LL) = deltau
             !
             ! Streaming below 3*deltau with linear distribution, see van Rijn 2011 p9.177
-            if (jawavestreaming == 1 .and. deltau > 1d-4 * hu(LL)) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
+            if (jawavestreaming == 1 .and. deltau > 1d-4) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
                Dfu0 = Dfuc ! (m/s2)
                do L = Lb, Ltop(LL)
-                  if (hu(L) <= 3d0 * deltau) then
-                     htop = min(hu(L), 3d0 * deltau) ! max height within streaming layer
-                     alin = 1d0 - htop / (3d0 * deltau) ! linear from 1 at bed to 0 at 3*deltau
+                  if (hu(L) <= (strlyrfac * deltau)) then
+                     htop = min(hu(L), strlyrfac * deltau) ! max height within streaming layer
+                     alin = 1d0 - htop / (strlyrfac * deltau) ! linear from 1 at bed to 0 at 3*deltau
                      Dfu1 = Dfuc * alin
                      adve(L) = adve(L) - 0.5d0 * (Dfu0 + Dfu1)
                      Dfu0 = Dfu1
                   end if
-                  if (hu(L) > 3d0 * deltau) then
+                  if (hu(L) > strlyrfac * deltau) then
                      if (L == Lb) then
-                        adve(L) = adve(L) - Dfuc * 3d0 * deltau / (2.0 * hu(L)) ! everything in bottom layer
+                        adve(L) = adve(L) - Dfuc * strlyrfac * deltau / (2.0 * hu(L)) ! everything in bottom layer
                      else
-                        alin = (min(hu(L), 3d0 * deltau) - hu(L - 1)) / (2d0 * (hu(L) - hu(L - 1)))
+                        alin = (min(hu(L), strlyrfac * deltau) - hu(L - 1)) / (2d0 * (hu(L) - hu(L - 1)))
                         Dfu1 = Dfuc * alin
                         adve(L) = adve(L) - Dfu1
                      end if

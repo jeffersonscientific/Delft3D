@@ -1641,6 +1641,7 @@ contains
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
       call prop_get(md_ptr, 'waves', 'fforc', fforc) ! factor for adjusting wave forces in momentum equation
+      call prop_get(md_ptr, 'waves', 'streamlyrfac', strlyrfac) ! factor for adjusting wave forces in momentum equation
 
       if (jawave <= 2) then
          jawaveStokes = 0

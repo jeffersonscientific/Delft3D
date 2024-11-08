@@ -174,7 +174,7 @@ contains
       upperlimitssc = 1d6
       inmorphopol = 1
       difparam            = 10d0
-      difcal              = 1d0
+      difcal              = 0d0
 
    end subroutine default_sediment
 

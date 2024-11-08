@@ -151,12 +151,12 @@ subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uor
       aks = asg * shs / dks * fac ! uorbu/(omega*ks), uorbu/omega = particle excursion length
 
       deltau = 0.09d0 * dks * aks**0.82d0 ! thickness of wave boundary layer from Fredsoe and Deigaard (1992)
-      deltau = max(deltau, 20d0 * ee * z00)
+      deltau = max(deltau, ee * z00) ! ustar / karman
       deltau = min(0.5d0 * hu(LL), deltau) !
 
       call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
       Dfu = 0.2821d0 * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
-      Dfu = fwfac * Dfu / 3d0 / deltau ! divided by 3 deltau    (m2/s3)      see van Rijn, streaming layer about 3 times wbl
+      Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by 3 deltau    (m2/s3)      see van Rijn, streaming layer about 3 times wbl
       Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
    else
       ustw2 = 0d0

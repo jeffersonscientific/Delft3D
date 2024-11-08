@@ -1036,8 +1036,8 @@ subroutine update_verticalprofiles()
                vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
             end if
 
-            if (jawave==0) then  ! we don't do viscosity reduction at the surface for waves
-            vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
+            if (jawave==0 .or. (jawave > 0 .and. jawavebreakerturbulence == 0)) then  ! we don't do viscosity reduction at the surface for waves
+               vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
             endif
             vicwwu(Lb0) = min(vicwwu(Lb0), vicwwu(Lb) * Eddyviscositybedfacmax)
 

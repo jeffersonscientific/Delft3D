@@ -1138,7 +1138,7 @@
                   rsedeq(nm, l) = rsdqlc(kmaxsd)
                   !
                   thick0 = max(thicklc(kmaxsd) * h0, epshu)
-                  thick1 = max(thicklc(kmaxsd) * h1, epshu)
+                  !thick1 = max(thicklc(kmaxsd) * h1, epshu)
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
@@ -1148,20 +1148,21 @@
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !
+                  if (difcal > 0d0) then
+                     seddif(l, kb:kt) = difcal * seddif(l, kb:kt)
+                  end if
+                  !
                   ! Impose relatively large vertical diffusion
                   ! coefficients for sediment in layer interfaces from
                   ! bottom of reference cell downwards, to ensure little
                   ! gradient in sed. conc. exists in this area.
-                  if (difparam > 0.0) then
+                  if (difparam > 0d0) then
                      difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
                      do kk = kb - 1, kmxsed(nm, l) - 1
                         seddif(l, kk) = difbot
                      end do
                   end if
                   !
-                  if (difcal > 0d0) then
-                     seddif = difcal * seddif
-                  end if
                end if ! suspfrac
             else
                !
