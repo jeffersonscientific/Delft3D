@@ -42,6 +42,8 @@ contains
 
         ! currently supported categories
         select case (connection%category)
+        case (category_hydrodynamics)
+            call set_hydrodynamics_connection_data(connection)
         case (category_wasteload)
             call set_wasteload_connection_data(connection)
         case (category_segment)
@@ -51,10 +53,40 @@ contains
         case (category_procparam)
             call set_procparam_connection_data(connection)
         end select
-
-        allocate (connection%p_value)
-
     end subroutine set_connection_data
+
+    !> Set the connection data for a hydrodynamics connection
+    subroutine set_hydrodynamics_connection_data(connection)
+        !!use delwaq2_global_data, only: load_name
+        use m_waq_memory_dimensions, only: num_cells, num_cells_bottom, num_exchanges
+        use m_real_array_indices, only: ivol, iarea, iflow
+        use m_string_utils, only: string_equals
+
+        type(connection_data), intent(inout) :: connection !< connection to set
+
+        integer(kind=int_wp) :: num_values
+
+        ! The substance/parameter may be "VOLUME", "AREA" or "FLOW"
+        if (string_equals(connection%subst_name, 'VOLUME')) then
+            connection%substance_index = 1
+            connection%buffer_idx      = ivol
+            num_values                 = num_cells + num_cells_bottom
+        elseif (string_equals(connection%subst_name, 'FLOW')) then
+            connection%substance_index = 2
+            connection%buffer_idx      = iflow
+            num_values                 = num_exchanges
+        elseif (string_equals(connection%subst_name, 'AREA')) then
+            connection%substance_index = 2
+            connection%buffer_idx      = iflow
+            num_values                 = num_exchanges
+        end if
+
+        if (connection%incoming) then
+            connection%buffer_idx = connection%data_index
+        end if
+
+        allocate (connection%p_value(num_values))
+    end subroutine set_hydrodynamics_connection_data
 
     !> Set the connection data for a wasteload connection
     subroutine set_wasteload_connection_data(connection)
@@ -91,6 +123,8 @@ contains
         else
             connection%buffer_idx = get_connection_buffer_index(connection, iwste, 1)
         end if
+
+        allocate (connection%p_value(1))
     end subroutine
 
     !> Set the connection data for a segment connection
@@ -108,6 +142,7 @@ contains
         connection%substance_index = get_substance_index(connection)
 
         connection%buffer_idx = get_connection_buffer_index(connection, iconc)
+        allocate (connection%p_value(1))
     end subroutine
 
     !> Set the connection data for a monitorpoint connection
@@ -122,19 +157,30 @@ contains
         connection%substance_index = get_substance_index(connection)
 
         connection%buffer_idx = get_connection_buffer_index(connection, iconc)
+        allocate (connection%p_value(1))
     end subroutine
 
     !> Set the connection data for a procparam connection
     subroutine set_procparam_connection_data(connection)
-        use delwaq2_global_data, only: procparam_const
-        use m_real_array_indices, only: icons
+        use m_waq_memory_dimensions, only: num_cells,num_cells_bottom, num_spatial_parameters
+        use delwaq2_global_data, only: procparam_const, procparam_param
+        use m_real_array_indices, only: icons, iparm
         use m_string_utils, only: index_in_array
 
         type(connection_data), intent(inout) :: connection !< connection to set
 
-        ! look up the index of the parameter in the procparam_const array
+        ! look up the index of the parameter in the procparam_const array or the
+        ! procparam_param array
         connection%data_index = index_in_array(connection%subst_name, procparam_const)
-        connection%buffer_idx = icons - 1 + connection%data_index
+        if ( connection%data_index > 0 ) then
+            connection%buffer_idx = icons - 1 + connection%data_index
+            allocate (connection%p_value(1))
+        else
+            connection%data_index = index_in_array(connection%subst_name, procparam_param)
+            connection%buffer_idx = iparm - 1 + connection%data_index
+            connection%stride     = num_spatial_parameters
+            allocate (connection%p_value(num_cells+num_cells_bottom))
+        endif
     end subroutine
 
     !> Determine substance index based on subst_name

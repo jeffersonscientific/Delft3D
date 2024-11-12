@@ -414,6 +414,7 @@ contains
         type(connection_data), pointer :: con_data !< current connection data object
         type(connection_data), allocatable :: new_con_data
         character(EXT_MAXSTRLEN) :: key_given !< key as string
+        integer                  :: i, j
 
         call init_logger()
         call log%log_debug("ext_get_current_time started")
@@ -435,11 +436,11 @@ contains
         con_data => connections%get_connection_by_exchange_name(key_given)
         if (.not. associated(con_data)) then
             new_con_data = parse_connection_string(key_given)
-            
+
             if (allocated(new_con_data)) then
                 call set_connection_data(new_con_data)
-                                
-                ! use added connection instance                
+
+                ! use added connection instance
                 con_data => connections%add_connection(new_con_data)
             end if
         end if
@@ -447,12 +448,19 @@ contains
         ! If the connection is outgoing, copy the current value into the pointer,
         ! else leave it to the update routine.
         if (.not. con_data%incoming) then
-            con_data%p_value = dlwqd%buffer%rbuf(con_data%buffer_idx)
+            if ( size(con_data%p_value) == 1 ) then
+                con_data%p_value(1) = dlwqd%buffer%rbuf(con_data%buffer_idx)
+            else
+                do i = 1,size(con_data%p_value)
+                    j = con_data%buffer_idx + (i-1) * con_data%stride
+                    con_data%p_value(i) = dlwqd%buffer%rbuf(j)
+                enddo
+            endif
         end if
 
         xptr = c_loc(con_data%p_value)
 
-        call log%log_debug("Get_var done "//int_to_str(con_data%buffer_idx)//real_to_str(con_data%p_value))
+        call log%log_debug("Get_var done "//int_to_str(con_data%buffer_idx)//real_to_str(con_data%p_value(1)))
         call log%log_debug("ext_get_current_time ended")
     end function ext_get_value_ptr
 

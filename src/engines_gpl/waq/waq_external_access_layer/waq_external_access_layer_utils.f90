@@ -78,7 +78,7 @@ contains
         use delwaq2_global_data
         type(connection_data), intent(in) :: connection !< Connection to update
 
-        dlwqd%buffer%rbuf(connection%buffer_idx) = connection%p_value
+        dlwqd%buffer%rbuf(connection%buffer_idx) = connection%p_value(1)
     end subroutine update_process_parameters
 
     subroutine update_wasteload(connection)
@@ -101,6 +101,6 @@ contains
             waste_load%set_factor = 1.0
         end if
 
-        waste_load%set_factor(connection%substance_index) = connection%p_value
+        waste_load%set_factor(connection%substance_index) = connection%p_value(1)
     end subroutine update_wasteload
 end module m_waq_external_access_layer_utils

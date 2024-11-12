@@ -42,8 +42,9 @@ module m_connection_data
         character(:), allocatable :: subst_name    !< Name of the substance
 
         ! data reference
-        integer(kind=int_wp) :: buffer_idx  !< Index into the RBUF array
-        real(kind=dp), pointer :: p_value   !< Copy of the value received/sent by DELWAQ - must be a pointer!
+        integer(kind=int_wp) :: buffer_idx         !< Index into the RBUF array
+        integer(kind=int_wp) :: stride = 1         !< Stride for extracting from/inserting into the RBUF array
+        real(kind=dp), pointer :: p_value(:)       !< Copy of the value(s) received/sent by DELWAQ - must be a pointer!
     end type
 
 end module m_connection_data
