@@ -1075,7 +1075,8 @@ contains
 
       call setcornertolinkorientations()
 
-      call setlinktocornerweights()
+    call allocate_linktocornerweights()
+    call set_linktocornerweights()
 
       do n = ndx2D + 1, ndxi
          call allocateandset1Dnodexyarrays(n) ! na  csu en snu

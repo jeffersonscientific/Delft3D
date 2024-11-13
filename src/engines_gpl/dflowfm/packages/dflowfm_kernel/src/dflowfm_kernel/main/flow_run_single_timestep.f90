@@ -115,8 +115,9 @@ contains
       return ! Return with success
 
    if (ja_Perot_weight_update == 1) then
+      call set_linktocornerweights()
       call set_linktocenterweights()
-   end if    
+   end if
 
    return ! Return with success
 888   continue

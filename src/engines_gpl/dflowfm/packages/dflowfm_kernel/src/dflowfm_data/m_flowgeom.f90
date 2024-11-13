@@ -160,6 +160,9 @@ module m_flowgeom
    real(kind=dp), allocatable :: wcnx4(:) !< link weights (lnx) for corner velocities k4
    real(kind=dp), allocatable :: wcny4(:) !< link weights (lnx) for corner velocities k4
 
+   double precision, dimension(:, :), allocatable :: wcnxy ! corner weight factors (2,numk) , only for normalising
+   integer, dimension(:), allocatable :: jacorner ! corner node (1) or not (0), dim(numk)
+   
    double precision, allocatable :: wwL(:) !< wall contribution to link weights wcl
    double precision, allocatable :: wcxy(:, :) !< center weight factors (2,ndx) , only for normalising
    double precision, allocatable :: wc(:) !< center weight factors (ndx)   , only for normalising
