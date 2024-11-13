@@ -16,7 +16,7 @@ object Windows : BuildType({
     name = "Windows"
     buildNumberPattern = "%dep.${Trigger.id}.build.revisions.short%"
 
-    val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
+    val filePath = "${DslContext.baseDir}/vars/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
     val windowsLines = lines.filter { line -> line.contains("win64")}
     val configs = windowsLines.map { line ->

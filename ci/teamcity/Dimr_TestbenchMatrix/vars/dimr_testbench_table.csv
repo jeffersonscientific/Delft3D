@@ -30,8 +30,8 @@ fm dwaves,dimr_dflowfm_dwaves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,F
 fm dwaves tutorial,dimr_dflowfm_dwaves_tutorial_course_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves,dimr_dflowfm_dwaves_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm full-scale,dimr_dflowfm_full_scale_models_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm hyd,dimr_dflowfm_hyd_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm hyd,dimr_dflowfm_hyd_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm hyd,dimr_dflowfm_hyd_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
+fm hyd,dimr_dflowfm_hyd_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,
 fm lim-waves,dimr_dflowfm_lim_waves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
 fm lim-waves,dimr_dflowfm_lim_waves_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
 fm parallel,dimr_dflowfm_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,

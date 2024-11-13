@@ -18,7 +18,7 @@ object Trigger : BuildType({
     }
 
     params {
-        param("testbench_table", "ci/teamcity/Dimr_TestbenchMatrix/dimr_testbench_table.csv")
+        param("testbench_table", "ci/teamcity/Dimr_TestbenchMatrix/vars/dimr_testbench_table.csv")
     
         param("teamcity_user", "svc_dimr_trigger")
         password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
@@ -66,6 +66,8 @@ object Trigger : BuildType({
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
                 doesNotEqual("branch_name", "none")
+                doesNotEqual("branch_name", "qp")
+                doesNotEqual("branch_name", "d3d4")
             }
 
             scriptContent = """
@@ -102,6 +104,8 @@ object Trigger : BuildType({
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
                 doesNotEqual("branch_name", "none")
+                doesNotEqual("branch_name", "qp")
+                doesNotEqual("branch_name", "d3d4")
             }
             
             scriptContent = """
