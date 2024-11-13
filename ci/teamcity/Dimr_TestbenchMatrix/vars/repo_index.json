@@ -40,5 +40,11 @@
         "src/engines_gpl/wave/*",
         "test/deltares_testbench/configs/dimr/dimr_*wave*.xml",
         "test/deltares_testbench/configs/include/dimr_*wave*.xml"
+    ],
+    "qp":[
+        "src/tools_lgpl/matlab/quickplot/*"
+    ],
+    "tc":[
+        "test/deltares_testbench/*"
     ]
 }

@@ -88,7 +88,7 @@ if __name__ == "__main__":
     changes = api.get_file_changes(merge_branch, token)
 
     indexer = FolderIndex()
-    component = indexer.get_scope("ci/teamcity/Dimr_TestbenchMatrix/repo_index.json", changes)
+    component = indexer.get_scope("ci/teamcity/Dimr_TestbenchMatrix/vars/repo_index.json", changes)
 
     changes_string = "\n".join(indexer.changes_with_component)
     print(f"Determined scope: {component}\n----------- CHANGES -----------\n{changes_string}")
