@@ -37,5 +37,6 @@ create_test(
         test_set_connection_data_segment_with_index
         test_set_connection_data_observation_with_index
         test_set_connection_data_for_constant
+        test_set_connection_data_for_spatial_parameter
         test_set_connection_data_hydrodynamics
 )

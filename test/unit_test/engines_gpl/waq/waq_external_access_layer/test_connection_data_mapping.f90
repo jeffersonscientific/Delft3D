@@ -69,9 +69,9 @@ program tests_connection_data_mapping
         case ('test_set_connection_data_for_constant')
             write (*, *) "Running "//cmd_arg
             call runtests(call_test_set_connection_data_for_constant)
-        case ('test_set_connection_data_for_spatial_constant')
+        case ('test_set_connection_data_for_spatial_parameter')
             write (*, *) "Running "//cmd_arg
-            call runtests(call_test_set_connection_data_for_spatial_constant)
+            call runtests(call_test_set_connection_data_for_spatial_parameter)
         case ('test_set_connection_data_hydrodynamics')
             write (*, *) "Running "//cmd_arg
             call runtests(call_test_set_connection_data_hydrodynamics)
@@ -84,7 +84,7 @@ program tests_connection_data_mapping
         call runtests(call_test_set_connection_data_segment_with_index)
         call runtests(call_test_set_connection_data_observation_with_index)
         call runtests(call_test_set_connection_data_for_constant)
-        call runtests(call_test_set_connection_data_for_spatial_constant)
+        call runtests(call_test_set_connection_data_for_spatial_parameter)
         call runtests(call_test_set_connection_data_hydrodynamics)
     end if
 
@@ -129,8 +129,8 @@ contains
         call test(test_set_connection_data_for_constant, 'Test setting data for a constant connection')
     end subroutine
 
-    subroutine call_test_set_connection_data_for_spatial_constant
-        call test(test_set_connection_data_for_spatial_constant, 'Test setting data for a spatial constant connection')
+    subroutine call_test_set_connection_data_for_spatial_parameter
+        call test(test_set_connection_data_for_spatial_parameter, 'Test setting data for a spatial constant connection')
     end subroutine
 
     subroutine call_test_set_connection_data_hydrodynamics
@@ -294,7 +294,7 @@ contains
 
     end subroutine
 
-    subroutine test_set_connection_data_for_spatial_constant()
+    subroutine test_set_connection_data_for_spatial_parameter()
         use m_real_array_indices, only: icons, iparm
         use m_waq_memory_dimensions, only: num_spatial_parameters, num_cells, num_cells_bottom
         use delwaq2_global_data, only: procparam_const, procparam_param
@@ -318,13 +318,13 @@ contains
         call set_connection_data(new_connection)
 
         ! assert
-        ! We select the second parameter (spatial constant), so the start index buffer_idx should read
+        ! We select the second spatial parameter, so the start index buffer_idx should read
         ! iparm - 1 + 2
         call assert_equal(new_connection%data_index, 2,                      'connection data_index should be correct')
         call assert_equal(new_connection%buffer_idx, iparm+1,                'connection buffer_idx should be correct')
         call assert_equal(new_connection%stride,     num_spatial_parameters, 'connection stride should be correct')
 
-    end subroutine test_set_connection_data_for_spatial_constant
+    end subroutine test_set_connection_data_for_spatial_parameter
 
     subroutine test_set_connection_data_hydrodynamics()
         use m_real_array_indices, only: ivol, iflow, iarea

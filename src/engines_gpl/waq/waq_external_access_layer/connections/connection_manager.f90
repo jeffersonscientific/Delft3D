@@ -85,6 +85,7 @@ contains
 
         do i = 1, size(this%connections)
             connection => this%connections(i)
+            write(88,*) i, connection%category, connection%incoming, connection%buffer_idx, size(connection%p_value)
             if (connection%category == category_type .and. connection%incoming) then
                 new_wrapper = connection_wrapper(connection)
                 found_connections = [found_connections, new_wrapper]
@@ -101,6 +102,8 @@ contains
         if (.not. allocated(this%connections)) then
             allocate (this%connections(0))
         end if
+
+        write(88,*) 'Added', connection%category, connection%incoming, connection%buffer_idx, size(connection%p_value)
 
         this%connections = [this%connections, connection]
         new_connection => this%connections(size(this%connections))

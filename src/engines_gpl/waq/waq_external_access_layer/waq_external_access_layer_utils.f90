@@ -72,14 +72,39 @@ contains
         do i = 1, size(category_connections)
             call update_process_parameters(category_connections(i)%connection_ptr)
         end do
+
+        ! Handle hydrodynamic data
+        category_connections = data_manager%get_incoming_connections_by_category(category_hydrodynamics)
+        do i = 1, size(category_connections)
+            call update_hydrodynamic_data(category_connections(i)%connection_ptr)
+        end do
     end subroutine update_from_incoming_data
 
     subroutine update_process_parameters(connection)
         use delwaq2_global_data
         type(connection_data), intent(in) :: connection !< Connection to update
+        integer                           :: first_index, last_index
 
-        dlwqd%buffer%rbuf(connection%buffer_idx) = connection%p_value(1)
+        if ( size(connection%p_value) == 1 ) then
+            dlwqd%buffer%rbuf(connection%buffer_idx) = connection%p_value(1)
+        else
+            first_index = connection%buffer_idx
+            last_index  = connection%buffer_idx - 1 + size(connection%p_value)
+            dlwqd%buffer%rbuf(first_index:last_index) = connection%p_value
+        endif
     end subroutine update_process_parameters
+
+    subroutine update_hydrodynamic_data(connection)
+        use delwaq2_global_data
+        type(connection_data), intent(in) :: connection !< Connection to update
+        integer                           :: first_index, last_index
+
+        first_index = connection%buffer_idx
+        last_index  = connection%buffer_idx - 1 + size(connection%p_value)
+        dlwqd%buffer%rbuf(first_index:last_index) = connection%p_value
+        write(88,*) '>>', first_index, last_index, dlwqd%buffer%rbuf(first_index:last_index:10)
+        write(88,*) '>>', connection%p_value(1:10)
+    end subroutine update_hydrodynamic_data
 
     subroutine update_wasteload(connection)
         use delwaq_loads, only: wasteloads, wasteload

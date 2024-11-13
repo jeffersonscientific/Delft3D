@@ -66,6 +66,8 @@ contains
 
         integer(kind=int_wp) :: num_values
 
+        write(88,*) 'HYD:', ivol, iflow, iarea
+
         ! The substance/parameter may be "VOLUME", "AREA" or "FLOW"
         if (string_equals(connection%subst_name, 'VOLUME')) then
             connection%substance_index = 1
@@ -79,10 +81,6 @@ contains
             connection%substance_index = 3
             connection%buffer_idx      = iarea
             num_values                 = num_exchanges
-        end if
-
-        if (connection%incoming) then
-            connection%buffer_idx = connection%data_index
         end if
 
         allocate (connection%p_value(num_values))
