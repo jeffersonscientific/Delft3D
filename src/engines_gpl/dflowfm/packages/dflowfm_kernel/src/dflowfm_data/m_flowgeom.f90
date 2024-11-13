@@ -93,6 +93,7 @@ module m_flowgeom
    type(tnode), allocatable :: nd(:) !< (ndx) flow node administration
    integer, allocatable, target :: kcs(:) !< node code permanent
    integer, allocatable, target :: kfs(:) !< [-] node code flooding {"shape": ["ndx"]}
+   integer, allocatable, target :: kfs_cutcell(:) !< [-] cutcell flag {"shape": ["ndx"]}
 
    real(kind=dp), allocatable, target :: bare(:) !< [m2] bottom area, for rain and evaporaton {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable :: bai(:) !< inv bottom area (m2), if < 0 use table in node type

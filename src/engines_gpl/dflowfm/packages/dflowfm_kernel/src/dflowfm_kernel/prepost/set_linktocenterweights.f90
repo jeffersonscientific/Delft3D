@@ -32,6 +32,13 @@
 module m_setlinktocenterweights
 
    implicit none
+    use m_flow
+    use m_netw
+    use m_flowgeom
+    use m_sferic
+    use m_longculverts
+    use m_flowparameters, only: ja_Perot_weight_update
+    implicit none
 
     double precision :: wud, wuL1, wuL2, cs, sn
     integer :: L, n, kk, n12, lnxmax
@@ -246,8 +253,13 @@ contains
 
       end do
 
-      deallocate (wcxy, wc)
-      if (allocated(wwL)) deallocate (wwL)
+    if (ja_Perot_weight_update == 0) then 
+       deallocate (wcxy)
+       deallocate (wc)
+       if (allocated(wwL)) then 
+          deallocate (wwL)
+       end if 
+    end if 
 
       kfs = 0
 
