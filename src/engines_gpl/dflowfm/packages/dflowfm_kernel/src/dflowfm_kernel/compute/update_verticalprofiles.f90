@@ -44,6 +44,8 @@ subroutine update_verticalprofiles()
 !c         Programmer: R.E. Uittenbogaard
 !c************************************************************************
 
+   use m_getustbcfuhi
+   use m_doaddksources, only: doaddksources
    use m_flow
    use m_flowgeom
    use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep

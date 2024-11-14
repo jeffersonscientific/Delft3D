@@ -51,6 +51,8 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
    use m_get_kbot_ktop
    use m_get_Lbot_Ltop
    use m_get_cz
+   use m_horvic
+   use m_horvic3
 
    implicit none
 
@@ -69,9 +71,6 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
    double precision, allocatable :: u1_tmp(:), vluban(:)
 
    integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
-
-   double precision :: horvic ! external
-   double precision :: horvic3 ! external
 
    double precision :: DRL, nuhroller
 

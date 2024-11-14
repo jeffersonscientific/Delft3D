@@ -728,6 +728,7 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_map_his_precision
       use m_qnerror
+      use m_densfm, only: densfm
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -744,7 +745,6 @@ contains
       integer :: jadum
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
-      real(kind=dp), external :: densfm
       real(kind=dp) :: tim
       real(kind=dp) :: sumlaycof
       real(kind=dp), parameter :: tolSumLay = 1d-12

@@ -31,6 +31,7 @@
 !
 
  subroutine setgrainsizes() ! for all fractions:
+    use m_fdster
     use M_SEDIMENT
     use m_physcoef, only: ag, rhomean, backgroundwatertemperature, vismol
     use MessageHandling

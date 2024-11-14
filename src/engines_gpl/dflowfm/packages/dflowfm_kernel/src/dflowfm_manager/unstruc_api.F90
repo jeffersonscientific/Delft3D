@@ -30,6 +30,8 @@
 !
 !
 module unstruc_api
+   use m_write_some_final_output, only: write_some_final_output
+   use m_writecdcoeffs, only: writeCdcoeffs
    use m_plotnu
    use m_choices
    use m_flowtimes

@@ -30,6 +30,13 @@
 !
 !
 module m_flow_flowinit
+   use m_furusobekstructures
+   use m_filter
+   use m_adjust_bobs_for_dams_and_structs, only: adjust_bobs_for_dams_and_structs
+   use m_addlink1d, only: addlink1D
+   use m_a1vol1tot, only: a1vol1tot
+   use m_rearst, only: rearst
+   use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
    use m_inidensconstants
    use m_alloc_jacobi

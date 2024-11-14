@@ -31,6 +31,13 @@
 !
 
  subroutine VOL12D(japerim) ! and add area's and volumes of 1D and 2D links, japerim=1: also set conveyance
+    use m_addship2d, only: addship2D
+    use m_addlink2d, only: addlink2D
+    use m_addlink1dkcu3, only: addlink1Dkcu3
+    use m_addlink1d2dinternal, only: addlink1D2Dinternal
+    use m_addlink1d2d, only: addlink1D2D
+    use m_addlink1d, only: addlink1D
+    use m_addclosed_2d_walls, only: addclosed_2D_walls
     use m_flowgeom
     use unstruc_channel_flow
     use m_oned_functions

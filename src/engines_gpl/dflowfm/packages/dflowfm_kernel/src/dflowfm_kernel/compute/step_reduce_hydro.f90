@@ -31,6 +31,8 @@
 !
 
  subroutine step_reduce_hydro(key) ! do a flow timestep dts guus, reduce once, then elimin conjugate grad substi
+    use m_poshcheck
+    use m_furu
     use m_flow ! when entering this subroutine, s1=s0, u1=u0, etc
     use m_flowgeom
     use Timers

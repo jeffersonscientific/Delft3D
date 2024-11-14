@@ -67,7 +67,7 @@
       use m_flowgeom
       use m_alloc
       use m_solver
-      use m_advec
+      use m_advec_data
       use m_writematrix
       use m_saadf, only: amub
       implicit none

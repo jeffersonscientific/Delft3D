@@ -30,7 +30,19 @@
 !
 !
 !< Intialise flow timestep, also called once after flowinit.
+module m_flow_initimestep
+use m_makeq1qaatstart
+use m_pillar_upd
+use m_heatu
+
+
+implicit none
+
+contains
+
  subroutine flow_initimestep(jazws0, set_hu, use_u1, iresult)
+    use m_bathyupdate, only: bathyupdate
+    use m_advecdriver, only: advecdriver
     use timers
     use m_flowtimes
     use m_flow
@@ -209,3 +221,5 @@
 888 continue
     ! Error
  end subroutine flow_initimestep
+
+end module m_flow_initimestep

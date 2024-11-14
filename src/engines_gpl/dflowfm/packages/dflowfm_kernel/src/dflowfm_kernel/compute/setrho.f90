@@ -69,6 +69,7 @@ double precision function setrho(cell, p0)
    use m_transport
    use m_turbulence, only: rhowat
    use unstruc_messages, only: mess, LEVEL_ERROR
+   use m_densfm, only: densfm
 
    implicit none
 
@@ -78,7 +79,6 @@ double precision function setrho(cell, p0)
    double precision, parameter :: rhom_min = 990d0 !< lower limit of rhom [kg/m3]
    double precision, parameter :: rhom_max = 1250d0 !< upper limit of rhom [kg/m3]
    integer :: i
-   double precision, external :: densfm
    double precision :: sal, temp, p1, dzz
 
    call getsaltemk(cell, sal, temp)
@@ -104,13 +104,12 @@ double precision function setrho(cell, p0)
 end function setrho
 
 double precision function setrhofixedp(k, p0)
+   use m_densfm, only: densfm
 
    implicit none
 
    integer, intent(in) :: k !< cell number
    double precision, intent(in) :: p0 !< some given pressure
-
-   double precision, external :: densfm
 
    double precision :: sal, temp
 

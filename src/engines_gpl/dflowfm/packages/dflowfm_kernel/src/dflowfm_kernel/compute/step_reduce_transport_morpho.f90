@@ -31,6 +31,7 @@
 !
 
  subroutine step_reduce_transport_morpho()
+    use m_equili_spiralintensity
     use m_flow
     use m_flowgeom
     use m_sediment, only: stm_included

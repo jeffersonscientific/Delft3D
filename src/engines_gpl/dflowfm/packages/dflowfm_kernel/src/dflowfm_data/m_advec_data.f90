@@ -30,7 +30,7 @@
 !
 !
 
-module m_advec
+module m_advec_data
    use m_solver
 
    integer :: jaoutput = 1 !< output matrices to file (1) or not (0)
@@ -51,4 +51,4 @@ module m_advec
    integer, dimension(:), allocatable :: iwork
 
    double precision, dimension(:, :), allocatable :: dfluxfac !< flux(L) = dfluxfac(1,L) * something(ln(1,L)) + dfluxfac(2,L) * something(ln(2,L)), positive from ln(1,L) to ln(2,L)
-end module
+end module m_advec_data
