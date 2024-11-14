@@ -30,6 +30,16 @@
 !
 !
 
+module m_writecdcoeffs
+
+implicit none
+
+private
+
+public :: writeCdcoeffs
+
+contains
+
  subroutine writeCdcoeffs()
     use unstruc_model
     use m_wind
@@ -156,3 +166,5 @@
     end if
 
  end subroutine writeCdcoeffs
+
+end module m_writecdcoeffs

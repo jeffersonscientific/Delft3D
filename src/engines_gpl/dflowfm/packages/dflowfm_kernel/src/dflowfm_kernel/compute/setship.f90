@@ -31,6 +31,9 @@
 !
 
  subroutine setship()
+    use m_afhouwendammit, only: afhouwendammit
+    use m_addship2d, only: addship2D
+    use m_readshipdef, only: readshipdef
     use m_getshipcontrol
     use m_netw
     use m_flowgeom

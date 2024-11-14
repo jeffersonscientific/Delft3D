@@ -30,6 +30,19 @@
 !
 !
 
+module m_advec
+use m_getucxucyweironly
+use m_getucxucynoweirs
+use m_getucxucybarrierzero
+
+implicit none
+
+private
+
+public :: advec
+
+contains
+
  subroutine advec() ! advection, based on u0, q0 24
     use m_flowtimes
     use m_flowgeom
@@ -1190,3 +1203,5 @@
     end if
 
  end subroutine advec
+
+end module m_advec

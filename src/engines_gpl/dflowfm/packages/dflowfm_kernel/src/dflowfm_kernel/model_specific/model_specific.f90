@@ -424,6 +424,8 @@ subroutine riverfloodwave()
 end subroutine riverfloodwave
 
 subroutine weirtheo(j12)
+   use m_findqorifice12
+   use m_findqorifice
    use m_ictext
    use time_module, only: seconds_to_datetimestring
    use m_flow
@@ -635,6 +637,7 @@ subroutine weirtheo(j12)
 end subroutine weirtheo
 
 subroutine gatetheo()
+   use m_findqorifice
    use m_ictext
    use m_flowgeom
    use m_flow

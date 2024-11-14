@@ -31,6 +31,8 @@
 !
 
 module m_reabnd2pol
+use m_writeset, only: writeset
+use m_readset, only: readset
 
 implicit none
 

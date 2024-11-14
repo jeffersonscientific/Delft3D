@@ -31,6 +31,7 @@
 !
 
 subroutine yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, cfhi)
+   use m_getseg1d
    use m_profiles
    use m_physcoef, only: ag
    implicit none

@@ -30,6 +30,16 @@
 !
 !
 
+module m_write_some_final_output
+
+implicit none
+
+private
+
+public :: write_some_final_output
+
+contains
+
  subroutine write_some_final_output()
     use timers
     use m_flow
@@ -46,6 +56,7 @@
     use m_transport, only: maserrsed
     use mass_balance_areas_routines, only: mba_final
     use m_datum, only: datum
+    use m_write_timestep_limiting_cells, only: write_timestep_limiting_cells
 #ifdef _OPENMP
     use omp_lib
 #endif
@@ -250,3 +261,5 @@
 
     call timstrt('All', handle_all)
  end subroutine write_some_final_output
+
+end module m_write_some_final_output

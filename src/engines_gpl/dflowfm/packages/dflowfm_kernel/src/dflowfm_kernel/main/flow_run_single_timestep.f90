@@ -32,6 +32,7 @@
 
 !> Performs a single computational timestep, but not the init and finalize of the timestep.
 subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
+   use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
    use m_flow
    use timers
    use m_flowgeom

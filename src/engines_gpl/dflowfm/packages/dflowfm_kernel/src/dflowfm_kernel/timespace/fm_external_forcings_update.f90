@@ -57,7 +57,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    logical :: l_set_frcu_mor = .false.
    logical :: first_time_wind
 
-   logical, external :: flow_initwaveforcings_runtime, flow_trachy_needs_update
+   logical, external :: flow_initwaveforcings_runtime
    character(len=255) :: tmpstr
    type(c_time) :: ecTime !< Time in EC-module
 
@@ -68,6 +68,9 @@ contains
 
    !> set field oriented boundary conditions
    module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+      use m_heatu
+      use m_flow_trachyupdate
+      use m_flow_trachy_needs_update
       use m_set_frcu_mor
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       double precision, intent(in) :: time_in_seconds !< Time in seconds

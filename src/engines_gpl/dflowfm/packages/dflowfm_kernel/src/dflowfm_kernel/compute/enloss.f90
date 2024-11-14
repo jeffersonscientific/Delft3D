@@ -27,6 +27,12 @@
 !
 !-------------------------------------------------------------------------------
 
+module m_enloss
+
+implicit none
+
+contains
+
 subroutine enloss(ag, d1, eweir, hkruin, &
                 & qunit, qvolk, toest, vov, &
                 & ewben, wsbov, wsben, dte, &
@@ -274,3 +280,5 @@ subroutine enloss(ag, d1, eweir, hkruin, &
 !       write(88,'(2a,10f8.4)')  'Villemonte  ', toest, dteonv, qweir, qunit, qvolkvil, q2rat, p
 !    endif
 end subroutine enloss
+
+end module m_enloss

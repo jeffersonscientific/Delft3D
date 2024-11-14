@@ -35,6 +35,7 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+   use m_write_some_final_output, only: write_some_final_output
    use iso_c_binding
    use unstruc_api
    use m_gui ! this should be removed when jaGUI = 0 by default

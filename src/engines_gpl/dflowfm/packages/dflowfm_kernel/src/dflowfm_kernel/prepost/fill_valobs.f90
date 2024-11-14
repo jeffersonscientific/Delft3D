@@ -32,6 +32,7 @@
 
 ! fill observation stations array
 subroutine fill_valobs()
+   use m_linkstocentercartcomp
    use m_flow
    use m_flowtimes
    use m_transport

@@ -39,7 +39,7 @@
     use m_missing
     use m_waves
     use m_sferic
-    use m_filter, only: ustar, itype
+    use m_filter_data, only: ustar, itype
     implicit none
     integer :: Lb, Lt, kxL, LL
     double precision :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1), dzv(kmxx)

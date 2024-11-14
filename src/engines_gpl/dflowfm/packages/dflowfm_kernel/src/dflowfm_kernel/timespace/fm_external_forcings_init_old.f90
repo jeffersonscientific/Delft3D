@@ -37,6 +37,7 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
 
+      use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_inquire_flowgeom, only: IFLTP_1D, IFLTP_ALL

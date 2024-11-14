@@ -30,7 +30,19 @@
 !
 !
 
+module m_furu
+use m_getustbcfuhi
+use m_furu_structures
+use m_furusobekstructures
+
+
+implicit none
+
+contains
+
  subroutine furu() ! set fu, ru and kfs
+    use m_fixedweirfriction2d
+    use m_filter
     use m_flow ! substitue u1 and q1
     use m_flowgeom
     use timers
@@ -46,6 +58,7 @@
     use m_flowparameters, only: ifixedWeirScheme1d2d
     use fm_manhole_losses, only: calculate_manhole_losses
     use m_get_Lbot_Ltop
+    use m_ispumpon
 
     implicit none
 
@@ -66,7 +79,6 @@
 
     integer :: jaustarintsave
     double precision :: sqcfi
-    integer :: ispumpon
 
     fsqrtt = sqrt(0.5d0)
     call timstrt('Furu', handle_furu)
@@ -400,3 +412,5 @@
 
  end subroutine furu
 
+
+end module m_furu

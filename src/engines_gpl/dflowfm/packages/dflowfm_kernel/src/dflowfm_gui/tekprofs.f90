@@ -70,7 +70,7 @@ contains
      double precision :: h0, b0, z00, zinc, cz, ustbref, ustwref, zint, z1, dz2, zz
      double precision :: tkebot, tkesur, tkewin
      double precision :: epsbot, epssur, dzkap, sqcf, ulx, sg, drhodz, rhomea, rhop0, prsappr
-     double precision, external :: densfm, setrhofixedp
+     double precision, external :: setrhofixedp
      double precision :: VMAX2, VMIN2
      integer :: is, Ls, LLs, Lbs, Lts
      integer :: jabruv

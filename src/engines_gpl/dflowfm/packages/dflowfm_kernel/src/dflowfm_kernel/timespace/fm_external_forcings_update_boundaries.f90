@@ -35,6 +35,7 @@ contains
 
 !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
+      use m_fm_thahbc
       use timers
       use m_flowtimes
       use m_flowgeom
