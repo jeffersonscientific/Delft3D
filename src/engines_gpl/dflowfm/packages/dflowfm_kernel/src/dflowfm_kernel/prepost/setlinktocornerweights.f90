@@ -39,7 +39,7 @@
     use m_sferic, only: jsferic, jasfer3D
     use m_missing, only: dmiss, dxymis
     use gridoperations
-    
+
     implicit none
 
     double precision :: ax, ay, wuL, wud, csa, sna
@@ -186,8 +186,8 @@
           nrcnw = nrcnw + 1 ! cnw = cornerwall point (netnode)
        end if
     end do
-    
-    if (nrcnw > size(kcnw)) then 
+
+    if (nrcnw > size(kcnw)) then
        if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
        allocate (cscnw(nrcnw), stat=ierr); 
        call aerr('cscnw(nrcnw)', ierr, nrcnw)
@@ -199,7 +199,7 @@
        call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
        allocate (sfcnw(nrcnw), stat=ierr); 
        call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
-    endif 
+    end if
 
     cscnw = 0
     sncnw = 0
@@ -242,9 +242,9 @@
 
     end do
 
-    if (ja_Perot_weight_update == 0) then 
-       deallocate (wcnxy, acn, jacorner)    
-    end if 
+    if (ja_Perot_weight_update == 0) then
+       deallocate (wcnxy, acn, jacorner)
+    end if
 
  end subroutine set_linktocornerweights
 
@@ -252,7 +252,7 @@
     use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
     use m_netw, only: numk
     use m_alloc
-    
+
     implicit none
 
     integer ierr
@@ -261,17 +261,17 @@
     if (allocated(wcnxy)) deallocate (wcnxy)
     allocate (wcnx3(lnx), stat=ierr); 
     call aerr('wcnx3(lnx) ', ierr, lnx)
-    allocate (wcny3(lnx), stat=ierr);     
+    allocate (wcny3(lnx), stat=ierr); 
     call aerr('wcny3(lnx) ', ierr, lnx)
-    allocate (wcnx4(lnx), stat=ierr);
+    allocate (wcnx4(lnx), stat=ierr); 
     call aerr('wcnx4(lnx) ', ierr, lnx)
     allocate (wcny4(lnx), stat=ierr); 
     call aerr('wcny4(lnx) ', ierr, lnx)
     if (allocated(wcLn)) deallocate (wcLn)
-    allocate (wcLn(2, lnx), stat=ierr);
+    allocate (wcLn(2, lnx), stat=ierr); 
     call aerr('wcLn(2,lnx)', ierr, lnx)
     allocate (wcnxy(3, numk), stat=ierr); 
-    call aerr('wcnxy(3,numk)', ierr, 3 * numk)    
+    call aerr('wcnxy(3,numk)', ierr, 3 * numk)
     allocate (jacorner(numk), stat=ierr)
     call aerr('jacorner(numk)', ierr, numk)
 
@@ -286,6 +286,5 @@
     call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
     allocate (sfcnw(nrcnw), stat=ierr); 
     call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
-    
+
  end subroutine allocate_linktocornerweights
-    
