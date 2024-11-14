@@ -1456,7 +1456,6 @@
                                         HisParExt(IEXT) (1:Len_trim(HisParExt(Iext))), &
                                         HisLocExt(IEXT) (1:Len_trim(HisLocExt(Iext))), &
                                         HisDataSet(iext,1), HisDataSetFile(HisDataSet(iext,1))
-&
         ENDDO
       ENDIF
 
