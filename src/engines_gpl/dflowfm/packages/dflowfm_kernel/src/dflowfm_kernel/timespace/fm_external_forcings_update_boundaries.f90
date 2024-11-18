@@ -35,6 +35,8 @@ contains
 
 !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
+      use m_update_dambreak_breach, only: update_dambreak_breach
+      use m_setsigmabnds, only: setsigmabnds
       use m_fm_thahbc
       use timers
       use m_flowtimes

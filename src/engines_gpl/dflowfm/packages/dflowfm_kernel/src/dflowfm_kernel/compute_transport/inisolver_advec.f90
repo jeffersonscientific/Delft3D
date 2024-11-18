@@ -63,6 +63,18 @@
 !> initialize matrix for first-order upwind discretization of advection
 !>   Cartesian cell-centered vector components are numbered as
 !>      ( ucx_1, ucy_1, ucx_2, ucy_2, ..., ...)
+module m_inisolver_advec
+use m_solversettings, only: solversettings
+
+
+implicit none
+
+private
+
+public :: inisolver_advec
+
+contains
+
    subroutine inisolver_advec(ierror)
       use m_flowgeom
       use m_alloc
@@ -312,3 +324,5 @@
 
       return
    end subroutine inisolver_advec
+
+end module m_inisolver_advec

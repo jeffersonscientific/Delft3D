@@ -30,6 +30,8 @@
 ! filter
 
 module m_filter
+use m_solversettings, only: solversettings
+
 
 implicit none
 

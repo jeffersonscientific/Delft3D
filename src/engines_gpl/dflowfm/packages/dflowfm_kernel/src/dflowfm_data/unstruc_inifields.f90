@@ -36,6 +36,8 @@
 !! frictioncoefficient, etc.
 module unstruc_inifields
 
+   use m_add_tracer, only: add_tracer
+   use m_setzcs, only: setzcs
    use unstruc_messages
    use properties
    use string_module, only: str_lower, strcmpi

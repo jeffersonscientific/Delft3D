@@ -30,14 +30,24 @@
 !
 !
 
-subroutine setrhokk(kk) ! fill rho of one column
+module m_setrho
+
+implicit none
+
+private
+
+public :: setrho, setrhofixedp, setrhokk
+
+contains
+
+!> fill rho of one column
+subroutine setrhokk(kk) 
    use m_flow, only: rho, density_is_pressure_dependent, kmxn
    use m_get_kbot_ktop
-   implicit none
+
    integer :: kk
    integer :: kb, kt, k
 
-   double precision, external :: setrho
    double precision :: p0
 
    call getkbotktop(kk, kb, kt)
@@ -193,3 +203,5 @@ subroutine add_sediment_effect_to_density(rho, cell)
 
    end if
 end subroutine add_sediment_effect_to_density
+
+end module m_setrho

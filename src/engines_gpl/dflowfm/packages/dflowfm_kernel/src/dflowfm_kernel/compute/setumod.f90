@@ -30,19 +30,30 @@
 !
 !
 
-subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
-   ! set Perot based friction velocities umod at u point
-   ! set tangential velocities at u point
-   ! set velocity gradient at u point
-   ! set corner based Perot velocities
-   use timers
+module m_setumod
+
+implicit none
+
+private
+
+public :: setumod
+
+contains
+
+!> set cell center Perot velocities at nodes
+!! set Perot based friction velocities umod at u point
+!! set tangential velocities at u point
+!! set velocity gradient at u point
+!! set corner based Perot velocities
+subroutine setumod(jazws0) 
+   use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
+   use m_setucxucyucxuucyu, only: setucxucyucxuucyu
+   use m_setcornervelocities, only: setcornervelocities
+   use timers, only: timstrt, timstop
    use m_flow
    use m_flowgeom
-   use m_flowtimes
+   use m_flowtimes, only: handle_umod, ja_timestep_auto_visc, dti
    use m_sferic
-   use m_wind
-   use m_ship
-   use m_missing
    use m_xbeach_data, only: DR, roller, swave, nuhfac
    use unstruc_model, only: md_restartfile
    use m_setucxcuy_leastsquare, only: reconst2nd
@@ -769,3 +780,5 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
    call timstop(handle_umod)
 
 end subroutine setumod
+
+end module m_setumod

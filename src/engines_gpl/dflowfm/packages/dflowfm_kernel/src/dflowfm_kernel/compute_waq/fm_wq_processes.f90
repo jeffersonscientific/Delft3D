@@ -1360,6 +1360,7 @@ end subroutine fm_wq_processes_step
 
 subroutine copy_data_from_fm_to_wq_processes(time)
    !  copy data from D-FlowFM to WAQ
+   use m_getfetch, only: getfetch
    use m_getkbotktopmax
    use m_flowgeom, only: Ndxi, ba
    use m_flow, only: vol1, ucx, ucy

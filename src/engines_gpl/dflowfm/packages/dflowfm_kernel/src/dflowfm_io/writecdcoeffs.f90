@@ -31,6 +31,8 @@
 !
 
 module m_writecdcoeffs
+use m_setcdwcoefficient, only: setcdwcoefficient
+
 
 implicit none
 

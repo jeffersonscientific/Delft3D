@@ -68,6 +68,8 @@ contains
 
    !> set field oriented boundary conditions
    module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+      use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
+      use m_update_pumps_with_levels, only: update_pumps_with_levels
       use m_heatu
       use m_flow_trachyupdate
       use m_flow_trachy_needs_update
@@ -337,7 +339,8 @@ contains
 !> set_wave_parameters
    subroutine set_wave_parameters(initialization)
       use ieee_arithmetic, only: ieee_is_nan
-
+      use m_compute_wave_parameters, only: compute_wave_parameters
+      
       logical, intent(in) :: initialization !< initialization phase
 
       logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary

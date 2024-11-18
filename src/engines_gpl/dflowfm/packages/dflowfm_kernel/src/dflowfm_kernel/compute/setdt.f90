@@ -30,6 +30,18 @@
 !
 !
 
+module m_setdt
+use m_fm_mor_maxtimestep, only: fm_mor_maxtimestep
+use m_setdtmaxavalan, only: setdtmaxavalan
+
+implicit none
+
+private
+
+public :: setdt
+
+contains
+
 subroutine setdt()
    use m_tekcflmx
    use m_partitioninfo
@@ -146,3 +158,5 @@ subroutine setdt()
    end if
 
 end subroutine setdt
+
+end module m_setdt

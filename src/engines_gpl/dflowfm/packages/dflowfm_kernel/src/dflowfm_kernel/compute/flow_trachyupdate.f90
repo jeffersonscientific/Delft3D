@@ -31,6 +31,8 @@
 !
 
 module m_flow_trachyupdate
+use m_setucxucy_mor, only: setucxucy_mor
+
 
 implicit none
 

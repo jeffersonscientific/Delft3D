@@ -85,6 +85,7 @@ contains
       use m_wricmps, only: wricmps
       use m_wrirstfileold, only: WRIRSTfileold
       use m_wriswan, only: WRIswan
+      use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
 
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr

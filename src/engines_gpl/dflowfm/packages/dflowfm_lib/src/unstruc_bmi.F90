@@ -35,6 +35,7 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+   use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
    use m_write_some_final_output, only: write_some_final_output
    use iso_c_binding
    use unstruc_api

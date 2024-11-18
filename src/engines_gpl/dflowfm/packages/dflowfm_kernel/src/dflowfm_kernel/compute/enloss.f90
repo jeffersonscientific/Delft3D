@@ -66,6 +66,7 @@ subroutine enloss(ag, d1, eweir, hkruin, &
 !!--declarations----------------------------------------------------------------
    use m_flowgeom
    use precision
+   use m_tabellenboek, only: tabellenboek
    implicit none
 !
 ! Global variables
@@ -99,7 +100,6 @@ subroutine enloss(ag, d1, eweir, hkruin, &
    real(fp) :: dtetab
    real(fp) :: dtevol
    real(fp) :: qqv
-   double precision :: tabellenboek
    real(fp) :: theta
    real(fp) :: vilcd(1:2) !! These parameters have to be read in
    real(fp) :: p, pref, qvolkvil, qweir, q2rat, cd0, cd0ref, sqfac, alfitp, re

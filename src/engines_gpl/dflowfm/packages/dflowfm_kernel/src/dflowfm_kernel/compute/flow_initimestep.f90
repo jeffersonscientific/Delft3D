@@ -29,8 +29,18 @@
 
 !
 !
-!< Intialise flow timestep, also called once after flowinit.
+!> Intialise flow timestep, also called once after flowinit.
 module m_flow_initimestep
+use m_compute_wave_parameters, only: compute_wave_parameters
+use m_compute_wave_forcing_rhs, only: compute_wave_forcing_rhs
+use m_fillsystem_advec, only: fillsystem_advec
+use m_setumod, only: setumod
+use m_settaubxu_nowave, only: settaubxu_nowave
+use m_setship, only: setship
+use m_setkfs, only: setkfs
+use m_setdt, only: setdt
+use m_setcfuhi, only: setcfuhi
+use m_setbaptist, only: setbaptist
 use m_makeq1qaatstart
 use m_pillar_upd
 use m_heatu

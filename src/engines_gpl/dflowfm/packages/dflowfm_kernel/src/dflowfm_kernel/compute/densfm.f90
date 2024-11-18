@@ -43,8 +43,10 @@ contains
 double precision function densfm(sal, temp, p0)
    use m_physcoef
    use m_flow
+   use m_rho_eckart, only: rho_eckart
+   use m_rho_unesco, only: rho_unesco
+   
    double precision :: sal, temp, p0
-   double precision, external :: rho_Eckart, rho_Unesco
 
    if (idensform == 0) then ! Uniform density
       densfm = rhomean

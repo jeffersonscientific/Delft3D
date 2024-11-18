@@ -28,6 +28,8 @@
 !-------------------------------------------------------------------------------
 
 module fm_external_forcings
+   use m_setwindstress, only: setwindstress
+   use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname
    implicit none

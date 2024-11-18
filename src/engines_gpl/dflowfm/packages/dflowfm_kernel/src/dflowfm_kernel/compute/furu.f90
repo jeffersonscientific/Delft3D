@@ -31,6 +31,7 @@
 !
 
 module m_furu
+use m_update_verticalprofiles, only: update_verticalprofiles
 use m_getustbcfuhi
 use m_furu_structures
 use m_furusobekstructures

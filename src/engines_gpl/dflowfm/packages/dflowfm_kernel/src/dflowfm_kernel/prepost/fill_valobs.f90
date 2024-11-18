@@ -57,6 +57,7 @@ subroutine fill_valobs()
    use m_get_ucx_ucy_eul_mag
    use m_get_link1
    use m_links_to_centers, only: links_to_centers
+   use m_setrho, only: setrhofixedp
 
    implicit none
 
@@ -69,7 +70,6 @@ subroutine fill_valobs()
    double precision, allocatable :: wa(:, :)
    double precision, allocatable :: frac(:, :)
    double precision, allocatable :: poros(:)
-   double precision, external :: setrhofixedp
    double precision, allocatable :: ueux(:)
    double precision, allocatable :: ueuy(:)
    double precision, allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point

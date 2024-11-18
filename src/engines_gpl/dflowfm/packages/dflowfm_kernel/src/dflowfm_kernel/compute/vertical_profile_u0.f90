@@ -32,6 +32,16 @@
 
 ! =================================================================================================
 ! =================================================================================================
+module m_vertical_profile_u0
+
+implicit none
+
+private
+
+public :: vertical_profile_u0
+
+contains
+
  subroutine vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
     use m_flow
     use m_flowgeom
@@ -287,3 +297,5 @@
     end if
 
  end subroutine vertical_profile_u0
+
+end module m_vertical_profile_u0

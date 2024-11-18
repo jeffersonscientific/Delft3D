@@ -30,12 +30,11 @@
 !
 !
 module m_get_prof_1D
+use m_yzprofile, only: yzprofile
 use m_pipe
 
-   implicit none
+implicit none
 contains
-! =================================================================================================
-! =================================================================================================
 subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
    use m_flow
    use m_flowgeom

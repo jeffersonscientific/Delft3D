@@ -37,6 +37,8 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
 
+      use m_add_tracer, only: add_tracer
+      use m_setzcs, only: setzcs
       use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
@@ -1373,6 +1375,7 @@ contains
          initialize_lateraldata, apply_transport
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
+      use m_togeneral, only: togeneral
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 

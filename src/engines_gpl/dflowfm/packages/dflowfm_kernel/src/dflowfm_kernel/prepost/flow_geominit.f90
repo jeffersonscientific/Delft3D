@@ -31,6 +31,7 @@
 !
 
  subroutine flow_geominit(iphase) ! initialise flow geometry
+    use m_setisnbnodisnblin, only: setisnbnodisnblin
     use m_load1d2dlinkfile
     use m_allocateandset2dnodexyarrays
     use m_allocateandset1dnodexyarrays
