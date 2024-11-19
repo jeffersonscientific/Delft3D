@@ -1318,7 +1318,7 @@ end subroutine org_gettabledata_vector
 !
 !
 !===============================================================================
-subroutine org_gettabledata_scalar(this       ,itable     ,ipar       , &
+recursive subroutine org_gettabledata_scalar(this       ,itable     ,ipar       , &
                  & npar       ,irec       ,values     ,timhr      , &
                  & refjulday  ,errorstring,extrapol_in)
 !!--description-----------------------------------------------------------------
