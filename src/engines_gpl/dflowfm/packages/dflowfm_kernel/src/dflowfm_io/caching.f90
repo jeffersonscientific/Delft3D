@@ -340,6 +340,7 @@ contains
       !
       close (lun)
       cache_success = .true.
+      call mess(LEVEL_INFO, 'Succesfully read cache file: '//trim(file_name))
 
    end subroutine load_caching_file
 
