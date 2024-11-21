@@ -468,17 +468,7 @@ contains
         ! * item-name-or-number: name of the waste load and the like or segment number, could also be "*"
         ! * substance-or-parameter-name: name or "*"
 
-        con_data => connections%get_connection_by_exchange_name(key_given)
-        if (.not. associated(con_data)) then
-            new_con_data = parse_connection_string(key_given)
-
-            if (allocated(new_con_data)) then
-                call set_connection_data(new_con_data)
-
-                ! use added connection instance
-                con_data => connections%add_connection(new_con_data)
-            end if
-        end if
+        con_data => connections%get_or_create_connection(key_given)
 
         ! If the connection is outgoing, copy the current value into the pointer,
         ! else leave it to the update routine.
