@@ -25,6 +25,8 @@
 module m_connection_manager
     use m_waq_precision
     use m_connection_data
+    use m_connection_data_mapping
+    use m_connection_parser
 
     implicit none
 
@@ -33,7 +35,8 @@ module m_connection_manager
     type, public :: connection_manager
         type(connection_data), dimension(:), allocatable, private :: connections !< stored connections (use get_connections to access)
     contains
-        procedure, public :: get_connection_by_exchange_name, get_incoming_connections_by_category, add_connection
+        procedure, public :: get_connection_by_exchange_name, get_incoming_connections_by_category, add_connection, &
+                             get_or_create_connection
     end type
 
     type, public :: connection_wrapper
@@ -42,8 +45,8 @@ module m_connection_manager
 
 contains
 
-    !> Finds the connection that matches the with the provided key based on exchange name property
-    !! Result: Index into the connection array or 0 if not found
+    !> Finds the connection that matches the provided key based on exchange name property
+    !! Result: Pointer to the element in the connection array or null() if not found
     function get_connection_by_exchange_name(this, key_name) result(found_connection)
         class(connection_manager), intent(in), target :: this    !< instance of this connection_manager
         character(len=*), intent(in) :: key_name                 !< Connection key to find
@@ -67,6 +70,29 @@ contains
         end do
     end function get_connection_by_exchange_name
 
+    !> Finds the connection that matches the provided key based on exchange name property
+    !! or creates a new one.
+    !! Result: Pointer to the element in the connection array
+    function get_or_create_connection(this, key_name) result(found_connection)
+        class(connection_manager), target   :: this              !< instance of this connection_manager
+        character(len=*), intent(in)        :: key_name          !< Connection key to find
+        type(connection_data), pointer      :: found_connection  !< Connection matching the key
+        type(connection_data), allocatable  :: new_con_data
+
+        found_connection => this%get_connection_by_exchange_name(key_name)
+
+        if (.not. associated(found_connection)) then
+            new_con_data = parse_connection_string(key_name)
+
+            if (allocated(new_con_data)) then
+                call set_connection_data(new_con_data)
+
+                ! use added connection instance
+                found_connection => this%add_connection(new_con_data)
+            endif
+        end if
+    end function get_or_create_connection
+
     !> Finds the incoming connections that have the provided category_type
     function get_incoming_connections_by_category(this, category_type) result(found_connections)
         class(connection_manager), intent(in), target :: this   !< instance of this connection_manager
@@ -85,7 +111,6 @@ contains
 
         do i = 1, size(this%connections)
             connection => this%connections(i)
-            write(88,*) i, connection%category, connection%incoming, connection%buffer_idx, size(connection%p_value)
             if (connection%category == category_type .and. connection%incoming) then
                 new_wrapper = connection_wrapper(connection)
                 found_connections = [found_connections, new_wrapper]
@@ -102,8 +127,6 @@ contains
         if (.not. allocated(this%connections)) then
             allocate (this%connections(0))
         end if
-
-        write(88,*) 'Added', connection%category, connection%incoming, connection%buffer_idx, size(connection%p_value)
 
         this%connections = [this%connections, connection]
         new_connection => this%connections(size(this%connections))

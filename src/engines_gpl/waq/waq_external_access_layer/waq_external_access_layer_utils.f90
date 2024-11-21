@@ -102,8 +102,6 @@ contains
         first_index = connection%buffer_idx
         last_index  = connection%buffer_idx - 1 + size(connection%p_value)
         dlwqd%buffer%rbuf(first_index:last_index) = connection%p_value
-        write(88,*) '>>', first_index, last_index, dlwqd%buffer%rbuf(first_index:last_index:10)
-        write(88,*) '>>', connection%p_value(1:10)
     end subroutine update_hydrodynamic_data
 
     subroutine update_wasteload(connection)
