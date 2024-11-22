@@ -30,57 +30,59 @@
 !
 !
 
-module m_compareanalytic
+module m_xbeachwaves_getcellcentergradients
 
 implicit none
 
 private
 
-public :: compareanalytic
+public :: getcellcentergradients
 
 contains
 
-subroutine compareanalytic(s, x, mmax)
-
-   use m_flowgeom
+subroutine getcellcentergradients(hh, dhsdx, dhsdy)
    use m_flow
-   use m_set_col
-   use m_inview
+   use m_flowgeom
 
-   integer :: mmax
-   double precision :: s(0:mmax), x(0:mmax)
-   double precision :: alf, dif, si
-   integer :: n, i, ii
+   implicit none
 
-   call statisticsnewstep()
+   double precision, intent(in), dimension(ndx) :: hh
+   double precision, intent(out), dimension(ndx) :: dhsdx, dhsdy
 
-   call setcol(221)
-   do n = 1, ndx
+   integer :: L, k1, k2, k, kb, ki
+   double precision :: hs1, hs2
 
-      if (.not. inview(xz(n), yz(n))) cycle
+   ! Tegeltjesdiepte approach is eenvoudiger en onnauwkeuriger, maar werkt altijd, ook met morfologie
+   dhsdx = 0d0
+   dhsdy = 0d0
+   do L = 1, Lnx
+      if (hu(L) > epshu) then ! link flows
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         hs1 = hh(k1)
+         hs2 = hh(k2)
 
-      i = 0
-      do ii = 1, mmax - 1
-         if (x(ii) <= xz(n) .and. xz(n) < x(ii + 1)) then
-            i = ii
-            exit
-         end if
-      end do
-      !i = (xz(n) + 0.5*dxw) / dxw
-      if (i > 2 .and. i < mmax - 1) then
-         alf = (xz(n) - x(i)) / (x(i + 1) - x(i))
-         if (alf < 0d0 .or. alf > 1d0) then
-            si = 0
-         else
-            si = (1 - alf) * s(i) + alf * s(i + 1)
-            dif = abs(s1(n) - si)
-            call statisticsonemorepoint(dif)
-            !   call ptabs(xz(n), bl(n) + 100d0*dif)
-         end if
+         dhsdx(k1) = dhsdx(k1) + wcx1(L) * (hs2 - hs1) * dxi(L) ! dimension m/m
+         dhsdy(k1) = dhsdy(k1) + wcy1(L) * (hs2 - hs1) * dxi(L)
+         dhsdx(k2) = dhsdx(k2) + wcx2(L) * (hs2 - hs1) * dxi(L)
+         dhsdy(k2) = dhsdy(k2) + wcy2(L) * (hs2 - hs1) * dxi(L)
       end if
    end do
-   call statisticsfinalise()
 
-end subroutine compareanalytic
+   do k = 1, nbndu
+      kb = kbndu(1, k)
+      ki = kbndu(2, k)
+      dhsdx(kb) = dhsdx(ki)
+      dhsdy(kb) = dhsdy(ki)
+   end do
 
-end module m_compareanalytic
+   do k = 1, nbndz
+      kb = kbndz(1, k)
+      ki = kbndz(2, k)
+      dhsdx(kb) = dhsdx(ki)
+      dhsdy(kb) = dhsdy(ki)
+   end do
+
+end subroutine getcellcentergradients
+
+endmodule  m_xbeachwaves_getcellcentergradients

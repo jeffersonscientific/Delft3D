@@ -33,6 +33,7 @@
  !> Initializes the entire current model (geometry, boundaries, initial state)
  !! @return Error status: error (/=0) or not (0)
  integer function flow_modelinit() result(iresult) ! initialise flowmodel
+    use m_xbeachwaves, only: xbeach_wave_init, xbeach_wave_input
     use m_flow_waveinit, only: flow_waveinit
     use m_alloc9basicwavearrays, only: alloc9basicwavearrays
     use m_ini_transport, only: ini_transport

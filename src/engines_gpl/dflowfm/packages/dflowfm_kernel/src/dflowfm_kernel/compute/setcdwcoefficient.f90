@@ -31,6 +31,8 @@
 !
 
 module m_setcdwcoefficient
+use m_getwavenr, only: getwavenr
+
 
 implicit none
 
