@@ -52,6 +52,7 @@ module m_observations_data
    integer :: mxls !< Unit nr hisdump to excel
    integer :: jafahrenheit = 0 !< Output in Celsius, otherwise Fahrenheit
 
+   double precision :: valobs_last_update_time !< Time at which the valobs array was last updated.
    double precision, dimension(:, :), allocatable, target :: valobs !< work array with 2d and 3d values stored at observation stations, dim(numobs+nummovobs, MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1))
 
    integer :: MAXNUMVALOBS2D ! maximum number of outputted values at observation stations

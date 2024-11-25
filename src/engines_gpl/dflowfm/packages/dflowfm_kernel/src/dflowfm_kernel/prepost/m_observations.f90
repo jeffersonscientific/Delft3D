@@ -96,6 +96,7 @@ contains
 
       integer :: i, i0, numfracs, nlyrs
 
+      valobs_last_update_time = dmiss
       MAXNUMVALOBS2D = 0
       MAXNUMVALOBS3D = 0
       MAXNUMVALOBS3Dw = 0

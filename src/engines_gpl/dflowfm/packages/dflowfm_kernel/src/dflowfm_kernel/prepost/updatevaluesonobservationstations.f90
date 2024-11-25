@@ -32,11 +32,17 @@
 
 !> update observation station data
 subroutine updateValuesOnObservationStations()
+   use m_flowtimes, only: time1
    use m_observations_data
    use m_partitioninfo
    use m_timer
    implicit none
 
+   if (valobs_last_update_time == time1) then
+      return
+   end if
+   valobs_last_update_time = time1
+   
    call fill_valobs()
 
    if (jampi == 1) then
