@@ -34,8 +34,8 @@
 subroutine updateValuesOnObservationStations()
    use m_flowtimes, only: time1
    use m_observations_data, only: IPNT_NUM, numobs, nummovobs, valobs, valobs_last_update_time
-   use m_partitioninfo, only: jampi
-   use m_timer, only: jatimer, IOUTPUTMPI
+   use m_partitioninfo, only: jampi, reduce_valobs
+   use m_timer, only: jatimer, IOUTPUTMPI, starttimer, stoptimer
 
    implicit none
 
