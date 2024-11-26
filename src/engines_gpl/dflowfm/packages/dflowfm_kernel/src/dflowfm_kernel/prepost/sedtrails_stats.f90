@@ -127,6 +127,7 @@ contains
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
+      use m_intrinsic_replacements, only: cosd, sind
 
       implicit none
 

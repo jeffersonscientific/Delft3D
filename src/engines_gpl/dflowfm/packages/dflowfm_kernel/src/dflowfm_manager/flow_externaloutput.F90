@@ -62,6 +62,7 @@
     use m_wribal
     use m_wrihistek
     use m_unc_write_his, only: unc_write_his
+    use m_intrinsic_replacements, only: cosd
 
 #ifdef _OPENMP
     use omp_lib

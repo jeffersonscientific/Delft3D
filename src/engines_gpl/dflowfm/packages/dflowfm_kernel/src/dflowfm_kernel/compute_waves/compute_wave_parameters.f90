@@ -55,6 +55,7 @@ contains
       use mathconsts, only: sqrt2_hp
       use m_transform_wave_physics, only: transform_wave_physics_hp
       !   use unstruc_display
+      use m_intrinsic_replacements, only: cosd, sind
 
       integer :: k1, k2, k, L
       integer :: ierror

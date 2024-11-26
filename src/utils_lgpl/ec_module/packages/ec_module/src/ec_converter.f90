@@ -2612,6 +2612,8 @@ contains
    function ecConverterNetcdf(connection, timesteps) result(success)
       use m_alloc
       use kdtree2Factory
+      use m_intrinsic_replacements, only: cosd, sind
+
       implicit none
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items

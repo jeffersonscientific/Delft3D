@@ -44,6 +44,7 @@ contains
       use m_sediment, only: sedtra, stm_included
       use m_get_kbot_ktop
       use m_get_cz
+      use m_intrinsic_replacements, only: cosd, sind
 
       ! Input variables
       integer, intent(in) :: waveswartdelwaq

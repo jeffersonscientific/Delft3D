@@ -306,6 +306,7 @@ contains
       use m_equatorial
       use m_flowtimes
       use m_netw, only: zkuni
+      use m_intrinsic_replacements, only: cosd
 
       implicit none
       integer :: nx, n

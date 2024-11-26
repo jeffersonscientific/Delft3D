@@ -1270,6 +1270,7 @@ contains
       use m_flowgeom, only: lnx, ln, csu, snu, ndx
       use m_physcoef, only: ag
       use m_transform_wave_physics
+      use m_intrinsic_replacements, only: cosd, sind
 
       implicit none
 

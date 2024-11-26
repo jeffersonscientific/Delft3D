@@ -43,6 +43,7 @@ contains
       use m_flowgeom
       use m_waves
       use m_physcoef
+      use m_intrinsic_replacements, only: cosd, sind
 
       implicit none
 
