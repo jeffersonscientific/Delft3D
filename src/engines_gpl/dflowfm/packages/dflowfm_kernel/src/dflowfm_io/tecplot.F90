@@ -38,7 +38,7 @@ module m_tecplot
 ! tecpolyface142 is missing in tecio.f90
    interface
       integer function tecpolyface142 &
-         (numfaces, ifacenodecounts, ifacenodes, ifaceleftelems, ifacerightelems)
+         (numfaces, ifacenodecounts, ifacenodes, ifaceleftelems, ifacerightelems) bind(C)
          integer :: numfaces
          integer :: ifacenodecounts(*)
          integer :: ifacenodes(*)
