@@ -35,7 +35,7 @@
 !! does not even create a flow link across it.
 subroutine thindams_on_netgeom()
    use m_crspath_on_netgeom, only: crspath_on_netgeom
-   use m_thindams
+   use m_thindams, only: thd, nthd, crspath_on_singlelink
    use network_data
    use unstruc_messages
    use m_alloc
@@ -45,6 +45,7 @@ subroutine thindams_on_netgeom()
    use m_find_crossed_links_kdtree2
    use m_get_link_neighboring_cell_coords
    use m_append_crspath_to_pol
+   use unstruc_caching, only: cacheRetrieved, cache_thin_dams, copy_cached_thin_dams
    implicit none
 
    double precision, dimension(:), allocatable :: dSL
@@ -66,76 +67,18 @@ subroutine thindams_on_netgeom()
 
    integer :: jakdtree = 1 ! use kdtree (1) or not (0)
 
+   logical :: cache_success = .false.
+
    if (nthd == 0) return
 
    ierror = 1
 
-   if (jakdtree == 1) then
-      call wall_clock_time(t0)
-
-!         determine set of links that are connected by a path
-      allocate (iLink(numL))
-      allocate (iPol(numL))
-      allocate (dSL(numL))
-      allocate (idum(3 * nthd))
-
-      call delpol()
-
-!         copy all paths to a DMISS-separated polyline
-      do ic = 1, nthd
-         NPL_prev = NPL ! previous end pointer in polyline array
-         call appendCRSPathToPol(thd(ic))
-         if (NPL > 0) then
-            if (NPL > ubound(idum, 1)) then
-               call realloc(idum, 1 + int(1.2d0 * dble(NPL)), keepExisting=.true., fill=0)
-            end if
-            idum(NPL_prev + 1:NPL) = ic
-         end if
-      end do
-
-      call find_crossed_links_kdtree2(treeglob, NPL, xpl, ypl, 1, numL, 0, numcrossedlinks, iLink, iPol, dSL, ierror)
-      if (ierror /= 0) then
-         !          disable kdtree
-         jakdtree = 0
-
-         !          deallocate
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(ipol)) deallocate (ipol)
-         if (allocated(dSL)) deallocate (dSL)
-         if (allocated(idum)) deallocate (idum)
-      else
-!            initialize number of crossed flowlinks in paths
-         do ic = 1, nthd
-            thd(ic)%lnx = 0
-         end do
-
-         do iL = 1, numcrossedlinks
-!               get link number
-            L = iLink(iL)
-!               get thin dam number
-            ic = idum(iPol(iL))
-            call get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
-            if (isactive == 1) then
-               call crspath_on_singlelink(thd(ic), L, xk(kn(1, L)), yk(kn(1, L)), xk(kn(2, L)), yk(kn(2, L)), xza, yza, xzb, yzb, 1)
-               do L = 1, thd(ic)%lnx
-                  LL = abs(thd(ic)%ln(L))
-                  if (LL > 0 .and. LL <= numl) then
-                     kn(3, LL) = 0
-                  end if
-               end do
-            end if
-         end do ! do iL=1,numcrossedlinks
-      end if
-
-      call wall_clock_time(t1)
-      write (mesg, "('thin dams with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
-      call mess(LEVEL_INFO, trim(mesg))
+   if (cacheRetrieved()) then
+      call copy_cached_thin_dams(thd, cache_success)
    end if
 
-   if (jakdtree == 0) then ! no kdtree, or kdtree gave error
-      call wall_clock_time(t0)
-      do ic = 1, nthd
-         call crspath_on_netgeom(thd(ic))
+   if (cache_success) then
+      do ic = 1, size(thd, 1)
          do L = 1, thd(ic)%lnx
             LL = abs(thd(ic)%ln(L))
             if (LL > 0 .and. LL <= numl) then
@@ -143,21 +86,87 @@ subroutine thindams_on_netgeom()
             end if
          end do
       end do
-      call wall_clock_time(t1)
-      write (mesg, "('thin dams without kdtree2, elapsed time: ', G15.5)") t1 - t0
-      call mess(LEVEL_INFO, trim(mesg))
-   end if ! if ( jakdtree.eq.1 ) then
+   else
+      if (jakdtree == 1) then
+         call wall_clock_time(t0)
 
-   ierror = 0
-1234 continue
+!         determine set of links that are connected by a path
+         allocate (iLink(numL))
+         allocate (iPol(numL))
+         allocate (dSL(numL))
+         allocate (idum(3 * nthd))
 
-   if (allocated(iLink)) deallocate (iLink)
-   if (allocated(iPol)) deallocate (iPol)
-   if (allocated(dSL)) deallocate (dSL)
-   if (allocated(idum)) deallocate (idum)
+         call delpol()
 
-   if (NPL > 0) call delpol()
+!         copy all paths to a DMISS-separated polyline
+         do ic = 1, nthd
+            NPL_prev = NPL ! previous end pointer in polyline array
+            call appendCRSPathToPol(thd(ic))
+            if (NPL > 0) then
+               if (NPL > ubound(idum, 1)) then
+                  call realloc(idum, 1 + int(1.2d0 * dble(NPL)), keepExisting=.true., fill=0)
+               end if
+               idum(NPL_prev + 1:NPL) = ic
+            end if
+         end do
 
+         call find_crossed_links_kdtree2(treeglob, NPL, xpl, ypl, 1, numL, 0, numcrossedlinks, iLink, iPol, dSL, ierror)
+         if (ierror /= 0) then
+            !          disable kdtree
+            jakdtree = 0
+         else
+!            initialize number of crossed flowlinks in paths
+            do ic = 1, nthd
+               thd(ic)%lnx = 0
+            end do
+
+            do iL = 1, numcrossedlinks
+!               get link number
+               L = iLink(iL)
+!               get thin dam number
+               ic = idum(iPol(iL))
+               call get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
+               if (isactive == 1) then
+                  call crspath_on_singlelink(thd(ic), L, xk(kn(1, L)), yk(kn(1, L)), xk(kn(2, L)), yk(kn(2, L)), xza, yza, xzb, yzb, 1)
+                  do L = 1, thd(ic)%lnx
+                     LL = abs(thd(ic)%ln(L))
+                     if (LL > 0 .and. LL <= numl) then
+                        kn(3, LL) = 0
+                     end if
+                  end do
+               end if
+            end do ! do iL=1,numcrossedlinks
+         end if
+
+         call wall_clock_time(t1)
+         write (mesg, "('thin dams with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
+         call mess(LEVEL_INFO, trim(mesg))
+      end if ! if ( jakdtree.eq.1 ) then
+
+      if (jakdtree == 0) then ! no kdtree, or kdtree gave error
+         call wall_clock_time(t0)
+         do ic = 1, nthd
+            call crspath_on_netgeom(thd(ic))
+            do L = 1, thd(ic)%lnx
+               LL = abs(thd(ic)%ln(L))
+               if (LL > 0 .and. LL <= numl) then
+                  kn(3, LL) = 0
+               end if
+            end do
+         end do
+         call wall_clock_time(t1)
+         write (mesg, "('thin dams without kdtree2, elapsed time: ', G15.5)") t1 - t0
+         call mess(LEVEL_INFO, trim(mesg))
+      end if ! if ( jakdtree.eq.0 ) then
+
+      ierror = 0
+
+      if (NPL > 0) call delpol()
+
+      call cache_thin_dams(thd)
+
+   end if ! if (cache_success) then
+   
    return
 
 end subroutine thindams_on_netgeom

@@ -43,27 +43,31 @@ module unstruc_caching
    use m_alloc
    use network_data
    use string_module, only: get_version_major_minor_integer
+   use m_crspath, only: tcrspath
 
    implicit none
 
    ! CachingFormatVersion = 1.00
    integer, parameter :: CacheFormatMajorVersion = 1
-   integer, parameter :: CacheFormatMinorVersion = 0
+   integer, parameter :: CacheFormatMinorVersion = 1
 
    ! History CachingFormatVersion:
 
    ! 1.00 (Until Nov 2024): The cached items include observations, fixed weirs, cross sections and dry_points_and_area.
+   ! 1.01 (Dec 2024)      : Thin dams are added to caching.
 
    logical, private :: cache_success
 
-   character(len=20), dimension(4), private :: section = ['OBSERVATIONS        ', &
+   character(len=20), dimension(5), private :: section = ['OBSERVATIONS        ', &
                                                           'FIXED WEIRS         ', &
                                                           'CROSS_SECTIONS      ', &
-                                                          'DRY_POINTS_AND_AREAS']
+                                                          'DRY_POINTS_AND_AREAS', &
+                                                          'THIN_DAMS']
    integer, parameter, private :: key_obs = 1
    integer, parameter, private :: key_fixed_weirs = 2
    integer, parameter, private :: key_cross_sections = 3
    integer, parameter, private :: key_dry_points_and_areas = 4
+   integer, parameter, private :: key_thin_dams = 5
 
    double precision, dimension(:), allocatable, private :: cache_xobs
    double precision, dimension(:), allocatable, private :: cache_yobs
@@ -90,6 +94,8 @@ module unstruc_caching
    double precision, dimension(:), allocatable, private :: cached_xz_dry
    double precision, dimension(:), allocatable, private :: cached_yz_dry
    type(tface), dimension(:), allocatable, private :: cached_netcell_dry
+
+   type(tcrspath), dimension(:), allocatable, private :: cached_thin_dams
 
    character(len=23), parameter, private :: version_string_prefix = "D-Flow FM, cache file, "
    character(len=md5length), private :: md5current
@@ -123,6 +129,8 @@ contains
 
       if (allocated(cache_cross_sections)) call deallocCrossSections(cache_cross_sections)
 
+      if (allocated(cached_thin_dams)) deallocate (cached_thin_dams)
+
       md5current = ''
 
    end subroutine default_caching
@@ -143,7 +151,7 @@ contains
 
       integer :: lun
       integer :: ierr
-      integer :: number, number_links, number_nodes, number_netcells
+      integer :: number, number_links, number_nodes, number_netcells, number_thin_dams
       integer :: version_major, version_minor
       character(len=30) :: version_file
       character(len=20) :: key
@@ -336,6 +344,19 @@ contains
       end if
 
       !
+      ! Load the information on thin dams:
+      !
+      read (lun, iostat=ierr) key, number_thin_dams
+      if (ierr /= 0 .or. key /= section(key_thin_dams)) then
+         call mess(LEVEL_WARN, 'Failed to thin dams from cache file (none present). Proceeding with normal initialization.')
+         close (lun)
+         return
+      end if
+      if (number_thin_dams > 0) then
+         allocate (cached_thin_dams(number_thin_dams))
+         call load_thin_dams(lun, number_thin_dams, cached_thin_dams, ierr)
+      end if
+      !
       ! All cached values were loaded, so all is well
       !
       close (lun)
@@ -343,6 +364,48 @@ contains
       call mess(LEVEL_INFO, 'Succesfully read cache file: '//trim(file_name))
 
    end subroutine load_caching_file
+
+!> Load cached thin dams from a caching file
+   subroutine load_thin_dams(lun, number_thin_dams, thin_dams, ierr)
+      integer, intent(in) :: lun !< LU-number of the caching file
+      integer, intent(in) :: number_thin_dams !< Number of thin dams
+      type(tcrspath), dimension(:), intent(out) :: thin_dams !< Array of cross section paths surrounding thin dams
+      integer, intent(out) :: ierr !< Error code
+
+      integer :: i, number_flow_links, number_polyline_points
+
+      do i = 1, number_thin_dams
+         read (lun, iostat=ierr) number_flow_links, number_polyline_points
+         if (ierr /= 0) then
+            close (lun)
+            exit
+         end if
+         read (lun, iostat=ierr) thin_dams(i)%np, thin_dams(i)%lnx
+         if (ierr /= 0) then
+            close (lun)
+            exit
+         end if
+         allocate (thin_dams(i)%xp(number_polyline_points), thin_dams(i)%yp(number_polyline_points), &
+                   thin_dams(i)%zp(number_polyline_points))
+         read (lun, iostat=ierr) thin_dams(i)%xp, thin_dams(i)%yp, thin_dams(i)%zp
+         if (ierr /= 0) then
+            close (lun)
+            exit
+         end if
+         if (thin_dams(i)%lnx > 0) then
+            allocate (thin_dams(i)%ln(number_flow_links), thin_dams(i)%indexp(number_flow_links), &
+                      thin_dams(i)%wfp(number_flow_links), thin_dams(i)%xk(2, number_flow_links), &
+                      thin_dams(i)%yk(2, number_flow_links), thin_dams(i)%iperm(number_flow_links), &
+                      thin_dams(i)%sp(number_flow_links), thin_dams(i)%wfk1k2(number_flow_links))
+            read (lun, iostat=ierr) thin_dams(i)%ln, thin_dams(i)%indexp, thin_dams(i)%wfp, thin_dams(i)%xk, &
+               thin_dams(i)%yk, thin_dams(i)%iperm, thin_dams(i)%sp, thin_dams(i)%wfk1k2
+            if (ierr /= 0) then
+               close (lun)
+               exit
+            end if
+         end if
+      end do
+   end subroutine load_thin_dams
 
 !> Load cached netcell from a caching file.
    subroutine load_netcell(lun, number_netcell, netcell, ierr)
@@ -527,11 +590,44 @@ contains
       call store_netcell(lun, cached_netcell_dry)
 
       !
+      ! Store data for thin dams
+      !
+      write (lun) section(key_thin_dams), size(cached_thin_dams, 1)
+      call store_thin_dams(lun, cached_thin_dams)
+
+      !
       ! We are done, so close the file
       !
       close (lun)
 
    end subroutine store_caching_file
+
+!> Store thin dams to a caching file.
+   subroutine store_thin_dams(lun, thin_dams)
+      integer, intent(in) :: lun !< LU-number of the caching file
+      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Array of cross section paths surrounding thin dams
+
+      integer :: i, number_thin_dams, number_flow_links, number_polyline_points
+
+      number_thin_dams = size(thin_dams, 1)
+      if (number_thin_dams > 0) then
+         do i = 1, number_thin_dams
+            number_flow_links = size(thin_dams(i)%ln)
+            number_polyline_points = size(thin_dams(i)%xp)
+            write (lun) number_flow_links, number_polyline_points
+            write (lun) thin_dams(i)%np, thin_dams(i)%lnx
+            write (lun) thin_dams(i)%xp(1:number_polyline_points), thin_dams(i)%yp(1:number_polyline_points), &
+               thin_dams(i)%zp(1:number_polyline_points)
+            if (thin_dams(i)%lnx > 0) then
+               write (lun) thin_dams(i)%ln(1:number_flow_links), thin_dams(i)%indexp(1:number_flow_links), &
+                  thin_dams(i)%wfp(1:number_flow_links), thin_dams(i)%xk(1:2, 1:number_flow_links), &
+                  thin_dams(i)%yk(1:2, 1:number_flow_links), thin_dams(i)%iperm(1:number_flow_links), &
+                  thin_dams(i)%sp(1:number_flow_links), thin_dams(i)%wfk1k2(1:number_flow_links)
+            end if
+         end do
+      end if
+
+   end subroutine store_thin_dams
 
 !> Store netcell to a caching file.
    subroutine store_netcell(lun, netcell)
@@ -764,6 +860,21 @@ contains
       end if
    end subroutine copy_cached_netgeom_without_dry_points_and_areas
 
+!> Copy grid information, where dry points and areas have been deleted, from cache file:
+   subroutine copy_cached_thin_dams(thin_dams, success)
+      type(tcrspath), dimension(:), intent(inout) :: thin_dams !< (nump1d2d) 1D&2D net cells (nodes and links)
+      logical, intent(out) :: success !< The cached information was compatible if true
+
+      success = .false.
+      if (cache_success) then
+         if (.not. allocated(cached_thin_dams)) then
+            return
+         end if
+         success = .true.
+         thin_dams = cached_thin_dams
+      end if
+   end subroutine copy_cached_thin_dams
+
 !> Cache grid information, where dry points and areas have been deleted:
    subroutine cache_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, bottom_area, xz, yz, xzw, yzw, netcell)
       integer, intent(in) :: nump !< Nr. of 2d netcells.
@@ -795,5 +906,13 @@ contains
       cached_netcell_dry = netcell(1:number_netcells)
 
    end subroutine cache_netgeom_without_dry_points_and_areas
+
+!> Cache thin dams:
+   subroutine cache_thin_dams(thin_dams)
+      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Array of cross section paths surrounding thin dams
+
+      cached_thin_dams = thin_dams
+
+   end subroutine cache_thin_dams
 
 end module unstruc_caching
