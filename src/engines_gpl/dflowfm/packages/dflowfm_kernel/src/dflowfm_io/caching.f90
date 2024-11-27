@@ -355,6 +355,7 @@ contains
       if (number_thin_dams > 0) then
          allocate (cached_thin_dams(number_thin_dams))
          call load_thin_dams(lun, number_thin_dams, cached_thin_dams, ierr)
+         call mess(LEVEL_WARN, 'Failed to load thin dams from cache file (invalid data). Proceeding with normal initialization.')
       end if
       !
       ! All cached values were loaded, so all is well
@@ -369,7 +370,7 @@ contains
    subroutine load_thin_dams(lun, number_thin_dams, thin_dams, ierr)
       integer, intent(in) :: lun !< LU-number of the caching file
       integer, intent(in) :: number_thin_dams !< Number of thin dams
-      type(tcrspath), dimension(:), intent(out) :: thin_dams !< Array of cross section paths surrounding thin dams
+      type(tcrspath), dimension(:), intent(out) :: thin_dams !< Thin dams path and set of crossed flow links
       integer, intent(out) :: ierr !< Error code
 
       integer :: i, number_flow_links, number_polyline_points
@@ -605,7 +606,7 @@ contains
 !> Store thin dams to a caching file.
    subroutine store_thin_dams(lun, thin_dams)
       integer, intent(in) :: lun !< LU-number of the caching file
-      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Array of cross section paths surrounding thin dams
+      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Thin dams path and set of crossed flow links
 
       integer :: i, number_thin_dams, number_flow_links, number_polyline_points
 
@@ -860,9 +861,9 @@ contains
       end if
    end subroutine copy_cached_netgeom_without_dry_points_and_areas
 
-!> Copy grid information, where dry points and areas have been deleted, from cache file:
+!> Copy grid information, links that have been inactivated due to thin dams, from cache file:
    subroutine copy_cached_thin_dams(thin_dams, success)
-      type(tcrspath), dimension(:), intent(inout) :: thin_dams !< (nump1d2d) 1D&2D net cells (nodes and links)
+      type(tcrspath), dimension(:), intent(inout) :: thin_dams !< Thin dams path and set of crossed flow links
       logical, intent(out) :: success !< The cached information was compatible if true
 
       success = .false.
@@ -909,7 +910,7 @@ contains
 
 !> Cache thin dams:
    subroutine cache_thin_dams(thin_dams)
-      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Array of cross section paths surrounding thin dams
+      type(tcrspath), dimension(:), intent(in) :: thin_dams !< Thin dams path and set of crossed flow links
 
       cached_thin_dams = thin_dams
 

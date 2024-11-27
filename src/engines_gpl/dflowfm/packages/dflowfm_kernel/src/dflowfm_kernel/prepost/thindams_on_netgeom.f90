@@ -160,6 +160,4 @@ subroutine thindams_on_netgeom()
 
    end if ! if (cache_success) then
 
-   return
-
 end subroutine thindams_on_netgeom
