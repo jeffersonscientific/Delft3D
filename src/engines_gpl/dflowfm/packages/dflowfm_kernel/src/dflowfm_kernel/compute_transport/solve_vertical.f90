@@ -172,10 +172,10 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
 
 !           ! diffusion
             if (jased > 3 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
-               fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + difsed(j)) * dtbazi
+               fluxfac = (max(ozmid , mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1)) + difsed(j)) * dtbazi
                ! i.w.  + vicwws/van rijn                              + background (dicoww)
             else
-               fluxfac = (sigdifi(j) * vicwws(k) + difsed(j) + ozmid) * dtbazi
+               fluxfac = (max(sigdifi(j) * vicwws(k), ozmid) + difsed(j)) * dtbazi
             end if
 
 !           BEGIN DEBUG
@@ -273,5 +273,3 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
    if (timon) call timstop(ithndl)
    return
 end subroutine solve_vertical
-
-end module m_solve_vertical
