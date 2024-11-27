@@ -28,6 +28,9 @@
 !-------------------------------------------------------------------------------
 
 module fm_external_forcings
+   use m_count_links, only: count_links
+   use m_add_bndtracer, only: add_bndtracer
+   use m_addopenbndsection, only: addopenbndsection
    use m_setwindstress, only: setwindstress
    use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
