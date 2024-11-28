@@ -26,7 +26,7 @@ class FolderIndex:
                     calculated.add(component)
 
         component = list(calculated)[0] if len(calculated) == 1 else None
-        self.changes_with_component.append(f"{component or "all"} : {changed_file_path}")
+        self.changes_with_component.append(f"{component or 'all'} : {changed_file_path}")
         return component or "all"
 
     def get_scope(self, json_dict_path: str, file_changes_list: List[str]) -> str:
@@ -84,9 +84,12 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    merge_branch = args.merge_branch
-    token = args.token
-    json_file = args.file
+    merge_branch: str = args.merge_branch
+    token: str = args.token
+    json_file: str = args.file
+
+    # The gitlab api requires _ instead of the - of the git branch.
+    merge_branch = merge_branch.replace("merge-requests", "merge_requests")
 
     api = GitlabApi()
     changes = api.get_file_changes(merge_branch, token)
