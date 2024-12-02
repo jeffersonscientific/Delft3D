@@ -9,7 +9,6 @@ set(dflowfm_cli_path "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 set(resource_path ${dflowfm_path}/res)
 
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-set(dflowfm_version_header_path ${dflowfm_path}/version)
 
 # Interacter
 if(WITH_INTERACTER)
@@ -29,7 +28,7 @@ endif()
 set(source ${dflowfm_cli_path}/net_main.F90)
 
 set(icon_file ${resource_path}/dflowfm_icon.rc)
-set(rc_version_file ${dflowfm_version_header_path}/dflowfm_cli_version.rc)
+set(rc_version_file ${dflowfm_path}/version/dflowfm_cli_version.rc)
 
 # Define the executable
 set(executable_name dflowfm-cli)
