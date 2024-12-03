@@ -32,11 +32,11 @@
 
 module m_compute_wave_parameters
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: compute_wave_parameters
+   public :: compute_wave_parameters
 
 contains
 
@@ -46,15 +46,16 @@ contains
       use m_waves
       use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flowwithoutwaves, epshu, wx, wy, ag, hs, waveforcing
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
-   !   use m_sferic
-   !   use m_flowtimes
+      !   use m_sferic
+      !   use m_flowtimes
       use mathconsts, only: sqrt2_hp
       use m_transform_wave_physics, only: transform_wave_physics_hp
-   !   use unstruc_display
+      !   use unstruc_display
 
       integer :: k1, k2, k, L
       integer :: ierror
       double precision :: hh, hw, tw, cs, sn, uorbi, rkw, ustt, uwi
+      double precision, dimension(:), allocatable :: hsig
 
       ! Fetch models
       !
@@ -100,6 +101,12 @@ contains
          !
          ! Needed here, because we need wave mass fluxes to calculate stokes drift
          if (jawave == 7) then
+            !
+            if (.not. allocated(hsig)) then
+               allocate (hsig(1:ndx))
+               hsig = min(hwavcom, gammax * hs) ! don't change hwavcom directly, as hs changes
+            end if
+            !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
                                & distot, dsurf, dwcap, &
@@ -167,6 +174,7 @@ contains
       end if
 
 1234  continue
+      if (allocated(hsig)) deallocate (hsig)
       return
    end subroutine compute_wave_parameters
 

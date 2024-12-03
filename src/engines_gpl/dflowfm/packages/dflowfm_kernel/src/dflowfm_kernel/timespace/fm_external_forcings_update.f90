@@ -340,7 +340,7 @@ contains
    subroutine set_wave_parameters(initialization)
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
-      
+
       logical, intent(in) :: initialization !< initialization phase
 
       logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary
@@ -395,17 +395,18 @@ contains
             ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
             ! Correct for this by setting values to zero
             do k = 1, ndx
-               if (isnan(hwavcom(k)) .or. & 
-                   isnan(phiwav(k)).or. & 
-                   isnan(sxwav(k)).or. & 
-                   isnan(sywav(k)).or. & 
-                   isnan(sbxwav(k)).or. & 
-                   isnan(sbywav(k)).or. & 
-                   isnan(dsurf(k)).or. & 
-                   isnan(dwcap(k)).or. & 
-                   isnan(mxwav(k)).or. & 
-                   isnan(mywav(k)).or. & 
-                   isnan(phiwav(k))) then ! one check should be enough, everything is collocated
+               if (isnan(hwavcom(k)) .or. &
+                   isnan(phiwav(k)) .or. &
+                   isnan(sxwav(k)) .or. &
+                   isnan(sywav(k)) .or. &
+                   isnan(sbxwav(k)) .or. &
+                   isnan(sbywav(k)) .or. &
+                   isnan(dsurf(k)) .or. &
+                   isnan(dwcap(k)) .or. &
+                   isnan(mxwav(k)) .or. &
+                   isnan(mywav(k)) .or. &
+                   isnan(phiwav(k)) .or. &
+                   hs(k) <= epshu) then
                   hwavcom(k) = 0d0
                   twavcom(k) = 0d0
                   sxwav(k) = 0d0
@@ -420,6 +421,11 @@ contains
                end if
             end do
             phiwav = convert_wave_direction_from_nautical_to_cartesian(phiwav)
+            do k = 1, ndx
+               if (abs(sxwav(k) + sbxwav(k)) > 20d0 .or. abs(sywav(k) + sbywav(k)) > 20d0) then
+                  continue
+               end if
+            end do
          end if
 
          ! SWAN data used via module m_waves

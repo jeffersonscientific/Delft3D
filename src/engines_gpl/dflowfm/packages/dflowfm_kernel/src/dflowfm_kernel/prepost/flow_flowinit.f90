@@ -181,7 +181,7 @@ contains
          return
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
-      
+
       ! it has to be called after EC module initialization
       call read_moving_stations(md_obsfile)
 
@@ -1275,6 +1275,7 @@ contains
       double precision :: rkw
       double precision :: ustt
       double precision :: hh
+      double precision, dimension(:), allocatable :: hsig
 
       if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
          ! Normal situation: use wave info in FLOW
@@ -1288,6 +1289,12 @@ contains
          hwav = min(hwav, gammax * hs)
          !
          if (jawave == 7) then
+            !
+            if (.not. allocated(hsig)) then
+               allocate (hsig(1:ndx))
+               hsig = min(hwavcom, gammax * hs) ! don't change hwavcom directly, as hs changes
+            end if
+            !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
                                & distot, dsurf, dwcap, &
@@ -1342,7 +1349,7 @@ contains
             call tauwave()
          end if
       end if
-
+      if (allocated(hsig)) deallocate (hsig)
    end subroutine set_wave_modelling
 
 !> initialize_salinity_from_bottom_or_top
