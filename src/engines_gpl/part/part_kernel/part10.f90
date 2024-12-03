@@ -786,7 +786,6 @@ contains
                     write(*, *) ' is not implemented               '
                     call stop_exit(1)
                 end select
-                !            vdiff(n03d) = disp
                 dvz = 2.0 * sq6 * sqrt(disp * itdelt) * &
                         (rnd(rseed) - 0.5) / depthl / dred
             endif
@@ -810,6 +809,15 @@ contains
             !**      vertically bouncing particles ?
 
             icounz = 0
+            !   scale dvz dependt on the keyword scale_vdif_depth and particles in the top layer (depth)
+            if (apply_wind_drag .and. scale_vdif_depth <1.0) then 
+                if (kp==ktopp) then
+                    zpabs = zp * locdep(n0, kp)
+                    if (zpabs < max_wind_drag_depth) then
+                        dvzt = dvzt * scale_vdif_depth
+                    endif
+                endif
+            endif
             znew = zp + dvzt
             do while (znew > 1.0 .or. znew < 0.0)
 

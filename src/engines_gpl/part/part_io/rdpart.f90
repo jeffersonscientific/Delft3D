@@ -664,6 +664,7 @@ contains
       apply_wind_drag = .false.
       max_wind_drag_depth = 0.5 ! default, when using leeway without the apply_wind_drag keyword
       write_restart_file = .false.
+      scale_vdif_depth = 1.0
       max_restart_age = -1
       pldebug = .false.
       screens = .false.
@@ -702,6 +703,13 @@ contains
                         if (gettoken (max_wind_drag_depth, ierr2) /= 0) goto 9005
                         if (max_wind_drag_depth<0.0) goto 9005
                         write (lun2, '(/a,f13.4)') ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
+                    case ('scale_vdif_depth') 
+                        write (lun2, '(/a)') ' Found keyword "scale_vdif_depth".'
+                        apply_wind_drag = .true.
+                        if (gettoken (scale_vdif_depth, ierr2) /= 0) goto 9005
+                        if (scale_vdif_depth<0.0) goto 9005
+                        write (lun2, '(/a,f13.4)') ' Scale factor for vertical diffusion for particles in top layer: ', scale_vdif_depth
+                        
                     case ('write_restart_file')
                         write (lun2, '(/a)') '  Found keyword "write_restart_file".'
                         write (lun2, '(/a,a)') '  At the end of a simulation, delpar will write ', &

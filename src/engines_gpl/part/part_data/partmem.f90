@@ -343,9 +343,10 @@ module spec_feat_par
     !     vertical bounce
     logical :: vertical_bounce
 
-    !     wind drag for all particles
+    !     wind drag and adaptation in depth layer of vertical diffusion for all particles
     logical :: apply_wind_drag
     real      (sp) :: max_wind_drag_depth
+    real      (sp) :: scale_vdif_depth
 
     !     restart files
     logical :: write_restart_file
