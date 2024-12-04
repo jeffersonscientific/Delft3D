@@ -88,7 +88,6 @@ contains
         real(dp), dimension(:), pointer               :: incoming_data
         real(dp), dimension(:), pointer               :: timeframe
         character(EXT_MAXSTRLEN)                      :: key_given
-        logical, save                                 :: first = .true.
 
         call init_logger()
         call log%log_debug("ext_set_var started")
@@ -105,11 +104,7 @@ contains
 
                 ! Handle the time frame differently
                 if ( key_given == 'TO_DELWAQ|timeframe' ) then
-                    if ( first ) then
-                        first = .false.
-                        call c_f_pointer(xptr, timeframe, [4])
-                        call set_coupling_timeframe( timeframe )
-                    endif
+                    call handle_coupling_timeframe( xptr )
                 else
 
                     ! Get the connection
@@ -578,20 +573,41 @@ contains
 
     !> Adjust the computational time frame to match that of
     !! the output provided by the hydrodynamic module we
-    !! are connecting to.
+    !! are connecting to. Also update the information on the
+    !! hydrodynamic data we are holding - volumes only.
     !!
-    subroutine set_coupling_timeframe( timeframe )
+    subroutine handle_coupling_timeframe( xptr )
         use m_timer_variables
-        real(dp), dimension(:) :: timeframe
+        type(c_ptr), value, intent(in)  :: xptr                  !< C-pointer to the actual value to be picked up by DELWAQ
 
-        itstrt = int( timeframe(1) )
-        itstop = int( timeframe(2) )
+        real(dp), dimension(:), pointer :: timeframe
+        logical, save                   :: first = .true.
 
-        dlwqd%itime = int( timeframe(1) )
+        integer, parameter              :: ILUN  = 7             ! NOTE: this is a fixed LU-number, see DLWQT4.
+        integer                         :: iColl
+        integer, save                   :: coupling_step         ! Time step for coupling in seconds (!)
+
+        if ( first ) then
+            first = .false.
+            call c_f_pointer(xptr, timeframe, [4])
+
+            itstrt        = int( timeframe(1) )
+            itstop        = int( timeframe(2) )
+            coupling_step = int( timeframe(3) )
+
+            dlwqd%itime   = int( timeframe(1) )
+        endif
+
+        !
+        ! Correct the hydrodynamic information - volumes only
+        !
+        iColl = FileUseDefCollCollFind (dlwqd%CollColl, ILUN)
+
+        dlwqd%CollColl%FileUseDefColls(iColl)%istart = dlwqd%itime
+        dlwqd%CollColl%FileUseDefColls(iColl)%istop  = dlwqd%itime + coupling_step
 
         ! TODO: correct the date for differences in reference date/time
 
-        ! TODO: use the time step for correcting the hydordynamic information
     end subroutine
 
 end module m_waq_external_access_layer

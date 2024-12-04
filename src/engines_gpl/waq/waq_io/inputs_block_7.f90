@@ -232,27 +232,38 @@ contains
         enddo
 
         ! if necessary, check for the parameters SURF and LENGTH
+        ! AM: this could be put in a separate subroutine, avoiding the repetition of code.
         if (chkpar(1)) then
             ch20 = 'SURF'
-            special = index_in_array(ch20, parameters%name(:parameters%no_item))
+            special = -1
+            if ( parameters%no_item > 0 ) then
+                special = index_in_array(ch20, parameters%name(:parameters%no_item))
+            endif
             if (special <= 0) then
-                special = index_in_array(ch20, segfuncs%name(:segfuncs%no_item))
-                if (special <= 0) then
-                    call status%increase_error_count()
-                    write(file_unit, 2410)
+                if ( segfuncs%no_item > 0 ) then
+                    special = index_in_array(ch20, segfuncs%name(:segfuncs%no_item))
                 endif
+            endif
+            if (special <= 0) then
+                call status%increase_error_count()
+                write(file_unit, 2410)
             endif
         endif
 
         if (chkpar(2)) then
             ch20 = 'LENGTH'
-            special = index_in_array(ch20, parameters%name(:parameters%no_item))
+            special = -1
+            if ( parameters%no_item > 0 ) then
+                special = index_in_array(ch20, parameters%name(:parameters%no_item))
+            endif
             if (special <= 0) then
-                special = index_in_array(ch20, segfuncs%name(:segfuncs%no_item))
-                if (special <= 0) then
-                    call status%increase_error_count()
-                    write(file_unit, 2420)
+                if ( segfuncs%no_item > 0 ) then
+                    special = index_in_array(ch20, segfuncs%name(:segfuncs%no_item))
                 endif
+            endif
+            if (special <= 0) then
+                call status%increase_error_count()
+                write(file_unit, 2420)
             endif
         endif
 
