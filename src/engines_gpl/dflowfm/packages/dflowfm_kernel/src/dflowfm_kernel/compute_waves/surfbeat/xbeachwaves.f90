@@ -1866,7 +1866,7 @@ subroutine xbeach_wave_bc()
             factor = 0.d0
          end if
          e01 = factor * E0; ! 1:ntheta ding
-         e01 = max(e01, 0.0d0); 
+         e01 = max(e01, 0.0d0);
          if (jampi == 0) then
             if (nbndw > 0) then
                Llong = Tlong * maxval(cgwav(kbndw(1, 1:nbndw))) !! cg at some boundary point, xbeach_dispersion(). This implies that this value is the same everywhere!!
@@ -1933,8 +1933,8 @@ subroutine xbeach_wave_bc()
             else
                factor = 0.d0
             end if
-            e01 = factor * E0; 
-            e01 = max(e01, 0.0d0); 
+            e01 = factor * E0;
+            e01 = max(e01, 0.0d0);
          elseif (trim(instat) == 'reuse') then
             close (71) ! to do, newlun
             close (72)
@@ -1984,7 +1984,7 @@ subroutine xbeach_wave_bc()
                           min(time0 / taper, 1.d0)
             if (nbndu > 0) then
                Lb = kbndw2kbndu(n)
-               bl1 = bl(kb); bl2 = bl(ki); 
+               bl1 = bl(kb); bl2 = bl(ki);
                ht = max(zbndu(Lb) - 0.5d0 * (bl1 + bl2), epshu) ! mean depth, not instantaneous
                em = (sum(0.5d0 * e01)) * dtheta * min(time0 / taper, 1.d0)
                ei = sum(zbndw(:, n), dim=1) * dtheta
@@ -2027,7 +2027,7 @@ subroutine xbeach_wave_bc()
 
             if (nbndu > 0) then
                Lb = kbndw2kbndu(n)
-               bl1 = bl(kb); bl2 = bl(ki); 
+               bl1 = bl(kb); bl2 = bl(ki);
                ht = max(zbndu(Lb) - 0.5d0 * (bl1 + bl2), epshu) ! mean depth, not instantaneous
                em = Emean * min(time0 / taper, 1.d0)
                ei = sum(zbndw(:, n), dim=1) * dtheta
@@ -2069,7 +2069,7 @@ subroutine xbeach_wave_bc()
             zbndw(:, n) = e01 * E1 / max(Emean, 0.000001d0) * min(time0 / taper, 1.d0)
             if (nbndu > 0) then
                Lb = kbndw2kbndu(n)
-               bl1 = bl(kb); bl2 = bl(ki); 
+               bl1 = bl(kb); bl2 = bl(ki);
                ht = max(zbndu(Lb) - 0.5d0 * (bl1 + bl2), epshu) ! mean depth, not instantaneous
                if (freewave == 1) then
                   uin(kbndw2kbndu(n)) = sqrt(ag / ht) * bi(n)
@@ -2209,7 +2209,7 @@ subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, waveps, hhw, kwav, k
       D = Qb * 2.d0 * alpha * rhomean * ag * H**2 / 8d0
       !
       if (wci /= 0 .or. windmodel == 1) then
-         D = D * sigmwav / 2.d0 / pi; 
+         D = D * sigmwav / 2.d0 / pi;
       else
          D = D / Trep
       end if
@@ -2318,7 +2318,7 @@ subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
    use m_flowparameters, only: eps10
    use m_dlimiter_nonequi
    use m_dslim
-   
+
    implicit none
 
    double precision, intent(in) :: dtmaxwav
@@ -3601,7 +3601,7 @@ subroutine rollerturbulence(k)
    hloc = max(s1(k) - bl(k), 0.01d0)
    ! compute mixing length
    ML = sqrt(2 * rol * Tw / (rhomean * cw))
-   ML = min(ML, hloc); 
+   ML = min(ML, hloc);
    ! exponential decay turbulence over depth
    dcfin = exp(min(100.d0, hloc / max(ML, 1d-10)))
    dcf = min(1.d0, 1.d0 / (dcfin - 1.d0))
@@ -3641,8 +3641,8 @@ subroutine borecharacter()
 
    dh = 0.03d0
    dt = 1.25d0
-   nh = floor(0.99d0 / dh); 
-   nt = floor(50.d0 / dt); 
+   nh = floor(0.99d0 / dh);
+   nt = floor(50.d0 / dt);
    hh = max(s1 - bl, epshu)
 
    ! compute dimensionless wave height and wave period in each grid point..
@@ -3654,16 +3654,16 @@ subroutine borecharacter()
          BR(k) = beta
          cycle
       end if
-      ih0 = floor(h0(k) / dh); 
-      it0 = floor(t0(k) / dt); 
-      ih1 = min(ih0 + 1, nh); 
-      it1 = min(it0 + 1, nt); 
-      p = (h0(k) - ih0 * dh) / dh; 
-      q = (T0(k) - it0 * dt) / dt; 
-      f0 = (1 - p) * (1 - q); 
-      f1 = p * (1 - q); 
-      f2 = q * (1 - p); 
-      f3 = p * q; 
+      ih0 = floor(h0(k) / dh);
+      it0 = floor(t0(k) / dt);
+      ih1 = min(ih0 + 1, nh);
+      it1 = min(it0 + 1, nt);
+      p = (h0(k) - ih0 * dh) / dh;
+      q = (T0(k) - it0 * dt) / dt;
+      f0 = (1 - p) * (1 - q);
+      f1 = p * (1 - q);
+      f2 = q * (1 - p);
+      f3 = p * q;
       if (t0(k) == 50.d0) then
          t0fac = 50.d0 / max((Trep * sqrt(ag / hh(k))), 50.d0)
       elseif (t0(k) == 1.25) then
@@ -4661,7 +4661,7 @@ subroutine solve_energy_balance2Dstat(x, y, mn, w, ds, inner, prev, seapts, nose
    ok = solverNotConverged
    indx = 0
    ee = 0d0
-   eemax = 1.d0; 
+   eemax = 1.d0;
    dtheta = theta(2) - theta(1)
    niter = min(maxiter, 400)
 
@@ -4687,10 +4687,10 @@ subroutine solve_energy_balance2Dstat(x, y, mn, w, ds, inner, prev, seapts, nose
       end if
       sweep = mod(iter, 4)
       if (sweep == 0) then
-         sweep = 4; 
+         sweep = 4;
       end if
       if (sweep == 1) then
-         eeold = ee; 
+         eeold = ee;
       end if
       !  Loop over all points depending on sweep direction
       do count = 1, mn
@@ -4882,7 +4882,7 @@ subroutine solve_roller_balance(x, y, mn, prev, hh, c, Dw, thetam, beta, ag, max
       end if
       sweep = mod(iter, 4)
       if (sweep == 0) then
-         sweep = 4; 
+         sweep = 4;
       end if
       !  Loop over all points depending on sweep direction
       do count = 1, mn
@@ -5923,10 +5923,10 @@ subroutine xbeach_wave_stationary(callType)
                         (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
       end do
    case (callTypeDirections)
-      do concurrent (k=1:ndx, hhwlocal(k) > epshu)
-         thetamean(k) = (sum(ee_local(:, k) * thet_s(:, k)) / ntheta_local) / &
-                        (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
-      end do
+!!    do concurrent (k=1:ndx, hhwlocal(k) > epshu)
+!!       thetamean(k) = (sum(ee_local(:, k) * thet_s(:, k)) / ntheta_local) / &
+!!                      (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
+!!    end do
    end select
    !
    ! Compute wave velocities

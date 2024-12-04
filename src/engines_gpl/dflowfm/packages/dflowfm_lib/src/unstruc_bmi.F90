@@ -307,6 +307,8 @@ contains
 
       c_iresult = flowinit()
 
+      write(88,*) 'FLOW: initialize', tstart_user, tstop_user, dt_user, ti_waq, ti_waqs, ti_waqe
+
       time_user = tstart_user
 
       ! Just terminate if we get an error....
@@ -475,6 +477,7 @@ contains
       ! It is important that we can simulate up to a time set from the outside
       ! We might have to set time_user or dt_user
 
+      write(88,*) 'FLOW: update', dt, time1
       call flow_run_sometimesteps(dt, ierr)
 
       update = ierr
@@ -484,6 +487,7 @@ contains
       use iso_c_binding, only: c_double
       real(c_double), intent(in) :: t
       no_warning_unused_variable(t)
+      write(88,*) 'FLOW: update_until', t, time1
       ! Calls update(t-tnow)
    end subroutine update_until
 
@@ -993,6 +997,9 @@ contains
       case ("waq/flow", "waq/area")
          shape(1) = waqpar%num_exchanges
          return
+      case ("waq/timeframe")
+         shape(1) = 4        ! Transfer start, time step, stop for the coupling output as well as the reference date
+         return
       end select
 
       include "bmi_get_var_shape.inc"
@@ -1094,6 +1101,8 @@ contains
 
       ! Store the name
       var_name = char_array_to_string(c_var_name)
+
+      write(88,*) 'FLOW get_var:', var_name
 
       ! Please be conservative in adding variables here. Most variables
       ! can be computed outside.
@@ -1292,6 +1301,8 @@ contains
       case ("waq/area")
          waqpar%online_hydrodynamics = .true.
          x = c_loc(waqpar%area)
+      case ("waq/timeframe")
+         x = c_loc(waqpar%coupling_timeframe)
       end select
 
       ! Try to parse variable name as slash-separated id (e.g., 'weirs/Lith/crest_level')

@@ -86,7 +86,9 @@ contains
 
         type(connection_data), pointer                :: con_data
         real(dp), dimension(:), pointer               :: incoming_data
+        real(dp), dimension(:), pointer               :: timeframe
         character(EXT_MAXSTRLEN)                      :: key_given
+        logical, save                                 :: first = .true.
 
         call init_logger()
         call log%log_debug("ext_set_var started")
@@ -100,16 +102,27 @@ contains
             ! is the way DIMR passes on the shape information
             !
             if ( index(key_given,'_shape') == 0 ) then
-                ! Get the connection
-                con_data => connections%get_or_create_connection(key_given)
 
-                if ( associated(con_data) ) then
-                    !
-                    ! Copy the data for later use
-                    !
-                    if ( size(con_data%p_value) > 1 ) then
-                        call c_f_pointer(xptr, incoming_data, [size(con_data%p_value)])
-                        con_data%p_value = incoming_data
+                ! Handle the time frame differently
+                if ( key_given == 'TO_DELWAQ|timeframe' ) then
+                    if ( first ) then
+                        first = .false.
+                        call c_f_pointer(xptr, timeframe, [4])
+                        call set_coupling_timeframe( timeframe )
+                    endif
+                else
+
+                    ! Get the connection
+                    con_data => connections%get_or_create_connection(key_given)
+
+                    if ( associated(con_data) ) then
+                        !
+                        ! Copy the data for later use
+                        !
+                        if ( size(con_data%p_value) > 1 ) then
+                            call c_f_pointer(xptr, incoming_data, [size(con_data%p_value)])
+                            con_data%p_value = incoming_data
+                        endif
                     endif
                 endif
             endif
@@ -324,6 +337,15 @@ contains
                            int_to_str(update_steps)// &
                            int_to_str(dlwqd%itime))
 
+        !
+        ! Only run if the coupling from the hydrodynamic side has started.
+        ! Otherwise it makes no sense.
+        !
+        if ( update_steps <= 0 ) then
+            call log%log_debug("ext_update_until skipped")
+            return
+        endif
+
         if (intsrt == 2) then
             ! Correct update_steps for delwaq scheme 2, which does a double time step every call
             update_steps = (update_steps + 1) / 2
@@ -537,4 +559,23 @@ contains
         write (str_buffer, *) real_value
         str_value = trim(str_buffer)
     end function c_real_to_str
+
+    !> Adjust the computational time frame to match that of
+    !! the output provided by the hydrodynamic module we
+    !! are connecting to.
+    !!
+    subroutine set_coupling_timeframe( timeframe )
+        use m_timer_variables
+        real(dp), dimension(:) :: timeframe
+
+        itstrt = int( timeframe(1) )
+        itstop = int( timeframe(2) )
+
+        dlwqd%itime = int( timeframe(1) )
+
+        ! TODO: correct the date for differences in reference date/time
+
+        ! TODO: use the time step for correcting the hydordynamic information
+    end subroutine
+
 end module m_waq_external_access_layer

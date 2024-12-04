@@ -381,6 +381,7 @@ module waq
       double precision, allocatable :: vdf(:) ! WAQ (aggregated) vertical diffusion
       double precision, allocatable :: qag(:) ! WAQ (aggregated) flux
       double precision, allocatable :: area(:) ! WAQ (aggregated) exchange areas
+      double precision              :: coupling_timeframe(4) ! Time frame for coupling with WAQ via BMI
       character(256) :: flhoraggr !  Name of input aggregation file
       character(256) :: flvertaggr !  Name of input aggregation file
    end type gd_waqpar
@@ -1863,6 +1864,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_alloc
+      use m_flowtimes, only: ti_waq, ti_waqs, ti_waqe, irefdate
       implicit none
 
       integer :: i, kb, kt, ktx, vaglay
@@ -2007,6 +2009,12 @@ contains
       call realloc(waqpar%vdf, waqpar%num_cells, keepExisting=.false., fill=0d0)
       call realloc(waqpar%kmk1, waqpar%num_cells, keepExisting=.false., fill=0)
       call realloc(waqpar%kmk2, waqpar%num_cells, keepExisting=.false., fill=0)
+
+      waqpar%coupling_timeframe(1) = ti_waqs         ! Start time for coupling
+      waqpar%coupling_timeframe(2) = ti_waqe         ! Stop time for coupling
+      waqpar%coupling_timeframe(3) = ti_waq          ! Time step for coupling
+      waqpar%coupling_timeframe(4) = irefdate        ! Reference time - required to match the date/time systems
+                                                     ! Avoid the Julian date version, though
 
       call getkbotktopmax(ndxi, kb, kt, ktx)
       waqpar%ndkxi = ktx ! Maximum internal 3D node
