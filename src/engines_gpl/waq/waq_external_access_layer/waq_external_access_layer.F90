@@ -135,6 +135,8 @@ contains
         integer(kind=int_wp)               :: iarg
         integer(kind=int_wp)               :: i
 
+        ! Store the key and value
+        key_given = char_array_to_string(c_key)
         call c_f_pointer(xptr, c_value, [EXT_MAXSTRLEN])
 
         call log%log_debug("Set_var: key = "//key_given)
