@@ -5270,6 +5270,7 @@ contains
       use m_get_ucx_ucy_eul_mag
       use m_get_cz
       use messagehandling, only : err_flush
+      use m_nudge, only: nudge_rate, nudge_tem, nudge_sal
 
       implicit none
 

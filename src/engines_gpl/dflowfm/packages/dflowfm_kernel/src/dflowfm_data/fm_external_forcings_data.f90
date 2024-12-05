@@ -32,9 +32,9 @@
 
 ! unstruc.f90
 module fm_external_forcings_data
-   use m_wind
-   use m_nudge
-   use m_bnd
+   use precision, only: dp
+   use m_bnd, only: bndtype
+   
    implicit none
 
    logical :: success !< want je wil maar liever succes
