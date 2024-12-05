@@ -97,7 +97,8 @@ program unstruc
    use m_editsplines
    use m_editsam
    use m_editnetw
-   
+   use m_read_commandline, only: read_commandline
+
    implicit none
 
    integer :: KEY
@@ -116,10 +117,9 @@ program unstruc
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
 
    integer, external :: iget_jaopengl
-   integer, external :: read_commandline
    integer, external :: flow_modelinit
 
-   double precision :: tstartall, tstopall ! just checking...
+   real(kind=dp) :: tstartall, tstopall ! just checking...
 
    call wall_clock_time(tstartall)
 

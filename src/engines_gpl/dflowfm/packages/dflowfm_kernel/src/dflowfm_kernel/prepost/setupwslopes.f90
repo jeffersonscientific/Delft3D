@@ -31,7 +31,9 @@
 !
 
  subroutine setupwslopes() ! set upwind slope pointers and weightfactors
+    use precision, only: dp
     ! TODO: 1D upwind slope pointers (gewoon de vorige)
+    use m_disable_higherorder_at_sorsin, only: disable_higherorder_at_sorsin
     use m_flowgeom
     use m_flowparameters, only: jaupwindsrc
     use m_sferic
@@ -45,17 +47,17 @@
     implicit none
 
     integer :: L, k12, k2
-    double precision :: dxn, dyn, rmin, r
+    real(kind=dp) :: dxn, dyn, rmin, r
     integer :: k, kk, LL, ku, kd, ja, ku2, nn, jacros
     integer :: i, iup, ib, ng
 
-    double precision :: rfr, dxk, dis, xn, yn, sl, sm, crp, xcr, ycr, dxl
+    real(kind=dp) :: rfr, dxk, dis, xn, yn, sl, sm, crp, xcr, ycr, dxl
 
     integer :: ierr, n
-    double precision :: rn(6)
+    real(kind=dp) :: rn(6)
     integer :: kun(6), nri(6)
 
-    double precision, external :: dprodin
+    real(kind=dp), external :: dprodin
 
     if (allocated(klnup)) then
        deallocate (klnup, slnup)

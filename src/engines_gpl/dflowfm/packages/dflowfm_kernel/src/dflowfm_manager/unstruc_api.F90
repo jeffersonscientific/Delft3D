@@ -30,6 +30,8 @@
 !
 !
 module unstruc_api
+   use m_write_some_final_output, only: write_some_final_output
+   use m_writecdcoeffs, only: writeCdcoeffs
    use m_plotnu
    use m_choices
    use m_flowtimes
@@ -39,7 +41,7 @@ module unstruc_api
 
    implicit none
 
-   double precision :: cpuall0
+   real(kind=dp) :: cpuall0
 contains
 
 !> Initializes global program/core data, not specific to a particular model.
@@ -108,7 +110,7 @@ contains
       implicit none
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
-      double precision :: QQQ, upot, ukin, ueaa
+      real(kind=dp) :: QQQ, upot, ukin, ueaa
       character(len=*) :: batfile
       character(len=256) :: rec, filnam, basemdu, tex
 
@@ -210,7 +212,7 @@ contains
          call warn_flush()
       end if
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jagui > 0) then
          call plotnu(md_ident)

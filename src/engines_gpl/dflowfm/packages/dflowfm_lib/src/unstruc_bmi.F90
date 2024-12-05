@@ -35,6 +35,11 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+   use m_flow_run_single_timestep, only: flow_run_single_timestep
+   use m_flow_init_single_timestep, only: flow_init_single_timestep
+   use m_flow_finalize_single_timestep, only: flow_finalize_single_timestep
+   use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
+   use m_write_some_final_output, only: write_some_final_output
    use iso_c_binding
    use unstruc_api
    use m_gui ! this should be removed when jaGUI = 0 by default
@@ -63,6 +68,7 @@ module bmi
    use m_nearfield
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
    use m_update_land_nodes
+   use m_find_name, only: find_name
 
    implicit none
 
@@ -88,7 +94,6 @@ module bmi
    real(c_double), target, allocatable, save :: TcrEro(:, :)
    real(c_double), target, allocatable, save :: TcrSed(:, :)
    integer, private :: iconst
-   integer, external :: findname
 
    integer(c_int), parameter :: var_count_compound = 11 ! pumps, weirs, orifices, gates, generalstructures, culverts, sourcesinks, dambreak, observations, crosssections, laterals ! TODO: AvD: temp, as long as this is not templated
 contains
@@ -484,7 +489,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jampi == 1) then
 !        finalize before exit
@@ -778,7 +783,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          type_name = "double"
@@ -851,7 +856,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          rank = 1
@@ -983,7 +988,7 @@ contains
       include "bmi_get_var_shape.inc"
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          shape(1) = ndkx
@@ -1293,7 +1298,7 @@ contains
       ! TODO: AvD: add returns to all auto generated cases to avoid unnecessary fall-through
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          call realloc(const_t, (/ndkx, numconst/), keepExisting=.true.)
@@ -1583,7 +1588,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          call c_f_pointer(xptr, x_1d_double_ptr, (/ndkx/))
@@ -1748,7 +1753,7 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -1806,9 +1811,9 @@ contains
       integer(c_int), pointer :: npli(:)
 
       integer :: i, npli_pts, nxln
-      double precision :: thdh
+      real(kind=dp) :: thdh
       logical :: with_z
-      double precision, dimension(:), allocatable :: dSL
+      real(kind=dp), dimension(:), allocatable :: dSL
       integer, dimension(:), allocatable :: iLnx, ipol
 
       ! The fortran name of the attribute name
@@ -2221,7 +2226,7 @@ contains
          case default
             !       assume this is a tracer
             !       get constituent number for this tracer
-            iconst = findname(NUMCONST, const_names, field_name)
+            iconst = find_name(const_names, field_name)
 
             if (iconst == 0) then
                !          tracer not found
@@ -2373,7 +2378,7 @@ contains
       case ('water_temperature')
          constituent_index = ITEMP
       case default
-         constituent_index = findname(NUMCONST, const_names, constituent_name)
+         constituent_index = find_name(const_names, constituent_name)
          if (iconst == 0) then
             !        tracer not found
             c_lateral_pointer = c_null_ptr
@@ -2946,8 +2951,8 @@ contains
 
       type(tface) :: cell
       integer :: edgeIndex
-      double precision :: linkX1, linkX2, linkY1, linkY2
-      double precision :: angle
+      real(kind=dp) :: linkX1, linkX2, linkY1, linkY2
+      real(kind=dp) :: angle
 
       real(c_double), target :: valuet
       type(c_ptr) :: xptr
@@ -3292,16 +3297,16 @@ contains
 !    integer                                 :: numc
 !    integer                                 :: n6
 !    real(c_double), pointer                 :: res(:)
-!    double precision, allocatable           :: sv(:,:)
+!    real(kind=dp), allocatable           :: sv(:,:)
 !    integer, allocatable                    :: ipsam(:)
-!    double precision, allocatable           :: cz(:,:)
-!    double precision, allocatable           :: cxx(:,:)
-!    double precision, allocatable           :: cyy(:,:)
+!    real(kind=dp), allocatable           :: cz(:,:)
+!    real(kind=dp), allocatable           :: cxx(:,:)
+!    real(kind=dp), allocatable           :: cyy(:,:)
 !    integer                                 :: meth
 !    integer                                 :: nmin
-!    double precision                        :: csize
+!    real(kind=dp)                        :: csize
 !    integer                                 :: i, j, k, IAVtmp, NUMMINtmp, INTTYPEtmp, ierr
-!    double precision                        :: RCELtmp
+!    real(kind=dp)                        :: RCELtmp
 !
 !    ! cache interpolation settings
 !    IAVtmp = IAV
@@ -3470,18 +3475,18 @@ contains
 
       real(c_double), pointer :: ptr(:) ! temporary pointer
 
-      double precision, dimension(:), target, allocatable, save :: xout, yout !< memory leak
+      real(kind=dp), dimension(:), target, allocatable, save :: xout, yout !< memory leak
       integer, dimension(:), target, allocatable, save :: feature_ids !< memory leak
       integer, dimension(:), target, allocatable :: dummy_ids !< temporary storage for snappnt
-      double precision, dimension(:), allocatable :: xintemp, yintemp
+      real(kind=dp), dimension(:), allocatable :: xintemp, yintemp
       integer :: ntemp
-      double precision, dimension(:), allocatable :: xin, yin
+      real(kind=dp), dimension(:), allocatable :: xin, yin
 
       ! Dambreak
       integer :: startIndex, i, noutSnapped, lstart, oldSize
-      double precision, dimension(:), target, allocatable :: xSnapped, ySnapped
-      double precision, allocatable, dimension(:, :) :: xSnappedLinks, ySnappedLinks
-      double precision :: start_location_x, start_location_y, x_breach, y_breach
+      real(kind=dp), dimension(:), target, allocatable :: xSnapped, ySnapped
+      real(kind=dp), allocatable, dimension(:, :) :: xSnappedLinks, ySnappedLinks
+      real(kind=dp) :: start_location_x, start_location_y, x_breach, y_breach
 
       c_ierror = 1
 
@@ -3802,8 +3807,8 @@ contains
       !return error code
       integer :: ierr
       !locals
-      double precision :: xa, ya, xb, yb, xm, ym, crpm, distanceStartPolygon
-      double precision, pointer :: xVerticesCoordinates(:), yVerticesCoordinates(:)
+      real(kind=dp) :: xa, ya, xb, yb, xm, ym, crpm, distanceStartPolygon
+      real(kind=dp), pointer :: xVerticesCoordinates(:), yVerticesCoordinates(:)
       integer :: l, k1, k2, crossed, isec
       integer, allocatable, target, save :: indexes(:) !as commented above, this is a memory leak of lnx integers
 

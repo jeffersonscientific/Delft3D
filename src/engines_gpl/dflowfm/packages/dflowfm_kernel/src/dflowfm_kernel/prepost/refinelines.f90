@@ -31,6 +31,8 @@
 !
 
   subroutine REFINELINES()
+     use precision, only: dp
+     use m_connect, only: connect
      use m_netw
      use M_GRIDSETTINGS
      use m_missing, only: dmiss, jins
@@ -43,7 +45,7 @@
      integer :: k2
      integer :: l
      integer :: lnu
-     double precision :: r0, XX, YY, ZZ
+     real(kind=dp) :: r0, XX, YY, ZZ
 
      if (MFAC <= 1) return
 
