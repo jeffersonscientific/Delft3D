@@ -273,3 +273,4 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
    if (timon) call timstop(ithndl)
    return
 end subroutine solve_vertical
+end module m_solve_vertical
