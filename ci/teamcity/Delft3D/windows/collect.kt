@@ -68,7 +68,7 @@ object WindowsCollect : BuildType({
     }
 
     dependencies {
-        dependency(WindowsBuild) {
+        dependency(Delft3DSobek_OssBuilds_BuildOssWin64vs2019if23) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
