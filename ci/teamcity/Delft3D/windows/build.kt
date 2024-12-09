@@ -65,6 +65,7 @@ object WindowsBuild : BuildType({
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
     }
 
