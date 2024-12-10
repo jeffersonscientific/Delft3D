@@ -350,14 +350,14 @@ contains
       cm = amm * exp(em * t)
 
       cfree = sqrt(g * h)
-      omfree = -imag(em); TfreeL = twopi / omfree; TFreel = time1 / TfreeL
+      omfree = -aimag(em); TfreeL = twopi / omfree; TFreel = time1 / TfreeL
       cfree = omfree / k
 
       cflfreeL = cfree * dts / deltax
       ndxfreeL = ndxforced
       ndtfreeL = ndxfreeL / cflfreeL; ndtfreeL = min(999, ndtfreeL)
 
-      reltim = -1d0 / dreal(ep) ! relaxation period
+      reltim = -1d0 / real(ep) ! relaxation period
       if (time1 > reltim) then
          relday = reltim / (24 * 3600)
          rnrel = reltim / (twopi / omfree)
