@@ -42,14 +42,14 @@ module m_intrinsic_replacements
 
 contains
 
-   pure function cosd(degrees) result(res)
+   pure elemental function cosd(degrees) result(res)
       real(kind=dp), intent(in) :: degrees
       real(kind=dp) :: res
 
       res = cos(degrees * degrees_to_radians)
    end function cosd
 
-   pure function sind(degrees) result(res)
+   pure elemental function sind(degrees) result(res)
       real(kind=dp), intent(in) :: degrees
       real(kind=dp) :: res
 
