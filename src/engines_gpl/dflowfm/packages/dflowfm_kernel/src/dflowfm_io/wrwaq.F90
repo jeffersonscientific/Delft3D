@@ -1775,8 +1775,6 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      write(88,*) 'In waq_wri_coupling'
-
       write (msgbuf, *) 'In waq_wri_couple_files: #', it_waq, ', time: ', time
       it_waq = it_waq + 1
       call msg_flush()
@@ -1790,7 +1788,6 @@ contains
           waqpar%volprev = waqpar%vol
       endif
 
-      write(88,*) 'In waq_wri_coupling: write volume'
       call waq_wri_vol(itim, defaultFilename('vol'), waqpar%lunvol)
       ! TODO: AvD: add a 'mode' 0/1/2 similar to Delft3D, so that we can write some quantities
       ! at *start* of *next* timestep instead of currently at the *end* of *current* timestep.
@@ -1823,7 +1820,6 @@ contains
 
       ! For first step, do not write any flux-related quantities (note the return).
       if (it_waq > 1) then
-         write(88,*) 'In waq_wri_coupling: write area/flow'
          ! Area file (flow areas)
          call waq_wri_are(itim_prev, defaultFilename('are'), waqpar%lunare)
          ! AvD: NOTE: A bit strange, au is *not* accumulated, defined at time1, but still printed
@@ -1865,7 +1861,6 @@ contains
       end if
       itim_prev = itim
 
-      write(88,*) 'waq_wri_coupling - done'
    end subroutine waq_wri_couple_files
 !
 !------------------------------------------------------------------------------
@@ -3075,7 +3070,6 @@ contains
       end if
 
       ! Call the waq-flo file writer
-      write(88,*) 'D-Flow FM: waq_wri_are ', itim, waqpar%area(100:110)
       if (.not. waqpar%online_hydrodynamics) then
           call wrwaqbin(itim, waqpar%area, waqpar%num_exchanges, filename, waq_format_ascii, lun)
       end if
@@ -3182,7 +3176,6 @@ contains
       end if
 
       ! Call the waq-flo file writer
-      write(88,*) 'D-Flow FM: waq_wri_flo ', itim, waqpar%qag(100:110)
       if (.not. waqpar%online_hydrodynamics) then
           call wrwaqbin(itim, waqpar%qag, waqpar%num_exchanges, filename, waq_format_ascii, lun)
       end if
