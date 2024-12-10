@@ -5289,7 +5289,7 @@ contains
       character(16) :: dxname
       character(64) :: dxdescr
       character(15) :: transpunit
-      real(kind=dp) :: rhol, mortime, wavfac
+      real(kind=dp) :: rhol, mortime, wavfac, hmlwL, huL
       real(kind=dp) :: moravg, dmorft, dmorfs, rhodt
       real(kind=dp) :: um, ux, uy, dzu
       real(kind=dp), dimension(:, :), allocatable :: poros, toutputx, toutputy, sxtotori, sytotori
