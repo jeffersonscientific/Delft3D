@@ -21,6 +21,11 @@ object WindowsBuildEnvironment : BuildType({
     buildNumberPattern = "%build.vcs.number%"
     description = "Delft3D Windows build container."
 
+    params {
+        param("trigger.type", "")
+        param("container.tag", "vs2019-oneapi2023")
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -57,7 +62,7 @@ object WindowsBuildEnvironment : BuildType({
                 contextDir = "ci/dockerfiles"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
                 """.trimIndent()
                 commandArgs = "--no-cache"
@@ -67,10 +72,12 @@ object WindowsBuildEnvironment : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
                 """.trimIndent()
             }
+            executionMode = ExecutionMode.RUN_ON_SUCCESS
+            enabled = "%trigger.type% != 'schedule'"
         }
     }
 
@@ -79,7 +86,14 @@ object WindowsBuildEnvironment : BuildType({
             triggerRules = """
                 +:ci/dockerfiles/**
             """.trimIndent()
+        schedule {
+            schedulingPolicy = cron("0 0 * * 0") // This cron expression runs the job every Sunday at midnight
             branchFilter = "+:<default>"
+            triggerBuild = always()
+            withPendingChangesOnly = false
+            parameters {
+                param("trigger.type", "schedule")
+            }
         }
     }
 
