@@ -60,7 +60,7 @@
       double precision :: waterLevelDownstreamLocationY     = -999d0
       character(IdLen) :: waterLevelUpstreamNodeId          = ''
       character(IdLen) :: waterLevelDownstreamNodeId        = ''
-      character(IdLen):: levelsAndWidths                   = ''
+      character(IdLen) :: levelsAndWidths                   = ''
 
       ! State variables, not to be read
       integer          :: phase
@@ -71,24 +71,25 @@
       double precision :: maximumAllowedWidth = - 1.0d0
 
    end type
-   
+
    double precision, parameter :: hoursToSeconds = 3600.0d0
 
    private
 
    contains
-
+   !> This routine sets dambreak%crl and dambreak%width, these varuables are needed
+   !! in the actual dambreak computation in dflowfm_kernel
    subroutine prepareComputeDambreak(dambreak, s1m1, s1m2, u0, time1, dt, maximumWidth)
    use ieee_arithmetic, only: ieee_is_nan
 
 
-   type(t_dambreak), pointer, intent(inout) :: dambreak
-   double precision, intent(in)             :: s1m1
-   double precision, intent(in)             :: s1m2
-   double precision, intent(in)             :: u0
-   double precision, intent(in)             :: time1
-   double precision, intent(in)             :: dt
-   double precision, intent(in)             :: maximumWidth
+   type(t_dambreak), pointer, intent(inout) :: dambreak      ! dambreak settings for a single dambreak
+   double precision, intent(in)             :: s1m1          ! waterlevel at upstream link from dambreak position
+   double precision, intent(in)             :: s1m2          ! waterlevel at downstream link from dambreak position
+   double precision, intent(in)             :: u0            ! normal velocity at dambreak position
+   double precision, intent(in)             :: time1         ! current time
+   double precision, intent(in)             :: dt            ! timestep
+   double precision, intent(in)             :: maximumWidth  ! maximum width
 
    !locals
    double precision :: smax
@@ -104,7 +105,7 @@
    double precision :: waterLevelJumpDambreak
    double precision :: breachWidthDerivative
 
-   ! form intial timestep
+   ! form initial timestep
    timeFromBreaching = time1 - dambreak%t0
    breachWidthDerivative = 0.d0
    waterLevelJumpDambreak = 0.d0
