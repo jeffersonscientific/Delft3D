@@ -368,7 +368,6 @@ module fm_external_forcings_data
    integer, parameter :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
    integer, parameter :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
    integer :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
-   character(len=128) :: dambreakWideningString = 'symmetric-asymmetric' !< method for dambreak widening (string for input processing)
    integer :: ndambreaklinks !< nr of dambreak links
    integer :: ndambreaksignals !< nr of dambreak signals
    integer, allocatable :: L1dambreaksg(:) !< first dambreak link for each signal
