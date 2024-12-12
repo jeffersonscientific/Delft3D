@@ -44,8 +44,9 @@ contains
    subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1, L2, strucid)
       use precision, only: dp
 
-      use m_flowgeom
-      use fm_external_forcings_data
+      use m_flowgeom, only: bob, bob0
+      use fm_external_forcings_data, only: kdambreak, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM, activeDambreakLinks, &
+                                           dambreakLinksEffectiveLength, dambreakLinksActualLength, dambreakWidening
       use MessageHandling
 
       implicit none
