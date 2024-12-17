@@ -1604,7 +1604,7 @@ contains
       call prop_get(md_ptr, 'waves', 'Wavemodelnr', jawave)
       call prop_get(md_ptr, 'waves', 'Waveforcing', waveforcing)
       call prop_get(md_ptr, 'waves', 'WavePeakEnhancementFactor', JONSWAPgamma0)
-      if (jawave == 6) then    ! backward compatibility
+      if (jawave == 6) then ! backward compatibility
          write (msgbuf, '(a,i0,a)') 'Wavemodelnr = ', waveforcing, ' is now merged with the offline wave functionality (wavemodelnr=7), and option 6 is deprecated.'
          call mess(LEVEL_WARN, msgbuf)
          jawave = 7
@@ -2034,8 +2034,8 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', jamapu1, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', jamapu0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', jamapucvec, success)
-      ! jre wm67
-      if ((jawave == 3 .or. jawave == 6) .and. jamapucvec == 0) then
+      !
+      if (jawave == 3 .and. jamapucvec == 0) then ! only needed for 2 way coupling
          jamapucvec = 1
          write (msgbuf, '(a, i0, a)') 'MDU setting "Wavemodelnr = ', jawave, '" requires ' &
             //'"Wrimap_velocity_vector = 1". Has been enabled now.'
@@ -3558,7 +3558,7 @@ contains
 
       ! jre wm67
       if (writeall .or. jawave > 0) then
-         call prop_set(prop_ptr, 'waves', 'Wavemodelnr', jawave, 'Wave model nr. (0: none, 1: fetch/depth limited hurdlestive, 2: Young-Verhagen, 3: SWAN, 5: uniform, 6: SWAN-NetCDF, 7: Offline Wave Coupling')
+         call prop_set(prop_ptr, 'waves', 'Wavemodelnr', jawave, 'Wave model nr. (0: none, 1: fetch/depth limited hurdlestive, 2: Young-Verhagen, 3: SWAN, 5: uniform, 7: Offline Wave Coupling')
          call prop_set(prop_ptr, 'waves', 'Rouwav', rouwav, 'Friction model for wave induced shear stress: FR84 (default) or: MS90, HT91, GM79, DS88, BK67, CJ85, OY88, VR04')
          call prop_set(prop_ptr, 'waves', 'Gammax', gammax, 'Maximum wave height/water depth ratio')
          call prop_set(prop_ptr, 'waves', 'uorbfac', jauorb, 'Orbital velocities: 0=D3D style; 1=Guza style')

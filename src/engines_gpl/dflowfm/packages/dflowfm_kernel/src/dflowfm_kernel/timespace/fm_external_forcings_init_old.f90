@@ -1271,7 +1271,7 @@ contains
                call qnerror(' ', 'Quantity WINDX_WINDY_AIRPRESSURE must be renamed to airpressure_windx_windy in the ext-file.', ' ')
                success = .false.
             else if (trim(qid) == "wavesignificantheight") then
-               if (jawave == 6 .or. jawave == 7) then
+               if (jawave == 7) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
@@ -1279,7 +1279,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "waveperiod") then
-               if (jawave == 6 .or. jawave == 7) then
+               if (jawave == 7) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7')
