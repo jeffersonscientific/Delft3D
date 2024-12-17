@@ -34,6 +34,7 @@ module m_flowparameters
    use precision, only: dp
    use m_sediment, only: jased
    use m_missing
+   use m_waveconst
 
    implicit none
 
@@ -749,7 +750,7 @@ contains
 
       jacali = 0 !< Include calibration factor for roughness
 
-      jawave = 0 ! Include wave model nr
+      jawave = NO_WAVES ! Include wave model nr
 
       waveforcing = 0 !< Include wave forcing
 

@@ -2169,6 +2169,7 @@ contains
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       use m_sferic, only: jsferic
       use, intrinsic :: iso_c_binding
+      use m_waveconst
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
       type(t_output_variable_set), intent(inout) :: output_set !< output set that items need to be added to
@@ -2549,14 +2550,14 @@ contains
          end if
 
          ! Wave model
-         if (jawave > 0 .and. jahiswav > 0) then
+         if (jawave > NO_WAVES .and. jahiswav > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_HWAV), valobs(:, IPNT_WAVEH))
             !call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_HWAV_SIG),valobs(:,IPNT_HS)                                    )
             ! TODO: hwav sig vs. rms
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TWAV), valobs(:, IPNT_WAVET))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PHIWAV), valobs(:, IPNT_WAVED))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RLABDA), valobs(:, IPNT_WAVEL))
-            if (jawave == 4) then
+            if (jawave == WAVE_SURFBEAT) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_R), valobs(:, IPNT_WAVER))
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UORB), valobs(:, IPNT_WAVEU))
@@ -2669,12 +2670,12 @@ contains
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCY), SSCY)
                end if
-               if (stmpar%morpar%moroutput%sbwuv .and. jawave > 0 .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
                   function_pointer => calculate_sediment_SBW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWY), SBWY)
                end if
-               if (stmpar%morpar%moroutput%sswuv .and. jawave > 0 .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
                   function_pointer => calculate_sediment_SSW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWY), SSWY)

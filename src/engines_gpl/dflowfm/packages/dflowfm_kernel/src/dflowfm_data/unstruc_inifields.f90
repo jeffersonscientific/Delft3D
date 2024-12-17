@@ -1481,6 +1481,7 @@ contains
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs
       use string_module, only: str_tolower
+      use m_waveconst
 
       implicit none
 
@@ -1682,7 +1683,7 @@ contains
          iCdtyp = 1 ! only 1 coeff
          !
       case ('wavesignificantheight')
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
          else

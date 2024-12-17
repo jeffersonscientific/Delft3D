@@ -29,32 +29,29 @@
 
 !
 !
-module m_k_plot_plus_min
-   use m_textflow
+module m_waveconst
 
    implicit none
-contains
-   subroutine KPLOTPLUSMIN(IPM)
-      use M_FLOWGEOM, only: ntheta
-      use M_FLOW, only: kmx, kplotfrombedorsurface, kplot, jawave
-      use m_xbeach_data, only: itheta_view
-      use m_waveconst
 
-      integer :: IP, IPM
+   ! wavemodelnr
+   integer, parameter :: NO_WAVES = 0
+   integer, parameter :: WAVE_FETCH_HURDLE = 1
+   integer, parameter :: WAVE_FETCH_YOUNG = 2
+   integer, parameter :: WAVE_SWAN_ONLINE = 3
+   integer, parameter :: WAVE_SURFBEAT = 4
+   integer, parameter :: WAVE_UNIFORM = 5
+   integer, parameter :: WAVE_NC_OFFLINE = 7
+   
+   ! wave forcing
+   integer, parameter :: NO_WAVEFORCES = 0
+   integer, parameter :: WAVEFORCES_RADIATIONSTRESS = 1
+   integer, parameter :: WAVEFORCES_DISSIPATION = 2
+   integer, parameter :: WAVEFORCES_DISSIPATION3D = 3
+   
+   ! Stokes drift profile
+   integer, parameter :: NO_STOKES_DRIFT = 0
+   integer, parameter :: STOKES_DRIFT_DEPTHUNIFORM = 1
+   integer, parameter :: STOKES_DRIFT_2NDORDER = 2
+   
 
-      if (kmx >= 1) then
-
-         ip = ipm
-         if (kplotfrombedorsurface /= 1) then
-            ip = -1 * ipm
-         end if
-
-         KPLOT = KPLOT + ip
-         kplot = max(1, min(kplot, kmx))
-
-         call TEXTFLOW()
-      else if (jawave == WAVE_SURFBEAT) then
-         itheta_view = max(min(itheta_view + sign(1, ipm), ntheta), 1)
-      end if
-   end subroutine KPLOTPLUSMIN
-end module m_k_plot_plus_min
+end module m_waveconst
