@@ -665,7 +665,7 @@ contains
          ! the name of the source item created by the file reader will be the same as the ext.force. quant name
          sourceItemName = target_name
          ! this file contains wave data
-         if (jawave == 3) then
+         if (jawave == WAVE_SWAN_ONLINE) then
             ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
             fileReaderPtr%one_time_field = .true.
          end if

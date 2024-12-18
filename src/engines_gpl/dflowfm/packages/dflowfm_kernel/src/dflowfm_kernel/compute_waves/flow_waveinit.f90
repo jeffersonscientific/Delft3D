@@ -88,7 +88,7 @@ contains
       call realloc(usty_cc, ndkx, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('usty_cc  (ndkx)', ierr, ndkx)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_SURFBEAT .or. jawave == WAVE_NC_OFFLINE) then
          call realloc(wavfu, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('wavfu  (lnkx)', ierr, lnkx)
          call realloc(wavfv, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
@@ -103,7 +103,7 @@ contains
          call aerr('sbywav  (ndx)', ierr, ndx)
       end if
 
-      if (jawave == 3 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
          call realloc(wavmubnd, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('wavmubnd  (lnkx)', ierr, lnkx)
          call realloc(uorbwav, ndx, stat=ierr, keepExisting=.false., fill=0d0)
@@ -123,14 +123,14 @@ contains
          call aerr('distot(ndx)', ierr, ndx)
       end if
       !
-      if (jawave == 3 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
          call realloc(hwavcom, ndx, stat=ierr, keepExisting=.false., fill=hwavuni)
          call aerr('hwavcom   (ndx)', ierr, ndx)
          call realloc(twavcom, ndx, stat=ierr, keepExisting=.false., fill=twavuni)
          call aerr('twavcom   (ndx)', ierr, ndx)
       end if
       !
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          if (trim(instat) == 'stat' .or. &
              trim(instat) == 'stat_table') then
             call allocstatsolverarrays(0, ierr)

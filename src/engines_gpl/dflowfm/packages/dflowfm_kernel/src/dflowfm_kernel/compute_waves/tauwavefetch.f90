@@ -134,9 +134,9 @@ subroutine tauwavefetch(tim)
          if (FetchL > 0) then
 
             select case (jawave)
-            case (1)
+            case (WAVE_FETCH_HURDLE)
                call hurdlestive(U10, fetchL, fetchD, Hsig, Tsig)
-            case (2)
+            case (WAVE_FETCH_YOUNG)
                call ian_young_pt(U10, fetchL, fetchD, Hsig, Tsig)
             end select
 

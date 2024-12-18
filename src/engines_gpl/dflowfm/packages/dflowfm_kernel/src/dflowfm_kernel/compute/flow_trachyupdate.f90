@@ -56,6 +56,7 @@ contains
       use m_vegetation, only: alfav
       use m_waves, only: ustokes
       use m_get_kbot_ktop
+      use m_waveconst
       !
       implicit none
       !
@@ -136,7 +137,7 @@ contains
          ! - D3D4 uses GLM velocities for trachytopes. Not sure if that is conceptually correct, to discuss.
          !   For now, I added the code to use eulerian vector for consistency
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             if (.not. allocated(u1eul)) then
                allocate (u1eul(1:lnkx), stat=ierr)
             end if

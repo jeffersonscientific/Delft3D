@@ -231,7 +231,7 @@ contains
             zlin = dmiss
          end if
       else if (linval == 48) then
-         if (jawave > 2 .and. jawave < 5) then
+         if (jawave > WAVE_FETCH_HURDLE .and. jawave < WAVE_UNIFORM) then
             zlin = wavfu(L)
          end if
       else if (linval == 54 .and. stm_included) then

@@ -113,7 +113,7 @@ contains
          vstokes(LL) = sintu * ag * asg * asg * rk / omeg / 2d0 / hu(LL)
 
          ! add 3D roller contribution to stokes drift
-         if (jawave == 4 .and. roller == 1) then
+         if (jawave == WAVE_SURFBEAT .and. roller == 1) then
             ! roller mass flux
             rmax = 0.125d0 * rhomean * ag * (gammaxxb * h)**2
             erol = min(0.5d0 * (R(k1) + R(k2)), rmax)

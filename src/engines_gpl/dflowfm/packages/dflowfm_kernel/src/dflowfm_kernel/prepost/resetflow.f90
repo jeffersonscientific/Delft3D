@@ -101,7 +101,7 @@ contains
 
     call reset_statistics()
 
-    if (jawave == 4) then
+    if (jawave == WAVE_SURFBEAT) then
        call xbeach_reset()
     end if
 

@@ -54,10 +54,8 @@ contains
 
       ust_mag = 0d0
       fwav_mag = 0d0
-      if (jawave /= 4) then
-         ustx_cc = 0d0
-         usty_cc = 0d0
-      end if
+      ustx_cc = 0d0
+      usty_cc = 0d0
 
       do L = 1, lnx ! safe for 3D
          k1 = ln(1, L); k2 = ln(2, L)
@@ -73,7 +71,7 @@ contains
       end do
       ust_mag = hypot(ustx_cc, usty_cc)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_SURFBEAT .or. jawave == WAVE_NC_OFFLINE) then
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt

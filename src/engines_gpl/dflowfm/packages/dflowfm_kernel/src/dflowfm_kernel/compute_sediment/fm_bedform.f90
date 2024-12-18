@@ -36,6 +36,7 @@ module m_calbedform
    use m_comp_fluxhor3d, only: comp_fluxhor3d
    use m_comp_dxiau, only: comp_dxiau
    use m_setucxucy_mor, only: setucxucy_mor
+   use m_waveconst
 
    implicit none
 
@@ -63,6 +64,7 @@ contains
       use m_waves
       use m_get_kbot_ktop
       use m_get_cz
+      use m_waveconst
       !
       implicit none
       !
@@ -139,7 +141,7 @@ contains
       end if
       czn = 0d0; czu = 0d0; u1eul = 0d0
       !
-      if (jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          u1eul = u1 - ustokes
          call setucxucy_mor(u1eul)
       end if
@@ -728,7 +730,7 @@ contains
       z0rou = 0d0; deltas = 0d0
       !
       ! Calculate Eulerian velocities at old time level
-      if (jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          if (.not. allocated(u0eul)) then
             allocate (u0eul(1:lnkx), stat=ierr)
          end if
@@ -767,7 +769,7 @@ contains
          relaxd = exp(-dt_user / max(1.0e-20_fp, par6))
          !
          maxdepfrac = 0.05d0
-         if (v2dwbl > 0 .and. jawave > 0 .and. kmx > 0) then
+         if (v2dwbl > 0 .and. jawave > NO_WAVES .and. kmx > 0) then
             deltas = 0d0
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
@@ -786,7 +788,7 @@ contains
                call getkbotktop(k, kb, kt)
                kmaxx = kb
                !
-               if (v2dwbl > 0 .and. (jawave > 0) .and. .not. flowWithoutWaves .and. kmx > 0) then
+               if (v2dwbl > 0 .and. (jawave > NO_WAVES) .and. .not. flowWithoutWaves .and. kmx > 0) then
                   !
                   ! Determine representative 2Dh velocity based on velocities in first layer above wave boundary layer
                   ! kmaxx is the first layer with its centre above the wave boundary layer
@@ -813,7 +815,7 @@ contains
                   u2dh = umod * (log((1d0 + hs(k)) / z0rou(k)) - 1d0) / (log(zz / z0rou(k)) - 1d0)
                end if
                !
-               if (jawave > 0 .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
                   hh = hwav(k) * sqrt(2.0_fp)
                   llabda = max(0.1_fp, rlabda(k))
                   arg = 2.0_fp * pi * depth / llabda

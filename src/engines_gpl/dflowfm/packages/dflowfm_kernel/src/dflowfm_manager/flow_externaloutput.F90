@@ -201,7 +201,7 @@ contains
     call timstop(handle_extra(78))
 
     ! Write com file
-    if (jawave == 3) then
+    if (jawave == WAVE_SWAN_ONLINE) then
        !
        if (ti_com /= dt_user .or. ti_ctv(1) > 0) then
           !

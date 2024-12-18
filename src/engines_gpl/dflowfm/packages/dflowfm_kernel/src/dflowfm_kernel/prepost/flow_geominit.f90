@@ -1497,7 +1497,7 @@ contains
     end if
 
 !JRE
-    if (jawave == 4) then
+    if (jawave == WAVE_SURFBEAT) then
        call xbeach_makethetagrid()
        call makethindamadmin()
        ! now that ntheta is determined:

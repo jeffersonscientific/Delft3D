@@ -157,7 +157,7 @@ subroutine flow_sedmorinit()
 
    do i = 1, stmpar%lsedtot
       if (stmpar%trapar%iform(i) == 19 .or. stmpar%trapar%iform(i) == 20) then
-         if (jawave /= 4) then
+         if (jawave /= WAVE_SURFBEAT) then
             call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Sediment transport formula '//trim(stmpar%trapar%name(i))//' is not supported without the surfbeat model.')
             return
          end if
@@ -167,11 +167,11 @@ subroutine flow_sedmorinit()
    ! Set transport velocity definitions according to morfile settings
    !
    jatranspvel = 1 ! default eul bedload, lag susp load
-   if (stmpar%morpar%eulerisoglm .and. jawave > 0) then
+   if (stmpar%morpar%eulerisoglm .and. jawave > NO_WAVES) then
       jatranspvel = 2 ! everything euler
    end if
 
-   if (stmpar%morpar%eulerisoglm .and. jawave == 0) then
+   if (stmpar%morpar%eulerisoglm .and. jawave == NO_WAVES) then
       call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - EulerISOGLM set to .false., as waves are not modeled.')
    end if
 
@@ -447,12 +447,12 @@ subroutine flow_sedmorinit()
          call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Could not allocate bermslope arrays. Bermslope transport switched off.')
          stmpar%morpar%bermslopetransport = .false.
       end if
-      if (jawave > 0 .and. jawave /= 4) then
+      if (jawave > NO_WAVES .and. jawave /= WAVE_SURFBEAT) then
          if (comparereal(gammax, stmpar%morpar%bermslopegamma) == 0) then
             stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4 ! if they are exactly the same, rounding errors set index to false wrongly
          end if
       end if
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          if (comparereal(gammaxxb, stmpar%morpar%bermslopegamma) == 0) then
             stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4
          end if

@@ -401,7 +401,7 @@ contains
                      end if
 
                      ! JRE: add roller induced viscosity
-                     if ((jawave == 4) .and. (swave == 1) .and. (roller == 1)) then
+                     if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
                         DRL = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
                         nuhroller = nuhfac * hu(L) * (DRL / rhomean)**(1d0 / 3d0)
                         vicL = max(nuhroller, vicL)

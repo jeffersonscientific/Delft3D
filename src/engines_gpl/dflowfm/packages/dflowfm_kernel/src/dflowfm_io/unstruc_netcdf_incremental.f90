@@ -359,6 +359,8 @@ contains
    function def_var_classmap_ugrid(name, ncid, id_twodim, var_id_class_bnds, var_id_jumps, incids) result(ierr)
       use m_missing, only: dmiss
       use fm_location_types
+      use m_waveconst
+      
       type(t_unc_mapids), intent(inout) :: incids !< class file and other NetCDF ids.
       character(len=*), intent(in) :: name !< name of the variable
       integer, intent(in) :: ncid !< the NetCDF file Id
@@ -392,7 +394,7 @@ contains
          lbound = 0d0
       else if (name == 'ucmag') then
          unit = 'm s-1'
-         if (jaeulervel == 1 .and. jawave > 0) then
+         if (jaeulervel == 1 .and. jawave > NO_WAVES) then
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_eulerian_speed', 'Flow element center Eulerian velocity magnitude', unit)
          else
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_speed', 'Flow element center velocity magnitude', unit)
@@ -404,7 +406,7 @@ contains
          lbound = 0d0
       else if (name == 'ucdir') then
          unit = 'degree'
-         if (jaeulervel == 1 .and. jawave > 0) then
+         if (jaeulervel == 1 .and. jawave > NO_WAVES) then
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_eulerian_velocity_to_direction', 'Flow element center Eulerian velocity direction', unit)
          else
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_velocity_to_direction', 'Flow element center velocity direction', unit)

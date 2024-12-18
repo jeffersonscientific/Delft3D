@@ -122,6 +122,7 @@ contains
       use m_flowparameters, only: eps10
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
+      use m_waveconst
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
@@ -237,7 +238,7 @@ contains
          end do
       end if
 
-      if ((jawave == 1 .or. jawave == 2) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
          call tauwavefetch(time_in_seconds)
       end if
 
@@ -384,6 +385,7 @@ contains
    subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
       use m_waves
       use m_flowparameters, only: jawave, waveforcing
+      use m_waveconst
 
       integer, intent(in) :: number_of_links !< number of links
       integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
@@ -392,7 +394,7 @@ contains
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
 
-      if (jawave == 7 .and. waveforcing == 2) then
+      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 2) then
          do link = 1, number_of_links
             kb = link2cell(1, link)
             ki = link2cell(2, link)
@@ -947,7 +949,7 @@ contains
             call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0d0)
             call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0d0
          else if (qidfm == 'absgenbnd') then
-            if (.not. (jawave == 4)) then ! Safety to avoid allocation errors later on
+            if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
                call qnerror('Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.', '  ', ' ')
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
@@ -1146,7 +1148,7 @@ contains
 
       else if (nbndu > 0 .and. (qid == 'dischargebnd' .or. qid == 'criticaloutflowbnd' .or. qid == 'weiroutflowbnd' .or. qid == 'absgenbnd')) then
          if (qid == 'absgenbnd') then
-            jawave = 4
+            jawave = WAVE_SURFBEAT
          end if
          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcing_file, targetindex=targetindex)
 
@@ -1975,7 +1977,7 @@ contains
       call init_1d2d()
 
       ! JRE ================================================================
-      if (nbndw > 0 .and. .not. (jawave == 4)) then
+      if (nbndw > 0 .and. .not. (jawave == WAVE_SURFBEAT)) then
          call qnerror('Wave energy boundary defined without setting correct wavemodelnr.', ' ', ' ')
          iresult = DFM_WRONGINPUT
       end if
@@ -2380,8 +2382,8 @@ contains
       end if
 
       if (jawind == 0) then
-         if (jawave > 0 .and. jawave < 3) then
-            jawave = 0 ! no wind, no waves
+         if (jawave > NO_WAVES .and. jawave < WAVE_SWAN_ONLINE) then
+            jawave = NO_WAVES ! no wind, no waves
             call mess(LEVEL_INFO, 'No wind, so waves is switched off ')
          end if
          if (jatem > 1) then

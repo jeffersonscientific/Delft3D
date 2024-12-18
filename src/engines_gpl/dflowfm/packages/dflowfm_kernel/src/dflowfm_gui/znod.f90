@@ -298,8 +298,8 @@ contains
             znod = s1(kk) + zsp(kk)
          end if
 
-      else if (nodval == numoptwav .and. jawave > 0 .and. .not. flowWithoutWaves) then
-         if (jawave == 1 .or. jawave == 2) then
+      else if (nodval == numoptwav .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
             select case (waveparopt)
             case (1)
                znod = Hwav(kk)
@@ -333,10 +333,10 @@ contains
             case (1)
                znod = Hwav(kk)
             case (2)
-               if (jawave /= 4) then
+               if (jawave > NO_WAVES) then
                   !   znod = Twav(kk)
                   !elseif (windmodel.eq.0) then
-                  znod = Trep
+                  znod = twav(kk)
                   !else
                   !   znod = tt1(itheta_view,kk)
                end if
@@ -364,11 +364,11 @@ contains
             case (9)
                znod = hypot(sbxwav(kk), sbywav(kk))
             case (10)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = ustx_cc(kk)
                end if
             case (11)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = usty_cc(kk)
                end if
             case (12)
@@ -376,61 +376,56 @@ contains
             case (13)
                znod = rr(itheta_view, kk)
             case (14)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = uorb(kk)
                end if
             case (15)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = D(kk)
                end if
             case (16)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = DR(kk)
                end if
             case (17)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = R(kk)
                end if
             case (18)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = Sxx(kk)
                end if
             case (19)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = Syy(kk)
                end if
             case (20)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = Sxy(kk)
                end if
             case (21)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = kwav(kk)
                end if
             case (22)
                znod = mod(270d0 - phiwav(kk), 360d0)
 
             case (23)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = dhsdx(kk)
                end if
             case (24)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = dhsdy(kk)
                end if
             case (25)
                znod = dmiss
-               !if (jawave .eq. 4) then
-               !   if (jawind>0 .and. jawsource>0) then
-               !      znod = wsorE(itheta_view, kk)
-               !   endif
-               !end if
             case (26)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = sigt(itheta_view, kk)
                end if
             case (27)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   !if (windmodel.eq.0) then
                   znod = cgwav(kk)
                   !else
@@ -438,38 +433,23 @@ contains
                   !end if
                end if
             case (28)
-               if (jawave == 1 .or. jawave == 2) then
+               if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
                   znod = fetch(1, kk)
                end if
             case (29)
                znod = dmiss
-               !if (jawave.eq.4) then
-               !   znod = dtheta * egradcg(itheta_view,kk)
-               !endif
             case (30)
                znod = dmiss
-               !if (jawave.eq.4) then
-               !   znod = SwT(kk)
-               !endif
             case (31)
                znod = dmiss
-               !if(jawave.eq.4) then
-               !   znod = SwE(kk)
-               !endif
             case (32)
-               if (jawave == 4) then
+               if (jawave == WAVE_SURFBEAT) then
                   znod = horadvec(itheta_view, kk)
                end if
             case (33)
                znod = dmiss
-               !if(jawave.eq.4) then
-               !   znod = horadvec2(itheta_view,kk)
-               !endif
             case (34)
                znod = dmiss
-               !if(jawave.eq.4) then
-               !   znod = ma(itheta_view,kk)
-               !endif
             end select
 
          end if

@@ -356,19 +356,19 @@ contains
 
       integer :: k
 
-      if (jawave == 3 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
 
          if (.not. initialization) then
             !
-            if (jawave == 7 .and. waveforcing == 1) then
+            if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 1) then
                !
                call set_parameters_for_radiation_stress_driven_forces()
                !
-            elseif (jawave == 7 .and. waveforcing == 2) then
+            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == 2) then
                !
                call set_parameters_for_dissipation_driven_forces()
                !
-            elseif (jawave == 7 .and. waveforcing == 3) then
+            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == 3) then
                !
                call set_parameters_for_3d_dissipation_driven_forces()
             else
@@ -400,7 +400,7 @@ contains
             message = dumpECMessageStack(LEVEL_ERROR, callback_msg)
          end if
 
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! If wave model and flow model do not cover each other exactly, NaN values can propagate in the flow model.
             ! Correct for this by setting values to zero
             do k = 1, ndx
@@ -448,7 +448,7 @@ contains
                end if
             end if
 
-            all_wave_variables = .not. (jawave == 7 .and. waveforcing /= 3)
+            all_wave_variables = .not. (jawave == WAVE_NC_OFFLINE .and. waveforcing /= 3)
             call select_wave_variables_subgroup(all_wave_variables)
 
             ! In MPI case, partition ghost cells are filled properly already, open boundaries are not
@@ -474,7 +474,7 @@ contains
             end if
          end if
 
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             ! this call  is needed for bedform updates with van Rijn 2007 (cal_bf, cal_ksc below)
             ! These subroutines need uorb, rlabda
             call compute_wave_parameters()
@@ -497,7 +497,7 @@ contains
 !> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
    subroutine set_all_wave_parameters()
       ! This part must be skipped during initialization
-      if (jawave == 3) then
+      if (jawave == WAVE_SWAN_ONLINE) then
          ! Finally the delayed external forcings can be initialized
          success = flow_initwaveforcings_runtime()
       end if
@@ -541,7 +541,7 @@ contains
 
    end subroutine set_all_wave_parameters
 
-!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)
+!> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)
    subroutine set_parameters_for_radiation_stress_driven_forces()
 
       twav(:) = 0d0
@@ -555,7 +555,7 @@ contains
       uorbwav(:) = 0d0
 
    end subroutine set_parameters_for_radiation_stress_driven_forces
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via total dissipation)
+   !> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == 2 (wave forces via total dissipation)
    subroutine set_parameters_for_dissipation_driven_forces()
 
       twav(:) = 0d0
@@ -572,7 +572,7 @@ contains
 
    end subroutine set_parameters_for_dissipation_driven_forces
 
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
+   !> set wave parameters for jawave == WAVE_NC_OFFLINE (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
    subroutine set_parameters_for_3d_dissipation_driven_forces()
 
       twav(:) = 0d0

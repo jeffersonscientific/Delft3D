@@ -129,7 +129,7 @@ contains
 
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
          ! updated ustokes needed before conversion to eulerian velocities
-         if (jawave > 0 .and. .not. flowwithoutwaves) then
+         if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
             ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
             if (jawaveStokes > 0) then
@@ -145,7 +145,7 @@ contains
 
          ustbLL = sqcf * umod ! ustar based upon bottom layer/layer integral velocity
 
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             rhoL = rhomean ! for now
             if (ustw2 > 1d-8) then
                !
@@ -264,7 +264,7 @@ contains
          cfuhiLL = sqcf * sqcf / hu(Lb) ! cfuhiLL   = g / (H.C.C) = (g.K.K) / (A.A)
          cfuhi3D = cfuhiLL * umod ! cfuhi3D = frc. contr. to diagonal
 
-         if (jawave == 0 .or. flowWithoutWaves) then
+         if (jawave == NO_WAVES .or. flowWithoutWaves) then
             z0urou(LL) = z0ucur(LL) ! morfo, bedforms, trachytopes
          end if
 
@@ -272,7 +272,7 @@ contains
          nit = 0
          u1Lb = u1(Lb)
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
-         if (jawave > 0 .and. .not. flowwithoutwaves) then
+         if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             ! strictly, not necessary as ust==0 for jawavestokes==0
             if (jawavestokes > 0) then

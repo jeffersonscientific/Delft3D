@@ -40,6 +40,7 @@ module m_fm_bott3d
    use m_bndmorlyr, only: bndmorlyr
    use m_bermslopenudging, only: bermslopenudging
    use precision
+   use m_waveconst
 
    implicit none
 
@@ -156,14 +157,14 @@ contains
       ! Bed-slope and sediment availability effects for
       ! wave-related bed load transport
       !
-      if (bedw > 0.0_fp .and. jawave > 0) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES) then
          call fm_adjust_bedload(e_sbwn, e_sbwt, AVALANCHE_OFF, SLOPECOR_ON)
       end if
       !
       ! Sediment availability effects for
       ! wave-related suspended load transport
       !
-      if (susw > 0.0_fp .and. jawave > 0) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES) then
          call fm_adjust_bedload(e_sswn, e_sswt, AVALANCHE_OFF, SLOPECOR_OFF)
       end if
       !

@@ -947,7 +947,7 @@ contains
     call aerr('z0urou(lnx)', ierr, lnx)
     call realloc(taus, ndx, stat=ierr, keepExisting=.false., fill=0d0)
     call aerr('taus    (ndx)', ierr, ndx)
-    call realloc(taubxu, lnx, stat=ierr, keepExisting=.false., fill=0d0) ! Always needs to be allocated, even if jawave == 0, used in gettau()
+    call realloc(taubxu, lnx, stat=ierr, keepExisting=.false., fill=0d0) ! Always needs to be allocated, even if jawave == NO_WAVES, used in gettau()
     call aerr('taubxu(lnx)', ierr, lnx)
     call realloc(taubu, lnx, stat=ierr, keepExisting=.false., fill=0d0)
     call aerr('taubu(lnx)', ierr, lnx)

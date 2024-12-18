@@ -174,7 +174,7 @@
        end do
     end if
 
-    if ((jawave == 3 .or. jawave == 7 .or. (jawave == 4 .and. lwave == 1)) .and. .not. flowWithoutWaves) then
+    if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE .or. (jawave == WAVE_SURFBEAT .and. lwave == 1)) .and. .not. flowWithoutWaves) then
        ! add wave forces to adve
        if (kmx == 0) then ! 2D
           do L = 1, lnx

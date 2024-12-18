@@ -1287,12 +1287,9 @@ contains
       use m_flowgeom, only: lnx, ln, csu, snu, ndx
       use m_physcoef, only: ag
       use m_transform_wave_physics
+      use m_waveconst
 
       implicit none
-
-      integer, parameter :: SWAN = 3
-      integer, parameter :: CONST = 5
-      integer, parameter :: SWAN_NETCDF = 6
 
       integer :: link
       integer :: left_node
@@ -1308,10 +1305,10 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0d0)
-         if (jawave >= SWAN_NETCDF) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -1319,7 +1316,7 @@ contains
          end if
          hwav = min(hwav, gammax * hs)
          !
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
                                & distot, dsurf, dwcap, &
@@ -1337,11 +1334,11 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
-         if (jawave == SWAN_NETCDF) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -1351,7 +1348,7 @@ contains
          call wave_uorbrlabda() ! hwav gets depth-limited here
       end if
 
-      if (jawave == CONST .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flowWithoutWaves) then
          hs = max(hs, 0d0)
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()

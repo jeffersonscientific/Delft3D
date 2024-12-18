@@ -57,6 +57,8 @@ contains
       use m_sediment, only: jased, stm_included, stmpar, jamorcfl, jamormergedtuser
       use m_fm_erosed, only: duneavalan
       use m_mormerge
+      use m_waveconst
+      
       implicit none
 
       real(kind=dp) :: dtsc_loc
@@ -73,7 +75,7 @@ contains
          end if
       end if
 
-      if (jawave == 4 .and. swave == 1) then
+      if (jawave == WAVE_SURFBEAT .and. swave == 1) then
          if (.not. (trim(instat) == 'stat' .or. trim(instat) == 'stat_table')) then
             call xbeach_wave_maxtimestep()
          end if

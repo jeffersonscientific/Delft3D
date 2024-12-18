@@ -385,6 +385,7 @@ subroutine fm_wq_processes_ini_proc()
    use m_wind, only: jawind, jarain
    use date_time_utils, only: compute_reference_day
    use m_logger_helper, only: set_log_unit_number
+   use m_waveconst
 
    implicit none
 
@@ -614,7 +615,7 @@ subroutine fm_wq_processes_ini_proc()
    end if
    isffetchl = 0
    isffetchd = 0
-   if (jawave == 1 .or. jawave == 2) then ! copied from "set_external_forcings", call to "tauwavefetch"
+   if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then ! copied from "set_external_forcings", call to "tauwavefetch"
       if (icon > 0) then
          num_spatial_time_fuctions = num_spatial_time_fuctions + 1
          isffetchl = num_spatial_time_fuctions
@@ -1440,7 +1441,7 @@ subroutine copy_data_from_fm_to_wq_processes(time)
 
    if (isftau > 0) then
       ipoitau = arrpoi(iisfun) + (isftau - 1) * num_cells
-      if (jawave == 0 .or. flowWithoutWaves) then
+      if (jawave == NO_WAVES .or. flowWithoutWaves) then
          call gettaus(1, 2)
       else
          call gettauswave(jawaveswartdelwaq)

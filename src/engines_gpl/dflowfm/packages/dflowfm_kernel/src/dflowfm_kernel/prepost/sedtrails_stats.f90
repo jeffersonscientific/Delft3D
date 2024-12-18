@@ -127,6 +127,7 @@ contains
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
+      use m_waveconst
 
       implicit none
 
@@ -154,7 +155,7 @@ contains
          return
       end if
 
-      if (jawave == 0 .or. flowWithoutWaves) then ! do not overwrite current+wave induced bed shear stresses from tauwave
+      if (jawave == NO_WAVES .or. flowWithoutWaves) then ! do not overwrite current+wave induced bed shear stresses from tauwave
          call gettaus(1, 1)
       else
          call gettauswave(jawaveSwartdelwaq)
@@ -204,7 +205,7 @@ contains
          end if
       end if
 
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          twopi = 2d0 * pi
          do k = 1, ndx
             h = hs(k)
