@@ -68,7 +68,7 @@
                write(IOUT1,'(2A)') 'MATLAB> ',trim(errorline)
             enddo
             close(unit)
-            CALL ERRMSG2 (954, 0, ' DataFromMatlab ', '[DUMMY]', IOUT1) ! writes "Error getting data from Matlab" to IOUT1
+            call write_error_message_rtc (954, 0, ' DataFromMatlab ', '[DUMMY]', IOUT1) ! writes "Error getting data from Matlab" to IOUT1
             RetVal = 954
          endif
 

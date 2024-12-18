@@ -43,7 +43,7 @@
 !-----------------------------------------------------------------------
 !   Calling routines:              RTC
 !-----------------------------------------------------------------------
-!   Called  routines:              ERRMSG2
+!   Called  routines:              write_error_message_rtc
 !-----------------------------------------------------------------------
 !  Formal parameters:
 !  ------------------
@@ -131,7 +131,7 @@
 !     Check the Julian date
 !-----------------------------------------------------------------------
       if (juldt .lt. 0.0) then
-        CALL ERRMSG2 (946, 0, 'CALBAR', &
+        call write_error_message_rtc (946, 0, 'CALBAR', &
                      ' Wrong date requested from D3DFlow ', outuni)
         RetVal = 946
         Return
