@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 rem Default arguments.
 rem No default value means that the option is a flag that is either on or off.
 rem A variable that can have arguments requires a default value (can be "")
-set config=all
+set config=fm-suite
 set build=
 set vs=0
 set coverage=
@@ -422,10 +422,9 @@ rem =======================
     echo [OPTIONS]: space separated list of options, sometimes followed by a value, in any order
     echo.
     echo -config ^<CONFIG^>:
-    echo   all     (default) : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo   delft3d4          : Delft3D-FLOW, D-WAQ, D-Waves
-    echo   delft3dfm         : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo   dflowfm           : D-Flow FM
+    echo   all     (default) : All CMaked products that are in fm-suite and d3d4-suite combined
+    echo   fm-suite          : D-Flow FM, D-WAQ, D-Waves, DIMR
+    echo   d3d4-suite        : Delft3D-FLOW, Delft3D-WAQ, Delft3D-PART, Delft3D-WAVE
     echo   dflowfm_interacter: D-Flow FM with Interacter
     echo   dimr              : DIMR
     echo   drr               : D-RR

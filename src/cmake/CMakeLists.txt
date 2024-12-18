@@ -197,8 +197,8 @@ set(drr_configuration "DRR")
 set(rtc_configuration "RTC")
 
 # Combined (multi-component) configurations
-set(delft3dfm_configuration "DELFT3DFM")
-set(delft3d4_configuration "DELFT3D4")
+set(fm-suite_configuration "FM-SUITE")
+set(d3d4-suite_configuration "D3D4-SUITE")
 set(all_configuration "ALL")
 
 # Determine the configuration to make
@@ -212,10 +212,10 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
      OR ${configuration_type} STREQUAL ${tools_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
-     OR ${configuration_type} STREQUAL ${delft3dfm_configuration}
-     OR ${configuration_type} STREQUAL ${delft3d4_configuration}
      OR ${configuration_type} STREQUAL ${drr_configuration}
      OR ${configuration_type} STREQUAL ${rtc_configuration}
+     OR ${configuration_type} STREQUAL ${fm-suite_configuration}
+     OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
@@ -297,16 +297,16 @@ endif()
 
 ### Composed configurations
 
-# Delft3D-FM configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${delft3dfm_configuration})
+# Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
+if(${configuration_type} STREQUAL ${fm-suite_configuration})
     message(STATUS "Generating solution for Delft3D-FM ...")
-    include(configurations/delft3dfm_configuration.cmake)
+    include(configurations/suites/fm_configuration.cmake)
 endif()
 
-# Delft3D4 configuration (dflow2d3d, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${delft3d4_configuration})
+# Delft3D4 suite configuration (dflow2d3d, dwaq, dwaves, and some tools)
+if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
     message(STATUS "Generating solution for Delft3D4 ...")
-    include(configurations/delft3d4_configuration.cmake)
+    include(configurations/suites/d3d4_configuration.cmake)
 endif()
 
 # ALL configuration

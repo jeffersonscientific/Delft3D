@@ -89,11 +89,25 @@ dwaq validation,dwaq_dpart/win64/dwaq_validation.xml,TRUE,FALSE,FALSE,FALSE,FALS
 dwaq,dwaq_dpart/lnx64/dwaq.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dwaq,dwaq_dpart/win64/dwaq.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dwaq_with_dll,dwaq_dpart/win64/dwaq_with_dll.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
-d3d4 flow flow,delft3d4/delft3d_lnx64_hp_flow_flow.xml,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,For testing d3d4 pipeline.
-d3d4 flow flow,delft3d4/delft3d_win64_hp_flow_flow.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FAILS for testing d3d4 pipeline.
-d3d4 flow mormerge,delft3d4/delft3d_lnx64_hp_flow_mormerge.xml,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,For testing d3d4 pipeline.
-d3d4 flow mormerge,delft3d4/delft3d_win64_hp_flow_mormerge.xml,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,For testing d3d4 pipeline.
-d3d4 flow nearfield,delft3d4/delft3d_lnx64_hp_flow_nearfield.xml,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,For testing d3d4 pipeline.
-d3d4 flow nearfield,delft3d4/delft3d_win64_hp_flow_nearfield.xml,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,For testing d3d4 pipeline.
-d3d4 flow_parallel nearfield,delft3d4/delft3d_lnx64_hp_flow_parallel_nearfield.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FAILS for testing d3d4 pipeline.
-d3d4 flow_parallel nearfield,delft3d4/delft3d_win64_hp_flow_parallel_nearfield.xml,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,For testing d3d4 pipeline.
+d3d4 flow,delft3d4/delft3d_lnx64_hp_flow.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow,delft3d4/delft3d_win64_hp_flow.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow flow,delft3d4/delft3d_lnx64_hp_flow_flow.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow flow,delft3d4/delft3d_win64_hp_flow_flow.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Timeout for unknown reason.
+d3d4 flow mormerge,delft3d4/delft3d_lnx64_hp_flow_mormerge.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow mormerge,delft3d4/delft3d_win64_hp_flow_mormerge.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow nearfield,delft3d4/delft3d_lnx64_hp_flow_nearfield.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow nearfield,delft3d4/delft3d_win64_hp_flow_nearfield.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow parallel,delft3d4/delft3d_lnx64_hp_flow_parallel.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow parallel,delft3d4/delft3d_win64_hp_flow_parallel.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow parallel nearfield,delft3d4/delft3d_lnx64_hp_flow_parallel_nearfield.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow parallel nearfield,delft3d4/delft3d_win64_hp_flow_parallel_nearfield.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow parallel wave,delft3d4/delft3d_lnx64_hp_flow_parallel_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow parallel wave,delft3d4/delft3d_win64_hp_flow_parallel_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow rtc,delft3d4/delft3d_lnx64_hp_flow_rtc.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow rtc,delft3d4/delft3d_win64_hp_flow_rtc.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow wave,delft3d4/delft3d_lnx64_hp_flow_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+d3d4 flow wave,delft3d4/delft3d_win64_hp_flow_wave.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
+RED d3d4 flow,delft3d4/delft3d_lnx64_hp_flow_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED d3d4 flow,delft3d4/delft3d_win64_hp_flow_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED d3d4 flow parallel,delft3d4/delft3d_lnx64_hp_flow_parallel_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED d3d4 flow parallel,delft3d4/delft3d_win64_hp_flow_parallel_red.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.

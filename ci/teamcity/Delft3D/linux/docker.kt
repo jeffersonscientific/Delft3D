@@ -135,6 +135,7 @@ object LinuxDocker : BuildType({
             artifactRules = """
                 intelmpi.tar.gz!/bin/hydra_* => intel/mpi/bin/
                 intelmpi.tar.gz!/bin/mpiexec* => intel/mpi/bin/
+                intelmpi.tar.gz!/bin/mpirun => intel/mpi/bin/
                 intelmpi.tar.gz!/lib  => intel/mpi/lib
             """.trimIndent()
         }
