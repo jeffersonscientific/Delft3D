@@ -22,8 +22,11 @@
 !!  rights reserved.
 module m_rfpart
     use m_waq_precision
+    use math_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: rfpart
 
 contains
 
@@ -40,7 +43,7 @@ contains
         ! Name    T   L I/O   Description                                   Units
         ! ----    --- -  -    -------------------                            ----
         ! ALK     R*4 1 I     alkalinity                                 [mole/m3]
-        ! CCL     R*4 1 I     chloride concentration                      [gCl/m3]
+        ! SAL     R*4 1 I     salinity                                      [g/kg]
         ! CECIM1  R*4 1 I     cation exchange capacity of IM1            [eq/kgDW]
         ! CECIM2  R*4 1 I     cation exchange capacity of IM2            [eq/kgDW]
         ! CECIM3  R*4 1 I     cation exchange capacity of IM3            [eq/kgDW]
@@ -89,7 +92,7 @@ contains
         INTEGER(kind = int_wp) :: LUNREP
         !
         REAL(kind = real_wp) :: PH, ALK, CCL, DOC, &
-                CECIM1, CECIM2, CECIM3, &
+                CECIM1, CECIM2, CECIM3, SAL, &
                 AC, BC, CC, DC, LC, GC, &
                 MC, NC, OC, &
                 LOGALK, LOGCCL, LOGDOC, LOGKP0
@@ -125,7 +128,8 @@ contains
                 !
                 PH = process_space_real(IP1)
                 ALK = process_space_real(IP2)
-                CCL = process_space_real(IP3)
+                SAL = process_space_real(IP3)
+                CCL = chlorinity_from( sal, 15.0_real_wp )  ! Use 15 degrees as a failry typical temperature
                 DOC = process_space_real(IP4)
                 CECIM1 = process_space_real(IP5)
                 CECIM2 = process_space_real(IP6)

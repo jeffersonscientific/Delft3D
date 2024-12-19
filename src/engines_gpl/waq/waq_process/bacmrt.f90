@@ -60,7 +60,7 @@ contains
         ! TEMPF   R*4 1 L temperature function                                 [-]
         ! TCMRT   R*4 1 I temperature coefficient for mortality              [1/d]
         ! VOLUME  R*4 1 L DELWAQ volume                                       [m3]
-        ! CL      R*4 1 I chloride concentration                            [g/m3]
+        ! SAL     R*4 1 I salinity, directly from input                     [g/kg]
         !     Logical Units : -
 
         !     Modules called : -
@@ -102,7 +102,7 @@ contains
                 TCMRT = process_space_real(IP3)
                 TEMP = process_space_real(IP4)
                 CRTEMP = process_space_real(IP5)
-                CL = process_space_real(IP6)
+                CL = chlorinity_from_sal( process_space_real(IP6), temp )
                 RAD = process_space_real(IP7)
                 CFRAD = process_space_real(IP8)
                 EXTVL = process_space_real(IP9)

@@ -1,7 +1,10 @@
 module m_salchl
     use m_waq_precision
+    use math_utils, only: salinity_from_chloride
 
     implicit none
+    private
+    public :: salchl
 
 contains
 
@@ -76,20 +79,15 @@ contains
         IP5 = IPOINT(5)
         IP6 = IPOINT(6)
         IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
         !
         IFLUX = 0
         DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                SAL = process_space_real(IP1)
-                CL = process_space_real(IP2)
-                GTCL = process_space_real(IP3)
-                TEMP = process_space_real(IP4)
-                SAL0 = process_space_real(IP5)
-                SWSALCL = process_space_real(IP6)
+                CL = process_space_real(IP1)
+                TEMP = process_space_real(IP2)
+                SWSALCL = process_space_real(IP3)
                 !
                 !***********************************************************************
                 !**** Processes connected to the normalization RIZA method
@@ -100,29 +98,29 @@ contains
                 !     basic relation sal-chlorinity: sal = 0.03 +1.805*chlor/density
                 !     density = f(temp and salt concentration)
                 !
+                !     Note: gtcl and sal0 are fixed to 1.805 and 0.03 respectively
+                !           Chlorinity expressed in g/m3, temperature in degrees C
+                !
+                !     Note: the switch is maintained to make sure that incorrect use is caught
+                !           Of old the routine allowed the reverse conversion via this switch.
+                !
                 IF (NINT(SWSALCL) == 1) THEN
-                    DENS = 1000. + 0.7 * CL / 1000 * GTCL &
-                            - 0.0061 * (TEMP - 4.0) * (TEMP - 4.0)
-                    SAL = CL * GTCL / DENS + SAL0
-                    !
+                    call salinity_from_chloride( cl, temp, sal, dens )
                 ELSE
-                    DENS = 1000. + 0.7 * SAL / (1 - SAL / 1000.) &
-                            - 0.0061 * (TEMP - 4.0) * (TEMP - 4.0)
-                    !
-                    IF (SAL <= SAL0) THEN
-                        SAL = 0.0
-                    ELSE
-                        SAL = SAL - SAL0
-                    ENDIF
-                    !
-                    !     g/m3 = (g/kg)*(kg/m3)/(g/g)
-                    !
-                    CL = SAL * DENS / GTCL
+                    CALL get_log_unit_number(LUNREP)
+                    WRITE(LUNREP, *) 'ERROR in SALCHL'
+                    WRITE(LUNREP, *) 'Obsolete option for conversion - only the value 1 is allowed'
+                    WRITE(LUNREP, *) 'Option in input:', SWITCH
+                    WRITE(*, *) 'ERROR in SALCHL'
+                    WRITE(*, *) 'Obsolete option for conversion - only the value 1 is allowed'
+                    WRITE(*, *) 'Option in input:', SWITCH
+                    CALL stop_with_error()
+                ENDIF
+
                 ENDIF
                 !
-                process_space_real (IP7) = DENS
-                process_space_real (IP8) = SAL
-                process_space_real (IP9) = CL
+                process_space_real (IP4) = DENS
+                process_space_real (IP5) = SAL
                 !
             ENDIF
             !
@@ -132,10 +130,6 @@ contains
             IP3 = IP3 + INCREM (3)
             IP4 = IP4 + INCREM (4)
             IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            IP7 = IP7 + INCREM (7)
-            IP8 = IP8 + INCREM (8)
-            IP9 = IP9 + INCREM (9)
             !
         end do
         !

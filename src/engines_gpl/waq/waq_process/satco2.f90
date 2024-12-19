@@ -22,8 +22,11 @@
 !!  rights reserved.
 module m_satco2
     use m_waq_precision
+    use math_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: satco2
 
 contains
 
@@ -42,9 +45,8 @@ contains
         !
         ! Name    T   L I/O   Description                                   Units
         ! ----    --- -  -    -------------------                            ----
-        ! CL2     R*4 1 I concentration of chloride                        [kg/m3]
-        ! CO2SAT  R*4 1 0 saturation concentration                          [g/m3]
-        ! PAPCO2  R*4 1 0 partial CO2 pressure                             [g/m3]
+        ! CO2SAT  R*4 1 O saturation concentration                          [g/m3]
+        ! PAPCO2  R*4 1 O partial CO2 pressure                              [g/m3]
         ! SAL     R*4 1 I Salinity                                           [ppt]
         ! SWITCH  I*4 1 I Switch for formulation options                       [-]
         ! TEMP    R*4 1 I ambient temperature                                 [xC]
@@ -85,15 +87,13 @@ contains
         IP3 = IPOINT(3)
         IP4 = IPOINT(4)
         IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
         !
         DO ISEG = 1, num_cells
 
-            CL2 = process_space_real(IP1) / 1000.
-            TEMP = process_space_real(IP2)
-            SWITCH = NINT(process_space_real(IP3))
-            SAL = process_space_real(IP4)
-            PAPCO2 = process_space_real(IP5)
+            TEMP = process_space_real(IP1)
+            SWITCH = NINT(process_space_real(IP2))
+            SAL = process_space_real(IP3)
+            PAPCO2 = process_space_real(IP4)
 
             IF (SWITCH == 1) THEN
 
@@ -112,6 +112,7 @@ contains
                 !
                 ! =====================================================================
 
+                CL2 = chlorinity_from_sal( sal ) / 1000.
                 TEMPA = TEMP + real(CtoKelvin)
                 RION = 0.147E-02 + 0.3592E-01 * CL2 + 0.68E-04 * CL2**2
                 RKCO2 = 10.0**(-(- 0.238573E+04 / TEMPA + 0.140184E+02 - &
@@ -140,7 +141,7 @@ contains
             !     Output of calculated saturation
 
             CO2SAT = PAPCO2 * RKCO2 * 1000. * 44.
-            process_space_real (IP6) = CO2SAT
+            process_space_real (IP5) = CO2SAT
             !
             !jvb  ENDIF
             !
@@ -149,7 +150,6 @@ contains
             IP3 = IP3 + INCREM (3)
             IP4 = IP4 + INCREM (4)
             IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
             !
         end do
         !

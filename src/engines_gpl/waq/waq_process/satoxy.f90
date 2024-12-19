@@ -22,11 +22,13 @@
 !!  rights reserved.
 module m_satoxy
     use m_waq_precision
+    use math_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: satoxy
 
 contains
-
 
     subroutine satoxy (process_space_real, fl, ipoint, increm, num_cells, &
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
@@ -44,7 +46,6 @@ contains
         !
         ! Name    T   L I/O   Description                                   Units
         ! ----    --- -  -    -------------------                            ----
-        ! CL      R*4 1 I concentration of chloride                         [g/m3]
         ! OXSAT   R*4 1 O saturation concentration of dissolved oxygen      [g/m3]
         ! SAL     R*4 1 I Salinity                                           [ppt]
         ! SWITCH  I*4 1 I Switch for formulation options                       [-]
@@ -83,21 +84,20 @@ contains
         IP2 = IPOINT(2)
         IP3 = IPOINT(3)
         IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
         !
         !     Initial calculations
         !
         DO ISEG = 1, num_cells
 
-            CL = process_space_real(IP1)
-            TEMP = process_space_real(IP2)
-            SWITCH = NINT(process_space_real(IP3))
-            SAL = process_space_real(IP4)
+            TEMP = process_space_real(IP1)
+            SWITCH = NINT(process_space_real(IP2))
+            SAL = process_space_real(IP3)
 
             IF (SWITCH == 1) THEN
                 !
                 !        Weiss volgens Gils (WL)
                 !
+                CL    = chlorinity_from_sal( sal, temp )
                 OXSAT = (14.652 &
                         - (0.41022 * TEMP) &
                         + (0.089392 * TEMP)**2 &
@@ -126,7 +126,7 @@ contains
 
             !     Output of calculated oxygen saturation
 
-            process_space_real (IP5) = OXSAT
+            process_space_real (IP4) = OXSAT
             !
             !jvb  ENDIF
             !
@@ -134,12 +134,9 @@ contains
             IP2 = IP2 + INCREM (2)
             IP3 = IP3 + INCREM (3)
             IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
             !
         end do
         !
-        RETURN
-        !
-    END
+    END subroutine satoxy
 
 end module m_satoxy
