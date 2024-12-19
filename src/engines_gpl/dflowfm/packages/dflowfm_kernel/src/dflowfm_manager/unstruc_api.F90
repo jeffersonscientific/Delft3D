@@ -30,6 +30,13 @@
 !
 !
 module unstruc_api
+   use m_flow_usertimestep, only: flow_usertimestep
+   use m_flow_externaloutput, only: flow_externaloutput
+   use m_updatevaluesonrunupgauges_mpi, only: updatevaluesonrunupgauges_mpi
+   use m_updatevaluesonrunupgauges, only: updatevaluesonrunupgauges
+   use m_updatevaluesonlaterals, only: updatevaluesonlaterals
+   use m_resetfullflowmodel, only: resetfullflowmodel
+   use m_inidat, only: inidat, loadfile, savefile
    use m_write_some_final_output, only: write_some_final_output
    use m_writecdcoeffs, only: writeCdcoeffs
    use m_plotnu
@@ -254,7 +261,8 @@ contains
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_statistical_output, only: update_source_input, update_statistical_output
       use m_wall_clock_time
-      integer, external :: flow_modelinit
+      use m_flow_modelinit, only: flow_modelinit
+
       integer :: timerHandle, inner_timerhandle
 
       !call inidia('api')

@@ -39,6 +39,9 @@ object WindowsCollect : BuildType({
                 filename = "src/scripts_lgpl/artifacts_cleaner.py"
                 scriptArguments = "--product dimrset --root ."
             }
+            conditions {
+                equals("dep.${WindowsBuild.id}.product", "fm-suite")
+            }
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
@@ -87,8 +90,8 @@ object WindowsCollect : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-
             artifacts {
+                buildRule = lastSuccessful()
                 artifactRules = """
                     *.dll => x64/lib
                     *.xsd => x64/share/drtc

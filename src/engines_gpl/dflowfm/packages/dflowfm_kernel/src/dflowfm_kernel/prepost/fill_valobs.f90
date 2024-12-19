@@ -31,6 +31,16 @@
 !
 
 ! fill observation stations array
+module m_fill_valobs
+
+implicit none
+
+private
+
+public :: fill_valobs
+
+contains
+
 subroutine fill_valobs()
    use precision, only: dp
    use m_linkstocentercartcomp
@@ -95,14 +105,15 @@ subroutine fill_valobs()
       allocate (wa(1:2, 1:max(kmx, 1)))
    end if
 
-   call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, jahisvelocity)
    if (jahistaucurrent > 0) then
-      if (jawave == 0 .or. flowWithoutWaves) then
+      if ((jawave == 0 .or. flowWithoutWaves)) then
+         call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, jahisvelocity)
          ! fill taus
          call gettaus(1, 1)
 
          ! get vector comps
          if (kmx == 0) then
+
             do k = 1, ndx
                workx(k) = taus(k) * ueux(k) / max(ucmag(k), 1d-4)
                worky(k) = taus(k) * ueuy(k) / max(ucmag(k), 1d-4)
@@ -564,3 +575,5 @@ subroutine fill_valobs()
    if (timon) call timstop(handle_extra(55))
    return
 end subroutine fill_valobs
+
+end module m_fill_valobs
