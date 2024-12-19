@@ -35,7 +35,7 @@ object WindowsBuildEnvironment : BuildType({
         powerShell {
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64
-            workingDir = "ci/dockerfiles"
+            workingDir = "ci/dockerfiles/windows"
             scriptMode = script {
                 content = """
                     # Define the source directory
@@ -53,9 +53,9 @@ object WindowsBuildEnvironment : BuildType({
             name = "Docker build dhydro"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/Dockerfile-dhydro"
+                    path = "ci/dockerfiles/windows/Dockerfile-dhydro"
                 }
-                contextDir = "ci/dockerfiles"
+                contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
@@ -78,7 +78,7 @@ object WindowsBuildEnvironment : BuildType({
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/**".trimIndent()
+            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
             branchFilter = "+:<default>".trimIndent()
             param("trigger.type", "vcs")
         }
