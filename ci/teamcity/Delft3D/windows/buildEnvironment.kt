@@ -49,10 +49,6 @@ object WindowsBuildEnvironment : BuildType({
                 """.trimIndent()
             }
         }
-        script {
-            name = "print dockerfile"
-            scriptContent = """type .\ci\dockerfiles\Dockerfile-dhydro"""
-        }
         dockerCommand {
             name = "Docker build dhydro"
             commandType = build {
