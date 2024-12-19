@@ -126,10 +126,6 @@ contains
                wavfv(L) = wavfv_loc + wavfbv_loc
             end if
             !
-            if (abs(wavfu(L)) > 100d0) then
-                continue
-            end if
-            !
             wavfu(L) = wavfu(L) * min(huvli(L), hminlwi) / rhomean ! Dimensions [m/s^2]
             wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean
             !
