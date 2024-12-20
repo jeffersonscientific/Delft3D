@@ -82,7 +82,6 @@ contains
       end if
 
       facmax = 0.25d0 * sag * rhomean * gammaloc**2
-      !facmax = 0.25d0 * sag * gammaloc**2
 
       wavfu = 0d0
       wavfv = 0d0

@@ -414,7 +414,6 @@ contains
                    ieee_is_nan(dwcap(k)) .or. &
                    ieee_is_nan(mxwav(k)) .or. &
                    ieee_is_nan(mywav(k)) .or. &
-                   ieee_is_nan(phiwav(k)) .or. &
                    hs(k) <= epshu) then
                   hwavcom(k) = 0d0
                   twavcom(k) = 0d0

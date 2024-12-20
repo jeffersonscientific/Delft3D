@@ -1307,7 +1307,6 @@ contains
       real(kind=dp) :: rkw
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
-      real(kind=dp), dimension(:), allocatable :: hsig
 
       if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
          ! Normal situation: use wave info in FLOW
@@ -1319,13 +1318,9 @@ contains
             hwav = hwavcom
          end if
          hwav = min(hwav, gammax * hs)
+         twav = twavcom
          !
          if (jawave == 7) then
-            !
-            if (.not. allocated(hsig)) then
-               allocate (hsig(1:ndx))
-               hsig = min(hwavcom, gammax * hs) ! don't change hwavcom directly, as hs changes
-            end if
             !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
@@ -1381,7 +1376,6 @@ contains
             call tauwave()
          end if
       end if
-      if (allocated(hsig)) deallocate (hsig)
    end subroutine set_wave_modelling
 
 !> initialize_salinity_from_bottom_or_top
