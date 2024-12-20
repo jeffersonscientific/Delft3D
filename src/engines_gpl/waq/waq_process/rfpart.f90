@@ -129,7 +129,7 @@ contains
                 PH = process_space_real(IP1)
                 ALK = process_space_real(IP2)
                 SAL = process_space_real(IP3)
-                CCL = chlorinity_from( sal, 15.0_real_wp )  ! Use 15 degrees as a failry typical temperature
+                CCL = chlorinity_from_sal( sal, 15.0_real_wp )  ! Use 15 degrees as a failry typical temperature
                 DOC = process_space_real(IP4)
                 CECIM1 = process_space_real(IP5)
                 CECIM2 = process_space_real(IP6)

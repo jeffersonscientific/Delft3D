@@ -22,8 +22,11 @@
 !!  rights reserved.
 module m_bacmrt
     use m_waq_precision
+    use math_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: bacmrt
 
 contains
 

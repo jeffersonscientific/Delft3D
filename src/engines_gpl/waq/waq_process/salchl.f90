@@ -1,6 +1,7 @@
 module m_salchl
     use m_waq_precision
     use math_utils, only: salinity_from_chloride
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
 
     implicit none
     private
@@ -62,23 +63,23 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
         !
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+!!        IMPLICIT REAL    (A-H, J-Z)
+!!        IMPLICIT INTEGER (I)
         !
         REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
                 IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         REAL(kind = real_wp) :: CL, SAL, SAL0, GTCL, TEMP, DENS, SWSALCL
-        integer(kind = int_wp) :: iseg
+        integer(kind = int_wp) :: iseg, ip1, ip2, ip3, ip4, ip5, iflux
+        integer(kind = int_wp) :: lunrep
+
         !
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
         IP3 = IPOINT(3)
         IP4 = IPOINT(4)
         IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
         !
         IFLUX = 0
         DO ISEG = 1, num_cells
@@ -110,14 +111,13 @@ contains
                     CALL get_log_unit_number(LUNREP)
                     WRITE(LUNREP, *) 'ERROR in SALCHL'
                     WRITE(LUNREP, *) 'Obsolete option for conversion - only the value 1 is allowed'
-                    WRITE(LUNREP, *) 'Option in input:', SWITCH
+                    WRITE(LUNREP, *) 'Option in input:', SWSALCL
                     WRITE(*, *) 'ERROR in SALCHL'
                     WRITE(*, *) 'Obsolete option for conversion - only the value 1 is allowed'
-                    WRITE(*, *) 'Option in input:', SWITCH
+                    WRITE(*, *) 'Option in input:', SWSALCL
                     CALL stop_with_error()
                 ENDIF
 
-                ENDIF
                 !
                 process_space_real (IP4) = DENS
                 process_space_real (IP5) = SAL

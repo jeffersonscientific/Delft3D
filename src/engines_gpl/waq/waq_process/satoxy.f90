@@ -68,7 +68,7 @@ contains
         !     Local declarations
         !
         INTEGER(kind = int_wp) :: SWITCH, LUNREP, ISEG, IP1, &
-                IP2, IP3, IP4, IP5
+                IP2, IP3, IP4
         REAL(kind = real_wp) :: CL, TEMP, SAL, TEMP2, PART1, &
                 PART2, OXSAT, A1, A2, A3, &
                 A4, B1, B2, B3

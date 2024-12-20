@@ -23,11 +23,13 @@
 module m_d40blo
     use m_waq_precision
     use m_set_effi
+    use math_utils, only: chlorinity_from_sal
 
     implicit none
+    private
+    public :: d40blo
 
 contains
-
 
     subroutine d40blo (process_space_real, fl, ipoint, increm, num_cells, &
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &

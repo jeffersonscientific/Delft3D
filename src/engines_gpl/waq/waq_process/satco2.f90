@@ -112,7 +112,7 @@ contains
                 !
                 ! =====================================================================
 
-                CL2 = chlorinity_from_sal( sal ) / 1000.
+                CL2 = chlorinity_from_sal( sal, temp ) / 1000.
                 TEMPA = TEMP + real(CtoKelvin)
                 RION = 0.147E-02 + 0.3592E-01 * CL2 + 0.68E-04 * CL2**2
                 RKCO2 = 10.0**(-(- 0.238573E+04 / TEMPA + 0.140184E+02 - &
