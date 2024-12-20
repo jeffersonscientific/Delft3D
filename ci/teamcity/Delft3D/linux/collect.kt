@@ -38,6 +38,9 @@ object LinuxCollect : BuildType({
             name = "Run artifacts_cleaner.py"
             path = "/usr/bin/python3"
             arguments = "src/scripts_lgpl/artifacts_cleaner.py --product dimrset --root ."
+            conditions {
+                equals("dep.${LinuxBuild.id}.product", "fm-suite")
+            }
         }
         exec {
             name = "Generate list of version numbers (from what-strings)"

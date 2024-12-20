@@ -16,9 +16,3 @@ Moving towards this new structure is a work in progress.
 
 ./miscellaneous/*
     - 'The rest', like tooling and third-party.
-
-./delft3d4_configuration.cmake
-    - Currently in use by the 'legacy' Delft3D4 pipelines.
-
-./delft3dfm_configuration.cmake
-    - Currently in use by the 'legacy' Delft3D FM pipelines.

@@ -60,7 +60,6 @@ object Trigger : BuildType({
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
                 doesNotEqual("product", "none")
                 doesNotEqual("product", "qp")
-                doesNotEqual("product", "d3d4")
             }
 
             scriptContent = """
@@ -98,7 +97,6 @@ object Trigger : BuildType({
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
                 doesNotEqual("product", "none")
                 doesNotEqual("product", "qp")
-                doesNotEqual("product", "d3d4")
             }
             
             scriptContent = """

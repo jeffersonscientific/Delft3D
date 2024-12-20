@@ -109,6 +109,10 @@
 			<arguments>
  				<argument>-n 2</argument>
 			</arguments>
+			<modules>
+				<module>intel/21.2.0</module>
+				<module>intelmpi/21.2.0</module>
+			</modules>
 		</program>
 <!-- 
 		<program name="COUP203" logOutputToFile="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -133,9 +137,43 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/lnx64</from>
 			</location>
-			<path>bin/run_dflow2d3d_parallel.sh</path>
+			<!-- parallel: <shell ref="mpi"/> -->
+			<path>bin/run_dflow2d3d.sh</path>
 			<arguments>
-				<argument>2</argument>
+				<argument>config_d_hydro_sp.xml</argument>
+			</arguments>
+		<!--
+			<environments>
+				<environment name="D3D_HOME" type="path">..\.</environment>
+				<environment name="ARCH" type="raw">lnx64</environment>
+			</environments>
+		-->
+		</program>
+		<program name="FLOW2D3D_FLOW2D3D" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/lnx64</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/lnx64</from>
+			</location>
+			<path>bin/run_dflow2d3d_fluidmud.sh</path>
+			<arguments>
+				<argument>-wconfig</argument>
+				<argument>config_d_hydro_sp.xml</argument>
+				<argument>-mconfig</argument>
+				<argument>config_d_hydro_mud_sp.xml</argument>
+			</arguments>
+		</program>
+		<program name="FLOW2D3D_RTC" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/lnx64</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/lnx64</from>
+			</location>
+			<path>bin/run_dflow2d3d_rtc.sh</path>
+			<arguments>
+				<argument>config_d_hydro_sp.xml</argument>
 			</arguments>
 		</program>
 		<program name="FLOW2D3D_WAVE" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true">
@@ -145,9 +183,9 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/lnx64</from>
 			</location>
-			<path>bin/run_dflow2d3d_parallel_dwaves.sh</path>
+			<path>bin/run_dflow2d3d_dwaves.sh</path>
 			<arguments>
-				<argument>2</argument>
+				<argument>config_d_hydro_sp.xml</argument>
 			</arguments>
 		</program>
 		<program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -259,5 +297,5 @@
 	<!--
 	testCases
 	-->
-	<xi:include href="../include/delft3d4_hp_cases_flow_nearfield.xml"/>
+	<xi:include href="../include/delft3d4_sp_cases_red.xml"/>
 </deltaresTestbench_v3>
