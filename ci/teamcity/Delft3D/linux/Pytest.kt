@@ -70,7 +70,7 @@ object LinuxPyTest : BuildType({
     features {
         dockerSupport {
             loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133"
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
             }
         }
         xmlReport {

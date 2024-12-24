@@ -14,6 +14,7 @@ version = "2024.12"
 project {
     params {
         password("delft3d-dev-secret", "credentialsJSON:75eb18ff-a859-4d78-aa74-206d10865c2e")
+        password("delft3d-secret", "credentialsJSON:75eb18ff-a859-4d78-aa74-206d10865c2e")
         param("product", "dummy_value")
     }
 
@@ -84,6 +85,13 @@ project {
     )
 
     features {
+        dockerRegistry {
+            id = "DOCKER_REGISTRY_DELFT3D"
+            name = "Docker Registry Delft3d"
+            url = "https://containers.deltares.nl/harbor/projects/9/repositories"
+            userName = "robot${'$'}delft3d+delft3d-push-pull"
+            password = "%delft3d-secret%"
+        }
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D_DEV"
             name = "Docker Registry Delft3d-dev"
