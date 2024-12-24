@@ -85,14 +85,20 @@ object LinuxPyTest : BuildType({
     }
 
     dependencies {
-        dependency(LinuxTestbenchContainer) {
+        dependency(LinuxBuildTestbenchContainer) {
             snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
 
             artifacts {
                 artifactRules = "container.txt"
             }
         }
+    }
+
+    requirements {
+        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 
 })

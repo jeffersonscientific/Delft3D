@@ -3,6 +3,7 @@ package Delft3D.linux
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.failureConditions.*
 import Delft3D.template.*
 import Delft3D.step.*
 
@@ -11,13 +12,11 @@ object LinuxBuildTestbenchContainer : BuildType({
     templates(
         TemplateMergeRequest,
     )
-
-    id("LinuxTestbenchContainer")
     name = "Build Testbench Container"
     description = "Create a container with the testbench (also for H7)"
 
-    artifactRules = "container.txt"
     buildNumberPattern = "%build.vcs.number%"
+    artifactRules = "container.txt"
 
     vcs {
         root(DslContext.settingsRoot)

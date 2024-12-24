@@ -39,15 +39,15 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxDocker)
         buildType(LinuxTest)
-        buildType(LinuxPyTest)
         buildType(LinuxBuildTestbenchContainer)
+        buildType(LinuxPyTest)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
             LinuxCollect,
             LinuxDocker,
             LinuxTest,
-            LinuxPyTest,
-            LinuxBuildTestbenchContainer
+            LinuxBuildTestbenchContainer,
+            LinuxPyTest
         )
     }
 
