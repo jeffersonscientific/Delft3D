@@ -30,39 +30,22 @@
 !
 !
 
-module m_stopint
+module m_partition_METIS_to_idomain
 
-implicit none
-
-private
-
-public :: stopint
-
-contains
-
-      subroutine STOPINT()
-         use unstruc_files
-         use unstruc_netcdf, only: unc_closeall
-         use m_partitioninfo
-         use m_fetch_operation_utils, only: finish_fetch_proc
-
-         call ISCREENCLOSE()
-         call unc_closeall()
-         call close_all_files()
-
-         call finish_fetch_proc()
-         if (jampi == 1) then
-!        finalize before exit
-            call partition_finalize()
-         end if
-
-!     SPvdP: close dia-file
-         if (mdia /= 0 .and. mdia < maxnum) then
-            close (mdia)
-            mdia = 0
-         end if
-
-         stop
-      end
-
-end module m_stopint
+   implicit none
+   
+   private
+   
+   public :: partition_METIS_to_idomain
+   
+   interface 
+      module subroutine partition_METIS_to_idomain(Nparts, jacontiguous, method, iseed)
+         implicit none
+         integer, intent(in) :: Nparts !< number of partitions
+         integer, intent(in) :: method !< partition method. 1: K-Way, 2: Recursive, 3: Mesh-dual
+         integer, intent(in) :: jacontiguous !< enforce contiguous domains (1) or not (0)
+         integer, intent(in) :: iseed !< User defined random seed, passed to METIS'option "SEED". Useful for reproducible partitionings, but only used when /= 0.
+      end subroutine partition_METIS_to_idomain
+   end interface 
+   
+end module m_partition_METIS_to_idomain

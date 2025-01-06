@@ -44,6 +44,16 @@ module fetch_proc_operation_data
 
 end module fetch_proc_operation_data
 
+module m_fetch_operation_utils
+
+   implicit none
+
+   private
+   
+   public:: initialise_fetch_proc_data, send_s1_to_fetch_proc, get_fetch_values_from_fetch_proc, &
+            set_mpi_environment_wwo_fetch_proc, stop_fetch_computation, finish_fetch_proc
+   
+   contains
 !> initialize data for the fetch proc operation
 integer function initialise_fetch_proc_data() result(iresult)
 
@@ -58,8 +68,6 @@ integer function initialise_fetch_proc_data() result(iresult)
    use m_alloc, only: aerr
    use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED, DFM_WRONGINPUT
    use MessageHandling
-
-   implicit none
 
 #ifdef HAVE_MPI
    integer :: status(MPI_Status_size)
@@ -181,8 +189,6 @@ subroutine send_s1_to_fetch_proc()
    use m_flow, only: s1
    use dfm_error, only: DFM_NOERR
 
-   implicit none
-
 #ifdef HAVE_MPI
    integer, dimension(MPI_Status_size) :: status
 #endif
@@ -219,8 +225,6 @@ subroutine get_fetch_values_from_fetch_proc()
    use m_flowgeom, only: ndx
    use m_waves, only: fetch, fetdp, nwf
    use dfm_error, only: DFM_NOERR
-
-   implicit none
 
 #ifdef HAVE_MPI
    integer :: status(MPI_Status_size)
@@ -260,8 +264,6 @@ subroutine set_mpi_environment_wwo_fetch_proc()
                               DFM_COMM_DFMWORLD, DFM_COMM_ALLWORLD
 #endif
    use m_gui
-
-   implicit none
 
    integer, dimension(:), allocatable :: list_of_procs ! a list of procs to create a new commmunicator without the fetch proc
    integer :: error, i
@@ -306,8 +308,6 @@ subroutine clean_fetch_proc_settings()
 #endif
    use m_gui
 
-   implicit none
-
    integer :: error
 
 #ifdef HAVE_MPI
@@ -332,8 +332,6 @@ logical function stop_fetch_computation(call_from_tauwavefetch)
 #endif
    use fetch_proc_operation_data
 
-   implicit none
-
    logical, intent(in) :: call_from_tauwavefetch !< It is true when the function is called from tauwavefetch subroutine
    logical :: result = .false.
    integer :: error
@@ -356,9 +354,6 @@ subroutine finish_fetch_proc()
    use MessageHandling
    use Timers
 
-   implicit none
-
-   logical, external :: stop_fetch_computation
    logical :: log_dump, call_from_tauwavefetch = .false.
 
    if (use_fetch_proc > 0) then
@@ -369,3 +364,5 @@ subroutine finish_fetch_proc()
    end if
 
 end subroutine finish_fetch_proc
+
+end module m_fetch_operation_utils

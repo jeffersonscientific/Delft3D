@@ -36,6 +36,7 @@ use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
 use m_cosphiunetcheck, only: cosphiunetcheck
 use m_preparecells, only: preparecells
 use m_partition_write_domains, only: partition_write_domains
+use m_partition_METIS_to_idomain, only: partition_METIS_to_idomain
 
 implicit none
 

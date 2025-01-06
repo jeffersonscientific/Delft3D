@@ -117,6 +117,7 @@ contains
       use unstruc_model
       use m_qn_read_error
       use m_filez, only: oldfil, doclose, newfil
+      use m_upotukinueaa, only: upotukinueaa
 
       implicit none
       integer :: ierr, minp, mout, L1, istat, i

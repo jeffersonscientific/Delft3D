@@ -52,7 +52,6 @@ subroutine netrotfld(xp, yp, kp)
    use m_missing
    use m_wearelt
    use m_sferic
-   use geometry_module, only: dbdistance
 
    real(kind=dp) :: xp, yp !< coordinates that determine the influenced region and rotation angle
 
@@ -60,7 +59,6 @@ subroutine netrotfld(xp, yp, kp)
 
    real(kind=dp) :: Dx0, Dy0, rsx, xn, yn, dist, frac
    real(kind=dp) :: Dalpha0, alpha, xcen, ycen
-   real(kind=dp), external :: getDx, getDy
 
    integer :: i, ja, jac
 

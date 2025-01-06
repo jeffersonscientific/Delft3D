@@ -1437,14 +1437,30 @@ contains
       call IOUTSTRINGXY(1, ipos, text)
    end subroutine Write2ScrChar
 
-end module unstruc_display
+subroutine GETINTRGB(KRGB) ! GET interacter RGB FOR NCOL
+   integer :: KRGB(4)
+   integer :: rgb
+   integer, external :: InfoGrPalette !access interacter palette info
+
+   ! grab the rgb value of the color nr
+   rgb = InfoGrPalette(KRGB(1))
+
+   ! split into separate r, g, b channel values (0.0 - 1.0)
+   KRGB(2) = iand(rgb, z'ff')
+   KRGB(3) = iand(ishft(rgb, -8), z'ff')
+   KRGB(4) = iand(ishft(rgb, -16), z'ff')
+
+end subroutine
+
+subroutine SETINTRGB(KRGB) ! SAME, SET
+   integer :: KRGB(4)
+   call IGRPALETTERGB(KRGB(1), KRGB(2), KRGB(3), KRGB(4))
+end subroutine
 
 subroutine zoomshift(nshift) ! based on polygon
-   use unstruc_display
-   use m_flowtimes
-   use m_polygon
-   use m_drawthis
-   implicit none
+   use m_polygon, only: npl, xpl, ypl
+   use m_drawthis, only: ndraw
+
    integer :: nshift, i1
    real(kind=dp) :: dr, x00, y00, dxw, dyw, rshift
 
@@ -1466,24 +1482,18 @@ subroutine zoomshift(nshift) ! based on polygon
 end subroutine zoomshift
 
 subroutine tekwindvector()
-   use m_wind
-   use m_wearelt
-   use unstruc_display
-   use m_heatfluxes
    use m_flow
-   use m_transport
-   use m_flowgeom
-   use m_wind
+   use m_transport, only: numconst, constituents
+   use m_flowgeom, only: ndxi
    use m_xbeach_data, only: csx, snx, itheta_view
    use m_flowparameters, only: jawave
-   use m_missing
-   use m_statistics
-   use messagehandling
-   use m_drawthis
-   use m_gtext
+   use m_statistics, only: npdf, xpdf, ypdf
+   use messagehandling, only: msgbuf, msg_flush
+   use m_drawthis, only: ndraw
+   use m_gtext, only: gtext
    use m_filez, only: doclose, newfil
+   use m_upotukinueaa, only: upotukinueaa
 
-   implicit none
    real(kind=dp) :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
    character tex * 60
    integer :: ncol, k, kk, vlatin, vlatout, i, mout
@@ -1760,83 +1770,5 @@ subroutine tekwindvector()
 
 end subroutine tekwindvector
 
-subroutine upotukinueaa(upot, ukin, ueaa)
-   use m_flow
-   use m_flowgeom
-   use m_missing
-   implicit none
-   real(kind=dp) :: upot, ukin, ueaa
-   real(kind=dp) :: vtot, roav, zz, rhok, bmin
-   integer k, kk
+end module unstruc_display
 
-   upot = 0d0; ukin = 0d0; ueaa = 0d0; vtot = 0d0; roav = 0d0; bmin = 1d9
-
-   do kk = 1, ndx
-      bmin = min(bmin, bl(kk))
-      if (hs(kk) == 0) cycle
-      do k = kbot(kk), ktop(kk)
-         vtot = vtot + vol1(k) ! m3
-         if (jasal > 0) then
-            roav = roav + vol1(k) * rho(k) ! kg
-         else
-            roav = roav + vol1(k) * rhomean ! kg
-         end if
-      end do
-   end do
-   if (vtot == 0d0) then
-      return
-   end if
-
-   roav = roav / vtot ! kg/m3
-
-   do kk = 1, ndx
-      if (hs(kk) == 0) cycle
-      do k = kbot(kk), ktop(kk)
-         if (kmx > 0) then
-            zz = (zws(k) + zws(k - 1)) * 0.5d0 - bmin ! m
-         else
-            zz = s1(k) - bmin
-         end if
-         if (jasal > 0) then
-            rhok = rho(k)
-         else
-            rhok = rhomean
-         end if
-         ueaa = ueaa + vol1(k) * zz * (rho(k) - roav) ! kg.m
-         upot = upot + vol1(k) * zz * rho(k) ! kg.m
-         ukin = ukin + vol1(k) * rho(k) * (ucx(k) * ucx(k) + ucy(k) * ucy(k)) * 0.5d0 ! kg.m2/s2
-      end do
-   end do
-
-   ueaa = ueaa * ag / vtot ! kg/(m.s2)
-   upot = upot * ag / vtot
-   ukin = ukin * 0.5 / vtot
-
-   if (upot0 == dmiss) upot0 = upot
-   if (ukin0 == dmiss) ukin0 = ukin
-
-! upot = upot - upot0
-   !
-end subroutine upotukinueaa
-
-subroutine GETINTRGB(KRGB) ! GET interacter RGB FOR NCOL
-   implicit none
-   integer :: KRGB(4)
-   integer :: rgb
-   integer, external :: InfoGrPalette !access interacter palette info
-
-   ! grab the rgb value of the color nr
-   rgb = InfoGrPalette(KRGB(1))
-
-   ! split into separate r, g, b channel values (0.0 - 1.0)
-   KRGB(2) = iand(rgb, z'ff')
-   KRGB(3) = iand(ishft(rgb, -8), z'ff')
-   KRGB(4) = iand(ishft(rgb, -16), z'ff')
-
-end subroutine
-
-subroutine SETINTRGB(KRGB) ! SAME, SET
-   implicit none
-   integer :: KRGB(4)
-   call IGRPALETTERGB(KRGB(1), KRGB(2), KRGB(3), KRGB(4))
-end subroutine

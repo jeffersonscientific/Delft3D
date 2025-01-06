@@ -47,7 +47,7 @@ contains
     use m_flowparameters, only: jaupwindsrc
     use m_sferic
     use m_alloc
-    use geometry_module, only: getdx, getdy, dbdistance, spher2locvec
+    use geometry_module, only: dbdistance, spher2locvec
     use stdlib_sorting, only: sort_index
     use m_missing, only: dmiss
     use fm_external_forcings_data
@@ -121,13 +121,6 @@ contains
                 ku = ln(1, LL)
                 if (ku == k) ku = ln(2, LL)
 
-!             dxx  = getdx( xz(k), yz(k), xz(ku), yz(ku) )
-!             dyy  = getdy( xz(k), yz(k), xz(ku), yz(ku) )
-!
-!             dxu = dxx*dxi(LL)
-!             dyu = dyy*dxi(LL)
-!             r   = dxu*dxn + dyu*dyn
-
                 r = dprodin(xz(kd), yz(kd), xz(k), yz(k), xz(k), yz(k), xz(ku), yz(ku))
                 r = r * (dxi(L)**2)
 
@@ -153,10 +146,6 @@ contains
              if (rfr < 0.1d0) then ! if only 1 link attached or upwind point sufficiently close
 
                 klnup(1 + 3 * (k12 - 1), L) = -ku ! flag for single value weighting
-!             dxx  = getdx( xz(k), yz(k), xz(ku), yz(ku) )
-!             dyy  = getdy( xz(k), yz(k), xz(ku), yz(ku) )
-!             dxk  = sqrt(dxx*dxx + dyy*dyy)
-
                 dxk = dbdistance(xz(k), yz(k), xz(ku), yz(ku), jsferic, jasfer3D, dmiss)
 
                 dxl = dx(L)

@@ -94,8 +94,6 @@ subroutine refinecellsandfaces2()
    integer :: k2
    integer :: num ! number of removed isolated hangning noded
 
-   real(kind=dp), external :: getdy
-
    character(len=64) :: tex
 
 !  determine if the refinement needs to adapt to sample values

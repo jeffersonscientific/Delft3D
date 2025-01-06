@@ -226,7 +226,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: initialize
 
       use iso_c_binding, only: c_char
-
+      use m_solve_petsc, only: startpetsc
       use unstruc_model
       use unstruc_files
       use m_partitioninfo
@@ -3742,6 +3742,7 @@ contains
       use m_netw
       use m_commandline_option
       use unstruc_model, only: md_pmethod
+      use m_partition_METIS_to_idomain, only: partition_METIS_to_idomain
 
       character(kind=c_char), intent(in) :: c_netfile_in(MAXSTRLEN)
       character(kind=c_char), intent(in) :: c_netfile_out(MAXSTRLEN)

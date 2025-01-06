@@ -127,6 +127,8 @@ contains
     use m_set_model_boundingbox, only: set_model_boundingbox
     use m_init_openmp, only: init_openmp
     use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
+    use m_tauwavefetch, only: tauwavefetch
+
     !
     ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
     ! Activate the following line (See also statements below)

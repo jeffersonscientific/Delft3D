@@ -122,6 +122,7 @@ contains
       use m_flowparameters, only: eps10
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
+      use m_tauwavefetch, only: tauwavefetch
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
@@ -2315,7 +2316,7 @@ contains
       use m_sediment, only: mxgr, grainlay, uniformerodablethickness, jagrainlayerthicknessspecified
       use m_transport, only: numconst_mdu, numconst
       use m_mass_balance_areas, only: mbaname, nomba, mbadef, mbadefdomain
-      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum
+      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum, set_japartqbnd
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions

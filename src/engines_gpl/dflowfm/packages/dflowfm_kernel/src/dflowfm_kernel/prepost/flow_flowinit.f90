@@ -127,6 +127,7 @@ contains
       use m_meteo, only: initialize_ec_module
       use m_observations, only: read_moving_stations
       use m_solve_guus, only: reducept
+      use m_upotukinueaa, only: upotukinueaa
 
       implicit none
 

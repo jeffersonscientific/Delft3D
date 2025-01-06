@@ -99,8 +99,6 @@ contains
 !        compute normal vectors
          do i = jstart, jend
             if (i < jend) then
-               !dsx = getdx(xpl(i),ypl(i),xpl(i+1),ypl(i+1))
-               !dsy = getdy(xpl(i),ypl(i),xpl(i+1),ypl(i+1))
                call getdxdy(xpl(i), ypl(i), xpl(i + 1), ypl(i + 1), dsx, dsy, jsferic)
                ds = sqrt(dsx**2 + dsy**2)
                dnxR = -dsy / ds
@@ -134,8 +132,6 @@ contains
          end do
 
 !        determine layer thickness
-         ! dx = getdx(xpl(ipol),ypl(ipol),xp,yp)
-         ! dy = getdy(xpl(ipol),ypl(ipol),xp,yp)
          call getdxdy(xpl(ipol), ypl(ipol), xp, yp, dx, dy, jsferic)
          det = dx * dnyi - dy * dnxi
          if (det > 1d-8) then

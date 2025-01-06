@@ -115,12 +115,6 @@ contains
             call getdxdy(x3, y3, x4, y4, x43, y43, jsferic)
             call getdxdy(x1, y1, x3, y3, x31, y31, jsferic)
 
-            !X21 =  getdx(x1,y1,x2,y2)
-            !Y21 =  getdy(x1,y1,x2,y2)
-            !X43 =  getdx(x3,y3,x4,y4)
-            !Y43 =  getdy(x3,y3,x4,y4)
-            !X31 =  getdx(x1,y1,x3,y3)
-            !Y31 =  getdy(x1,y1,x3,y3)
             DET = X43 * Y21 - Y43 * X21
             if (abs(DET) < EPS) then
                return

@@ -143,6 +143,7 @@ module m_choices
    use m_copygridtosam
    use m_copyzlintosamples
    use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
+   use m_partition_to_idomain, only: partition_to_idomain
 
    implicit none
 

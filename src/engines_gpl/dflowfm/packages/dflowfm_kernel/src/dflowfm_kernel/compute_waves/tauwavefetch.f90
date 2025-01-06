@@ -40,6 +40,16 @@ module m_fetch_local_data
    real(kind=dp), allocatable :: fetch_temp(:, :)
 end module m_fetch_local_data
 
+module m_tauwavefetch
+
+   implicit none
+
+   private
+   
+   public :: tauwavefetch
+   
+contains
+    
 !> calculates fetch length and depth based significant wave height and period
 !! based on Hurdle, Stive formulae, tauwave based on Swart, taus = taubmx = taucur + tauwave, as in Delwaq
 subroutine tauwavefetch(tim)
@@ -56,15 +66,13 @@ subroutine tauwavefetch(tim)
    use m_hurdlestive, only: hurdlestive
    use m_ian_young_pt, only: ian_young_pt
    use m_tauwavehk, only: tauwavehk
-
-   implicit none
+   use m_fetch_operation_utils, only: initialise_fetch_proc_data, stop_fetch_computation, stop_fetch_computation, &
+       stop_fetch_computation, send_s1_to_fetch_proc, get_fetch_values_from_fetch_proc
 
    real(kind=dp), intent(in) :: tim
 
    integer :: error, cell
    integer, save :: total_nr_cells
-   integer, external :: initialise_fetch_proc_data
-   logical, external :: stop_fetch_computation
    logical, parameter :: call_from_tauwavefetch = .true.
    real(kind=dp) :: U10, fetchL, fetchd, hsig, tsig, rsqrt2, dum
 
@@ -188,8 +196,6 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
    use m_set_col
    use m_cls1
 
-   implicit none
-
    integer, intent(in) :: total_nr_cells
 
    integer :: cell, index_wind_direction, error
@@ -263,8 +269,6 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
    use m_fetch_local_data
    use m_alloc
    use m_qnerror
-
-   implicit none
 
    real(kind=dp), intent(in) :: u_wind, v_wind
 
@@ -353,13 +357,11 @@ subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)
    use timers
    use m_partitioninfo
    use m_gui
-   use geometry_module, only: getdx, getdy, dbdistance, cross, normalout, normalin
+   use geometry_module, only: dbdistance, cross, normalout, normalin
    use m_missing, only: dmiss
    use m_sferic
    use m_fetch_local_data
    use m_alloc
-
-   implicit none
 
    real(kind=dp), intent(in) :: u_wind, v_wind
    integer, intent(out) :: nr_cells_done
@@ -466,8 +468,6 @@ subroutine calculate_fetch_values(nr_cells_done, total_nr_cells)
    use m_fetch_local_data
    use m_qnerror
 
-   implicit none
-
    integer, intent(inout) :: nr_cells_done
    integer, intent(in) :: total_nr_cells
 
@@ -543,8 +543,6 @@ subroutine get_phiwav_values()
    use m_flow
    use m_sferic, only: pi
 
-   implicit none
-
    integer :: link, k1, k2
    real(kind=dp), dimension(:), allocatable :: wxc, wyc
 
@@ -569,7 +567,6 @@ subroutine copy_values_to_boundary_nodes()
    use m_flow
    use m_waves, only: uorb, twav, hwav
 
-   implicit none
    integer :: node, kb, ki
 
    do node = 1, nbndz
@@ -592,3 +589,5 @@ subroutine copy_values_to_boundary_nodes()
       phiwav(kb) = phiwav(ki)
    end do
 end subroutine copy_values_to_boundary_nodes
+
+end module m_tauwavefetch

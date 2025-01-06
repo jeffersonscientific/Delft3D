@@ -26,7 +26,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
 !
 !
 #ifdef HAVE_CONFIG_H
@@ -77,15 +76,21 @@ module m_petsc
 
    PetscErrorCode, parameter :: PETSC_OK = 0
 end module m_petsc
+    
+submodule (m_solve_petsc) m_solve_petsc_
 
+   implicit none
+
+contains
+    
 !> initialze PETSc
-subroutine startpetsc()
+module subroutine startpetsc()
 #ifdef HAVE_PETSC
    use m_petsc
    use mpi, only: mpi_comm_dup
    use m_flowparameters, only: Icgsolver
    use m_partitioninfo, only: DFM_COMM_DFMWORLD, jampi
-   implicit none
+
    PetscErrorCode :: ierr = PETSC_OK
 
    if (icgsolver == 6) then
@@ -102,13 +107,13 @@ subroutine startpetsc()
 end subroutine startpetsc
 
 !> initialze PETSc
-subroutine stoppetsc()
+module subroutine stoppetsc()
 #ifdef HAVE_PETSC
    use mpi, only: mpi_comm_free
    use m_petsc
    use m_flowparameters, only: Icgsolver
    use m_partitioninfo, only: jampi
-   implicit none
+
    PetscErrorCode :: ierr = PETSC_OK
 
    if (Icgsolver == 6) then
@@ -124,15 +129,13 @@ end subroutine stoppetsc
 
 !> allocate arrays for petsc matrix construction,
 !>   and get sparsity pattern in RCS format
-subroutine ini_petsc(Ndx, ierror)
+module subroutine ini_petsc(Ndx, ierror)
    use m_reduce
    use m_partitioninfo
    use petsc
    use m_petsc
    use MessageHandling
    use stdlib_sorting, only: sort_index
-
-   implicit none
 
    integer, intent(in) :: Ndx !< number of cells
    integer, intent(out) :: ierror !< error (1) or not (0)
@@ -439,7 +442,6 @@ subroutine setPETSCmatrixEntries()
    use m_petsc
    use MessageHandling
    use m_flowgeom, only: kfs
-   implicit none
 
    integer :: i, n
 
@@ -566,13 +568,9 @@ end subroutine setPETSCmatrixEntries
 subroutine createPETSCPreconditioner(iprecnd)
    use petsc
    use m_reduce
-!      use unstruc_messages
    use m_partitioninfo
    use m_petsc
-!      use petscksp; use petscdm
    use MessageHandling
-
-   implicit none
 
    integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
 
@@ -641,17 +639,13 @@ end subroutine createPETSCPreconditioner
 !> compose the global matrix and solver for PETSc
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
-subroutine preparePETSCsolver(japipe)
+module subroutine preparePETSCsolver(japipe)
 ! fix for missing definition of KSPPIPECG in finclude/petscdef.h:
 #define KSPPIPECG 'pipecg'
    use petsc
    use m_reduce
-!      use unstruc_messages
    use m_partitioninfo
    use m_petsc
-!      use petscksp; use petscdm
-
-   implicit none
 
    integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
 
@@ -699,8 +693,6 @@ subroutine preparePETSCsolver(japipe)
    if (ierr /= PETSC_OK) print *, 'conjugategradientPETSC: PETSC_ERROR (1)'
    if (ierr /= PETSC_OK) go to 1234
 
-!      call writemesg('RHS and SOL vector are filled')
-
    if (ierr == PETSC_OK) then
       call KSPCreate(PETSC_COMM_WORLD, Solver, ierr)
       isKSPCreated = .true.
@@ -726,7 +718,7 @@ end subroutine preparePETSCsolver
 !> compose the global matrix and solve with PETSc
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
-subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
+module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
    use petsc
    use m_reduce
    use m_partitioninfo
@@ -735,8 +727,6 @@ subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
    use m_flowtimes, only: dts ! for logging
    use MessageHandling
    use m_flowparameters, only: jalogsolverconvergence
-
-   implicit none
 
    integer, intent(in) :: ndx
    real(kind=dp), dimension(Ndx), intent(inout) :: s1
@@ -849,7 +839,7 @@ subroutine killSolverPETSC()
 !#include <finclude/petscdef.h>
    use petsc
    use m_petsc
-   implicit none
+
    PetscErrorCode :: ierr = PETSC_OK
 
    if (isKSPCreated) then
@@ -862,8 +852,6 @@ subroutine writesystem()
    use m_partitioninfo
    use m_flowgeom, only: kfs
    use m_petsc
-
-   implicit none
 
    integer :: i, j, irow, jcol, ifirstrow, n
    integer :: iter, ierr, lunfil
@@ -954,3 +942,4 @@ subroutine writesystem()
    return
 end subroutine
 
+end submodule m_solve_petsc_

@@ -32,9 +32,16 @@
 !> for Tecplot output
 module m_tecplot
    use precision, only: dp
+   
    implicit none
+   
+   private
+   
+   public :: wrinet_tecplot, wrimap_tecplot, ini_tecplot
+
 #ifdef HAVE_TECPLOT
    include 'tecio.f90'
+#endif
 
 ! tecpolyface142 is missing in tecio.f90
    interface
@@ -87,13 +94,14 @@ contains
 !  write array to Tecplot file
    subroutine tecdat(num, var, ierr, kmask, miss)
       use m_missing
-      implicit none
 
       integer, intent(in) :: num ! data size
       real(kind=dp), dimension(num), intent(in) :: var ! data to be written
       integer, intent(out) :: ierr ! error (1) or not (0)
       integer, dimension(num), optional, intent(in) :: kmask ! mask
       real(kind=dp), optional, intent(in) :: miss ! missing value
+
+#ifdef HAVE_TECPLOT
 
       real, dimension(:), allocatable :: xx
 
@@ -124,21 +132,20 @@ contains
       ierr = tecdat142(i, xx, 0)
 
       if (allocated(xx)) deallocate (xx)
-
-      return
-   end subroutine tecdat
+#else
+      associate(var=>var, kmask=>kmask, miss=>miss)
+      end associate
+      ierr = 0
 #endif
-end module m_tecplot
+
+   end subroutine tecdat
 
 !>  write net to Tecplot file
 subroutine wrinet_tecplot(FNAM)
-   use m_tecplot
    use network_data
    use unstruc_messages
    use m_partitioninfo
    use m_qnerror
-
-   implicit none
 
    character(len=*), intent(in) :: FNAM
 
@@ -222,6 +229,8 @@ subroutine wrinet_tecplot(FNAM)
 
 1234 continue
 #else
+   associate(FNAM => FNAM)
+   end associate
    call qnerror('Tecplot output not available', ' ', ' ')
 
 #endif
@@ -233,15 +242,14 @@ end subroutine wrinet_tecplot
 !>    it is assumed that the mesh and connectivity are written in the net file
 !>    it is also assumed that the flow-node numbering and netcell numbering are the same
 subroutine wrimap_tecplot(FNAM)
-   use m_tecplot
+#ifdef HAVE_TECPLOT
    use m_flow, only: s1, ucx, ucy, vih
    use m_flowgeom
    use network_data, only: nump
    use m_flowtimes, only: time1
-   use unstruc_messages
    use gridoperations
-
-   implicit none
+#endif
+   use MessageHandling, only: mess, LEVEL_ERROR
 
    character(len=*), intent(in) :: FNAM
 
@@ -305,6 +313,8 @@ subroutine wrimap_tecplot(FNAM)
 
    if (allocated(cellmask)) deallocate (cellmask)
 #else
+   associate(FNAM => FNAM)
+   end associate
    call mess(LEVEL_ERROR, 'Tecplot output not available')
 #endif
 
@@ -312,10 +322,8 @@ subroutine wrimap_tecplot(FNAM)
 end subroutine wrimap_tecplot
 
 subroutine ini_tecplot()
-   use m_tecplot
    use network_data
    use gridoperations
-   implicit none
 
 #ifdef HAVE_TECPLOT
 
@@ -420,3 +428,4 @@ subroutine ini_tecplot()
    return
 end subroutine ini_tecplot
 
+end module m_tecplot

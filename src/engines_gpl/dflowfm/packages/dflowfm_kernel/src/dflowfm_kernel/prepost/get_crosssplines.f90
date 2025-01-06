@@ -49,7 +49,6 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
    use m_spline2curvi
    use m_alloc
    use stdlib_sorting, only: sort_index
-   use geometry_module, only: dbdistance
 
    integer, intent(in) :: num !< number of spline control points
    real(kind=dp), dimension(num), intent(in) :: xs1, ys1 !< coordinates of spline control points

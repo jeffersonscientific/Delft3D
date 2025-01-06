@@ -74,6 +74,7 @@ contains
     use m_wribal
     use m_wrihistek
     use m_unc_write_his, only: unc_write_his
+    use m_print_timings, only: print_timings
 
 #ifdef _OPENMP
     use omp_lib

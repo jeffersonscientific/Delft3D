@@ -101,7 +101,7 @@ contains
     use unstruc_messages
     use string_module
     use m_plotdots
-    use geometry_module, only: getdx, getdy, dbdistance, normalin, normalout, half, duitpl, dlinedis
+    use geometry_module, only: dbdistance, normalin, normalout, half, duitpl, dlinedis
     use stdlib_sorting, only: sort_index
     use m_flowtimes, only: ti_waq
     use gridoperations
@@ -1203,15 +1203,6 @@ contains
 
           call duitpl(xzw(k1), yzw(k1), xk(k3), yk(k3), xzw(k1), yzw(k1), xk(k4), yk(k4), sig, jsferic)
           call dlinedis(xzw(k1), yzw(k1), xk(k3), yk(k3), xk(k4), yk(k4), JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
-!
-!       dxx = getdx( xk(k3), yk(k3), xk(k4), yk(k4) )  ! xk(k4) - xk(k3)
-!       dyy = getdy( xk(k3), yk(k3), xk(k4), yk(k4) )  ! yk(k4) - yk(k3)
-!       rrr = sqrt(dxx*dxx + dyy*dyy)
-!       cs  = 0 ; sn = 0
-!       if (rrr .ne. 0) then
-!          cs = sig*dxx/rrr
-!          sn = sig*dyy/rrr
-!       endif
 
           rrr = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss)
           call half(xk(k3), yk(k3), xk(4), yk(k4), xh, yh, jsferic, jasfer3D)

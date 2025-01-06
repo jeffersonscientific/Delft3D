@@ -41,6 +41,7 @@ contains
       use m_fm_update_crosssections, only: fm_update_mor_width_mean_bedlevel
       use m_flowgeom, only: ndx2d, ndxi
       use Timers
+      use m_tecplot, only: wrimap_tecplot, wrinet_tecplot
 
       implicit none
       real(kind=dp), intent(in) :: tim

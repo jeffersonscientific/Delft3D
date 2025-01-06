@@ -198,6 +198,9 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
 
 set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/partition.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/pressakey.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/print_timings.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_data_path}/partition_METIS_to_idomain.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/m_gui.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/menuv1.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/setwor.F90

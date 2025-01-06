@@ -228,12 +228,6 @@ contains
          write (6, '(a,E9.2,a,E9.2)') ' WC-time solver   [s]: ', gettimer(1, ITOTALSOL), ' CPU-time solver   [s]: ', gettimer(0, ITOTALSOL)
          write (6, '(a,E9.2,a,E9.2)') ' WC-time MPI comm [s]: ', gettimer(1, IMPICOMM), ' CPU-time MPI comm [s]: ', gettimer(0, IMPICOMM)
       end if
-!         call mpi_barrier(DFM_COMM_DFMWORLD,ierr)
-
-!      call writemesg('Wallclock times')
-!      call printall(numt, t(3,:), tnams)
-!      call writemesg('CPU times')
-!      call printall(numt, tcpu(3,:), tnams)
 
 1234  continue
 

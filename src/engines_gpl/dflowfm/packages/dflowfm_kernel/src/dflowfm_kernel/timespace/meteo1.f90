@@ -5455,38 +5455,6 @@ contains
 
    end subroutine polyindexweight
    !
-   !
-   ! ==========================================================================
-   !>
-!LC: TODO remove
-!   SUBROUTINE LINEDISq(X3,Y3,X1,Y1,X2,Y2,JA,DIS,XN,YN,rl) ! = dlinesdis2
-!
-!
-!   integer          :: ja
-!   real(kind=dp) :: X1,Y1,X2,Y2,X3,Y3,DIS,XN,YN
-!   real(kind=dp) :: R2,RL,X21,Y21,X31,Y31,dbdistance
-!
-!   ! korste afstand tot lijnelement tussen eindpunten
-!   JA  = 0
-!   !X21 = getdx(x1,y1,x2,y2)
-!   !Y21 = getdy(x1,y1,x2,y2)
-!   call getdxdy(x1,y1,x2,y2,x21,y21)
-!   !X31 = getdx(x1,y1,x3,y3)
-!   !Y31 = getdy(x1,y1,x3,y3)
-!   call getdxdy(x1,y1,x3,y3,x31,y31)
-!   R2  = dbdistance(x2,y2,x1,y1)
-!   R2  = R2*R2
-!   IF (R2 .NE. 0) THEN
-!      RL  = (X31*X21 + Y31*Y21) / R2
-!      IF (0d0 .LE. RL .AND. RL .LE. 1d0) then
-!         JA = 1
-!      end if
-!      XN  = X1 + RL*(x2-x1)
-!      YN  = Y1 + RL*(y2-y1)
-!      DIS = dbdistance(x3,y3,xn,yn)
-!   end if
-!   RETURN
-!   END subroutine LINEDISq
 end module timespace_triangle ! met leading dimensions 3 of 4
 !
 !

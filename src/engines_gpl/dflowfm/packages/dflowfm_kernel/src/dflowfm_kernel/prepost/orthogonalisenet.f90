@@ -102,9 +102,6 @@ subroutine ORTHOGONALISENET(jarerun)
 
    logical :: Lteknet
 
-   real(kind=dp), external :: getDx, getDy
-
-!   integer,          parameter                   :: IMISS = -999999
    real(kind=dp), parameter :: EPS = 1d-4
 
    real(kind=dp) :: mu, mumin, mumax, mumat, wwx, wwy
@@ -810,7 +807,7 @@ contains
       use m_flowgeom
       use m_orthosettings
       use m_missing
-      use geometry_module, only: dbdistance, normaloutchk, dcosphi, getdx, getdy
+      use geometry_module, only: dbdistance, normaloutchk, dcosphi
 
       implicit none
 
@@ -2018,7 +2015,6 @@ contains
 
       real(kind=dp) :: RlinkL, RlinkR, cDPhi
       real(kind=dp) :: volwwxi
-      real(kind=dp), external :: getdx, getdy
 
       ierror_ = 1
       if (present(ierror)) ierror = ierror_
@@ -2130,12 +2126,6 @@ contains
             alpha = xiL * xi1 + etaL * eta1
             alpha = alpha / (xi1**2 + eta1**2)
 
-!            Dx1 = getDx(xk(k0), yk(k0), xk(k1), yk(k1))
-!            Dy1 = getDy(xk(k0), yk(k0), xk(k1), yk(k1))
-!            DxL = getDx(xk(k0), yk(k0), xL(klink), yL(klink))
-!            DyL = getDy(xk(k0), yk(k0), xL(klink), yL(klink))
-!            alpha_x = (Dx1*DxL + Dy1*DyL) / (Dx1**2+Dy1**2 + 1d-16)
-!            alpha_x = 0.5d0;
             alpha_x = alpha; 
             if (alpha_x /= 0.5d0) then
                continue

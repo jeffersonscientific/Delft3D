@@ -30,39 +30,36 @@
 !
 !
 
-module m_stopint
+module m_pressakey
 
-implicit none
+   implicit none
+   
+   private
+   
+   public :: pressakey
+   
+   contains
+   
+   subroutine pressakey()
+#ifdef HAVE_MPI
+   use mpi
+   use m_partitioninfo, only: DFM_COMM_ALLWORLD, my_rank
 
-private
+   integer :: ierr
 
-public :: stopint
+   call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
 
-contains
+   if (my_rank == 0) then
+      write (6, *) "press a key from rank 0..."
+      read (5, *)
+   end if
 
-      subroutine STOPINT()
-         use unstruc_files
-         use unstruc_netcdf, only: unc_closeall
-         use m_partitioninfo
-         use m_fetch_operation_utils, only: finish_fetch_proc
+   call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
+#else
+   write (6, *) "press a key..."
+   read (5, *)
+#endif
 
-         call ISCREENCLOSE()
-         call unc_closeall()
-         call close_all_files()
-
-         call finish_fetch_proc()
-         if (jampi == 1) then
-!        finalize before exit
-            call partition_finalize()
-         end if
-
-!     SPvdP: close dia-file
-         if (mdia /= 0 .and. mdia < maxnum) then
-            close (mdia)
-            mdia = 0
-         end if
-
-         stop
-      end
-
-end module m_stopint
+end subroutine pressakey
+   
+end module m_pressakey

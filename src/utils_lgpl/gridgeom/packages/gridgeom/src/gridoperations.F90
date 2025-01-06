@@ -694,7 +694,7 @@
    use network_data
 
    use mathconsts, only: degrad_hp
-   use geometry_module, only: getdx, getdy, dcosphi, cross
+   use geometry_module, only: dcosphi, cross
    use m_missing, only : dmiss, dxymis
    use m_sferic, only: jsferic, jasfer3D
    use MessageHandling
@@ -2324,7 +2324,7 @@
    !LC use m_netw
    use network_data
    use m_sferic
-   use geometry_module, only: getdxdy, dcosphi, getdx, getdy
+   use geometry_module, only: getdxdy, dcosphi
    use stdlib_sorting, only: sort_index
 
    implicit none
@@ -2349,8 +2349,6 @@
          K1 = K
       end if
 
-      !dx = getdx(xk(k1), yk(k1), xk(k2), yk(k2))
-      !dy = getdy(xk(k1), yk(k1), xk(k2), yk(k2))
       call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
       if (abs(dx) < 1d-14 .and. abs(dy) < 1d-14) then
          if (dy < 0) then

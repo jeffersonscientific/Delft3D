@@ -510,6 +510,7 @@ contains
     use m_timer
     use m_qnerror
     use m_solve_jacobi
+    use m_solve_petsc, only: conjugategradientPETSC
 
 #ifdef HAVE_PETSC
     use m_petsc
@@ -1681,6 +1682,7 @@ contains
     use m_partitioninfo
     use m_readyy
     use m_saad, only: inisaad
+    use m_solve_petsc, only: ini_petsc, preparePETSCsolver
 
     implicit none
 

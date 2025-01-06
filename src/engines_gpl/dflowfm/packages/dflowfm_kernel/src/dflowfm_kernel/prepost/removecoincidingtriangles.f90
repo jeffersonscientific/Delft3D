@@ -56,8 +56,6 @@ contains
       real(kind=dp), allocatable :: XNW(:), YNW(:)
       integer, allocatable :: NNW(:, :)
 
-      real(kind=dp), external :: getdx, getdy
-
       call FINDCELLS(3)
 
       allocate (XNW(NUMP), YNW(NUMP), NNW(3, NUMP), STAT=IERR)
@@ -74,11 +72,7 @@ contains
             k3 = kdum
          end if
 
-         !dx2 = getdx(XK(K1), YK(K1), XK(K2), YK(K2)) ! AvD: TODO: getdx toepassen
-         !dy2 = getdy(XK(K1), YK(K1), XK(K2), YK(K2))
          call getdxdy(XK(K1), YK(K1), XK(K2), YK(K2), dx2, dy2, jsferic)
-         !dx3 = getdx(XK(K1), YK(K1), XK(K3), YK(K3))
-         !dy3 = getdy(XK(K1), YK(K1), XK(K3), YK(K3))
          call getdxdy(XK(K1), YK(K1), XK(K3), YK(K3), dx3, dy3, jsferic)
          den = dy2 * dx3 - dy3 * dx2
          if (DEN == 0d0) then
