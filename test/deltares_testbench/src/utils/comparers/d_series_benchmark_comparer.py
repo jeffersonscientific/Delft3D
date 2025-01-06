@@ -10,9 +10,9 @@ import src.utils.comparers.d_series_comparer as DSeriesComparer
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.tree_comparer import TreeException
 from src.utils.logging.i_logger import ILogger
-from src.utils.comparers.end_result import EndResult
 
 # ------------------------DSeriesComparer-constructor------------------------ #
 

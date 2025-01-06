@@ -6,7 +6,7 @@
 import datetime
 import os
 import tempfile
-from typing import AnyStr, List, Tuple
+from typing import List, Tuple
 
 import netCDF4 as nc
 import numpy as np
