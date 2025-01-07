@@ -40,7 +40,7 @@ class netcdf_fortranRecipe(ConanFile):
 
     def generate(self):
         deps = CMakeDeps(self)
-        deps.set_property("netcdf", "cmake_target_aliases", "[libnetcdf]")
+        deps.set_property("netcdf", "cmake_target_aliases", ["libnetcdf"])
         deps.generate()
         tc = CMakeToolchain(self)
         # Work around bug in conan relating to CheckLibraryExists, see https://github.com/conan-io/conan/issues/12180
