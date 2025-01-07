@@ -50,7 +50,7 @@ object LinuxPyTest : BuildType({
     }
 
     failureConditions {
-        executionTimeoutMin = 1800
+        executionTimeoutMin = 30
         errorMessage = true
         failOnText {
             conditionType = BuildFailureOnText.ConditionType.REGEXP
