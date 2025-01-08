@@ -24,40 +24,6 @@ object LinuxBuildTestbenchContainer : BuildType({
     }
 
     steps {
-        python {
-            name = "Check merge conflicts"
-
-            conditions {
-                contains("teamcity.build.branch", "merge-requests")
-            }
-            command = script {
-                content = """
-                    import subprocess
-                    import json
-                    import time
-                    
-                    merge_branch = "%teamcity.build.branch%".replace("merge-requests", "merge_requests")
-                    for i in range(5):
-                        time.sleep(60)
-                        url = f"https://git.deltares.nl/api/v4/projects/14/{merge_branch}"
-                        merge_request_details = subprocess.check_output(["curl", "--header", f"PRIVATE-TOKEN: %gitlab_private_access_token%", url])
-                        merge_request_data = json.loads(merge_request_details)
-                        merge_status = merge_request_data.get("merge_status", "")
-                        if merge_status == "can_be_merged":
-                            print("##teamcity[message text='No merge conflicts']")
-                            break
-                        elif i == 4:
-                            print("##teamcity[buildProblem status='FAILURE' description='Could not verify merge_status of merge-request.']")
-                            break
-                        else:
-                            has_conflicts = merge_request_data.get("has_conflicts", "")
-                            if has_conflicts:
-                                print("##teamcity[buildProblem status='FAILURE' description='Merge conflicts prevented run']")
-                                break
-                        print(f"##teamcity[message text='Retry get merge_status from gitlab #{str(i+1)}']")
-                """.trimIndent()
-            }
-        }
         mergeTargetBranch {}
         dockerCommand {
             name = "Build docker testbench container"
