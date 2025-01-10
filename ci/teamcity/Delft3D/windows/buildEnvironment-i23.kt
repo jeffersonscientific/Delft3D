@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import Delft3D.template.*
 import Delft3D.step.*
 
-object WindowsBuildEnvironment : BuildType({
+object WindowsBuildEnvironmentI23 : BuildType({
 
     templates(
         TemplateMergeRequest,
@@ -16,7 +16,7 @@ object WindowsBuildEnvironment : BuildType({
         TemplateMonitorPerformance
     )
 
-    name = "Delft3D build environment container"
+    name = "Delft3D build environment intel 2023 container"
     buildNumberPattern = "%build.vcs.number%"
     description = "Delft3D Windows build container."
 
@@ -53,7 +53,7 @@ object WindowsBuildEnvironment : BuildType({
             name = "Docker build dhydro"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/windows/Dockerfile-dhydro"
+                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-vs2019-i23"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
