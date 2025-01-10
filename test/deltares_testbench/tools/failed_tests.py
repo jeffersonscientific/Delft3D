@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import sys
+from typing import TextIO
 
 from src.utils.comparers.end_result import EndResult
 
@@ -12,11 +13,14 @@ def get_failed_tests(filename: str) -> list:
 
     Parameters
     ----------
-        filename (str): The path to the log file.
+    filename : str
+        The path to the log file.
 
     Returns
     -------
-        list: A list of failed test case names.
+    list
+        A list of failed test case names.
+
     """
     pattern = rf"\|(.*?)\|.*?\|({EndResult.ERROR.value}|{EndResult.NOK.value})"
     failed_tests = []
@@ -41,14 +45,16 @@ def prepare_failed_tests_directory() -> None:
     os.makedirs("failed")
 
 
-def copy_directory(src: str, dst: str, copy_log) -> None:
+def copy_directory(src: str, dst: str, copy_log: TextIO) -> None:
     """Copy a directory from the source to the destination.
 
     Parameters
     ----------
-    src (str): The source directory path.
-    dst (str): The destination directory path.
-    copy_log (file object): The log file object to write the copy status.
+    src, dst : str
+        The source and destination directory path.
+    copy_log : TextIO
+        The log file object to write the copy status.
+
     """
     copy_log.write(f"{src} => {dst}")
     try:
@@ -63,8 +69,11 @@ def copy_failed_tests(failed_tests, platform: str) -> None:
 
     Parameters
     ----------
-    failed_tests (list): A list of failed test case names.
-    platform (str): The platform name used to locate the reference directories.
+    failed_tests : list
+        A list of failed test case names.
+    platform : str
+        The platform name used to locate the reference directories.
+
     """
     prepare_failed_tests_directory()
 
