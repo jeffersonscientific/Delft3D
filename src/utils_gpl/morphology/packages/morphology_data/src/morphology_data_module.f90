@@ -349,6 +349,8 @@ type fluffy_type
     !
     ! single / doubles (fp)
     !
+    real(fp) :: maxthfluff!  maximum allowed thickness of the fluff layer [m]
+    real(fp) :: densfluff !  density of the fluff layer [kg/m3]
     !
     ! singles (sp)
     !
@@ -575,8 +577,8 @@ type sedpar_type
     real(fp) :: tfloc     !  relaxation time scale for flocculation [s]
     real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
     real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
-    real(fp) :: k_wsmod   ! parameter for settling velocity reduction [-]
-    real(fp) :: h0_wsmod  ! threshold of water depth for settling velocity reduction [m]
+    real(fp) :: k_wsmod   !  parameter for settling velocity reduction [-]
+    real(fp) :: h0_wsmod  !  threshold of water depth for settling velocity reduction [m]
     real(fp) :: version   !  interpreter version
     !
     ! reals
@@ -1774,6 +1776,9 @@ subroutine initfluffy(flufflyr)
 !
     flufflyr%iflufflyr = 0
     !
+    flufflyr%maxthfluff = 0.2_fp
+    flufflyr%densfluff = 200.0_fp
+    !
     nullify(flufflyr%mfluni)
     nullify(flufflyr%mfluff)
     nullify(flufflyr%bfluff0)
@@ -1837,6 +1842,8 @@ subroutine clrfluffy(istat, flufflyr)
 !! executable statements -------------------------------------------------------
 !
     flufflyr%iflufflyr = 0
+    flufflyr%maxthfluff = 0.0_fp
+    flufflyr%densfluff = 0.0_fp
     !
     if (associated(flufflyr%mfluni))      deallocate(flufflyr%mfluni,      STAT = istat)
     if (associated(flufflyr%mfluff))      deallocate(flufflyr%mfluff,      STAT = istat)
