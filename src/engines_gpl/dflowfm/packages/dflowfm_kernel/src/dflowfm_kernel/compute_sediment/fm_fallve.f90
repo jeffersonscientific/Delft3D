@@ -122,6 +122,7 @@ contains
       real(kind=dp) :: wsloc
       real(kind=dp), dimension(:), allocatable :: z0rou
       real(kind=dp) :: thick
+      real(kind=dp) :: alpha
 
       character(256) :: errmsg
    !!
