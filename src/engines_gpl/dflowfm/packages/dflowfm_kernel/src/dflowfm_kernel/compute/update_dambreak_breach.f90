@@ -31,14 +31,38 @@
 !
 
 module m_update_dambreak_breach
+   use precision, only: dp
 
    implicit none
 
    private
 
    public :: update_dambreak_breach
+   public :: allocate_dambreak_data
 
-contains
+   real(kind=dp), allocatable, target, public :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
+   real(kind=dp), allocatable, target, public :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
+   real(kind=dp), allocatable, public :: normalVelocityDambreak(:) !< dambreak normal velocity
+   real(kind=dp), allocatable, public :: breachWidthDerivativeDambreak(:) !< breach width derivatives
+   real(kind=dp), allocatable, public :: waterLevelJumpDambreak(:) !< water level jumps
+   
+   real(kind=dp), allocatable :: dambreakAveraging(:, :) !< (1,:) weight averaged values of waterlevel per dambreaklink
+                                                         !! (2,:) weight per dambreaklink
+   contains
+
+   subroutine allocate_dambreak_data(ndambreaklinks)
+      use m_alloc, only: realloc
+
+      integer, intent(in) :: ndambreaklinks 
+     
+      call realloc(waterLevelsDambreakUpstream, ndambreaklinks)
+      call realloc(waterLevelsDambreakDownstream, ndambreaklinks)
+      call realloc(normalVelocityDambreak, ndambreaklinks)
+      call realloc(breachWidthDerivativeDambreak, ndambreaklinks)
+      call realloc(waterLevelJumpDambreak, ndambreaklinks)
+      call realloc(dambreakAveraging, [2,ndambreaklinks])
+   
+   end subroutine allocate_dambreak_data
 
    subroutine update_dambreak_breach(startTime, deltaTime)
       use precision, only: dp
@@ -49,13 +73,13 @@ contains
       use m_Dambreak, only: prepareComputeDambreak
       use m_partitioninfo, only: getAverageQuantityFromLinks
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_dambreakLevelsAndWidthsFromTable
-      use fm_external_forcings_data, only: success, ndambreaklinks, ndambreaksignals, dambreakAveraging, &
+      use fm_external_forcings_data, only: success, ndambreaklinks, ndambreaksignals, &
          dambreaks, maximumDambreakWidths, breachWidthDambreak, breachDepthDambreak, &
-         dambreakLevelsAndWidthsFromTable, normalVelocityDambreak, breachWidthDerivativeDambreak, waterLevelJumpDambreak, &
+         dambreakLevelsAndWidthsFromTable, &
          LStartBreach, L1dambreaksg, L2dambreaksg, kdambreak, activeDambreakLinks, &
-         nDambreakLocationsUpstream, dambreakLocationsUpstream, waterLevelsDambreakUpStream, &
+         nDambreakLocationsUpstream, dambreakLocationsUpstream, &
          dambreakLocationsUpstreamMapping, nDambreakAveragingUpstream, dambreakAverigingUpstreamMapping, &
-         nDambreakLocationsDownstream, dambreakLocationsDownstream, waterLevelsDambreakDownStream, &
+         nDambreakLocationsDownstream, dambreakLocationsDownstream, &
          dambreakLocationsDownstreamMapping, nDambreakAveragingDownstream, dambreakAverigingDownstreamMapping
       use m_flowtimes, only: irefdate, tunit, tzone
 

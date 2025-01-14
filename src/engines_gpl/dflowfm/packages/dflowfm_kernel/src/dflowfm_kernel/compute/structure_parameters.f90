@@ -49,6 +49,8 @@ contains
       use m_compound
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
+      use m_update_dambreak_breach, only: waterLevelsDambreakUpStream, waterLevelsDambreakDownStream, normalVelocityDambreak, & 
+            breachWidthDerivativeDambreak, waterLevelJumpDambreak
 
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
       real(kind=dp) :: dir

@@ -376,12 +376,14 @@ contains
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
       use fm_external_forcings_data, only: dambreakLinksEffectiveLength, &
-                                           maximumDambreakWidths, kdambreak, LStartBreach, waterLevelsDambreakDownStream, waterLevelsDambreakUpStream, &
-                                           breachDepthDambreak, breachWidthDambreak, dambreak_ids, activeDambreakLinks, normalVelocityDambreak, dambreakAveraging, &
-                                           dambreakLevelsAndWidthsFromTable, breachWidthDerivativeDambreak, waterLevelJumpDambreak, dambreakLocationsUpstreamMapping, &
+                                           maximumDambreakWidths, kdambreak, LStartBreach, &
+                                           breachDepthDambreak, breachWidthDambreak, dambreak_ids, activeDambreakLinks, &
+                                           dambreakLevelsAndWidthsFromTable, dambreakLocationsUpstreamMapping, &
                                            dambreakLocationsUpstream, dambreakAverigingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
                                            dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, dambreakAverigingDownstreamMapping, &
                                            nDambreakLocationsDownstream, nDambreakAveragingDownstream, dambreaks, ndambreaklinks
+      use m_update_dambreak_breach, only: allocate_dambreak_data
+
       use m_alloc, only: realloc
 
       integer, intent(in) :: ndambreaksignals !< ndambreaksignals is the number of dambreak signals.
@@ -410,17 +412,12 @@ contains
       call realloc(kdambreak, [3, ndambreaklinks], fill=0)
       call realloc(dambreaks, ndambreaksignals, fill=0)
       call realloc(LStartBreach, ndambreaksignals, fill=-1)
-      call realloc(waterLevelsDambreakDownStream, ndambreaksignals, fill=0.0_dp)
-      call realloc(waterLevelsDambreakUpStream, ndambreaksignals, fill=0.0_dp)
+      call allocate_dambreak_data(ndambreaksignals)
       call realloc(breachDepthDambreak, ndambreaksignals, fill=0.0_dp)
       call realloc(breachWidthDambreak, ndambreaksignals, fill=0.0_dp)
       call realloc(dambreak_ids, ndambreaksignals)
       call realloc(activeDambreakLinks, ndambreaklinks, fill=0)
-      call realloc(normalVelocityDambreak, ndambreaksignals)
-      call realloc(dambreakAveraging, [2, ndambreaksignals], fill=0.0_dp)
       call realloc(dambreakLevelsAndWidthsFromTable, ndambreaksignals * 2, fill=0.0_dp)
-      call realloc(breachWidthDerivativeDambreak, ndambreaksignals, fill=0.0_dp)
-      call realloc(waterLevelJumpDambreak, ndambreaksignals, fill=0.0_dp)
       call realloc(dambreakLocationsUpstreamMapping, ndambreaksignals, fill=0)
       call realloc(dambreakLocationsUpstream, ndambreaksignals, fill=0)
       call realloc(dambreakAverigingUpstreamMapping, ndambreaksignals, fill=0)
@@ -620,6 +617,7 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
+      use m_update_dambreak_breach, only: allocate_dambreak_data
 
       implicit none
       logical :: status
@@ -1690,11 +1688,14 @@ contains
 !
       if (ndambreaksignals > 0) then
 
+         call allocate_dambreak_data(ndambreaklinks) 
+         
          if (allocated(maximumDambreakWidths)) deallocate (maximumDambreakWidths)
          allocate (maximumDambreakWidths(ndambreaksignals))
          maximumDambreakWidths = 0.0_dp
          if (allocated(kdambreak)) deallocate (kdambreak)
          allocate (kdambreak(3, ndambreaklinks), stat=ierr) ! the last row stores the actual
+         ! kdambreak is an integer array? This is flow_init_structurecontrol_old so will be removed soon
          kdambreak = 0.0_dp
          if (allocated(dambreaks)) deallocate (dambreaks)
          allocate (dambreaks(ndambreaksignals))
@@ -1703,14 +1704,6 @@ contains
          if (allocated(LStartBreach)) deallocate (LStartBreach)
          allocate (LStartBreach(ndambreaksignals))
          LStartBreach = -1
-
-         if (allocated(waterLevelsDambreakDownStream)) deallocate (waterLevelsDambreakDownStream)
-         allocate (waterLevelsDambreakDownStream(ndambreaksignals))
-         waterLevelsDambreakDownStream = 0.0_dp
-
-         if (allocated(waterLevelsDambreakUpStream)) deallocate (waterLevelsDambreakUpStream)
-         allocate (waterLevelsDambreakUpStream(ndambreaksignals))
-         waterLevelsDambreakUpStream = 0.0_dp
 
          if (allocated(breachDepthDambreak)) deallocate (breachDepthDambreak)
          allocate (breachDepthDambreak(ndambreaksignals))
@@ -1727,29 +1720,9 @@ contains
          allocate (activeDambreakLinks(ndambreaklinks))
          activeDambreakLinks = 0
 
-         if (allocated(normalVelocityDambreak)) deallocate (normalVelocityDambreak)
-         allocate (normalVelocityDambreak(ndambreaksignals))
-         normalVelocityDambreak = 0.0_dp
-
-         if (allocated(dambreakAveraging)) deallocate (dambreakAveraging)
-         allocate (dambreakAveraging(2, ndambreaksignals))
-         dambreakAveraging = 0.0_dp
-
          if (allocated(dambreakLevelsAndWidthsFromTable)) deallocate (dambreakLevelsAndWidthsFromTable)
          allocate (dambreakLevelsAndWidthsFromTable(ndambreaksignals * 2))
          dambreakLevelsAndWidthsFromTable = 0.0_dp
-
-         if (allocated(breachWidthDerivativeDambreak)) deallocate (breachWidthDerivativeDambreak)
-         allocate (breachWidthDerivativeDambreak(ndambreaksignals))
-         breachWidthDerivativeDambreak = 0.0_dp
-
-         if (allocated(waterLevelJumpDambreak)) deallocate (waterLevelJumpDambreak)
-         allocate (waterLevelJumpDambreak(ndambreaksignals))
-         waterLevelJumpDambreak = 0.0_dp
-
-         if (allocated(waterLevelJumpDambreak)) deallocate (waterLevelJumpDambreak)
-         allocate (waterLevelJumpDambreak(ndambreaksignals))
-         waterLevelJumpDambreak = 0.0_dp
 
          ! dambreak upstream
          if (allocated(dambreakLocationsUpstreamMapping)) deallocate (dambreakLocationsUpstreamMapping)

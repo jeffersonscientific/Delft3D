@@ -351,14 +351,8 @@ module fm_external_forcings_data
 
    ! Dambreak
    !time varying
-   real(kind=dp), allocatable, target :: waterLevelsDambreakUpStream(:) !< the water levels computed each time step upstream
-   real(kind=dp), allocatable, target :: waterLevelsDambreakDownStream(:) !< the water levels computed each time step downstream
    real(kind=dp), allocatable, target :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
    real(kind=dp), allocatable, target :: breachWidthDambreak(:) !< the dambreak breach width (as a level)
-   real(kind=dp), allocatable :: normalVelocityDambreak(:) !< dambreak normal velocity
-   real(kind=dp), allocatable :: dambreakAveraging(:, :) !< to avoid allocations/deallocations
-   real(kind=dp), allocatable :: breachWidthDerivativeDambreak(:) !< breach width derivatives
-   real(kind=dp), allocatable :: waterLevelJumpDambreak(:) !< water level jumps
    !constant in time
    real(kind=dp), allocatable :: maximumDambreakWidths(:) !< the total dambreak width (from pli file)
    real(kind=dp), allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
