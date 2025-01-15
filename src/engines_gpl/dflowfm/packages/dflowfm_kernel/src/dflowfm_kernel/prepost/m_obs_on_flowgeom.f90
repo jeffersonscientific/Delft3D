@@ -38,10 +38,10 @@ module m_obs_on_flowgeom
 contains
 
 !> Snap observation stations to nearest flow nodes and links.
-!! Results are stored in `m_observations` state arrays.
+!! Results are stored in `m_observations_data` state arrays.
    subroutine obs_on_flowgeom(iobstype)
 
-      use m_observations_data, only: numobs, nummovobs, kobs, namobs
+      use m_observations_data, only: numobs, nummovobs, kobs, namobs, neighbour_nodes_obs, neighbour_weights_obs
       use unstruc_messages, only: loglevel_StdOut
       use messagehandling, only: LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
@@ -84,6 +84,8 @@ contains
       else
          ! No cache, so process all requested observation points.
          call find_flownodes_and_links_for_all_observation_stations(n1, n2)
+
+         call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
       end if
 
       if (loglevel_StdOut == LEVEL_DEBUG) then
@@ -251,5 +253,28 @@ contains
       end if
 
    end subroutine find_flownodes_and_links_for_all_observation_stations
+
+   subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end, neighbour_nodes_table, neighbour_weights_table)
+      integer, intent(in) :: n_start !< Starting index of obs
+      integer, intent(in) :: n_end   !< Ending index of obs
+      integer, intent(inout) :: neighbour_nodes_table !< [3, n_end] Table of nearby flow node numbers for each station
+      real(kind=dp), intent(inout) :: neighbour_weights_obs  !< [3, n_end] Table of interpolation weights for nearby flow node numbers for each station
+
+      ! xu, yu: xobs, yobs
+      ! zh
+      ! jdla local met waarde 1
+      ! xs: xz(1:ndx2d), yz(1:ndx2d) (uit m_flowgeom)
+      ! ns: ndx2d
+      ! dmiss uit m_missing
+      ! jsferic, jasfer3D uit m_sferic
+      ! jins = 0
+      ! transformcoef uit fm_external_forcings_data
+      !, kcc:  TODO
+      call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, &
+               NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef, kcc)
+
+      ! NU: pak de geproduceerde gewichten uit indxx, wf..., en sla ze op in neighbour_nodes_table en neighbour_weights_table
+
+   end subroutine  init_interpolation_data_for_all_observation_stations
 
 end module m_obs_on_flowgeom

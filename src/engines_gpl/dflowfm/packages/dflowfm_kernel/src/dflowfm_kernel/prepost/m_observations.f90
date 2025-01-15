@@ -653,6 +653,8 @@ contains
          call realloc(xyobs, 2 * (nummovobs + capacity_))
          call realloc(kobs, numobs + nummovobs + capacity_)
          call realloc(lobs, numobs + nummovobs + capacity_)
+         call realloc(neighbour_nodes_obs, [3, numobs + nummovobs + capacity_])
+         call realloc(neighbour_weights_obs, [3, numobs + nummovobs + capacity_])
          call realloc(namobs, numobs + nummovobs + capacity_)
          call realloc(smxobs, numobs + nummovobs + capacity_)
          call realloc(cmxobs, numobs + nummovobs + capacity_)

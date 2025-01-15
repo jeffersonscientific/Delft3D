@@ -30,7 +30,7 @@
 !
 !
 
-! fill observation stations array
+! fill values on observation stations array
 module m_fill_valobs
 
    implicit none
@@ -39,8 +39,9 @@ module m_fill_valobs
 
    public :: fill_valobs
 
-contains
+   contains
 
+   !> ...
    subroutine fill_valobs()
       use precision, only: dp
       use m_linkstocentercartcomp
@@ -169,7 +170,7 @@ contains
 
       valobs = DMISS
       do i = 1, numobs + nummovobs
-         k = max(kobs(i), 1)
+         k = max(kobs(i), 1) ! k: snapped flow node for station i
          link_id_nearest = lobs(i)
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
 
@@ -203,6 +204,7 @@ contains
             valobs(i, IPNT_BL) = bl(k)
 
             valobs(i, IPNT_CMX) = cmxobs(i)
+            
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0d0
                valobs(i, IPNT_wy) = 0d0
