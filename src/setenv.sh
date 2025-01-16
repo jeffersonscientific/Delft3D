@@ -30,6 +30,20 @@ if [[ "$1" == intel24* ]]; then
      module load patchelf/0.17.2_intel2023.1.0_standalone
      module load ninja/1.11.1_native
      module load petsc/3.21.3_intel2024.2.0
+	 
+elif [[ "$1" == intel25* ]]; then
+     echo "Loading Intel25 compiled modules"
+     module load cmake/3.30.0_intel2024.0.0
+     module load intel/2025.0.0
+     module load intelmpi/2021.14.0
+     #module load netcdf/4.9.2_4.6.1_intel2023.1.0 # NetCDF 4 enddef calls sometimes return error -38
+     module load netcdf/4.7.4_4.5.3_intel2023.1.0_standalone
+     module load gdal/3.6.3_intel2023.1.0_standalone
+     module load proj/9.2.0_intel2024.0.0
+     module load tiff/4.5.0rc3_intel2024.0.0
+     module load patchelf/0.17.2_intel2023.1.0_standalone
+     module load ninja/1.11.1_native
+     module load petsc/3.21.3_intel2024.2.0
 
 elif [ "$1" == "gnu" ]; then
      echo "Loading GNU compiled modules"
