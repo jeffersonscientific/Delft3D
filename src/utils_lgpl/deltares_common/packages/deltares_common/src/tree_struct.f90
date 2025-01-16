@@ -62,7 +62,7 @@ module tree_data_types
    end type
 
    type tree_data_ptr
-      type(tree_data), pointer :: node_ptr
+      type(tree_data), pointer :: node_ptr => null()
    end type tree_data_ptr
 end module tree_data_types
 
