@@ -117,11 +117,20 @@ contains
 
                     if ( associated(con_data) ) then
                         !
-                        ! Copy the data for later use
+                        ! Copy the data for later use (in pieces of 100 thousand numbers - stack overflow in ifx)
                         !
                         if ( size(con_data%p_value) > 1 ) then
                             call c_f_pointer(xptr, incoming_data, [size(con_data%p_value)])
-                            con_data%p_value = incoming_data
+                            block
+                                integer :: i, first, last, pieces, piece_size
+                                piece_size = 100000
+                                pieces     = ( size(con_data%p_value) + piece_size - 1) / piece_size
+                                do i = 1, pieces
+                                    first = 1 + (i - 1) * piece_size
+                                    last = min( first + piece_size - 1, size(con_data%p_value) )
+                                    con_data%p_value(first:last) = incoming_data(first:last)
+                                enddo
+                            end block
                         endif
                     endif
                 endif
