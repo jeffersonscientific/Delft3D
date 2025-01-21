@@ -1,5 +1,5 @@
 subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
-                & kmax      ,bed       , &
+                & num_layers_grid      ,bed       , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
                 & frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      , &
@@ -273,7 +273,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
        kmaxsd  = 1
        kmaxsd2 = 1
        alphak  = 1.0_fp
-       do k = kmax - 1, 1, -1
+       do k = num_layers_grid- 1, 1, -1
           !
           ! Calculate level of lower cell interface
           !
