@@ -49,6 +49,7 @@ contains
       use m_flowtimes, only: dts
       use m_get_ustwav
       use m_get_czz0
+      use m_filez, only: error
       use mathconsts, only: ee
 
       implicit none
