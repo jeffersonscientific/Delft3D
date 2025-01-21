@@ -39,7 +39,6 @@ if(UNIX)
                          fortrangis
                          netcdff)
     target_compile_definitions(${library_name} PRIVATE LINUX64)
-    oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies}
          PkgConfig::NETCDF)
     include_directories(${CMAKE_BINARY_DIR}/netcdff)
@@ -57,18 +56,12 @@ if (WIN32)
                         netcdf4
                         netcdff)
     target_compile_definitions(${library_name} PRIVATE WIN64)
-    oss_include_libraries(${library_name} oss_dependencies)
 
     target_link_libraries(${library_name} ${oss_dependencies}
                                           netcdf)
 
     target_compile_options(${library_name} PRIVATE "${heap_arrays_one_flag}")
 endif(WIN32)
-
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 
 set(src_path src)
 # Set additional compilation properties
@@ -93,12 +86,7 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     include_directories(${version_include_dir})
 
     set(oss_dependencies io_netcdf)
-    oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies})
-
-    # Set additional compilation properties, specific for Debug mode
-    target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-    target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
     # Create the folder structure in vfproj
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${src_path}/io_netcdf_api.F90)

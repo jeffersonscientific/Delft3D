@@ -229,10 +229,10 @@ module m_ec_typedefs
    type tEcMask
       integer                       :: mmin                  !< Represents the leftmost horizontal index 
       integer                       :: nmin                  !< Represents the bottommost vertical index 
-      integer                       :: mmax                  !< Represents the rightmost horizontal index 
-      integer                       :: nmax                  !< Represents the topmost vertical index 
-      integer                       :: mrange                !< Equals mmax-mmin+1 (redundant, but convenient)
-      integer                       :: nrange                !< Equals nmax-nmin+1 
+      integer                       :: num_columns                  !< Represents the rightmost horizontal index
+      integer                       :: num_rows                  !< Represents the topmost vertical index
+      integer                       :: mrange                !< Equals num_columns-mmin+1 (redundant, but convenient)
+      integer                       :: nrange                !< Equals num_rows-nmin+1
       integer, allocatable          :: msk(:)                !< Array of mask values (TODO: should this be 2d?) 
    end type tEcMask
    
@@ -364,6 +364,9 @@ module m_ec_typedefs
                                                                                      ! ignored if below zero or file is not an ensemble
       integer, dimension(:), pointer                :: dim_varids => null()          !<For each dimension in NetCDF: id of the associated variable                               
       integer, dimension(:), pointer                :: dim_length => null()          !<For each dimension in NetCDF: length
+      integer                                       :: time_id
+      integer                                       :: lonx_id
+      integer                                       :: laty_id
       logical                                       :: one_time_field = .false.      !< TRUE: input file contains single time field
    end type tEcFileReader
 

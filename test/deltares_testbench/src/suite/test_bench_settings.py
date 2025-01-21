@@ -1,7 +1,6 @@
-"""
-Description: TestBenchSettings data class
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""TestBenchSettings data class.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import sys
@@ -12,24 +11,24 @@ from src.config.local_paths import LocalPaths
 from src.config.program_config import ProgramConfig
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.mode_type import ModeType
+from src.config.types.path_type import PathType
 from src.utils.common import log_separator, log_sub_header
 from src.utils.logging.log_level import LogLevel
 from src.utils.logging.logger import Logger
-from src.config.types.path_type import PathType
 
 
 class TestBenchSettings:
-    """Settings for a test bench run"""
+    """Settings for a test bench run."""
 
     log_level: LogLevel = LogLevel.INFO
     local_paths: Optional[LocalPaths] = None
     programs: List[ProgramConfig] = []
-    configs: List[TestCaseConfig] = []
+    configs_from_xml: List[TestCaseConfig] = []
+    configs_to_run: List[TestCaseConfig] = []
     run_mode: ModeType = ModeType.COMPARE
     config_file: str = ""
     credentials: Credentials = Credentials()
     filter: str = ""
-    autocommit: bool = False
     skip_run: bool = False
     skip_download: List[PathType] = []
     teamcity: bool = False
@@ -39,12 +38,15 @@ class TestBenchSettings:
     test_bench_startup_dir: Optional[str] = None
     server_base_url: str = ""
     override_paths: str = ""
+    skip_post_processing: bool = False
 
-    def log_overview(self, logger: Logger):
-        """Logs overview of the parameters
+    def log_overview(self, logger: Logger) -> None:
+        """Log overview of the parameters.
 
-        Args:
-            logger (Logger): logger to log to
+        Parameters
+        ----------
+        logger: Logger
+            Logger to log to.
         """
         log_sub_header("Parsed arguments", logger)
 

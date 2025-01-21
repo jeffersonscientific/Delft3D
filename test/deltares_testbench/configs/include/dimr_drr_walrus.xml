@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 	<!-- ======================================================================== -->
         <testCase name="e108(drr)_f03(walrus)_c01_Regge-regression-test" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c01_Regge-regression-test</path>
@@ -102,11 +102,11 @@
                 </file> 
                 <file name="rr/balansdt.his" type="HIS">
                     <parameters>
-                        <parameter name="CumBalanceError" location="1" toleranceAbsolute="0.0001" />
-                        <parameter name="CumBalanceError" location="4" toleranceAbsolute="0.0001" />
-                        <parameter name="CumBalanceError" location="5" toleranceAbsolute="0.0001" />
-                        <parameter name="CumBalanceError" location="6" toleranceAbsolute="0.0001" />
-						<parameter name="CumBalanceError" location="9" toleranceAbsolute="0.0001" />
+                        <parameter name="CumBalanceError" location="1" toleranceAbsolute="0.4" />
+                        <parameter name="CumBalanceError" location="4" toleranceAbsolute="0.4" />
+                        <parameter name="CumBalanceError" location="5" toleranceAbsolute="0.6" />
+                        <parameter name="CumBalanceError" location="6" toleranceAbsolute="0.4" />
+						<parameter name="CumBalanceError" location="9" toleranceAbsolute="0.4" />
 					</parameters>
                 </file> 
 

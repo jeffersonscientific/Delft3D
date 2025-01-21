@@ -1,4 +1,4 @@
-<programs>
+<programs xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <program name="command_prompt">
         <path>cmd</path>
         <arguments>
@@ -37,5 +37,13 @@
             <from>teamcity_artifacts/x64</from>
         </location>
         <path>bin/run_delpar.bat</path>
+    </program>
+
+    <program name="plct" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+        <path>plct.exe</path>
+        <shell ref="command_prompt"/>
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/plct</from>
+        </location>
     </program>
 </programs>

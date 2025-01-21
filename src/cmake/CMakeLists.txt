@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.30)
 
 project(CMake)
 enable_testing()
@@ -22,8 +22,9 @@ cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)
 
 
-# Set unit test root directory
-set(unit_tests_dir ${dir}/test/unit_test) # This points to the location of OSS/test
+# Set unit and integration test root directory
+set(unit_tests_dir ${dir}/test/unit_test)
+set(integration_tests_dir ${dir}/test/integration_test)
 
 include(modules.cmake)
 
@@ -44,9 +45,10 @@ elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
 else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
+include(compiler_options/compiler_warning_targets.cmake)
 
-# Set available build configurations for the .sln file
-set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+# Set available build configurations
+set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
@@ -71,12 +73,12 @@ if (WIN32)
             message(STATUS "Using Intel 2024 folder structure.")
             set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
             set(mpi_module_path ${mpi_include_path}/mpi)
-            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
+            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
         else()
             message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
             set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
             set(mpi_module_path ${mpi_include_path})
-            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
+            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<IF:$<CONFIG:Debug>,debug,release>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
         endif()
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
@@ -96,11 +98,10 @@ if (WIN32)
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
     message(STATUS "Tecplot set to ${tecplot_path}")
 
-    if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
-        # Set the petsc path
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
-    else()
+    if(intel_version EQUAL 23)
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
+    else()
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
     endif()
 
     #also set PETSC library directory
@@ -158,7 +159,7 @@ endif()
 #     Linux  : compile source code  using ".../expat/cmake_deltares/CMakeLists.txt"
 set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
 if (WIN32)
-    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64)
+    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
 ### Configuration names
@@ -183,7 +184,7 @@ endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
 # Basic (single-component) configurations
 set(dflowfm_configuration "DFLOWFM")
-set(dflowfm_interacter_configuration "DFLOWFM_INTERACTER")
+set(dflowfm_configuration_interacter "DFLOWFM_INTERACTER")
 set(tests_configuration "TESTS")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
@@ -192,16 +193,18 @@ set(swan_configuration "SWAN")
 set(flow2d3d_configuration "FLOW2D3D")
 set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
+set(drr_configuration "DRR")
+set(rtc_configuration "RTC")
 
 # Combined (multi-component) configurations
-set(delft3dfm_configuration "DELFT3DFM")
-set(delft3d4_configuration "DELFT3D4")
+set(fm-suite_configuration "FM-SUITE")
+set(d3d4-suite_configuration "D3D4-SUITE")
 set(all_configuration "ALL")
 
 # Determine the configuration to make
 if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${dflowfm_configuration}
-     OR ${configuration_type} STREQUAL ${dflowfm_interacter_configuration}
+     OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
      OR ${configuration_type} STREQUAL ${dimr_configuration}
      OR ${configuration_type} STREQUAL ${dwaq_configuration}
      OR ${configuration_type} STREQUAL ${dwaves_configuration}
@@ -209,8 +212,10 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
      OR ${configuration_type} STREQUAL ${tools_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
-     OR ${configuration_type} STREQUAL ${delft3dfm_configuration}
-     OR ${configuration_type} STREQUAL ${delft3d4_configuration}
+     OR ${configuration_type} STREQUAL ${drr_configuration}
+     OR ${configuration_type} STREQUAL ${rtc_configuration}
+     OR ${configuration_type} STREQUAL ${fm-suite_configuration}
+     OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
@@ -220,80 +225,92 @@ endif()
 # Tests configuration
 if(${configuration_type} STREQUAL ${tests_configuration})
     message(STATUS "Generating solution for Tests ...")
-    include(configurations/tests_configuration.cmake)
+    include(configurations/components/tests_configuration.cmake)
 endif()
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})
     message(STATUS "Generating solution for D-Flow FM ...")
-    include(configurations/dflowfm_configuration.cmake)
+    include(configurations/components/dflowfm_configuration_without_interacter.cmake)
 endif()
 
 # D-Flow FM (with Interacter-GUI) configuration
-if(${configuration_type} STREQUAL ${dflowfm_interacter_configuration})
+if(${configuration_type} STREQUAL ${dflowfm_configuration_interacter})
     message(STATUS "Generating solution for D-Flow FM (with interacter) ...")
-    include(configurations/dflowfm_interacter_configuration.cmake)
+    include(configurations/components/dflowfm_configuration_interacter.cmake)
 endif()
 
 # DIMR configuration
 if(${configuration_type} STREQUAL ${dimr_configuration})
     message(STATUS "Generating solution for DIMR ...")
-    include(configurations/dimr_configuration.cmake)
+    include(configurations/components/dimr_configuration.cmake)
 endif()
 
 # D-WAQ configuration
 if(${configuration_type} STREQUAL ${dwaq_configuration})
     message(STATUS "Generating solution for D-Waq ...")
-    include(configurations/dwaq_configuration.cmake)
+    include(configurations/components/dwaq_configuration.cmake)
     message(STATUS "Finished generating solution for D-Waq")
 endif()
 
 # D-Waves configuration
 if(${configuration_type} STREQUAL ${dwaves_configuration})
     message(STATUS "Generating solution for D-Waves ...")
-    include(configurations/dwaves_configuration.cmake)
+    include(configurations/components/dwaves_configuration.cmake)
 endif()
 
 # SWAN configuration
 if(${configuration_type} STREQUAL ${swan_configuration})
     message(STATUS "Generating solution for SWAN ...")
-    include(configurations/swan_configuration.cmake)
+    include(configurations/components/swan_configuration.cmake)
 endif()
 
 # Flow2D3D (Delft3D4) configuration
 if(${configuration_type} STREQUAL ${flow2d3d_configuration})
     message(STATUS "Generating solution for Flow2D3D ...")
-    include(configurations/flow2d3d_configuration.cmake)
+    include(configurations/components/flow2d3d_configuration.cmake)
 endif()
 
 # Tools configuration
 if(${configuration_type} STREQUAL ${tools_configuration})
     message(STATUS "Generating solution for Tools ...")
-    include(configurations/tools_configuration.cmake)
+    include(configurations/miscellaneous/tools_configuration_no_fm.cmake)
 endif()
 
 # Tools_gpl configuration
 if(${configuration_type} STREQUAL ${tools_gpl_configuration})
     message(STATUS "Generating solution for Tools_GPL ...")
-    include(configurations/tools_gpl_configuration.cmake)
+    include(configurations/miscellaneous/tools_gpl_configuration.cmake)
+endif()
+
+# RTC configuration
+if(${configuration_type} STREQUAL ${rtc_configuration})
+    message(STATUS "Generating solution for rtc ...")
+    include(configurations/components/rtc_configuration.cmake)
+endif()
+
+# D-RR configuration
+if(${configuration_type} STREQUAL ${drr_configuration})
+    message(STATUS "Generating solution for D-RR ...")
+    include(configurations/components/drr_configuration.cmake)
 endif()
 
 ### Composed configurations
 
-# Delft3D-FM configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${delft3dfm_configuration})
+# Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
+if(${configuration_type} STREQUAL ${fm-suite_configuration})
     message(STATUS "Generating solution for Delft3D-FM ...")
-    include(configurations/delft3dfm_configuration.cmake)
+    include(configurations/suites/fm_configuration.cmake)
 endif()
 
-# Delft3D4 configuration (dflow2d3d, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${delft3d4_configuration})
+# Delft3D4 suite configuration (dflow2d3d, dwaq, dwaves, and some tools)
+if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
     message(STATUS "Generating solution for Delft3D4 ...")
-    include(configurations/delft3d4_configuration.cmake)
+    include(configurations/suites/d3d4_configuration.cmake)
 endif()
 
 # ALL configuration
 if(${configuration_type} STREQUAL ${all_configuration})
     message(STATUS "Generating solution for all (open-source) projects in OSS tree ...")
-    include(configurations/all_configuration.cmake)
+    include(configurations/testbenches/all_configuration.cmake)
 endif()

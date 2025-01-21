@@ -65,10 +65,10 @@ if (WIN32)
                         netcdf4
                         netcdff)
 
-    target_link_libraries(${library_name} ${oss_dependencies})
+
 endif(WIN32)
 
-oss_include_libraries(${library_name} oss_dependencies)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 
 # Define how the files should be structured within Visual Studio
@@ -76,4 +76,4 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
 # Change project flags at the end of this file
-target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
+target_compile_options(${library_name} PRIVATE ${qauto_threaded_flags})

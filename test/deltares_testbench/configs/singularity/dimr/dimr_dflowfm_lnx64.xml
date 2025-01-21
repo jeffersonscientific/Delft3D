@@ -38,7 +38,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -46,12 +45,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
 		<program name="checkhydbal">
 			<shell ref="command_prompt"/>
@@ -62,6 +55,15 @@
                 <from>teamcity_artifacts</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
             <path>execute_singularity_tc.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+            </environments>
+        </program>
+        <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true">
+            <location ref="local" type="check">
+                <from>teamcity_artifacts</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+            </location>
+            <path>execute_singularity_tc.sh run_dflowfm.sh</path>
             <environments>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
             </environments>
@@ -92,6 +94,35 @@
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="dflowfm_restart">
+            <programs>
+                <program ref="execute_singularity" seq="1">
+                    <arguments>
+                        <argument>-p</argument>
+                        <argument>2</argument>
+                        <argument>run_dimr.sh</argument>
+                        <argument>-m</argument>
+                        <argument>dimr.xml</argument>
+                    </arguments>
+                </program>
+                <program ref="execute_singularity" seq="2">
+                    <arguments>
+                        <argument>-p</argument>
+                        <argument>2</argument>
+                        <argument>run_dimr.sh</argument>
+                        <argument>-m</argument>
+                        <argument>dimr_restart.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="dflowfm_restart_platform">
             <programs>
                 <program ref="execute_singularity" seq="1">
                     <arguments>

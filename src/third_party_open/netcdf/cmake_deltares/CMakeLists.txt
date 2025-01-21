@@ -14,6 +14,8 @@ set(c_sources ${source_path}/nf_lib.c)
 # Add library
 add_library(netcdf4 ${c_sources})
 
+target_link_libraries(netcdf4 PRIVATE no_compiler_warnings)
+
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${c_sources} )
 set_target_properties (netcdf4 PROPERTIES FOLDER third_party_open)
@@ -45,22 +47,19 @@ add_library(${netcdf_library_name} ${fortran_sources})
 
 # Set additional compilation properties for the netcdf library
 target_compile_options(${netcdf_library_name} PRIVATE ${file_preprocessor_flag})
-
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${netcdf_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
+target_link_libraries(${netcdf_library_name} PRIVATE no_compiler_warnings)
 
 # Set dependencies
 set(oss_dependencies netcdf4)
-oss_include_libraries(${netcdf_library_name} oss_dependencies)
+target_link_libraries(${netcdf_library_name} PRIVATE ${oss_dependencies})
 
 if (WIN32)
-   target_compile_options(${netcdf_library_name} PRIVATE "${heap_arrays_100_flag}")
+  target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
 endif(WIN32)
 
 if(UNIX)
     target_compile_options(${netcdf_library_name} PRIVATE ${c_compiler_flags})
-    target_link_libraries(${netcdf_library_name} ${oss_dependencies})
+    target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
     set(Fortran_MODULE_DIRECTORY ${LIBRARY_OUTPUT_DIRECTORY}) 
 endif()
 

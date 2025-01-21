@@ -30,8 +30,6 @@ if (UNIX)
                          netcdf4
                          netcdff)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
-
     target_link_libraries(${executable_name}
                           ${oss_dependencies})
 endif(UNIX)
@@ -45,7 +43,6 @@ if (WIN32)
                          netcdf4
                          netcdff)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
@@ -63,10 +60,6 @@ endif(UNIX)
 if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
 endif(WIN32)
-
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
@@ -102,7 +95,7 @@ if (WIN32)
                           "tecio.lib")
 
     message(STATUS "Setting target_compile_definitions in windows")
-    target_compile_definitions(${executable_name} PRIVATE "WIN32;HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
+    target_compile_definitions(${executable_name} PRIVATE "WIN32")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")

@@ -10,9 +10,6 @@ add_executable(${executable_name}   ${executable_files}
                                     ${rc_version_file}
                                     ${icon_file})
 
-# Set additional compilation properties
-target_compile_options(${executable_name} PRIVATE "${extend_source132_flag}")
-
 # Set dependencies
 if (WIN32)
     set(exe_dependencies    wave_data
@@ -33,7 +30,6 @@ if (WIN32)
                             swan
                             ) 
 
-    oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} ${exe_dependencies})
 
 endif(WIN32)
@@ -63,8 +59,6 @@ if(UNIX)
                             esmfsm
                             netcdff
                             )
-    
-    oss_include_libraries(${executable_name} exe_dependencies)
 
     target_link_libraries(${executable_name}
          ${exe_dependencies}

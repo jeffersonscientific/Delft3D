@@ -19,11 +19,9 @@ function(gp_item_default_embedded_path_override item default_embedded_path_var)
 endfunction(gp_item_default_embedded_path_override)
 
 include(BundleUtilities)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../functions.cmake)
 
 set(BU_CHMOD_BUNDLE_ITEMS 1)
-
-# fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/d_hydro" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")

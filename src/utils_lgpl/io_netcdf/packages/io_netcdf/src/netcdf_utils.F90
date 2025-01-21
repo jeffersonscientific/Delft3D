@@ -103,8 +103,7 @@ interface ncu_set_att
 end interface
 
 abstract interface
-   function ncu_apply_to_att(attname, attvalue) result(ierr)
-      character(len=*),              intent(in   ) :: attname  !< Name of the attribute, cannot be changed.
+   function ncu_apply_to_att(attvalue) result(ierr)
       character(len=:), allocatable, intent(inout) :: attvalue !< value of the attribute, can be changed. Should be an allocatable character string.
       integer                                      :: ierr     !< Result status (recommended IONC_NOERR if successful)
    end function ncu_apply_to_att
@@ -331,7 +330,7 @@ function ncu_copy_atts( ncidin, ncidout, varidin, varidout, forbidden_atts, appl
          ! Special case: do not just copy, but apply a user-provided function to the attribute text first.
          call realloc(atttext, attlen, keepExisting=.false., fill=' ')
          ierr = nf90_get_att(ncidin, varidin, attname, atttext)
-         ierr = apply_fun(attname, atttext)
+         ierr = apply_fun(atttext)
          ierr = nf90_put_att(ncidout, varidout, attname, atttext)
       else
          ! Standard case: copy attribute+value as-is from input dataset to output dataset.
@@ -432,9 +431,6 @@ function ncu_clone_vardef(ncidin, ncidout, varidin, newname, varidout, &
 
 
    integer                        :: ierr
-   integer                        :: i
-
-   character(len=nf90_max_name)   :: attname
    integer                        :: natts
    integer :: ndims, xtype
    integer, allocatable ::dimids(:)
@@ -822,7 +818,6 @@ function ncu_copy_var_atts( ncidin, ncidout, varidin, varidout ) result(ierr)
     integer                        :: i
     character(len=nf90_max_name)   :: attname
     integer                        :: natts
-    integer                        :: attvalue
 
     ierr = -1
     ierr = nf90_inquire_variable( ncidin, varidin, nAtts=natts )
@@ -956,10 +951,10 @@ end subroutine ncu_set_att_reals
 
 !> Replace forbidden chars in NetCDF names by _.
 subroutine ncu_sanitize_name(name_string)
-   use string_module, only: replace_char
+   use string_module, only: replace_char, ichar_space, ichar_forward_slash, ichar_underscore
    character(len=*), intent(inout) :: name_string !< Name to be used in NetCDF (variable, dimension etc.)
-   call replace_char(name_string, 32, 95) ! ' ' -> '_'
-   call replace_char(name_string, 47, 95) ! '/' -> '_'
+   call replace_char(name_string, ichar_space, ichar_underscore)
+   call replace_char(name_string, ichar_forward_slash, ichar_underscore)
 end subroutine ncu_sanitize_name
 
 !> Check the error code returned by the NetCDF API and print the error message in case of an error.

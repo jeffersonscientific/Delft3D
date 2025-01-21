@@ -1,7 +1,7 @@
     <!--
     testCases
     -->
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e108(drr)_f01(unpaved)_c01_400_Ernst" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c01_400_Ernst</path>
             <checks>
@@ -189,7 +189,7 @@
                         <parameter name="Percolation" location="2" toleranceAbsolute="0.004" />
                         <parameter name="Capill.Rise" location="2" toleranceAbsolute="0.004" />
                         <parameter name="Groundw.Level" location="2" toleranceAbsolute="0.001" />
-                        <parameter name="Groundw.Volume" location="2" toleranceAbsolute="0.1" />
+                        <parameter name="Groundw.Volume" location="2" toleranceRelative="1e-4" />
                         <parameter name="GWLevel-Surface" location="2" toleranceAbsolute="0.001" />
                     </parameters>
                 </file>

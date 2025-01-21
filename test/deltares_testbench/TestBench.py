@@ -1,7 +1,6 @@
-"""
-Description: Main Application for running Tests
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Main Application for running Tests.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import logging
@@ -20,14 +19,14 @@ if __name__ == "__main__":
     (
         settings.local_paths,
         settings.programs,
-        settings.configs,
+        settings.configs_from_xml,
     ) = XmlConfigParser().load(settings, logger)
 
     # Filter the testcases to be run
     if settings.filter != "":
-        settings.configs = XmlConfigParser.filter_configs(
-            settings.configs, settings.filter, logger
-        )
+        settings.configs_to_run = XmlConfigParser.filter_configs(settings.configs_from_xml, settings.filter, logger)
+    else:
+        settings.configs_to_run = settings.configs_from_xml
 
     settings.log_overview(logger)
 

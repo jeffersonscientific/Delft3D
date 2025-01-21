@@ -20,7 +20,7 @@ function(gp_item_default_embedded_path_override item default_embedded_path_var)
 endfunction(gp_item_default_embedded_path_override)
 IF(UNIX)
 include(BundleUtilities)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../functions.cmake)
 
 set(BU_CHMOD_BUNDLE_ITEMS 1)
 
@@ -29,7 +29,6 @@ fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/waqmerge" "${BUILD_LIBRARIES}" "${THIR
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/ddcouple" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/agrhyd" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/maptonetcdf" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
-fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/calcage" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 
 
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")

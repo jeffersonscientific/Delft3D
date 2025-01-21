@@ -143,7 +143,6 @@ if (WIN32)
 
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
 if (WIN32)
     # Set linker properties
@@ -190,6 +189,10 @@ install(TARGETS ${library_name} RUNTIME DESTINATION lib)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
+    
+    # Add scripts for running coupled Delft3D4 - C-SUMO computations. These .sh scripts make sure that C-SUMO is started in the background
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d_AL8_csumo.sh                DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d_AL8_csumo.sh      DESTINATION bin)
 endif(UNIX)
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d.${platform_extension}                   DESTINATION bin)
@@ -204,4 +207,4 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/tabmom     
 
 
 # Change project flags at the end of this file
-# target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
+# target_compile_options(${library_name} PRIVATE {qauto_threaded_flags})

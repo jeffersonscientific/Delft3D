@@ -7,9 +7,6 @@ set(library_name wave)
 add_library(${library_name} SHARED  ${library_files}
                                     ${rc_version_file})
 
-# Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
-
 # Set dependencies on windows
 if (WIN32)
     set(library_dependencies    wave_data
@@ -31,7 +28,6 @@ if (WIN32)
                                 swan
                                 ) 
 
-    oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
 
     # Set linker properties
@@ -77,8 +73,6 @@ if(UNIX)
                                 esmfsm
                                 netcdff
                                 )
-                                
-    oss_include_libraries(${library_name} library_dependencies)
 
     target_link_libraries(${library_name}
          ${library_dependencies}

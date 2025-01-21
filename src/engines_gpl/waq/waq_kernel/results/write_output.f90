@@ -22,16 +22,17 @@
 !!  rights reserved.
 module m_write_output
     use m_waq_precision
-    use m_values
+    use m_exchange_values, only: exchange_values
     use m_write_balance_output
     use m_write_monitoring_output
-    use m_write_map_output, only: write_binary_history_output, write_binary_map_output
+    use m_write_binary_output, only: write_binary_history_output, write_binary_map_output
     use m_write_nefis_output, only: write_nefis_history_output, write_nefis_map_output
     use m_write_netcdf_output
     use m_prepare_output_data, only: write_concentrations_in_grid_layout, fill_output_buffer_base_grid, &
             fill_transport_terms_transects, fill_output_buffer_sub_grid, fill_transect_output_buffer, &
             fill_dump_areas_balances, update_base_grid_local_array, calculate_balance_terms, &
             write_balance_history_output
+    use m_write_restart_map_file, only: write_restart_map_file
     use timers, only: evaluate_timers
 
     implicit none
@@ -42,197 +43,172 @@ module m_write_output
 contains
 
 
-    subroutine write_output(notot, noseg, nopa, nosfun, itime, &
-            moname, syname, duname, idump, nodump, &
+    !> Manages output: verifies which output is required for the current time,
+    !! and calls the corresponding subroutines to generate that output.
+    subroutine write_output(num_substances_total, num_cells, num_spatial_parameters, num_spatial_time_fuctions, itime, &
+            moname, syname, duname, idump, num_monitoring_points, &
             conc, cons, param, func, segfun, &
-            volume, nocons, nofun, idt, noutp, &
+            volume, num_constants, num_time_functions, idt, num_output_files, &
             file_name_list, file_unit_list, ioutps, iopoin, riobuf, &
             ousnm, ouuni, oudsc, sysnm, syuni, sydsc, &
-            ounam, nx, ny, lgrid, cgrid, &
-            nosys, bound, ip, amass, amass2, &
+            ounam, num_cells_u_dir, num_cells_v_dir, lgrid, cgrid, &
+            num_substances_transported, bound, ip, amass, amass2, &
             asmass, noflux, flxint, isflag, iaflag, &
             ibflag, imstrt, imstop, imstep, idstrt, &
             idstop, idstep, ihstrt, ihstop, ihstep, &
-            imflag, idflag, ihflag, noloc, proloc, &
-            nodef, defaul, itstrt, itstop, ndmpar, &
-            danam, ndmpq, ndmps, iqdmp, isdmp, &
+            imflag, idflag, ihflag, num_local_vars, proloc, &
+            num_defaults, defaul, itstrt, itstop, ndmpar, &
+            danam, ndmpq, num_monitoring_cells, iqdmp, isdmp, &
             ipdmp, dmpq, dmps, flxdmp, ntdmpq, &
-            nambuf, noraai, ntraaq, ioraai, nqraai, &
-            iqraai, trraai, ranam, stochi, nogrid, &
-            novar, vararr, varidx, vartda, vardag, &
+            nambuf, num_transects, num_transect_exchanges, ioraai, nqraai, &
+            iqraai, trraai, ranam, stochi, num_grids, &
+            num_vars, vararr, varidx, vartda, vardag, &
             arrknd, arrpoi, arrdm1, arrdm2, vgrset, &
-            grdnos, grdseg, a, nobnd, nobtyp, &
-            bndtyp, inwtyp, coname, noq, ipoint, &
+            grdnos, grdseg, a, num_boundary_conditions, num_boundary_types, &
+            bndtyp, inbtyp, coname, num_exchanges, ipoint, &
             intopt, paname, funame, sfname, dmpbal, &
-            nowst, nowtyp, wsttyp, iwaste, inxtyp, &
+            num_waste_loads, num_waste_load_types, wsttyp, iwaste, inwtyp, &
             wstdmp, iknmrk, isegcol)
-        ! Driver output system
+
         !
-        !     Parameters
-        !
-        !     Name    Kind     Length     Funct.  Description
-        !     ----    -----    ------     ------- -----------
-        !     notot   integer       1     input   Total number of substances
-        !     noseg   integer       1     input   Nr. of computational elements
-        !     nopa    integer       1     input   Number of parameters
-        !     nosfun  integer       1     input   Number of segment functions
-        !     itime   integer       1     input   Time in system clock units
-        !     moname  char*40       4     input   Model and run names
-        !     syname  char*20    notot    input   names of substances
-        !     duname  char*20    nodump   input   names of dump locations
-        !     idump   integer    nodump   input   dump segment numbers
-        !     nodump  integer       1     input   number of dump locations
-        !     conc    real   notot,noseg  input   Model concentrations
-        !     cons    real          *     in/out  Model constants
-        !     param   real    nopa,noseg  in/out  Model parameters
-        !     func    real          *     in/out  Model functions at ITIME
-        !     segfun  real   noseg,nosfun in/out  Segment functions at ITIME
-        !     volume  real      noseg     input   Segment volumes
-        !     nocons  integer       1     input   Number of constants used
-        !     nofun   integer       1     input   Number of functions ( user )
-        !     idt     integer       1     input   Simulation timestep
-        !     noutp   integer       1     input   Number of output files
-        !     file_name_list   char*(*)      *     input   File names
-        !     file_unit_list     integer       *     input   Uint numbers
-        !     ioutps  integer 7*noutp    in/out   Output structure
-        !                                            index 1 = start time
-        !                                            index 2 = stop time
-        !                                            index 3 = time step
-        !                                            index 4 = number of vars
-        !                                            index 5 = kind of output
-        !                                            index 6 = grid of output
-        !                                            index 7 = initialize flag
-        !     iopoin  integer       *     input   Pointer to DELWAQ array's
-        !     riobuf  real          *     local   Output buffer
-        !     ounam   char*20       *     input   name of output variable
-        !     nx      integer       1     input   Width of output grid
-        !     ny      integer       1     input   Depth of output grid
-        !     lgrid   integer     nx*ny   input   grid-layout
-        !     cgrid   char*20       *     local   Char buffer for dmp output
-        !     nosys   integer       1     input   Number of active substances
-        !     bound   real          *     input   Bounary conditions
-        !     ip      integer       *     in/out  Paging structure
-        !     amass   real       notot,*  input   Mass array
-        !     amass2  real       notot,*  in/out  Cummulative balance on whole
-        !     asmass  real       notot,*  in/out  Cummulative balance per segment
-        !     noflux  integer       1     input   Number of fluxes
-        !     flxint  real  noflux*ndmpar in/out  Integrated fluxes at dump segments
-        !     isflag  integer       1     input   if 1 then dd-hh:mm'ss"
-        !     iaflag  integer       1     output  if 1 then accumulate mass bal
-        !     ibflag  integer       1     input   Flag = 1 then balances
-        !     imstrt  integer       1     input   Monitoring start time ( scu )
-        !     imstop  integer       1     input   Monitoring stop time ( scu )
-        !     imstep  integer       1     input   Monitoring time step ( scu )
-        !     idstrt  integer       1     input   Dump start time ( scu )
-        !     idstop  integer       1     input   Dump stop time ( scu )
-        !     idstep  integer       1     input   Dump time step ( scu )
-        !     ihstrt  integer       1     input   History start time ( scu )
-        !     ihstop  integer       1     input   History stop time ( scu )
-        !     ihstep  integer       1     input   History time step ( scu )
-        !     imflag  logical       1     output  If .T. then monitor step
-        !     idflag  logical       1     output  If .T. then dump step
-        !     ihflag  logical       1     output  If .T. then history step
-        !     noloc   integer       1     input   Number of variables in PROLOC
-        !     param   real   noloc,noseg  input   Parameters local in PROCES system
-        !     nodef   integer       1     input   Number of used defaults
-        !     defaul  real          *     input   Default proces parameters
-        !     itstrt  integer     1       input   start time
-        !     itstop  integer     1       input   stop time
-        !     ndmpar  integer     1       input   Number of dump areas
-        !     danam   char*20  ndmpar     input   Dump area names
-        !     ndmpq   integer     1       input   Number of dumped exchanges
-        !     ndmps   integer     1       input   Number of dumped segments
-        !     iqdmp   integer       *     input   Exchange to dumped exchange pointer
-        !     isdmp   integer       *     input   Segment to dumped segment pointer
-        !     ipdmp   integer       *     input   pointer structure dump area's
-        !     dmpq    real  notot*ndmps*? input   mass balance dumped segments
-        !     dmps    real  nosys*ndmpq*? input   mass balance dumped exchange
-        !     flxdmp  real  noflux*ndmps  input   Integrated fluxes
-        !     nambuf  char*20       *     input   Buffer for names
-        !     noraai  integer       1     input   Number of raaien
-        !     ntraaq  integer       1     input   Total number of exch. in raaien
-        !     ioraai  integer       *     input   Output option for raai
-        !     nqraai  integer       *     input   Number of exchanges in raai
-        !     iqraai  integer       *     input   Exchanges in raai
-        !     trraai  real notot*ndmpar*6 in/out  Cummulative transport over raai
-        !     ranam   char*20       *     input   Raaien names
-        !     stochi  real   notot*noflux input   Proces stochiometry
-        !     intopt  integer     1       input   Integration and balance suboptions
-        !     ==================================================================
-        !
-        use m_write_restart_map_file
-        use m_array_manipulation, only: initialize_real_array
-        use m_logger_helper, only: stop_with_error
-        use m_cli_utils, only: is_command_arg_specified
+        use m_array_manipulation, only : initialize_real_array
+        use m_logger_helper, only : stop_with_error
+        use m_cli_utils, only : is_command_arg_specified
         use timers
         use results
         use nan_check_module
 
-        integer(kind = int_wp) :: notot, noseg, nopa, nosfun, itime, &
-                nodump, nocons, nofun, idt, noutp, &
-                nx, ny, nosys, noflux, isflag, &
-                iaflag, ibflag, imstrt, imstop, imstep, &
-                idstrt, idstop, idstep, ihstrt, ihstop, &
-                ihstep, noloc, nodef, itstrt, itstop, &
-                ndmpar, ndmpq, ndmps, ntdmpq, noraai, &
-                ntraaq, nogrid, novar, nobnd, nobtyp, &
-                noq
-        integer(kind = int_wp) :: idump(*), file_unit_list(*), &
-                ioutps(7, *), iopoin(*), &
-                lgrid(*), ip(*), &
-                iqdmp(*), isdmp(*), &
-                ipdmp(*), ioraai(*), &
-                nqraai(*), iqraai(*), &
-                vararr(novar), varidx(novar), &
-                vartda(novar), vardag(novar), &
-                arrknd(*), arrpoi(*), &
-                arrdm1(*), arrdm2(*), &
-                vgrset(novar, *), grdnos(nogrid), &
-                grdseg(noseg, nogrid), &
-                inwtyp(*), ipoint(4, noq)
-        integer(kind = int_wp), intent(in) :: iknmrk(noseg)      ! Feature array. Bit zero set means active.
-        real(kind = real_wp) :: conc (notot, noseg), &
-                cons(*), &
-                param(nopa, noseg), &
-                func(*), &
-                segfun(noseg, nosfun), &
-                volume(*), &
-                riobuf(*), bound(*), &
-                amass(notot, noseg), &
-                amass2(notot, 5), &
-                asmass(*), flxint(*), &
-                proloc(*), defaul(*), &
-                dmpq(*), dmps(*), &
-                flxdmp(*), trraai(nosys, *), &
-                stochi(notot, noflux), a(*)
-        character(len = 20)  syname(*), duname(*), &
-                ounam(*), cgrid(*), &
-                danam(*), nambuf(*), &
-                ranam(*), bndtyp(*), &
-                coname(*), paname(*), &
-                funame(*), sfname(*)
-        character(len = 100) ousnm(*), sysnm(*)
-        character(len = 40)  ouuni(*), syuni(*)
-        character(len = 60)  oudsc(*), sydsc(*)
+        integer(kind = int_wp), intent(in   ) :: num_substances_total                   !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells                   !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: num_spatial_parameters                    !< Number of parameters
+        integer(kind = int_wp), intent(in   ) :: num_spatial_time_fuctions                  !< Number of segment functions
+        integer(kind = int_wp), intent(in   ) :: itime                   !< Time in system clock units
+        integer(kind = int_wp), intent(in   ) :: num_monitoring_points                  !< Number of dump locations
+        character(len=40)     , intent(in   ) :: moname(4)               !< Model and run names
+        character(len=20)     , intent(in   ) :: syname(num_substances_total)           !< Names of substances, syname(*)
+        character(len=20)     , intent(in   ) :: duname(num_monitoring_points)          !< Names of dump locations, duname(*)
+        integer(kind = int_wp), intent(in   ) :: idump(num_monitoring_points)           !< Dump segment numbers
+        real(kind = real_wp)  , intent(inout) :: conc(num_substances_total,num_cells)       !< Model concentrations
+        real(kind = real_wp)  , intent(inout) :: cons(*)                 !< Model constants
+        real(kind = real_wp)  , intent(inout) :: param(num_spatial_parameters,num_cells)       !< Model parameters
+        real(kind = real_wp)  , intent(inout) :: func(*)                 !< Model functions at ITIME
+        real(kind = real_wp)  , intent(inout) :: segfun(num_cells,num_spatial_time_fuctions)    !< Segment functions at ITIME
+        real(kind = real_wp)  , intent(in   ) :: volume(num_cells)           !< Segment volumes, volume(*)
+        integer(kind = int_wp), intent(in   ) :: num_constants                  !< Number of constants used
+        integer(kind = int_wp), intent(in   ) :: num_time_functions                   !< Number of functions ( user )
+        integer(kind = int_wp), intent(in   ) :: idt                     !< Simulation timestep
+        integer(kind = int_wp), intent(in   ) :: num_output_files                   !< Number of output files
+        character(len=*)      , intent(in   ) :: file_name_list(*)       !< File names
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)       !< Uint numbers
+        integer(kind = int_wp), intent(inout) :: ioutps(7, num_output_files)        !< Output structure, ioutps(7, *)
+                                                                         !< Index 1 = start time
+                                                                         !< Index 2 = stop time
+                                                                         !< Index 3 = time step
+                                                                         !< Index 4 = number of vars
+                                                                         !< Index 5 = kind of output
+                                                                         !< Index 6 = grid of output
+                                                                         !< Index 7 = initialize flag
+        integer(kind = int_wp), intent(in   ) :: iopoin(*)               !< Pointer to DELWAQ array's
+        real(kind=real_wp),     intent(inout) :: riobuf(*)               !< Buffer for input and output
+        character(len=20)     , intent(in   ) :: ounam (*)               !< Name of output variable
+        integer(kind = int_wp), intent(in   ) :: num_cells_u_dir                      !< Width of output grid
+        integer(kind = int_wp), intent(in   ) :: num_cells_v_dir                      !< Depth of output grid
+        integer(kind = int_wp), intent(in   ) :: lgrid(num_cells_u_dir, num_cells_v_dir)           !< Grid-layout, lgrid(*)
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported                   !< Number of active substances
+        real(kind = real_wp)  , intent(in   ) :: bound(*)                !< Bounary conditions
+        integer(kind = int_wp), intent(inout) :: ip(*)                   !< Paging structure
+        real(kind = real_wp)  , intent(in   ) :: amass(num_substances_total,num_cells)      !< Mass array
+        real(kind = real_wp)  , intent(inout) :: amass2(num_substances_total,5)         !< Cummulative balance on whole
+        real(kind = real_wp)  , intent(inout) :: asmass(*)               !< Cummulative balance per segment
+        integer(kind = int_wp), intent(in   ) :: noflux                  !< Number of fluxes
+        real(kind = real_wp)  , intent(inout) :: flxint(*)               !< Integrated fluxes at dump segments, flxint(noflux,ndmpar)
+        integer(kind = int_wp), intent(in   ) :: isflag                  !< If 1 then dd-hh:mm'ss"
+        integer(kind = int_wp), intent(  out) :: iaflag                  !< If 1 then accumulate mass bal
+        integer(kind = int_wp), intent(in   ) :: ibflag                  !< Flag = 1 then balances
+        integer(kind = int_wp), intent(in   ) :: imstrt                  !< Monitoring start time ( scu )
+        integer(kind = int_wp), intent(in   ) :: imstop                  !< Monitoring stop time ( scu )
+        integer(kind = int_wp), intent(in   ) :: imstep                  !< Monitoring time step ( scu )
+        integer(kind = int_wp), intent(in   ) :: idstrt                  !< Dump start time ( scu )
+        integer(kind = int_wp), intent(in   ) :: idstop                  !< Dump stop time ( scu )
+        integer(kind = int_wp), intent(in   ) :: idstep                  !< Dump time step ( scu )
+        integer(kind = int_wp), intent(in   ) :: ihstrt                  !< History start time ( scu )
+        integer(kind = int_wp), intent(in   ) :: ihstop                  !< History stop time ( scu )
+        integer(kind = int_wp), intent(in   ) :: ihstep                  !< History time step ( scu )
+        logical               , intent(  out) :: imflag                  !< If .T. then monitor step
+        logical               , intent(  out) :: idflag                  !< If .T. then dump step
+        logical               , intent(  out) :: ihflag                  !< If .T. then history step
+        integer(kind = int_wp), intent(in   ) :: num_local_vars                   !< Number of variables in PROLOC
+        integer(kind = int_wp), intent(in   ) :: num_defaults                   !< Number of used defaults
+        real(kind = real_wp)  , intent(in   ) :: defaul(*)               !< Default proces parameters
+        integer(kind = int_wp), intent(in   ) :: itstrt                  !< Start time
+        integer(kind = int_wp), intent(in   ) :: itstop                  !< Stop time
+        integer(kind = int_wp), intent(in   ) :: ndmpar                  !< Number of dump areas
+        character(len=20)     , intent(in   ) :: danam(ndmpar)           !< Dump area names, danam(*)
+        integer(kind = int_wp), intent(in   ) :: ndmpq                   !< Number of dumped exchanges
+        integer(kind = int_wp), intent(in   ) :: num_monitoring_cells
+        integer(kind = int_wp), intent(in   ) :: iqdmp(*)                !< Exchange to dumped exchange pointer
+        integer(kind = int_wp), intent(in   ) :: isdmp(*)                !< Segment to dumped segment pointer
+        integer(kind = int_wp), intent(in   ) :: ipdmp(*)                !< Pointer structure dump areas
+        real(kind = real_wp)  , intent(in   ) :: dmpq(*)                 !< Mass balance dumped segments
+        real(kind = real_wp)  , intent(in   ) :: dmps(*)                 !< Mass balance dumped exchange
+        real(kind = real_wp)  , intent(in   ) :: flxdmp(*)               !< Integrated fluxes
+        integer(kind = int_wp), intent(in   ) :: ntdmpq                  !< Total number exchanges in dump area
+        character(len=20)     , intent(inout) :: nambuf(*)               !< Buffer for names
+        integer(kind = int_wp), intent(in   ) :: num_transects
+        integer(kind = int_wp), intent(in   ) :: num_transect_exchanges
+        integer(kind = int_wp), intent(in   ) :: ioraai(*)               !< Output option for transect
+        integer(kind = int_wp), intent(in   ) :: nqraai(*)               !< Number of exchanges in transect
+        integer(kind = int_wp), intent(in   ) :: iqraai(*)               !< Exchanges in transect
+        real(kind = real_wp)  , intent(inout) :: trraai(num_substances_transported, *)        !< Cummulative transport over transect
+        character(len=20)     , intent(in   ) :: ranam(*)                !< transects names
+        real(kind = real_wp)  , intent(in   ) :: stochi(num_substances_total, noflux)   !< Proces stochiometry
+        integer(kind = int_wp), intent(in   ) :: intopt                  !< Integration and balance suboptions
+        integer(kind = int_wp), intent(in   ) :: num_grids                  !< Number of grids
+        integer(kind = int_wp), intent(in   ) :: num_vars                   !< Number of variables
+        integer(kind = int_wp), intent(in   ) :: num_boundary_conditions                   !< Number of boundaries
+        integer(kind = int_wp), intent(in   ) :: num_boundary_types                  !< Number of boundary types
+        integer(kind = int_wp), intent(in   ) :: num_exchanges                     !< Number of exchanges
+        integer(kind = int_wp), intent(in   ) :: iknmrk(num_cells)           !< Feature array. Bit zero set means active.
+        integer(kind = int_wp), intent(in   ) :: vararr(num_vars)           !< Variable array number
+        integer(kind = int_wp), intent(in   ) :: varidx(num_vars)           !< Variable index in array
+        integer(kind = int_wp), intent(in   ) :: vartda(num_vars)           !< Type of disaggregation
+        integer(kind = int_wp), intent(in   ) :: vardag(num_vars)           !< Variable disaggr. weight var.
+        integer(kind = int_wp), intent(in   ) :: arrknd(*)               !< Kind of array
+        integer(kind = int_wp), intent(in   ) :: arrpoi(*)               !< Array pointer in A
+        integer(kind = int_wp), intent(in   ) :: arrdm1(*)               !< First dimension
+        integer(kind = int_wp), intent(in   ) :: arrdm2(*)               !< Second dimension
+        integer(kind = int_wp), intent(in   ) :: vgrset(num_vars, *)        !< Actual indication (inout in actloc????)
+        integer(kind = int_wp), intent(in   ) :: grdnos(num_grids)          !< Number of segments in grid
+        integer(kind = int_wp), intent(in   ) :: grdseg(num_cells, num_grids)   !< Segment pointering
+        integer(kind = int_wp), intent(in   ) :: inbtyp(*)               !< Index for boundary type
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, num_exchanges)          !< Pointer array
+        real(kind = real_wp),   intent(inout) :: proloc(*)               !< Process local array for output
+        real(kind = real_wp),   intent(inout) :: a(*)                    !< Real array work space
+        character(len=20),      intent(inout) :: cgrid(*)                !< Char buffer for dmp output
+        character(len=20)     , intent(in   ) :: bndtyp(*)               !< Boundary types names
+        character(len=20)     , intent(in   ) :: coname(*)               !< Constant names
+        character(len=20)     , intent(in   ) :: paname(*)               !< Parameters names
+        character(len=20)     , intent(in   ) :: funame(*)               !< Function names
+        character(len=20)     , intent(in   ) :: sfname(*)               !< Segment function names
+        character(len=100)    , intent(in   ) :: ousnm(*)                !< Output variables standard names
+        character(len=100)    , intent(in   ) :: sysnm(*)                !< Standard substances names
+        character(len=40)     , intent(in   ) :: ouuni(*)                !< Units of output variables
+        character(len=40)     , intent(in   ) :: syuni(*)                !< Standard substances units
+        character(len=60)     , intent(in   ) :: oudsc(*)                !< Output descriptions
+        character(len=60)     , intent(in   ) :: sydsc(*)                !< Standard substances descriptions
+        integer(kind = int_wp), intent(in   ) :: dmpbal(ndmpar)          !< If ==1, then dump area is included in the balance
+        integer(kind = int_wp), intent(in   ) :: num_waste_loads                   !< Number of wasteloads
+        integer(kind = int_wp), intent(in   ) :: num_waste_load_types                  !< Number of wasteload types
+        character(len = 20),    intent(in   ) :: wsttyp(num_waste_load_types)          !< Wasteload types names
+        integer(kind = int_wp), intent(in   ) :: iwaste(num_waste_loads)           !< Segment numbers of the wasteloads
+        integer(kind = int_wp), intent(in   ) :: inwtyp(num_waste_loads)           !< Wasteload type number (index in wsttyp)
+        real(kind = real_wp),   intent(in   ) :: wstdmp(num_substances_total, num_waste_loads, 2) !< Accumulated wasteloads 1/2 in and out
+        integer(kind = int_wp), intent(in   ) :: isegcol(*)              !< Pointer from segment to top of column
 
+        ! Local variables
         character(len = 100), allocatable :: hnc_standard(:)
         character(len = 40), allocatable :: hnc_unit(:)
         character(len = 60), allocatable :: hnc_description(:)
-
-        character(len = 40) :: moname(4)
-        character(len = *) :: file_name_list(*)
-        logical       imflag, idflag, ihflag
-        integer(kind = int_wp) :: dmpbal(ndmpar)        ! indicates if dump area is included in the balance
-        integer(kind = int_wp) :: nowst                 ! number of wasteloads
-        integer(kind = int_wp) :: nowtyp                ! number of wasteload types
-        character(len = 20) :: wsttyp(nowtyp)        ! wasteload types names
-        integer(kind = int_wp) :: iwaste(nowst)         ! segment numbers of the wasteloads
-        integer(kind = int_wp) :: inxtyp(nowst)         ! wasteload type number (index in wsttyp)
-        real(kind = real_wp) :: wstdmp(notot, nowst, 2) ! accumulated wasteloads 1/2 in and out
-        integer(kind = int_wp), intent(in) :: isegcol(*)            ! pointer from segment to top of column
-        !
-        !     Local declarations
-        !
         integer(kind = int_wp), parameter :: igseg = 1
         integer(kind = int_wp), parameter :: igmon = 2
         integer(kind = int_wp), parameter :: iggrd = 3
@@ -243,36 +219,34 @@ contains
                 isrtou, igrdou, iniout, lunout, iout, &
                 ierr, ierr2, i, i1, i2, &
                 ifi, ncout, nrvar2, nrvar3, ip1, &
-                iof, nsegou, intopt
-
+                iof, nsegou
         character(len = 255) lchout
         character(len = 20)  name
         logical       loflag, lmfirs, ldfirs, lhfirs, ldummy, lnonans
         logical       lget, lread
         real(kind = real_wp), allocatable :: surf(:)
-        integer(kind = int_wp) :: idummy       ! dummy not used
-        real(kind = real_wp) :: rdummy       ! dummy not used
-        character(len = 256) :: adummy       ! dummy not used
-        logical :: lfound       ! Keyword found (or not)
-        logical, save :: lnancheck    ! Do check on NAN in conc array
-
-        integer(kind = int_wp), save :: mncrec = 0                            ! netCDF map
-        integer(kind = int_wp), save :: hncrec = 0                            ! netCDF history
-        integer(kind = int_wp), save :: timeid, bndtimeid                     ! netCDF map
-        integer(kind = int_wp), save :: timeidh, bndtimeidh                   ! netCDF history
-        integer(kind = int_wp), allocatable, save :: mncwqid1(:, :), mncwqid2(:, :)  ! netCDF map
-        integer(kind = int_wp), allocatable, save :: hncwqid1(:, :), hncwqid2(:, :)  ! netCDF history
-
+        
+        logical, save :: lnancheck ! Do check on NAN in conc array
         logical, save :: first = .true.
 
-        real(kind = dp) :: damass2(notot, 5)
-
         integer(kind = int_wp) :: ithandl = 0
+        integer(kind = int_wp), save :: mncrec = 0  !< netCDF map
+        integer(kind = int_wp), save :: hncrec = 0  !< netCDF history
+        integer(kind = int_wp), save :: timeid      
+        integer(kind = int_wp), save :: bndtimeid   !< netCDF map
+        integer(kind = int_wp), save :: timeidh
+        integer(kind = int_wp), save :: bndtimeidh  !< netCDF history
+
+        integer(kind = int_wp), allocatable, save :: mncwqid1(:, :), mncwqid2(:, :) ! netCDF map
+        integer(kind = int_wp), allocatable, save :: hncwqid1(:, :), hncwqid2(:, :) ! netCDF history
+        
+        real(kind = dp) :: damass2(num_substances_total, 5)
+
         if (timon) call timstrt ("write_output", ithandl)
 
         if (first) then
-            allocate(mncwqid1(notot, 3), mncwqid2(novar, 3))
-            allocate(hncwqid1(notot, 2), hncwqid2(novar, 2))
+            allocate(mncwqid1(num_substances_total, 3), mncwqid2(num_vars, 3))
+            allocate(hncwqid1(num_substances_total, 2), hncwqid2(num_vars, 2))
             ! allow switching of NAN concentrations check
             lnancheck = .not. is_command_arg_specified('-nonancheck')
             first = .false.
@@ -281,7 +255,7 @@ contains
         if (lnancheck) then
             ! Check for NANs in the concentration array
             lunout = file_unit_list(19)
-            lnonans = nan_check(conc, 'conc(notot, noseg)', lunout, 1, 1)
+            lnonans = nan_check(conc, 'conc(num_substances_total, num_cells)', lunout, 1, 1)
             if (.not. lnonans) then
                 write(lunout, '(/A)')  '  ERROR : NAN found the concentration array, ending calculation.'
                 write(*, '(/A)')  '  ERROR : NAN found the concentration array, ending calculation. See location in mon-file.'
@@ -289,7 +263,7 @@ contains
                 write(*, '(A)')   '          Current concentration fields written to _res.map.'
                 write(lunout, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
                 write(*, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
-                call write_restart_map_file(file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
+                call write_restart_map_file(file_unit_list, file_name_list, conc, itime, moname, syname, num_substances_total, num_cells)
                 call stop_with_error()
             endif
         endif
@@ -303,9 +277,9 @@ contains
         if (imflag) then
             damass2 = amass2
             iaflag = 1
-            do i2 = 1, notot
+            do i2 = 1, num_substances_total
                 amass2(i2, 1) = 0.0
-                do i1 = 1, noseg
+                do i1 = 1, num_cells
                     damass2(i2, 1) = damass2(i2, 1) + amass(i2, i1)
                 enddo
             enddo
@@ -313,19 +287,19 @@ contains
         endif
 
         ! Fill mass in ASMASS array using DMPQ and DMPS
-        if (imflag .or. (ihflag .and. noraai > 0)) then
+        if (imflag .or. (ihflag .and. num_transects > 0)) then
             if (ibflag == 1) then
-                call fill_dump_areas_balances(notot, nosys, noflux, ndmpar, ndmpq, &
-                        ndmps, ntdmpq, iqdmp, isdmp, ipdmp, &
+                call fill_dump_areas_balances(num_substances_total, num_substances_transported, noflux, ndmpar, ndmpq, &
+                        num_monitoring_cells, ntdmpq, iqdmp, isdmp, ipdmp, &
                         dmpq, amass, dmps, flxdmp, asmass, &
                         flxint)
             endif
 
-            if (noraai > 0) then
+            if (num_transects > 0) then
                 if (lhfirs) then
-                    call initialize_real_array(trraai, noraai * nosys)
+                    call initialize_real_array(trraai, num_transects * num_substances_transported)
                 else
-                    call fill_transport_terms_transects(nosys, ndmpq, noraai, ntraaq, ioraai, &
+                    call fill_transport_terms_transects(num_substances_transported, ndmpq, num_transects, num_transect_exchanges, ioraai, &
                             nqraai, iqraai, iqdmp, dmpq, trraai)
                 endif
             endif
@@ -337,7 +311,7 @@ contains
         k1 = 1
 
         ! Loop over the output files
-        do iout = 1, noutp
+        do iout = 1, num_output_files
             !
             !        Map output structure to single variables part 1
             !
@@ -373,16 +347,16 @@ contains
                     isrtou == iba2) .and. ibflag /= 1) goto 100
 
             ! Set all local variables used active on base grid
-            call update_base_grid_local_array (iopoin, nrvar, nocons, nopa, nofun, &
-                    nosfun, notot, noseg, noloc, nogrid, &
-                    novar, vararr, varidx, vartda, vardag, &
+            call update_base_grid_local_array (iopoin, nrvar, num_constants, num_spatial_parameters, num_time_functions, &
+                    num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, num_grids, &
+                    num_vars, vararr, varidx, vartda, vardag, &
                     arrknd, arrpoi, arrdm1, arrdm2, vgrset, &
                     grdnos, grdseg, a)
 
             ! Fill output buffer
             if (isrtou == iba2) then
 
-                call calculate_balance_terms(notot, noflux, ndmpar, nrvar, stochi, flxint, asmass, riobuf)
+                call calculate_balance_terms(num_substances_total, noflux, ndmpar, nrvar, stochi, flxint, asmass, riobuf)
 
             elseif (isrtou == iba3) then
                 !     jos doet het zelf
@@ -391,37 +365,37 @@ contains
                         isrtou == ihi3 .or. &
                         isrtou == ihnc3 .or. &
                         isrtou == ihn3) then
-                    ncout = notot
+                    ncout = num_substances_total
                 else
                     ncout = 0
                 endif
                 nrvar2 = nrvar / 2
                 ! For the dump area's
-                call fill_output_buffer_sub_grid(riobuf, iopoin(k1), nrvar2, nocons, nopa, &
-                        nofun, nosfun, notot, conc, segfun, &
+                call fill_output_buffer_sub_grid(riobuf, iopoin(k1), nrvar2, num_constants, num_spatial_parameters, &
+                        num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
                         func, param, cons, idt, itime, &
-                        volume, noseg, nosys, ndmpar, ipdmp, &
-                        bound, noloc, proloc, nodef, defaul, &
+                        volume, num_cells, num_substances_transported, ndmpar, ipdmp, &
+                        bound, num_local_vars, proloc, num_defaults, defaul, &
                         ncout, ntdmpq, paname, sfname, funame, &
                         danam)
 
-                ! For the raaien
+                ! For the transects
                 if ((isrtou == ihi3 .or. &
                         isrtou == ihnc3 .or. &
                         isrtou == ihn3) .and. &
-                        noraai > 0) then
-                    nrvar3 = notot + nrvar2
+                        num_transects > 0) then
+                    nrvar3 = num_substances_total + nrvar2
                     ip1 = (ncout + nrvar2) * ndmpar + 1
-                    call fill_transect_output_buffer(riobuf(ip1), nrvar3, trraai, noraai, nosys)
+                    call fill_transect_output_buffer(riobuf(ip1), nrvar3, trraai, num_transects, num_substances_transported)
                 endif
             else
                 nrvar2 = nrvar
-                call fill_output_buffer_base_grid(riobuf, iopoin(k1), nrvar, nocons, nopa, &
-                        nofun, nosfun, notot, conc, segfun, &
+                call fill_output_buffer_base_grid(riobuf, iopoin(k1), nrvar, num_constants, num_spatial_parameters, &
+                        num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
                         func, param, cons, idt, itime, &
-                        volume, noseg, nosys, nodump, idump, &
-                        nx, ny, lgrid, igrdou, bound, &
-                        noloc, proloc, nodef, defaul)
+                        volume, num_cells, num_substances_transported, num_monitoring_points, idump, &
+                        num_cells_u_dir, num_cells_v_dir, lgrid, igrdou, bound, &
+                        num_local_vars, proloc, num_defaults, defaul)
             endif
 
             ! Fill character buffer with substance names and output names
@@ -439,21 +413,21 @@ contains
                     deallocate(hnc_description)
                 endif
 
-                allocate(hnc_standard(notot + nrvar2))
-                allocate(hnc_unit(notot + nrvar2))
-                allocate(hnc_description(notot + nrvar2))
+                allocate(hnc_standard(num_substances_total + nrvar2))
+                allocate(hnc_unit(num_substances_total + nrvar2))
+                allocate(hnc_description(num_substances_total + nrvar2))
 
-                do i = 1, notot
+                do i = 1, num_substances_total
                     nambuf(i) = syname(i)
                     hnc_standard(i) = sysnm(i)
                     hnc_unit(i) = syuni(i)
                     hnc_description(i) = sydsc(i)
                 end do
                 do i = 1, nrvar2
-                    nambuf(notot + i) = ounam(k1 + i - 1)
-                    hnc_standard(notot + i) = ousnm(k1 + i - 1)
-                    hnc_unit(notot + i) = ouuni(k1 + i - 1)
-                    hnc_description(notot + i) = oudsc(k1 + i - 1)
+                    nambuf(num_substances_total + i) = ounam(k1 + i - 1)
+                    hnc_standard(num_substances_total + i) = ousnm(k1 + i - 1)
+                    hnc_unit(num_substances_total + i) = ouuni(k1 + i - 1)
+                    hnc_description(num_substances_total + i) = oudsc(k1 + i - 1)
                 end do
             endif
 
@@ -461,7 +435,7 @@ contains
             if (isrtou == imon) then
 
                 call write_monitoring_output (lunout, idump, conc, amass2, itime, &
-                        duname, syname, moname, nodump, notot, &
+                        duname, syname, moname, num_monitoring_points, num_substances_total, &
                         ip, isflag, asmass, ibflag, nrvar, &
                         ounam(k1), riobuf, itstrt, itstop, ndmpar, &
                         danam)
@@ -469,7 +443,7 @@ contains
             elseif (isrtou == imo2) then
 
                 call write_monitoring_output (lunout, idump, conc, amass2, itime, &
-                        duname, syname, moname, nodump, 0, &
+                        duname, syname, moname, num_monitoring_points, 0, &
                         ip, isflag, asmass, ibflag, nrvar, &
                         ounam(k1), riobuf, itstrt, itstop, ndmpar, &
                         danam)
@@ -477,7 +451,7 @@ contains
             elseif (isrtou == imo3) then
                 !
                 call outmo3 (lunout, amass2, itime, syname, moname, &
-                        notot, ip, isflag, asmass, ibflag, &
+                        num_substances_total, ip, isflag, asmass, ibflag, &
                         nrvar2, ounam(k1), riobuf, itstrt, itstop, &
                         ndmpar, danam)
                 !
@@ -490,38 +464,38 @@ contains
                 !
             elseif (isrtou == idmp) then
                 !
-                call write_concentrations_in_grid_layout (lunout, lchout, itime, moname, nx, &
-                        ny, lgrid, cgrid, notot, nosys, &
+                call write_concentrations_in_grid_layout (lunout, lchout, itime, moname, num_cells_u_dir, &
+                        num_cells_v_dir, lgrid, cgrid, num_substances_total, num_substances_transported, &
                         syname, conc, bound, nrvar, ounam(k1), &
                         riobuf, ip(5), isflag, iniout)
                 !
             elseif (isrtou == idm2) then
                 !
-                call write_concentrations_in_grid_layout (lunout, lchout, itime, moname, nx, &
-                        ny, lgrid, cgrid, 0, 0, &
+                call write_concentrations_in_grid_layout (lunout, lchout, itime, moname, num_cells_u_dir, &
+                        num_cells_v_dir, lgrid, cgrid, 0, 0, &
                         syname, conc, bound, nrvar, ounam(k1), &
                         riobuf, ip(5), isflag, iniout)
                 !
             elseif (isrtou == ihis) then
                 !
-                call write_binary_history_output(lunout, lchout, itime, moname, nodump, &
-                        idump, duname, notot, syname, conc, &
+                call write_binary_history_output(lunout, lchout, itime, moname, num_monitoring_points, &
+                        idump, duname, num_substances_total, syname, conc, &
                         nrvar, ounam(k1), riobuf, iniout)
 
             elseif (isrtou == ihnf) then
 
-                iof = nrvar * nodump + 1
-                call write_nefis_history_output(lunout, lchout, itime, moname, noseg, &
-                        notot, conc, nambuf, nrvar, riobuf, &
-                        iostrt, iostop, iostep, nodump, idump, &
+                iof = nrvar * num_monitoring_points + 1
+                call write_nefis_history_output(lunout, lchout, itime, moname, num_cells, &
+                        num_substances_total, conc, nambuf, nrvar, riobuf, &
+                        iostrt, iostop, iostep, num_monitoring_points, idump, &
                         duname, riobuf(iof), iniout)
 
             elseif (isrtou == ihnc) then
                 hncrec = hncrec + 1
-                iof = nrvar * nodump + 1
+                iof = nrvar * num_monitoring_points + 1
                 call write_netcdf_history_output(file_unit_list(47), file_name_list(47), file_name_list(46), timeidh, &
                         bndtimeidh, hncrec, itime, moname, &
-                        idump, duname, nodump, notot, &
+                        idump, duname, num_monitoring_points, num_substances_total, &
                         conc, syname, sysnm, syuni, &
                         sydsc, hncwqid1, nrvar, riobuf, &
                         ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), &
@@ -529,36 +503,35 @@ contains
 
             elseif (isrtou == ihi2) then
 
-                call write_binary_history_output(lunout, lchout, itime, moname, nodump, &
+                call write_binary_history_output(lunout, lchout, itime, moname, num_monitoring_points, &
                         idump, duname, 0, syname, conc, &
                         nrvar, ounam(k1), riobuf, iniout)
 
             elseif (isrtou == ihn2) then
 
-                iof = nrvar * nodump + 1
-                call write_nefis_history_output(lunout, lchout, itime, moname, noseg, &
+                iof = nrvar * num_monitoring_points + 1
+                call write_nefis_history_output(lunout, lchout, itime, moname, num_cells, &
                         0, conc, ounam(k1), nrvar, riobuf, &
-                        iostrt, iostop, iostep, nodump, idump, &
+                        iostrt, iostop, iostep, num_monitoring_points, idump, &
                         duname, riobuf(iof), iniout)
 
             elseif (isrtou == ihnc2) then
 
                 hncrec = hncrec + 1
-                iof = nrvar * nodump + 1
+                iof = nrvar * num_monitoring_points + 1
                 call write_netcdf_history_output(file_unit_list(47), file_name_list(47), file_name_list(46), timeidh, &
                         bndtimeidh, hncrec, itime, moname, &
-                        idump, duname, nodump, 0, &
+                        idump, duname, num_monitoring_points, 0, &
                         conc, syname, sysnm, syuni, &
                         sydsc, hncwqid1, nrvar, riobuf, &
                         ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), &
                         hncwqid2, file_unit_list(19))
                 !
             elseif (isrtou == ihi3) then
-                !
-                !           Let op RANAM achter DANAM
-                !
-                nrvar3 = notot + nrvar2
-                nsegou = ndmpar + noraai
+
+                ! Let op RANAM achter DANAM
+                nrvar3 = num_substances_total + nrvar2
+                nsegou = ndmpar + num_transects
                 call write_binary_history_output(lunout, lchout, itime, moname, nsegou, &
                         idump, danam, 0, syname, conc, &
                         nrvar3, nambuf, riobuf, iniout)
@@ -566,10 +539,10 @@ contains
             elseif (isrtou == ihn3) then
 
                 ! Let op RANAM achter DANAM
-                nrvar3 = notot + nrvar2
-                nsegou = ndmpar + noraai
+                nrvar3 = num_substances_total + nrvar2
+                nsegou = ndmpar + num_transects
                 iof = nrvar3 * nsegou + 1
-                call write_nefis_history_output(lunout, lchout, itime, moname, noseg, &
+                call write_nefis_history_output(lunout, lchout, itime, moname, num_cells, &
                         0, conc, nambuf, nrvar3, riobuf, &
                         iostrt, iostop, iostep, nsegou, idump, &
                         danam, riobuf(iof), iniout)
@@ -578,8 +551,8 @@ contains
 
                 ! Let op RANAM achter DANAM
                 hncrec = hncrec + 1
-                nrvar3 = notot + nrvar2
-                nsegou = ndmpar + noraai
+                nrvar3 = num_substances_total + nrvar2
+                nsegou = ndmpar + num_transects
                 iof = nrvar3 * nsegou + 1
                 call write_netcdf_history_output(file_unit_list(47), file_name_list(47), file_name_list(46), timeidh, &
                         bndtimeidh, hncrec, itime, moname, &
@@ -597,7 +570,7 @@ contains
 
             elseif (isrtou == ihn4) then
                 iof = nrvar2 * ndmpar + 1
-                call write_nefis_history_output(lunout, lchout, itime, moname, noseg, &
+                call write_nefis_history_output(lunout, lchout, itime, moname, num_cells, &
                         0, conc, ounam(k1), nrvar2, riobuf, &
                         iostrt, iostop, iostep, ndmpar, idump, &
                         danam, riobuf(iof), iniout)
@@ -616,46 +589,46 @@ contains
 
             elseif (isrtou == imap) then
 
-                call write_binary_map_output (lunout, lchout, itime, moname, noseg, &
-                        notot, conc, syname, nrvar, riobuf, &
+                call write_binary_map_output (lunout, lchout, itime, moname, num_cells, &
+                        num_substances_total, conc, syname, nrvar, riobuf, &
                         ounam(k1), iknmrk, iniout)
 
             elseif (isrtou == imnf) then
 
-                iof = nrvar * noseg + 1
-                call write_nefis_map_output(lunout, lchout, itime, moname, noseg, notot, conc, syname, nrvar, riobuf, &
+                iof = nrvar * num_cells + 1
+                call write_nefis_map_output(lunout, lchout, itime, moname, num_cells, num_substances_total, conc, syname, nrvar, riobuf, &
                         ounam(k1), iostrt, iostop, iostep, riobuf(iof), iniout)
 
             elseif (isrtou == imnc) then
 
                 mncrec = mncrec + 1
                 call write_netcdf_map_output(file_unit_list(49), file_name_list(49), file_name_list(46), timeid, bndtimeid, mncrec, &
-                        itime, moname, noseg, notot, conc, syname, sysnm, syuni, sydsc, mncwqid1, nrvar, &
+                        itime, moname, num_cells, num_substances_total, conc, syname, sysnm, syuni, sydsc, mncwqid1, nrvar, &
                         riobuf, ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), mncwqid2, volume, iknmrk, file_unit_list(19))
 
             elseif (isrtou == ima2) then
 
-                call write_binary_map_output (lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
+                call write_binary_map_output (lunout, lchout, itime, moname, num_cells, 0, conc, syname, nrvar, riobuf, &
                         ounam(k1), iknmrk, iniout)
 
             elseif (isrtou == imn2) then
 
-                iof = nrvar * noseg + 1
-                call write_nefis_map_output(lunout, lchout, itime, moname, noseg, 0, conc, syname, nrvar, riobuf, &
+                iof = nrvar * num_cells + 1
+                call write_nefis_map_output(lunout, lchout, itime, moname, num_cells, 0, conc, syname, nrvar, riobuf, &
                         ounam(k1), iostrt, iostop, iostep, riobuf(iof), iniout)
 
             elseif (isrtou == imnc2) then
 
                 mncrec = mncrec + 1
                 call write_netcdf_map_output(file_unit_list(49), file_name_list(49), file_name_list(46), timeid, bndtimeid, mncrec, &
-                        itime, moname, noseg, 0, &
+                        itime, moname, num_cells, 0, &
                         conc, syname, sysnm, syuni, sydsc, mncwqid1, nrvar, &
                         riobuf, ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), mncwqid2, &
                         volume, iknmrk, file_unit_list(19))
 
             elseif (isrtou == ibal) then
 
-                call write_balance_history_output(lunout, itime, moname, notot, noflux, syname, ndmpar, danam, asmass, &
+                call write_balance_history_output(lunout, itime, moname, num_substances_total, noflux, syname, ndmpar, danam, asmass, &
                         flxint, nrvar2, riobuf, iniout)
 
             elseif (isrtou == iba2) then
@@ -663,23 +636,23 @@ contains
                 call write_binary_history_output(lunout, lchout, itime, moname, ndmpar, idump, danam, 0, syname, conc, &
                         nrvar, ounam(k1), riobuf, iniout)
             elseif (isrtou == iba3) then
-                allocate(surf(noseg))
+                allocate(surf(num_cells))
                 name = 'SURF'
                 lget = .true.
-                call values (name, noseg, surf, nocons, nopa, &
-                        nofun, nosfun, cons, coname, param, &
+                call exchange_values (name, num_cells, surf, num_constants, num_spatial_parameters, &
+                        num_time_functions, num_spatial_time_fuctions, cons, coname, param, &
                         paname, func, funame, segfun, sfname, &
                         lget, ierr)
 
-                call write_balance_text_output(notot, itime, nosys, noflux, ndmpar, &
+                call write_balance_text_output(num_substances_total, itime, num_substances_transported, noflux, ndmpar, &
                         ndmpq, ntdmpq, itstop, imstrt, imstop, &
                         iqdmp, ipdmp, asmass, flxint, stochi, &
-                        syname, danam, moname, dmpq, nobnd, &
-                        nobtyp, bndtyp, inwtyp, nocons, coname, &
-                        cons, noq, ipoint, ounam(k1), intopt, &
-                        volume, surf, noseg, lunout, lchout, &
-                        iniout, dmpbal, nowst, nowtyp, wsttyp, &
-                        iwaste, inxtyp, wstdmp, isegcol, imstep)
+                        syname, danam, moname, dmpq, num_boundary_conditions, &
+                        num_boundary_types, bndtyp, inbtyp, num_constants, coname, &
+                        cons, num_exchanges, ipoint, ounam(k1), intopt, &
+                        volume, surf, num_cells, lunout, lchout, &
+                        iniout, dmpbal, num_waste_loads, num_waste_load_types, wsttyp, &
+                        iwaste, inwtyp, wstdmp, isegcol, imstep)
 
                 file_unit_list(ifi) = lunout ! Ad hoc: routine open_waq_files sets the LU-number via newunit
                 deallocate (surf)
@@ -697,6 +670,4 @@ contains
 
         if (timon) call timstop (ithandl)
     end subroutine write_output
-
-
 end module m_write_output

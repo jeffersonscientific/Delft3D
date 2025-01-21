@@ -34,6 +34,8 @@ function varargout = d3d_qp(cmd,varargin)
 %   $HeadURL$
 %   $Id$
 
+%VERSION = 2.70
+
 try
     if nargin==0
         cmd='initialize';
@@ -48,27 +50,39 @@ catch Ex
 end
 
 function outdata=d3d_qp_core(cmd,varargin)
-%VERSION = 2.70
-qpversionbase = 'v<VERSION>';
-gitrepo = '<GITREPO>';
-githash = '<GITHASH>';
-qpcreationdate = '<CREATIONDATE>';
-%
-persistent qpversion logfile logtype
+persistent qpversion qpversionbase gitrepo githash qpcreationdate
+persistent logfile logtype
 
 if isempty(qpversion)
+    qpversionbase = 'v<VERSION>';
+    gitrepo = '<GITREPO>';
+    githash = '<GITHASH>';
+    qpcreationdate = '<CREATIONDATE>';
+
     if isequal(qpversionbase(1:2),'v<')
-        qpversion='source code version';
+        thisfile=mfilename('fullpath');
+        thisdir=fileparts(thisfile);
+        [version, githash, gitrepo] = read_identification(thisdir,'d3d_qp.m');
+        qpversion = ['source code ',version];
     else
-        qpversion=qpversionbase;
+        qpversion = qpversionbase;
     end
-    if isempty(strfind(qpversion,'('))
-        if strncmp(fliplr(computer),'46',2)
-            nbits=64;
-        else
-            nbits=32;
+    if all(qpversion ~= '(')
+        switch computer
+            case 'PCWIN'
+                platform = 'Windows 32bit';
+            case 'GLNX86'
+                platform = 'Linux 32bit';
+            case 'PCWIN64'
+                platform = 'Windows 64bit';
+            case 'GLNXA64'
+                platform = 'Linux 64bit';
+            case 'MACI64'
+                platform = 'Apple 64bit';
+            otherwise
+                platform = computer;
         end
-        qpversion=sprintf('%s (%ibit)',qpversion,nbits);
+        qpversion=sprintf('%s (%s)',qpversion,platform);
     end
     logfile=0;
     logtype=1;
@@ -91,7 +105,7 @@ if nargout~=0
         if nargin>1
             outdata = {qp_checkversion(varargin{:})};
         else
-            outdata = {qpversion};
+            outdata = {qpversion,githash,gitrepo};
         end
         return
     elseif isstandalone % allow standalone auto start ...
@@ -2499,7 +2513,7 @@ switch cmd
             writelog(logfile,logtype,cmd,get(cb,'value'));
         end
         
-    case {'colbarhorz','climsymm','extend2edge','clipnans'}
+    case {'colbarhorz','climsymm','climclip','extend2edge','clipnans'}
         % nothing do
         cb=findobj(UOH,'tag',cmd);
         if ~isempty(cmdargs)
@@ -2567,6 +2581,30 @@ switch cmd
             writelog(logfile,logtype,cmd,c);
         end
         
+    case 'plotclass'
+        cv = findobj(UOH,'tag','thresholds=?');
+        pc = findobj(UOH,'tag','plotclass');
+
+        c = get(cv, 'userdata');
+        % classes = get_classes(c);
+        classes = {'1','2','3'};
+
+        if isempty(cmdargs)
+            iclass = get(pc, 'userdata');
+            if isequal(iclass,0) || isequal(iclass,-1)
+                iclass = 1:length(classes);
+            end
+            [~,iclass] = ui_type(classes, 'multiselect', iclass);
+        else
+            iclass = cmdargs{1};
+        end
+        if ~isequal(iclass,-1)
+            set(pc, 'userdata', iclass)
+            if logfile
+                writelog(logfile,logtype,cmd,iclass);
+            end
+        end
+
     case {'xclipping','yclipping','zclipping','clippingvals'}
         cv=findobj(UOH,'tag',[cmd '=?']);
         if isempty(cmdargs)
@@ -5050,8 +5088,10 @@ switch cmd
         % ------ colour limits ...
         %
         set(findobj(UOH,'tag','climmode=?'),'value',1)
+        set(findobj(UOH,'tag','climsymm'),'value',0)
         set(findobj(UOH,'tag','climmax=?'),'userdata',1,'string','1')
-        set(findobj(UOH,'tag','climmax=?'),'userdata',0,'string','0')
+        set(findobj(UOH,'tag','climmin=?'),'userdata',0,'string','0')
+        set(findobj(UOH,'tag','climclip'),'value',0)
         %
         % ------ colour map ...
         %
@@ -5107,7 +5147,8 @@ switch cmd
             'organizationname','filefilterselection','colorbar_ratio', ...
             'showinactiveopt', 'defaultfigurepos','timezonehandling', ...
             'enforcedtimezone', 'netcdf_use_fillvalue','export_max_ntimes', ...
-            'update_showversion', 'defaultrenderer','defaultsmoothing'}
+            'update_showversion', 'defaultrenderer','defaultsmoothing', ...
+            'ghostscript', 'ghostscript_browse'}
         qp_prefs(UD,mfig,cmd,cmdargs);
         
     case {'deltaresweb','deltaresweboss'}

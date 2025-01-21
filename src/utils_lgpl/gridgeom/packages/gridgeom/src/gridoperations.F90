@@ -42,7 +42,7 @@
    public :: FINDPENTAS
    public :: FINDHEXAS
    public :: iscounterclockwise
-   public :: RECHTSAF
+   public :: rechtsaf
    public :: CONNECTDBN
    public :: CONNECTDB
    public :: ADDLINKTONODES
@@ -176,7 +176,7 @@
    use network_data
    implicit none
    integer :: ierr
-   integer :: k, KX, LS, LS0, LX, NN
+   integer :: k, KX, LS, LS0, LX
 
    if (.not. allocated(xk) .or. .not. allocated(kn) .or. .not. allocated(nod)) return
 
@@ -423,9 +423,6 @@
 
    integer                           :: i, j
    integer                           :: kL, kR, LL
-
-   integer                           :: num
-
    integer                           :: knod, kcom
 
    integer, dimension(N)             :: icell
@@ -522,16 +519,12 @@
    SUBROUTINE SETNEWPOINT(XP,YP,ZP,K1)
 
    use network_data
-   use m_missing, only : dmiss, xymis
 
    implicit none
-   integer :: jav
-   integer :: jview
-   double precision :: xyz
-   double precision :: XP, YP, ZP
-   integer :: K1
 
-   COMMON /HOWTOVIEW/ JVIEW, JAV, XYZ ! 1,2,3 OF 4
+   double precision, intent(in) :: XP, YP, ZP
+   integer,         intent(out) :: K1
+
    CALL GIVENEWNODENUM(K1)
    xk(k1) = xp
    yk(k1) = yp
@@ -555,16 +548,15 @@
    SUBROUTINE CROSSED2d_BNDCELL(NML, XP1, YP1, XP2, YP2 , NC1, Lfound)
    !use m_netw
    use network_data
-   use m_cell_geometry, only: xz, yz
    use m_missing, only : dmiss
    use geometry_module, only : crossinbox, cross
-   use m_sferic, only: jsferic, jasfer3D
+   use m_sferic, only: jsferic
 
    implicit none
    INTEGER          :: NC1, NML
    DOUBLE PRECISION :: XP1, YP1, XP2, YP2
 
-   INTEGER          :: L, JACROS, K1, K2, LL, Lfound
+   INTEGER          :: L, JACROS, K1, K2, Lfound
    DOUBLE PRECISION :: SL, SM, XCR, YCR, CRP, slm
 
    NC1 = 0
@@ -595,14 +587,14 @@
    use m_cell_geometry, only: xz, yz
    use m_missing, only : dmiss
    use geometry_module, only : crossinbox, cross
-   use m_sferic, only: jsferic, jasfer3D
+   use m_sferic, only: jsferic
 
    implicit none
    INTEGER          :: NC1, NML
    DOUBLE PRECISION :: XP1, YP1, XP2, YP2
 
-   INTEGER          :: L, JACROS, K1, K2, LL, Lfound
-   DOUBLE PRECISION :: SL, SM, XCR, YCR, CRP, slm
+   INTEGER          :: JACROS, K1, K2, LL, Lfound
+   DOUBLE PRECISION :: SL, SM, XCR, YCR, CRP
   
    if (nc1 > 0) then 
       xp2 = xz(nc1) ; yp2 = yz(nc1)
@@ -702,9 +694,9 @@
    use network_data
 
    use mathconsts, only: degrad_hp
-   use geometry_module, only: getdx, getdy, dcosphi, cross
+   use geometry_module, only: dcosphi, cross
    use m_missing, only : dmiss, dxymis
-   use m_sferic, only: pi, jsferic, jasfer3D
+   use m_sferic, only: jsferic, jasfer3D
    use MessageHandling
    use m_alloc
 
@@ -712,13 +704,13 @@
    INTEGER               :: JACROSSCHECK_ !< remove crossed 2D links (1), or not (0), output permutation array (+10)
 
    double precision :: crp, e, e1
-   integer          :: jacros, mout
-   integer          :: k, k1, k12, k2, k22, k3, KI, ka, kb, kk, L, L1, L2, LL, LLL, LI, LTOT, ls, JA
+   integer          :: jacros
+   integer          :: k, k1, k12, k2, k22, k3, KI, ka, kb, kk, L, L1, L2, LL, LLL, LI, JA
    INTEGER          :: jDupLinks, jOverlapLinks, jSmallAng, maxlin
    double precision :: sl, sm, xcr, ycr
 
    INTEGER, ALLOCATABLE          ::  KC2(:), KN2(:,:), KCK(:)
-   double precision              :: phi, dx, dy, dmaxcosp, dcosp, costriangleminangle, phi0
+   double precision              :: dmaxcosp, dcosp, costriangleminangle
 
    double precision :: X(4), Y(4)
 
@@ -726,8 +718,6 @@
 
    integer :: jacrosscheck ! remove 2D crossing netlinks (1) or not (0)
    integer :: japermout    ! output permutation array (1) or not (0)
-   integer :: janodperm    ! output node permutation array (1) or not (0)
-
    
    logical :: need_to_allocate_kc
 
@@ -824,7 +814,7 @@
             JA = 0
          ELSE                                                    !            : OR BOTH EQUAL
             if ((K3 == 1 .or. k3 == 6) .and. allocated(dxe)) then ! User-defined net link lengths
-               if (dxe(L) <= 0d0) then                           ! X/Y of K1, K2 may be equal, as long as length > 0
+               if (dxe(L) /= dmiss .and. dxe(L) <= 0d0) then                           ! X/Y of K1, K2 may be equal, as long as length > 0
                   ja = 0
                end if
             else IF (XK(K1) == XK(K2) .AND. YK(K1) == YK(K2) ) THEN
@@ -1017,8 +1007,6 @@
    nlinktoosmall = 0
    nlinkcross    = 0
 
-   ! call trace_netlink_polys()
-
    if ( japermout.eq.1 ) then
       if ( allocated(Lperm_new) ) deallocate(Lperm_new)
    end if
@@ -1057,7 +1045,7 @@
 
    use network_data
    use m_alloc
-   use m_sferic, only:  jsferic, jasfer3D, dtol_pole
+   use m_sferic, only:  dtol_pole
    use m_cell_geometry
 
    implicit none
@@ -1122,7 +1110,7 @@
    double precision, dimension(Msize) :: xv, yv
    integer, dimension(Msize)          :: Lorg
    integer, dimension(Msize)          :: LnnL
-   integer                            :: i, k, L, nn
+   integer                            :: nn
 
    nn = netcell(n)%n
 
@@ -1148,8 +1136,6 @@
 
    implicit none
    integer, intent(in) :: JP !< Type of cells to find (unfolded: 3: triangle, etc. up to 6=hexa, 0 = all; folded: code+100; no new nodemask (nonzero values will be used as mask here): code+1000, no sednodadm: code+10000, output link permutation array: code+100000)
-
-   integer, allocatable, dimension(:) :: kc_sav  ! save of kc
 
    integer :: ik
    integer :: k
@@ -1322,7 +1308,6 @@
    integer :: l
    integer :: ll
    integer :: lll
-   integer :: i
    integer :: kr(3), Lr(3)
    integer :: kkk_, kkkk_, nmkmax
 
@@ -1355,7 +1340,7 @@
                LL  = NOD(K2)%LIN(KKK)  ; IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3) ; IF (K3 == 0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1370,7 +1355,7 @@
                      LLL  = NOD(K3)%LIN(KKKK) ; IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4)  ; IF (K4 == 0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .EQ. K1) THEN  ! TRI GEVONDEN
                         IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1)  EXIT
                         !                    call setcol(31) ! red
@@ -1398,7 +1383,6 @@
                         kr(1)=k1; kr(2)=k2; kr(3)=k3
                         if ( .not.iscounterclockwise(3, kr) ) cycle
 
-                        !CALL ALREADYTRI(K1,K2,K3,JA); IF (JA > 0) EXIT
                         call increasenetcells(NUMP+1, 1.2, .true.)
                         NUMP = NUMP + 1
                         call realloc(netcell(NUMP)%NOD, 3, stat=ierr, keepExisting=.false.)
@@ -1498,7 +1482,7 @@
                LL  = NOD(K2)%LIN(KKK)  ; IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3); IF (K3 == 0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1513,7 +1497,7 @@
                      LLL  = NOD(K3)%LIN(KKKK) ; IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4); IF (K4 == 0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .NE. K2) THEN
 
                         kkkkk = 1
@@ -1529,7 +1513,7 @@
                            IF (LLLL .EQ. LLL .OR. LLLL .EQ. LL .OR. LLLL .EQ. L) CYCLE
                            IF (LNN(LLLL) .GE. 2) CYCLE
                            CALL OTHERNODECHK(K4,LLLL,K5) ; IF (K5 == 0) CYCLE
-                           IF ( RECHTSAF(K3,K4,K5) ) CYCLE
+                           IF ( rechtsaf(K3,K4,K5) ) CYCLE
                            IF (K5 .EQ. K1) THEN  ! PANEEL GEVONDEN
                               IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1 .OR. LNN(LLLL)>1)  EXIT
 
@@ -1547,8 +1531,6 @@
                                     end if
                                  end if
                               end if
-
-                              !CALL ALREADYQUAD(K1,K2,K3,K4,JA) ; IF (JA > 0 ) EXIT
 
                               kr(1)=k1; kr(2)=k2; kr(3)=k3; kr(4)=k4
                               if ( .not.iscounterclockwise(4, kr) ) cycle
@@ -1658,7 +1640,7 @@
                IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3); IF (K3 == 0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1674,7 +1656,7 @@
                      IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4); IF (K4 == 0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .NE. K2 .AND. K4 .NE. K1) THEN
 
                         kkkkk = 1
@@ -1690,7 +1672,7 @@
                            IF (LLLL .EQ. LLL .OR. LLLL .EQ. LL .OR. LLLL .EQ. L) CYCLE
                            IF (LNN(LLLL) .GE. 2) CYCLE
                            CALL OTHERNODECHK(K4,LLLL,K5) ; IF (K5 == 0) CYCLE
-                           IF ( RECHTSAF(K3,K4,K5) ) CYCLE
+                           IF ( rechtsaf(K3,K4,K5) ) CYCLE
                            IF (K5 .NE. K3 .AND. K5 .NE. K2 .AND. K5 .NE. K1) THEN
 
                               kkkkkk = 1
@@ -1706,7 +1688,7 @@
                                  IF (LLLLL .EQ. LLLL .OR. LLLLL .EQ. LLL .OR. LLLLL .EQ. LL .OR. LLLLL .EQ. L) CYCLE
                                  IF (LNN(LLLLL) .GE. 2) CYCLE
                                  CALL OTHERNODECHK(K5,LLLLL,K6); IF (K6 == 0) CYCLE
-                                 IF ( RECHTSAF(K4,K5,K6) ) CYCLE
+                                 IF ( rechtsaf(K4,K5,K6) ) CYCLE
                                  IF (K6 .EQ. K1) THEN  ! PENTA GEVONDEN
                                     IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1 .OR.     &
                                        LNN(LLLL)>1 .OR. LNN(LLLLL) > 1 )  EXIT
@@ -1727,8 +1709,6 @@
                                        end if
                                     end if
                                     end if
-
-                                    !CALL ALREADYPENTA(K1,K2,K3,K4,K5,JA) ; IF (JA > 0) EXIT
 
                                     kr(1)=k1; kr(2)=k2; kr(3)=k3; kr(4)=k4; kr(5)=k5
                                     if ( .not.iscounterclockwise(5, kr) ) cycle
@@ -1821,7 +1801,7 @@
    integer :: kr(6), Lr(6)
    integer :: kkk_, kkkk_, kkkkk_, kkkkkk_, kkkkkkk_, nmkmax
 
-   !LC LOGICAL RECHTSAF
+   !LC LOGICAL rechtsaf
    !LC logical :: alreadycell
    !LC logical :: iscounterclockwise
 
@@ -1854,7 +1834,7 @@
                IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3); IF (K3 ==0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1871,7 +1851,7 @@
                      IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4); IF (K4 ==0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .NE. K2 .AND. K4 .NE. K1) THEN
 
                         kkkkk = 1
@@ -1887,7 +1867,7 @@
                            IF (LLLL .EQ. LLL .OR. LLLL .EQ. LL .OR. LLLL .EQ. L) CYCLE
                            IF (LNN(LLLL) .GE. 2) CYCLE
                            CALL OTHERNODECHK(K4,LLLL,K5); IF (K5 ==0) CYCLE
-                           IF ( RECHTSAF(K3,K4,K5) ) CYCLE
+                           IF ( rechtsaf(K3,K4,K5) ) CYCLE
                            IF (K5 .NE. K3 .AND. K5 .NE. K2 .AND. K5 .NE. K1) THEN
 
                               kkkkkk = 1
@@ -1903,7 +1883,7 @@
                                  IF (LLLLL .EQ. LLLL .OR. LLLLL .EQ. LLL .OR. LLLLL .EQ. LL .OR. LLLLL .EQ. L) CYCLE
                                  IF (LNN(LLLLL) .GE. 2) CYCLE
                                  CALL OTHERNODECHK(K5,LLLLL,K6); IF (K6 ==0) CYCLE
-                                 IF ( RECHTSAF(K4,K5,K6) ) CYCLE
+                                 IF ( rechtsaf(K4,K5,K6) ) CYCLE
                                  IF (K6 .NE. K4 .AND. K6 .NE. K3 .AND. K6 .NE. K2 .AND. K6 .NE. K1) THEN
 
                                     kkkkkkk = 1
@@ -1920,7 +1900,7 @@
                                           LLLLLL .EQ. LLL .OR. LLLLLL .EQ. LL .OR. LLLLLL .EQ. L) CYCLE
                                        IF (LNN(LLLLLL) .GE. 2) CYCLE
                                        CALL OTHERNODECHK(K6,LLLLLL,K7); IF (K7 ==0) CYCLE
-                                       IF ( RECHTSAF(K5,K6,K7) ) CYCLE
+                                       IF ( rechtsaf(K5,K6,K7) ) CYCLE
                                        IF (K7 .EQ. K1) THEN  ! HEXA GEVONDEN
                                           IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1 .OR.      &
                                              LNN(LLLL)>1 .OR. LNN(LLLLL)>1 .OR. LNN(LLLLLL)>1)  EXIT
@@ -1941,8 +1921,6 @@
                                              end if
                                           end if
                                           end if
-
-                                          !CALL ALREADYHEXA(K1,K2,K3,K4,K5,K6,JA) ; IF (JA > 0) EXIT
 
                                           kr(1)=k1; kr(2)=k2; kr(3)=k3; kr(4)=k4; kr(5)=k5; kr(6)=k6
                                           if ( .not.iscounterclockwise(6, kr) ) cycle
@@ -2027,7 +2005,7 @@
 
    double precision                  :: darea
    integer                           :: jacounterclockwise          ! counterclockwise (1) or not (0)
-   integer                           :: i, ip1, kk, kkp1
+   integer                           :: i, kk
 
    iscounterclockwise = .true.
 
@@ -2061,23 +2039,10 @@
    return
    end function iscounterclockwise
 
-   LOGICAL FUNCTION RECHTSAF(K1,K2,K3)
-   use network_data
-   implicit none
-   integer :: K1, K2, K3
-
-   logical, external :: rechtsaf_active
-
-   double precision :: sig
-
+   LOGICAL FUNCTION rechtsaf(K1,K2,K3)
+   integer, intent(in) :: K1, K2, K3
    rechtsaf = .false.
-   return
-
-   rechtsaf = RECHTSAF_active(K1,K2,K3)
-
-   return
-
-   end FUNCTION RECHTSAF
+   end FUNCTION rechtsaf
 
    SUBROUTINE CONNECTDBN(K1,K2,LNU)
    implicit none
@@ -2218,7 +2183,7 @@
       integer, intent(in   ) :: netcellnod(:,:)  !< connectivity table with vertex nodes for all netcells (faces)
       integer, intent(  out) :: netcelllin(:,:)  !< Resulting connectivity table with side edges for all netcells (faces), in same order as the nodes.
 
-      integer :: N, ik, inext, kcur, knext, nv
+      integer :: N, ik, inext, nv
       nv = size(netcellnod, 1)
 
       do N=1,numcell
@@ -2237,16 +2202,16 @@
       end do
    end subroutine ggeo_construct_netcelllin_from_netcellnod
 
-   SUBROUTINE INCELLS(XA,YA,KIN)
+   ELEMENTAL RECURSIVE SUBROUTINE INCELLS(XA,YA,KIN)
    !use m_netw
    use network_data
    use geometry_module, only: pinpok
    use m_missing, only : jins, dmiss
 
    implicit none
-   double precision :: xa
-   double precision :: ya
-   integer :: kin
+   double precision, intent(in) :: xa
+   double precision, intent(in) :: ya
+   integer, intent(out) :: kin
 
    integer :: in
    integer :: k
@@ -2276,14 +2241,13 @@
    !use m_netw
    use network_data
    use geometry_module, only: pinpok
-   use m_missing, only : jins, dmiss
    use m_sferic, only: jsferic
    use kdtree2Factory
    implicit none
    double precision,      intent(in   ) :: xa             !< Input/query point x-coordinate
    double precision,      intent(in   ) :: ya             !< Input/query point y-coordinate
    integer,               intent(  out) :: kin            !< netcell index found (0 when not found)
-   type(kdtree_instance), intent(in   ) :: treeinst       !< k-d tree for searching netcell mass centers
+   type(kdtree_instance), intent(inout) :: treeinst       !< k-d tree for searching netcell mass centers
    double precision,      intent(in   ) :: searchradiussq !< Squared search radius for k-d tree searching
 
    integer :: nCellsInSearchRadius
@@ -2351,7 +2315,7 @@
    !LC use m_netw
    use network_data
    use m_sferic
-   use geometry_module, only: getdxdy, dcosphi, getdx, getdy
+   use geometry_module, only: getdxdy, dcosphi
    use stdlib_sorting, only: sort_index
 
    implicit none
@@ -2363,12 +2327,10 @@
    double precision, allocatable   :: arglin(:)                   ! dummy array
    integer,          allocatable   :: linnrs(:), inn(:)           ! dummy arrays
 
-   integer                         :: k1, k2, L, LL
+   integer                         :: k1, k2, L
+   double precision                :: phi0
 
-   integer                         :: jDupLinks, jOverlapLinks, jSmallAng
-   double precision                :: sl, sm, xcr, ycr, phi0
-
-   double precision                :: phi, dx, dy, dmaxcosp, dcosp, costriangleminangle
+   double precision                :: phi, dx, dy
 
    allocate(arglin(maxlin), linnrs(maxlin), inn(maxlin))
    do L=1,NMK(K)
@@ -2378,8 +2340,6 @@
          K1 = K
       end if
 
-      !dx = getdx(xk(k1), yk(k1), xk(k2), yk(k2))
-      !dy = getdy(xk(k1), yk(k1), xk(k2), yk(k2))
       call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
       if (abs(dx) < 1d-14 .and. abs(dy) < 1d-14) then
          if (dy < 0) then
@@ -2425,7 +2385,7 @@
    double precision,                   intent(out) :: zz     !< polygon-averaged value
 
    integer,          dimension(Msize)              :: kpole
-   integer                                         :: num, numz, m, mp1, mp2, k1, k2, k3
+   integer                                         :: num, numz, m, mp1, mp2, k1, k2
 
    !  initialization
    xv   = 0d0
@@ -2563,7 +2523,7 @@
 
 
    double precision :: dismin
-   integer          :: ja, k, k1, k2, L, k1ClientIndex, k2ClientIndex
+   integer          :: k, k1, k2, L, k1ClientIndex, k2ClientIndex
    double precision :: dis,dis1,dis2
    logical                       :: validOneDMask
    
@@ -2628,14 +2588,14 @@
    double precision,      intent(in   ) :: XP1, YP1 !< Input/query point coordinates
    double precision,      intent(  out) :: dist     !< Distance between query point and the 1D point found
    integer         ,      intent(  out) :: n1       !< 1D point found
-   type(kdtree_instance), intent(in   ) :: treeinst !< k-d tree for searching 1D net nodes
+   type(kdtree_instance), intent(inout) :: treeinst !< k-d tree for searching 1D net nodes
    double precision,      intent(in   ) :: searchradiussq !< Squared search radius for k-d tree searching
    integer,               intent(in   ) :: k1d(:)   !< Mapping table from purely 1D net nodes to full set of netnodenumbers (1:numk1d) ==> (1:numk)
    integer, optional,     intent(in   ) :: oneDMask(:)
 
 
    double precision :: dismin
-   integer          :: ja, k, k1, k1ClientIndex
+   integer          :: k, k1, k1ClientIndex
    double precision :: dis
    logical          :: validOneDMask
    integer, save :: timerhandle(2) = 0
@@ -2752,7 +2712,7 @@
    integer,          dimension(MMAX) :: LnnL
    integer                           :: nn
    integer                           :: jaccw  ! counterclockwise (1) or not (0) (not used here)
-   integer                           :: i, k, k2, k3, iv, ih
+   integer                           :: i, k, k2, iv, ih
 
    double precision                  :: ba, xzw, yzw, xh(4), yh(4)
 
@@ -2829,13 +2789,12 @@
    integer, optional,          intent(in) :: inNet                                 !< Whether or not (1/0) to generate links only for 1D points that lie inside of 2D grid cells. Default: off, 0.
    
    !locals
-   integer                                :: K1, K2, K3, L, NC1, NC2, JA, KK2(2), KK, NML, LL
-   integer                                :: i, ierr, k, kcell
+   integer                                :: K1, K2, K3, L, NC1, NC2, KK2(2), KK, NML, LL
+   integer                                :: i, ierr, k
    double precision                       :: XN, YN, XK2, YK2, WWU
    integer                                :: insidePolygons, Lfound, k1ClientIndex, k2ClientIndex 
    integer                                :: inNet_
    logical                                :: validOneDMask
-   integer :: ifil
    integer :: timerhandle(6)
    type(kdtree_instance) :: treeinstcells
    double precision :: searchradiussq
@@ -3071,13 +3030,11 @@
    double precision, optional, intent(in)  :: xplRoofs(:), yplRoofs(:), zplRoofs(:)
    integer, optional, intent(in)           :: oneDMask(:)                !< Masking array for 1d mesh points, unmerged nodes
 
-   integer                                 :: inp, n, n1, ip, i, k1, k2, L, k, numUnMergedNodes
-   double precision                        :: XN1, YN1, DIST
+   integer                                 :: inp, n, n1, ip, i, k1, k2, L
+   double precision                        :: DIST
    integer,          allocatable           :: nodroof(:), nod1D(:)
    double precision, allocatable           :: dismin(:)
-   character(len=5)                        :: sd
    integer                                 :: ierr
-   integer                                 :: nInputPolygon
    logical                                 :: validOneDMask
    
    validOneDMask = .false.
@@ -3448,7 +3405,7 @@
       integer,          dimension(N)              :: iclist
       double precision                            :: xc, yc, area, w, sn, cs, xh, yh, aa, cs2, cs3, sn2, sn3, f
       double precision, dimension(1)              :: csloc, snloc, csloc2, snloc2, csloc3, snloc3
-      double precision                            :: xh2, yh2, xh3, yh3, dist
+      double precision                            :: xh2, yh2, xh3, yh3
 
       integer                                     :: i, ic, k1, k2, L, NN, Nc, ja2D, Lp, k3, ip, is, ncol
       integer                                     :: jacounterclockwise          ! counterclockwise (1) or not (0) (not used here)
@@ -3606,7 +3563,6 @@
          if (num .ge. 3) then 
              call random_number(aa)
              ncol = 255*aa
-             !call DISPF2closed(xx,yy,num,num,ncol)
              
              if ( jatolan.eq.1 ) then
                 call INCREASELAN(MXLAN+num+2)
@@ -3638,7 +3594,7 @@
 
       integer                            :: ierror    ! error (1) or not (0)
 
-      integer                            :: i, ip1, ic1, ic2, j, ja, L, Lp1, NN
+      integer                            :: i, ip1, ic1, ic2, ja, L, Lp1, NN
       integer                            :: ii, iim1
 
       ierror = 1
@@ -3795,7 +3751,7 @@
 
    integer, intent(inout)  :: nlinks
    integer                 :: l, ierr
-   integer                 :: linkType, mesh1dCellIndex, mesh2dCellIndex
+   integer                 :: linkType
 
    ierr = 0
    nlinks = 0
@@ -3814,7 +3770,7 @@
 
    integer, intent(inout)  :: arrayfrom(:), arrayto(:)
    integer, intent(in)     :: start_index
-   integer                 :: ierr, nlinks, l, nc
+   integer                 :: ierr, nlinks, l
    integer                 :: linkType, mesh1dCellIndex, mesh2dCellIndex
    integer, allocatable    :: mesh2dMapping(:)
 
@@ -3865,7 +3821,7 @@
    double precision, intent(in)          :: nodex(:), nodey(:), nodeoffset(:), branchlength(:)
    integer, intent(in)                   :: nodebranchidx(:), sourcenodeid(:), targetnodeid(:), startindex
    type(t_ug_meshgeom), intent(inout)    :: meshgeom
-   integer                               :: ierr, nbranches, branch, numMeshNodes, numk, numl, st, en, stn, enn, stnumk, ennumk, k, numNetworkNodes, numLocalNodes
+   integer                               :: ierr, nbranches, branch, numMeshNodes, numk, numl, st, en, stn, enn, k, numNetworkNodes, numLocalNodes
    integer, allocatable                  :: startEndBranchNodes(:,:), edge_nodes(:,:), correctedNodeBranchidx(:), localNodeIndexses(:), networkNodeIndex(:), branchids(:), meshnodeIndex(:)
    integer                               :: shift, startInternal, endInternal
    double precision, allocatable, target :: xk(:), yk(:)
@@ -4096,7 +4052,7 @@
    integer, intent(inout)                 :: numedege
    integer, allocatable                   :: meshnodemapping(:,:), internalnodeindexses(:), connectionMask(:), correctedBranchidx(:)
    integer, optional, intent(inout)       :: edgenodes(:,:)
-   integer                                :: nnetworknodes, nBranches,nmeshnodes, ierr , k , n, br, st, en, kk, firstvalidarraypos
+   integer                                :: nnetworknodes, nBranches,nmeshnodes, ierr , n, br, st, en, kk, firstvalidarraypos
 
    ierr = 0
    firstvalidarraypos = 0
@@ -4340,9 +4296,9 @@
    !locals
    integer                          :: ierr !< Error status, 0 if success, nonzero in case of error.
    integer                          :: k, kk, k1, k2, k3, k4, ncellsinSearchRadius
-   integer                          :: numberCellNetlinks, prevConnected1DNode, newPointIndex, newLinkIndex
+   integer                          :: prevConnected1DNode, newPointIndex, newLinkIndex
    integer                          :: l, cellNetLink, cellId, kn3localType, numnetcells, insidePolygons, clientIndex
-   double precision                 :: searchRadiusSquared, maxdistance, prevDistance, currDistance, ldistance, rdistance
+   double precision                 :: searchRadiusSquared, prevDistance, currDistance, ldistance, rdistance
    logical                          :: boundaryCell
    type(kdtree_instance)            :: treeinst
    logical                          :: validOneDMask, isPolygonPresent

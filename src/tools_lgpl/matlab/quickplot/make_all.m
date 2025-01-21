@@ -38,17 +38,18 @@ function make_all(release)
 %   $Id$
 
 if ~license('checkout','compiler')
-    if matlabversionnumber >= 9.06 && batchStartupOptionUsed
-        fprintf('##teamcity[buildStop comment=''Compiler license currently not available.'' readdToQueue=''true'']\n');
-        return
-    else
-        error('Compiler license currently not available.')
+    try
+        if batchStartupOptionUsed
+            fprintf('##teamcity[buildStop comment=''Compiler license currently not available.'' readdToQueue=''true'']\n');
+            return
+        end
     end
+    error('Compiler license currently not available.')
 end
 curdir = pwd;
 sourcedir = [curdir,filesep,'progsrc'];
 
-[qpversion,hash,repo_url] = read_identification(sourcedir,'d3d_qp.m');
+[qpversion,hash,repo_url] = get_qpversion(sourcedir,'d3d_qp.m');
 T = now;
 
 if nargin == 0
@@ -58,11 +59,11 @@ if nargin == 0
     release = sprintf('Build %d.%2.2d',yr,mn);
 end
 
-c = computer;
-if strcmp(c(end-1:end),'64')
+if strcmp(computer,'PCWIN64')
    make_d3dmatlab(curdir,'version',qpversion,'url',repo_url,'hash',hash,'time',T,'release',release)
 end
 make_quickplot(curdir,qpversion,repo_url,hash,T)
 make_ecoplot(curdir,qpversion,repo_url,hash,T)
 make_delwaq2raster(curdir,qpversion,repo_url,hash,T)
 make_sim2ugrid(curdir,qpversion,repo_url,hash,T)
+make_tests(curdir,qpversion,repo_url,hash,T)

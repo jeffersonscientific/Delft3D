@@ -31,36 +31,35 @@ module m_write_restart_map_file
 contains
 
 
+    !> Writes the concentrations of all substances for all cells or segments to a restart map file
     subroutine write_restart_map_file(file_unit_list, file_name_list, concentration_values, time_clock_unit, &
-            model_name, substances_names, num_systems, num_segments)
-        ! gives a complete system dump
-
-        !     concentration_values    REAL     num_systems*?     INPUT   concentration values
-        !     time_clock_unit   INTEGER  1           INPUT   present time in clock units
-        !     model_name   CHAR*40  4           INPUT   model identhification
-        !     substances_names   CHAR*20  num_systems       INPUT   names of substances
-        !     num_systems   INTEGER  1           INPUT   total number of systems
-        !     num_segments   INTEGER  1           INPUT   total number of segments
+            model_name, substances_names, num_systems, num_cells)
 
         use m_open_waq_files
         use timers
 
-        real(kind = real_wp) :: concentration_values(num_systems, num_segments)
-        integer(kind = int_wp), intent(in) :: num_segments, num_systems, time_clock_unit
-        character(len = 20), intent(in) :: substances_names(*)
-        character(len = 40) :: model_name(*)
-        character(len = *) :: file_name_list(*)
-        character(len = 255) :: file_name
-        integer(kind = int_wp) :: file_unit_list(*)
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*) !< Array containing all file unit numbers
+        integer(kind = int_wp), intent(in   ) :: num_cells      !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: num_systems       !< Number of substances
+        integer(kind = int_wp), intent(in   ) :: time_clock_unit   !< present time in clock units
 
+        real(kind = real_wp),intent(inout) :: concentration_values(num_systems, num_cells) !< Concentrations of all substances in all cells or segments
+
+        character(len = 20),  intent(in   ) :: substances_names(*) !< Names of substances
+        character(len = 40),  intent(in   ) :: model_name(*)       !< Name of the model
+        character(len = *),   intent(in   ) :: file_name_list(*)   !< Names of all output files
+
+        ! Local variables
         integer(kind = int_wp) :: i, j, k
         integer(kind = int_wp) :: nan_count, ierr, ithandl = 0
+
+        character(len = 255) :: file_name
 
         if (timon) call timstrt ("write_restart_map_file", ithandl)
 
         ! check for NaNs
         nan_count = 0
-        do j = 1, num_segments
+        do j = 1, num_cells
             do i = 1, num_systems
                 if (concentration_values(i, j) /= concentration_values(i, j)) then
                     concentration_values(i, j) = 0.0
@@ -72,7 +71,7 @@ contains
         if (nan_count /= 0) then
             write (file_unit_list(19), *) ' Corrected concentrations as written to the restart file:'
             write (file_unit_list(19), *) ' Number of values reset from NaN to zero: ', nan_count
-            write (file_unit_list(19), *) ' Total amount of numbers in the array: ', num_systems * num_segments
+            write (file_unit_list(19), *) ' Total amount of numbers in the array: ', num_systems * num_cells
             write (file_unit_list(19), *) ' This may indicate that the computation was unstable'
         endif
 
@@ -94,7 +93,7 @@ contains
 
         20 call open_waq_files (file_unit_list(23), file_name, 23, 1, ierr)
         write (file_unit_list(23)) (model_name(k), k = 1, 4)
-        write (file_unit_list(23))   num_systems, num_segments
+        write (file_unit_list(23))   num_systems, num_cells
         write (file_unit_list(23)) (substances_names(k), k = 1, num_systems)
         write (file_unit_list(23)) time_clock_unit, concentration_values
         close (file_unit_list(23))
@@ -102,5 +101,4 @@ contains
         if (timon) call timstop (ithandl)
 
     end subroutine write_restart_map_file
-
 end module m_write_restart_map_file

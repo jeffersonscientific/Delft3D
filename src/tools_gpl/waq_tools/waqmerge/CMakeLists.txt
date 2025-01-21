@@ -22,7 +22,6 @@ if (UNIX)
                          waq_hyd_data
                          waq_utils_f)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
 
     target_link_libraries(${executable_name}
          ${oss_dependencies}
@@ -41,7 +40,6 @@ if (WIN32)
                          netcdff
                          waq_utils_f)
 
-    oss_include_libraries(${executable_name} oss_dependencies)
     target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
 
@@ -71,7 +69,7 @@ endif(WIN32)
 # Define how the files should be structured within Visual Studio
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/waqmerge)
 
-target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
+target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 # Set post-build step
 set(install_dir ${CMAKE_BINARY_DIR})
