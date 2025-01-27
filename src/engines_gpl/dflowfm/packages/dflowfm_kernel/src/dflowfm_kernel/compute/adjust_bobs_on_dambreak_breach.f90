@@ -38,6 +38,10 @@ module m_adjust_bobs_on_dambreak_breach
    private
 
    public :: adjust_bobs_on_dambreak_breach
+   integer, parameter, public :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
+   integer, parameter, public :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
+   integer, parameter, public :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
+   integer, public :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
 
 contains
 
@@ -45,8 +49,8 @@ contains
       use precision, only: dp
 
       use m_flowgeom, only: bob, bob0
-      use fm_external_forcings_data, only: kdambreak, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM, activeDambreakLinks, &
-                                           dambreakLinksEffectiveLength, dambreakLinksActualLength, dambreakWidening
+      use fm_external_forcings_data, only: kdambreak, activeDambreakLinks, &
+                                           dambreakLinksEffectiveLength, dambreakLinksActualLength
       use MessageHandling
 
       implicit none

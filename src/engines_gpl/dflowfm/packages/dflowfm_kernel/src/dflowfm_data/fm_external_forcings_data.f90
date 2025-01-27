@@ -26,11 +26,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-! unstruc.f90
 module fm_external_forcings_data
    use precision, only: dp
    use m_bnd, only: bndtype
@@ -358,10 +353,6 @@ module fm_external_forcings_data
    real(kind=dp), allocatable :: dambreakLinksEffectiveLength(:) !< dambreak maximum flow widths
    real(kind=dp), allocatable :: dambreakLinksActualLength(:) !< dambreak actual flow widths
    integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
-   integer, parameter :: DBW_SYMM = 1 !< symmetrical dambreak widening (limited width in case of asymmetric starting link placement)
-   integer, parameter :: DBW_PROP = 2 !< dambreak wideining proportional to left/right dam length
-   integer, parameter :: DBW_SYMM_ASYMM = 3 !< symmetrical dambreak widening until left/right runs out of space then continues one sided
-   integer :: dambreakWidening = DBW_SYMM_ASYMM !< method for dambreak widening
    integer :: ndambreaklinks !< nr of dambreak links
    integer :: ndambreaksignals !< nr of dambreak signals
    integer, allocatable :: L1dambreaksg(:) !< first dambreak link for each signal
