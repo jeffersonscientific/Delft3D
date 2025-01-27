@@ -15,24 +15,23 @@ object WindowsBuild : BuildType({
     )
  
     name = "Build"
-    buildNumberPattern = "%build.vcs.number%"
+    buildNumberPattern = "%product%: %build.vcs.number%"
     description = "Windows build."
 
     allowExternalStatus = true
     artifactRules = """
         #teamcity:symbolicLinks=as-is
         **/*.log => logging
-        %install_dir%/** => oss_artifacts_x64_%build.vcs.number%.zip!x64
+        build_%product%/install/** => oss_artifacts_x64_%build.vcs.number%.zip!x64
     """.trimIndent()
 
     params {
-        param("install_dir", "install_%build_configuration%")
-        param("build_configuration", "all")
         param("intel_fortran_compiler", "ifort")
         param("enable_code_coverage_flag", "OFF")
         param("generator", """"Visual Studio 16 2019"""")
         param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
         param("build_type", "Release")
+        select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
     }
 
     vcs {
@@ -51,13 +50,13 @@ object WindowsBuild : BuildType({
             name = "Determine product by branch prefix"
             command = script {
                 content="""
-                    if "%product%" == "dummy_value":
+                    if "%product%" == "auto-select":
                         if "merge-request" in "%teamcity.build.branch%":
                             product = "%teamcity.pullRequest.source.branch%".split("/")[0]
-                            print(f"##teamcity[setParameter name='product' value='{product}']")
                         else:
                             product = "%teamcity.build.branch%".split("/")[0]
-                            print(f"##teamcity[setParameter name='product' value='{product}']")
+                        print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
+                        print(f"##teamcity[buildNumber '{product}: %build.vcs.number%']")
                 """.trimIndent()
             }
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
@@ -78,9 +77,9 @@ object WindowsBuild : BuildType({
         script {
             name = "Build"
             scriptContent = """
-                cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%build_configuration% -B build_%build_configuration% -D CMAKE_INSTALL_PREFIX=%install_dir% -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
+                cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%product% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
 
-                cd build_%build_configuration%
+                cd build_%product%
 
                 cmake --build . -j --target install --config %build_type%
             """.trimIndent()
@@ -88,6 +87,14 @@ object WindowsBuild : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+        }
+        powerShell {
+            name = "Add FBC-tools"
+            scriptMode = script {
+                content="""
+                    robocopy fbctools build_%product%\install /E /XC /XN /XO
+                """.trimIndent()
+            }
         }
     }
 
@@ -117,8 +124,8 @@ object WindowsBuild : BuildType({
             }
             artifacts {
                 artifactRules = """
-                    *.dll => %install_dir%/lib
-                    *.xsd => %install_dir%/share/drtc
+                    *.dll => fbctools/lib
+                    *.xsd => fbctools/share/drtc
                 """.trimIndent()
             }
         }

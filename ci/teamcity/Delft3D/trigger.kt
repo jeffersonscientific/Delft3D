@@ -31,7 +31,7 @@ object Trigger : BuildType({
 
         param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")
-        param("product", "dummy_value")
+        param("product", "auto-select")
     }
 
     steps {
