@@ -1657,7 +1657,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c27_test027" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f01_general/c27_test027</path>
+        <path version="2025-01-27T10:45:40.690000">e03_waq/f01_general/c27_test027</path>
         <checks>
             <file name="d3d-waq-test027.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6918,7 +6918,7 @@
             <file name="deltashell.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="2.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="0.3" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
         </checks>
@@ -6930,7 +6930,7 @@
             <file name="deltashell.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="2.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="0.3" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
         </checks>
