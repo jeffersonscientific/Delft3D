@@ -38,7 +38,7 @@ module m_update_dambreak_breach
    private
 
    public :: update_dambreak_breach
-   public :: allocate_dambreak_data
+   public :: allocate_and_initialize_dambreak_data
 
    ! time varying, can be get/set via BMI interface
    real(kind=dp), allocatable, target, public :: breachDepthDambreak(:) !< the dambreak breach width (as a level)
@@ -52,21 +52,44 @@ module m_update_dambreak_breach
    
    real(kind=dp), allocatable :: dambreakAveraging(:, :) !< (1,:) weight averaged values of waterlevel per dambreaklink
                                                          !! (2,:) weight per dambreaklink
+   ! Upstream water level
+   integer, public :: nDambreakLocationsUpstream !< nr of dambreak signals with locations upstream
+   integer, allocatable, public :: dambreakLocationsUpstreamMapping(:) !< mapping of dambreak locations upstream
+   integer, allocatable, public :: dambreakLocationsUpstream(:) !< store cell ids for water level locations upstream
+   integer, public :: nDambreakAveragingUpstream !< nr of dambreak signals upstream with averaging
+   integer, allocatable, public :: dambreakAveragingUpstreamMapping(:) !< mapping of dambreak averaging upstream
+   ! Downstream water level
+   integer, public :: nDambreakLocationsDownstream !< nr of dambreak signals with locations downstream
+   integer, allocatable, public :: dambreakLocationsDownstreamMapping(:) !< mapping of dambreak locations downstream
+   integer, allocatable, public :: dambreakLocationsDownstream(:) !< store cell ids for water level locations downstream
+   integer, public :: nDambreakAveragingDownstream !< nr of dambreak signals downstream with averaging
+   integer, allocatable, public :: dambreakAveragingDownstreamMapping(:) !< mapping of dambreak averaging in the dambreak arrays
+
    contains
 
-   subroutine allocate_dambreak_data(ndambreaklinks)
+   subroutine allocate_and_initialize_dambreak_data(ndambreaksignals)
       use m_alloc, only: realloc
 
-      integer, intent(in) :: ndambreaklinks 
+      integer, intent(in) :: ndambreaksignals
      
-      call realloc(waterLevelsDambreakUpstream, ndambreaklinks)
-      call realloc(waterLevelsDambreakDownstream, ndambreaklinks)
-      call realloc(normalVelocityDambreak, ndambreaklinks)
-      call realloc(breachWidthDerivativeDambreak, ndambreaklinks)
-      call realloc(waterLevelJumpDambreak, ndambreaklinks)
-      call realloc(dambreakAveraging, [2,ndambreaklinks])
-   
-   end subroutine allocate_dambreak_data
+      call realloc(waterLevelsDambreakUpstream, ndambreaksignals)
+      call realloc(waterLevelsDambreakDownstream, ndambreaksignals)
+      call realloc(normalVelocityDambreak, ndambreaksignals)
+      call realloc(breachWidthDerivativeDambreak, ndambreaksignals)
+      call realloc(waterLevelJumpDambreak, ndambreaksignals)
+      call realloc(dambreakAveraging, [2,ndambreaksignals])
+      call realloc(dambreakLocationsUpstreamMapping, ndambreaksignals, fill=0)
+      call realloc(dambreakLocationsUpstream, ndambreaksignals, fill=0)
+      call realloc(dambreakAveragingUpstreamMapping, ndambreaksignals, fill=0)
+      call realloc(dambreakLocationsDownstreamMapping, ndambreaksignals, fill=0)
+      call realloc(dambreakLocationsDownstream, ndambreaksignals, fill=0)
+      call realloc(dambreakAveragingDownstreamMapping, ndambreaksignals, fill=0)
+      nDambreakLocationsUpstream = 0
+      nDambreakAveragingUpstream = 0
+      nDambreakLocationsDownstream = 0
+      nDambreakAveragingDownstream = 0
+
+   end subroutine allocate_and_initialize_dambreak_data
 
    subroutine update_dambreak_breach(startTime, deltaTime)
       use precision, only: dp
@@ -79,11 +102,7 @@ module m_update_dambreak_breach
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_dambreakLevelsAndWidthsFromTable
       use fm_external_forcings_data, only: success, ndambreaklinks, ndambreaksignals, &
          dambreaks, dambreakLevelsAndWidthsFromTable, &
-         LStartBreach, L1dambreaksg, L2dambreaksg, kdambreak, activeDambreakLinks, &
-         nDambreakLocationsUpstream, dambreakLocationsUpstream, &
-         dambreakLocationsUpstreamMapping, nDambreakAveragingUpstream, dambreakAverigingUpstreamMapping, &
-         nDambreakLocationsDownstream, dambreakLocationsDownstream, &
-         dambreakLocationsDownstreamMapping, nDambreakAveragingDownstream, dambreakAverigingDownstreamMapping
+         LStartBreach, L1dambreaksg, L2dambreaksg, kdambreak, activeDambreakLinks
       use m_dambreak, only: BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_flowtimes, only: irefdate, tunit, tzone
 
@@ -123,7 +142,7 @@ module m_update_dambreak_breach
          if (nDambreakAveragingUpstream > 0) then
 
             ! Compute sumQuantitiesByWeight upstream
-            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAverigingUpstreamMapping(1:nDambreakAveragingUpstream)), L2dambreaksg(dambreakAverigingUpstreamMapping(1:nDambreakAveragingUpstream)), wu, kdambreak(3, :), s1, kdambreak(1, :), dambreakAveraging, 0, &
+            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAveragingUpstreamMapping(1:nDambreakAveragingUpstream)), L2dambreaksg(dambreakAveragingUpstreamMapping(1:nDambreakAveragingUpstream)), wu, kdambreak(3, :), s1, kdambreak(1, :), dambreakAveraging, 0, &
                                                hu, dmiss, activeDambreakLinks, 0)
 
             if (ierr /= 0) then
@@ -134,9 +153,9 @@ module m_update_dambreak_breach
             if (ndambreaklinks > 0) then
                do n = 1, nDambreakAveragingUpstream
                   if (dambreakAveraging(2, n) > 0.0d0) then
-                     waterLevelsDambreakUpStream(dambreakAverigingUpstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
-                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAverigingUpstreamMapping(n)))%dambreak%T0) < 1d-10) then
-                     waterLevelsDambreakUpStream(dambreakAverigingUpstreamMapping(n)) = s1(kdambreak(1, LStartBreach(dambreakAverigingUpstreamMapping(n))))
+                     waterLevelsDambreakUpStream(dambreakAveragingUpstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
+                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAveragingUpstreamMapping(n)))%dambreak%T0) < 1d-10) then
+                     waterLevelsDambreakUpStream(dambreakAveragingUpstreamMapping(n)) = s1(kdambreak(1, LStartBreach(dambreakAveragingUpstreamMapping(n))))
                   else
                      continue
                   end if
@@ -155,7 +174,7 @@ module m_update_dambreak_breach
          if (nDambreakAveragingDownstream > 0) then
 
             ! Compute sumQuantitiesByWeight downstream
-            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAverigingDownstreamMapping(1:nDambreakAveragingDownstream)), L2dambreaksg(dambreakAverigingDownstreamMapping(1:nDambreakAveragingDownstream)), wu, kdambreak(3, :), s1, kdambreak(2, :), dambreakAveraging, 0, &
+            ierr = getAverageQuantityFromLinks(L1dambreaksg(dambreakAveragingDownstreamMapping(1:nDambreakAveragingDownstream)), L2dambreaksg(dambreakAveragingDownstreamMapping(1:nDambreakAveragingDownstream)), wu, kdambreak(3, :), s1, kdambreak(2, :), dambreakAveraging, 0, &
                                                hu, dmiss, activeDambreakLinks, 0)
 
             if (ierr /= 0) then
@@ -166,9 +185,9 @@ module m_update_dambreak_breach
             if (ndambreaklinks > 0) then
                do n = 1, nDambreakAveragingDownstream
                   if (dambreakAveraging(2, n) > 0.0d0) then
-                     waterLevelsDambreakDownStream(dambreakAverigingDownstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
-                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAverigingDownstreamMapping(n)))%dambreak%T0) < 1d-10) then
-                     waterLevelsDambreakDownStream(dambreakAverigingDownstreamMapping(n)) = s1(kdambreak(2, LStartBreach(dambreakAverigingDownstreamMapping(n))))
+                     waterLevelsDambreakDownStream(dambreakAveragingDownstreamMapping(n)) = dambreakAveraging(1, n) / dambreakAveraging(2, n)
+                  else if (abs(startTime - network%sts%struct(dambreaks(dambreakAveragingDownstreamMapping(n)))%dambreak%T0) < 1d-10) then
+                     waterLevelsDambreakDownStream(dambreakAveragingDownstreamMapping(n)) = s1(kdambreak(2, LStartBreach(dambreakAveragingDownstreamMapping(n))))
                   else
                      continue
                   end if

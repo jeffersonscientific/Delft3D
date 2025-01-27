@@ -378,11 +378,13 @@ contains
       use fm_external_forcings_data, only: dambreakLinksEffectiveLength, &
                                            kdambreak, LStartBreach, &
                                            dambreak_ids, activeDambreakLinks, &
-                                           dambreakLevelsAndWidthsFromTable, dambreakLocationsUpstreamMapping, &
-                                           dambreakLocationsUpstream, dambreakAverigingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
-                                           dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, dambreakAverigingDownstreamMapping, &
-                                           nDambreakLocationsDownstream, nDambreakAveragingDownstream, dambreaks, ndambreaklinks
-      use m_update_dambreak_breach, only: allocate_dambreak_data, breachDepthDambreak, breachWidthDambreak
+                                           dambreakLevelsAndWidthsFromTable, &
+                                           dambreaks, ndambreaklinks
+      use m_update_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
+                                          dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
+                                          dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
+                                          dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
+                                          dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_alloc, only: realloc
 
@@ -411,18 +413,12 @@ contains
       call realloc(kdambreak, [3, ndambreaklinks], fill=0)
       call realloc(dambreaks, ndambreaksignals, fill=0)
       call realloc(LStartBreach, ndambreaksignals, fill=-1)
-      call allocate_dambreak_data(ndambreaksignals)
+      call allocate_and_initialize_dambreak_data(ndambreaksignals)
       call realloc(breachDepthDambreak, ndambreaksignals, fill=0.0_dp)
       call realloc(breachWidthDambreak, ndambreaksignals, fill=0.0_dp)
       call realloc(dambreak_ids, ndambreaksignals)
       call realloc(activeDambreakLinks, ndambreaklinks, fill=0)
       call realloc(dambreakLevelsAndWidthsFromTable, ndambreaksignals * 2, fill=0.0_dp)
-      call realloc(dambreakLocationsUpstreamMapping, ndambreaksignals, fill=0)
-      call realloc(dambreakLocationsUpstream, ndambreaksignals, fill=0)
-      call realloc(dambreakAverigingUpstreamMapping, ndambreaksignals, fill=0)
-      call realloc(dambreakLocationsDownstreamMapping, ndambreaksignals, fill=0)
-      call realloc(dambreakLocationsDownstream, ndambreaksignals, fill=0)
-      call realloc(dambreakAverigingDownstreamMapping, ndambreaksignals, fill=0)
 
       do n = 1, ndambreaksignals
          associate (pstru => network%sts%struct(dambridx(n)))
@@ -498,7 +494,7 @@ contains
                      end if
                   else
                      nDambreakAveragingUpstream = nDambreakAveragingUpstream + 1
-                     dambreakAverigingUpstreamMapping(nDambreakAveragingUpstream) = n
+                     dambreakAveragingUpstreamMapping(nDambreakAveragingUpstream) = n
                   end if
                end if
 
@@ -527,7 +523,7 @@ contains
                      end if
                   else
                      nDambreakAveragingDownstream = nDambreakAveragingDownstream + 1
-                     dambreakAverigingDownstreamMapping(nDambreakAveragingDownstream) = n
+                     dambreakAveragingDownstreamMapping(nDambreakAveragingDownstream) = n
                   end if
                end if
 
@@ -617,8 +613,13 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
-      use m_update_dambreak_breach, only: allocate_dambreak_data, breachDepthDambreak, breachWidthDambreak
+      use m_update_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
+                                          dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
+                                          dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
+                                          dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
+                                          dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
+
 
       implicit none
       logical :: status
@@ -1689,7 +1690,7 @@ contains
 !
       if (ndambreaksignals > 0) then
 
-         call allocate_dambreak_data(ndambreaklinks) 
+         call allocate_and_initialize_dambreak_data(ndambreaklinks) 
          
          if (allocated(kdambreak)) deallocate (kdambreak)
          allocate (kdambreak(3, ndambreaklinks), stat=ierr) ! the last row stores the actual
@@ -1721,38 +1722,6 @@ contains
          if (allocated(dambreakLevelsAndWidthsFromTable)) deallocate (dambreakLevelsAndWidthsFromTable)
          allocate (dambreakLevelsAndWidthsFromTable(ndambreaksignals * 2))
          dambreakLevelsAndWidthsFromTable = 0.0_dp
-
-         ! dambreak upstream
-         if (allocated(dambreakLocationsUpstreamMapping)) deallocate (dambreakLocationsUpstreamMapping)
-         allocate (dambreakLocationsUpstreamMapping(ndambreaksignals))
-         dambreakLocationsUpstreamMapping = 0.0_dp
-
-         if (allocated(dambreakLocationsUpstream)) deallocate (dambreakLocationsUpstream)
-         allocate (dambreakLocationsUpstream(ndambreaksignals))
-         dambreakLocationsUpstream = 0.0_dp
-
-         if (allocated(dambreakAverigingUpstreamMapping)) deallocate (dambreakAverigingUpstreamMapping)
-         allocate (dambreakAverigingUpstreamMapping(ndambreaksignals))
-         dambreakAverigingUpstreamMapping = 0.0_dp
-
-         nDambreakLocationsUpstream = 0
-         nDambreakAveragingUpstream = 0
-
-         ! dambreak downstream
-         if (allocated(dambreakLocationsDownstreamMapping)) deallocate (dambreakLocationsDownstreamMapping)
-         allocate (dambreakLocationsDownstreamMapping(ndambreaksignals))
-         dambreakLocationsDownstreamMapping = 0.0_dp
-
-         if (allocated(dambreakLocationsDownstream)) deallocate (dambreakLocationsDownstream)
-         allocate (dambreakLocationsDownstream(ndambreaksignals))
-         dambreakLocationsDownstream = 0.0_dp
-
-         if (allocated(dambreakAverigingDownstreamMapping)) deallocate (dambreakAverigingDownstreamMapping)
-         allocate (dambreakAverigingDownstreamMapping(ndambreaksignals))
-         dambreakAverigingDownstreamMapping = 0.0_dp
-
-         nDambreakLocationsDownstream = 0
-         nDambreakAveragingDownstream = 0
 
          do n = 1, ndambreaksignals
             do k = L1dambreaksg(n), L2dambreaksg(n)
@@ -1864,7 +1833,7 @@ contains
                      end if
                   else
                      nDambreakAveragingUpstream = nDambreakAveragingUpstream + 1
-                     dambreakAverigingUpstreamMapping(nDambreakAveragingUpstream) = n
+                     dambreakAveragingUpstreamMapping(nDambreakAveragingUpstream) = n
                   end if
                end if
 
@@ -1893,7 +1862,7 @@ contains
                      end if
                   else
                      nDambreakAveragingDownstream = nDambreakAveragingDownstream + 1
-                     dambreakAverigingDownstreamMapping(nDambreakAveragingDownstream) = n
+                     dambreakAveragingDownstreamMapping(nDambreakAveragingDownstream) = n
                   end if
                end if
 
