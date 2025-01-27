@@ -81,6 +81,7 @@ module m_update_dambreak_breach
          dambreakLocationsUpstreamMapping, nDambreakAveragingUpstream, dambreakAverigingUpstreamMapping, &
          nDambreakLocationsDownstream, dambreakLocationsDownstream, &
          dambreakLocationsDownstreamMapping, nDambreakAveragingDownstream, dambreakAverigingDownstreamMapping
+      use m_dambreak, only: BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_flowtimes, only: irefdate, tunit, tzone
 
       implicit none
@@ -190,11 +191,11 @@ module m_update_dambreak_breach
             do n = 1, ndambreaksignals
                istru = dambreaks(n)
                if (istru /= 0) then
-                  if (network%sts%struct(istru)%dambreak%algorithm == 1 .or. network%sts%struct(istru)%dambreak%algorithm == 2) then
+                  if (network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_VDKNAAP .or. network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
                      ! Compute the breach width
                      call prepareComputeDambreak(network%sts%struct(istru)%dambreak, waterLevelsDambreakUpStream(n), waterLevelsDambreakDownStream(n), normalVelocityDambreak(n), startTime, deltaTime, maximumDambreakWidths(n))
                   end if
-                  if (network%sts%struct(istru)%dambreak%algorithm == 3 .and. startTime > network%sts%struct(istru)%dambreak%t0) then
+                  if (network%sts%struct(istru)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES .and. startTime > network%sts%struct(istru)%dambreak%t0) then
                      !Time in the tim file is relative to the start time
                      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_dambreakLevelsAndWidthsFromTable, irefdate, tzone, tunit, startTime - network%sts%struct(istru)%dambreak%t0)
                      ! NOTE: AvD: the code above works correctly, but is dangerous:

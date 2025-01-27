@@ -29,14 +29,17 @@
    !  
    !-------------------------------------------------------------------------------
 
-   use m_GlobalParameters
-   use m_struc_helper
+   use m_GlobalParameters, only: Idlen, gravity
 
    implicit none
 
    public prepareComputeDambreak
    public setCoefficents
 
+   integer, parameter, public :: BREACH_GROWTH_VDKNAAP = 1
+   integer, parameter, public :: BREACH_GROWTH_VERHEIJVDKNAAP = 2
+   integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
+   
    type, public :: t_dambreak
       double precision :: startLocationX
       double precision :: startLocationY
@@ -50,7 +53,7 @@
       double precision :: f2
       double precision :: ucrit
       double precision :: t0
-      integer          :: materialtype                      =  1 !for algorithm 1, default matrerial type is clay
+      integer          :: materialtype                      =  1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
       double precision :: endTimeFirstPhase
       double precision :: breachWidthDerivative             = -1.0d0
       double precision :: waterLevelJumpDambreak            = -1.0d0	
@@ -115,8 +118,8 @@
    if (timeFromBreaching < 0) return
    
    !vdKnaap(2000) formula: to do: implement table 
-   if(dambreak%algorithm == 1) then     
-
+   if(dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then   
+   
       ! The linear part
       if (timeFromBreaching < dambreak%timeToBreachToMaximumDepth ) then
          dambreak%crl    = dambreak%crestLevelIni - timeFromBreaching / dambreak%timeToBreachToMaximumDepth * (dambreak%crestLevelIni - dambreak%crestLevelMin)
@@ -133,7 +136,7 @@
       
 
    ! Verheij-vdKnaap(2002) formula
-   else if (dambreak%algorithm == 2) then  
+   else if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
 
       if (time1 <= dambreak%endTimeFirstPhase) then
       ! phase 1: lowering
@@ -185,7 +188,7 @@
 
    type(t_dambreak), pointer, intent(inout) :: dambreak
 
-   if (dambreak%algorithm == 1) then
+   if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
       ! clay
       if (dambreak%materialtype == 1) then 
          dambreak%aCoeff = 20
@@ -197,7 +200,7 @@
          dambreak%bCoeff = 522
          dambreak%maximumAllowedWidth = 200 !meters
       endif
-   else if (dambreak%algorithm == 2) then
+   else if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
          dambreak%endTimeFirstPhase = dambreak%t0 + dambreak%timeToBreachToMaximumDepth 
    endif
 

@@ -383,7 +383,7 @@ contains
                                            dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, dambreakAverigingDownstreamMapping, &
                                            nDambreakLocationsDownstream, nDambreakAveragingDownstream, dambreaks, ndambreaklinks
       use m_update_dambreak_breach, only: allocate_dambreak_data
-
+      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_alloc, only: realloc
 
       integer, intent(in) :: ndambreaksignals !< ndambreaksignals is the number of dambreak signals.
@@ -464,7 +464,7 @@ contains
                dambreak%phase = 0
                dambreak%width = 0.0_dp
                dambreak%crl = dambreak%crestLevelIni
-               if (dambreak%algorithm == 3) then
+               if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                   qid = 'dambreakLevelsAndWidths'
                   if (index(trim(dambreak%levelsAndWidths)//'|', '.tim|') > 0) then
@@ -474,8 +474,8 @@ contains
                end if
 
                ! inquire if the water level upstream has to be taken from a location or be a result of averaging
-               if (dambreak%algorithm == 2 & ! 2: Needed for computation and output
-                   .or. dambreak%algorithm == 3) then ! 3: Needed for output only.
+               if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
                   xla = dambreak%waterLevelUpstreamLocationX
                   yla = dambreak%waterLevelUpstreamLocationY
                   if (dambreak%waterLevelUpstreamNodeId /= '') then
@@ -503,8 +503,8 @@ contains
                end if
 
                ! inquire if the water level downstream has to be taken from a location or be a result of averaging
-               if (dambreak%algorithm == 2 & ! 2: Needed for computation and output
-                   .or. dambreak%algorithm == 3) then ! 3: Needed for output only.
+               if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
                   xla = dambreak%waterLevelDownstreamLocationX
                   yla = dambreak%waterLevelDownstreamLocationY
                   if (dambreak%waterLevelDownstreamNodeId /= '') then
@@ -618,6 +618,7 @@ contains
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
       use m_update_dambreak_breach, only: allocate_dambreak_data
+      use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
 
       implicit none
       logical :: status
@@ -1829,7 +1830,7 @@ contains
                network%sts%struct(istrtmp)%dambreak%phase = 0
                network%sts%struct(istrtmp)%dambreak%width = 0.0_dp
                network%sts%struct(istrtmp)%dambreak%crl = network%sts%struct(istrtmp)%dambreak%crestLevelIni
-               if (network%sts%struct(istrtmp)%dambreak%algorithm == 3) then
+               if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                   qid = 'dambreakLevelsAndWidths'
                   network%sts%struct(istrtmp)%dambreak%levelsAndWidths = trim(network%sts%struct(istrtmp)%dambreak%levelsAndWidths)
@@ -1841,8 +1842,8 @@ contains
                end if
 
                ! inquire if the water level upstream has to be taken from a location or be a result of averaging
-               if (network%sts%struct(istrtmp)%dambreak%algorithm == 2 & ! 2: Needed for computation and output
-                   .or. network%sts%struct(istrtmp)%dambreak%algorithm == 3) then ! 3: Needed for output only.
+               if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
                   xla = network%sts%struct(istrtmp)%dambreak%waterLevelUpstreamLocationX
                   yla = network%sts%struct(istrtmp)%dambreak%waterLevelUpstreamLocationY
                   if (network%sts%struct(istrtmp)%dambreak%waterLevelUpstreamNodeId /= '') then
@@ -1870,8 +1871,8 @@ contains
                end if
 
                ! inquire if the water level downstream has to be taken from a location or be a result of averaging
-               if (network%sts%struct(istrtmp)%dambreak%algorithm == 2 & ! 2: Needed for computation and output
-                   .or. network%sts%struct(istrtmp)%dambreak%algorithm == 3) then ! 3: Needed for output only.
+               if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
                   xla = network%sts%struct(istrtmp)%dambreak%waterLevelDownstreamLocationX
                   yla = network%sts%struct(istrtmp)%dambreak%waterLevelDownstreamLocationY
                   if (network%sts%struct(istrtmp)%dambreak%waterLevelDownstreamNodeId /= '') then
