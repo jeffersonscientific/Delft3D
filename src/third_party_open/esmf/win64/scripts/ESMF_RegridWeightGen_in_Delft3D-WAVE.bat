@@ -25,7 +25,7 @@ if [%3] EQU [] (
 set srcfile=%1
 set destfile=%2
 set wfile=%3
-set addflags=--method bilinear --src_loc center --dst_loc center
+set addflags=--method bilinear --src_loc corner --dst_loc corner
 
 set defaultflags=--ignore_unmapped
 set arguments=%defaultflags% %addflags% --source %srcfile% --destination %destfile% --weight %wfile%
