@@ -98,7 +98,7 @@ class ComparisonRunner(TestSetRunner):
             table["Test case name"].append(testcase_name)
             table["Filename"].append(file_check.name)
             table["Parameter"].append(str(parameter.name))
-            if(parameter.location != None):
+            if parameter.location is not None:
                 table["Location"].append(str(parameter.location))
 
             if compare_result.result != EndResult.ERROR:
@@ -114,7 +114,7 @@ class ComparisonRunner(TestSetRunner):
 
             if compare_result.result == EndResult.NOK:
                 failed = True
-                if(parameter.location == None):
+                if parameter.location is None:
                     table["Location"].append(compare_result.max_abs_diff_coordinates)
 
         log_table(table, composite_logger)
