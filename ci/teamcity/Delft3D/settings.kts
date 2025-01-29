@@ -30,6 +30,7 @@ project {
     template(TemplatePublishStatus)
     template(TemplateMonitorPerformance)
     template(TemplateFailureCondition)
+    template(TemplateDocumentationBuild)
 
     subProject {
         id("Linux")
@@ -84,12 +85,29 @@ project {
         )
     }
 
+    subProject {
+        id("Documentation")
+        name = "Documentation"
+
+        buildType(DflowfmValidationDocument)
+        buildType(DflowfmDwavesValidationDocument)
+        buildType(DMorphologyValidationDocument)
+        buildType(DWaqValidationDocument)
+        buildTypesOrder = arrayListOf(
+            DflowfmValidationDocument,
+            DflowfmDwavesValidationDocument,
+            DMorphologyValidationDocument,
+            DWaqValidationDocument
+        )
+    }
+
     subProject(VerschilanalyseProject)
 
     subProjectsOrder = arrayListOf(
         RelativeId("Linux"),
         RelativeId("Windows"),
-        VerschilanalyseProject
+        VerschilanalyseProject,
+        RelativeId("Documentation")
     )
 
     buildType(Trigger)
