@@ -98,12 +98,14 @@ class ComparisonRunner(TestSetRunner):
             table["Test case name"].append(testcase_name)
             table["Filename"].append(file_check.name)
             table["Parameter"].append(str(parameter.name))
-
+            if(parameter.location != None):
+                table["Location"].append(str(parameter.location))
+            
             if compare_result.result != EndResult.ERROR:
                 table["Result"].append(compare_result.result.value)
                 table["MaxAbsDiff"].append(compare_result.max_abs_diff)
                 table["MaxRelDiff"].append(compare_result.max_rel_diff)
-                table["Location"].append(compare_result.max_abs_diff_coordinates)
+                
             else:
                 table["Result"].append("<error>")
                 table["MaxAbsDiff"].append("<error>")
@@ -113,7 +115,9 @@ class ComparisonRunner(TestSetRunner):
 
             if compare_result.result == EndResult.NOK:
                 failed = True
-
+                if(parameter.location == None): 
+                    table["Location"].append(compare_result.max_abs_diff_coordinates)
+                
         log_table(table, composite_logger)
 
         if self.settings.teamcity and error:
