@@ -66,10 +66,10 @@ program tests_connection_manager
         end select
     else
         write (*, *) "No test specified, running all tests"
-        !call runtests(call_test_add_connection)
-        !call runtests(call_test_get_connection_by_exchange_name)
+        call runtests(call_test_add_connection)
+        call runtests(call_test_get_connection_by_exchange_name)
         call runtests(call_test_get_incoming_connections_by_category)
-        !call runtests(call_test_add_multiple_connections)
+        call runtests(call_test_add_multiple_connections)
     end if
 
     call runtests_final()
