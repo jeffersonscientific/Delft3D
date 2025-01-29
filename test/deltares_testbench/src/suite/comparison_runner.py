@@ -105,7 +105,6 @@ class ComparisonRunner(TestSetRunner):
                 table["Result"].append(compare_result.result.value)
                 table["MaxAbsDiff"].append(compare_result.max_abs_diff)
                 table["MaxRelDiff"].append(compare_result.max_rel_diff)
-                
             else:
                 table["Result"].append("<error>")
                 table["MaxAbsDiff"].append("<error>")
