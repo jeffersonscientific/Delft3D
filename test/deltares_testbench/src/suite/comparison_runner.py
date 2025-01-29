@@ -114,7 +114,7 @@ class ComparisonRunner(TestSetRunner):
 
             if compare_result.result == EndResult.NOK:
                 failed = True
-                if(parameter.location == None): 
+                if(parameter.location == None):
                     table["Location"].append(compare_result.max_abs_diff_coordinates)
 
         log_table(table, composite_logger)
