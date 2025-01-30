@@ -67,11 +67,11 @@ module m_physcoef
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !<60.    ! 6      ! 66     ! uniform friction coeff
-   real(kind=dp) :: umodlin !< linear friction umod , friction_type 4,5,6
+   real(kind=dp) :: umodlin !< linear friction umod, friction type 4,5,6
 
    real(kind=dp) :: wall_ks !< vertical wall nIKURADSE ROUGHNESSs (m)
    real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
-                                              !! z0 for bottom follows from friction_type==3 and z0=frcuni
+                            !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=frcuni
    real(kind=dp) :: z0 !< z0
 
    real(kind=dp) :: vicouv !< constant horizontal eddy viscosity   (m2/s) mom
@@ -157,7 +157,7 @@ contains
       frcmax = 0.0_dp
       ifrctypuni = 1 ! 0=chezy, 1=manning, 2=white colebrook (D3D), 3=white colebrook (WAQUA)
       frcunilin = 0.0_dp !
-      umodlin = 1.0_dp ! linear friction umod , friction_type 4,5,6
+      umodlin = 1.0_dp ! linear friction umod, friction type 4,5,6
       wall_ks = 0.0_dp ! vertical wall nIKURADSE ROUGHNESSs (m)
       vicouv = 0.1_dp ! constant horizontal eddy viscosity (m2/s) mom
       dicouv = 0.1_dp ! constant horizontal eddy diffusivity (m2/s) sal, sed

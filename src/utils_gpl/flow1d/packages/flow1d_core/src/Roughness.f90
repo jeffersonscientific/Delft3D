@@ -53,7 +53,6 @@ module m_Roughness
    real(kind=dp) :: vonkar = 0.41 !< von Karman constant ()
    real(kind=dp) :: ag = 9.81_dp !< gravity acceleration
    real(kind=dp) :: sag !< = sqrt(ag)
-   real(kind=dp) :: ee !< natural e ()
 
 !   public setCrossSectionIncrement
 !
@@ -143,7 +142,6 @@ contains
          deallocate (rgs%rough)
       else
          ! set some parameters (not the correct location)
-         ee = exp(1.0_dp)
          sag = sqrt(ag)
          rgs%version = -1
       end if
@@ -288,7 +286,7 @@ contains
 
 !> Get the Chezy value for a given friction type and parameter value
    real(kind=dp) function GetChezy(frictType, cpar, rad, dep, u)
-
+      use mathconsts, only: ee
       implicit none
       real(kind=dp), intent(in) :: dep !< water depth
       real(kind=dp), intent(in) :: rad !< hydraulic radius
