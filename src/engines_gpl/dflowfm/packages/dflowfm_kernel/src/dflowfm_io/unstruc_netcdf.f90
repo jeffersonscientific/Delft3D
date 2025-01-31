@@ -5270,7 +5270,7 @@ contains
       use m_reconstruct_ucz
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       use messagehandling, only : err_flush
 
       implicit none
@@ -7666,7 +7666,7 @@ contains
       if (jamap_chezy_links > 0) then
          do LL = 1, lnx
             if (frcu(LL) > 0d0) then
-               call getcz(hu(LL), frcu(LL), ifrcutp(LL), czu(LL), LL) ! in gettaus czu is calculated but not stored
+               czu(LL) = get_chezy(hu(LL), frcu(LL), u1(LL), v(LL), ifrcutp(LL)) ! in gettaus czu is calculated but not stored
             end if
          end do
       end if
@@ -8012,7 +8012,7 @@ contains
       use m_reconstruct_ucz
       use m_reconstruct_sed_transports
       use m_get_ucx_ucy_eul_mag
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
 
       implicit none
 
@@ -9859,7 +9859,7 @@ contains
          if (jamap_chezy_links > 0) then
             do LL = 1, lnx
                if (frcu(LL) > 0d0) then
-                  call getcz(hu(LL), frcu(LL), ifrcutp(LL), czu(LL), LL)
+                  czu(LL) = get_chezy(hu(LL), frcu(LL), u1(LL), v(LL), ifrcutp(LL))
                end if
             end do
          end if
