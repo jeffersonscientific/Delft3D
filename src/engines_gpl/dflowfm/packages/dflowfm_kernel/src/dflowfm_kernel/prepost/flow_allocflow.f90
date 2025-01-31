@@ -567,9 +567,7 @@ contains
       call aerr('uqcx(ndkx) , uqcy(ndkx)', ierr, 2 * ndkx); uqcx = 0; uqcy = 0
       allocate (ucxq(ndkx), ucyq(ndkx), stat=ierr)
       call aerr('ucxq(ndkx) , ucyq(ndkx)', ierr, 2 * ndkx); ucxq = 0; ucyq = 0
-      if (jamapucvec == 1 .or. jamapucmag == 1 .or. jahisvelocity == 1 .or. len_trim(md_foufile) > 0 .or. allocated(map_classes_ucmag) .or. jahistaucurrent > 0) then
-         call realloc(ucmag, ndkx, keepExisting=.false.)
-      end if
+      call realloc(ucmag, ndkx, keepExisting=.false.)
       allocate (qin(ndkx), vih(ndkx), stat=ierr)
       call aerr('qin (ndkx) , vih (ndkx)', ierr, 2 * ndkx); qin = 0; vih = 0
       allocate (dvxc(ndkx), dvyc(ndkx), stat=ierr)

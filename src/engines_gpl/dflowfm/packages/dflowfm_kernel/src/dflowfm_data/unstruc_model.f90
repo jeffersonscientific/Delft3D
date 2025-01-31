@@ -38,7 +38,7 @@ module unstruc_model
    use properties
    use tree_data_types
    use tree_structures
-   use unstruc_messages
+   use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
    use m_globalparameters, only: t_filenames
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
@@ -433,6 +433,7 @@ contains
       use m_set_nod_adm
       use m_realan, only: realan
       use m_filez, only: oldfil
+      use unstruc_messages, only: threshold_abort
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
@@ -688,7 +689,7 @@ contains
       use fm_external_forcings_data, only: dambreakWideningString, dambreakWidening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
       use m_physcoef
       use m_alloc
@@ -707,7 +708,7 @@ contains
       use m_xbeach_avgoutput
       use unstruc_netcdf, only: UNC_CONV_CFOLD, UNC_CONV_UGRID, unc_set_ncformat, unc_set_nccompress, unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
       use dfm_error
-      use MessageHandling
+      use unstruc_messages, only: unstruc_errorhandler, loglevel_StdOut
       use system_utils, only: split_filename
       use m_commandline_option, only: iarg_usecaching
       use m_subsidence, only: sdu_update_s1
@@ -728,6 +729,8 @@ contains
       use m_map_his_precision
       use m_qnerror
       use m_densfm, only: densfm
+      use messagehandling, only: msgbuf, err_flush, warn_flush
+      use geometry_module, only: INTERNAL_NETLINKS_EDGE, ALL_NETLINKS_LOOP
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -750,7 +753,7 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
       integer :: ignore_value
-      external :: unstruc_errorhandler
+
       istat = 0 ! Success
 
 ! Put .mdu file into a property tree
@@ -994,6 +997,13 @@ contains
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
+      call prop_get(md_ptr, 'geometry', 'Circumcenter', circumcenter_method)
+      if (circumcenter_method < INTERNAL_NETLINKS_EDGE .or. circumcenter_method > ALL_NETLINKS_LOOP) then
+         call mess(LEVEL_ERROR, '"[geometry] Circumcenter" expects an integer between 1 and 3.')
+      end if
+      if (circumcenter_method == INTERNAL_NETLINKS_EDGE) then
+         call mess(LEVEL_WARN, '"[geometry] Circumcenter = 1" will be deprecated and will be removed in future. Please update this in your model. "Circumcenter = 2" is the improved current inplementation using internal net links only. "Circumcenter = 3" is a stricter implemention considering also the net links on the outline of the grid. The new options may require an update of your grid.')
+      end if
       call prop_get(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
       if (jampi == 1 .and. md_japartition /= 1) then
          if (len_trim(md_partitionfile) < 1) then
@@ -1759,10 +1769,7 @@ contains
             ja_timestep_auto_visc = 1
          end if
       end if
-      ! if (success .and. ibuf /= 1) then
-      !   write(msgbuf, '(a,i0,a)') 'MDU [time] AutoTimestep=', ibuf, ' is deprecated, timestep always automatic. Use DtMax instead.'
-      !   call warn_flush()
-      ! endif
+
       call prop_get(md_ptr, 'time', 'AutoTimestepNoStruct', ja_timestep_nostruct, success)
       call prop_get(md_ptr, 'time', 'AutoTimestepNoQout', ja_timestep_noqout, success)
 
@@ -2478,15 +2485,6 @@ contains
          jashp_fxw = 0
       end if
 
-      ! Switch on rst boundaries if jawave==3 and restartinterval>0
-      ! For now here, and temporarily commented
-      !if (jarstbnd==0 .and. jawave==3 .and. ti_rst>eps10) then
-      !   write (msgbuf, '(a)') 'MDU settings specify that writing restart files is requested, and switch off writing boundary data to the restart file. ' &
-      !      //'A coupling with SWAN is specified as well. To correctly restart a SWAN+FM model, boundary restart data are required. Switching Wrirst_bnd to 1.'
-      !   call warn_flush()
-      !   jarstbnd=1
-      !endif
-
       if (jagui == 0) then
          ! If obsolete entries are used in the mdu-file, return with that error code.
          call check_file_tree_for_deprecated_keywords(md_ptr, deprecated_mdu_keywords, ierror, prefix='While reading '''//trim(filename)//'''', excluded_chapters=['model'])
@@ -2586,7 +2584,7 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_wind
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
       use m_physcoef
       use unstruc_netcdf, only: unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
@@ -2611,6 +2609,7 @@ contains
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
       use m_datum
+      use geometry_module, only: INTERNAL_NETLINKS_EDGE
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -2812,6 +2811,9 @@ contains
       end if
       if (writeall .or. (Dcenterinside /= 1d0)) then
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
+      end if
+      if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
+         call prop_set(prop_ptr, 'geometry', 'Circumcenter', circumcenter_method, 'Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
       end if
       if (writeall .or. (bamin > 1d-6)) then
          call prop_set(prop_ptr, 'geometry', 'Bamin', Bamin, 'Minimum grid cell area, in combination with cut cells')
@@ -3977,7 +3979,10 @@ contains
    subroutine switch_dia_file()
       use system_utils, only: makedir
       use m_set_get_mdia, only: setmdia, getmdia
+      use unstruc_messages, only: initMessaging
+
       implicit none
+
       integer :: mdia2, mdia, ierr
       character(len=256) :: rec
       logical :: line_copied
