@@ -1314,8 +1314,8 @@ contains
                isednum = 1
             end if
             target_location_type = UNC_LOC_S3D
-            indx = isednum
-            target_array_3d => sed
+            indx = ised1 + isednum - 1
+            target_array_3d => constituents
          end if
 
       case ('initialtemperature')

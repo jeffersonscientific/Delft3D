@@ -55,6 +55,7 @@ contains
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
       use m_flow, only: iturbulencemodel, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
       use m_flowparameters, only: jasal, jatem, epshs, epsz0
+      use m_transportdata, only: ISED1
       use m_transport, only: constituents, isalt, itemp
       use m_turbulence, only: turkinepsws, rhowat
       use sediment_basics_module, only: SEDTYP_CLAY
@@ -158,7 +159,6 @@ contains
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
 
-      if (s1(k)-bl(k)<=epshs) cycle
       do k = 1, ndx
          if (s1(k) - bl(k) <= epshs) cycle
          !
@@ -259,11 +259,10 @@ contains
             ctot = 0d0
             cclay = 0d0
             do ll = 1, lsed
-               ctot = ctot + constituents(ISED1+ll-1, kk)
-               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ISED1+ll-1, kk)
+               ctot = ctot + constituents(ISED1 + ll - 1, kk)
+               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ISED1 + ll - 1, kk)
             end do
             !
-      if (kmx > 1) then      ! what about kmx=1?
             do ll = 1, lsed
                !
                do i = 1, npar
@@ -285,7 +284,7 @@ contains
                dll_reals(WS_RP_SALIN) = real(salint, hp)
                dll_reals(WS_RP_TEMP) = real(temint, hp)
                dll_reals(WS_RP_RHOWT) = real(rhoint, hp)
-               dll_reals(WS_RP_CFRCB) = real(constituents(ISED1+ll-1, kk), hp)
+               dll_reals(WS_RP_CFRCB) = real(constituents(ISED1 + ll - 1, kk), hp)
                dll_reals(WS_RP_CTOT) = real(ctot, hp)
                dll_reals(WS_RP_KTUR) = real(tur_k, hp)
                dll_reals(WS_RP_EPTUR) = real(tur_eps, hp)
@@ -336,7 +335,7 @@ contains
                ws(kk, ll) = wsloc
             end do ! ll
          end do ! kk
-         if (kmx > 1) then
+         if (kmx > 1) then      ! what about kmx=1?
             do ll = 1, lsed
                ws(kb - 1, ll) = ws(kb, ll) ! to check
             end do ! ll

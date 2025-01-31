@@ -128,6 +128,7 @@ contains
       use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
+      use m_fill_constituents, only: fill_constituents
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:

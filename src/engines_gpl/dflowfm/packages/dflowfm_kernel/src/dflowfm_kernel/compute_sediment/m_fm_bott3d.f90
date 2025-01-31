@@ -1591,7 +1591,7 @@ contains
    !! Local variables
    !!
 
-      integer :: k, ll, l, kb, kt, kk, itrac
+      integer :: k, ll, kb, kt, kk, itrac
 
       real(kind=dp) :: hsk
       real(kind=dp) :: ddp

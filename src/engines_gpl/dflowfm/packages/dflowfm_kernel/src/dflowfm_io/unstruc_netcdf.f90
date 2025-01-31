@@ -12955,7 +12955,7 @@ contains
       use time_module, only: datetimestring_to_seconds, seconds_to_datetimestring
       use m_flow
       use m_flowtimes
-      use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, constituents, itrac2const, const_names, ifrac2const
+      use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ITRA1, ITRAN, constituents, itrac2const, const_names, ifrac2const
       use m_fm_wq_processes
       use fm_external_forcings_data, only: numtracers, trnames, ibnd_own, ndxbnd_own
       use m_sediment

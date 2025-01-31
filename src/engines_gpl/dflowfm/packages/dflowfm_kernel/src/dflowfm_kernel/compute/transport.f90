@@ -57,7 +57,7 @@ contains
       use m_flowtimes
       use m_flowparameters, only: jadiagnostictransport
       use m_physcoef, only: idensform, difmolsal
-      use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
+      use m_transport, only: NUMCONST, constituents, ISALT, ITEMP, ised1
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_dlimitercentral
       use m_dslim
@@ -68,7 +68,7 @@ contains
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, ki, jastep, kk
+      integer :: j, jj, ki, jastep, kk
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -419,15 +419,14 @@ contains
          end if
       end if
 
-          if (jased > 0 .and. .not. stm_included) then
-          !
-          ! we removed sed from the morfo module code, so we need this:
-          if (jased > 0 .and. stm_included) then
-             do j = 1, stmpar%lsedsus
-                jj = ISED1+j-1
-                constituents(jj,kb) = constituents(jj,ki)
-             end do
-          end if
+      if (jased > 0 .and. .not. stm_included) then
+         ! we removed sed from the morpho code, so we need this:
+         do j = 1, stmpar%lsedsus
+            jj = ised1 + j - 1
+            constituents(jj, kb) = constituents(jj, ki)
+         end do
+      end if
+      
       do k = 1, 0 !  ndxi ! for test selectiveZ.mdu
          if (xz(k) > 270) then
             do kk = kbot(k), ktop(k)

@@ -417,8 +417,6 @@ contains
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
 
-      integer :: iyear, imonth, iday, ihour, imin
-      real(kind=dp) :: sec
       character(len=19) :: datembastart, datembaend
       logical :: write_balance !< flag specifying whether balance should be written
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period

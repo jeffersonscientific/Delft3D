@@ -166,7 +166,6 @@ contains
             end do
          end do
 
-                endif
          if (limmax /= 0) then
             write (msgbuf, *) 'Max. salinity limited, number of cells Limmax = ', limmax; call msg_flush()
          end if

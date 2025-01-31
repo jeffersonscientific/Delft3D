@@ -48,7 +48,6 @@ contains
       use m_transport_sub, only: transport
       use m_step_reduce_transport_morpho, only: step_reduce_transport_morpho
       use m_step_reduce_hydro, only: step_reduce_hydro
-      use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
       use m_flow
       use timers
       use m_flowgeom
@@ -56,7 +55,6 @@ contains
       use unstruc_netcdf
       use m_timer
       use dfm_error
-      use m_wrimap
 
       integer :: key
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful. DFM_TIMESETBACK if succesful, but with timestep setbacks.

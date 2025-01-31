@@ -374,13 +374,13 @@ contains
                   if (qid(16:16) == '8') isednum = 8
                   if (qid(16:16) == '9') isednum = 9
 
-                  sedh(1:ndx) = sed(isednum, 1:ndx)
+                  sedh(1:ndx) = constituents(ised1 + isednum - 1, 1:ndx)
                   success = timespaceinitialfield(xz, yz, sedh, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                   if (success) then
                      do kk = 1, ndx
                         if (sedh(kk) /= dmiss) then
                            do k = kbot(kk), kbot(kk) + kmxn(kk) - 1
-                              sed(isednum, k) = sedh(kk)
+                              constituents(ised1 + isednum - 1, k) = sedh(kk)
                            end do
                         end if
                      end do
