@@ -71,10 +71,18 @@ object WindowsBuildEnvironmentI24 : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
                 """.trimIndent()
             }
+        }
+        dockerCommand {
+            name = "Docker push"
+            commandType = push {
+                namesAndTags = """
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
+                """.trimIndent()
+            }
+            enabled = "%trigger.type%" == "vcs"
         }
     }
 

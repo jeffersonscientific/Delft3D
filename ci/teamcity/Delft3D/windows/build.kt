@@ -4,7 +4,6 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
-import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 import Delft3D.step.*
 
@@ -28,10 +27,9 @@ object WindowsBuild : BuildType({
     """.trimIndent()
 
     params {
-        param("intel_fortran_compiler", "ifx")
+        param("intel_fortran_compiler", "ifort")
         param("enable_code_coverage_flag", "OFF")
-        param("container.tag", "vs2022-intel2024")
-        param("generator", """"Visual Studio 17 2022"""")
+        param("generator", """"Visual Studio 16 2019"""")
         param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
         param("build_type", "Release")
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
@@ -45,7 +43,7 @@ object WindowsBuild : BuildType({
 
     steps {
         mergeTargetBranch {
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
@@ -64,7 +62,7 @@ object WindowsBuild : BuildType({
                         print(f"##teamcity[buildNumber '{product}-testbench: %build.vcs.number%']")
                 """.trimIndent()
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
@@ -75,7 +73,7 @@ object WindowsBuild : BuildType({
                 echo #define BUILD_NR "%build.vcs.number%" > checkout_info.h
                 echo #define BRANCH "%teamcity.build.branch%" >> checkout_info.h
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
@@ -88,7 +86,7 @@ object WindowsBuild : BuildType({
 
                 cmake --build . -j --target install --config %build_type%
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
@@ -100,13 +98,6 @@ object WindowsBuild : BuildType({
                     robocopy fbctools build_%product%\install /E /XC /XN /XO
                 """.trimIndent()
             }
-        }
-    }
-
-    triggers {
-        finishBuildTrigger {
-            buildType = WindowsBuildEnvironmentI24.id.toString()
-            successfulOnly = true
         }
     }
 
