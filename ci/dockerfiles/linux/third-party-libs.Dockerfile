@@ -334,7 +334,7 @@ pushd "/var/cache/src/${BASEDIR}"
     --enable-parallel \
     --with-zlib=/usr/local/include,/usr/local/lib \
     --with-szlib=/usr/local
-make -j -l6
+make --jobs=8
 make install
 popd
 EOF-hdf5
