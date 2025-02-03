@@ -15,7 +15,7 @@ FROM base AS compression-libs
 ARG DEBUG
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-compression-libs"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 export CC=icx CXX=icpx
 [[ $DEBUG = "0" ]] && CFLAGS="-O3" || CFLAGS="-g -O0"
@@ -33,12 +33,12 @@ do
         echo "CACHED ${BASEDIR}"
     else
         echo "Fetching ${URL}..."
-        wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src/'
+        wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src/'
     fi
 
     pushd "/var/cache/src/${BASEDIR}"
     [[ -f configure ]] && ./configure
-    make -j8
+    make --jobs=8
     make install
     popd
 done
@@ -49,7 +49,7 @@ FROM base AS uuid
 ARG DEBUG
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-uuid"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.2.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -57,7 +57,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 export CC=icx
@@ -66,7 +66,7 @@ export CFLAGS
 
 pushd "/var/cache/src/${BASEDIR}"
 ./configure --prefix=/usr/local --disable-all-programs --enable-libuuid
-make -j8
+make --jobs=8
 make install
 popd
 EOF-uuid
@@ -76,7 +76,7 @@ FROM base AS metis
 ARG DEBUG
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-metis"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 GKLIB_COMMIT_ID='8bd6bad750b2b0d90800c632cf18e8ee93ad72d7'
 for BASEDIR_URL in \
@@ -89,7 +89,7 @@ do
         echo "CACHED ${BASEDIR}"
     else
         echo "Fetching ${URL}..."
-        wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+        wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
     fi
 done
 
@@ -99,7 +99,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     make config prefix=/usr/local cc=icx debug=1 gdb=1
 fi
-make -j8
+make --jobs=8
 make install
 
 popd
@@ -110,7 +110,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     make config prefix=/usr/local cc=icx shared=1 debug=1 gdb=1
 fi
-make -j8
+make --jobs=8
 make install
 popd
 EOF-metis
@@ -120,7 +120,7 @@ FROM base AS expat
 ARG DEBUG
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-expat"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz'
 BASEDIR='libexpat-R_2_6_2/expat'
@@ -128,7 +128,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 [[ $DEBUG = "0" ]] && FLAGS="-O3 -DNDEBUG -fPIC" || FLAGS="-g -O0 -fPIC"
@@ -136,7 +136,7 @@ fi
 pushd "/var/cache/src/${BASEDIR}"
 ./buildconf.sh
 ./configure CC=icx CXX=icpx CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
-make -j8
+make --jobs=8
 make install
 popd
 EOF-expat
@@ -146,7 +146,7 @@ FROM base AS xerces-c
 ARG DEBUG
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-xerces-c"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/apache/xerces-c/archive/refs/tags/v3.2.5.tar.gz'
 BASEDIR='xerces-c-3.2.5'
@@ -154,7 +154,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 mkdir "/var/cache/src/${BASEDIR}/build"
@@ -168,7 +168,7 @@ else
         -DCMAKE_C_FLAGS="-g -O0 -fPIC" -DCMAKE_CXX_FLAGS="-g -O0 -fPIC" \
         -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
 fi
-make -j8
+make --jobs=8
 make install
 popd
 EOF-xerces-c
@@ -181,7 +181,7 @@ ARG DEBUG
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-petsc"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.19.0.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -189,7 +189,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
@@ -216,7 +216,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-curl"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://curl.se/download/curl-8.9.1.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -224,7 +224,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 pushd "/var/cache/src/${BASEDIR}"
@@ -233,7 +233,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     ./configure CC=icx CFLAGS="-O0" --enable-debug --with-openssl --with-zlib --with-zstd
 fi
-make -j8
+make --jobs=8
 make install
 popd
 EOF-curl
@@ -246,7 +246,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-sqlite3"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -254,7 +254,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 pushd "/var/cache/src/${BASEDIR}"
@@ -263,7 +263,7 @@ if [[ $DEBUG = "0" ]]; then
 else
     ./configure CC=icx CFLAGS="-g -O0" CPPFLAGS="-DSQLITE_DEBUG"
 fi
-make -j8
+make --jobs=8
 make install
 popd
 EOF-sqlite3
@@ -276,7 +276,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-tiff"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -284,7 +284,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 mkdir -p "/var/cache/src/${BASEDIR}/build"
@@ -298,7 +298,7 @@ else
         -DCMAKE_C_FLAGS="-g -O0" -DCMAKE_CXX_FLAGS="-g -O0" \
         -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
 fi
-make -j8
+make --jobs=8
 make install
 popd
 EOF-tiff
@@ -312,7 +312,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-hdf5"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz'
 BASEDIR='hdf5-hdf5-1_14_2'
@@ -320,7 +320,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
@@ -349,7 +349,7 @@ COPY --from=curl --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-netcdf-c"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://downloads.unidata.ucar.edu/netcdf-c/4.9.2/netcdf-c-4.9.2.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -357,7 +357,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
@@ -376,14 +376,14 @@ cmake .. \
     -DSzip_INCLUDE_DIRS=/usr/local/include \
     -DSzip_RELEASE_LIBRARY=/usr/local/lib/libsz.so
 
-make -j8
+make --jobs=8
 make install
 popd
 EOF-netcdf-c
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-netcdf-fortran"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz'
 BASEDIR='netcdf-fortran-4.6.1'
@@ -391,7 +391,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
@@ -407,7 +407,7 @@ pushd "/var/cache/src/${BASEDIR}"
     FCFLAGS="$FLAGS" FFLAGS="$FLAGS" F77FLAGS="$FLAGS" F90FLAGS="$FLAGS" \
     --enable-large-file-tests --with-pic
 
-make -j8
+make --jobs=8
 make install
 popd
 EOF-netcdf-fortran
@@ -422,7 +422,7 @@ COPY --from=curl --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-proj"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://download.osgeo.org/proj/proj-9.2.0.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -430,7 +430,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
@@ -446,7 +446,7 @@ cmake .. \
     -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so \
     -DEXE_SQLITE3=/usr/local/bin/sqlite3 \
     -DENABLE_TIFF=ON
-cmake --build . --config $BUILD_TYPE -j 8
+cmake --build . --config $BUILD_TYPE --parallel 8
 cmake --build . --target install
 popd
 EOF-proj
@@ -462,7 +462,7 @@ COPY --from=proj --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-gdal"
 set -eo pipefail
-. /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/OSGeo/gdal/releases/download/v3.9.2/gdal-3.9.2.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -470,7 +470,7 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
 mkdir -p "/var/cache/src/${BASEDIR}/build"
@@ -490,7 +490,7 @@ cmake .. \
     -DGDAL_USE_ZSTD=ON -DGDAL_USE_ZLIB=ON \
     -DGDAL_USE_TIFF=ON
 
-cmake --build . --config $BUILD_TYPE -j 8
+cmake --build . --config $BUILD_TYPE --parallel 8
 cmake --build . --target install
 
 popd
@@ -510,21 +510,27 @@ if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
     echo "Fetching ${URL}..."
-    wget -q -O - "$URL" | tar -xzf - -C '/var/cache/src'
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
+
+source /opt/intel/oneapi/setvars.sh
 
 pushd "/var/cache/src/${BASEDIR}"
 
 export ESMF_DIR="/var/cache/src/${BASEDIR}"
 export ESMF_COMM=mpiuni # we do not need mpi per se
+export ESMF_COMPILER=intel
+export ESMF_C=icx
+export ESMF_CXX=icpx
+export ESMF_F90=${INTEL_FORTRAN_COMPILER}
 export ESMF_OPTLEVEL=2
 export ESMF_NETCDF=split
 export ESMF_NETCDF_INCLUDE=/usr/local/include
 export ESMF_NETCDF_LIBPATH=/usr/local/lib
 export ESMF_INSTALL_PREFIX=/usr/local
-export ESMF_CXXSTD=sysdefault # some C++ libraries require gcc posix extensions, specifically the sigaction definition
+export ESMF_CXXSTD=sysdefault
 
-make -j8
+make --jobs=8
 make install
 popd
 EOF-esmf
