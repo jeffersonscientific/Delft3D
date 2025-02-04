@@ -11,7 +11,8 @@ object WindowsBuild : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateFailureCondition
     )
  
     name = "Build"
@@ -55,6 +56,8 @@ object WindowsBuild : BuildType({
                             product = "%teamcity.pullRequest.source.branch%".split("/")[0]
                         else:
                             product = "%teamcity.build.branch%".split("/")[0]
+                        if product == "main":
+                            product = "all"
                         print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
                         print(f"##teamcity[buildNumber '{product}: %build.vcs.number%']")
                 """.trimIndent()
@@ -95,24 +98,6 @@ object WindowsBuild : BuildType({
                     robocopy fbctools build_%product%\install /E /XC /XN /XO
                 """.trimIndent()
             }
-        }
-    }
-
-    failureConditions {
-        executionTimeoutMin = 1800
-        errorMessage = true
-        failOnText {
-            conditionType = BuildFailureOnText.ConditionType.REGEXP
-            pattern = "Artifacts path .* not found"
-            failureMessage = "Artifacts are missing"
-            reverse = false
-        }
-        failOnText {
-            conditionType = BuildFailureOnText.ConditionType.CONTAINS
-            pattern = "Failed to resolve artifact dependency"
-            failureMessage = "Unable to collect all dependencies"
-            reverse = false
-            stopBuildOnFailure = true
         }
     }
 
