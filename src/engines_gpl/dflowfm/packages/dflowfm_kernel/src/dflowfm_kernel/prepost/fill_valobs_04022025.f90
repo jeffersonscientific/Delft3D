@@ -76,10 +76,11 @@ module m_fill_valobs
       integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs
+      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr(3)
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens, prsappr, drhodz, rhomea
       real(kind=dp) :: ux, uy, um
-!      real(kind=dp) :: valtmp 
+      real(kind=dp) :: valtmp 
       real(kind=dp), allocatable :: wa(:, :)
       real(kind=dp), allocatable :: frac(:, :)
       real(kind=dp), allocatable :: poros(:)
@@ -207,7 +208,57 @@ module m_fill_valobs
             valobs(i, IPNT_S1) = s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
                                  s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
                                  s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
-         
+            
+            ! Temporary: Fill valobs for salinity here. Works a bit easier
+                       
+!            if (intobs(i) == 0) then
+                ! Normal station
+!                do kk = kb, kt
+!                   klay = kk - kb + nlayb
+!                   if (jasal > 0) then
+!                      valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
+!                   end if
+!                end do
+!            else
+                if (.not. allocated(ueux)) then
+                    call realloc(ueux, ndkx, keepExisting=.false., fill=0d0)
+                end if    
+                ueux = constituents(isalt,:) 
+                call interpolate_horizontal (ueux,i)
+                
+                ! Interpolated station 
+                do iwght = 1, 3
+                   if (model_is_3D()) then
+                      call getkbotktop    (neighbour_nodes_obs(1,i), kb_tmp(1), kt_tmp(1))
+                      call getlayerindices(neighbour_nodes_obs(1,i), nlayb_tmp(1), nrlay_tmp(1))
+                      call getkbotktop    (neighbour_nodes_obs(2,i), kb_tmp(2), kt_tmp(2))
+                      call getlayerindices(neighbour_nodes_obs(2,i), nlayb_tmp(2), nrlay_tmp(2))
+                      call getkbotktop    (neighbour_nodes_obs(3,i), kb_tmp(3), kt_tmp(3))
+                      call getlayerindices(neighbour_nodes_obs(3,i), nlayb_tmp(3), nrlay_tmp(3))
+                   else
+                       kb_tmp     = k
+                       kt_tmp     = k
+                       nlayb_tmp  = 1
+                   end if 
+                end do
+               
+                ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value)
+            
+                kstart = maxval(nlayb_tmp)
+                kstop  = minval(nlayb_tmp + nrlay_tmp - 1)
+               
+                do klay = kstart, kstop
+                   pntnr(1) = kb_tmp(1) - nlayb_tmp(1) + klay     
+                   pntnr(2) = kb_tmp(2) - nlayb_tmp(2) + klay
+                   pntnr(3) = kb_tmp(3) - nlayb_tmp(3) + klay
+                   valtmp   = constituents(isalt, pntnr(1))*neighbour_weights_obs(1,i) + &
+                              constituents(isalt, pntnr(2))*neighbour_weights_obs(2,i) + &
+                              constituents(isalt, pntnr(3))*neighbour_weights_obs(3,i) 
+!                   valobs(i, IPNT_SA1 + klay - 1) = valtmp
+                end do
+!           end if 
+              
+            
             if (nshiptxy > 0) then
                if (allocated(zsp)) then
                   valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
@@ -386,22 +437,14 @@ module m_fill_valobs
 
             do kk = kb, kt
                klay = kk - kb + nlayb
-  
-               if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-                  call interpolate_horizontal (ueux,i,IPNT_UCX)
-                  call interpolate_horizontal (ueuy,i,IPNT_UCY) 
-!                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
-!                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-               end if
-               
-               
+
                if (model_is_3D()) then
-                  ! make temporary arry with cellcentres
-                  do j = 2, ndkx
-                      ueux(j) = 0.5d0 * (zws(j) + zws(j - 1))
-                  end do
-                  call interpolate_horizontal (ueux,i,IPNT_ZCS)  
-!                 valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
+                  valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
+               end if
+
+               if (jahisvelocity > 0 .or. jahisvelvec > 0) then
+                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
+                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
                end if
 
                if (jawave > 0 .and. .not. flowWithoutWaves) then
@@ -417,19 +460,18 @@ module m_fill_valobs
                end if
 
                if (model_is_3D()) then
-                   valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
+                  valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
                end if
-               
                if (jasal > 0) then
-                   ! (mis)use ueux to store salinities
-                  ueux = constituents(isalt,:)
-                  call interpolate_horizontal (ueux,i,IPNT_SA1)
+                  if (.not. allocated(ueux)) then
+                      call realloc(ueux, ndkx, keepExisting=.false., fill=0d0)
+                  end if    
+                  ueux = constituents(isalt,:) 
+                  call interpolate_horizontal (ueux,i)
 !                  valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
                end if
                if (jatem > 0) then
-                   ueux = constituents(itemp,:)
-                   call interpolate_horizontal (ueux,i,IPNT_TEM1)
-!                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
+                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
                end if
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
@@ -609,7 +651,7 @@ module m_fill_valobs
       return
    end subroutine fill_valobs
   
-   subroutine interpolate_horizontal (rarray,istat,IPNT)
+   subroutine interpolate_horizontal (rarray,istat)
    
       ! Interpolate (horizontally, within a computational layer) to a position from 3 surrounding snapped points
       ! earray ca be constituents or 
@@ -620,10 +662,10 @@ module m_fill_valobs
       use m_get_kbot_ktop
       use m_get_layer_indices
       
-      integer      , intent(in)                       :: istat, IPNT 
-      real(kind=dp), intent(in), allocatable          :: rarray (:)
-      
-      real(kind=dp)                                   :: value
+      integer                                         :: istat 
+   
+      real(kind=dp), allocatable                      :: rarray (:)
+      REAL(kind=dp)                                   :: value
       real(kind=dp)                                   :: weighttot
       
       integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay
@@ -649,8 +691,8 @@ module m_fill_valobs
                
       do klay = kstart, kstop
          
-         value     = 0.0d0
-         weighttot = 0.0d0
+         value     = 0.0
+         weighttot = 0.0
          
          do iwght = 1, 3
              if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
@@ -659,7 +701,7 @@ module m_fill_valobs
                weighttot = weighttot + neighbour_weights_obs(iwght,istat) 
              end if
          end do
-         valobs(istat, IPNT + klay - 1) = value/weighttot
+         valobs(istat, IPNT_SA1 + klay - 1) = value/weighttot
       end do
  
   end subroutine  interpolate_horizontal
