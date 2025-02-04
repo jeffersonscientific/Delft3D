@@ -151,7 +151,6 @@ module unstruc_model
    character(len=255) :: md_dredgefile = ' ' !< File containing dredging settings (e.g., *.dad)
    character(len=255) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
    character(len=255) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
-   character(len=255) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
    character(len=1024) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)  
 !  character(len=1024) :: md_nestobsfile = ' ' !< pli file containing boundary locations nested model  (e.g., *.pli)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete

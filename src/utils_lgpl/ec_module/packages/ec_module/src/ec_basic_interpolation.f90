@@ -339,8 +339,9 @@
 
    subroutine TRIINTfast(XS_IN, YS_IN, ZS_IN, NS,NDIM,X,Y,Z,NXY,JDLA,jakdtree, jsferic, NH, jins, dmiss, jasfer3D, &
                          XH, YH, ZH, transformcoef, kc)
+   
    implicit none
-   !
+   
    ! parameters
    integer,       intent(inout)        :: jakdtree               !< use kdtree (1) or not (0)
    integer,       intent(in)           :: ns, NDIM               !< sample vector dimension
