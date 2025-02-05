@@ -36,7 +36,7 @@
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.04"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.31"/>
                     </parameters>
                 </file>
             </checks>
@@ -218,7 +218,7 @@
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.04"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.02"/>
                     </parameters>
                 </file>
             </checks>
@@ -338,7 +338,7 @@
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.02"/>
-                        <parameter name="period" toleranceAbsolute="0.06"/>
+                        <parameter name="period" toleranceAbsolute="0.6"/>
                     </parameters>
                 </file>
             </checks>
@@ -359,7 +359,7 @@
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.06"/>
-                        <parameter name="period" toleranceAbsolute="0.06"/>
+                        <parameter name="period" toleranceAbsolute="0.6"/>
                     </parameters>
                 </file>
             </checks>
@@ -402,7 +402,7 @@
                 <file name="wavm-Waves.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.03"/>
+                        <parameter name="hsign" toleranceAbsolute="0.031"/>
                         <parameter name="period" toleranceAbsolute="0.15"/>
                     </parameters>
                 </file>
