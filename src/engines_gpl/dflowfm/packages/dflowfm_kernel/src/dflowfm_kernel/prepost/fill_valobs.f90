@@ -70,6 +70,7 @@ module m_fill_valobs
       use m_get_link1
       use m_links_to_centers, only: links_to_centers
       use m_setrho, only: setrhofixedp
+      use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
 
       implicit none
 
