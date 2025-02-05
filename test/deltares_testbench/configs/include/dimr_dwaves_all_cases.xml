@@ -211,7 +211,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f02_c05_windfields" ref="dimr_trunk">
-            <path version="2024-01-12T07:40:00">e04_wave/f02-windfields/c05</path>
+            <path version="2025-02-05T15:49:12.732000">e04_wave/f02-windfields/c05</path>
             <maxRunTime>900.0</maxRunTime>
             <checks>
                 <file name="wavm-grw.nc" type="NETCDF">
