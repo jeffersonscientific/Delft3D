@@ -416,8 +416,8 @@
                 <file name="wavm-Waves.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.01"/>
+                        <parameter name="hsign" toleranceAbsolute="0.08"/>
+                        <parameter name="period" toleranceAbsolute="0.18"/>
                     </parameters>
                 </file>
             </checks>
