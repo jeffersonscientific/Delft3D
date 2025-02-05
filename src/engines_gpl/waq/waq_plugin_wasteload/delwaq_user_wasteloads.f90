@@ -740,9 +740,12 @@ contains
         logical, save :: first = .true.
         ! is there a filterfactor file? then read the factore and allocate the set factors
         if (first) then
-            first = .false. 
+!            first = .false. 
             i = 999
             file_filter = "filterfactors.csv"
+            filterload=1.0
+            nfilt = 0
+            ierr = 0
             inquire (file = file_filter, exist = exi)
             if (exi) then
                 allocate(filterload(num_waste_loads))
@@ -753,6 +756,10 @@ contains
                     write(88, *) ' Load number: ',load_number, ', filtervalue: ', filterload(i)
                    if (ierr /= 0) then
                        write(lunrep, *) 'Error reading filterfile '
+                       stop
+                   endif
+                   if (filterload(i) < 0 .or. filterload(i) > 1) then
+                       write(lunrep, *) 'Filterfactor ', i, ' outside range [0-1]: ', filterload(i)
                        stop
                    endif
                 enddo
@@ -847,9 +854,12 @@ contains
                     do ifilt = 1, nfilt
                         ! adding  source due to filter to the target substance (stoechemetry), adding is not the problem, but for each source all filters need to be added 
                         ! to ensure that the remain load is correct to maintain mass balance.
-                        ! TODO: question to verify is the index of set_factor in relation to that of the loads
                         old_load =  wls(i)%loads(ntarget(ifilt))
                         wls(i)%loads(ntarget(ifilt)) = wls(i)%loads(ntarget(ifilt)) + wls(i)%loads(nsource(ifilt)) * filter_factor(ifilt) * (1.0 - filterload(i))
+                        if (first) then
+                            write(88, '(a106)') 'check: substance target, prefilter load, calculated load, substance conversion factor, load filterfactor '
+                            first = .false.
+                        endif
                         write(88, '(a6,1x,a20,1x, 4(f5.1,1x))')'Check:', syname(ntarget(ifilt)), old_load, wls(i)%loads(ntarget(ifilt)), filter_factor(ifilt), filterload(i)
                     enddo
                 ! for each substance source, reduce the original load - this also means a target may not be present as a source.
