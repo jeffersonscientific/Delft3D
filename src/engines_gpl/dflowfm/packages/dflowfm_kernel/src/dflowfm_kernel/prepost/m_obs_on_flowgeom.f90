@@ -252,31 +252,8 @@ contains
       end if
 
    end subroutine find_flownodes_and_links_for_all_observation_stations
-
-   subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end, neighbour_nodes_table, neighbour_weights_table)
-      integer, intent(in) :: n_start !< Starting index of obs
-      integer, intent(in) :: n_end   !< Ending index of obs
-      integer, intent(inout) :: neighbour_nodes_table !< [3, n_end] Table of nearby flow node numbers for each station
-      real(kind=dp), intent(inout) :: neighbour_weights_obs  !< [3, n_end] Table of interpolation weights for nearby flow node numbers for each station
-
-      ! xu, yu: xobs, yobs
-      ! zh
-      ! jdla local met waarde 1
-      ! xs: xz(1:ndx2d), yz(1:ndx2d) (uit m_flowgeom)
-      ! ns: ndx2d
-      ! dmiss uit m_missing
-      ! jsferic, jasfer3D uit m_sferic
-      ! jins = 0
-      ! transformcoef uit fm_external_forcings_data
-      !, kcc:  TODO
-      call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, &
-               NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef, kcc)
-
-      ! NU: pak de geproduceerde gewichten uit indxx, wf..., en sla ze op in neighbour_nodes_table en neighbour_weights_table
-
-   end subroutine  init_interpolation_data_for_all_observation_stations
-
-  subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs)
+ 
+   subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs)
       
       use m_observations_data      , only: xobs, yobs, numobs, nummovobs  
       use m_flowgeom               , only: xz, yz, ndx2d
