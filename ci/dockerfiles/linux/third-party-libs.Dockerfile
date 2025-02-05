@@ -1,19 +1,19 @@
 # syntax=docker/dockerfile:1.4
 
 ARG INTEL_ONEAPI_VERSION=2024
-ARG BUILDTOOLS_IMAGE_TAG=oneapi-${INTEL_ONEAPI_VERSION}
-ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-buildtools
-
-FROM ${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG} AS base
-
 ARG INTEL_FORTRAN_COMPILER=ifort
-ARG INTEL_ONEAPI_VERSION=2024
 ARG DEBUG=0
+ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-buildtools
+ARG BUILDTOOLS_IMAGE_TAG=oneapi-${INTEL_ONEAPI_VERSION}
+
+ARG BUILDTOOLS_IMAGE_PATH=${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG}
+ARG CACHE_ID_SUFFIX=cache-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${DEBUG}-${BUILDTOOLS_IMAGE_PATH}
+
+FROM ${BUILDTOOLS_IMAGE_PATH} AS base
 
 FROM base AS compression-libs
 
-ARG DEBUG
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-compression-libs"
+RUN --mount=type=cache,target=/var/cache/src/,id=compression-libs-${CACHE_ID_SUFFIX} <<"EOF-compression-libs"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -46,8 +46,7 @@ EOF-compression-libs
 
 FROM base AS uuid
 
-ARG DEBUG
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-uuid"
+RUN --mount=type=cache,target=/var/cache/src/,id=uuid-${CACHE_ID_SUFFIX} <<"EOF-uuid"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -73,8 +72,7 @@ EOF-uuid
 
 FROM base AS metis
 
-ARG DEBUG
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-metis"
+RUN --mount=type=cache,target=/var/cache/src/,id=metis-${CACHE_ID_SUFFIX} <<"EOF-metis"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -117,8 +115,7 @@ EOF-metis
 
 FROM base AS expat
 
-ARG DEBUG
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-expat"
+RUN --mount=type=cache,target=/var/cache/src/,id=expat-${CACHE_ID_SUFFIX} <<"EOF-expat"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -143,8 +140,7 @@ EOF-expat
 
 FROM base AS xerces-c
 
-ARG DEBUG
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-xerces-c"
+RUN --mount=type=cache,target=/var/cache/src/,id=xerxes-c-${CACHE_ID_SUFFIX} <<"EOF-xerces-c"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -175,11 +171,7 @@ EOF-xerces-c
 
 FROM base AS petsc
 
-ARG INTEL_FORTRAN_COMPILER
-ARG INTEL_ONEAPI_VERSION
-ARG DEBUG
-
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-petsc"
+RUN --mount=type=cache,target=/var/cache/src/,id=petsc-${CACHE_ID_SUFFIX} <<"EOF-petsc"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -210,11 +202,9 @@ EOF-petsc
 
 FROM base AS curl
 
-ARG DEBUG
-
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-curl"
+RUN --mount=type=cache,target=/var/cache/src/,id=curl-${CACHE_ID_SUFFIX} <<"EOF-curl"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -240,11 +230,9 @@ EOF-curl
 
 FROM base AS sqlite3
 
-ARG DEBUG
-
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-sqlite3"
+RUN --mount=type=cache,target=/var/cache/src/,id=sqlite3-${CACHE_ID_SUFFIX} <<"EOF-sqlite3"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -270,11 +258,9 @@ EOF-sqlite3
 
 FROM base AS tiff
 
-ARG DEBUG
-
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-tiff"
+RUN --mount=type=cache,target=/var/cache/src/,id=tiff-${CACHE_ID_SUFFIX} <<"EOF-tiff"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -305,12 +291,9 @@ EOF-tiff
 
 FROM base AS hdf5
 
-ARG DEBUG
-ARG INTEL_FORTRAN_COMPILER
-
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-hdf5"
+RUN --mount=type=cache,target=/var/cache/src/,id=hdf5-${CACHE_ID_SUFFIX} <<"EOF-hdf5"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -341,13 +324,10 @@ EOF-hdf5
 
 FROM base AS netcdf
 
-ARG DEBUG
-ARG INTEL_FORTRAN_COMPILER
-
 COPY --from=hdf5 --link /usr/local/ /usr/local/
 COPY --from=curl --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-netcdf-c"
+RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-c-${CACHE_ID_SUFFIX} <<"EOF-netcdf-c"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -381,7 +361,7 @@ make install
 popd
 EOF-netcdf-c
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-netcdf-fortran"
+RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-fortran-${CACHE_ID_SUFFIX} <<"EOF-netcdf-fortran"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -414,13 +394,11 @@ EOF-netcdf-fortran
 
 FROM base AS proj
 
-ARG DEBUG
-
 COPY --from=tiff --link /usr/local/ /usr/local/
 COPY --from=sqlite3 --link /usr/local/ /usr/local/
 COPY --from=curl --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-proj"
+RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -453,14 +431,12 @@ EOF-proj
 
 FROM base AS gdal
 
-ARG DEBUG
-
 COPY --from=expat --link /usr/local/ /usr/local/
 COPY --from=xerces-c --link /usr/local/ /usr/local/
 COPY --from=netcdf --link /usr/local/ /usr/local/
 COPY --from=proj --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-gdal"
+RUN --mount=type=cache,target=/var/cache/src/,id=gdal-${CACHE_ID_SUFFIX} <<"EOF-gdal"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -501,7 +477,7 @@ FROM base as esmf
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 COPY --from=netcdf --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF-esmf"
+RUN --mount=type=cache,target=/var/cache/src/,id=esmf-${CACHE_ID_SUFFIX} <<"EOF-esmf"
 set -eo pipefail
 
 URL='https://github.com/esmf-org/esmf/archive/refs/tags/v8.8.0.tar.gz'

@@ -6,7 +6,7 @@ ARG INTEL_ONEAPI_VERSION=2024
 
 # Install intel C/C++ and Fortran compilers, the
 # math kernel library and MPI library/tools
-RUN --mount=type=cache,target=/var/cache/dnf <<"EOF"
+RUN --mount=type=cache,target=/var/cache/dnf,id=compilers-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
 set -eo pipefail
 
 cat <<EOT > /etc/yum.repos.d/oneAPI.repo
@@ -49,7 +49,7 @@ fi
 EOF
 
 # Build autotools, because some libraries require recent versions of it.
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF"
+RUN --mount=type=cache,target=/var/cache/src/,id=autotools-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
@@ -75,7 +75,7 @@ done
 EOF
 
 # CMake
-RUN --mount=type=cache,target=/var/cache/src/ <<"EOF"
+RUN --mount=type=cache,target=/var/cache/src/,id=cmake-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
