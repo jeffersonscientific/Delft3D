@@ -6028,7 +6028,7 @@ contains
          ! there is only one val, so it can keep its value
       end if
       if (ierror /= 0) then
-         call mess(LEVEL_FATAL, 'MPI error while performing allreduce on logical')
+         call mess(LEVEL_FATAL, 'mpi_allreduce failed in logical_and_across_partitions')
       end if
    end subroutine logical_and_across_partitions
 
