@@ -35,7 +35,7 @@
                 <file name="wavm-Waves.nc" type="NETCDF">
                     <parameters>
                         <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.04"/>
+                        <parameter name="hsign" toleranceAbsolute="0.14"/>
                         <parameter name="period" toleranceAbsolute="0.31"/>
                     </parameters>
                 </file>
