@@ -20,6 +20,9 @@ object DWaqValidationDocument : BuildType({
     steps {
         python {
             name = "Generate functionality report"
+            environment = venv {
+                requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
+            }
             command = file {
                 filename = "test/deltares_testbench/scripts/generate_functionality_report.py"
                 scriptArguments = "--engine_dir_name %engine_dir%"

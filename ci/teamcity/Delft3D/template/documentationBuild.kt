@@ -46,6 +46,9 @@ object TemplateDocumentationBuild : Template({
         }
         python {
             name = "Update infrastructure for functionality report"
+            environment = venv {
+                requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
+            }
             command = file {
                 filename = "test/deltares_testbench/scripts/update_functionality_report.py"
                 scriptArguments = "--reldir ./%engine_dir%"
@@ -53,6 +56,9 @@ object TemplateDocumentationBuild : Template({
         }
         python {
             name = "Generate report"
+            environment = venv {
+                requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
+            }
             command = file {
                 filename = "test/deltares_testbench/scripts/generate_report.py"
                 scriptArguments = "--texfile %engine_dir%/doc/validation/%engine_name%_validation_doc.tex"

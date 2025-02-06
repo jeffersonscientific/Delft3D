@@ -15,6 +15,9 @@ object DflowfmDwavesValidationDocument : BuildType({
 
     steps {
         python {
+            environment = venv {
+                requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
+            }
             name = "Generate functionality report"
             command = file {
                 filename = "test/deltares_testbench/scripts/generate_functionality_report.py"
