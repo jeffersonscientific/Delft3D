@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import sys
 
 from minio import Minio
 from minio.error import S3Error
@@ -25,7 +26,15 @@ prefix = f"cases/{args.engine_dir}"
 local_dir = f"./{args.engine_dir}"
 
 
-def download_from_minio(bucket, prefix, local):
+def download_from_minio(bucket: str, prefix: str, local: str) -> None:
+    """
+    Download files from MinIO bucket to a local directory.
+
+    Args:
+        bucket (str): Name of the S3 bucket.
+        prefix (str): Prefix of the files to download.
+        local (str): Local directory to save the downloaded files.
+    """
     objects = client.list_objects(bucket, prefix=prefix, recursive=True)
     for obj in objects:
         key = obj.object_name
@@ -41,3 +50,4 @@ try:
     download_from_minio(bucket_name, prefix, local_dir)
 except S3Error as e:
     print(f"Error occurred: {e}")
+    sys.exit(1)
