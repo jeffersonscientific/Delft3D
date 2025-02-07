@@ -32,16 +32,26 @@ object TemplateDocumentationBuild : Template({
     }
 
     steps {
-        powerShell {
+        python {
             name = "Checkout Testbench cases from MinIO"
             id = "CHECKOUT_TESTBENCH_CASES_FROM_MINIO"
-            scriptMode = script {
-                content = """
-                    echo "Installing Minio Client (mc)"
-                    Invoke-WebRequest -Uri "https://dl.minio.io/client/mc/release/windows-amd64/mc.exe" -OutFile ".\mc.exe"
-                    .\mc.exe alias set dsc-testbench https://s3.deltares.nl %s3_dsctestbench_accesskey% %s3_dsctestbench_secret%
-                    .\mc cp --recursive dsc-testbench/dsc-testbench/cases/%engine_dir% .
-                """.trimIndent()
+            environment = venv {
+            requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
+            }
+            command = file {
+                filename = "test/deltares_testbench/scripts/download_from_s3.py"
+                scriptArguments = "--access_key %s3_dsctestbench_accesskey% --secret_key %s3_dsctestbench_secret% --engine_dir %engine_dir%"
+            }
+            }
+        }
+        python {
+            name = "Checkout Testbench cases from MinIO"
+            id = "CHECKOUT_TESTBENCH_CASES_FROM_MINIO"
+            environment = venv {
+                requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
+            }
+            command = file {
+                filename = "test/deltares_testbench/scripts/checkout_testbench_cases.py"
             }
         }
         python {
