@@ -31,6 +31,10 @@ project {
     template(TemplateMonitorPerformance)
     template(TemplateFailureCondition)
     template(TemplateDocumentationBuild)
+    template(TemplateDocumentationCheckout)
+    template(TemplateDocumentationUpdateInfrastructure)
+    template(TemplateDocumentationGenerateFunctionality)
+    template(TemplateDocumentationGenerateReport)
 
     subProject {
         id("Linux")

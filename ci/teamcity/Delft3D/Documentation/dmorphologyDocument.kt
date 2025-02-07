@@ -8,12 +8,20 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 import Delft3D.template.*
 
 object DMorphologyValidationDocument : BuildType({
-    templates(TemplateDocumentationBuild)
+    templates(
+        TemplateDocumentationBuild,
+        TemplateDocumentationCheckout,
+        TemplateDocumentationUpdateInfrastructure,
+        TemplateDocumentationGenerateReport)
 
     name = "D-Morphology - Validation and Functionality document (Latex/PDF)"
 
     params {
         param("engine_dir", "e02_dflowfm")
         param("engine_name", "dmorphology")
+    }
+
+    steps {
+        stepsOrder = arrayListOf("CHECKOUT_TESTBENCH_CASES_FROM_MINIO", "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT", "GENERATE_REPORT")
     }
 })
