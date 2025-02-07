@@ -232,16 +232,6 @@ def generate_pdf(u_dir: str, u_doc: str) -> int:
                 "##teamcity[testStarted  name='Generating: %s' message='Final' captureStandardOutput='true']" % (u_doc)
             )
 
-        to_execute = "%s update" % _svnexe
-        svn_update = subprocess.Popen(to_execute, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).wait()
-        if svn_update == "":
-            print_stderr(
-                "##teamcity[testFailed name='Generating: %s' message='SVN Update Failed' details='%s']"
-                % (u_doc, to_execute)
-            )
-            _build_failure += 1
-            return 1
-
         error = run_pdflatex(u_doc)
         if error == 1:
             print_stderr(
