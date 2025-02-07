@@ -34,7 +34,7 @@ object TemplateDocumentationBuild : Template({
     steps {
         powerShell {
             name = "Checkout Testbench cases from MinIO"
-            id = "Checkout_Testbench_cases_from_MinIO"
+            id = "CHECKOUT_TESTBENCH_CASES_FROM_MINIO"
             scriptMode = script {
                 content = """
                     echo "Installing Minio Client (mc)"
@@ -46,6 +46,7 @@ object TemplateDocumentationBuild : Template({
         }
         python {
             name = "Update infrastructure for functionality report"
+            id = "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT"
             environment = venv {
                 requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
             }
@@ -56,6 +57,7 @@ object TemplateDocumentationBuild : Template({
         }
         python {
             name = "Generate report"
+            id = "GENERATE_REPORT"
             environment = venv {
                 requirementsFile = "test/deltares_testbench/scripts/requirements.txt"
             }
