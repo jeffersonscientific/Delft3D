@@ -6,7 +6,7 @@
             <checks>
                 <file name="wave/wavm-hkwm_2017-squaredNet_HK_20190507_v01_cut_ref2.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="dir" toleranceAbsolute="400.0"/>
+                        <parameter name="dir" toleranceAbsolute="370.0"/>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
                         <parameter name="period" toleranceAbsolute="0.03"/>
                     </parameters>
