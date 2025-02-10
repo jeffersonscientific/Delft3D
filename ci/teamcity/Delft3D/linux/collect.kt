@@ -47,18 +47,6 @@ object LinuxCollect : BuildType({
             path = "/usr/bin/python3"
             arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimr_version_lnx64.txt"
         }
-        script {
-            name = "Copy libraries"
-            workingDir = "lnx64/lib"
-            scriptContent = """
-                #!/usr/bin/env bash
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_core.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_avx*.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_def*.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_intel_thread.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_sequential.so* .
-            """.trimIndent()
-        }
     }
 
     failureConditions {
