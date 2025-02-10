@@ -68,7 +68,7 @@ contains
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, jj, ki, jastep, kk
+      integer :: j, ki, jastep, kk
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -404,9 +404,15 @@ contains
                if (jatem > 0 .and. keepstbndonoutflow == 0) then
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
-               if (jased > 0) then
+               if (jased > 0 .and. jased < 4) then
                   do j = 1, mxgr
                      sed(j, kb) = sed(j, ki)
+                  end do
+               end if
+               !
+               if (jased > 0 .and. stm_included) then
+                  do j = 1, stmpar%lsedsus
+                     constituents(ISED1 + j - 1, kb) = constituents(ISED1 + j - 1, ki)
                   end do
                end if
             end if
@@ -419,14 +425,6 @@ contains
          end if
       end if
 
-      if (jased > 0 .and. .not. stm_included) then
-         ! we removed sed from the morpho code, so we need this:
-         do j = 1, stmpar%lsedsus
-            jj = ised1 + j - 1
-            constituents(jj, kb) = constituents(jj, ki)
-         end do
-      end if
-      
       do k = 1, 0 !  ndxi ! for test selectiveZ.mdu
          if (xz(k) > 270) then
             do kk = kbot(k), ktop(k)
