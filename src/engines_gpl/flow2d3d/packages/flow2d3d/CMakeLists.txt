@@ -138,7 +138,7 @@ if (UNIX)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
+                        netcdf
                         netcdff)
 
     target_link_libraries(${library_name} ${oss_dependencies})
@@ -166,7 +166,7 @@ if (WIN32)
                             "comdlg32.lib"
                             "gdi32.lib"
                             "winspool.lib"
-                            "netcdf.lib")
+    )
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")

@@ -31,7 +31,7 @@ add_executable(${executable_name}   ${headers}
 target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netcdf4
+    set(exe_dependencies netcdf
                          netcdff)
 
     target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})

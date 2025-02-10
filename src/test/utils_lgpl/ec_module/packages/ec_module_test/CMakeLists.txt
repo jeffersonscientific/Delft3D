@@ -45,7 +45,7 @@ if(WIN32)
                          io_netcdf_data
                          kdtree_wrapper
                          kdtree2
-                         netcdf4
+                         netcdf
                          netcdff)
 
     target_link_directories(${executable_name} PRIVATE

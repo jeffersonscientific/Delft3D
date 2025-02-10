@@ -53,7 +53,7 @@ endif(UNIX)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netcdf4
+                                            netcdf
                                             netcdff)
 endif(WIN32)
 

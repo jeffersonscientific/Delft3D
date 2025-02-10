@@ -68,7 +68,7 @@ endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
+                        netcdf
                         netcdff)
 endif(WIN32)
 

@@ -144,7 +144,7 @@ target_link_libraries(${library_name} PRIVATE
                       morphology_io
                       morphology_kernel
                       morphology_plugins_c
-                      netcdf4
+                      netcdf
                       netcdff
                       polypack
                       trachytopes_io

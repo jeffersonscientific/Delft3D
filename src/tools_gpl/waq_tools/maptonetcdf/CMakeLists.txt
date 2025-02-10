@@ -30,7 +30,7 @@ endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                         netcdf4
+                         netcdf
                          netcdff)
 
     target_link_libraries(${executable_name} ${oss_dependencies})
@@ -54,9 +54,6 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name}
-                          "netcdf.lib")
 
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
