@@ -28,9 +28,9 @@ object WindowsBuild : BuildType({
 
     params {
         param("intel_fortran_compiler", "ifort")
+        param("container.tag", "vs2019-intel2023")
+        param("generator", """"Visual Studio 16 2019"""")
         param("enable_code_coverage_flag", "OFF")
-        param("container.tag", "vs2022-intel2024")
-        param("generator", """"Visual Studio 17 2022"""")
         param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
         param("build_type", "Release")
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
