@@ -51,13 +51,6 @@ def which(program):
 
 
 def check_installation():
-    global _bibtex   
-    global _initexmf 
-    global _makeindex
-    global _miktexpm 
-    global _pdflatex 
-    global _start_dir
-    global _svnexe
     error = 0
     
     try:  

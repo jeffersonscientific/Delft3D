@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 import generate_latex_doc as gdoc  # gdoc: Generate DOCument
 import pytz
+from executables import Executables
 
 # Define the timezone for the Netherlands
 netherlands_tz = pytz.timezone("Europe/Amsterdam")
@@ -13,93 +14,8 @@ netherlands_tz = pytz.timezone("Europe/Amsterdam")
 _d1 = 0  # reference date (i.e. today)
 _d2 = 0  # reference date minus delta (delta = one day)
 
-_bibtex = "not set"
-_initexmf = "not set"
-_makeindex = "not set"
-_miktexpm = "not set"
-_pdflatex = "not set"
 _start_dir = "not set"
-_svnexe = "not set"
 
-
-def is_exe(fpath: str) -> bool:
-    """Check if the file at the given path is executable.
-
-    Args:
-        fpath (str): The file path.
-
-    Returns
-    -------
-        bool: True if the file is executable, False otherwise.
-    """
-    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-
-def which(program: str) -> str:
-    """Locate a program file in the system's PATH.
-
-    Args:
-        program (str): The name of the program to locate.
-
-    Returns
-    -------
-        str: The path to the program if found, None otherwise.
-    """
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
-
-
-def check_installation() -> int:
-    """Check the installation of required executables.
-
-    Returns
-    -------
-        int: 0 if all required executables are found, 1 otherwise.
-    """
-    global _bibtex
-    global _initexmf
-    global _makeindex
-    global _miktexpm
-    global _pdflatex
-    global _start_dir
-    global _svnexe
-
-    try:
-        os.environ["PATH"]
-    except KeyError:
-        print("Please set the environment variable PATH")
-        return 1
-
-    _bibtex = which("bibtex.exe")
-    _initexmf = which("initexmf.exe")
-    _makeindex = which("makeindex.exe")
-    _miktexpm = which("mpm.exe")
-    _pdflatex = which("pdflatex.exe")
-
-    print("Using bibtex   : %s" % _bibtex)
-    print("Using initexmf : %s" % _initexmf)
-    print("Using makeindex: %s" % _makeindex)
-    print("Using miktexpm : %s" % _miktexpm)
-    print("Using pdflatex : %s" % _pdflatex)
-
-    if _bibtex is None or _initexmf is None or _makeindex is None or _miktexpm is None or _pdflatex is None:
-        return 1
-
-    _svnexe = which("svn.exe")
-    if _svnexe is None:
-        return 1
-    print("Using svn      : %s" % _svnexe)
-    return 0
 
 
 def run_make_index(u_doc: str) -> int:
@@ -152,9 +68,15 @@ def main(argv: list) -> int:
         funcs_path = os.path.join(
             _start_dir, engine_dir_name, "doc", "functionalities", engine_name + "_functionalities_doc.tex"
         )
-
-    error = check_installation()
-    if error == 1:
+    error = 0
+    try:
+        os.environ["PATH"]
+    except KeyError:
+        print("Please set the environment variable PATH")
+        error = 1
+    executables = Executables()
+    executables.assign_installations()
+    if error == 1 or executables.are_executables_invalid():
         print("Check installation")
         sys.exit(1)
 
@@ -165,7 +87,7 @@ def main(argv: list) -> int:
     # Generate the functionalities document
     if os.path.exists(funcs_path):
         um_dir, um_doc = os.path.split(funcs_path)
-        error_funcs_doc = gdoc.generate_pdf(um_dir, um_doc)
+        error_funcs_doc = gdoc.generate_pdf(um_dir, um_doc, executables)
 
     error_funcdoc = 0
 
@@ -175,7 +97,7 @@ def main(argv: list) -> int:
         if f_name.find("fxx") == -1:
             if f_name[0] == "f":
                 um_dir = os.path.join(engine_dir, f_name, "doc")
-                error = gdoc.generate_pdf(um_dir, "functionality_report")
+                error = gdoc.generate_pdf(um_dir, "functionality_report", executables)
                 error_funcdoc = max(error_funcdoc, error)
 
     return max(error_funcdoc, error_funcs_doc)

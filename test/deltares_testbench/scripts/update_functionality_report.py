@@ -8,9 +8,6 @@ import pytz
 # Define the timezone for the Netherlands
 netherlands_tz = pytz.timezone("Europe/Amsterdam")
 
-global _script_dir
-
-
 def inplace_change(s: str, old_string: str, new_string: str) -> str:
     """
     Replace occurrences of a substring within a string with a new substring.
@@ -58,12 +55,13 @@ def subs_in_file(file_name: str, src: str, dst: str) -> None:
         f.close()
 
 
-def recursive_walk(folder: str) -> None:
+def recursive_walk(folder: str, script_dir: str) -> None:
     """
     Recursively walks through the given folder, generates documentation files, and organizes them into a LaTeX.
 
     Args:
         folder (str): The path to the folder to walk through.
+        script_dir (str): The path of the script.
 
     This function performs the following steps:
     1. Creates a "functionalities/chapters" directory inside the given folder if it doesn't exist.
@@ -80,7 +78,6 @@ def recursive_walk(folder: str) -> None:
             - If the sub-item is a directory, adds a CHAPTER section to both the item's "testcases.tex" file
               and the main "testcases.tex" file.
     """
-    global _script_dir
     e_name = os.path.basename(os.path.normpath(folder))
     functionalities_dir = os.path.join(folder, "doc", "functionalities", "chapters")
     if not os.path.exists(functionalities_dir):
@@ -105,7 +102,7 @@ def recursive_walk(folder: str) -> None:
 
             print("%s" % f_name)
             # copy template functionality report directory
-            src = os.path.join(_script_dir, "template_functionality_report")
+            src = os.path.join(script_dir, "template_functionality_report")
             dst = doc_dir
 
             func_tex = os.path.join(doc_dir, "chapters", "testcases.tex")
@@ -171,8 +168,6 @@ def main(argv: list[str]) -> None:
     -------
         None
     """
-    global _script_dir
-
     parser = argparse.ArgumentParser(description="Batch process to remove side toc in HTML-files")
     # run_mode_group = parser.add_mutually_exclusive_group(required=False)
     parser.add_argument("-r", "--reldir", help="Relative path to engine directory, ex. e01_d3dflow.", dest="rel_dir")
@@ -191,16 +186,16 @@ def main(argv: list[str]) -> None:
         print("Given directory does not exists: %s" % src_dir)
         return
 
-    _script_dir = os.path.join(start_dir, os.path.dirname(__file__))
+    script_dir = os.path.join(start_dir, os.path.dirname(__file__))
 
     # relative path
 
     os.chdir(src_dir)
 
-    print("Script directory : %s" % _script_dir)
+    print("Script directory : %s" % script_dir)
     print("Start directory  : %s" % start_dir)
     print("Working directory: %s" % os.getcwd())
-    recursive_walk(src_dir)
+    recursive_walk(src_dir, script_dir)
     print("Processing done")
 
     cwd = os.chdir(start_dir)
