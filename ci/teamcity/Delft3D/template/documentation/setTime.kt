@@ -9,6 +9,11 @@ import java.io.File
 object TemplateSetTimeVariable : Template({
     name = "Set time variable template."
 
+    params {
+        // Environment variables that are overwritten in the build.
+        param("env.TIME_ISO_8601", "")
+    }
+
     steps {
         script {
             name = "Set time variable step."
