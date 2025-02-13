@@ -577,7 +577,7 @@ FROM base AS all
 RUN set -eo pipefail && \
     cat <<EOT > /root/.bashrc
 source /opt/intel/oneapi/setvars.sh
-export FC=mpiifort CXX=mpicxx CC=mpiicx
+export FC=mpi${INTEL_FORTRAN_COMPILER} CXX=mpiicpx CC=mpiicx
 export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH
 EOT
