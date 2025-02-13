@@ -36,10 +36,6 @@ module m_setlinktocornerweights
 
    private
 
-    double precision :: ax, ay, wuL, wud, csa, sna
-    integer :: k, L, ierr, nx
-    integer :: k1, k2, k3, k4
-    integer :: ka, kb, LL
    public :: setlinktocornerweights
    public :: allocatelinktocornerweights
 
@@ -278,92 +274,6 @@ contains
    end subroutine setlinktocornerweights
 
  subroutine allocatelinktocornerweights() ! allocate corner related link x- and y weights
-    use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
-    use m_netw, only: numk
-    use m_alloc
-
-    implicit none
-
-    integer ierr
-
-    if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
-    if (allocated(wcnxy)) deallocate (wcnxy)
-    allocate (wcnx3(lnx), stat=ierr); 
-    call aerr('wcnx3(lnx) ', ierr, lnx)
-    allocate (wcny3(lnx), stat=ierr); 
-    call aerr('wcny3(lnx) ', ierr, lnx)
-    allocate (wcnx4(lnx), stat=ierr); 
-    call aerr('wcnx4(lnx) ', ierr, lnx)
-    allocate (wcny4(lnx), stat=ierr); 
-    call aerr('wcny4(lnx) ', ierr, lnx)
-    if (allocated(wcLn)) deallocate (wcLn)
-    allocate (wcLn(2, lnx), stat=ierr); 
-    call aerr('wcLn(2,lnx)', ierr, lnx)
-    allocate (wcnxy(3, numk), stat=ierr); 
-    call aerr('wcnxy(3,numk)', ierr, 3 * numk)
-    allocate (jacorner(numk), stat=ierr)
-    call aerr('jacorner(numk)', ierr, numk)
-
-    if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
-    allocate (cscnw(nrcnw), stat=ierr); 
-    call aerr('cscnw(nrcnw)', ierr, nrcnw)
-    allocate (sncnw(nrcnw), stat=ierr); 
-    call aerr('sncnw(nrcnw)', ierr, nrcnw)
-    allocate (kcnw(nrcnw), stat=ierr); 
-    call aerr(' kcnw(nrcnw)', ierr, nrcnw)
-    allocate (nwalcnw(2, nrcnw), stat=ierr); 
-    call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
-    allocate (sfcnw(nrcnw), stat=ierr); 
-    call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
-
-    cscnw = 0
-    sncnw = 0
-    kcnw = 0
-    nwalcnw = 0
-    sfcnw = 0
-    nrcnw = 0
-    do k = 1, numk ! set up admin for corner velocity alignment at closed walls
-
-!    if ( nmk(k) - int(wcnxy (3,k)) == 2 ) then ! two more netlinks than flowlinks to this corner
-       if (jacorner(k) == 1) then
-          nrcnw = nrcnw + 1 ! cnw = cornerwall point (netnode)
-          kcnw(nrcnw) = k
-          ka = 0; kb = 0
-          do LL = 1, nmk(k)
-             L = nod(k)%lin(LL) ! netstuff
-             if (lnn(L) == 1) then
-                if (ka == 0) then
-                   if (lne2ln(L) <= 0 .and. kn(3, L) /= 0) then ! SPvdP: closed boundaries used in determination of normal vector only
-                      call othernode(k, L, ka) ! use other node on closed boundary
-                   else
-                      ka = k ! use own node on open boundary
-                   end if
-                else if (kb == 0 .and. kn(3, L) /= 0) then
-                   if (lne2ln(L) <= 0) then ! SPvdP: closed boundaries used in determination of normal vector only
-                      call othernode(k, L, kb) ! use other node on closed boundary
-                   else
-                      kb = k ! use own node on closed boundary
-                   end if
-                end if
-             end if
-          end do
-          if (ka /= 0 .and. kb /= 0 .and. ka /= kb) then ! only for 2D netnodes
-             call normalin(xk(ka), yk(ka), xk(kb), yk(kb), csa, sna, xk(k), yk(k), jsferic, jasfer3D, dxymis)
-             cscnw(nrcnw) = csa
-             sncnw(nrcnw) = sna
-          end if
-
-       end if
-
-    end do
-
-    if (ja_Perot_weight_update == 0) then
-       deallocate (wcnxy, acn, jacorner)
-    end if
-
- end subroutine set_linktocornerweights
-
- subroutine allocate_linktocornerweights() ! allocate corner related link x- and y weights
     use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner
     use m_netw, only: numk
     use m_alloc

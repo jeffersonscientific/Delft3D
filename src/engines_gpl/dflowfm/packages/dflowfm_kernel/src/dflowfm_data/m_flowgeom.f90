@@ -166,15 +166,6 @@ module m_flowgeom
    double precision, allocatable :: wwL(:) !< wall contribution to link weights wcl
    double precision, allocatable :: wcxy(:, :) !< center weight factors (2,ndx) , only for normalising
    double precision, allocatable :: wc(:) !< center weight factors (ndx)   , only for normalising
-   
-
-   double precision, dimension(:, :), allocatable :: wcnxy ! corner weight factors (2,numk) , only for normalising
-   integer, dimension(:), allocatable :: jacorner ! corner node (1) or not (0), dim(numk)
-   
-   double precision, allocatable :: wwL(:) !< wall contribution to link weights wcl
-   double precision, allocatable :: wcxy(:, :) !< center weight factors (2,ndx) , only for normalising
-   double precision, allocatable :: wc(:) !< center weight factors (ndx)   , only for normalising
-   
 
    double precision, allocatable :: csb(:, :) !< cosine orientation from left/right neighboring flownode to flowlink, left/right as ln
    double precision, allocatable :: snb(:, :) !< sine   orientation from left/right neighboring flownode to flowlink, left/right as ln
