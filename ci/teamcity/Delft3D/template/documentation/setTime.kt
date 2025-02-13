@@ -20,7 +20,7 @@ object TemplateSetTimeVariable : Template({
             name = "Set time variable step"
             id = "SET_TIME_VARIABLE"
             scriptContent = """
-                call windows/scripts/setTimeParam.bat
+                call ci/teamcity/Delft3D/windows/scripts/setTimeParam.bat
             """.trimIndent()
         }
     }
