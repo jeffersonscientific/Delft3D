@@ -86,6 +86,7 @@ module m_fill_valobs
       real(kind=dp), allocatable :: poros(:)
       real(kind=dp), allocatable :: ueux(:)
       real(kind=dp), allocatable :: ueuy(:)
+      real(kind=dp), allocatable :: tmp_interp(:)
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
@@ -97,6 +98,11 @@ module m_fill_valobs
          call realloc(ueux, ndkx, keepExisting=.false., fill=0d0)
          call realloc(ueuy, ndkx, keepExisting=.false., fill=0d0)
       end if
+      
+      if (.not. allocated(tmp_interp)) then
+         call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0d0)
+      end if
+      
       !
       if (jawave > 0) then
          if (jahissigwav == 0) then
@@ -251,19 +257,19 @@ module m_fill_valobs
             ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
             ! (mis)use ueux to store cel cntres and salinity etc. noy used as ueux after this 
                 do j = 2, ndkx
-                   ueux(j) = 0.5d0 * (zws(j) + zws(j - 1))
+                   tmp_interp(j) = 0.5d0 * (zws(j) + zws(j - 1))
                 end do
                 call interpolate_horizontal (ueux,i,IPNT_ZCS)  
             end if
             
             if (jasal > 0) then
-               ueux = constituents(isalt,:)
-               call interpolate_horizontal (ueux,i,IPNT_SA1)
+               tmp_interp = constituents(isalt,:)
+               call interpolate_horizontal (tmp_interp,i,IPNT_SA1)
             end if
             
             if (jatem > 0) then
-               ueux = constituents(itemp,:)
-               call interpolate_horizontal (ueux,i,IPNT_TEM1)
+               tmp_interp = constituents(itemp,:)
+               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1)
             end if 
 
 !           From here back to normal (snapping in stead of interpolating)           

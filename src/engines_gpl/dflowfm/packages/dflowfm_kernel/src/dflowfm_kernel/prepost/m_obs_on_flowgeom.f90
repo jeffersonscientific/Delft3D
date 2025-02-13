@@ -136,13 +136,7 @@ contains
       integer :: nloctype1D, nloctype2D, nloctypeAll
       type(t_ObservationPoint), pointer :: pOPnt
       
-      
-
       ntotal = nend - nstart + 1
-      if (ntotal <= 0) then
-         return
-      end if
-
       ! realloc temperary arrays for searching
       call realloc(ixy2obs0, ntotal, keepExisting=.false.)
       call realloc(xobs_tmp0, ntotal, keepExisting=.false.)
