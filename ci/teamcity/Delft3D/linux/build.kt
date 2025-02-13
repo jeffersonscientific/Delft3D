@@ -59,10 +59,6 @@ object LinuxBuild : BuildType({
             scriptContent = """
                 #!/bin/bash
                 set -eo pipefail
-                source /opt/intel/oneapi/setvars.sh
-                export LD_LIBRARY_PATH=/usr/local/lib:${'$'}{LD_LIBRARY_PATH}
-                export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${'$'}{PKG_CONFIG_PATH}
-                export FC=mpi%intel_fortran_compiler% CXX=mpicxx CC=mpiicx
 
                 cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
                 cmake --build build_%product% --parallel --target install --config %build_type%
