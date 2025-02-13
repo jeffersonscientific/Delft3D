@@ -25,7 +25,7 @@ def download_file(client, bucket, key, local_path, last_modified, version_id=Non
     dir_path = os.path.dirname(local_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path, exist_ok=True)
-        print(f"Created directory: {dir_path}")
+        print(f"Download directory: {dir_path}")
     if not os.path.exists(local_path):
         client.fget_object(bucket, key, local_path, version_id=version_id)
 
@@ -53,7 +53,7 @@ def download_from_minio(bucket: str, prefix: str, local: str, iso_time: str) -> 
     filtered_objects = [obj for obj in objects if obj.is_latest and obj.last_modified <= filter_time]
     
     # Batch processing
-    batch_size = 10
+    batch_size = 50
     for i in range(0, len(filtered_objects), batch_size):
         batch = filtered_objects[i:i + batch_size]
         download_batch(client, bucket, batch, local, prefix)
