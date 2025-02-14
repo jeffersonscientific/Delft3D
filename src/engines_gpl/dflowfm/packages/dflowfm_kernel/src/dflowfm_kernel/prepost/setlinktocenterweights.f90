@@ -250,7 +250,7 @@ contains
          end if
       end if
 
-      kfs = 0
+      !kfs = 0
 
    end subroutine setlinktocenterweights
 
