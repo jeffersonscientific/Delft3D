@@ -43,12 +43,12 @@ contains
 
    subroutine setlinktocornerweights() ! set corner related link x- and y weights
       use precision, only: dp
-      use m_flow
-      use m_netw
-      use m_flowgeom
+      use m_flow, only: ja_Perot_weight_update, PEROT_STATIC, jacomp, irov
+      use m_netw, only: nmk, numk, nod, lnn, xk, yk, kn
+      use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcln, lnx1d, lnx, lncn, wcnxy, kcu, wu, dx, csu, snu, acn, cscnw, sncnw, jacorner, kcnw, lne2ln
       use geometry_module, only: normalin
       use m_sferic, only: jsferic, jasfer3D
-      use m_missing, only: dmiss, dxymis
+      use m_missing, only: dxymis
       use gridoperations
       use m_lin2corx, only: lin2corx
       use m_lin2cory, only: lin2cory
@@ -57,6 +57,7 @@ contains
       integer :: k, L, nx
       integer :: k3, k4
       integer :: ka, kb, LL
+      integer :: krcnw ! counter for cn points attached to 2 closed walls
       wcnx3 = 0
       wcny3 = 0
       wcnx4 = 0
@@ -70,15 +71,12 @@ contains
       wcLn = 0
       !endif
 
-      jacorner = 0
       nx = 0
       do L = lnx1D + 1, lnx
          k3 = lncn(1, L); k4 = lncn(2, L)
          nx = max(nx, k3, k4)
       end do
       wcnxy = 0
-
-      jacorner = 0
 
       do L = lnx1D + 1, lnx
          if (abs(kcu(L)) == 1) then
@@ -135,7 +133,6 @@ contains
 !    wcnxy(2,k4) = wcnxy(2,k4) + lin2cory(L,2,ax,ay)
       end do
 
-
       do L = lnx1D + 1, lnx
          if (abs(kcu(L)) == 1) cycle
          k3 = lncn(1, L); k4 = lncn(2, L)
@@ -164,15 +161,15 @@ contains
       cscnw = 0
       sncnw = 0
       kcnw = 0
-      nwalcnw = 0
-      sfcnw = 0
-      nrcnw = 0
+      !nwalcnw = 0
+      !sfcnw = 0
+      krcnw = 0
       do k = 1, numk ! set up admin for corner velocity alignment at closed walls
 
 !    if ( nmk(k) - int(wcnxy (3,k)) == 2 ) then ! two more netlinks than flowlinks to this corner
          if (jacorner(k) == 1) then
-            nrcnw = nrcnw + 1 ! cnw = cornerwall point (netnode)
-            kcnw(nrcnw) = k
+            krcnw = krcnw + 1 ! cnw = cornerwall point (netnode)
+            kcnw(krcnw) = k
             ka = 0; kb = 0
             do LL = 1, nmk(k)
                L = nod(k)%lin(LL) ! netstuff
@@ -194,8 +191,8 @@ contains
             end do
             if (ka /= 0 .and. kb /= 0 .and. ka /= kb) then ! only for 2D netnodes
                call normalin(xk(ka), yk(ka), xk(kb), yk(kb), csa, sna, xk(k), yk(k), jsferic, jasfer3D, dxymis)
-               cscnw(nrcnw) = csa
-               sncnw(nrcnw) = sna
+               cscnw(krcnw) = csa
+               sncnw(krcnw) = sna
             end if
 
          end if
@@ -218,7 +215,7 @@ contains
       integer ierr
       integer :: k, L
       integer :: k1, k2
-      
+
       if (allocated(wcnx3)) deallocate (wcnx3, wcny3, wcnx4, wcny4)
       if (allocated(wcnxy)) deallocate (wcnxy)
       allocate (wcnx3(lnx), stat=ierr); 
@@ -276,7 +273,7 @@ contains
             nrcnw = nrcnw + 1 ! cnw = cornerwall point (netnode)
          end if
       end do
-      
+
       if (allocated(cscnw)) deallocate (cscnw, sncnw, kcnw, nwalcnw, sfcnw)
       allocate (cscnw(nrcnw), stat=ierr); 
       call aerr('cscnw(nrcnw)', ierr, nrcnw)
