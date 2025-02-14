@@ -58,7 +58,7 @@ module m_flowparameters
    !< bed level of the channel.
    integer :: lincontin !< 0 = no, 1 = yes linear continuity
 
-   integer :: iperot !< Perot weigthing type of cell center velocities ucx, ucy
+   integer :: Perot_type !< Perot weigthing type of cell center velocities ucx, ucy
                                                         !! in vectoren:
                                                         !! 0 : uc*sum(w) = sum (u W)
                                                         !! 1 : uc*A      = sum(u dxa W)
@@ -666,7 +666,7 @@ contains
       !< bed level of the channel.
       lincontin = 0 ! 0 = no, 1 = yes linear continuity
 
-      iperot = 1 ! Perot weigthing type of cell center velocities ucx, ucy
+      Perot_type = 1 ! Perot weigthing type of cell center velocities ucx, ucy
       ! in vectoren:
       ! 0 : uc*sum(w) = sum (u W)
       ! 1 : uc*A      = sum(u dxa W)

@@ -64,7 +64,7 @@ contains
       real(kind=dp) :: dischcorrection
       real(kind=dp) :: uinx, uiny, u1L
 
-      if (iperot /= -1) then
+      if (Perot_type /= -1) then
          ucxq = 0d0; ucyq = 0d0 ! zero arrays
          ucx = 0d0; ucy = 0d0
 
@@ -170,7 +170,7 @@ contains
                if (hs(k) > 0d0) then
                   ucxq(k) = ucxq(k) / hs(k)
                   ucyq(k) = ucyq(k) / hs(k)
-                  if (iperot == 2) then
+                  if (Perot_type == 2) then
                      ucx(k) = ucxq(k)
                      ucy(k) = ucyq(k)
                   end if
@@ -192,7 +192,7 @@ contains
                         ucxq(k) = ucxq(k) / dzz
                         ucyq(k) = ucyq(k) / dzz
                      end if
-                     if (iperot == 2) then
+                     if (Perot_type == 2) then
                         ucx(k) = ucxq(k)
                         ucy(k) = ucyq(k)
                      end if

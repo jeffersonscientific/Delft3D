@@ -1180,7 +1180,7 @@ contains
             walls(2, nw) = k3 ! first wall corner
             walls(3, nw) = k4 ! second wall corner
 
-            if (iperot == -1) then
+            if (Perot_type == -1) then
                nwx = nd(k1)%nwx
                if (nd(k1)%nwx == 0) then
                   allocate (nd(k1)%nw(1))
