@@ -66,10 +66,6 @@ contains
       wcLn = 0
       !endif
 
-      !if (kmx > 0 .and. jased > 0 .and. jased < 4) then
-      wcLn = 0
-      !endif
-
       nx = 0
       do L = lnx1D + 1, lnx
          k3 = lncn(1, L); k4 = lncn(2, L)
