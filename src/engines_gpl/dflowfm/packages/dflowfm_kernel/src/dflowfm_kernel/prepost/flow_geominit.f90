@@ -63,6 +63,7 @@ module m_flow_geominit
    private
 
    public :: flow_geominit
+   public :: getcellsurface1d
 
 contains
 
@@ -151,7 +152,7 @@ contains
       integer :: icn ! corner stuff
       integer :: kk1, kk2, kk3 ! banf stuff
       real(kind=dp) :: dlength, dlenmx, dxorgL
-      real(kind=dp) :: rrr, cs, sn, dis, xn, yn, xt, yt, rl, sf, hdx, alfa, dxlim, dxlink
+      real(kind=dp) :: rrr, cs, sn, dis, xn, yn, xt, yt, rl, sf, alfa, dxlim, dxlink
       real(kind=dp) :: phase
       real(kind=dp) :: xref, yref
       integer :: jaend
@@ -945,6 +946,11 @@ contains
             wu(L) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) ! set 2D link width
          end if
       end do
+      
+      if (jampi > 0) then
+         ! WU of orphan 1D2D links must come from neighbouring partition.
+         call update_ghosts(ITYPE_U, 1, lnx, wu, ierror, ignore_orientation=.true.)
+      end if
 
       k = 0 ! count MAX nr of 1D endpoints, dir zijn dead ends
       do L = 1, lnx
@@ -980,31 +986,7 @@ contains
       end do
       mx1Dend = k
 
-      do L = 1, lnx ! for all links, set area
-         if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
-            ! TODO: UNST-6592: consider excluding ghost links here and do an mpi_allreduce sum later
-            hdx = 0.5d0 * dx(L)
-            k1 = ln(1, L)
-            k2 = ln(2, L)
-            if (k1 > ndx2d) ba(k1) = ba(k1) + hdx * wu(L) ! todo, on 1d2d nodes, choose appropriate wu1DUNI = min ( wu1DUNI, intersected 2D face)
-            if (k2 > ndx2d) ba(k2) = ba(k2) + hdx * wu(L)
-         end if
-      end do      
-
-      do L = lnxi + 1, Lnx
-         k1 = ln(1, L); k2 = ln(2, L)
-         ba(k1) = ba(k2) ! set bnd ba to that of inside point
-      end do
-
-      do k = 1, mx1Dend
-         k1 = n1Dend(k)
-         ba(k1) = 2d0 * ba(k1)
-      end do
-      
-      if (jampi > 0) then
-         ! WU of orphan 1D2D links must come from neighbouring partition.
-         call update_ghosts(ITYPE_U, 1, lnx, wu, ierror, ignore_orientation=.true.)
-      end if
+      call getcellsurface1d()
 
       ! fraction of dist(nd1->edge) to link lenght dx
       call readyy('geominit', 0.94d0)
@@ -1064,12 +1046,18 @@ contains
          end if
       end do
 
-      do n = 1, ndx
+      do n = 1, ndx2D ! internal 2d nodes
          if (ba(n) > 0d0) then
             bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
          end if
       end do
 
+      do n = ndx1Db + 1, ndx ! boundary 2d nodes
+         if (ba(n) > 0d0) then
+            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         end if
+      end do
+      
       ! call message ('cutcell call 4',' ',' ')
       if (allocated(kfs)) deallocate (kfs)
       fnam = '*.cut'
@@ -1515,4 +1503,59 @@ contains
 
    end subroutine flow_geominit
 
+   !> Computes the bottom area of a cell for 1d coordinates.
+   subroutine getcellsurface1d()
+   
+      use m_flowgeom, only: n1Dend, lnx, ndx2d, dx, wu, ln, lnxi, mx1dend, kcu, bai, ndx1Db
+      use m_cell_geometry, only: ba
+      use precision, only: dp
+      
+      implicit none   
+      
+      integer L
+      integer k1
+      integer k2
+      integer k
+      integer n
+      real(kind=dp) :: hdx
+
+      do L = 1, lnx ! for all links, set area
+         if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
+             k1 = ln(1, L)
+             k2 = ln(2, L)
+            if (k1 > ndx2d) ba(k1) = 0
+            if (k2 > ndx2d) ba(k2) = 0
+         end if       
+      end do
+      
+      do L = 1, lnx ! for all links, set area
+         if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
+            ! TODO: UNST-6592: consider excluding ghost links here and do an mpi_allreduce sum later
+            hdx = 0.5d0 * dx(L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            if (k1 > ndx2d) ba(k1) = ba(k1) + hdx * wu(L) ! todo, on 1d2d nodes, choose appropriate wu1DUNI = min ( wu1DUNI, intersected 2D face)
+            if (k2 > ndx2d) ba(k2) = ba(k2) + hdx * wu(L)
+         end if
+      end do      
+
+      do L = lnxi + 1, Lnx
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ba(k1) = ba(k2) ! set bnd ba to that of inside point
+      end do
+
+      do k = 1, mx1Dend
+         k1 = n1Dend(k)
+         ba(k1) = 2d0 * ba(k1)
+      end do
+
+      do n = ndx2D + 1, ndx1Db
+         if (ba(n) > 0d0) then
+            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         end if
+      end do
+      
+   end subroutine getcellsurface1d
+   
 end module m_flow_geominit

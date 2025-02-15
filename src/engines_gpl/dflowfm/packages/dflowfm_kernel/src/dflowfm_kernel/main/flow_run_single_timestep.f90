@@ -51,6 +51,7 @@ contains
       use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
       use m_setlinktocornerweights, only: setlinktocornerweights
       use m_setlinktocenterweights, only: setlinktocenterweights
+      use m_flow_geominit, only: getcellsurface1d
          
       use m_flow
       use timers
@@ -116,7 +117,7 @@ contains
       end if
 
       if (Perot_weight_update == PEROT_UPDATE) then
-         !call setlinktocornerweights()
+         call getcellsurface1d()
          call setlinktocenterweights()
       end if
 
