@@ -986,7 +986,7 @@ contains
       end do
       mx1Dend = k
 
-      call getcellsurface1d()
+      call getcellsurface1d(ba, bai)
 
       ! fraction of dist(nd1->edge) to link lenght dx
       call readyy('geominit', 0.94d0)

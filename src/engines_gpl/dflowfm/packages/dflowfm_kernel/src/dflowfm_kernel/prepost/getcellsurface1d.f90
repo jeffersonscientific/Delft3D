@@ -40,14 +40,16 @@ module m_getcellsurface1d
 contains
 
    !> Computes the bottom area of a cell for 1d coordinates.
-   subroutine getcellsurface1d()
+   subroutine getcellsurface1d(ba, bai)
    
-      use m_flowgeom, only: n1Dend, lnx, ndx2d, dx, wu, ln, lnxi, mx1dend, kcu, bai, ndx1Db
-      use m_cell_geometry, only: ba
+      use m_flowgeom, only: n1Dend, lnx, ndx2d, dx, wu, ln, lnxi, mx1dend, kcu, ndx1Db, ndx
       use precision, only: dp
       
       implicit none   
       
+      real(kind=dp), dimension(ndx), intent(inout) :: ba
+      real(kind=dp), dimension(ndx), intent(inout) :: bai
+
       integer L
       integer k1
       integer k2

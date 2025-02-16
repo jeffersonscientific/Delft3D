@@ -117,7 +117,7 @@ contains
       end if
 
       if (Perot_weight_update == PEROT_UPDATE) then
-         call getcellsurface1d()
+         call getcellsurface1d(ba, bai)
          call setlinktocenterweights()
       end if
 
