@@ -232,7 +232,6 @@ contains
       end do
 
       if (Perot_weight_update == PEROT_STATIC) then
-         deallocate (wcxy)
          deallocate (wc)
          if (allocated(wwL)) then
             deallocate (wwL)
