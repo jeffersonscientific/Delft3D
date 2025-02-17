@@ -36,10 +36,10 @@ module m_setlinktocenterweights
 
    public :: setlinktocenterweights
 
-    contains
-    
+contains
+
    !> set center related linkxy weights
-   subroutine setlinktocenterweights() 
+   subroutine setlinktocenterweights()
       use precision, only: dp
       use m_flow
       use m_netw

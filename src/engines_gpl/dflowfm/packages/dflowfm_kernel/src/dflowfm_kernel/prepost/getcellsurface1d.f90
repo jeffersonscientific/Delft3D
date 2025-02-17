@@ -92,7 +92,7 @@ contains
          ba(k1) = 2d0 * ba(k1)
       end do
 
-      ! compute inverse area of 1D nodes 
+      ! compute inverse area of 1D nodes
       do n = ndx2D + 1, ndx1Db
          if (ba(n) > 0d0) then
             bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights

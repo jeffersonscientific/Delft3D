@@ -38,10 +38,10 @@ module m_allocate_linktocenterweights
 
    public :: allocatelinktocenterweights
 
-    contains
+contains
 
-   !> allocate center related linkxy weights 
-   subroutine allocatelinktocenterweights() 
+   !> allocate center related linkxy weights
+   subroutine allocatelinktocenterweights()
 
       use m_flowgeom
       use m_alloc

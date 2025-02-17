@@ -39,10 +39,10 @@ module m_allocatelinktocornerweights
 
    public :: allocatelinktocornerweights
 
-    contains
+contains
 
    !> Allocate corner related link x- and y weights
-   subroutine allocatelinktocornerweights() 
+   subroutine allocatelinktocornerweights()
       use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, wcnxy, jacorner, lne2ln
       use m_netw, only: numk, numl, kn, lnn
       use m_alloc
