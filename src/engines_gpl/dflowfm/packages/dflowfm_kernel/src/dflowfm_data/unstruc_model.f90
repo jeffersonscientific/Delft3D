@@ -185,7 +185,6 @@ module unstruc_model
    real(kind=dp) :: md_thetav_waq = 0d0 !< thetav for waq
    real(kind=dp) :: md_dt_waqproc = 0d0 !< processes time step
    real(kind=dp) :: md_dt_waqbal = 0d0 !< mass balance output time step (old)
-   integer :: md_flux_int = 1 !< process fluxes integration option (1: WAQ, 2: D-Flow FM)
 
    ! TODO: reading for trachytopes is still within rdtrt, below was added for partitioning (when no initialization)
    character(len=4) :: md_trtrfile = ' ' !< Variable that stores information if trachytopes are used ('Y') or not ('N')
@@ -1238,7 +1237,7 @@ contains
          jalimnor = 1
       end if
 
-      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection); 
+      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection);
       call prop_get(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
       !call prop_get(md_ptr, 'numerics', 'filter'          , jafilter)
       !call prop_get(md_ptr, 'numerics', 'filterorder'     , filterorder)
@@ -2401,7 +2400,6 @@ contains
       call prop_get(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
       call prop_get(md_ptr, 'processes', 'StatisticsFile', md_sttfile, success)
       call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
-      call prop_get(md_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, success)
       call prop_get(md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
       call prop_get(md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
       call prop_get(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling)
@@ -3939,7 +3937,6 @@ contains
       call prop_set(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
       call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
       call prop_set(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
-      call prop_set(prop_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, 'Process fluxes integration option (1: WAQ, 2: D-Flow FM)')
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
