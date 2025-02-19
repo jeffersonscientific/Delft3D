@@ -136,8 +136,21 @@ if (UNIX)
     set(mpi_module_path ${mpi_include_path})
 
     #NetCDF
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    pkg_check_modules(NETCDF     REQUIRED netcdf)
+    pkg_check_modules(NETCDF_FTN REQUIRED netcdf-fortran)
+
+    # Create two separate targets, because the targets created by pkg_check_modules with IMPORTED_TARGET
+    # mix variables for both static and dynamic linking of netcdf, and the C library is not explicitly
+    # linked by the Fortran target. Use the same names as on windows.
+    add_library(netcdf INTERFACE)
+    target_include_directories(netcdf INTERFACE ${NETCDF_INCLUDE_DIRS})
+    target_link_directories(netcdf INTERFACE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(netcdf INTERFACE ${NETCDF_LIBRARIES})
+
+    add_library(netcdff INTERFACE)
+    target_include_directories(netcdf-fortran INTERFACE ${NETCDF_FTN_INCLUDE_DIRS})
+    target_link_directories(netcdf-fortran INTERFACE ${NETCDF_FTN_LIBRARY_DIRS})
+    target_link_libraries(netcdf-fortran INTERFACE ${NETCDF_FTN_LIBRARIES} netcdf)
 
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)

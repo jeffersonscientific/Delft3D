@@ -9,8 +9,7 @@ if (UNIX)
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${NETCDF_INCLUDEDIR}) 
+
     add_definitions(-DD3D_PLUGIN_EXT=".so")
     add_definitions(-DHAVE_STRUCT_TIMESPEC)
 endif(UNIX)
@@ -47,7 +46,6 @@ if(UNIX)
                               "${expat_include_path}")
 
     target_link_libraries(${library_name} ${oss_dependencies})
-    target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})
 endif()
 
