@@ -144,13 +144,11 @@ if (UNIX)
     # linked by the Fortran target. Use the same names as on windows.
     add_library(netcdf INTERFACE)
     target_include_directories(netcdf INTERFACE ${NETCDF_INCLUDE_DIRS})
-    target_link_directories(netcdf INTERFACE ${NETCDF_LIBRARY_DIRS})
-    target_link_libraries(netcdf INTERFACE ${NETCDF_LIBRARIES})
+    target_link_libraries(netcdf INTERFACE ${NETCDF_LINK_LIBRARIES})
 
     add_library(netcdff INTERFACE)
-    target_include_directories(netcdf-fortran INTERFACE ${NETCDF_FTN_INCLUDE_DIRS})
-    target_link_directories(netcdf-fortran INTERFACE ${NETCDF_FTN_LIBRARY_DIRS})
-    target_link_libraries(netcdf-fortran INTERFACE ${NETCDF_FTN_LIBRARIES} netcdf)
+    target_include_directories(netcdff INTERFACE ${NETCDF_FTN_INCLUDE_DIRS})
+    target_link_libraries(netcdff INTERFACE ${NETCDF_FTN_LINK_LIBRARIES} netcdf)
 
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)

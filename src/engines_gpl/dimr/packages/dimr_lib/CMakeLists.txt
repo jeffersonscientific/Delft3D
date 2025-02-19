@@ -36,7 +36,9 @@ add_library(${library_name} SHARED  ${source}
 
 if(UNIX)
     set(oss_dependencies    deltares_common_c
-                            expat)
+                            expat
+                            netcdf
+    )
 
     target_compile_definitions(${library_name} PRIVATE LINUX64)
 
