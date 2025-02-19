@@ -19,7 +19,7 @@ object Sign : BuildType({
             workingDir = "to_sign"
             scriptMode = script {
                 content = """
-                    ${'$'}files = Get-ChildItem -Path . -Recurse
+                    ${'$'}files = Get-ChildItem -Path . -Recurse -Include *.exe,*.dll | Where-Object { -not ${'$'}_.PSIsContainer }
                     
                     foreach (${'$'}file in ${'$'}files) {
                         try {
