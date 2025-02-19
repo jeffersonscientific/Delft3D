@@ -19,19 +19,19 @@ object Sign : BuildType({
             workingDir = "to_sign"
             scriptMode = script {
                 content = """
-                    $files = Get-ChildItem -Path . -Recurse
+                    ${'$'}files = Get-ChildItem -Path . -Recurse
                     
-                    foreach ($file in $files) {
+                    foreach (${'$'}file in ${'$'}files) {
                         try {
                             # Check if the file is signed
-                            $signature = Get-AuthenticodeSignature -FilePath $file.FullName
-                            if ($signature.Status -eq 'Valid') {
+                            ${'$'}signature = Get-AuthenticodeSignature -FilePath ${'$'}file.FullName
+                            if (${'$'}signature.Status -eq 'Valid') {
                                 # Remove the signed file
-                                Remove-Item -Path $file.FullName -Force
-                                Write-Output "Removed signed file: $($file.FullName)"
+                                Remove-Item -Path ${'$'}file.FullName -Force
+                                Write-Output "Removed signed file: ${'$'}(${'$'}file.FullName)"
                             }
                         } catch {
-                            Write-Output "Error processing file: $($file.FullName)"
+                            Write-Output "Error processing file: ${'$'}(${'$'}file.FullName)"
                         }
                     }
                 """.trimIndent()
