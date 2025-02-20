@@ -16,6 +16,7 @@ gantt
     section Integration Front end
     Teams; Manuals (Installation, User, Technical reference) :31-03-2025, 5d
     Luca; Grid editor (1d2d) Delivery :31-03-2025, 5d
+    Bert; release Quickplot+manuals :31-03-2025, 5d
     section Release Validation + containers
     PT; Testing (new workflows, Grid editor, ...) :07-04-2025, 19d
     WES team; Testing D-Waq, PLCT and D-Part :07-04-2025, 19d
