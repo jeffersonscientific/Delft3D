@@ -16,12 +16,7 @@ add_library(netcdf_c_extension ${c_sources})
 
 target_link_libraries(netcdf_c_extension PRIVATE no_compiler_warnings)
 
-if(UNIX)
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    target_link_libraries(netcdf_c_extension PRIVATE PkgConfig::NETCDF)
-elseif(WIN32)
-    target_link_libraries(netcdf_c_extension PRIVATE "netcdf.lib")
-endif(UNIX)
+target_link_libraries(netcdf_c_extension PRIVATE "netcdf.lib")
 
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${c_sources} )

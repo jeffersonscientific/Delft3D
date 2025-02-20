@@ -54,14 +54,7 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     target_link_libraries(${executable_name} PRIVATE
-         PkgConfig::NETCDF
          netcdff)
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
