@@ -6,6 +6,7 @@ gantt
     Kick-off :20-02-2025, 1d
     section Release prep
     Wrap up feature development :03-03-2025, 5d
+    PT; UI smoketest :03-03-2025, 5d
     section Integration
     All teams; Integration of features :17-03-2025, 5d
     Robin; Release branch :21-03-2025, 1d
