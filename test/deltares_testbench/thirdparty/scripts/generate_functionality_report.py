@@ -11,9 +11,6 @@ from executables import Executables
 # Define the timezone for the Netherlands
 netherlands_tz = pytz.timezone("Europe/Amsterdam")
 
-_d1 = 0  # reference date (i.e. today)
-_d2 = 0  # reference date minus delta (delta = one day)
-
 _start_dir = "not set"
 
 
@@ -46,11 +43,7 @@ def main(argv: list) -> int:
     -------
         int: The maximum error code encountered during the process.
     """
-    global _d1, _d2
     global _start_dir
-
-    _d1 = datetime.now(netherlands_tz) - timedelta(days=1)
-    _d2 = datetime.now(netherlands_tz) + timedelta(days=1)
 
     parser = argparse.ArgumentParser(description="Batch process to generate functionality document")
     parser.add_argument(
@@ -58,7 +51,7 @@ def main(argv: list) -> int:
     )
     args = parser.parse_args()
 
-    funcs_path = "JanM"
+    funcs_path = ""
     error_funcs_doc = 0
 
     _start_dir = os.getcwd()

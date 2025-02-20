@@ -10,8 +10,6 @@ from executables import Executables
 # Define the timezone for the Netherlands
 netherlands_tz = pytz.timezone("Europe/Amsterdam")
 
-_d1 = 0  # reference date (i.e. today)
-_d2 = 0  # reference date minus delta (delta = one day)
 _draft = 0
 _force = 0
 suites = []
@@ -214,7 +212,6 @@ def main(argv: list[str]) -> int:
     -------
         int: Returns 0 if successful, otherwise returns 1.
     """
-    global _d1, _d2
     global _start_dir
     global _draft, _force
     global _um_specified
@@ -235,8 +232,6 @@ def main(argv: list[str]) -> int:
     if args.texfile:
         _um_specified = args.texfile
 
-    _d1 = datetime.now(netherlands_tz) - timedelta(days=1)
-    _d2 = datetime.now(netherlands_tz) + timedelta(days=1)
     _start_dir = os.getcwd()
 
     error = 0

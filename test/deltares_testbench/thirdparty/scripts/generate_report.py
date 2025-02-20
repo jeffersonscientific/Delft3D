@@ -23,15 +23,12 @@ def main(argv: list) -> int:
     """
     _start_dir = "not set"
 
-    _d1 = datetime.now(netherlands_tz) - timedelta(days=1) # reference date (i.e. today)
-    _d2 = datetime.now(netherlands_tz) + timedelta(days=1) # reference date minus delta (delta = one day)
-
     parser = argparse.ArgumentParser(description="Batch process to generate validation and functionality document")
     # run_mode_group = parser.add_mutually_exclusive_group(required=False)
     parser.add_argument("-t", "--texfile", help="Name of the tex-file to generate a document from", dest="val_doc")
     args = parser.parse_args()
 
-    val_path = "JanM"
+    val_path = ""
 
     _start_dir = os.getcwd()
     if args.val_doc:

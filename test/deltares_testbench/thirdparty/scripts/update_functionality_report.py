@@ -174,7 +174,7 @@ def main(argv: list[str]) -> None:
     parser.add_argument("-a", "--absdir", help="Absolute path to engine directory, ex. e01_d3dflow.", dest="abs_dir")
     args = parser.parse_args()
 
-    src_dir = "janm"
+    src_dir = ""
     start_dir = os.getcwd()
     if args.rel_dir:
         rel_dir = args.rel_dir

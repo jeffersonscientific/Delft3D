@@ -36,7 +36,7 @@ def download_from_minio(minio_client, bucket: str, prefix: str, local: str, iso_
     filter_time = datetime.fromisoformat(iso_time)
     
     # Further filter objects based on key content
-    filtered_objects = [obj for obj in objects if "doc" in obj.object_name]
+    filtered_objects = [obj for obj in objects if "/doc/" in obj.object_name]
     
     # Create a dictionary to store the latest version of each object before or on the filter_time
     latest_objects = {}
