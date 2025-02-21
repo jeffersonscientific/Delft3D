@@ -70,7 +70,6 @@ module m_ade2d
       real(kind=dp), dimension(:, :), allocatable :: fluxverbf ! vertical   fluxes
 
       real(kind=dp), dimension(:), allocatable :: difsedubf ! sum of molecular and user-specified diffusion coefficient
-      real(kind=dp), dimension(:), allocatable :: difsedwbf ! sum of molecular and user-specified diffusion coefficient
       real(kind=dp), dimension(:), allocatable :: sigdifibf
 
       real, dimension(:), allocatable :: dumL
@@ -101,7 +100,6 @@ module m_ade2d
       call realloc(fluxverbf, (/1, Ndx/), keepExisting=.true., fill=0d0)
 
       call realloc(difsedubf, 1, keepExisting=.true., fill=0d0)
-      call realloc(difsedwbf, 1, keepExisting=.true., fill=0d0)
       call realloc(sigdifibf, 1, keepExisting=.true., fill=0d0)
 
       allocate (dumL(1:lnkx), stat=ierror); dumL = 0.0
