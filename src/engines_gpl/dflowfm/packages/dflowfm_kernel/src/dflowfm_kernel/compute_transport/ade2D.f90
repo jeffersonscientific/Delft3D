@@ -43,7 +43,7 @@ module m_ade2d
     subroutine fm_ade2d(thevar, qadv, sour, sink, limityp, ierror)
       use m_transport, only: dxiau
       use m_flowgeom, only: Ndx, Lnx, ln, ba ! static mesh information
-      use m_flow, only: Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, kmxn, kmxL, vol1, epshu
+      use m_flow, only: Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, kmxn, kmxL
       use m_alloc, only: realloc
       use precision, only: dp
       use m_solve_2d, only: solve_2d
@@ -64,7 +64,6 @@ module m_ade2d
       integer, intent(in) :: limityp !< limiter type (>0) or upwind (0)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
-      real(kind=dp) :: dvoli
       integer :: k1, k2
 
       real(kind=dp), dimension(:, :), allocatable :: fluxhorbf ! horizontal fluxes
@@ -90,7 +89,7 @@ module m_ade2d
       !real(kind=dp), dimension(lnx), allocatable :: uadv
       real(kind=dp), dimension(:), allocatable :: bfsumhorflux, dumx, dumy
 
-      integer :: k, L
+      integer :: L
 
       ierror = 1
 
@@ -134,10 +133,8 @@ module m_ade2d
          bfsqu(k2) = bfsqu(k2) - min(qadv(L), 0d0)
       end do
 
-      do k = 1, Ndx
-         const_sourbf(1, k) = sour(k)
-         const_sinkbf(1, k) = sink(k)
-      end do
+      const_sourbf=RESHAPE(sour,shape=(/1, ndx/))
+      const_sinkbf=RESHAPE(sink,shape=(/1, ndx/))
 
 !  compute horizontal fluxes, explicit part
       call comp_dxiAu()
