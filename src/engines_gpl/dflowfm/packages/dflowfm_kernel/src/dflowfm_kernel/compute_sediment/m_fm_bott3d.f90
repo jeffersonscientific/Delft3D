@@ -2051,7 +2051,8 @@ contains
       end if
 
     end subroutine fm_sumflux
-
+    
+    !> Apply diffusion to sediment mass in the active layer. 
     subroutine fm_diffusion_active_layer()
       use precision, only: dp
       use m_ade2d, only: fm_ade2d
@@ -2064,7 +2065,6 @@ contains
    !! I/O
    !!
 
-      !real(kind=dp), intent(in) :: dtmor
 
    !!
    !! Local variables
