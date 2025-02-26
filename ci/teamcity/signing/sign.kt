@@ -26,7 +26,12 @@ object Sign : BuildType({
             platform = PowerShellStep.Platform.x64
             scriptMode = script {
                 // We cannot sing this binary, see: https://wiki.tcl-lang.org/page/SDX+under+Windows
-                content = """Move-Item -Path to_sign\\bin\\tclkitsh852.exe -Destination dont_sign\\bin\\tclkitsh852.exe -Force""".trimIndent()
+                content = """
+                    if (-Not (Test-Path -Path dont_sign)) {
+                        New-Item -ItemType Directory -Path dont_sign
+                    }
+                    Move-Item -Path to_sign\\bin\\tclkitsh852.exe -Destination dont_sign\\bin\\tclkitsh852.exe -Force
+                """.trimIndent()
             }
         }
         powerShell {
