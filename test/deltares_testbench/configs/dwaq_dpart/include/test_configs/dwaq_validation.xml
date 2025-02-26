@@ -325,7 +325,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c21_channel_flow_open_sides_scheme11" ref="dwaq_default">
-        <path version="2025-02-20T14:28:20.799000">e03_waq/f09_validation_water_quality_delwaq/c21_channel_flow_open_sides_scheme11</path>
+        <path version="2025-02-24T14:11:35.173000">e03_waq/f09_validation_water_quality_delwaq/c21_channel_flow_open_sides_scheme11</path>
         <checks>
             <file name="dwaq/channel_flow_open_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -340,7 +340,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c22_channel_flow_open_sides_scheme22" ref="dwaq_default">
-        <path version="2025-02-20T14:28:22.403000">e03_waq/f09_validation_water_quality_delwaq/c22_channel_flow_open_sides_scheme22</path>
+        <path version="2025-02-24T14:11:37.850000">e03_waq/f09_validation_water_quality_delwaq/c22_channel_flow_open_sides_scheme22</path>
         <checks>
             <file name="dwaq/channel_flow_open_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -370,7 +370,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c24_tidal_flow_one_dimensional_scheme22" ref="dwaq_default">
-        <path version="2025-02-20T14:28:27.077000">e03_waq/f09_validation_water_quality_delwaq/c24_tidal_flow_one_dimensional_scheme22</path>
+        <path version="2025-02-24T14:11:42.771000">e03_waq/f09_validation_water_quality_delwaq/c24_tidal_flow_one_dimensional_scheme22</path>
         <checks>
             <file name="dwaq/tidal_flow_wq.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
