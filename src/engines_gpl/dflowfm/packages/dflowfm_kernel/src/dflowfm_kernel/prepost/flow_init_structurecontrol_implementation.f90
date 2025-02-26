@@ -1978,7 +1978,7 @@ contains
       do i = 1, num_links
          do nn = 1, 2
             n12 = ln(nn, abs(links(i)))
-            do kk = 1, nd(n12)%lnx ! and flag non-21 links to perot incoming only
+            do kk = 1, nd(n12)%lnx
                LL = abs(nd(n12)%ln(kk))
                teta(LL) = 1.0_dp
             end do
