@@ -152,10 +152,18 @@ def signing_is_valid(
     filepath: str, developer_prompt: str, expected_issued_to: str = ""
 ) -> bool:
     status, issued_to = verify_signing_authority(filepath, developer_prompt)
+    if expected_issued_to and issued_to != expected_issued_to:
+        print(f"file not correctly signed: {filepath}")
+    elif not expected_issued_to and status == "Verified":
+        print(f"file should not be signed: {filepath}")
+    else:
+        print(f"file is correctly (un)signed: {filepath}")
+
     return status == "Verified" and expected_issued_to == issued_to
 
 
 def is_signing_correct(
+    directory: str,
     files_that_should_be_signed_with_issued_to: list,
     files_that_should_not_be_signed: list[Path],
     developer_prompt: str,
@@ -170,25 +178,27 @@ def is_signing_correct(
         bool: True if all files are signed correctly, False otherwise.
     """
     files_signed_correctly = True
-    for expected_signed_file in files_that_should_be_signed_with_issued_to:
-        filepath = os.path.join(directory, expected_signed_file["file"])
-        if signing_is_valid(
-            filepath, developer_prompt, expected_signed_file["issuedTo"]
-        ):
-            print(f"File is correctly signed: {filepath}")
-        else:
-            files_signed_correctly = False
-            print(f"File is not correctly signed: {filepath}")
+    files_unsigned_correctly = True
+    with ThreadPoolExecutor() as executor:
+        signed_results = executor.map(
+            lambda item: signing_is_valid(
+                os.path.join(directory, item["file"]),
+                developer_prompt,
+                item["issuedTo"],
+            ),
+            files_that_should_be_signed_with_issued_to,
+        )
+        files_signed_correctly = all(signed_results)
 
-    for expected_unsigned_file in files_that_should_not_be_signed:
-        filepath = os.path.join(directory, expected_unsigned_file)
-        if not signing_is_valid(filepath, developer_prompt):
-            print(f"File is correctly not signed: {expected_unsigned_file}")
-        else:
-            files_signed_correctly = False
-            print(f"File is signed but should not be: {expected_unsigned_file}")
+        unsigned_results = executor.map(
+            lambda item: signing_is_valid(
+                os.path.join(directory, item), developer_prompt
+            ),
+            files_that_should_not_be_signed,
+        )
+        files_unsigned_correctly = not any(unsigned_results)
 
-    return files_signed_correctly
+    return files_signed_correctly and files_unsigned_correctly
 
 
 def validate_directory_contents(
@@ -300,6 +310,7 @@ if __name__ == "__main__":
 
     files_that_should_be_signed_with_issued_to = files_to_check["signed"]
     if not is_signing_correct(
+        directory,
         files_that_should_be_signed_with_issued_to,
         files_that_should_not_be_signed,
         developer_prompt,
