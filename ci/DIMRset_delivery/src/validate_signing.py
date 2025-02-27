@@ -5,15 +5,15 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-signtool = "signtool.exe"
+SIGNTOOL = "signtool.exe"
 
 
-def is_signtool_available(developer_promt: str) -> bool:
+def is_signtool_available(developer_prompt: str) -> bool:
     """
     Checks if the 'signtool' is available in the given developer prompt.
 
     Args:
-        developer_promt (str): The command to open the developer prompt.
+        developer_prompt (str): The command to open the developer prompt.
 
     Returns:
         bool: True if 'signtool' is available, False otherwise.
@@ -21,9 +21,9 @@ def is_signtool_available(developer_promt: str) -> bool:
     try:
         result = subprocess.run(
             [
-                developer_promt,
+                developer_prompt,
                 "&&",
-                signtool,
+                SIGNTOOL,
                 "verify",
                 "/?",
             ],
@@ -41,13 +41,13 @@ def is_signtool_available(developer_promt: str) -> bool:
         return False
 
 
-def verify_signing_authority(filepath: str, developer_promt: str) -> tuple:
+def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple:
     """
     Verifies the signing authority of a given file using the specified developer prompt.
 
     Args:
         filepath (str): The path to the file to be verified.
-        developer_promt (str): The developer prompt command to be used for verification.
+        developer_prompt (str): The developer prompt command to be used for verification.
 
     Returns:
         tuple: A tuple containing the verification status ("Verified" or "Not Verified")
@@ -56,9 +56,9 @@ def verify_signing_authority(filepath: str, developer_promt: str) -> tuple:
     try:
         result = subprocess.run(
             [
-                developer_promt,
+                developer_prompt,
                 "&&",
-                signtool,
+                SIGNTOOL,
                 "verify",
                 "/pa",
                 "/v",
@@ -104,9 +104,9 @@ def get_actual_files(directory: str) -> list:
 def validate_signing_status(
     file: str,
     directory: str,
-    files_that_should_be_signed_with_issued_to: str,
-    files_that_should_not_be_signed: str,
-    developer_promt: str,
+    files_that_should_be_signed_with_issued_to: list[str],
+    files_that_should_not_be_signed: list[str],
+    developer_prompt: str,
 ) -> tuple:
     """
     Validate the signing status of a file.
@@ -116,19 +116,19 @@ def validate_signing_status(
         directory (str): The directory where the file is located.
         files_that_should_be_signed_with_issued_to (str): List of files that should be signed with a specific issuer.
         files_that_should_not_be_signed (str): List of files that should not be signed.
-        developer_promt (str): Prompt for the developer.
+        developer_prompt (str): Prompt for the developer.
 
     Returns:
         tuple: A message indicating the validation result and a boolean indicating if the validation was successful.
     """
     filepath = os.path.join(directory, file)
-    status, issued_to = verify_signing_authority(filepath, developer_promt)
+    status, issued_to = verify_signing_authority(filepath, developer_prompt)
     if file in [item["file"] for item in files_that_should_be_signed_with_issued_to]:
         if status == "Verified":
             for item in files_that_should_be_signed_with_issued_to:
                 if item["file"] == file:
                     break
-            expected_issued_to = item["Issued to"]
+            expected_issued_to = item["issuedTo"]
             if expected_issued_to == issued_to:
                 return f"File is correctly signed: {file} by {issued_to}", True
             else:
@@ -150,18 +150,18 @@ def validate_signing_status(
 
 
 def is_signing_correct(
-    actual_files: list,
-    files_that_should_be_signed_with_issued_to: list,
-    files_that_should_not_be_signed: list,
-    developer_promt: str,
+    actual_files: list[str],
+    files_that_should_be_signed_with_issued_to: list[str],
+    files_that_should_not_be_signed: list[str],
+    developer_prompt: str,
 ) -> bool:
     """
     Checks if the signing status of files is correct.
     Args:
         actual_files (list): List of files to check.
-        files_that_should_be_signed_with_issued_to (list): List of files that should be signed with "issued to".
+        files_that_should_be_signed_with_issued_to (list): List of files that should be signed with "issuedTo".
         files_that_should_not_be_signed (list): List of files that should not be signed.
-        developer_promt (str): Developer prompt for signing validation.
+        developer_prompt (str): Developer prompt for signing validation.
     Returns:
         bool: True if all files are signed correctly, False otherwise.
     """
@@ -175,7 +175,7 @@ def is_signing_correct(
                 directory,
                 files_that_should_be_signed_with_issued_to,
                 files_that_should_not_be_signed,
-                developer_promt,
+                developer_prompt,
             )
             for file in actual_files
         ]
@@ -189,7 +189,9 @@ def is_signing_correct(
     return files_signed_correctly
 
 
-def validate_directory_contents(actual_files: list, expected_files: list) -> bool:
+def validate_directory_contents(
+    actual_files: list[str], expected_files: list[str]
+) -> bool:
     """
     Validates the contents of a directory by comparing the actual files against the expected files.
     Args:
@@ -237,17 +239,17 @@ def validate_directory_contents(actual_files: list, expected_files: list) -> boo
 
 def print_example_json_file_structure() -> None:
     print("Example JSON file structure:{")
-    print('    "Signed": [')
+    print('    "signed": [')
     print("        {")
     print('            "file": "file_1.exe",')
-    print('            "Issued to": "party A"')
+    print('            "issuedTo": "party A"')
     print("        },")
     print("        {")
     print('            "file": "file_2.dll",')
-    print('            "Issued to": "Party B"')
+    print('            "issuedTo": "Party B"')
     print("        }")
     print("    ],")
-    print('    "Not signed": [')
+    print('    "notSigned": [')
     print('        "file_3.dll",')
     print('        "lib\\file_4.dll"')
     print("    ]")
@@ -264,18 +266,18 @@ if __name__ == "__main__":
         type=str,
     )
     parser.add_argument(
-        "developer_promt", help="Path to the vs studio developer promt", type=str
+        "developer_prompt", help="Path to the vs studio developer promt", type=str
     )
     parser.add_argument("directory", help="Directiry to validate.", type=str)
     if len(sys.argv) != 4:
         print(
-            "Usage: python script.py <expected_structure_json> <developer_promt> <directory>"
+            "Usage: python script.py <expected_structure_json> <developer_prompt> <directory>"
         )
         sys.exit(1)
 
     args = parser.parse_args()
     file_structure_json = args.expected_structure_json
-    developer_promt = args.developer_promt
+    developer_prompt = args.developer_prompt
     directory = args.directory
 
     try:
@@ -284,42 +286,43 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error loading JSON file: {e}")
         sys.exit(1)
+
     try:
         files_that_should_be_signed = [
-            item["file"] for item in files_to_check["Signed"]
+            item["file"] for item in files_to_check["signed"]
         ]
-        files_that_should_not_be_signed = files_to_check["Not signed"]
+        files_that_should_not_be_signed = files_to_check["notSigned"]
     except Exception as e:
         print(f"Error parsing JSON file: {file_structure_json}")
         print(f"Error: {e}")
         print_example_json_file_structure()
         sys.exit(1)
+
     expected_files = files_that_should_be_signed + files_that_should_not_be_signed
     actual_files = get_actual_files(directory)
 
     if not validate_directory_contents(actual_files, expected_files):
         print("Directory check failed: Missing or extra files detected.")
         sys.exit(1)
-    else:
-        print(
-            "Directory check passed: All expected files are present and in the right structure."
-        )
 
-    if not is_signtool_available(developer_promt):
+    print(     "Directory check passed: All expected files are present and in the right structure."
+    )
+
+    if not is_signtool_available(developer_prompt):
         print(
             "signtool is required to run this script. Please ensure it is installed and available in the PATH."
         )
         sys.exit(1)
-    else:
-        files_that_should_be_signed_with_issued_to = files_to_check["Signed"]
-        if not is_signing_correct(
-            actual_files,
-            files_that_should_be_signed_with_issued_to,
-            files_that_should_not_be_signed,
-            developer_promt,
-        ):
-            print("Some files are not correctly signed")
-            sys.exit(1)
+
+    files_that_should_be_signed_with_issued_to = files_to_check["signed"]
+    if not is_signing_correct(
+        actual_files,
+        files_that_should_be_signed_with_issued_to,
+        files_that_should_not_be_signed,
+        developer_prompt,
+    ):
+        print("Some files are not correctly signed")
+        sys.exit(1)
 
     print(
         "All files are correctly signed and the directory contains all expected files."
