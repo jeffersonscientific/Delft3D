@@ -42,8 +42,8 @@ module m_fm_advec_diff_2d
     
     subroutine fm_advec_diff_2d(thevar, uadv, qadv, sour, sink, limityp, ierror)
       use m_transport, only: dxiau
-      use m_flowgeom, only: Ndx, Lnx, ln, ba ! static mesh information
-      use m_flow, only: Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, kmxn, kmxL
+      use m_flowgeom, only: ndx, lnx, ln, ba ! static mesh information
+      use m_flow, only: ndkx, lnkx, kbot, ktop, lbot, ltop, kmxn, kmxL
       use m_alloc, only: realloc
       use precision, only: dp
       use m_solve_2d, only: solve_2d
@@ -73,14 +73,14 @@ module m_fm_advec_diff_2d
       real(kind=dp), dimension(:), allocatable :: dif ! sum of molecular and user-specified diffusion coefficient
       real(kind=dp), dimension(:), allocatable :: sigdif
 
-      real, dimension(:), allocatable :: dumL
+      real, dimension(:), allocatable :: duml
       real(kind=dp), dimension(:), allocatable :: sqi
 
-      real(kind=dp), dimension(:, :), allocatable :: const_sour ! sources in transport, dim(NUMCONST,Ndkx)
-      real(kind=dp), dimension(:, :), allocatable :: const_sink ! linear term of sinks in transport, dim(NUMCONST,Ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: const_sour ! sources in transport, dim(NUMCONST,ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: const_sink ! linear term of sinks in transport, dim(NUMCONST,ndkx)
 
 !  work arrays
-      real(kind=dp), dimension(:, :), allocatable :: rhs ! right-hand side, dim(NUMCONST,Ndkx)
+      real(kind=dp), dimension(:, :), allocatable :: rhs ! right-hand side, dim(NUMCONST,ndkx)
       integer, dimension(:), allocatable :: jaupdate
       integer, dimension(:), allocatable :: jahorupdate
       integer, dimension(:), allocatable :: ndeltasteps
@@ -96,23 +96,23 @@ module m_fm_advec_diff_2d
       call realloc(ndeltasteps, ndx, keepExisting=.true., fill=1) !It is only used if NSUBSTEPS>1, which is not the case.
       call realloc(sqi, ndx, keepExisting=.true., fill=0d0)
 
-      call realloc(fluxhor, (/1, Lnx/), keepExisting=.true., fill=0d0)
-      call realloc(fluxver, (/1, Ndx/), keepExisting=.true., fill=0d0)
+      call realloc(fluxhor, (/1, lnx/), keepExisting=.true., fill=0d0)
+      call realloc(fluxver, (/1, ndx/), keepExisting=.true., fill=0d0)
 
       call realloc(dif, 1, keepExisting=.true., fill=0d0)
       call realloc(sigdif, 1, keepExisting=.true., fill=0d0)
 
-      allocate (dumL(1:lnkx), stat=ierror); dumL = 0.0
+      allocate (duml(1:lnkx), stat=ierror); duml = 0.0
 
-      call realloc(rhs, (/1, Ndx/), keepExisting=.true., fill=0d0)
+      call realloc(rhs, (/1, ndx/), keepExisting=.true., fill=0d0)
 
-      call realloc(sumhorflux, Ndx, keepExisting=.true., fill=0d0)
-      call realloc(dumx, Ndx, keepExisting=.true., fill=0d0)
-      call realloc(dumy, Ndx, keepExisting=.true., fill=0d0)
+      call realloc(sumhorflux, ndx, keepExisting=.true., fill=0d0)
+      call realloc(dumx, ndx, keepExisting=.true., fill=0d0)
+      call realloc(dumy, ndx, keepExisting=.true., fill=0d0)
 
 !  construct advective velocity field --> uadv, qadv, mind the orientation (>0 from ln(1,L) to ln(2,L))
       !qadv=uadv
-      do L = 1, Lnx
+      do L = 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
          sqi(k1) = sqi(k1) - min(qadv(L), 0d0)
@@ -124,9 +124,9 @@ module m_fm_advec_diff_2d
 
 !  compute horizontal fluxes, explicit part
       call comp_dxiAu()
-      call comp_fluxhor3D(NUMCONST, limityp, Ndx, Lnx, uadv, qadv, sqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, dif, sigdif, dumL, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, fluxhor, dumx, dumy, 1, dxiAu)
-      call comp_sumhorflux(1, 0, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
-      call solve_2D(1, Ndx, ba, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, 1, jaupdate, ndeltasteps, thevar, rhs)
+      call comp_fluxhor3D(NUMCONST, limityp, ndx, lnx, uadv, qadv, sqi, ba, kbot, lbot, ltop, kmxn, kmxL, thevar, dif, sigdif, duml, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, fluxhor, dumx, dumy, 1, dxiAu)
+      call comp_sumhorflux(1, 0, lnkx, ndkx, lbot, ltop, fluxhor, sumhorflux)
+      call solve_2D(1, ndx, ba, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, 1, jaupdate, ndeltasteps, thevar, rhs)
       ierror = 0
 1234  continue
       return
