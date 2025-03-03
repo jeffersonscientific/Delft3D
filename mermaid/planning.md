@@ -3,21 +3,30 @@ gantt
     title 2025.02 DHYDRO suite release
     dateFormat  YYYY-MM-DD
     dateFormat  DD-MM-YYYY
-    Kick-off :20-02-2025, 1d
+    
     section Release prep
+    Kick-off :20-02-2025, 1d
     Wrap up feature development :03-03-2025, 5d
     PT; UI smoketest :03-03-2025, 5d
-    section Integration
+    DevOps; Smoketest VA :03-03-2025, 5d
+
+    section Integration DIMR features
     All teams; Integration of features :17-03-2025, 5d
     Robin; Release branch :21-03-2025, 1d
+    DevOps; Container check :21-03-2025, 1d
+
     section DIMR Release
+    DevOps; Create open source package :24-03-2025, 5d
     Teams; Handover validation documentation :24-03-2025, 5d
     Teams; Handover example testcases :24-03-2025, 5d
     DevOps; Starts verschil analyse :24-03-2025, 5d
+
     section Integration Front end
     Teams; Manuals (Installation, User, Technical reference) :31-03-2025, 5d
     Luca; Grid editor (1d2d) Delivery :31-03-2025, 5d
     Bert; release Quickplot+manuals :31-03-2025, 5d
+    Rinske; Update Requirements anbd MVP doc :31-03-2025, 5d
+
     section Release Validation + containers
     PT; Testing (new workflows, Grid editor, ...) :07-04-2025, 19d
     WES team; Testing D-Waq, PLCT and D-Part :07-04-2025, 19d
@@ -29,6 +38,14 @@ gantt
     RC; Release notes :21-04-2025, 5d
     DevOps; Makes container :21-04-2025, 5d
     Erik (+1 t.b.d.); Writes VA rapport :21-04-2025, 5d
+
     section Handover to SST
-    RC; All files ready on P-drive: 28-04-2025, 5d
+    RC; All files ready on P-drive: 28-04-2025, 1d
+    SST; Run basic workflow/open manuals: 28-04-2025, 1d
+    SST; Check deliverables: 28-04-2025, 5d
+    SST; Copy to N drive/download portal: 28-04-2025, 5d
+    SST; Update license server: 28-04-2025, 5d
+
+    section GO LIVE
+    Edward; Sent out mail: 09-06-2025, 1d
 :::
