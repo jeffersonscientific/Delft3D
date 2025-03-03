@@ -33,13 +33,15 @@ module test_statistical_output
    public :: tests_statistical_output
 
 contains
-
    subroutine tests_statistical_output
-      call test(test_realloc, 'Tests realloc function')
-      call test(test_realloc_crop, 'Tests realloc function with crop')
+      call test(test_realloc_unallocated, 'Tests realloc function with unallocated array')
+      call test(test_realloc_allocated, 'Tests realloc function with allocated array')
+      call test(test_realloc_crop_no_elements, 'Tests realloc function with crop and no elements')
+      call test(test_realloc_crop_one_element, 'Tests realloc function with crop and an element')
+      call test(test_dealloc, 'Tests dealloc function')
    end subroutine tests_statistical_output
 
-   subroutine test_realloc()
+   subroutine test_realloc_unallocated()
       type(t_output_variable_set) :: output_set
       call assert_equal(allocated(output_set%statout), .false., '')
       call assert_equal(output_set%capacity, 0, '')
@@ -47,12 +49,44 @@ contains
       call realloc(output_set)
       call assert_equal(allocated(output_set%statout), .true., '')
       call assert_equal(output_set%capacity > 0, .true., '')
-   end subroutine test_realloc
+   end subroutine test_realloc_unallocated
 
-   subroutine test_realloc_crop()
+   subroutine test_realloc_allocated()
+      type(t_output_variable_set) :: output_set
+      integer, parameter :: value_to_test = 496
+
+      output_set%count = 3
+      call realloc(output_set)
+      output_set%statout(3)%id_var = value_to_test
+
+      output_set%count = 300
+      call realloc(output_set)
+      call assert_equal(allocated(output_set%statout), .true., '')
+      call assert_equal(output_set%capacity >= 300, .true., '')
+      call assert_equal(output_set%statout(3)%id_var, value_to_test, '')
+   end subroutine test_realloc_allocated
+
+   subroutine test_realloc_crop_no_elements()
       type(t_output_variable_set) :: output_set
       call realloc(output_set, .true.)
       call assert_equal(allocated(output_set%statout), .true., '')
       call assert_equal(output_set%capacity, output_set%count, '')
-   end subroutine test_realloc_crop
+   end subroutine test_realloc_crop_no_elements
+
+   subroutine test_realloc_crop_one_element()
+      type(t_output_variable_set) :: output_set
+      output_set%count = 1
+      call realloc(output_set, .true.)
+      call assert_equal(allocated(output_set%statout), .true., '')
+      call assert_equal(output_set%capacity, output_set%count, '')
+   end subroutine test_realloc_crop_one_element
+
+   subroutine test_dealloc()
+      type(t_output_variable_set) :: output_set
+      call realloc(output_set)
+      call assert_equal(allocated(output_set%statout), .true., '')
+
+      call dealloc(output_set)
+      call assert_equal(allocated(output_set%statout), .false., '')
+   end subroutine test_dealloc
 end module test_statistical_output

@@ -61,29 +61,36 @@ contains
 
       logical :: crop_
       type(t_output_variable_item), allocatable, dimension(:) :: new_statout
+      integer :: count_to_copy
 
       crop_ = .false.
       if (present(crop)) then
          crop_ = crop
       end if
 
-      if (crop_ .and. (output_set%count < output_set%capacity .or. .not. allocated(output_set%statout))) then
-         allocate (new_statout(output_set%count))
-         new_statout(1:output_set%count) = output_set%statout(1:output_set%count)
-         call move_alloc(new_statout, output_set%statout)
+      ! Optimization: if the output set is already at capacity, we don't need to do anything
+      if (allocated(output_set%statout) .and. ((crop_ .and. output_set%capacity == output_set%count) .or. &
+                                               (.not. crop_ .and. output_set%capacity >= output_set%count))) then
+         return
+      end if
+
+      if (crop_) then
          output_set%capacity = output_set%count
+      else if (output_set%capacity == 0) then
+         output_set%capacity = 200
+      end if
+
+      do while (output_set%count > output_set%capacity)
+         output_set%capacity = 2 * output_set%capacity
+      end do
+
+      if (allocated(output_set%statout)) then
+         allocate (new_statout(output_set%capacity))
+         count_to_copy = min(output_set%count, size(output_set%statout))
+         new_statout(1:count_to_copy) = output_set%statout(1:count_to_copy)
+         call move_alloc(new_statout, output_set%statout)
       else
-         if (allocated(output_set%statout)) then
-            if (output_set%count > output_set%capacity) then ! only increase size if necessary
-               output_set%capacity = output_set%capacity * 2
-               allocate (new_statout(output_set%capacity))
-               new_statout(1:size(output_set%statout)) = output_set%statout
-               call move_alloc(new_statout, output_set%statout)
-            end if
-         else
-            output_set%capacity = 200
-            allocate (output_set%statout(output_set%capacity))
-         end if
+         allocate (output_set%statout(output_set%capacity))
       end if
    end subroutine reallocate_output_set
 
@@ -204,9 +211,7 @@ contains
             end if
 
             output_set%count = output_set%count + 1
-            if (output_set%count > output_set%capacity) then
-               call reallocate_output_set(output_set)
-            end if
+            call realloc(output_set)
 
             item%output_config = output_config
             item%source_input => data_pointer
