@@ -42,9 +42,8 @@ gantt
     section Handover to SST
     RC; All files ready on P-drive: 28-04-2025, 1d
     SST; Run basic workflow/open manuals: 28-04-2025, 1d
-    SST; Check deliverables: 28-04-2025, 5d
-    SST; Copy to N drive/download portal: 28-04-2025, 5d
-    SST; Update license server: 28-04-2025, 5d
+    SST; Check deliverables and copy to N drive/download portal: 28-04-2025, 5d
+    SST; Release checklist: 28-04-2025, 5d
 
     section GO LIVE
     Edward; Sent out mail: 09-06-2025, 1d
