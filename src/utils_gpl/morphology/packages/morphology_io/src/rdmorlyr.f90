@@ -620,7 +620,7 @@ contains
             !YES diffusion in active-layer mode    
             !
             txtput1 = 'Diffusion in active-layer model'
-            write (lundia, '(3a)') txtput1, ':', 'YES'
+            write (lundia, '(3a)') txtput1, ':', '                 YES'
             
             select case(active_layer_diffusion)                
             case(1)
@@ -691,7 +691,7 @@ contains
             !NO diffusion in active-layer model    
             !
             txtput1 = 'Diffusion in active-layer model'
-            write (lundia, '(3a)') txtput1, ':', 'NO'
+            write (lundia, '(3a)') txtput1, ':', '                  NO'
          endif
          
       case default
