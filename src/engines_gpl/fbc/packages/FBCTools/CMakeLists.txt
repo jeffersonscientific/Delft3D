@@ -182,11 +182,6 @@ add_custom_command(TARGET FBCTools
 # Install library dependencies into output folder
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     STRING(REGEX REPLACE "/" "\\\\" WINDOWS_FORMAT_PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR})
-    add_custom_command(PRE_BUILD
-                       OUTPUT ${PROJECT_SOURCE_DIR}/src/version.rc
-                       COMMAND call del /F /Q ${WINDOWS_FORMAT_PROJECT_SOURCE_DIR}\\src\\version.rc
-                       COMMAND call ${PROJECT_SOURCE_DIR}\\thirdParty\\version_number\\update_version.cmd ${PROJECT_SOURCE_DIR}\\src\\version.rc ${PROJECT_SOURCE_DIR}\\src ${PROJECT_SOURCE_DIR}\\src\\version_number.ini
-                       DEPENDS version_number.ini)
     if(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
         add_custom_command(TARGET FBCTools
                            POST_BUILD
@@ -205,11 +200,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
                            COMMAND "${CMAKE_COMMAND}" -E copy ${PROJECT_SOURCE_DIR}/thirdParty/msvcp100/x86/msvcp100$<$<CONFIG:Debug>:d>.dll ${DESTINATION_DIR})
     endif()
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    add_custom_command(PRE_BUILD
-                       OUTPUT ${PROJECT_SOURCE_DIR}/src/version.rc
-                       COMMAND rm -f $PROJECT_SOURCE_DIR}/src/version.rc
-                       COMMAND ${PROJECT_SOURCE_DIR}/thirdParty/version_number/update_version.sh ${PROJECT_SOURCE_DIR}/src/version.rc ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/src/version_number.ini
-                       DEPENDS version_number.ini)
     if(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
         add_custom_command(TARGET FBCTools
                            POST_BUILD
