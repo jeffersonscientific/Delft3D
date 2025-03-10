@@ -12,7 +12,7 @@ CACHE_FROM_ARGS="--cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cach
 if [[ -n "$JIRA_ISSUE_ID" ]]; then
     BUILDTOOLS_IMAGE_TAG="${JIRA_ISSUE_ID}-${BUILDTOOLS_IMAGE_TAG}"
     IMAGE_TAG="${JIRA_ISSUE_ID}-${IMAGE_TAG}"
-    CACHE_FROM_ARGS="--cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cache ${CACHE_FROM_ARGS}"
+    CACHE_FROM_ARGS="${CACHE_FROM_ARGS} --cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cache"
 fi
 
 DEBUG=0

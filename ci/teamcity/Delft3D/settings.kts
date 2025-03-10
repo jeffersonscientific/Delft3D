@@ -48,7 +48,7 @@ project {
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildTypesOrder = listOf(
-                LinuxBuildTools, 
+                LinuxBuildTools,
                 LinuxThirdPartyLibs,
             )
         }
