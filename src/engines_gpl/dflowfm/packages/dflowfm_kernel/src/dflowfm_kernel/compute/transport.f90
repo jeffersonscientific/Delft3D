@@ -49,7 +49,7 @@ contains
       use precision, only: dp
       use m_setrho, only: set_density, set_pressure_dependent_density
       use m_getverticallyaveraged
-      use m_flowgeom
+      use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban, xz
       use m_flow, only: density_is_pressure_dependent, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
                         limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
                         kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
@@ -57,12 +57,10 @@ contains
       use Timers, only: timstrt, timstop
       use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr
       use m_netw, only: zk
-      use m_flowtimes
+      use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
-      use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
+      use m_transport, only: numconst, constituents, isalt, itemp
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
-      use m_dlimitercentral
-      use m_dslim
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_equilibrium_transport_rates
