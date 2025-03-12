@@ -36,13 +36,14 @@ module unstruc_model
    use m_setgrainsizes, only: setgrainsizes
    use precision, only: dp, hp, comparereal
    use tree_structures, only: tree_data, print_tree
+   use properties, only: prop_get, prop_file, tree_create, tree_destroy
    use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
    use m_globalparameters, only: t_filenames
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
    use m_fm_icecover, only: ice_mapout
    use netcdf, only: nf90_double
-   use m_start_parameters, only: md_jaautostart, md_noautostart
+   use m_start_parameters, only: md_jaAutoStart, MD_NOAUTOSTART
 
    implicit none
 
@@ -56,12 +57,11 @@ module unstruc_model
     !!   need to be converted/updated by user), then the major version number
     !!   is incremented.
 
-   ! MDUFormatVersion = 1.08
+   ! MDUFormatVersion = 1.09
    integer, parameter :: MDUFormatMajorVersion = 1
    integer, parameter :: MDUFormatMinorVersion = 9
 
    ! History MDUFormatVersion:
-
    ! 1.09 (2019-08-21): Renamed [geometry] roughnessFiles to frictFile.
    ! 1.08 (2019-07-27): Default option for density changed from Eckart to UNESCO (idensform=2 instead of 1)
    ! 1.07 (2019-06-13): Renamed [model] block as [General] block, replace keyword MDUFormatVersion by FileVersion
@@ -73,12 +73,14 @@ module unstruc_model
    ! 1.01 (2014-11-10): Renamed ThindykeFile/Scheme/Contraction -> FixedWeirFile/Scheme/Contraction.
    ! 1.00 (2014-09-22): first version of new permissive checking procedure. All (older) unversioned input remains accepted.
 
+   ! ExtfileNewMajorVersion = 2.02
    integer, parameter :: ExtfileNewMajorVersion = 2
    integer, parameter :: ExtfileNewMinorVersion = 2
+
    ! History ExtfileNewVersion:
-   ! 2.00 (2019-08-06): enabled specifying "nodeId" in a 1D network node.
-   ! 2.01 (2019-12-04): optional fields targetMaskFile and targetMaskInvert for [Meteo] blocks.
    ! 2.02 (2024-10-24): add [SourceSink] blocks.
+   ! 2.01 (2019-12-04): optional fields targetMaskFile and targetMaskInvert for [Meteo] blocks.
+   ! 2.00 (2019-08-06): enabled specifying "nodeId" in a 1D network node.
 
    !> The version number of the 1D2DFile format: d.dd, [config_major].[config_minor], e.g., 1.03
     !!
