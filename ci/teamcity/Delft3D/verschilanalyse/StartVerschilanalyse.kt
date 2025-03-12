@@ -9,7 +9,8 @@ import Delft3D.verschilanalyse.ReportVerschilanalyse
 
 
 object StartVerschilanalyse : BuildType({
-    name = "Start verschilanalyse models"
+    name = "Submit"
+    description = "Submit verschilanalyse models to H7."
     maxRunningBuilds = 1
 
     vcs {

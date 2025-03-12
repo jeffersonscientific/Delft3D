@@ -13,6 +13,9 @@ import Delft3D.verschilanalyse.*
 version = "2024.12"
 
 project {
+
+    description = "contact: BlackOps (black-ops@deltares.nl)"
+
     params {
         param("delft3d-user", "robot${'$'}delft3d+delft3d-push-pull")
         password("delft3d-secret", "credentialsJSON:eb73cbd9-d17e-4bbe-ab3e-fdabe1eeddb0")
@@ -25,8 +28,6 @@ project {
 
         param("product", "dummy_value")
     }
-
-    description = "contact: BlackOps (black-ops@deltares.nl)"
 
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
@@ -50,7 +51,7 @@ project {
         }
         subProject {
             id("BuildContainers")
-            name = "Build Containers"
+            name = "Build-environment Containers"
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildTypesOrder = listOf(
@@ -62,15 +63,11 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxDocker)
         buildType(LinuxTest)
-        buildType(LinuxBuildTestbenchContainer)
-        buildType(LinuxPyTest)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
             LinuxCollect,
             LinuxDocker,
-            LinuxTest,
-            LinuxBuildTestbenchContainer,
-            LinuxPyTest
+            LinuxTest
         )
     }
 
@@ -114,11 +111,9 @@ project {
     )
 
     buildType(Trigger)
-    buildType(Release)
 
     buildTypesOrder = arrayListOf(
-        Trigger,
-        Release
+        Trigger
     )
 
     features {

@@ -5,7 +5,8 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 object ReportVerschilanalyse: BuildType({
-    name = "Report verschilanalyse"
+    name = "Report"
+    description = "Report verschilanalyse outcome and send email."
 
     artifactRules = """
         ci/teamcity/Delft3D/verschilanalyse/scripts/report.zip

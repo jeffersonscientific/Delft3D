@@ -10,6 +10,8 @@ import Delft3D.linux.containers.*
 
 object LinuxBuild : BuildType({
 
+    description = "CMake build."
+
     templates(
         TemplateMergeRequest,
         TemplateDetermineProduct,
@@ -20,7 +22,6 @@ object LinuxBuild : BuildType({
 
     name = "Build"
     buildNumberPattern = "%product%: %build.vcs.number%"
-    description = "Linux build."
 
     allowExternalStatus = true
     artifactRules = """
