@@ -31,12 +31,15 @@
 !
 
 module m_densfm
+   use precision_basics, only: dp
 
    implicit none
 
    private
 
    public :: densfm, add_sediment_effect_to_density
+   real(kind=dp), parameter, public :: RHO_MIN = 990.0_dp !< lower limit of density [kg/m3]
+   real(kind=dp), parameter, public :: RHO_MAX = 1250.0_dp !< upper limit of density [kg/m3]
 
    interface densfm
       module procedure calculate_density_from_salinity_and_temperature
@@ -245,7 +248,6 @@ contains
       use sediment_basics_module, only: has_advdiff
       use messagehandling, only: LEVEL_ERROR, mess
       use unstruc_model, only: check_positive_value
-      use m_setrho, only: RHO_MIN, RHO_MAX
 
       implicit none
 

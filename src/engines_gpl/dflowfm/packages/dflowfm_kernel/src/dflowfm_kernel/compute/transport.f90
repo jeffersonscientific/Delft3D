@@ -70,7 +70,7 @@ contains
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, ki, jastep, kk, cell_index
+      integer :: j, ki, jastep, kk
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -225,19 +225,19 @@ contains
       end if
 
       !$OMP PARALLEL DO    &
-      !$OMP PRIVATE(cell_index)
-      do cell_index = 1, ndx
-         call set_density(cell_index)
+      !$OMP PRIVATE(kk)
+      do kk = 1, ndx
+         call set_density(kk)
       end do
       !$OMP END PARALLEL DO
 
       if (density_is_pressure_dependent()) then
          ! rhop(:) = rho(:) ! the above, via set_density(), calculated rho is the potential density (function of salinity and temperature)
          !$OMP PARALLEL DO    &
-         !$OMP PRIVATE(cell_index)
-         do cell_index = 1, ndx
+         !$OMP PRIVATE(kk)
+         do kk = 1, ndx
             ! calculate the in-situ density (function of salinity, temperature and pressure)
-            call set_pressure_dependent_density(cell_index)
+            call set_pressure_dependent_density(kk)
          end do
          !$OMP END PARALLEL DO
       end if

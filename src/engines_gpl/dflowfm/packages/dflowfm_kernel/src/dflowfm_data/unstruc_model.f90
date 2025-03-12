@@ -728,7 +728,6 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_map_his_precision
       use m_qnerror
-      use m_densfm, only: densfm
       use messagehandling, only: msgbuf, err_flush, warn_flush
       use geometry_module, only: INTERNAL_NETLINKS_EDGE, ALL_NETLINKS_LOOP
 
@@ -1237,7 +1236,7 @@ contains
          jalimnor = 1
       end if
 
-      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection);
+      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection)
       call prop_get(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
       !call prop_get(md_ptr, 'numerics', 'filter'          , jafilter)
       !call prop_get(md_ptr, 'numerics', 'filterorder'     , filterorder)
