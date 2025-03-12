@@ -35,6 +35,13 @@ set(Boost_USE_RELEASE_LIBS ON)
 # version 1.65 is a minimum version
 if(LINUX)
    find_package(Boost 1.65 REQUIRED COMPONENTS system filesystem)
+   find_package(XercesC REQUIRED)
+   if(XercesC_FOUND)
+      message(STATUS "Found Xerces-C: ${XercesC_VERSION}")
+      include_directories(${XercesC_INCLUDE_DIRS})
+   else()
+      message(FATAL_ERROR "Xerces-C not found")
+   endif()
 else()
    set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/boost)
    set(BOOST_LIBRARY_DIR ${BOOST_ROOT}/stage/lib)
@@ -103,7 +110,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
                        xerces-c_3)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(LINK_LIBRARIES FBCTools_static 
-                       xerces-c
+                       ${XercesC_LIBRARIES}
                        dl
                        boost_system
                        boost_date_time
@@ -142,4 +149,6 @@ set(FBC_SUPPORT_FILES
   install(FILES ${FBC_SUPPORT_FILES} DESTINATION share/drtc)
   install(TARGETS FBCTools RUNTIME DESTINATION bin)
   install(TARGETS FBCTools_BMI RUNTIME DESTINATION lib)
-  install(FILES ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/bin/xerces-c_3_1.dll DESTINATION lib)
+  if(win32)
+     install(FILES ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/bin/xerces-c_3_1.dll DESTINATION lib)
+  endif()

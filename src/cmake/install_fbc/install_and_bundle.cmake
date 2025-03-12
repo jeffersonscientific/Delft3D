@@ -1,14 +1,14 @@
+set(FBCTools_source_dir ${PROJECT_SOURCE_DIR}/../engines_gpl/fbc/packages/FBCTools/)
+
 set(BUILD_LIBRARIES
    ${CMAKE_INSTALL_PREFIX}/lib/libFBCTools_BMI.so
-   ${CMAKE_INSTALL_PREFIX}/lib/libFBCTools_OpenMI.so
 )
 
 set(FBC_THIRDPARTY_x64_LIB_FOLDERS
   ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_INSTALL_PREFIX}/lib
   ${CMAKE_INSTALL_PREFIX}/bin
-  ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-linux-gcc-3.4/lib
-  ${PROJECT_SOURCE_DIR}/thirdParty/ipopt_3_11_7_linux64bit/lib
+  ${FBCTools_source_dir}/thirdParty/ipopt_3_11_7_linux64bit/lib
   ${Boost_LIBRARY_DIRS}
 )
 
