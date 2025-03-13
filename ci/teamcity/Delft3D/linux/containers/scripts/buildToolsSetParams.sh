@@ -8,7 +8,7 @@ IMAGE_TAG="oneapi-${INTEL_ONEAPI_VERSION}"
 CACHE_FROM_ARGS="--cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cache"
 if [[ -n "$JIRA_ISSUE_ID" ]]; then
     IMAGE_TAG="${JIRA_ISSUE_ID}-${IMAGE_TAG}"
-    CACHE_FROM_ARGS="${CACHE_FROM_ARGS} --cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cache"
+    CACHE_FROM_ARGS="--cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cache ${CACHE_FROM_ARGS}"
 fi
 
 echo "##teamcity[setParameter name='env.IMAGE_TAG' value='$IMAGE_TAG']"
