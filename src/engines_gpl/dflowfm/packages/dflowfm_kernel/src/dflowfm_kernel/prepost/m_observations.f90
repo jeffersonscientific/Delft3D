@@ -992,8 +992,8 @@ contains
       call reapol_nampli(minp, 0, 1, ipli)
       
       do istat = 1, npl
-          write(numstr,'(i5.5)') istat
-          call addObservation(xpl(istat), ypl(istat), 'Nest_'//trim(nampli(1))//'_'//numstr)
+          write(numstr,'(i4.4)') istat
+          call addObservation(xpl(istat), ypl(istat), trim(nampli(1))//'_'//numstr)
           intobs(numobs) = 1
       end do
    end subroutine loadObservations_from_pli
