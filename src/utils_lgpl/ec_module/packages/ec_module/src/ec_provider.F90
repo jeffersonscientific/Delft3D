@@ -154,6 +154,7 @@ contains
       integer :: iostat
 
       integer :: netCDFId
+      !character(len=len(quantityName)) :: quantityNameTmp
 
       success = .false.
       istat = EC_UNKNOWN_ERROR
@@ -201,7 +202,11 @@ contains
             bcBlockPtr%numlay = bcBlockPtr%ncptr%nLayer
          end if
       end select
+      
+      ! TK: Temporary, change quantityname in waterlevel in stead of waterlevelbnd (does not exist as parameter on his file)
+!      bcBlockPtr%ncptr%VARIABLE_NAMES(14) = 'waterlevelbnd'
 
+      ! quantityNameTmp = 'waterlevel'
       if (.not. ecBCInit(instancePtr, filename, quantityName, plilabel, bcBlockPtr, iostat, funtype=funtype)) return
 
       ! Every BC block (instance) needs an associated filereader referring to it

@@ -1,0 +1,4 @@
+in : c:\checkouts\delft3d\test\deltares_testbench\data\engines\teamcity_artifacts>
+
+Als administrator:
+mklink /d x64 c:\checkouts\delft3d\install_dflowfm\
