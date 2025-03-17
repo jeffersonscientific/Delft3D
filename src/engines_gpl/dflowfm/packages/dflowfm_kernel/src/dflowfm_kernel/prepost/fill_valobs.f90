@@ -324,7 +324,7 @@ module m_fill_valobs
                   ii = j - IVAL_SBCY1 + 1
                   tmp_interp = sedtra%sbcy(:, ii)
                   call interpolate_horizontal (tmp_interp,i,IPNT_SBCY1 + ii - 1,UNC_LOC_S)
-!                 valobs(i, IPNT_SBCY1 + ii - 1) = sedtra%sbcy(k, ii)
+!                  valobs(i, IPNT_SBCY1 + ii - 1) = sedtra%sbcy(k, ii)
                end do
                do j = IVAL_SSCX1, IVAL_SSCXN
                   ii = j - IVAL_SSCX1 + 1
