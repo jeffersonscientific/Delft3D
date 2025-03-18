@@ -8,8 +8,10 @@ import Delft3D.linux.*
 import Delft3D.windows.*
 
 object Trigger : BuildType({
-
+    id("Delft3D_Trigger")
+    name = "Trigger"
     description = "This is triggered for merge-requests and will schedule the appropriate testbenches."
+    buildNumberPattern = "%build.vcs.number%"
 
     templates(
         TemplateMergeRequest,
@@ -17,9 +19,6 @@ object Trigger : BuildType({
         TemplatePublishStatus,
         TemplateMonitorPerformance
     )
-
-    name = "Trigger"
-    buildNumberPattern = "%build.vcs.number%"
 
     vcs {
         root(DslContext.settingsRoot)
