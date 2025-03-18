@@ -74,8 +74,8 @@ object LinuxRunEnvironmentContainers : BuildType({
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
                 namesAndTags = """
-                    dimrset
-                    containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%
+                    runEnvironment
+                    containers.deltares.nl/delft3d/delft3d-run-environment:alma8-%build.vcs.number%
                 """.trimIndent()
                 commandArgs = """
                     --pull
@@ -93,7 +93,7 @@ object LinuxRunEnvironmentContainers : BuildType({
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
-                namesAndTags = "containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%"
+                namesAndTags = "containers.deltares.nl/delft3d/test/delft3d-test-environment:alma8-%build.vcs.number%"
                 commandArgs = """
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
@@ -105,8 +105,8 @@ object LinuxRunEnvironmentContainers : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d/delft3dfm:alma8-%build.vcs.number%
-                    containers.deltares.nl/delft3d/test/delft3dfm:alma8-%build.vcs.number%
+                    containers.deltares.nl/delft3d/delft3d-run-environment:alma8-%build.vcs.number%
+                    containers.deltares.nl/delft3d/test/delft3d-test-environment:alma8-%build.vcs.number%
                 """.trimIndent()
             }
         }
