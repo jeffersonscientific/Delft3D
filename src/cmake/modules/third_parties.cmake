@@ -60,6 +60,8 @@ set(spherepack_module ${third_party_open_path}/spherepack/${cmake_directory})
 
 #intel redist
 set(intelredist_module ${third_party_open_path}/intelredist)
+#microsoft redist
+set(microsoftredist_module ${third_party_open_path}/microsoftredist)
 
 if(WIN32)
     set(Tecplot_module ${third_party_open_path}/Tecplot)
