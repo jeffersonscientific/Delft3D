@@ -3970,14 +3970,14 @@ contains
       else
          runid_len = L2 - L1
          if (runid_len > len(md_ident)) then
-            call mess(LEVEL_ERROR, 'Your run id is too long: "'//filename(L1:L2 - 1)//'"')
+            call mess(LEVEL_ERROR, 'Your MDU filename is too long: "'//filename(L1:L2 - 1)//'"')
          end if
          md_ident = filename(L1:L2 - 1) ! TODO: strip off path [AvD]
          md_ident_sequential = trim(md_ident) ! needed for parallel outputdir
 
          if (jampi == 1 .and. numranks > 1) then
             if (runid_len > (len(md_ident) - 5)) then ! account for suffix '_00XX'
-               call mess(LEVEL_ERROR, 'Your run id is too long: "'//filename(L1:L2 - 1)//'"')
+               call mess(LEVEL_ERROR, 'Your MDU filename is too long: "'//filename(L1:L2 - 1)//'"')
             end if
             md_ident = trim(md_ident)//'_'//sdmn ! add rank number to ident
             filename = trim(md_ident)//filename(L2:)
