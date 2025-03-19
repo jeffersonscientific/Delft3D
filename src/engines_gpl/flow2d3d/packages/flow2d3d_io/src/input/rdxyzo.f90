@@ -123,6 +123,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     character(12)                    :: fildef   ! Default file name (usually = blank)
     character(6)                     :: keyw     ! Name of record to look for in the MD-file (usually KEYWRD or RECNAM)
     character(6)                     :: cval     ! String value
+    real(fp)     , dimension(2)      :: rval2    ! Help array (real) where the data, recently read from the MD-file, are stored temporarily
 !
 !! executable statements -------------------------------------------------------
 !
@@ -208,10 +209,10 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! locate and read 'DxDy' record for DX and DY
        ! default value not allowed => nodef
        !
-       rval = rmissval
-       call prop_get(gdp%mdfile_ptr, '*', 'DxDy', rval, 2)
-       if (comparereal(rval(1),rmissval) == 0 .or. &
-         & comparereal(rval(2),rmissval) == 0       ) then
+       rval2 = rmissval
+       call prop_get(gdp%mdfile_ptr, '*', 'DxDy', rval2, 2)
+       if (comparereal(rval2(1),rmissval) == 0 .or. &
+         & comparereal(rval2(2),rmissval) == 0       ) then
           error = .true.
           call prterr(lundia, 'P004', 'No grid file defined')
        else
@@ -225,8 +226,8 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
              else
                 call prterr(lundia, 'Z013', 'The use of constant dx and dy is deprecated')
                 write (lundia,*) '           Use a grid file instead'
-                dx = rval(1)
-                dy = rval(2)
+                dx = rval2(1)
+                dy = rval2(2)
              endif
           else
              call prterr(lundia, 'P004', 'The use of constant dx and dy for ' // &
