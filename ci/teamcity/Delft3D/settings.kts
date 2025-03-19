@@ -8,11 +8,15 @@ import Delft3D.linux.containers.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
+import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
 version = "2024.12"
 
 project {
+
+    description = "contact: BlackOps (black-ops@deltares.nl)"
+
     params {
         param("delft3d-user", "robot${'$'}delft3d+delft3d-push-pull")
         password("delft3d-secret", "credentialsJSON:eb73cbd9-d17e-4bbe-ab3e-fdabe1eeddb0")
@@ -25,8 +29,6 @@ project {
 
         param("product", "dummy_value")
     }
-
-    description = "contact: BlackOps (black-ops@deltares.nl)"
 
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
@@ -50,11 +52,11 @@ project {
         }
         subProject {
             id("BuildContainers")
-            name = "Build Containers"
+            name = "Build-environment Containers"
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildTypesOrder = listOf(
-                LinuxBuildTools, 
+                LinuxBuildTools,
                 LinuxThirdPartyLibs,
             )
         }
@@ -62,15 +64,11 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxDocker)
         buildType(LinuxTest)
-        buildType(LinuxBuildTestbenchContainer)
-        buildType(LinuxPyTest)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
             LinuxCollect,
             LinuxDocker,
-            LinuxTest,
-            LinuxBuildTestbenchContainer,
-            LinuxPyTest
+            LinuxTest
         )
     }
 
@@ -104,21 +102,30 @@ project {
         )
     }
 
+    subProject {
+        id("CiUtilities")
+        name = "CI utilities"
+        description = """
+            Build and test the utilities used in the Delft3D TeamCity project.
+        """.trimIndent()
+
+        buildType(TestPythonCiTools)
+    }
+
     subProject(VerschilanalyseProject)
 
     subProjectsOrder = arrayListOf(
         RelativeId("Linux"),
         RelativeId("Windows"),
-        VerschilanalyseProject,
-        RelativeId("Documentation")
+        RelativeId("Documentation"),
+        RelativeId("CiUtilities"),
+        VerschilanalyseProject
     )
 
     buildType(Trigger)
-    buildType(Release)
 
     buildTypesOrder = arrayListOf(
-        Trigger,
-        Release
+        Trigger
     )
 
     features {
