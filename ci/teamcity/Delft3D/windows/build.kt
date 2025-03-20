@@ -8,6 +8,9 @@ import Delft3D.template.*
 import Delft3D.step.*
 
 object WindowsBuild : BuildType({
+
+    description = "CMake build."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,7 +20,6 @@ object WindowsBuild : BuildType({
  
     name = "Build"
     buildNumberPattern = "%product%: %build.vcs.number%"
-    description = "Windows build."
 
     allowExternalStatus = true
     artifactRules = """
@@ -32,7 +34,7 @@ object WindowsBuild : BuildType({
         param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
         param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
-        param("build_type", "Release")
+        select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
     }
 
@@ -92,31 +94,7 @@ object WindowsBuild : BuildType({
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
-        powerShell {
-            name = "Add FBC-tools"
-            scriptMode = script {
-                content="""
-                    robocopy fbctools build_%product%\install /E /XC /XN /XO
-                """.trimIndent()
-            }
-        }
     }
-
-    dependencies {
-        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-            artifacts {
-                artifactRules = """
-                    *.dll => fbctools/lib
-                    *.xsd => fbctools/share/drtc
-                """.trimIndent()
-            }
-        }
-    }
-
     features {
         dockerSupport {
             loginToRegistry = on {

@@ -1,6 +1,7 @@
 import os
-from typing import List
 import tarfile
+import zipfile
+from typing import List
 
 from helpers.SshClient import SshClient
 from lib.TeamCity import TeamCity
@@ -60,7 +61,7 @@ class ArtifactInstallHelper(object):
     def download_artifacts_to_network_drive(self) -> None:
         """ Downloads the DIMR artifacts to the network drive. """
         latest_dimr_collector_release_signed_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=TEAMCITY_IDS.DIMR_COLLETOR_RELEASE_SIGNED_BUILD_TYPE_ID.value)
+            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value)
         artifact_names = \
             self.__teamcity.get_build_artifact_names(build_id=latest_dimr_collector_release_signed_build_id)
 
