@@ -37,109 +37,231 @@ implicit none
 
 private
 
-public compute_umod
+public compute_umod, find_cell_centre_index
 
 contains
     
-function compute_umod(u,v,huv,deltadir,sig,kmax,gdp) result(umod)
-
-use precision, only: fp 
-use globaldata, only: globdat
-
+subroutine compute_umod(nmmax , kmax , icx       , &
+                      & kcs   , kfu  , kfv       , kcu    , kcv, &
+                      & dps   , s1   , deltau    , deltav , &
+                      & u     , v    , sig, &
+                      & gdp, &
+                      !output
+                      &umod   , uuu  , vvv) 
 !
-! Global variables
+use precision, only: fp, prec
+!
+use globaldata, only: globdat
+!
+implicit none
 !
 type(globdat),target :: gdp
 !
+! Global variables
 !
-integer, intent(in)  :: kmax
-!
-real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax), intent(in)  :: u
-real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax), intent(in)  :: v
-real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)      , intent(in)  :: huv
-real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)      , intent(in)  :: deltadir  
-real(fp), dimension(kmax)                                          , intent(in)  :: sig
-
-real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) :: umod !cell centres!!!
+integer                                           , intent(in)  :: nmmax !  Description and declaration in dimens.igs
+integer                                           , intent(in)  :: kmax  !  Description and declaration in esm_alloc_int.f90
+integer                                           , intent(in)  :: icx
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kcs   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kcu   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kcv   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfu   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfv   !  Description and declaration in esm_alloc_int.f90
+real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: dps   !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: s1    !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: deltau !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: deltav !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: u
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: v
+real(fp)  , dimension(kmax)                       , intent(in)  :: sig   !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: umod
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: uuu
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: vvv
 !
 ! Local variables
 !
-integer :: kmaxx
-integer :: k
-integer :: nc, nm, kc, mc, mu, nd !
+integer  :: kmx
+integer  :: nm
+integer  :: nm_u1
+integer  :: nm_u2
+integer  :: nm_v1
+integer  :: nm_v2
+real(fp) :: ufac
+real(fp) :: vfac
 !
-real(kind=fp) :: ucm !cell center velocity in m-direction [m/s]
-real(kind=fp) :: ucn !cell center velocity in n-direction [m/s]
-real(kind=fp) :: depth
-real(kind=fp) :: zcc
-
+!! executable statements -------------------------------------------------------
 !
-! Initialize locals
-!
-ucm   = 0.0_fp
-ucn   = 0.0_fp
-depth = 0.0_fp
+do nm=1,nmmax !loop on cell-centres
 
-
-
-do kc=1,nc !loop on cell-centres
-
-associate(v2dwbl => gdp%gdnumeco%v2dwbl, trtminh => gdp%gdtrachy%trtminh)
-depth      = max(trtminh , huv(nc, mc))
-!
-kmaxx = kmax
-!
-
-if (v2dwbl) then !  Flag for the use of velocity above wave boundary layer for computing 2d representative velocity
-   do k = kmax, 1, -1
-      zcc = (1.0 + sig(k))*depth
-      if (zcc>deltadir(nc, mc) .or. zcc>0.5*depth) then
-         kmaxx = k
-         exit
-      endif
-   enddo
-endif
-end associate      
-
-!v2dwbl          => gdp%gdnumeco%v2dwbl
-!trtminh         => gdp%gdtrachy%trtminh
-
-!idir 1
-!uvdir=r(u1)     ,uvperp=r(v1) 
-
-!idir 2
-!uvdir=r(v1)     ,uvperp=r(u1) 
-
-!
-! Average perpendicular velocity
-!
-!if (idir==1) then
-!   call ! For Villemonte and Tabellen(nc, mc, nm, gdp) 
-!   call n_and_m_to_nm(nc, mu, nmu, gdp) 
-!
-!   vvv = 0.25_fp*(  uvperp(nc, mc, kmaxx) + uvperp(nc, mu, kmaxx)  &
-!       &          + uvperp(nd, mc, kmaxx) + uvperp(nd, mu, kmaxx))
-!else
-!   call n_and_m_to_nm(nc, mc, nm, gdp) 
-!   call n_and_m_to_nm(nu, mc, num, gdp) 
-!
-!   vvv = 0.25_fp*(  uvperp(nc, mc, kmaxx) + uvperp(nc, md, kmaxx)  &
-!       &          + uvperp(nu, mc, kmaxx) + uvperp(nu, md, kmaxx))
-!endif
-!          
-!uuu  = uvdir(nc, mc, kmaxx)
-!umod = sqrt(uuu**2 + vvv**2)
-
-ucm = 0.25_fp*(  u(nc, mc, kmaxx) + u(nc, mu, kmaxx)  &
-    &          + u(nd, mc, kmaxx) + u(nd, mu, kmaxx))
-
-ucn = 0.25_fp*(  v(nc, mc, kmaxx) + v(nc, mu, kmaxx)  &
-    &          + v(nd, mc, kmaxx) + v(nd, mu, kmaxx))
-
-umod = sqrt(ucm**2 + ucn**2)
-
+   call find_cell_centre_index(gdp,nm,icx,s1,dps,kcs,kcu,kmax,kcv,kfu,kfv,deltau,deltav,sig,&
+                            & nm_u1,nm_u2,nm_v1,nm_v2,kmx,ufac,vfac)
+          
+   uuu(nm) = ufac * (  kfu(nm_u1)*u(nm_u1, kmx) &
+      &         + kfu(nm_u2)*u(nm_u2, kmx)  )
+   vvv(nm) = vfac * (  kfv(nm_v1)*v(nm_v1, kmx) &
+      &         + kfv(nm_v2)*v(nm_v2, kmx)  )
+   
+   umod(nm) = (uuu(nm)*uuu(nm) + vvv(nm)*vvv(nm))**0.5
 enddo !kn
 
-end function compute_umod
+end subroutine compute_umod
+       
+subroutine find_cell_centre_index(gdp,nm,icx,s1,dps,kcs,kcu,kmax,kcv,kfu,kfv,deltau,deltav,sig,&
+                                & nm_u1,nm_u2,nm_v1,nm_v2,kmx,ufac,vfac)
+!
+use precision, only: fp, prec
+use globaldata, only: globdat
+!
+implicit none
+!
+type(globdat),target :: gdp
+!
+! The following list of pointer parameters is used to point inside the gdp structure
+!
+real(fp)                             , pointer :: eps
+logical                              , pointer :: v2dwbl
+!
+! Global variables
+!
+integer                                           , intent(in)  :: nm
+integer                                           , intent(in)  :: icx
+integer                                           , intent(in)  :: kmax  !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kcs   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kcu   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kcv   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfu   !  Description and declaration in esm_alloc_int.f90
+integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfv   !  Description and declaration in esm_alloc_int.f90
+!
+real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: dps   !  Description and declaration in esm_alloc_real.f90
+!
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: deltau !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: deltav !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: s1    !  Description and declaration in esm_alloc_real.f90
+real(fp)  , dimension(kmax)                       , intent(in)  :: sig   !  Description and declaration in esm_alloc_real.f90
+!
+integer, intent(out) :: nm_u1
+integer, intent(out) :: nm_u2
+integer, intent(out) :: nm_v1
+integer, intent(out) :: nm_v2
+integer, intent(out) :: kmx
+!
+real(fp), intent(out) :: vfac
+real(fp), intent(out) :: ufac    
+!
+! Local variables
+!
+integer  :: k
+integer  :: ndm
+integer  :: ndmd
+integer  :: ndmu
+integer  :: nmd
+integer  :: nmu
+integer  :: num
+integer  :: numd
+real(fp) :: cc
+real(fp) :: fact
+real(fp) :: maxdepfrac
+real(fp) :: h1
+real(fp) :: deltas
+!
+!! executable statements -------------------------------------------------------
+!
+eps                 => gdp%gdconst%eps
+v2dwbl              => gdp%gdnumeco%v2dwbl
+!
+nmd  = nm  - icx
+numd = nmd + 1
+ndmd = nmd - 1
+num  = nm  + 1
+ndm  = nm  - 1
+nmu  = nm  + icx
+ndmu = nmu - 1
+!
+h1 = s1(nm) + real(dps(nm),fp)
+!
+if (v2dwbl) then
+   fact   = max(kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm), 1)
+   deltas = (deltau(nm) + deltau(nmd) + deltav(nm) + deltav(ndm)) / fact
+   maxdepfrac = 0.5_fp
+else
+   deltas = 0.05_fp
+   maxdepfrac = 0.05_fp
+endif       
+!
+do k = kmax, 1, -1
+   cc  = (1.0 + sig(k))*h1
+   kmx = k
+   if (cc>=maxdepfrac*h1 .or. cc>=deltas) then
+      exit
+   endif         
+enddo
+!
+ufac = 0.5_fp
+vfac = 0.5_fp
+if (abs(kcs(nm)) == 1) then
+   !
+   ! Internal point
+   ! Set velocity in U direction.
+   !
+   nm_u1 = nm
+   nm_u2 = nmd
+   !
+   ! Set velocity in V direction.
+   !
+   nm_v1 = nm
+   nm_v2 = ndm
+elseif (kcu(nm) + kcu(nmd) == 1) then
+   !
+   ! Open boundary (kcs(nm)==2) in v-direction
+   !
+   ! Set velocity in U direction.
+   !
+   nm_u1 = nm
+   nm_u2 = nmd
+   ufac  = 1.0_fp
+   !
+   ! Set velocity in V direction.
+   !
+   if (kcu(nm) == 1) then
+      !
+      ! Open boundary at left-hand side
+      !
+      nm_v1 = nmu
+      nm_v2 = ndmu
+   else
+      !
+      ! Open boundary at right-hand side
+      !
+      nm_v1 = nmd
+      nm_v2 = ndmd
+   endif
+else
+   !
+   ! Open boundary (kcs(nm)==2) in u-direction
+   !
+   ! Set velocity in U direction.
+   !
+   if (kcv(nm) == 1) then
+      !
+      ! Open boundary at lower side
+      !
+      nm_u1 = num
+      nm_u2 = numd
+   else
+      !
+      ! Open boundary at upper side
+      !
+      nm_u1 = ndm
+      nm_u2 = ndmd
+   endif
+   !
+   ! Set velocity in V direction.
+   !
+   nm_v1 = nm
+   nm_v2 = ndm
+   vfac  = 1.0_fp
+endif
 
+end subroutine find_cell_centre_index
+                
 end module m_umod
