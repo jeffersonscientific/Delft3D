@@ -101,12 +101,12 @@ module unstruc_model
 
    type(tree_data), pointer, public :: md_ptr !< Unstruc Model Data in tree_data
 
-   character(len=64), target :: md_ident = ' ' !< Identifier of the model, used as suggested basename for some files. (runid)
+   character(:), allocatable, target :: md_ident !< Identifier of the model, used as suggested basename for some files. (runid)
 
-   character(len=64) :: md_mdu = ' ' !< similar, used in parsing parsing commandline
-   character(len=64) :: md_ident_sequential = ' ' !< Sequential model identifier, used for parallel outputdir
+   character(:), allocatable :: md_mdu !< similar, used in parsing parsing commandline
+   character(:), allocatable :: md_ident_sequential !< Sequential model identifier, used for parallel outputdir
 
-   character(len=64) :: md_specific = ' ' !< Optional 'model specific ID', read from MDU, to enable certain custom runtime function calls (instead of via MDU name/md_ident).
+   character(:), allocatable :: md_specific !< Optional 'model specific ID', read from MDU, to enable certain custom runtime function calls (instead of via MDU name/md_ident).
 
    character(len=4) :: md_tunit = ' ' !< Unit of tstart_user and tstop_user (only for read and write, while running these are always in seconds).
 

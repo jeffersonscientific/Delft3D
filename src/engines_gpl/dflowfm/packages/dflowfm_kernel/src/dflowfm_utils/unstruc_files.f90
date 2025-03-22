@@ -391,7 +391,11 @@ contains
 
       if (mdia /= 0) return
 
-      L = len_trim(md_ident)
+      if(allocated(md_ident)) then
+         L = len_trim(md_ident)
+      else 
+         L = 0
+      end if
       if (L == 0) then
          base = trim(basename)
          L = len_trim(basename)
