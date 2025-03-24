@@ -1098,7 +1098,7 @@ contains
       use m_meteo, only: ec_addtimespacerelation
       ! use m_flow, only:
       use network_data, only: numk
-      use m_flowgeom, only: lnx
+      use m_flowgeom, only: lnx, ndx
       use m_alloc, only: aerr
 
       implicit none
@@ -1117,21 +1117,21 @@ contains
       if (allocated(sdu_blp)) deallocate (sdu_blp)
 
       select case (ibedlevtyp)
-      case (enum_field1D)
-         allocate (subsupl(lnx), stat=ierr)
-         call aerr('subsupl(lnx)', ierr, lnx)
+      case (enum_field1D) ! Cell centers
+         allocate (subsupl(ndx), stat=ierr)
+         call aerr('subsupl(ndx)', ierr, ndx)
          subsupl = 0.0_dp
-         allocate (subsupl_t0(lnx), stat=ierr)
-         call aerr('subsupl_t0(lnx)', ierr, lnx)
+         allocate (subsupl_t0(ndx), stat=ierr)
+         call aerr('subsupl_t0(ndx)', ierr, ndx)
          subsupl_t0 = 0.0_dp
-         allocate (subsupl_tp(lnx), stat=ierr)
-         call aerr('subsupl_tp(lnx)', ierr, lnx)
+         allocate (subsupl_tp(ndx), stat=ierr)
+         call aerr('subsupl_tp(ndx)', ierr, ndx)
          subsupl_tp = 0.0_dp
-         allocate (subsout(lnx), stat=ierr)
-         call aerr('subsout(lnx)', ierr, lnx)
+         allocate (subsout(ndx), stat=ierr)
+         call aerr('subsout(ndx)', ierr, ndx)
          subsout = 0.0_dp
 
-      case (enum_field2D)
+      case (enum_field2D) ! u-points
          if (allocated(mask)) deallocate (mask)
          allocate (mask(lnx), source=1, stat=ierr)
          call aerr('mask(lnx)', ierr, lnx)
@@ -1148,7 +1148,7 @@ contains
          call aerr('subsout(lnx)', ierr, lnx)
          subsout = 0.0_dp
 
-      case (enum_field3D, enum_field4D, enum_field5D, enum_field6D)
+      case (enum_field3D, enum_field4D, enum_field5D, enum_field6D) ! Cell corners / net nodes
          if (allocated(mask)) deallocate (mask)
          allocate (mask(numk), source=1, stat=ierr)
          call aerr('mask(numk)', ierr, numk)
@@ -1166,8 +1166,8 @@ contains
          subsout = 0.0_dp
       end select
 
-      allocate (sdu_blp(lnx), stat=ierr)
-      call aerr('sdu_blp(lnx)', ierr, lnx)
+      allocate (sdu_blp(ndx), stat=ierr)
+      call aerr('sdu_blp(ndx)', ierr, ndx)
       sdu_blp = 0.0_dp
 
       if (success) then
@@ -1544,9 +1544,9 @@ contains
       case ('groundlayerthickness')
          target_location_type = UNC_LOC_U
          target_array => grounlay
-         target_array => grounlay
          jagrounlay = 1
-      case ('bedrock_surface_elevation')
+
+      case ('bedrocksurfaceelevation')
          call initialize_subsupl()
          time_dependent_array = .true.
          select case (ibedlevtyp)
@@ -1557,6 +1557,7 @@ contains
          case (enum_field3D, enum_field4D, enum_field5D, enum_field6D)
             target_location_type = UNC_LOC_CN
          end select
+         ! Note: target_array not needed, handled via quantity in ec_addtimespacerelation()
 
       case ('frictiontrtfactor')
 
