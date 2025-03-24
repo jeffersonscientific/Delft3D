@@ -8,19 +8,19 @@ gantt
     Kick-off :20-02-2025, 1d
     Wrap up feature development :03-03-2025, 5d
     DevOps; Smoketest VA :03-03-2025, 5d
-    PT; UI smoketest :17-03-2025, 5d
+    PT; UI smoketest :24-03-2025, 1d
 
     section Integration DIMR features
-    All teams; Integration of features :17-03-2025, 5d
-    Robin; Release branch :21-03-2025, 1d
-    DevOps; Container check :21-03-2025, 1d
+    All teams; Integration of features :17-03-2025, 12d
+    Robin; Release branch :28-03-2025, 1d
+    DevOps; Container check :28-03-2025, 1d
 
     section DIMR Release
-    DevOps; Create open source package :24-03-2025, 5d
-    Teams; Handover validation documentation :24-03-2025, 5d
-    Teams; Handover example testcases :24-03-2025, 5d
-    DevOps; Starts verschil analyse :24-03-2025, 5d
     PO's; Starts gathering release notes wiki :24-03-2025, 5d
+    DevOps; Create open source package :31-03-2025, 5d
+    Teams; Handover validation documentation :31-03-2025, 5d
+    Teams; Handover example testcases :31-03-2025, 5d
+    DevOps; Starts verschil analyse :31-03-2025, 5d
 
     section Integration Front end
     Teams; Manuals (Installation, User, Technical reference) :31-03-2025, 5d
