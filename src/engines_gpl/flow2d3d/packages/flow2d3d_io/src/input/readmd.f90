@@ -345,8 +345,6 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     character(256)                        :: filic       !  File name of initial condition file
     character(256)                        :: filnam      ! File name for attribute files
     character(300)                        :: mdfrec      ! Standard rec. length in MD-file (300) 300 = 256 + a bit (field, =, ##, etc.)
-    
-    integer, parameter :: ddbval = 1 
 !
 !! executable statements -------------------------------------------------------
 !
@@ -836,7 +834,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     call rdtrt(lundia    ,error     ,lftrto    ,dt        , &
              & kmax      ,itimtt    ,gdtrachy  , &
              & griddim   ,dryflc    ,gdp%mdfile_ptr,gdp%gdwaqpar%waqol     , &
-             & ddbval    ,tunit)
+             & gdp%d%ddbound ,tunit)
     !call rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     !         & nmax      ,nmaxus    ,kmax      ,itimtt    ,gdp       )
     if (error) goto 9999

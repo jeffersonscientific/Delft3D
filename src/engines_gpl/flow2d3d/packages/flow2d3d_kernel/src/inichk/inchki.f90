@@ -465,7 +465,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     !
     if (lftrto) then
        call chktrt(lundia    ,error     ,gdp%griddim   , & 
-                 & gdp%gdtrachy  ,flnmD50   ,flnmD90   ,lfbedfrmrou, gdp%gdprocs%sedim, ddbval)
+                 & gdp%gdtrachy  ,flnmD50   ,flnmD90   ,lfbedfrmrou, gdp%gdprocs%sedim, gdp%d%ddbound)
        !call chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
        !          & i(kcu)    ,i(kcv)    ,gdp)
     endif
