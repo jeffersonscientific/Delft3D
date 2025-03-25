@@ -111,10 +111,6 @@ module m_physcoef
    real(kind=dp) :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
    real(kind=dp) :: zab(2), sfr(2) !< help variables
 
-   real(kind=dp) :: cp0 !< eckart density parameters
-   real(kind=dp) :: clam !< eckart density parameters
-   real(kind=dp) :: clam0 !< eckart density parameters
-   real(kind=dp) :: alph0 !< eckart density parameters
    integer :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
    logical :: apply_thermobaricity !< Check if density is pressure dependent
    integer :: Maxitpresdens = 1 !< max nr of density-pressure iterations
@@ -191,8 +187,6 @@ contains
 
       vicwminb = 0.0_dp ! was 0.0_dp, minimum viscosity in production terms shear and buoyancy
       xlozmidov = 0.0_dp ! Ozmidov length scale
-
-      alph0 = 0.698_dp ! =Eckart density parameters
 
       idensform = 2 !< 0 = no, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
       apply_thermobaricity = .false.

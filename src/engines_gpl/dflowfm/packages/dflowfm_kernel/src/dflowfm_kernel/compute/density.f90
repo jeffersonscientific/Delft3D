@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 
 module m_density
-   use precision_basics, only: dp
+   use precision, only: dp
 
    implicit none
 
@@ -48,7 +48,6 @@ module m_density
 contains
 
    function calculate_density_from_salinity_and_temperature(salinity, temperature) result(density)
-      use precision, only: dp
       use m_physcoef, only: rhomean
       use m_flow, only: idensform
       use MessageHandling, only: LEVEL_ERROR, mess
@@ -78,7 +77,6 @@ contains
    end function calculate_density_from_salinity_and_temperature
 
    function calculate_density_from_salinity_temperature_and_pressure(salinity, temperature, pressure) result(density)
-      use precision, only: dp
       use m_flow, only: idensform
       use MessageHandling, only: LEVEL_ERROR, mess
       use m_density_formulas, only: DENSITY_OPTION_UNESCO83, density_unesco83
@@ -98,7 +96,6 @@ contains
 
    !> Fill potential density of one column
    subroutine set_potential_density(potential_density, cell_index_2d)
-      use precision, only: dp
       use m_flow, only: kmxn
       use m_get_kbot_ktop, only: getkbotktop
 
@@ -131,7 +128,6 @@ contains
 
    !> Fill in-situ density of one column
    subroutine set_pressure_dependent_density(in_situ_density, cell_index_2d)
-      use precision, only: dp
       use m_flow, only: kmxn, zws
       use m_get_kbot_ktop, only: getkbotktop
       use m_physcoef, only: Maxitpresdens, ag
@@ -169,10 +165,6 @@ contains
    end subroutine set_pressure_dependent_density
 
    function density_at_cell(cell_index_3d, pressure) result(density)
-      use precision, only: dp
-
-      implicit none
-
       integer, intent(in) :: cell_index_3d !< cell number
       real(kind=dp), intent(in) :: pressure !< some given pressure
       real(kind=dp) :: density
@@ -187,7 +179,6 @@ contains
    end function density_at_cell
 
    subroutine salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
-      use precision, only: dp
       use m_flow, only: jasal, jatem, backgroundsalinity, backgroundwatertemperature
       use m_transport, only: isalt, itemp, constituents
 
@@ -211,7 +202,6 @@ contains
 
    !> Adds the effect of sediment on the density of a cell
    subroutine add_sediment_effect_to_density(rho, cell)
-      use precision, only: dp
       use m_sediment, only: jased, jaseddenscoupling, jasubstancedensitycoupling, mxgr, rhosed, sed, stmpar, stm_included
       use m_transport, only: constituents, ised1, itra1, itran
       use m_turbulence, only: rhowat

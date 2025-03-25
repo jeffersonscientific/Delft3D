@@ -71,7 +71,6 @@ module m_flow_flowinit
    use m_rearst, only: rearst
    use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
-   use m_inidensconstants
    use m_alloc_jacobi
 
    implicit none
@@ -165,8 +164,6 @@ contains
          jatidep = OFF
          jaselfal = OFF
       end if
-
-      call inidensconstants() ! Some density parameters
 
       if (ti_waq > 0d0 .and. max(limtypmom, limtypsa, limtypTM) <= 0) then
          call qnerror('DELWAQ requires at least one limiter (Numerical Parameters). DELWAQ output disabled for now.', ' ', ' ')

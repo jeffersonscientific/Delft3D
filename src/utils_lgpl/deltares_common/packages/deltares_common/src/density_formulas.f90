@@ -67,7 +67,6 @@ contains
    !! check value: sigma = 59.82037  kg/m**3. for s = 40 (ipss-78) ,
    !! t = 40 deg c, p0= 10000 decibars.
    pure function density_unesco83(salinity, temperature, pressure) result(density)
-      use precision, only: dp
       implicit none
       real(kind=dp), intent(in) :: salinity
       real(kind=dp), intent(in) :: temperature
