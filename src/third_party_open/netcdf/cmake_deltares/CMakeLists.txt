@@ -61,7 +61,12 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortran_sources} )
 set_target_properties (${netcdf_library_name} PROPERTIES FOLDER third_party_open)
 
 message(STATUS ${netcdf_version} " binary dir is ${library_path}/netCDF 4.6.1/bin/")
-install (DIRECTORY ${library_path}netCDF\ 4.6.1/bin/ DESTINATION lib
-FILES_MATCHING
-PATTERN "*.dll"
+set(binary_dir ${library_path}/netCDF\ 4.6.1/bin/)
+install (FILES
+${binary_dir}/netcdf.dll
+${binary_dir}/hdf5_hl.dll
+${binary_dir}/hdf5.dll
+${binary_dir}/libcurl.dll # for Gdal
+${binary_dir}/zlib1.dll # for curl
+DESTINATION lib
 )
