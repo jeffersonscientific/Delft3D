@@ -954,6 +954,7 @@ contains
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
+      use fm_external_forcings_data, only: numsrc, qstss
       use dfm_error, only: DFM_NOERR
 
       type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the sourcesink block.
@@ -964,9 +965,10 @@ contains
       character(len=INI_VALUE_LEN) :: sourcesink_id
       character(len=INI_VALUE_LEN) :: sourcesink_name
       character(len=INI_VALUE_LEN) :: location_file
-      character(len=INI_VALUE_LEN) :: discharge_file
+      character(len=INI_VALUE_LEN) :: discharge_input
       character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
-      character(len=NAMLEN) :: tmpstr
+      character(len=NAMLEN) :: const_name
+      character(len=INI_VALUE_LEN) :: quantity_id
 
       integer :: num_coordinates
       real(kind=dp), dimension(:), allocatable :: x_coordinates
@@ -1024,7 +1026,7 @@ contains
       call prop_get(node_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
       call prop_get(node_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
 
-      call prop_get(node_ptr, '', 'discharge', discharge_file, is_read)
+      call prop_get(node_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
@@ -1049,13 +1051,28 @@ contains
          return
       end if
 
+      quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
+      !call resolvePath(filename, basedir) ! TODO!
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1)*(numsrc-1) + 1, &
+                                               1, qstss)
+
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+            // 'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+         call err_flush()
+         return
+      end if
+
       ! Constituents (salinity, temperature, sediments, tracers) may have a timeseries file
       ! specifying the difference in concentration added by the source/sink.
       ! All these files are optional, so no check on 'is_read' can be present below.
       if (NUMCONST > 0) then
          allocate (constituent_delta_file(NUMCONST), stat=ierr)
          do i_const = 1, NUMCONST
+            is_read = .false.
+            const_name = const_names(i_const)
             if (i_const == ISALT) then
+               const_name = 'salinity'
                call prop_get(node_ptr, '', 'salinityDelta', constituent_delta_file(i_const), is_read)
             else if (i_const == ITEMP) then
                call prop_get(node_ptr, '', 'temperatureDelta', constituent_delta_file(i_const), is_read)
@@ -1063,13 +1080,20 @@ contains
                cycle
             else
                ! tracers and sediments: remove special characters from const_name before constructing the property to read.
-               tmpstr = const_names(i_const)
-               call ncu_sanitize_name(tmpstr)
+               call ncu_sanitize_name(const_name)
                if (i_const >= ISED1 .and. i_const <= ISEDN) then
-                  call prop_get(node_ptr, '', 'sedFrac'//trim(tmpstr)//'Delta', constituent_delta_file(i_const), is_read)
+                  call prop_get(node_ptr, '', 'sedFrac'//trim(const_name)//'Delta', constituent_delta_file(i_const), is_read)
                else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
-                  call prop_get(node_ptr, '', 'tracer'//trim(tmpstr)//'Delta', constituent_delta_file(i_const), is_read)
+                  call prop_get(node_ptr, '', 'tracer'//trim(const_name)//'Delta', constituent_delta_file(i_const), is_read)
                end if
+            end if
+            
+            if (is_read) then
+               quantity_id = 'sourcesink_' // trim(const_name) // 'Delta'  ! New quantity name in .bc files
+               !call resolvePath(filename, basedir) ! TODO!
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), TRIM(const_name)//'Delta', trim(constituent_delta_file(i_const)), (numconst + 1)*(numsrc-1) + 1 + i_const, &
+                                                        1, qstss)
+               continue
             end if
          end do
       end if
