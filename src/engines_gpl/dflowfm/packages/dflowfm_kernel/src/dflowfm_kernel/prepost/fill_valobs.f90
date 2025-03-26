@@ -90,7 +90,7 @@ module m_fill_valobs
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
-      if (kmx == 0) then
+       if (kmx == 0) then
          kmx_const = 1 ! to make numbering work
       end if
 
