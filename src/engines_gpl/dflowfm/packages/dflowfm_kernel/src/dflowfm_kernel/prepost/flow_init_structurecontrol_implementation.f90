@@ -149,6 +149,7 @@ contains
 
             if (numgen > 0) then
                istat = initialize_structure_links(pstru, numgen, kegen(1:numgen), wu)
+               call apply_teta_is_1_to_neighbours(kegen(1:numgen), numgen, teta)
             else
                call reallocP(pstru%linknumbers, 0)
                istat = DFM_NOERR
@@ -297,8 +298,7 @@ contains
    subroutine allocate_structure_arrays(nstr, widths, lftopol, pumpidx, gateidx, cdamidx, cgenidx, dambridx)
       use precision_basics, only: dp
       use m_alloc, only: realloc
-      use fm_external_forcings_data, only: dambreakPolygons
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength, dambreakLinksActualLength
+      use fm_external_forcings_data, only: dambreakPolygons, dambreakLinksEffectiveLength, dambreakLinksActualLength
       use network_data, only: numl
 
       integer, intent(in) :: nstr !< nstr is the number of (potential) structures
@@ -379,14 +379,11 @@ contains
       use fm_external_forcings_data, only: kdambreak, LStartBreach, &
                                            dambreak_ids, activeDambreakLinks, &
                                            dambreakLevelsAndWidthsFromTable, &
-                                           dambreaks, ndambreaklinks
-      use m_update_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
-                                          dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
-                                          dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
-                                          dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
-                                          dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
+                                           dambreaks, ndambreaklinks, dambreakLinksEffectiveLength
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
+                                          add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
+                                          add_averaging_upstream_signal, add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength
       use m_alloc, only: realloc
 
       integer, intent(in) :: ndambreaksignals !< ndambreaksignals is the number of dambreak signals.
@@ -482,20 +479,15 @@ contains
                            ''' in dambreak ''', trim(dambreak_ids(n)), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)                        
                      end if
                   else
-                     nDambreakAveragingUpstream = nDambreakAveragingUpstream + 1
-                     dambreakAveragingUpstreamMapping(nDambreakAveragingUpstream) = n
+                     call add_averaging_upstream_signal(n)
                   end if
                end if
 
@@ -511,20 +503,15 @@ contains
                            ''' in dambreak ''', trim(dambreak_ids(n)), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else
-                     nDambreakAveragingDownstream = nDambreakAveragingDownstream + 1
-                     dambreakAveragingDownstreamMapping(nDambreakAveragingDownstream) = n
+                     call add_averaging_downstream_signal(n)
                   end if
                end if
 
@@ -614,15 +601,11 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
-      use m_update_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
-                                          dambreakLocationsUpstreamMapping, dambreakLocationsUpstream, &
-                                          dambreakAveragingUpstreamMapping, nDambreakLocationsUpstream, nDambreakAveragingUpstream, &
-                                          dambreakLocationsDownstreamMapping, dambreakLocationsDownstream, &
-                                          dambreakAveragingDownstreamMapping, nDambreakLocationsDownstream, nDambreakAveragingDownstream
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, breachDepthDambreak, breachWidthDambreak, &
+         add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
+         add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use m_adjust_bobs_on_dambreak_breach, only: dambreakLinksEffectiveLength, dambreakLinksActualLength 
-
-
+      use fm_external_forcings_data, only: dambreakLinksEffectiveLength, dambreakLinksActualLength
 
       implicit none
       logical :: status
@@ -756,6 +739,7 @@ contains
 
          if (numgen > 0) then
             istat = initialize_structure_links(pstru, numgen, kegen(1:numgen), wu)
+            call apply_teta_is_1_to_neighbours(kegen(1:numgen), numgen, teta)
          else
             call reallocP(pstru%linknumbers, 0)
             istat = DFM_NOERR
@@ -1823,20 +1807,15 @@ contains
                            ''' in dambreak ''', trim(strid), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsUpstream = nDambreakLocationsUpstream + 1
-                        dambreakLocationsUpstreamMapping(nDambreakLocationsUpstream) = n
-                        dambreakLocationsUpstream(nDambreakLocationsUpstream) = k
+                        call add_dambreaklocation_upstream(n,k)
                      end if
                   else
-                     nDambreakAveragingUpstream = nDambreakAveragingUpstream + 1
-                     dambreakAveragingUpstreamMapping(nDambreakAveragingUpstream) = n
+                     call add_averaging_upstream_signal(n)
                   end if
                end if
 
@@ -1852,20 +1831,15 @@ contains
                            ''' in dambreak ''', trim(strid), '''.'
                         call err_flush()
                      else
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else if (xla /= dmiss .and. yla /= dmiss) then
                      call incells(xla, yla, k)
                      if (k > 0) then
-                        nDambreakLocationsDownstream = nDambreakLocationsDownstream + 1
-                        dambreakLocationsDownstreamMapping(nDambreakLocationsDownstream) = n
-                        dambreakLocationsDownstream(nDambreakLocationsDownstream) = k
+                        call add_dambreaklocation_downstream(n,k)
                      end if
                   else
-                     nDambreakAveragingDownstream = nDambreakAveragingDownstream + 1
-                     dambreakAveragingDownstreamMapping(nDambreakAveragingDownstream) = n
+                     call add_averaging_downstream_signal(n)
                   end if
                end if
 
@@ -1989,5 +1963,28 @@ contains
       if (allocated(cgenidx)) deallocate (cgenidx)
 
    end function flow_init_structurecontrol_old
+
+   !> Set teta to 1 for all links that are connected to an upstream or downstream node of a general structure link.
+   subroutine apply_teta_is_1_to_neighbours(links, num_links, teta   )
+
+      use m_flowgeom, only: nd, ln
+
+      integer, dimension(:), intent(in) :: links !< Array with flow links on hydraulic structures.
+      integer, intent(in) :: num_links !< Length of input array links.
+      real(kind=dp), dimension(:), intent(inout) :: teta !< Theta-values of time integration for all flow links.
+
+      ! set teta to 1 for a
+      integer :: i, nn, n12, kk, LL
+      do i = 1, num_links
+         do nn = 1, 2
+            n12 = ln(nn, abs(links(i)))
+            do kk = 1, nd(n12)%lnx
+               LL = abs(nd(n12)%ln(kk))
+               teta(LL) = 1.0_dp
+            end do
+         end do
+
+      end do
+end subroutine apply_teta_is_1_to_neighbours
 
 end submodule flow_init_structurecontrol_implementation

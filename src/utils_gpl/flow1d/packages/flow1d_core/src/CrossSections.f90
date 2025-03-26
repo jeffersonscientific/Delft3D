@@ -794,7 +794,11 @@ integer function  AddCrossSectionByVariables(crs, CSDef, branchid, chainage, ire
    crs%cross(i)%groundFriction      = groundFriction
    crs%cross(i)%itabDef             = iref
    crs%cross(i)%tabDef              => CSDef%CS(iref)
-
+   
+   if (crs%cross(i)%crossType == CS_YZ_PROF) then
+      crs%cross(i)%convtab1 => null()
+      call CalcConveyance(crs%cross(i))    
+   end if
    call SetParsCross(CSDef%CS(iref), crs%cross(i))
    
    AddCrossSectionByVariables = i
@@ -829,6 +833,7 @@ subroutine SetParsCross(CrossDef, cross)
             bedLevel = Crossdef%z(j)
          endif
       enddo
+      bedlevel = bedlevel + Crossdef%bedlevel
       cross%surfaceLevel = cross%shift + surflevel
       cross%bedLevel     = cross%shift + bedlevel
    else

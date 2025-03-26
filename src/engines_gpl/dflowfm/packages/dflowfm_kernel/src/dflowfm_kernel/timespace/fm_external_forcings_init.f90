@@ -621,13 +621,18 @@ contains
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
-      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, update_method_in_case_extrapolation, convert_file_type_string_to_integer
+      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
+         update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
+         convert_file_type_string_to_integer
       use fm_external_forcings_data, only: filetype, transformcoef, kx, tair_available, dewpoint_available
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-      use m_wind, only: airdensity, jawindstressgiven, jaspacevarcharn, ja_airdensity, japatm, jawind, jarain, jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext
+      use m_wind, only: airdensity, jawindstressgiven, jaspacevarcharn, ja_airdensity, japatm, jawind, jarain, &
+         jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
+         ec_charnock, wcharnock, rain, qext
       use m_flowgeom, only: ndx, lnx, xz, yz
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, &
+         itempforcingtyp
       use timespace, only: timespaceinitialfield
       use m_meteo, only: ec_addtimespacerelation
       use dfm_error, only: DFM_NOERR
@@ -647,7 +652,7 @@ contains
       logical :: invert_mask
       logical :: is_variable_name_available
       logical :: is_extrapolation_allowed
-      character(len=INI_KEY_LEN) :: variable_name
+      character(len=INI_VALUE_LEN) :: variable_name
       character(len=INI_VALUE_LEN) :: interpolation_method, forcing_file, forcing_file_type, item_type, quantity, target_mask_file
       character(len=1) :: oper
       real(dp) :: max_search_radius
@@ -699,6 +704,7 @@ contains
       call prop_get(node_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
       if (is_successful) then
          method = convert_method_string_to_integer(interpolation_method)
+         call update_method_with_weightfactor_fallback(forcing_file_type, method)
       else
          method = get_default_method_for_file_type(forcing_file_type)
       end if
@@ -1070,7 +1076,7 @@ contains
       case (UNC_LOC_U)
          target_num_points = lnx
          target_x => xu(1:target_num_points)
-         target_x => yu(1:target_num_points)
+         target_y => yu(1:target_num_points)
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select

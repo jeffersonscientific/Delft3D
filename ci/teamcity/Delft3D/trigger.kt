@@ -9,6 +9,8 @@ import Delft3D.windows.*
 
 object Trigger : BuildType({
 
+    description = "This is triggered for merge-requests and will schedule the appropriate testbenches."
+
     templates(
         TemplateMergeRequest,
         TemplateDetermineProduct,
@@ -39,7 +41,7 @@ object Trigger : BuildType({
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {
-                filename = "ci/teamcity/scripts/testbench_filter.py"
+                filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v lnx64"
             }
         }
@@ -47,7 +49,7 @@ object Trigger : BuildType({
         python {
             name = "Retrieve Windows Testbench XMLs from CSV"
             command = file {
-                filename = "ci/teamcity/scripts/testbench_filter.py"
+                filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v win64"
             }
         }
@@ -74,6 +76,7 @@ object Trigger : BuildType({
                                 </revision>
                             </revisions>
                             <properties>
+                                <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_lnx64%"/>
                             </properties>
                             <snapshot-dependencies>
@@ -111,6 +114,7 @@ object Trigger : BuildType({
                                 </revision>
                             </revisions>
                             <properties>
+                                <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_win64%"/>
                             </properties>
                             <snapshot-dependencies>

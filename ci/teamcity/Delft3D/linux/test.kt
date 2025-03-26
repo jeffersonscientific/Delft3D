@@ -13,6 +13,8 @@ import CsvProcessor
 
 object LinuxTest : BuildType({
 
+    description = "Run TestBench.py within the Docker container on a list of testbench XML files."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -20,7 +22,7 @@ object LinuxTest : BuildType({
     )
 
     name = "Test"
-    buildNumberPattern = "%build.vcs.number%"
+    buildNumberPattern = "%product%: %build.vcs.number%"
 
     artifactRules = """
         test\deltares_testbench\data\cases\**\*.pdf      => pdf
@@ -50,6 +52,7 @@ object LinuxTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
+        param("product", "unknown")
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))

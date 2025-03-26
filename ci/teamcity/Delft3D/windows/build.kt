@@ -8,6 +8,9 @@ import Delft3D.template.*
 import Delft3D.step.*
 
 object WindowsBuild : BuildType({
+
+    description = "CMake build."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,7 +20,6 @@ object WindowsBuild : BuildType({
  
     name = "Build"
     buildNumberPattern = "%product%: %build.vcs.number%"
-    description = "Windows build."
 
     allowExternalStatus = true
     artifactRules = """
@@ -27,11 +29,12 @@ object WindowsBuild : BuildType({
     """.trimIndent()
 
     params {
-        param("intel_fortran_compiler", "ifort")
+        param("intel_fortran_compiler", "ifx")
+        param("container.tag", "vs2022-intel2024")
+        param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
-        param("generator", """"Visual Studio 16 2019"""")
         param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
-        param("build_type", "Release")
+        select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
     }
 
@@ -43,7 +46,7 @@ object WindowsBuild : BuildType({
 
     steps {
         mergeTargetBranch {
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
@@ -56,13 +59,13 @@ object WindowsBuild : BuildType({
                             product = "%teamcity.pullRequest.source.branch%".split("/")[0]
                         else:
                             product = "%teamcity.build.branch%".split("/")[0]
-                        if product == "main":
+                        if "%teamcity.build.branch.is_default%" == "true":
                             product = "all"
                         print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
-                        print(f"##teamcity[buildNumber '{product}: %build.vcs.number%']")
+                        print(f"##teamcity[buildNumber '{product}-testbench: %build.vcs.number%']")
                 """.trimIndent()
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
@@ -73,7 +76,7 @@ object WindowsBuild : BuildType({
                 echo #define BUILD_NR "%build.vcs.number%" > checkout_info.h
                 echo #define BRANCH "%teamcity.build.branch%" >> checkout_info.h
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
@@ -86,36 +89,12 @@ object WindowsBuild : BuildType({
 
                 cmake --build . -j --target install --config %build_type%
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
-        powerShell {
-            name = "Add FBC-tools"
-            scriptMode = script {
-                content="""
-                    robocopy fbctools build_%product%\install /E /XC /XN /XO
-                """.trimIndent()
-            }
-        }
     }
-
-    dependencies {
-        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-            artifacts {
-                artifactRules = """
-                    *.dll => fbctools/lib
-                    *.xsd => fbctools/share/drtc
-                """.trimIndent()
-            }
-        }
-    }
-
     features {
         dockerSupport {
             loginToRegistry = on {
