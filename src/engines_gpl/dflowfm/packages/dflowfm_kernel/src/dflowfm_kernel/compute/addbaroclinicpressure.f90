@@ -44,7 +44,6 @@ contains
    subroutine addbaroclinicpressure()
       use m_addbarocl, only: addbarocL, addbarocLorg, addbarocLrho_w
       use m_addbaroc2, only: addbaroc2
-      use m_addbaroc, only: addbaroc
       use m_flowgeom
       use m_flow
       use m_flowtimes
