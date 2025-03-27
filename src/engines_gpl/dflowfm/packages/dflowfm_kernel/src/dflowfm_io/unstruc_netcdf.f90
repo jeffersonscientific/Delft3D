@@ -56,7 +56,7 @@ module unstruc_netcdf
    use m_debug
    use m_readyy
    use m_qnerror
-   use netcdf_utils, only: ncu_sanitize_name
+   use netcdf_utils, only: ncu_sanitize_name, ncu_ensure_data_mode
 
    implicit none
 
@@ -5332,6 +5332,8 @@ contains
       character(1024) :: longname !< long, descriptive name of netCDF variable content
 
       integer :: nc_precision
+      logical :: was_in_define
+
       integer, parameter :: FIRST_ARRAY = 1
       integer, parameter :: SECOND_ARRAY = 2
 
@@ -6392,7 +6394,8 @@ contains
          !
          ! END OF DEFINITION PART
          !
-         ierr = nf90_enddef(mapids%ncid)
+         ierr = ncu_ensure_data_mode(mapids%ncid, was_in_define)
+
          if (ierr == NF90_EVARSIZE .and. unc_cmode /= NF90_NETCDF4) then
             call mess(LEVEL_ERROR, 'Error while writing map file. Probably model grid is too large for classic NetCDF format. Try setting [output] NcFormat = 4 in your MDU.')
          else if (ierr /= NF90_NOERR) then
