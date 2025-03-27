@@ -42,8 +42,9 @@ module m_addbaroclinicpressure
 contains
 
    subroutine addbaroclinicpressure()
-      use m_addbarocl, only: addbarocL, addbarocLorg, addbarocLrho_w
-      use m_addbaroc2, only: addbaroc2
+      use precision, only: dp
+      use m_addbarocl, only: addbarocL, addbarocLrho_w
+      use m_addbaroc, only: addbaroc
       use m_flowgeom
       use m_flow
       use m_flowtimes
@@ -59,34 +60,34 @@ contains
       end if
 
       if (kmx == 0) then
-         !$OMP PARALLEL DO       &
-         !$OMP PRIVATE(LL,Lb,Lt)
+         !$OMP PARALLEL DO &
+         !$OMP PRIVATE(LL)
          do LL = 1, lnxbc
-            if (hu(LL) == 0d0) cycle
-            call getLbotLtop(LL, Lb, Lt)
-            if (Lt < Lb) then
+            if (hu(LL) == 0.0_dp) then
                cycle
             end if
-            call addbaroc2(LL, Lb, Lt)
+            call addbaroc(LL)
          end do
          !$OMP END PARALLEL DO
       else
 
-         rvdn = 0d0; grn = 0d0
+         rvdn = 0.0_dp
+         grn = 0.0_dp
 
          if (jarhointerfaces == 1) then
-
-            !$OMP PARALLEL DO       &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(n)
             do n = 1, ndx
                call addbarocnrho_w(n)
             end do
             !$OMP END PARALLEL DO
 
-            !$OMP PARALLEL DO       &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(LL,Lb,Lt)
             do LL = 1, lnxbc
-               if (hu(LL) == 0d0) cycle
+               if (hu(LL) == 0.0_dp) then
+                  cycle
+               end if
                call getLbotLtop(LL, Lb, Lt)
                if (Lt < Lb) then
                   cycle
@@ -94,20 +95,21 @@ contains
                call addbarocLrho_w(LL, Lb, Lt)
             end do
             !$OMP END PARALLEL DO
-
          else
 
-            !$OMP PARALLEL DO       &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(n)
             do n = 1, ndx
                call addbarocn(n)
             end do
             !$OMP END PARALLEL DO
 
-            !$OMP PARALLEL DO       &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(LL,Lb,Lt)
             do LL = 1, lnxbc
-               if (hu(LL) == 0d0) cycle
+               if (hu(LL) == 0.0_dp) then
+                  cycle
+               end if
                call getLbotLtop(LL, Lb, Lt)
                if (Lt < Lb) then
                   cycle
