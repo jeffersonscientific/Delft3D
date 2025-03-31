@@ -277,7 +277,7 @@ contains
          L = iLink(n)
          n_end = n - 1
          if (L > Lp) then
-            if (n_end > n_start + 1) then
+            if (n_end > n_start) then
                call sort_index(iPol(n_start:n_end), new_index(n_start:n_end))
                do k = n_start, n_end
                   dSL(k) = dSL_copy(n_start - 1 + new_index(k))
