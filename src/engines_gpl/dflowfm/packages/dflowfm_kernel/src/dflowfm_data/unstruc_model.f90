@@ -744,7 +744,7 @@ contains
       character(len=200), dimension(:), allocatable :: fnames
       real(kind=dp) :: tim
       real(kind=dp) :: sumlaycof
-      real(kind=dp), parameter :: tolSumLay = 1d-12
+      real(kind=dp), parameter :: tolSumLay = 1.0e-12_dp
       integer, parameter :: maxLayers = 300
       integer :: major, minor
       integer :: ignore_value
@@ -1408,7 +1408,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity)
       call prop_get(md_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature)
       ! Set molecular viscosity
-      vismol = 4.0_dp / (20.0_dp + backgroundwatertemperature) * 1d-5 ! Van Rijn, 1993, from iniphys.f90
+      vismol = 4.0_dp / (20.0_dp + backgroundwatertemperature) * 1.0e-5_dp ! Van Rijn, 1993, from iniphys.f90
 
       call prop_get(md_ptr, 'physics', 'NFEntrainmentMomentum', NFEntrainmentMomentum)
 
@@ -1633,7 +1633,7 @@ contains
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
       if (ftauw < 0.0_dp) then
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0, reset to 0.0. Bed shear stress due to waves switched off.')
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0_dp, reset to 0.0. Bed shear stress due to waves switched off.')
          ftauw = 0.0_dp
       end if
       if (fwfac < 0.0_dp) then
@@ -2679,7 +2679,7 @@ contains
       call prop_set(prop_ptr, 'geometry', 'UseCaching', md_usecaching, 'Use caching for geometrical/network-related items (0: no, 1: yes)')
 
       call prop_set(prop_ptr, 'geometry', 'Uniformwidth1D', wu1Duni, 'Uniform width for channel profiles not specified by profloc')
-      if (writeall .or. hh1Duni /= 3d3) then
+      if (writeall .or. hh1Duni /= 3.0e3_dp) then
          call prop_set(prop_ptr, 'geometry', 'Uniformheight1D', hh1Duni, 'Uniform height for channel profiles not specified by profloc')
       end if
       if (writeall .or. abs(iproftypuni) /= 3) then
@@ -2709,15 +2709,15 @@ contains
          call prop_set(prop_ptr, 'geometry', '1D2DLinkFile', trim(md_1d2dlinkfile), 'File *.ini containing custom parameters for 1D2D links')
       end if
 
-      if (writeall .or. dxmin1D /= 1d-3) then
+      if (writeall .or. dxmin1D /= 1.0e-3_dp) then
          call prop_set(prop_ptr, 'geometry', 'Dxmin1D', Dxmin1D, 'Minimum 1D link length, (except for duikers) ')
       end if
       call prop_set(prop_ptr, 'geometry', 'Dxwuimin2D', Dxwuimin2D, 'Smallest fraction dx/wu , set dx > Dxwuimin2D*wu, Default = 0.1')
 
-      if (writeall .or. removesmalllinkstrsh /= 1d-1) then
+      if (writeall .or. removesmalllinkstrsh /= 0.1_dp) then
          call prop_set(prop_ptr, 'geometry', 'Removesmalllinkstrsh', removesmalllinkstrsh, '0-1, 0= no removes')
       end if
-      if (writeall .or. cosphiutrsh /= 5d-1) then
+      if (writeall .or. cosphiutrsh /= 0.5_dp) then
          call prop_set(prop_ptr, 'geometry', 'Cosphiutrsh', cosphiutrsh, '0-1, 1= no bad orthos')
       end if
 
@@ -2794,10 +2794,10 @@ contains
          call prop_set(prop_ptr, 'geometry', 'Nonlin1D', Nonlin1D, 'Non-linear 1D volumes, 1 = Preisman slot, 2 = pipes closed (Nested Newton)')
       end if
 
-      if (writeall .or. Slotw2D /= 1d-3) then
+      if (writeall .or. Slotw2D /= 1.0e-3_dp) then
          call prop_set(prop_ptr, 'geometry', 'Slotw2D', Slotw2D, '-')
       end if
-      if (writeall .or. Slotw1D /= 1d-3) then
+      if (writeall .or. Slotw1D /= 1.0e-3_dp) then
          call prop_set(prop_ptr, 'geometry', 'Slotw1D', Slotw1D, '-')
       end if
 
@@ -2817,7 +2817,7 @@ contains
       if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
          call prop_set(prop_ptr, 'geometry', 'Circumcenter', circumcenter_method, 'Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
       end if
-      if (writeall .or. (bamin > 1d-6)) then
+      if (writeall .or. (bamin > 1.0e-6_dp)) then
          call prop_set(prop_ptr, 'geometry', 'Bamin', Bamin, 'Minimum grid cell area, in combination with cut cells')
       end if
       if (writeall .or. (rrtol /= 3.0_dp)) then !
@@ -3139,11 +3139,11 @@ contains
          call prop_set(prop_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal, 'Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)')
       end if
 
-      if (writeall .or. (epstke > 1d-32 .and. kmx > 0)) then
+      if (writeall .or. (epstke > 1.0e-32_dp .and. kmx > 0)) then
          call prop_set(prop_ptr, 'numerics', 'EpsTKE', epstke, '(TKE=max(TKE,EpsTKE), default=1d-32)')
       end if
 
-      if (writeall .or. (epseps > 1d-32 .and. kmx > 0)) then
+      if (writeall .or. (epseps > 1.0e-32_dp .and. kmx > 0)) then
          call prop_set(prop_ptr, 'numerics', 'EpsEPS', epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
       end if
 
@@ -3265,10 +3265,10 @@ contains
          call prop_set(prop_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1, 'Update water levels (S1) due to subsidence / uplift')
       end if
 
-      if (writeall .or. epsmaxlev /= 1d-8) then
+      if (writeall .or. epsmaxlev /= 1.0e-8_dp) then
          call prop_set(prop_ptr, 'numerics', 'EpsMaxlev', epsmaxlev, 'Stop criterium for non-linear iteration')
       end if
-      if (writeall .or. epsmaxlevm /= 1d-8) then
+      if (writeall .or. epsmaxlevm /= 1.0e-8_dp) then
          call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm, 'Stop criterium for Nested Newton loop in non-linear iteration')
       end if
 
