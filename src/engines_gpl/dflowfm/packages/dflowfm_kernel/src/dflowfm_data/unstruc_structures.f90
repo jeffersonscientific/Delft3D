@@ -274,13 +274,17 @@ contains
       implicit none
 
       if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
-         if (allocated(valpump)) deallocate (valpump)
+         if (allocated(valpump)) then
+            deallocate (valpump)
+         end if
          allocate (valpump(NUMVALS_PUMP, npumpsg))
          valpump = 0.0_dp
       end if
       if (ti_rst > 0 .or. jahiscgen > 0) then
          if (ncgensg > 0) then
-            if (allocated(valcgen)) deallocate (valcgen)
+            if (allocated(valcgen)) then
+               deallocate (valcgen)
+            end if
             allocate (valcgen(NUMVALS_CGEN, ncgensg)); valcgen = 0.0_dp
          end if
 
@@ -288,22 +292,30 @@ contains
             ngenstru = network%sts%numGeneralStructures
          end if
          if (ngenstru > 0) then
-            if (allocated(valgenstru)) deallocate (valgenstru)
+            if (allocated(valgenstru)) then
+               deallocate (valgenstru)
+            end if
             allocate (valgenstru(NUMVALS_GENSTRU, ngenstru)); valgenstru = 0.0_dp
          end if
       end if
       if (jahisgate > 0) then
          if (ngatesg > 0) then
-            if (allocated(valgate)) deallocate (valgate)
+            if (allocated(valgate)) then
+               deallocate (valgate)
+            end if
             allocate (valgate(NUMVALS_CGEN, ngatesg)); valgate = 0.0_dp
          end if
          if (ngategen > 0) then
-            if (allocated(valgategen)) deallocate (valgategen)
+            if (allocated(valgategen)) then
+               deallocate (valgategen)
+            end if
             allocate (valgategen(NUMVALS_GATEGEN, ngategen)); valgategen = 0.0_dp
          end if
       end if
       if (jahiscdam > 0 .and. ncdamsg > 0) then
-         if (allocated(valcdam)) deallocate (valcdam)
+         if (allocated(valcdam)) then
+            deallocate (valcdam)
+         end if
          allocate (valcdam(NUMVALS_CDAM, ncdamsg)); valcdam = 0.0_dp
       end if
       if (nweirgen == 0) then ! If it is new 1D weir, the weir is stored in the network type
@@ -311,35 +323,51 @@ contains
       end if
 
       if ((ti_rst > 0 .or. jahisweir > 0) .and. nweirgen > 0) then
-         if (allocated(valweirgen)) deallocate (valweirgen)
+         if (allocated(valweirgen)) then
+            deallocate (valweirgen)
+         end if
          allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen)); valweirgen = 0.0_dp
       end if
       if (jahisdambreak > 0 .and. ndambreaksignals > 0) then
-         if (allocated(valdambreak)) deallocate (valdambreak)
+         if (allocated(valdambreak)) then
+            deallocate (valdambreak)
+         end if
          allocate (valdambreak(NUMVALS_DAMBREAK, ndambreaksignals)); valdambreak = 0.0_dp
       end if
       if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
-         if (allocated(valorifgen)) deallocate (valorifgen)
+         if (allocated(valorifgen)) then
+            deallocate (valorifgen)
+         end if
          allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices)); valorifgen = 0.0_dp
       end if
       if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
-         if (allocated(valbridge)) deallocate (valbridge)
+         if (allocated(valbridge)) then
+            deallocate (valbridge)
+         end if
          allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges)); valbridge = 0.0_dp
       end if
       if ((ti_rst > 0 .or. jahisculv > 0) .and. network%sts%numCulverts > 0) then
-         if (allocated(valculvert)) deallocate (valculvert)
+         if (allocated(valculvert)) then
+            deallocate (valculvert)
+         end if
          allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts)); valculvert = 0.0_dp
       end if
       if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
-         if (allocated(valuniweir)) deallocate (valuniweir)
+         if (allocated(valuniweir)) then
+            deallocate (valuniweir)
+         end if
          allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs)); valuniweir = 0.0_dp
       end if
       if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
-         if (allocated(valcmpstru)) deallocate (valcmpstru)
+         if (allocated(valcmpstru)) then
+            deallocate (valcmpstru)
+         end if
          allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count)); valcmpstru = 0.0_dp
       end if
       if (jahislongculv > 0 .and. nlongculverts > 0) then
-         if (allocated(vallongculvert)) deallocate (vallongculvert)
+         if (allocated(vallongculvert)) then
+            deallocate (vallongculvert)
+         end if
          allocate (vallongculvert(NUMVALS_LONGCULVERT, nlongculverts)); vallongculvert = 0.0_dp
       end if
 
@@ -376,7 +404,9 @@ contains
 !> Resets only structures variables intended for a restart of an existing flow simulation (same MDU).
 !! Upon loading of new model/MDU, call default_structures() instead.
    subroutine reset_structures()
-      if (allocated(gates)) deallocate (gates)
+      if (allocated(gates)) then
+         deallocate (gates)
+      end if
    end subroutine reset_structures
 
 !> Fills the valstruct array for one given structure on a given link L.
@@ -1553,9 +1583,15 @@ contains
          return
       end select
 
-      if (allocated(geomXStructInput)) deallocate (geomXStructInput)
-      if (allocated(geomYStructInput)) deallocate (geomYStructInput)
-      if (allocated(nNodesStructInput)) deallocate (nNodesStructInput)
+      if (allocated(geomXStructInput)) then
+         deallocate (geomXStructInput)
+      end if
+      if (allocated(geomYStructInput)) then
+         deallocate (geomYStructInput)
+      end if
+      if (allocated(nNodesStructInput)) then
+         deallocate (nNodesStructInput)
+      end if
 
       nNodeTot = 0
       i = 1

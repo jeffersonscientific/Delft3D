@@ -179,15 +179,21 @@ contains
       ! pumps, including staged pumps
       !
       if (npumpsg > 0) then
-         if (allocated(qpump)) deallocate (qpump)
-         if (allocated(pump_ids)) deallocate (pump_ids)
+         if (allocated(qpump)) then
+            deallocate (qpump)
+         end if
+         if (allocated(pump_ids)) then
+            deallocate (pump_ids)
+         end if
          allocate (pump_ids(npumpsg))
          allocate (qpump(npumpsg), stat=ierr)
          call aerr('qpump(npumpsg)', ierr, npumpsg)
          qpump = 0.0_dp
 
          if (npump > 0) then
-            if (allocated(kpump)) deallocate (kpump)
+            if (allocated(kpump)) then
+               deallocate (kpump)
+            end if
             allocate (kpump(3, npump), stat=ierr)
             call aerr('kpump(3,npump)', ierr, npump * 3)
             kpump = 0
@@ -215,16 +221,24 @@ contains
 
          nPumpsWithLevels = 0
 
-         if (allocated(pumpsWithLevels)) deallocate (pumpsWithLevels)
+         if (allocated(pumpsWithLevels)) then
+            deallocate (pumpsWithLevels)
+         end if
          allocate (pumpsWithLevels(npumpsg))
          pumpsWithLevels = pumpidx
-         if (allocated(waterLevelsPumpLeft)) deallocate (waterLevelsPumpLeft)
+         if (allocated(waterLevelsPumpLeft)) then
+            deallocate (waterLevelsPumpLeft)
+         end if
          allocate (waterLevelsPumpLeft(npumpsg))
          waterLevelsPumpLeft = 0.0_dp
-         if (allocated(waterLevelsPumpRight)) deallocate (waterLevelsPumpRight)
+         if (allocated(waterLevelsPumpRight)) then
+            deallocate (waterLevelsPumpRight)
+         end if
          allocate (waterLevelsPumpRight(npumpsg))
          waterLevelsPumpRight = 0.0_dp
-         if (allocated(pumpAveraging)) deallocate (pumpAveraging)
+         if (allocated(pumpAveraging)) then
+            deallocate (pumpAveraging)
+         end if
          allocate (pumpAveraging(2, npumpsg))
          pumpAveraging = 0.0_dp
          ! initialize
@@ -286,11 +300,21 @@ contains
 888   continue
 
       if (allocated(xdum)) deallocate (xdum, ydum, kdum)
-      if (allocated(widths)) deallocate (widths)
-      if (allocated(pumpidx)) deallocate (pumpidx)
-      if (allocated(gateidx)) deallocate (gateidx)
-      if (allocated(cdamidx)) deallocate (cdamidx)
-      if (allocated(cgenidx)) deallocate (cgenidx)
+      if (allocated(widths)) then
+         deallocate (widths)
+      end if
+      if (allocated(pumpidx)) then
+         deallocate (pumpidx)
+      end if
+      if (allocated(gateidx)) then
+         deallocate (gateidx)
+      end if
+      if (allocated(cdamidx)) then
+         deallocate (cdamidx)
+      end if
+      if (allocated(cgenidx)) then
+         deallocate (cgenidx)
+      end if
 
    end function flow_init_structurecontrol
 
@@ -682,16 +706,36 @@ contains
          return
       end if
 
-      if (allocated(widths)) deallocate (widths)
-      if (allocated(lftopol)) deallocate (lftopol)
-      if (allocated(dambreakLinksEffectiveLength)) deallocate (dambreakLinksEffectiveLength)
-      if (allocated(dambreakLinksActualLength)) deallocate (dambreakLinksActualLength)
-      if (allocated(pumpidx)) deallocate (pumpidx)
-      if (allocated(gateidx)) deallocate (gateidx)
-      if (allocated(cdamidx)) deallocate (cdamidx)
-      if (allocated(cgenidx)) deallocate (cgenidx)
-      if (allocated(dambridx)) deallocate (dambridx)
-      if (allocated(dambreakPolygons)) deallocate (dambreakPolygons)
+      if (allocated(widths)) then
+         deallocate (widths)
+      end if
+      if (allocated(lftopol)) then
+         deallocate (lftopol)
+      end if
+      if (allocated(dambreakLinksEffectiveLength)) then
+         deallocate (dambreakLinksEffectiveLength)
+      end if
+      if (allocated(dambreakLinksActualLength)) then
+         deallocate (dambreakLinksActualLength)
+      end if
+      if (allocated(pumpidx)) then
+         deallocate (pumpidx)
+      end if
+      if (allocated(gateidx)) then
+         deallocate (gateidx)
+      end if
+      if (allocated(cdamidx)) then
+         deallocate (cdamidx)
+      end if
+      if (allocated(cgenidx)) then
+         deallocate (cgenidx)
+      end if
+      if (allocated(dambridx)) then
+         deallocate (dambridx)
+      end if
+      if (allocated(dambreakPolygons)) then
+         deallocate (dambreakPolygons)
+      end if
 
       allocate (widths(numl))
       allocate (lftopol(numl))
@@ -960,32 +1004,56 @@ contains
       kdum = 1
 
       if (ncgensg > 0) then ! All generalstructure, i.e., the weir/gate/generalstructure user input
-         if (allocated(zcgen)) deallocate (zcgen)
-         if (allocated(kcgen)) deallocate (kcgen)
+         if (allocated(zcgen)) then
+            deallocate (zcgen)
+         end if
+         if (allocated(kcgen)) then
+            deallocate (kcgen)
+         end if
          kx = 3 ! 1: crest/sill, 2: gateloweredge, 3: width (?)
          allocate (zcgen(ncgensg * kx), kcgen(4, ncgen), stat=ierr)
          call aerr('zcgen(ncgensg*kx), kcgen(4,ncgen)', ierr, ncgen * (2 * kx + 3))
          kcgen = 0.0_dp
          zcgen = huge(1.0_dp)
 
-         if (allocated(cgen_ids)) deallocate (cgen_ids)
-         if (allocated(cgen_type)) deallocate (cgen_type)
-         if (allocated(cgen2str)) deallocate (cgen2str)
-         if (allocated(weir2cgen)) deallocate (weir2cgen)
-         if (allocated(gate2cgen)) deallocate (gate2cgen)
-         if (allocated(genstru2cgen)) deallocate (genstru2cgen)
+         if (allocated(cgen_ids)) then
+            deallocate (cgen_ids)
+         end if
+         if (allocated(cgen_type)) then
+            deallocate (cgen_type)
+         end if
+         if (allocated(cgen2str)) then
+            deallocate (cgen2str)
+         end if
+         if (allocated(weir2cgen)) then
+            deallocate (weir2cgen)
+         end if
+         if (allocated(gate2cgen)) then
+            deallocate (gate2cgen)
+         end if
+         if (allocated(genstru2cgen)) then
+            deallocate (genstru2cgen)
+         end if
          allocate (cgen_ids(ncgensg), cgen_type(ncgensg), cgen2str(ncgensg))
          allocate (weir2cgen(nweirgen), gate2cgen(ngategen), genstru2cgen(ngenstru))
-         if (allocated(gates)) deallocate (gates)
+         if (allocated(gates)) then
+            deallocate (gates)
+         end if
          allocate (gates(ngategen))
 
          nweirgen = 0
          ngategen = 0
          ngenstru = 0
 
-         if (allocated(fusav)) deallocate (fusav)
-         if (allocated(rusav)) deallocate (rusav)
-         if (allocated(ausav)) deallocate (ausav)
+         if (allocated(fusav)) then
+            deallocate (fusav)
+         end if
+         if (allocated(rusav)) then
+            deallocate (rusav)
+         end if
+         if (allocated(ausav)) then
+            deallocate (ausav)
+         end if
          allocate (Fusav(3, ncgen), Rusav(3, ncgen), Ausav(3, ncgen), stat=ierr)
          Fusav = 0.0_dp
          Rusav = 0.0_dp
@@ -1042,7 +1110,9 @@ contains
          hulp(idx_gateheight, 1:ncgensg) = huge(1.0_dp) ! GateHeight
          hulp(idx_gateopeningwidth, 1:ncgensg) = 0.0_dp ! GateOpeningWidth
 
-         if (allocated(generalstruc)) deallocate (generalstruc)
+         if (allocated(generalstruc)) then
+            deallocate (generalstruc)
+         end if
          allocate (generalstruc(ncgensg))
 
          do n = 1, ncgensg
@@ -1391,7 +1461,9 @@ contains
             deallocate (zgate, kgate)
          end if
 
-         if (allocated(gate_ids)) deallocate (gate_ids)
+         if (allocated(gate_ids)) then
+            deallocate (gate_ids)
+         end if
          allocate (gate_ids(ngatesg))
          allocate (zgate(ngatesg), kgate(3, ngate), stat=ierr)
          call aerr('zgate(ngatesg), kgate(3,ngate)', ierr, ngate * 5)
@@ -1460,10 +1532,16 @@ contains
       end if ! Old style controllable gateloweredgelevel
 
       if (ncdamsg > 0) then ! Old-style controllable damlevel
-         if (allocated(zcdam)) deallocate (zcdam)
-         if (allocated(kcdam)) deallocate (kcdam)
+         if (allocated(zcdam)) then
+            deallocate (zcdam)
+         end if
+         if (allocated(kcdam)) then
+            deallocate (kcdam)
+         end if
 
-         if (allocated(cdam_ids)) deallocate (cdam_ids)
+         if (allocated(cdam_ids)) then
+            deallocate (cdam_ids)
+         end if
          allocate (cdam_ids(ncdamsg))
          allocate (zcdam(ncdamsg), kcdam(3, ncdam), stat=ierr)
          call aerr('zcdam(ncdamsg), kcdam(3,ncdam)', ierr, ncdam * 5)
@@ -1538,15 +1616,21 @@ contains
 ! pumps, including staged pumps
 !
       if (npumpsg > 0) then
-         if (allocated(qpump)) deallocate (qpump)
-         if (allocated(pump_ids)) deallocate (pump_ids)
+         if (allocated(qpump)) then
+            deallocate (qpump)
+         end if
+         if (allocated(pump_ids)) then
+            deallocate (pump_ids)
+         end if
          allocate (pump_ids(npumpsg))
          allocate (qpump(npumpsg), stat=ierr)
          call aerr('qpump(npumpsg)', ierr, npumpsg)
          qpump = 0.0_dp
 
          if (npump > 0) then
-            if (allocated(kpump)) deallocate (kpump)
+            if (allocated(kpump)) then
+               deallocate (kpump)
+            end if
             allocate (kpump(3, npump), stat=ierr)
             call aerr('kpump(3,npump)', ierr, npump * 3)
             kpump = 0
@@ -1574,16 +1658,24 @@ contains
 
          nPumpsWithLevels = 0
 
-         if (allocated(pumpsWithLevels)) deallocate (pumpsWithLevels)
+         if (allocated(pumpsWithLevels)) then
+            deallocate (pumpsWithLevels)
+         end if
          allocate (pumpsWithLevels(npumpsg))
          pumpsWithLevels = -1
-         if (allocated(waterLevelsPumpLeft)) deallocate (waterLevelsPumpLeft)
+         if (allocated(waterLevelsPumpLeft)) then
+            deallocate (waterLevelsPumpLeft)
+         end if
          allocate (waterLevelsPumpLeft(npumpsg))
          waterLevelsPumpLeft = 0.0_dp
-         if (allocated(waterLevelsPumpRight)) deallocate (waterLevelsPumpRight)
+         if (allocated(waterLevelsPumpRight)) then
+            deallocate (waterLevelsPumpRight)
+         end if
          allocate (waterLevelsPumpRight(npumpsg))
          waterLevelsPumpRight = 0.0_dp
-         if (allocated(pumpAveraging)) deallocate (pumpAveraging)
+         if (allocated(pumpAveraging)) then
+            deallocate (pumpAveraging)
+         end if
          allocate (pumpAveraging(2, npumpsg))
          pumpAveraging = 0.0_dp
          ! initialize
@@ -1679,34 +1771,50 @@ contains
 
          call allocate_and_initialize_dambreak_data(ndambreaklinks) 
          
-         if (allocated(kdambreak)) deallocate (kdambreak)
+         if (allocated(kdambreak)) then
+            deallocate (kdambreak)
+         end if
          allocate (kdambreak(3, ndambreaklinks), stat=ierr) ! the last row stores the actual
          ! kdambreak is an integer array? This is flow_init_structurecontrol_old so will be removed soon
          kdambreak = 0.0_dp
-         if (allocated(dambreaks)) deallocate (dambreaks)
+         if (allocated(dambreaks)) then
+            deallocate (dambreaks)
+         end if
          allocate (dambreaks(ndambreaksignals))
          dambreaks = 0
 
-         if (allocated(LStartBreach)) deallocate (LStartBreach)
+         if (allocated(LStartBreach)) then
+            deallocate (LStartBreach)
+         end if
          allocate (LStartBreach(ndambreaksignals))
          LStartBreach = -1
 
-         if (allocated(breachDepthDambreak)) deallocate (breachDepthDambreak)
+         if (allocated(breachDepthDambreak)) then
+            deallocate (breachDepthDambreak)
+         end if
          allocate (breachDepthDambreak(ndambreaksignals))
          breachDepthDambreak = 0.0_dp
 
-         if (allocated(breachWidthDambreak)) deallocate (breachWidthDambreak)
+         if (allocated(breachWidthDambreak)) then
+            deallocate (breachWidthDambreak)
+         end if
          allocate (breachWidthDambreak(ndambreaksignals))
          breachWidthDambreak = 0.0_dp
 
-         if (allocated(dambreak_ids)) deallocate (dambreak_ids)
+         if (allocated(dambreak_ids)) then
+            deallocate (dambreak_ids)
+         end if
          allocate (dambreak_ids(ndambreaksignals))
 
-         if (allocated(activeDambreakLinks)) deallocate (activeDambreakLinks)
+         if (allocated(activeDambreakLinks)) then
+            deallocate (activeDambreakLinks)
+         end if
          allocate (activeDambreakLinks(ndambreaklinks))
          activeDambreakLinks = 0
 
-         if (allocated(dambreakLevelsAndWidthsFromTable)) deallocate (dambreakLevelsAndWidthsFromTable)
+         if (allocated(dambreakLevelsAndWidthsFromTable)) then
+            deallocate (dambreakLevelsAndWidthsFromTable)
+         end if
          allocate (dambreakLevelsAndWidthsFromTable(ndambreaksignals * 2))
          dambreakLevelsAndWidthsFromTable = 0.0_dp
 
@@ -1855,8 +1963,12 @@ contains
             if (.not. allocated(dambreakPolygons(indexInPliset)%yp)) cycle
 
             ! Create the array with the coordinates of the flow links
-            if (allocated(xl)) deallocate (xl)
-            if (allocated(yl)) deallocate (yl)
+            if (allocated(xl)) then
+               deallocate (xl)
+            end if
+            if (allocated(yl)) then
+               deallocate (yl)
+            end if
             nDambreakCoordinates = L2dambreaksg(n) - L1dambreaksg(n) + 1
             allocate (xl(nDambreakCoordinates, 2))
             allocate (yl(nDambreakCoordinates, 2))
@@ -1956,11 +2068,21 @@ contains
 888   continue
 
       if (allocated(xdum)) deallocate (xdum, ydum, kdum)
-      if (allocated(widths)) deallocate (widths)
-      if (allocated(pumpidx)) deallocate (pumpidx)
-      if (allocated(gateidx)) deallocate (gateidx)
-      if (allocated(cdamidx)) deallocate (cdamidx)
-      if (allocated(cgenidx)) deallocate (cgenidx)
+      if (allocated(widths)) then
+         deallocate (widths)
+      end if
+      if (allocated(pumpidx)) then
+         deallocate (pumpidx)
+      end if
+      if (allocated(gateidx)) then
+         deallocate (gateidx)
+      end if
+      if (allocated(cdamidx)) then
+         deallocate (cdamidx)
+      end if
+      if (allocated(cgenidx)) then
+         deallocate (cgenidx)
+      end if
 
    end function flow_init_structurecontrol_old
 

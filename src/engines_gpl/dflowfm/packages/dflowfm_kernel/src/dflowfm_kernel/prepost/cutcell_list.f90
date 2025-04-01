@@ -282,7 +282,9 @@ contains
             end if
          end do
          call remove_masked_netcells()
-         if (allocated(cellmask)) deallocate (cellmask)
+         if (allocated(cellmask)) then
+            deallocate (cellmask)
+         end if
       end if
 
       ! call restorepol() ! initial SAVEPOL no longer valid due to CUTCELWU call
@@ -429,12 +431,24 @@ contains
          write (mesg, "('cutcell with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
          call mess(LEVEL_INFO, trim(mesg))
 !       deallocate
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dsL)) deallocate (dsL)
-         if (allocated(numcrossed)) deallocate (numcrossed)
-         if (allocated(polynum)) deallocate (polynum)
-         if (allocated(polysec)) deallocate (polysec)
+         if (allocated(iLink)) then
+            deallocate (iLink)
+         end if
+         if (allocated(iPol)) then
+            deallocate (iPol)
+         end if
+         if (allocated(dsL)) then
+            deallocate (dsL)
+         end if
+         if (allocated(numcrossed)) then
+            deallocate (numcrossed)
+         end if
+         if (allocated(polynum)) then
+            deallocate (polynum)
+         end if
+         if (allocated(polysec)) then
+            deallocate (polysec)
+         end if
 
          return
       end subroutine find_intersecting_polysections

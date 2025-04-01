@@ -41,31 +41,31 @@ module m_flow_allocflow
 contains
 
    !> initialise flow model time independent parameters
-   subroutine flow_allocflow() 
+   subroutine flow_allocflow()
       use precision, only: dp
       use m_netw, only: kn
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
-          limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop,&
-          kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
-          numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
-          sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
-          kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
-          dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
-          uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
-          uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
-          qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, jabaroctimeint, &
-          jacreep, dpbdx0, rho0, jabarocterm, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
-          workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
-          spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
-          limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
-          turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
-          v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
-          frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
-          salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
-          jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
-          rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
-          jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
+                        limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
+                        numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
+                        sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
+                        kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
+                        dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
+                        uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
+                        uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
+                        qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, jabaroctimeint, &
+                        jacreep, dpbdx0, rho0, jabarocterm, rvdn, grn, jarhointerfaces, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
+                        workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
+                        spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
+                        limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
+                        turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
+                        v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
+                        frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
+                        salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
+                        jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
+                        rich, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
+                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
@@ -382,7 +382,9 @@ contains
 
             else if (laytyp(j) == 2) then
 
-               if (allocated(zslay)) deallocate (zslay)
+               if (allocated(zslay)) then
+                  deallocate (zslay)
+               end if
                allocate (zslay(0:mx, mxlaydefs), stat=ierr) ! nr of layer distributions
 
                if (iStrchType >= 0) then
@@ -684,24 +686,32 @@ contains
       end if
 
       if (kmx > 0 .and. (ja_timestep_auto == 3 .or. ja_timestep_auto == 4)) then
-         if (allocated(squ2D)) deallocate (squ2d)
+         if (allocated(squ2D)) then
+            deallocate (squ2D)
+         end if
          allocate (squ2D(ndkx), stat=ierr)
          call aerr('squ2D(ndkx)', ierr, ndkx); squ2D = 0
       end if
 
       if (ja_timestep_auto == 1 .and. ja_timestep_nostruct > 0) then
-         if (allocated(squcor)) deallocate (squcor)
+         if (allocated(squcor)) then
+            deallocate (squcor)
+         end if
          allocate (squcor(ndx), stat=ierr)
          call aerr('squcor(ndx)', ierr, ndx); squcor = 0
       end if
 
       if (icorio == 7 .or. icorio == 8 .or. icorio == 27 .or. icorio == 28) then
-         if (allocated(hus)) deallocate (hus)
+         if (allocated(hus)) then
+            deallocate (hus)
+         end if
          allocate (hus(ndkx), stat=ierr)
          call aerr('hus(ndkx)', ierr, ndkx); hus = 0
       end if
       if (kmx > 0) then
-         if (allocated(ucz)) deallocate (ucz)
+         if (allocated(ucz)) then
+            deallocate (ucz)
+         end if
          allocate (ucz(ndkx), stat=ierr)
          call aerr('ucz (ndkx)', ierr, ndkx); ucz = 0
       end if
@@ -724,7 +734,9 @@ contains
       end if
 
       if (stm_included) then
-         if (allocated(rhowat)) deallocate (rhowat)
+         if (allocated(rhowat)) then
+            deallocate (rhowat)
+         end if
          allocate (rhowat(ndkx), stat=ierr)
          call aerr('rhowat (ndkx)', ierr, ndkx); rhowat = rhomean
       end if
@@ -732,13 +744,17 @@ contains
       if (jasal > 0 .or. jatem > 0 .or. jased > 0 .or. stm_included) then
          if (abs(jabaroctimeint) >= 2) then
             if (jacreep == 1 .or. abs(jabaroctimeint) == 3 .or. abs(jabaroctimeint) == 4) then
-               if (allocated(dpbdx0)) deallocate (dpbdx0)
+               if (allocated(dpbdx0)) then
+                  deallocate (dpbdx0)
+               end if
                allocate (dpbdx0(lnkx), stat=ierr)
                call aerr('dpbdx0 (lnkx)', ierr, lnkx); dpbdx0 = 0.0_dp
             end if
 
             if (jacreep /= 1 .and. abs(jabaroctimeint) == 2 .or. abs(jabaroctimeint) == 5) then
-               if (allocated(rho0)) deallocate (rho0)
+               if (allocated(rho0)) then
+                  deallocate (rho0)
+               end if
                allocate (rho0(ndkx), stat=ierr)
                call aerr('rho0 (ndkx)', ierr, ndkx); rho0 = rhomean
             end if
@@ -751,7 +767,9 @@ contains
             call aerr('rvdn(ndkx), grn(ndkx)', ierr, 2 * ndkx)
 
             if (jarhointerfaces == 1) then
-               if (allocated(rhosww)) deallocate (rhosww)
+               if (allocated(rhosww)) then
+                  deallocate (rhosww)
+               end if
                allocate (rhosww(ndkx), stat=ierr)
                call aerr('rhosww(ndkx)', ierr, ndkx); rhosww = 0.0_dp
             end if
@@ -800,13 +818,19 @@ contains
 
 !    Secondary Flow
       if (jasecflow > 0) then
-         if (allocated(spirint)) deallocate (spirint)
+         if (allocated(spirint)) then
+            deallocate (spirint)
+         end if
          allocate (spirint(ndx), stat=ierr)
          call aerr('spirint( ndx )', ierr, ndx); spirint = 0
-         if (allocated(czusf)) deallocate (czusf)
+         if (allocated(czusf)) then
+            deallocate (czusf)
+         end if
          allocate (czusf(lnx), stat=ierr)
          call aerr('czusf  ( lnx )', ierr, lnx); czusf = 0
-         if (allocated(czssf)) deallocate (czssf)
+         if (allocated(czssf)) then
+            deallocate (czssf)
+         end if
          allocate (czssf(ndx), stat=ierr)
          call aerr('czssf  ( ndx )', ierr, ndx); czssf = 0
          if (kmx == 0) then
@@ -914,9 +938,15 @@ contains
       if (jsferic == 0) then
          jatidep = 0; jaselfal = 0
       else if (jatidep > 0 .or. jaselfal > 0) then
-         if (allocated(tidep)) deallocate (tidep)
-         if (allocated(tidef)) deallocate (tidef)
-         if (allocated(s1init)) deallocate (s1init)
+         if (allocated(tidep)) then
+            deallocate (tidep)
+         end if
+         if (allocated(tidef)) then
+            deallocate (tidef)
+         end if
+         if (allocated(s1init)) then
+            deallocate (s1init)
+         end if
          if (jaselfal > 0) then
 !      also store SAL potential
             allocate (tidep(2, ndx), stat=ierr)
@@ -984,29 +1014,75 @@ contains
       call aerr('taubu(lnx)', ierr, lnx)
 
       ! link related
-      if (allocated(cfuhi)) deallocate (cfuhi)
-      if (allocated(frcu)) deallocate (frcu)
-      if (allocated(ifrcutp)) deallocate (ifrcutp)
-      if (allocated(u0)) deallocate (u0)
-      if (allocated(u1)) deallocate (u1)
-      if (allocated(q1)) deallocate (q1)
-      if (allocated(qa)) deallocate (qa)
-      if (allocated(map_fixed_weir_energy_loss)) deallocate (map_fixed_weir_energy_loss)
-      if (allocated(v)) deallocate (v)
-      if (allocated(ucxu)) deallocate (ucxu)
-      if (allocated(ucyu)) deallocate (ucyu)
-      if (allocated(hu)) deallocate (hu)
-      if (allocated(huvli)) deallocate (huvli)
-      if (allocated(au)) deallocate (au)
-      if (allocated(au_nostrucs)) deallocate (au_nostrucs)
-      if (allocated(viu)) deallocate (viu)
-      if (allocated(vicLu)) deallocate (vicLu)
-      if (allocated(suu)) deallocate (suu)
-      if (allocated(advi)) deallocate (advi)
-      if (allocated(adve)) deallocate (adve)
-      if (allocated(plotlin)) deallocate (plotlin)
-      if (allocated(frcu_bkp)) deallocate (frcu_bkp)
-      if (allocated(frcu_mor)) deallocate (frcu_mor)
+      if (allocated(cfuhi)) then
+         deallocate (cfuhi)
+      end if
+      if (allocated(frcu)) then
+         deallocate (frcu)
+      end if
+      if (allocated(ifrcutp)) then
+         deallocate (ifrcutp)
+      end if
+      if (allocated(u0)) then
+         deallocate (u0)
+      end if
+      if (allocated(u1)) then
+         deallocate (u1)
+      end if
+      if (allocated(q1)) then
+         deallocate (q1)
+      end if
+      if (allocated(qa)) then
+         deallocate (qa)
+      end if
+      if (allocated(map_fixed_weir_energy_loss)) then
+         deallocate (map_fixed_weir_energy_loss)
+      end if
+      if (allocated(v)) then
+         deallocate (v)
+      end if
+      if (allocated(ucxu)) then
+         deallocate (ucxu)
+      end if
+      if (allocated(ucyu)) then
+         deallocate (ucyu)
+      end if
+      if (allocated(hu)) then
+         deallocate (hu)
+      end if
+      if (allocated(huvli)) then
+         deallocate (huvli)
+      end if
+      if (allocated(au)) then
+         deallocate (au)
+      end if
+      if (allocated(au_nostrucs)) then
+         deallocate (au_nostrucs)
+      end if
+      if (allocated(viu)) then
+         deallocate (viu)
+      end if
+      if (allocated(vicLu)) then
+         deallocate (vicLu)
+      end if
+      if (allocated(suu)) then
+         deallocate (suu)
+      end if
+      if (allocated(advi)) then
+         deallocate (advi)
+      end if
+      if (allocated(adve)) then
+         deallocate (adve)
+      end if
+      if (allocated(plotlin)) then
+         deallocate (plotlin)
+      end if
+      if (allocated(frcu_bkp)) then
+         deallocate (frcu_bkp)
+      end if
+      if (allocated(frcu_mor)) then
+         deallocate (frcu_mor)
+      end if
 
       allocate (cfuhi(lnx), stat=ierr) ! hk: hier stond + 1, heb ik weggehaald
       call aerr('cfuhi(lnx)', ierr, lnx); cfuhi = 0
@@ -1059,46 +1135,62 @@ contains
       call aerr('plotlin(max(lnkx,ndkx))', ierr, lnkx); plotlin = 0
 
       if (jafrculin > 0) then
-         if (allocated(frculin)) deallocate (frculin)
+         if (allocated(frculin)) then
+            deallocate (frculin)
+         end if
          allocate (frculin(lnx), stat=ierr)
          call aerr('frculin (lnx)', ierr, ndx); frculin = dmiss
       end if
 
       if (network%loaded .or. stm_included) then
-         if (allocated(u_to_umain)) deallocate (u_to_umain)
+         if (allocated(u_to_umain)) then
+            deallocate (u_to_umain)
+         end if
          allocate (u_to_umain(lnkx), stat=ierr)
          call aerr('u_to_umain   (lnkx)', ierr, lnkx); u_to_umain = 1.0_dp
 
-         if (allocated(q1_main)) deallocate (q1_main)
+         if (allocated(q1_main)) then
+            deallocate (q1_main)
+         end if
          allocate (q1_main(lnkx), stat=ierr)
          call aerr('q1_main   (lnkx)', ierr, lnkx); q1_main = 0
       end if
 
       if (jacali == 1) then
-         if (allocated(cfclval)) deallocate (cfclval)
+         if (allocated(cfclval)) then
+            deallocate (cfclval)
+         end if
          allocate (cfclval(numl), stat=ierr)
          call aerr('cfclval(numl)', ierr, numl); cfclval = 0
       end if
 
       if (jatrt == 1) then
-         if (allocated(cftrt)) deallocate (cftrt)
+         if (allocated(cftrt)) then
+            deallocate (cftrt)
+         end if
          allocate (cftrt(numl, 3), stat=ierr)
          call aerr('cftrt(numl,3)', ierr, numl); cftrt = 0
       end if
 
       if (jamap_chezy_elements > 0) then
-         if (allocated(czs)) deallocate (czs)
+         if (allocated(czs)) then
+            deallocate (czs)
+         end if
          allocate (czs(ndx), stat=ierr)
          call aerr('czs(ndx)', ierr, ndx); czs = 0
       end if
       if (jamap_chezy_links > 0) then
-         if (allocated(czu)) deallocate (czu)
+         if (allocated(czu)) then
+            deallocate (czu)
+         end if
          allocate (czu(lnx), stat=ierr)
          call aerr('czu(lnx)', ierr, lnx); czu = 0
       end if
 
       if (jarhoxu > 0 .or. jased > 0) then
-         if (allocated(rhou)) deallocate (rhou)
+         if (allocated(rhou)) then
+            deallocate (rhou)
+         end if
          allocate (rhou(lnkx), stat=ierr)
          call aerr('rhou (lnkx)', ierr, lnkx); rhou = rhomean
       end if
@@ -1125,7 +1217,9 @@ contains
       call aerr('ru   (lnkx)', ierr, ndx); ru = 0
 
       if (jasal > 0 .or. kmx > 0) then
-         if (allocated(sa1)) deallocate (sa1)
+         if (allocated(sa1)) then
+            deallocate (sa1)
+         end if
          allocate (sa1(ndkx), stat=ierr)
          call aerr('sa1 (ndkx)', ierr, ndkx); sa1 = salini
 
@@ -1134,24 +1228,32 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (allocated(patm)) deallocate (patm)
+         if (allocated(patm)) then
+            deallocate (patm)
+         end if
          allocate (patm(ndx), stat=ierr)
          call aerr('patm(ndx)', ierr, ndx)
          patm(:) = 0.0_dp
 
-         if (allocated(tair)) deallocate (tair)
+         if (allocated(tair)) then
+            deallocate (tair)
+         end if
          allocate (tair(ndx), stat=ierr)
          call aerr('tair(ndx)', ierr, ndx)
          tair(:) = 0.0_dp
 
-         if (allocated(rhum)) deallocate (rhum)
+         if (allocated(rhum)) then
+            deallocate (rhum)
+         end if
          allocate (rhum(ndx), stat=ierr)
          call aerr('rhum(ndx)', ierr, ndx)
          rhum(:) = 0.0_dp
       end if
 
       if (jatem > 0) then
-         if (allocated(tem1)) deallocate (tem1)
+         if (allocated(tem1)) then
+            deallocate (tem1)
+         end if
          allocate (tem1(ndkx), stat=ierr)
          call aerr('tem1(ndkx) ', ierr, ndkx)
          tem1 = temini
@@ -1162,25 +1264,39 @@ contains
          heatsrc0 = 0.0_dp
 
          if (jatem > 1) then ! also heat modelling involved
-            if (allocated(tair)) deallocate (tair)
-            if (allocated(rhum)) deallocate (rhum)
-            if (allocated(clou)) deallocate (clou)
+            if (allocated(tair)) then
+               deallocate (tair)
+            end if
+            if (allocated(rhum)) then
+               deallocate (rhum)
+            end if
+            if (allocated(clou)) then
+               deallocate (clou)
+            end if
             allocate (tair(ndx), rhum(ndx), clou(ndx), stat=ierr)
             call aerr('tair(ndx), rhum(ndx), clou(ndx)', ierr, 3 * ndx)
             tair = BACKGROUND_AIR_TEMPERATURE
             rhum = BACKGROUND_HUMIDITY
             clou = BACKGROUND_CLOUDINESS
-            if (allocated(qrad)) deallocate (qrad)
+            if (allocated(qrad)) then
+               deallocate (qrad)
+            end if
             allocate (qrad(ndx), stat=ierr)
             call aerr('qrad(ndx)', ierr, ndx)
             qrad = 0.0_dp
-            if (allocated(solar_radiation)) deallocate (solar_radiation)
+            if (allocated(solar_radiation)) then
+               deallocate (solar_radiation)
+            end if
             allocate (solar_radiation(ndx), stat=ierr)
             call aerr('solar_radiation(ndx)', ierr, ndx)
             solar_radiation(:) = 0.0_dp
-            if (allocated(longwave)) deallocate (longwave)
+            if (allocated(longwave)) then
+               deallocate (longwave)
+            end if
             if (Soiltempthick > 0) then
-               if (allocated(tbed)) deallocate (tbed)
+               if (allocated(tbed)) then
+                  deallocate (tbed)
+               end if
                allocate (tbed(ndx), stat=ierr)
                call aerr('tbed(ndx)', ierr, ndx)
                tbed = temini
@@ -1188,14 +1304,18 @@ contains
          end if
 
          if ((jamapheatflux > 0 .or. jahisheatflux > 0) .and. jatem > 1) then
-            if (allocated(Qtotmap)) deallocate (Qtotmap)
+            if (allocated(Qtotmap)) then
+               deallocate (Qtotmap)
+            end if
             allocate (Qtotmap(ndx), stat=ierr)
             call aerr('Qtotmap(ndx)', ierr, ndx)
             Qtotmap = 0.0_dp
          end if
 
          if (jatem == 5) then ! save cd coeff if heat modelling also involved
-            if (allocated(cdwcof)) deallocate (cdwcof)
+            if (allocated(cdwcof)) then
+               deallocate (cdwcof)
+            end if
             allocate (cdwcof(lnx), stat=ierr)
             call aerr('cdwcof(lnx)', ierr, lnx)
             cdwcof = 0.0_dp
@@ -1229,19 +1349,25 @@ contains
          allocate (sed(mxgr, ndkx), stat=ierr)
          call aerr('sed (mxgr,ndkx)', ierr, ndkx * mxgr)
 
-         if (allocated(sdupq)) deallocate (sdupq)
+         if (allocated(sdupq)) then
+            deallocate (sdupq)
+         end if
          allocate (sdupq(mxgr, ndkx), stat=ierr)
          call aerr('sdupq(mxgr,ndkx)', ierr, ndkx * mxgr)
          sdupq = 0.0_dp
 
          if (jaceneqtr == 1) then ! cell centre equilibrium transport concentration
             mxn = ndx
-            if (allocated(blinc)) deallocate (blinc)
+            if (allocated(blinc)) then
+               deallocate (blinc)
+            end if
             allocate (blinc(ndx), stat=ierr)
             call aerr('blinc(ndx)', ierr, ndx); blinc = 0.0_dp
          else ! cell corner equilibrium transport concentration
             mxn = numk
-            if (allocated(sedi)) deallocate (sedi)
+            if (allocated(sedi)) then
+               deallocate (sedi)
+            end if
             allocate (sedi(mxgr, ndx), stat=ierr)
             call aerr('sedi(mxgr,ndx)', ierr, ndx * mxgr); sedi = 0.0_dp
          end if
@@ -1249,7 +1375,9 @@ contains
          call aerr('grainlay(mxgr,mxn)', ierr, mxgr * mxn); grainlay = 0.0_dp
 
          if (kmx > 0 .and. jased > 0 .and. jased < 4) then
-            if (allocated(ustbc)) deallocate (ustbc)
+            if (allocated(ustbc)) then
+               deallocate (ustbc)
+            end if
             allocate (ustbc(mxn), stat=ierr)
             call aerr('ustbc(mxn)', ierr, mxn); ustbc = 0.0_dp
          end if
@@ -1257,7 +1385,9 @@ contains
       end if
 
       if (idensform > 0 .and. jaRichardsononoutput > 0) then
-         if (allocated(rich)) deallocate (rich)
+         if (allocated(rich)) then
+            deallocate (rich)
+         end if
          allocate (rich(lnkx), stat=ierr)
          call aerr('rich(lnkx)', ierr, lnkx); rich = 0.0_dp
       else
@@ -1272,7 +1402,9 @@ contains
       end if
 
       if (itstep == 4) then ! explicit time-step
-         if (allocated(sqwave)) deallocate (sqwave)
+         if (allocated(sqwave)) then
+            deallocate (sqwave)
+         end if
          allocate (sqwave(ndx), stat=ierr)
          call aerr('sqwave (ndx)', ierr, ndx); sqwave = 0
       end if
@@ -1321,15 +1453,21 @@ contains
       end if
 
       if (nshiptxy > 0) then
-         if (allocated(zsp0)) deallocate (zsp0)
+         if (allocated(zsp0)) then
+            deallocate (zsp0)
+         end if
          allocate (zsp0(numk), stat=ierr)
          call aerr('zsp0(numk)', ierr, numk); zsp0 = 0.0_dp
 
-         if (allocated(zspc)) deallocate (zspc)
+         if (allocated(zspc)) then
+            deallocate (zspc)
+         end if
          allocate (zspc(numk), stat=ierr)
          call aerr('zspc(numk)', ierr, numk); zspc = 0.0_dp
 
-         if (allocated(zspc0)) deallocate (zspc0)
+         if (allocated(zspc0)) then
+            deallocate (zspc0)
+         end if
          allocate (zspc0(numk), stat=ierr); zspc0 = 0.0_dp
          call aerr('zspc0(numk)', ierr, numk)
 

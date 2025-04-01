@@ -182,9 +182,15 @@ contains
 
 ! deallocate
       if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
+         if (allocated(iLink)) then
+            deallocate (iLink)
+         end if
+         if (allocated(iPol)) then
+            deallocate (iPol)
+         end if
+         if (allocated(dSL)) then
+            deallocate (dSL)
+         end if
       end if
 
    end subroutine setbobsongullies
