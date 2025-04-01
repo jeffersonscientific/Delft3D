@@ -71,16 +71,16 @@ module m_fill_valobs
       use m_links_to_centers, only: links_to_centers
       use m_setrho, only: setrhofixedp
       use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
-      use fm_location_types
 
       implicit none
 
-      integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx, i_tmp, kb_tmp, kt_tmp, kk_tmp
+      integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens, prsappr, drhodz, rhomea
       real(kind=dp) :: ux, uy, um
+!      real(kind=dp) :: valtmp 
       real(kind=dp), allocatable :: wa(:, :)
       real(kind=dp), allocatable :: frac(:, :)
       real(kind=dp), allocatable :: poros(:)
@@ -90,10 +90,6 @@ module m_fill_valobs
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
-       if (kmx == 0) then
-         kmx_const = 1 ! to make numbering work
-      end if
-
       nlyrs = 0
 
       if (timon) call timstrt("fill_valobs", handle_extra(55))
@@ -102,12 +98,11 @@ module m_fill_valobs
          call realloc(ueux, ndkx, keepExisting=.false., fill=0d0)
          call realloc(ueuy, ndkx, keepExisting=.false., fill=0d0)
       end if
-
+      
       if (.not. allocated(tmp_interp)) then
-         ! Allocate as 2D arry for water levels etc.
-         call realloc(tmp_interp, ndx, keepExisting=.false., fill=0d0)
+         call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0d0)
       end if
-
+      
       !
       if (jawave > 0) then
          if (jahissigwav == 0) then
@@ -193,7 +188,7 @@ module m_fill_valobs
             neighbour_weights_obs(2,i) = 0.0
             neighbour_weights_obs(3,i) = 0.0
          end if
-
+            
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
 
             if (model_is_3D()) then
@@ -213,66 +208,71 @@ module m_fill_valobs
 
 !        store values in valobs work array
             valobs(i, :) = dmiss ! Intended to have dmiss on inactive layers for output.
-
+            
             ! It is taken care of in subroutine reduce_valobs for parallel computation.
-
-!            valobs(i, IPNT_S1) = s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-!                                 s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-!                                 s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
-            call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S)
-
+                         
+            valobs(i, IPNT_S1) = s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                 s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                 s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
+         
             if (nshiptxy > 0) then
                if (allocated(zsp)) then
-                  tmp_interp = s1 + zsp
-                  call interpolate_horizontal (tmp_interp,i,IPNT_S1,UNC_LOC_S)
+!                 valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
+                  valobs(i, IPNT_S1) = (s1 (neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                        s1 (neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                        s1 (neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) ) + &
+                                       (zsp(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                        zsp(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                        zsp(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) )                   
                end if
             end if
-           
-            tmp_interp = s1 - bl
-            call interpolate_horizontal (tmp_interp,i,IPNT_HS,UNC_LOC_S)
-            
-            call interpolate_horizontal (bl        ,i,IPNT_BL,UNC_LOC_S)
 
+!           valobs(i, IPNT_HS) = s1(k) - bl(k)
+            valobs(i, IPNT_HS) = (s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                  s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                  s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) ) - &
+                                 (bl(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                  bl(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                  bl(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i) )
+           
+!           valobs(i, IPNT_BL) = bl(k)
+            valobs(i, IPNT_BL) = bl(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
+                                 bl(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + & 
+                                 bl(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
+            
+!           Dont know what cmxobs is.           
             valobs(i, IPNT_CMX) = cmxobs(i)
 
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
-            ! First       : allocate tmp_interp for 3D quantities
-            call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0d0)
-            
             if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-               call interpolate_horizontal (ueux,i,IPNT_UCX,UNC_LOC_S3D)
-               call interpolate_horizontal (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
+               call interpolate_horizontal (ueux,i,IPNT_UCX)
+               call interpolate_horizontal (ueuy,i,IPNT_UCY) 
             end if
-
+            
             if (jahisvelocity > 0) then
-               call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
-            end if
-
-! Depth averaged velocities (dont understand why ucx is 3-dimenional but only firts ndx points are used)            
-            if (model_is_3D()) then
-               call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
-               call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
-!               valobs(i, IPNT_UCXQ) = ucx(k)
-!               valobs(i, IPNT_UCYQ) = ucy(k)
+               call interpolate_horizontal (ucmag,i,IPNT_UMAG)         
             end if
             
             if (model_is_3D()) then
             ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
+            ! (mis)use ueux to store cel cntres and salinity etc. noy used as ueux after this 
                 do j = 2, ndkx
                    tmp_interp(j) = 0.5d0 * (zws(j) + zws(j - 1))
                 end do
-                call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
+                call interpolate_horizontal (tmp_interp,i,IPNT_ZCS)  
             end if
-
+            
             if (jasal > 0) then
                tmp_interp = constituents(isalt,:)
-               call interpolate_horizontal (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
+               call interpolate_horizontal (tmp_interp,i,IPNT_SA1)
             end if
-
+            
             if (jatem > 0) then
                tmp_interp = constituents(itemp,:)
-               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
-            end if
+               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1)
+            end if 
+
+!           From here back to normal (snapping in stead of interpolating)           
 
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0d0
@@ -285,113 +285,73 @@ module m_fill_valobs
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
             end if
-               
             if (jaPATM > 0 .and. allocated(patm)) then
-!              valobs(i, IPNT_PATM) = PATM(k)
-               call interpolate_horizontal (PATM,i,IPNT_PATM,UNC_LOC_S)
+               valobs(i, IPNT_PATM) = PATM(k)
             end if
 
             if (jawave == 4 .and. allocated(R)) then
-!               valobs(i, IPNT_WAVER) = R(k)
-                call interpolate_horizontal (R,i,IPNT_WAVER,UNC_LOC_S)
+               valobs(i, IPNT_WAVER) = R(k)
             end if
 
             if (jawave > 0 .and. allocated(hwav)) then
-               ! Allocate tmp_interp as 2D arry 
-               call realloc(tmp_interp, ndx, keepExisting=.false., fill=0d0) 
-               tmp_interp = hwav*wavfac
-               call interpolate_horizontal (tmp_interp,i,IPNT_WAVEH,UNC_LOC_S)
-               call interpolate_horizontal (twav      ,i,IPNT_WAVET,UNC_LOC_S)
-!              valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
-!              valobs(i, IPNT_WAVET) = twav(k)
+               valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
+               valobs(i, IPNT_WAVET) = twav(k)
                if (.not. flowWithoutWaves) then
-                  tmp_interp = modulo(270d0 - phiwav, 360d0) ! Direction from
-                  call interpolate_horizontal (tmp_interp,i,IPNT_WAVED,UNC_LOC_S)
- !                valobs(i, IPNT_WAVED) = modulo(270d0 - phiwav(k), 360d0) ! Direction from
-                  call interpolate_horizontal (rlabda,i,IPNT_WAVEL,UNC_LOC_S)
-                  call interpolate_horizontal (uorb  ,i,IPNT_WAVEU,UNC_LOC_S)
-!                 valobs(i, IPNT_WAVEL) = rlabda(k)
-!                 valobs(i, IPNT_WAVEU) = uorb(k)
+                  valobs(i, IPNT_WAVED) = modulo(270d0 - phiwav(k), 360d0) ! Direction from
+                  valobs(i, IPNT_WAVEL) = rlabda(k)
+                  valobs(i, IPNT_WAVEU) = uorb(k)
                end if
             end if
 
             if (jahistaucurrent > 0) then
-               call interpolate_horizontal (workx,i,IPNT_TAUX,UNC_LOC_S)
-               call interpolate_horizontal (worky,i,IPNT_TAUY,UNC_LOC_S)
-!              valobs(i, IPNT_TAUX) = workx(k)
-!              valobs(i, IPNT_TAUY) = worky(k)
+               valobs(i, IPNT_TAUX) = workx(k)
+               valobs(i, IPNT_TAUY) = worky(k)
             end if
- 
+
             if (stm_included .and. jased > 0) then
-               ! Allocate tmp_interp as 2D arry 
-               call realloc(tmp_interp, ndx, keepExisting=.false., fill=0d0)  
                do j = IVAL_SBCX1, IVAL_SBCXN
                   ii = j - IVAL_SBCX1 + 1
-                  tmp_interp = sedtra%sbcx(:, ii)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_SBCX1 + ii - 1,UNC_LOC_S)
-!                 valobs(i, IPNT_SBCX1 + ii - 1) = sedtra%sbcx(k, ii)
+                  valobs(i, IPNT_SBCX1 + ii - 1) = sedtra%sbcx(k, ii)
                end do
                do j = IVAL_SBCY1, IVAL_SBCYN
                   ii = j - IVAL_SBCY1 + 1
-                  tmp_interp = sedtra%sbcy(:, ii)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_SBCY1 + ii - 1,UNC_LOC_S)
-!                  valobs(i, IPNT_SBCY1 + ii - 1) = sedtra%sbcy(k, ii)
+                  valobs(i, IPNT_SBCY1 + ii - 1) = sedtra%sbcy(k, ii)
                end do
                do j = IVAL_SSCX1, IVAL_SSCXN
                   ii = j - IVAL_SSCX1 + 1
-                  tmp_interp = sedtra%sscx(:, ii)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_SSCX1 + ii - 1,UNC_LOC_S)
-!                 valobs(i, IPNT_SSCX1 + ii - 1) = sedtra%sscx(k, ii)
+                  valobs(i, IPNT_SSCX1 + ii - 1) = sedtra%sscx(k, ii)
                end do
                do j = IVAL_SSCY1, IVAL_SSCYN
                   ii = j - IVAL_SSCY1 + 1
-                  tmp_interp = sedtra%sscy(:, ii)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_SSCY1 + ii - 1,UNC_LOC_S)
-!                 valobs(i, IPNT_SSCY1 + ii - 1) = sedtra%sscy(k, ii)
+                  valobs(i, IPNT_SSCY1 + ii - 1) = sedtra%sscy(k, ii)
                end do
                if (jawave > 0 .and. .not. flowWithoutWaves) then
                   do j = IVAL_SBWX1, IVAL_SBWXN
                      ii = j - IVAL_SBWX1 + 1
-                     tmp_interp = sedtra%sbwx(:, ii)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_SBWX1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_SBWX1 + ii - 1) = sedtra%sbwx(k, ii)
+                     valobs(i, IPNT_SBWX1 + ii - 1) = sedtra%sbwx(k, ii)
                   end do
                   do j = IVAL_SBWY1, IVAL_SBWYN
                      ii = j - IVAL_SBWY1 + 1
-                     tmp_interp = sedtra%sbwy(:, ii)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_SBWY1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_SBWY1 + ii - 1) = sedtra%sbwy(k, ii)
+                     valobs(i, IPNT_SBWY1 + ii - 1) = sedtra%sbwy(k, ii)
                   end do
                   do j = IVAL_SSWX1, IVAL_SSWXN
                      ii = j - IVAL_SSWX1 + 1
-                     tmp_interp = sedtra%sswx(:, ii)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_SSWX1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_SSWX1 + ii - 1) = sedtra%sswx(k, ii)
+                     valobs(i, IPNT_SSWX1 + ii - 1) = sedtra%sswx(k, ii)
                   end do
                   do j = IVAL_SSWY1, IVAL_SSWYN
                      ii = j - IVAL_SSWY1 + 1
-                     tmp_interp = sedtra%sswy(:, ii)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_SSWY1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_SSWY1 + ii - 1) = sedtra%sswy(k, ii)
+                     valobs(i, IPNT_SSWY1 + ii - 1) = sedtra%sswy(k, ii)
                   end do
                end if
                !
-               tmp_interp = sedtra%taub
-               call interpolate_horizontal (tmp_interp,i,IPNT_TAUB,UNC_LOC_S)
-!              valobs(i, IPNT_TAUB) = sedtra%taub(k) ! contains tausmax or Soulsby-Clarke shear stresses
-
+               valobs(i, IPNT_TAUB) = sedtra%taub(k) ! contains tausmax or Soulsby-Clarke shear stresses
                ! bed composition
                if (stmpar%morlyr%settings%iunderlyr == 1) then
                   do j = IVAL_BODSED1, IVAL_BODSEDN
                      ii = j - IVAL_BODSED1 + 1
-                     tmp_interp = stmpar%morlyr%state%bodsed(ii, :)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_BODSED1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_BODSED1 + ii - 1) = stmpar%morlyr%state%bodsed(ii, k)
+                     valobs(i, IPNT_BODSED1 + ii - 1) = stmpar%morlyr%state%bodsed(ii, k)
                   end do
-                    
-                  tmp_interp = stmpar%morlyr%state%dpsed
-                  call interpolate_horizontal (tmp_interp,i,IPNT_DPSED,UNC_LOC_S)
-!                 valobs(i, IPNT_DPSED) = stmpar%morlyr%state%dpsed(k)
+                  valobs(i, IPNT_DPSED) = stmpar%morlyr%state%dpsed(k)
                elseif (stmpar%morlyr%settings%iunderlyr == 2) then
                   nlyrs = stmpar%morlyr%settings%nlyr
                   do l = 1, stmpar%lsedtot
@@ -417,9 +377,7 @@ module m_fill_valobs
                   do klay = 1, nlyrs
                      do j = IVAL_MSED1, IVAL_MSEDN
                         ii = j - IVAL_MSED1 + 1
-                        tmp_interp = stmpar%morlyr%state%msed(ii, klay, :)
-                        call interpolate_horizontal (tmp_interp,i,IPNT_MSED1 + (ii - 1) * nlyrs + klay - 1,UNC_LOC_S)
- !                      valobs(i, IPNT_MSED1 + (ii - 1) * nlyrs + klay - 1) = stmpar%morlyr%state%msed(ii, klay, k)
+                        valobs(i, IPNT_MSED1 + (ii - 1) * nlyrs + klay - 1) = stmpar%morlyr%state%msed(ii, klay, k)
                      end do
                      !
                      do j = IVAL_LYRFRAC1, IVAL_LYRFRACN
@@ -428,406 +386,266 @@ module m_fill_valobs
                      end do
                      !
                      valobs(i, IPNT_POROS + klay - 1) = poros(klay)
-                     tmp_interp = stmpar%morlyr%state%thlyr(klay, :)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_THLYR + klay - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_THLYR + klay - 1) = stmpar%morlyr%state%thlyr(klay, k)
+                     valobs(i, IPNT_THLYR + klay - 1) = stmpar%morlyr%state%thlyr(klay, k)
                   end do
                end if
                !
                do j = IVAL_FRAC1, IVAL_FRACN
                   ii = j - IVAL_FRAC1 + 1
-                  tmp_interp = sedtra%frac(:, ii)   
-                  call interpolate_horizontal (tmp_interp,i,IPNT_FRAC1 + ii - 1,UNC_LOC_S)
-!                 valobs(i, IPNT_FRAC1 + ii - 1) = sedtra%frac(k, ii)
+                  valobs(i, IPNT_FRAC1 + ii - 1) = sedtra%frac(k, ii)
                end do
-               tmp_interp = sedtra%mudfrac
-               call interpolate_horizontal (tmp_interp,i,IPNT_MUDFRAC,UNC_LOC_S)
- !             valobs(i, IPNT_MUDFRAC) = sedtra%mudfrac(k)
-               tmp_interp = sedtra%sandfrac
-               call interpolate_horizontal (tmp_interp,i,IPNT_SANDFRAC,UNC_LOC_S)
-!              valobs(i, IPNT_SANDFRAC) = sedtra%sandfrac(k)
+               valobs(i, IPNT_MUDFRAC) = sedtra%mudfrac(k)
+               valobs(i, IPNT_SANDFRAC) = sedtra%sandfrac(k)
                !
                if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
                   do j = IVAL_MFLUFF1, IVAL_MFLUFFN
                      ii = j - IVAL_MFLUFF1 + 1
-                     tmp_interp = stmpar%morpar%flufflyr%mfluff(ii, :)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_MFLUFF1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_MFLUFF1 + ii - 1) = stmpar%morpar%flufflyr%mfluff(ii, k)
+                     valobs(i, IPNT_MFLUFF1 + ii - 1) = stmpar%morpar%flufflyr%mfluff(ii, k)
                   end do
                end if
                !
                do j = IVAL_FIXFAC1, IVAL_FIXFACN
                   ii = j - IVAL_FIXFAC1 + 1
-                  tmp_interp = sedtra%fixfac(:, ii)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_FIXFAC1 + ii - 1,UNC_LOC_S)
-!                 valobs(i, IPNT_FIXFAC1 + ii - 1) = sedtra%fixfac(k, ii)
+                  valobs(i, IPNT_FIXFAC1 + ii - 1) = sedtra%fixfac(k, ii)
                end do
                !
                do j = IVAL_HIDEXP1, IVAL_HIDEXPN
                   ii = j - IVAL_HIDEXP1 + 1
-                  tmp_interp = sedtra%hidexp(:, ii)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_HIDEXP1 + ii - 1,UNC_LOC_S)
-!                 valobs(i, IPNT_HIDEXP1 + ii - 1) = sedtra%hidexp(k, ii)
+                  valobs(i, IPNT_HIDEXP1 + ii - 1) = sedtra%hidexp(k, ii)
                end do
                !
                if (stmpar%lsedsus > 0) then
                   do j = IVAL_SOUR1, IVAL_SOURN
                      ii = j - IVAL_SOUR1 + 1
-                     tmp_interp = sedtra%sourse(:, ii)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_SOUR1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_SOUR1 + ii - 1) = sedtra%sourse(k, ii)
+                     valobs(i, IPNT_SOUR1 + ii - 1) = sedtra%sourse(k, ii)
                   end do
                   do j = IVAL_SINK1, IVAL_SINKN
                      ii = j - IVAL_SINK1 + 1
-                     tmp_interp = sedtra%sinkse(:, ii)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_SINK1 + ii - 1,UNC_LOC_S)
-!                    valobs(i, IPNT_SINK1 + ii - 1) = sedtra%sinkse(k, ii)
+                     valobs(i, IPNT_SINK1 + ii - 1) = sedtra%sinkse(k, ii)
                   end do
                end if
             end if
-            
-            if (jahistur > 0) then
-                 call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D)  
-!                valobs(i, IPNT_VIU + klay - 1) = vius(kk)
-            end if
-            
-            tmp_interp =  0.5d0 * (squ + sqi)
-            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)
-!           valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
-     
-!           Waterkwaliteitsparameters           
-            if (IVAL_TRA1 > 0) then
-                do j = IVAL_TRA1, IVAL_TRAN
-                    ii = j - IVAL_TRA1 + 1
-                    tmp_interp = constituents(ii, :)
-                    call interpolate_horizontal (tmp_interp,i,IPNT_TRA1 + (ii - 1)*kmx_const, UNC_LOC_S3D)                   
- !                  valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
-                 end do
-            end if
-            
-            ! Must be more elegant way of doing this
-            if (IVAL_HWQ1 > 0) then
-               do j = IVAL_HWQ1, IVAL_HWQN
-                  ii = j - IVAL_HWQ1 + 1
-                  do i_tmp = 1, 3
-                      call getkbotktop(neighbour_nodes_obs(i_tmp,i), kb_tmp, kt_tmp)
-                      do kk_tmp = kb_tmp, kt_tmp
-                         tmp_interp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
-                      end do
-                  end do
-                  call interpolate_horizontal (tmp_interp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D)    
-!                 valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
+            !
+            if (IVAL_WQB1 > 0) then
+               do j = IVAL_WQB1, IVAL_WQBN
+                  ii = j - IVAL_WQB1 + 1
+                  valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
                end do
             end if
-            
-            if (IVAL_WQB3D1 > 0) then
-               do j = IVAL_WQB3D1, IVAL_WQB3DN
-                  ii = j - IVAL_WQB3D1 + 1
-                  tmp_interp = wqbot(ii, :)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_WQB3D1 + ii - 1, UNC_LOC_S3D)    
-!                  valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
-               end do
-            end if
-            
-            if (IVAL_SF1 > 0) then
-               do j = IVAL_SF1, IVAL_SFN
-                  ii = j - IVAL_SF1 + 1
-                     tmp_interp = constituents(ISED1 + ii - 1, :)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_SF1 + ii - 1, UNC_LOC_S3D)             
-!                  valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
-               end do
-            end if
-             
-            if (kmx == 0 .and. IVAL_WS1 > 0) then
-               do j = IVAL_WS1, IVAL_WSN
-                  ii = j - IVAL_WS1 + 1
-                  tmp_interp = mtd%ws(:, ii)
-                  call interpolate_horizontal (tmp_interp,i,IPNT_WS1 + ii - 1, UNC_LOC_S3D)             
-!                 valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
-               end do
-            end if
-            
-            if (jased > 0 .and. .not. stm_included) then
-                 tmp_interp = sed(1,:)
-                 call interpolate_horizontal (tmp_interp,i,IPNT_SED, UNC_LOC_S3D)        
-!              valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
-            end if
-            
+
             if (model_is_3D()) then
-               call interpolate_horizontal (zws,i,IPNT_ZWS, UNC_LOC_W) 
-!              valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-               if (iturbulencemodel >= 2 .and. jahistur > 0) then
-                   call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W) 
-!                  valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
-                   
-               end if
-               if (IVAL_WS1 > 0) then
-                  do j = IVAL_WS1, IVAL_WSN
-                     ii = j - IVAL_WS1 + 1
-                     tmp_interp = mtd%ws(:, ii)
-                     call interpolate_horizontal (tmp_interp,i,IPNT_WS1 + (ii - 1) * (kmx + 1) , UNC_LOC_W) 
- !                   valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
-                   end do
-               end if
-               
-               if (IVAL_SEDDIF1 > 0) then
-                  do j = IVAL_SEDDIF1, IVAL_SEDDIFN
-                     ii = j - IVAL_SEDDIF1 + 1
-                     tmp_interp = mtd%seddif(:, ii)
-                      call interpolate_horizontal (tmp_interp,i,IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) , UNC_LOC_W) 
-!                     valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
-                  end do
-               end if
+               valobs(i, IPNT_UCXQ) = ucx(k)
+               valobs(i, IPNT_UCYQ) = ucy(k)
             end if
+
+            do kk = kb, kt
+               klay = kk - kb + nlayb
   
-!           Rainfall
-               if (jarain > 0 .and. jahisrain > 0) then
-                  call interpolate_horizontal (rain,i,IPNT_RAIN,UNC_LOC_S)
-!                 valobs(i, IPNT_RAIN) = rain(k)
-               end if
-
-               if (allocated(airdensity) .and. jahis_airdensity > 0) then
-                  call interpolate_horizontal (airdensity,i,IPNT_AIRDENSITY,UNC_LOC_S)
-!                 valobs(i, IPNT_AIRDENSITY) = airdensity(k)
-               end if
-
-!           Infiltration
-               if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-                  tmp_interp = infiltcap * 1d3 * 3600d0 ! m/s -> mm/hr
-                  call interpolate_horizontal (tmp_interp,i,IPNT_INFILTCAP,UNC_LOC_S) 
-!                 valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1d3 * 3600d0 ! m/s -> mm/hr
-                  if (ba(k) > 0d0) then
-                     tmp_interp = infilt / ba * 1d3 * 3600d0 ! m/s -> mm/hr! m/s -> mm/hr
-                     call interpolate_horizontal (tmp_interp,i,IPNT_INFILTACT,UNC_LOC_S) 
-!                    valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1d3 * 3600d0 ! m/s -> mm/hr
-                  else
-                     valobs(i, IPNT_INFILTACT) = 0d0
-                  end if
-               end if
+!              if (jahisvelocity > 0 .or. jahisvelvec > 0) then
+!                 call interpolate_horizontal (ueux,i,IPNT_UCX)
+!                 call interpolate_horizontal (ueuy,i,IPNT_UCY) 
+!                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
+!                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
+!              end if
                
-               !           Heatflux
-               if (jatem > 0 .and. jahisheatflux > 0) then
-                  call getlink1(k, LL)
-                  if (jawind > 0) then
-                     valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
-                  end if
+               
+!              if (model_is_3D()) then
+!                valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
+!              end if
 
-                  if (jatem > 1) then ! also heat modelling involved
-                     call interpolate_horizontal (Tair,i,IPNT_TAIR,UNC_LOC_S)   
-!                    valobs(i, IPNT_TAIR) = Tair(k)
-                  end if
-
-                  if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
-                     call interpolate_horizontal (Rhum,i,IPNT_RHUM,UNC_LOC_S)
-!                    valobs(i, IPNT_RHUM) = Rhum(k)
-                     call interpolate_horizontal (CLOU,i,IPNT_CLOU,UNC_LOC_S)
-!                    valobs(i, IPNT_CLOU) = Clou(k)
-                  end if
-
-                  if (jatem == 5) then
-                     call interpolate_horizontal (Qsunmap,i,IPNT_QSUN,UNC_LOC_S)
-!                    valobs(i, IPNT_QSUN) = Qsunmap(k)
-                     call interpolate_horizontal (Qevamap,i,IPNT_QEVA,UNC_LOC_S)
-!                    valobs(i, IPNT_QEVA) = Qevamap(k)
-                     call interpolate_horizontal (Qconmap,i,IPNT_QCON,UNC_LOC_S)
-!                    valobs(i, IPNT_QCON) = Qconmap(k)
-                     call interpolate_horizontal (Qlongmap,i,IPNT_QCON,UNC_LOC_S)
-!                    valobs(i, IPNT_QLON) = Qlongmap(k)
-                     call interpolate_horizontal (Qfrevamap,i,IPNT_QFRE,UNC_LOC_S) 
-!                    valobs(i, IPNT_QFRE) = Qfrevamap(k)
-                     call interpolate_horizontal (Qfrconmap,i,IPNT_QFRC,UNC_LOC_S) 
-!                    valobs(i, IPNT_QFRC) = Qfrconmap(k)
-                  end if
-
-                  if (jatem > 1) then
-                     call interpolate_horizontal (Qtotmap,i,IPNT_QTOT,UNC_LOC_S) 
-!                    valobs(i, IPNT_QTOT) = Qtotmap(k)!
-                  end if
-               end if
-
-            
-            
-!           From here back to normal (snapping in stead of interpolating, do not fill valobs in case of interpolating)
-            if (intobs(i) == 0) then                     
-               !
-               ! Dit weet ik even niet (wat is wgb1? kb?)
-               if (IVAL_WQB1 > 0) then
-                  do j = IVAL_WQB1, IVAL_WQBN
-                     ii = j - IVAL_WQB1 + 1
-                     valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
-                  end do
-               end if
-
-               do kk = kb, kt
-                  klay = kk - kb + nlayb
-                  if (jawave > 0 .and. .not. flowWithoutWaves) then
-                     if (hs(k) > epshu) then
-                        if (kmx == 0) then
-                           kk_const = 1
-                        else
-                           kk_const = klay
-                        end if
-                        valobs(i, IPNT_UCXST + klay - 1) = wa(1, kk_const)
-                        valobs(i, IPNT_UCYST + klay - 1) = wa(2, kk_const)
-                     end if
-                  end if
-                  
-                  if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
-                     if (density_is_pressure_dependent()) then
-                        valobs(i, IPNT_RHOP + klay - 1) = setrhofixedp(kk, 0d0)
-                        valobs(i, IPNT_RHO + klay - 1) = rho(kk)
+               if (jawave > 0 .and. .not. flowWithoutWaves) then
+                  if (hs(k) > epshu) then
+                     if (kmx == 0) then
+                        kk_const = 1
                      else
-                        call interpolate_horizontal (rho,i,IPNT_RHOP,UNC_LOC_S3D)
+                        kk_const = klay
                      end if
+                     valobs(i, IPNT_UCXST + klay - 1) = wa(1, kk_const)
+                     valobs(i, IPNT_UCYST + klay - 1) = wa(2, kk_const)
                   end if
-
-
-!                  if (IVAL_TRA1 > 0) then
-!                     do j = IVAL_TRA1, IVAL_TRAN
-!                        ii = j - IVAL_TRA1 + 1
-!                        valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
-!                     end do
-!                 end if
-
-!                if (IVAL_HWQ1 > 0) then
-!                   do j = IVAL_HWQ1, IVAL_HWQN
-!                      ii = j - IVAL_HWQ1 + 1
-!                      valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
-!                    end do
-!                 end if
-
-!                  if (IVAL_WQB3D1 > 0) then
-!                     do j = IVAL_WQB3D1, IVAL_WQB3DN
-!                        ii = j - IVAL_WQB3D1 + 1
-!                        valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
-!                     end do
-!                  end if
-
-!                  if (IVAL_SF1 > 0) then
-!                     do j = IVAL_SF1, IVAL_SFN
-!                        ii = j - IVAL_SF1 + 1
-!                        valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
-!                     end do
-!                  end if
-
-!                  if (kmx == 0 .and. IVAL_WS1 > 0) then
-!                     do j = IVAL_WS1, IVAL_WSN
-!                        ii = j - IVAL_WS1 + 1
-!                        valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
-!                     end do
-!                  end if
-
-!                  if (jased > 0 .and. .not. stm_included) then
-!                     valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
-!                  end if
-                  valobs(i, IPNT_CMX) = max(valobs(i, IPNT_UCX), sqrt(ucx(kk)**2 + ucy(kk)**2))
-               end do
-               valobs(i, IPNT_SMX) = max(smxobs(i), s1(k))
+               end if
 
                if (model_is_3D()) then
-                  call getkbotktop(k, kb, kt)
-                  call getlayerindices(k, nlayb, nrlay)
-                  do kk = kb - 1, kt
-                     klay = kk - kb + nlayb + 1
-!                     valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-                     if (iturbulencemodel >= 2 .and. jahistur > 0) then
-!                        valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
-                     end if
-                     if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
-                        if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
-                           if (density_is_pressure_dependent()) then
-                              prsappr = ag * rhomean * (zws(kt) - zws(kk))
-                              drhodz = (setrhofixedp(kk + 1, prsappr) - setrhofixedp(kk, prsappr)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
-                           else
-                              drhodz = (rho(kk + 1) - rho(kk)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
-                           end if
-                           rhomea = 0.5d0 * (rho(kk + 1) + rho(kk))
-                           valobs(i, IPNT_BRUV + klay - 1) = -ag * drhodz / rhomea
-                        end if
-                     end if
-!                     if (IVAL_WS1 > 0) then
-!                        do j = IVAL_WS1, IVAL_WSN
-!                           ii = j - IVAL_WS1 + 1
-!                           valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
-!                        end do
-!                     end if
-!                     if (IVAL_SEDDIF1 > 0) then
-!                        do j = IVAL_SEDDIF1, IVAL_SEDDIFN
-!                           ii = j - IVAL_SEDDIF1 + 1
-!                           valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
-!                        end do
-!                     end if
-                  end do
-
-                  if (link_id_nearest > 0) then
-                     call getLbotLtop(link_id_nearest, Lb, Lt)
-                     call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
-                     do L = Lb - 1, Lt
-                        klay = L - Lb + nlaybL + 1
-                        valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
-                        if (iturbulencemodel >= 2 .and. jahistur > 0) then
-                           valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
-                        end if
-                        if (iturbulencemodel >= 3 .and. jahistur > 0) then
-                           valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
-                           valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
-                        end if
-                        if (idensform > 0 .and. jaRichardsononoutput > 0) then
-                           valobs(i, IPNT_RICH + klay - 1) = rich(L)
-                        end if
-                     end do
+                   valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
+               end if
+               
+!              if (jasal > 0) then
+                   ! (mis)use ueux to store salinities
+!                  ueux = constituents(isalt,:)
+!                  call interpolate_horizontal (ueux,i,IPNT_SA1)
+!                  valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
+!              end if
+!              if (jatem > 0) then
+!                  ueux = constituents(itemp,:)
+!                  call interpolate_horizontal (ueux,i,IPNT_TEM1)
+!                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
+!              end if
+               if (jahistur > 0) then
+                  valobs(i, IPNT_VIU + klay - 1) = vius(kk)
+               end if
+               if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+                  if (density_is_pressure_dependent()) then
+                     valobs(i, IPNT_RHOP + klay - 1) = setrhofixedp(kk, 0d0)
+                     valobs(i, IPNT_RHO + klay - 1) = rho(kk)
+                  else
+                     call interpolate_horizontal (rho,i,IPNT_RHOP) 
                   end if
                end if
-
-!           Rainfall
-!               if (jarain > 0 .and. jahisrain > 0) then
-!                  valobs(i, IPNT_RAIN) = rain(k)
+!               if (jahisvelocity > 0) then
+!                  call interpolate_horizontal (ucmag,i,IPNT_UMAG)         
+!                 valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
 !               end if
+               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
-!               if (allocated(airdensity) .and. jahis_airdensity > 0) then
-!                  valobs(i, IPNT_AIRDENSITY) = airdensity(k)
-!               end if
+               if (kmx == 0) then
+                  kmx_const = 1 ! to make numbering below work
+               end if
 
-!           Infiltration
-!               if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-!                  valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1d3 * 3600d0 ! m/s -> mm/hr
-!                  if (ba(k) > 0d0) then
-!                     valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1d3 * 3600d0 ! m/s -> mm/hr
-!                  else
-!                     valobs(i, IPNT_INFILTACT) = 0d0
-!                  end if
-!               end if
+               if (IVAL_TRA1 > 0) then
+                  do j = IVAL_TRA1, IVAL_TRAN
+                     ii = j - IVAL_TRA1 + 1
+                     valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
+                  end do
+               end if
 
-!           Heatflux
-!               if (jatem > 0 .and. jahisheatflux > 0) then
-!                  call getlink1(k, LL)
-!                  if (jawind > 0) then
-!                     valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
-!                  end if
+               if (IVAL_HWQ1 > 0) then
+                  do j = IVAL_HWQ1, IVAL_HWQN
+                     ii = j - IVAL_HWQ1 + 1
+                     valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
+                  end do
+               end if
 
-!                  if (jatem > 1) then ! also heat modelling involved
-!                     valobs(i, IPNT_TAIR) = Tair(k)
-!                  end if
+               if (IVAL_WQB3D1 > 0) then
+                  do j = IVAL_WQB3D1, IVAL_WQB3DN
+                     ii = j - IVAL_WQB3D1 + 1
+                     valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
+                  end do
+               end if
 
-!                  if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
-!                     valobs(i, IPNT_RHUM) = Rhum(k)
-!                     valobs(i, IPNT_CLOU) = Clou(k)
-!                  end if
+               if (IVAL_SF1 > 0) then
+                  do j = IVAL_SF1, IVAL_SFN
+                     ii = j - IVAL_SF1 + 1
+                     valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
+                  end do
+               end if
 
-!                 if (jatem == 5) then
-!                     valobs(i, IPNT_QSUN) = Qsunmap(k)
-!                     valobs(i, IPNT_QEVA) = Qevamap(k)
-!                     valobs(i, IPNT_QCON) = Qconmap(k)
-!                     valobs(i, IPNT_QLON) = Qlongmap(k)
-!                     valobs(i, IPNT_QFRE) = Qfrevamap(k)
-!                     valobs(i, IPNT_QFRC) = Qfrconmap(k)
-!                  end if
+               if (kmx == 0 .and. IVAL_WS1 > 0) then
+                  do j = IVAL_WS1, IVAL_WSN
+                     ii = j - IVAL_WS1 + 1
+                     valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
+                  end do
+               end if
 
-!                  if (jatem > 1) then
-!                     valobs(i, IPNT_QTOT) = Qtotmap(k)
-!                  end if
-!               end if
-             end if
+               if (jased > 0 .and. .not. stm_included) then
+                  valobs(i, IPNT_SED + klay - 1) = sed(1, kk)
+               end if
+               valobs(i, IPNT_CMX) = max(valobs(i, IPNT_UCX), sqrt(ucx(kk)**2 + ucy(kk)**2))
+            end do
+            valobs(i, IPNT_SMX) = max(smxobs(i), s1(k))
+
+            if (model_is_3D()) then
+               call getkbotktop(k, kb, kt)
+               call getlayerindices(k, nlayb, nrlay)
+               do kk = kb - 1, kt
+                  klay = kk - kb + nlayb + 1
+                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
+                  if (iturbulencemodel >= 2 .and. jahistur > 0) then
+                     valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+                  end if
+                  if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+                     if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
+                        if (density_is_pressure_dependent()) then
+                           prsappr = ag * rhomean * (zws(kt) - zws(kk))
+                           drhodz = (setrhofixedp(kk + 1, prsappr) - setrhofixedp(kk, prsappr)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
+                        else
+                           drhodz = (rho(kk + 1) - rho(kk)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
+                        end if
+                        rhomea = 0.5d0 * (rho(kk + 1) + rho(kk))
+                        valobs(i, IPNT_BRUV + klay - 1) = -ag * drhodz / rhomea
+                     end if
+                  end if
+                  if (IVAL_WS1 > 0) then
+                     do j = IVAL_WS1, IVAL_WSN
+                        ii = j - IVAL_WS1 + 1
+                        valobs(i, IPNT_WS1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%ws(kb + klay - 2, ii)
+                     end do
+                  end if
+                  if (IVAL_SEDDIF1 > 0) then
+                     do j = IVAL_SEDDIF1, IVAL_SEDDIFN
+                        ii = j - IVAL_SEDDIF1 + 1
+                        valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
+                     end do
+                  end if
+               end do
+
+               if (link_id_nearest > 0) then
+                  call getLbotLtop(link_id_nearest, Lb, Lt)
+                  call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
+                  do L = Lb - 1, Lt
+                     klay = L - Lb + nlaybL + 1
+                     valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
+                     if (iturbulencemodel >= 2 .and. jahistur > 0) then
+                        valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
+                     end if
+                     if (iturbulencemodel >= 3 .and. jahistur > 0) then
+                        valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
+                        valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
+                     end if
+                     if (idensform > 0 .and. jaRichardsononoutput > 0) then
+                        valobs(i, IPNT_RICH + klay - 1) = rich(L)
+                     end if
+                  end do
+               end if
+            end if
+
+!        Rainfall
+            if (jarain > 0 .and. jahisrain > 0) then
+               valobs(i, IPNT_RAIN) = rain(k)
+            end if
+
+            if (allocated(airdensity) .and. jahis_airdensity > 0) then
+               valobs(i, IPNT_AIRDENSITY) = airdensity(k)
+            end if
+
+!        Infiltration
+            if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
+               valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1d3 * 3600d0 ! m/s -> mm/hr
+               if (ba(k) > 0d0) then
+                  valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1d3 * 3600d0 ! m/s -> mm/hr
+               else
+                  valobs(i, IPNT_INFILTACT) = 0d0
+               end if
+            end if
+
+!        Heatflux
+            if (jatem > 0 .and. jahisheatflux > 0) then
+               call getlink1(k, LL)
+               if (jawind > 0) then
+                  valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
+               end if
+
+               if (jatem > 1) then ! also heat modelling involved
+                  valobs(i, IPNT_TAIR) = Tair(k)
+               end if
+
+               if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
+                  valobs(i, IPNT_RHUM) = Rhum(k)
+                  valobs(i, IPNT_CLOU) = Clou(k)
+               end if
+
+               if (jatem == 5) then
+                  valobs(i, IPNT_QSUN) = Qsunmap(k)
+                  valobs(i, IPNT_QEVA) = Qevamap(k)
+                  valobs(i, IPNT_QCON) = Qconmap(k)
+                  valobs(i, IPNT_QLON) = Qlongmap(k)
+                  valobs(i, IPNT_QFRE) = Qfrevamap(k)
+                  valobs(i, IPNT_QFRC) = Qfrconmap(k)
+               end if
+
+               if (jatem > 1) then
+                  valobs(i, IPNT_QTOT) = Qtotmap(k)
+               end if
+            end if
          else
             valobs(i, :) = DMISS
          end if
@@ -840,67 +658,61 @@ module m_fill_valobs
       if (timon) call timstop(handle_extra(55))
       return
    end subroutine fill_valobs
-
-   subroutine interpolate_horizontal (rarray,istat,IPNT,locType)
-
+  
+   subroutine interpolate_horizontal (rarray,istat,IPNT)
+   
       ! Interpolate (horizontally, within a computational layer) to a position from 3 surrounding snapped points
-      ! earray ca be constituents or
-      !
+      ! earray ca be constituents or 
+      !   
       use precision,             only: dp
       use fm_statistical_output, only: model_is_3d
       use m_observations_data
       use m_get_kbot_ktop
       use m_get_layer_indices
-      use fm_location_types
-
-      integer      , intent(in)                       :: istat, IPNT,locType
+      
+      integer      , intent(in)                       :: istat, IPNT 
       real(kind=dp), intent(in), allocatable          :: rarray (:)
-
+      
       real(kind=dp)                                   :: value
       real(kind=dp)                                   :: weighttot
-
-      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay, oneDown
-
-      oneDown = 0
       
+      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay
+
       do iwght = 1, 3
-          if (model_is_3D() .and. (locType == UNC_LOC_S3D .or. LocType == UNC_LOC_W)) then
+          if (model_is_3D()) then
               call getkbotktop    (neighbour_nodes_obs(iwght,istat), kb_tmp(iwght), kt_tmp(iwght))
               call getlayerindices(neighbour_nodes_obs(iwght,istat), nlayb_tmp(iwght), nrlay_tmp(iwght))
-
+              
           else
               kb_tmp   (iwght) = neighbour_nodes_obs(iwght,istat)
               kt_tmp   (iwght) = neighbour_nodes_obs(iwght,istat)
-              nlayb_tmp(iwght) = 1
+              nlayb_tmp(iwght) = 1 
               nrlay_tmp(iwght) = 1
           end if
+          
       end do
-
-      if (LocType == UNC_LOC_W) then
-          nrlay_tmp = nrlay_tmp + 1
-          oneDown   = 1
-      end if
-           
-      ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value
+      
+      ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value)
+            
       kstart = minval(nlayb_tmp)
       kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
-      
+               
       do klay = kstart, kstop
-
+         
          value     = 0.0d0
          weighttot = 0.0d0
-
+         
          do iwght = 1, 3
              if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
-               pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay - oneDown
-               value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
-               weighttot = weighttot + neighbour_weights_obs(iwght,istat)
+               pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay
+               value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat) 
+               weighttot = weighttot + neighbour_weights_obs(iwght,istat) 
              end if
          end do
          valobs(istat, IPNT + klay - 1) = value/weighttot
       end do
-
+ 
   end subroutine  interpolate_horizontal
-
+  
 
 end module m_fill_valobs
