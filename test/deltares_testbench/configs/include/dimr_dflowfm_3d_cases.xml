@@ -474,7 +474,7 @@
     </testCase>
 
     <testCase name="e02_f012_c076_waqseries_3d_unaggregated" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c076_waqseries_3d_unaggregated</path>
+      <path version="2025-04-02T07:50:09.354000">e02_dflowfm/f012_inout/c076_waqseries_3d_unaggregated</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/waqtest_map.nc" type="netCDF">
@@ -488,7 +488,7 @@
     </testCase>
 
     <testCase name="e02_f012_c077_waqseries_3d_aggregated" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c077_waqseries_3d_aggregated</path>
+      <path version="2025-04-02T07:51:11.293000">e02_dflowfm/f012_inout/c077_waqseries_3d_aggregated</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/waqtest_map.nc" type="netCDF">
