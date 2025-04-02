@@ -6429,7 +6429,7 @@
       </checks>
     </testCase>  
     <testCase name="e02_f092_c08_exer_12_2d_bend_course_model" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
+      <path version="2025-04-02T13:21:56.691000">e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/cb_2d_map.nc" type="netCDF">
@@ -6441,7 +6441,7 @@
       </checks>
     </testCase>  
     <testCase name="e02_f092_c10_exer_13_r01_vlissingen_course_model" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
+      <path version="2025-04-02T13:40:05.923000">e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/r01_map.nc" type="netCDF">
@@ -6453,7 +6453,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f092_c11_exer_13_r02_vlissingen_course_model" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
+      <path version="2025-04-02T14:30:04.496000">e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/r02_map.nc" type="netCDF">

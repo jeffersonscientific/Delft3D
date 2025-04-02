@@ -757,7 +757,7 @@
     </testCase>
 
     <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
-      <path version="2024-10-02T14:15:00">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
+      <path version="2025-04-02T13:15:10.435000">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">
@@ -771,7 +771,7 @@
     </testCase>
 
     <testCase name="e02_f092_c09_exer_12_3d_bend_course_model" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c09_exer_12_3d_bend_course_model</path>
+      <path version="2025-04-02T13:26:49.790000">e02_dflowfm/f092_tutorial_course_models/c09_exer_12_3d_bend_course_model</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/cb_3d_map.nc" type="netCDF">
