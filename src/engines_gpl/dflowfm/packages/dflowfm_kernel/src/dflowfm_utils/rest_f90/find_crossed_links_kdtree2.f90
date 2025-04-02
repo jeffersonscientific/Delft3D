@@ -263,30 +263,28 @@ contains
       integer, dimension(nLinks) :: new_index !< index of sorted iPol
       real(kind=dp), dimension(nLinks) :: dSL_copy !< copy of intersection length dSL
 
-      integer :: L
-      integer :: Lp
       integer :: k
       integer :: n
       integer :: n_start
       integer :: n_end
 
       dSL_copy = dSL
-      Lp = iLink(1)
       n_start = 1
-      do n = 1, numcrossedLinks
-         L = iLink(n)
-         n_end = n - 1
-         if (L > Lp) then
-            if (n_end > n_start) then
-               call sort_index(iPol(n_start:n_end), new_index(n_start:n_end))
-               do k = n_start, n_end
-                  dSL(k) = dSL_copy(n_start - 1 + new_index(k))
-               end do
-            end if
-            n_start = n
-            Lp = iLink(n)
-         end if
-      end do
+      do n = 1,numcrossedLinks 
+         do n_end = n_start, numcrossedLinks - 1
+             if (iLink(n_end + 1) > iLink(n_start)) then 
+                 exit 
+             end if 
+         end do
+         call sort_index(iPol(n_start:n_end), new_index(n_start:n_end))
+         do k = n_start, n_end
+            dSL(k) = dSL_copy(n_start - 1 + new_index(k))
+         end do
+         n_start = n_end + 1
+         if (n_start > numcrossedLinks) then 
+             exit
+         end if 
+      end do 
    end subroutine
 
 end module m_find_crossed_links_kdtree2
