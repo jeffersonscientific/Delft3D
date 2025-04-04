@@ -10,7 +10,7 @@ import Delft3D.template.*
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2024.12"
+version = "2025.03"
 
 project {
 
@@ -72,12 +72,14 @@ project {
         buildType(WindowsBuild)
         buildType(WindowsCollect)
         buildType(WindowsTest)
+        buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
             WindowsBuildEnvironment,
             WindowsBuildEnvironmentI24,
             WindowsBuild,
             WindowsCollect,
-            WindowsTest
+            WindowsTest,
+            WindowsBuildDflowfmInteracter,
         )
     }
 
@@ -115,8 +117,10 @@ project {
     )
 
     buildType(Trigger)
+    buildType(DIMRbak)
     buildTypesOrder = arrayListOf(
-        Trigger
+        Trigger,
+        DIMRbak
     )
 
     features {

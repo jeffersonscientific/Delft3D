@@ -65,6 +65,12 @@ object LinuxRuntimeContainers : BuildType({
                 chmod a+x dimrset/bin/*
             """.trimIndent()
         }
+        script {
+            name = "Copy example to docker directory"
+            scriptContent = """
+                mkdir ./example && cp -r examples/dflowfm/08_dflowfm_sequential_dwaves/* ./example
+            """.trimIndent()
+        }
         dockerCommand {
             name = "Docker build runtime-environment image"
             commandType = build {
