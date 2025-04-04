@@ -624,7 +624,7 @@ contains
             L = lnfxw(i)
             k3 = lncn(1, L); k4 = lncn(2, L)
             if (L > 0) then
-               write (mout, '(18(f24.4), i6)') xu(L), yu(L), bob(1, L), wu(L), xk(k3), yk(k3), xk(k4), yk(k4), crestlevxw(i), shlxw(i), shrxw(i), crestlxw(i), taludlxw(i), taludrxw(i), vegxw(i), iweirtxw(i), csu(L), snu(L), L, bob(1,L), bob(2,L), u1(L)
+               write (mout, '(18(f24.4), i6, 3(f24.4))') xu(L), yu(L), bob(1, L), wu(L), xk(k3), yk(k3), xk(k4), yk(k4), crestlevxw(i), shlxw(i), shrxw(i), crestlxw(i), taludlxw(i), taludrxw(i), vegxw(i), iweirtxw(i), csu(L), snu(L), L, bob(1,L), bob(2,L), u1(L)
             end if
          end do
          call doclose(mout)
