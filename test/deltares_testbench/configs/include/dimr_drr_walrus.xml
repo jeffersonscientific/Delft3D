@@ -405,6 +405,16 @@
 						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
+                </file> 		
+
+                <testCase name="e108(drr)_f03(walrus)_c12_HEC-HMS_unit_hydrograph " ref="drr_default">
+            <path version="2025-04-3T07:40:00">e108_drr/f03_walrus/c12_HEC-HMS_unit_hydrograph</path>
+            <checks>
+                <file name="rr/rrrunoff.his" type="HIS">
+                    <parameters>
+						<parameter name="Runoff" location="9" toleranceAbsolute="0.0001" />
+						<parameter name="Outflow" location="9" toleranceAbsolute="0.0001" />
+					</parameters>
                 </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
