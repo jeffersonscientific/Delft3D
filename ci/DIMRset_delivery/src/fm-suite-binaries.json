@@ -153,11 +153,7 @@
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "bin\\rr.exe",
-            "issuedTo": "Stichting Deltares"
-        },
-        {
-            "file": "bin\\FBCTools.exe",
+            "file": "bin\\dfm_volume_tool.exe",
             "issuedTo": "Stichting Deltares"
         },
         {
