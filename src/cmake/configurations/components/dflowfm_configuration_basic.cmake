@@ -223,9 +223,6 @@ endif()
 if(NOT TARGET intelredist)
     add_subdirectory(${checkout_src_root}/${intelredist_module} intelredist)
 endif()
-if(NOT TARGET microsoftredist)
-    add_subdirectory(${checkout_src_root}/${microsoftredist_module} microsoftredist)
-endif()
 
 # Unit tests for dflowfm and io_netcdf
 # Only for the version without interacter

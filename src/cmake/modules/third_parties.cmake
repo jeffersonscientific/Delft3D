@@ -59,8 +59,6 @@ set(spherepack_module ${third_party_open_path}/spherepack/${cmake_directory})
 
 #intel redist
 set(intelredist_module ${third_party_open_path}/intelredist)
-#microsoft redist
-set(microsoftredist_module ${third_party_open_path}/microsoftredist)
 
 set(gdal_module ${third_party_open_path}/gdal)
 set(zlib_module ${third_party_open_path}/zlib)
