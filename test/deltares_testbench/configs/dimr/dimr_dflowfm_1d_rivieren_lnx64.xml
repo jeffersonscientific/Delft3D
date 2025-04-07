@@ -206,7 +206,7 @@
         <path version="2025-03-26T14:30:00">e02_dflowfm/f100_1D/c10_closed_rectangle_river</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
-            <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
             <parameters>
                 <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
                 <parameter name="waterdepth" toleranceAbsolute="0.0001" />
