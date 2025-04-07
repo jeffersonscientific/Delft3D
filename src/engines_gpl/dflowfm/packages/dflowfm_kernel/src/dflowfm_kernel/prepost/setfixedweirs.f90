@@ -283,8 +283,6 @@ contains
             bobL = max(bob(1, L), bob(2, L))
          end if
 
-         ! if ( (zc > bobL .and. zc > zcrest(L)) .or. ( (ifixedweirscheme == 8 .or. ifixedweirscheme == 9) .and. ifirstweir(L) == 1) ) then   ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
-
          if (((zc > bobL .or. include_fixed_weir_below_bob) .and. zc > zcrest(L)) .or. ifirstweir(L) == 1) then ! For Villemonte and Tabellenboek fixed weirs under bed level are also possible
 
             ! Set whether this is the first time that for this link weir values are set:
@@ -422,7 +420,6 @@ contains
                      ztoed(L) = zc - zhd
                      dzsilld(L) = zcrest(L) - ztoed(L)
                   end if
-             !! write (msgbuf,'(a,2i5,7f10.3)') 'Projected fixed weir', L, iweirtyp(L), zc, bobL, dzsillu(L), dzsilld(L),crestlen(L),taludu(L),taludd(L); call msg_flush()
                else ! use global type definition
                   if (ifixedweirscheme == 7) then
                      iadv(L) = 23 !  Rajaratnam
@@ -438,20 +435,6 @@ contains
                      iadv(L) = 21 !  Ifixedweirscheme 6
                   end if
                end if
-
-               ! 21 = Ifixedweirscheme 6
-               ! 22 = General structure
-               ! 23 = Rajaratnam
-               ! 24 = Tabellenboek
-               ! 25 = Villemonte
-
-               !if (jawriteDFMinterpretedvalues > 0) then
-               !   if (jakol45 == 2) then
-               !       write (mout, '(18(f24.4), 2(i6))') xu(L), yu(L), bob(1, L), fixedweircontraction * wu(L), xk(k3), yk(k3), xk(k4), yk(k4), crestlen(L), zcrest(L), taludu(L), taludd(L), vegetat(L), iweirtyp(L), ztoeu(L), ztoed(L), dzsilld(L), dzsillu(L), iadv(L), L
-               !   else
-               !       write (mout, '(8(f24.4)) ') xu(L), yu(L), bob(1, L), fixedweircontraction * wu(L), xk(k3), yk(k3), xk(k4), yk(k4)
-               !   end if
-               !end if
             else
                nh = nh + 1 ! just raised bobs
             end if
@@ -464,7 +447,6 @@ contains
                !
                if (zc > zcrest(L)) then
                   zcrest(L) = zc
-             !! write (msgbuf,'(a,i5,f10.3)') 'Higher crest level: ', L,  zcrest(L); call msg_flush()
                end if
                if (jakol45 /= 0) then
                   call normalout(XPL(k), YPL(k), XPL(k + 1), YPL(k + 1), xn, yn, jsferic, jasfer3D, dmiss, dxymis) ! test EdG
@@ -480,17 +462,14 @@ contains
                   if (zc - zhu < ztoeu(L) .and. zhu > 0.01) then
                      ztoeu(L) = zc - zhu
                      dzsillu(L) = zcrest(L) - ztoeu(L)
-            !! write (msgbuf,'(a,i5,f10.3)') 'Larger sill up:     ', L,  dzsillu(L); call msg_flush()
                   end if
                   if (zc - zhd < ztoed(L) .and. zhd > 0.01) then
                      ztoed(L) = zc - zhd
                      dzsilld(L) = zcrest(L) - ztoed(L)
-            !! write (msgbuf,'(a,i5,f10.3)') 'Larger sill down:   ', L, dzsilld(L); call msg_flush()
                   end if
                end if
             end if
          end if
-    !! write (msgbuf,'(a,2i5,7f10.3)') 'Projected fixed weir', L, iweirtyp(L), zcrest(L), ztoeu(L), dzsillu(L),ztoed(L),dzsilld(L),taludu(L),taludd(L); call msg_flush()
 
       end do
 
