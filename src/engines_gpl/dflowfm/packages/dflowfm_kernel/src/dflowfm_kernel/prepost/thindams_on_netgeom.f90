@@ -145,6 +145,11 @@ contains
             call wall_clock_time(t1)
             write (mesg, "('thin dams with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
             call mess(LEVEL_INFO, trim(mesg))
+
+            if (allocated(iLink)) deallocate (iLink)
+            if (allocated(iPol)) deallocate (iPol)
+            if (allocated(dSL)) deallocate (dSL)
+            if (allocated(idum)) deallocate (idum)
          end if ! if (jakdtree == 1) then
 
          if (jakdtree == 0) then ! no kdtree, or kdtree gave error
