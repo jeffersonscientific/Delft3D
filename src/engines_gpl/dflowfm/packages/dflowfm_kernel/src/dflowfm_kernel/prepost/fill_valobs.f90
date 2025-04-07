@@ -184,9 +184,10 @@ contains
 
       valobs = DMISS
       do i = 1, numobs + nummovobs
-         k = max(kobs(i), 1)
+         k = max(kobs(i), 1) ! k: snapped flow node for station i
          link_id_nearest = lobs(i)
-        if (intobs(i) == 0) then
+         if (intobs(i) == 0) then
+            ! Treat snapped stations as interpolated ones!
             neighbour_nodes_obs(1,i)   = k
             neighbour_nodes_obs(2,i)   = k
             neighbour_nodes_obs(3,i)   = k
@@ -212,13 +213,10 @@ contains
                call linkstocentercartcomp(k, ustokes, wa) ! wa now 2*1 value or 2*1 vertical slice
             end if
 
-!        store values in valobs work array
+            ! store values in valobs work array
             valobs(i, :) = dmiss ! Intended to have dmiss on inactive layers for output.
-           ! It is taken care of in subroutine reduce_valobs for parallel computation.
 
-!            valobs(i, IPNT_S1) = s1(neighbour_nodes_obs(1,i))*neighbour_weights_obs(1,i) + &
-!                                 s1(neighbour_nodes_obs(2,i))*neighbour_weights_obs(2,i) + &
-!                                 s1(neighbour_nodes_obs(3,i))*neighbour_weights_obs(3,i)
+            ! Fill valobs with water levels (ando so on, and so on!)
             call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S)
 
             if (nshiptxy > 0) then
@@ -228,9 +226,11 @@ contains
                end if
             end if
 
+            ! Water Depth
             tmp_interp = s1 - bl
             call interpolate_horizontal (tmp_interp,i,IPNT_HS,UNC_LOC_S)
 
+            ! Bed level
             call interpolate_horizontal (bl        ,i,IPNT_BL,UNC_LOC_S)
 
             valobs(i, IPNT_CMX) = cmxobs(i)
@@ -239,37 +239,45 @@ contains
             ! First       : allocate tmp_interp for 3D quantities
             call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0d0)
 
+            ! Velocities (3D)
             if (jahisvelocity > 0 .or. jahisvelvec > 0) then
                call interpolate_horizontal (ueux,i,IPNT_UCX,UNC_LOC_S3D)
                call interpolate_horizontal (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
             end if
 
+            ! Velocity magnitude (3D)
             if (jahisvelocity > 0) then
                call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
             end if
 
-! Depth averaged velocities (dont understand why ucx is 3-dimenional but only firts ndx points are used)
+            ! Depth averaged velocities (first ndx pounts of ucx/ucy array)
             if (model_is_3D()) then
                call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
                call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
-!               valobs(i, IPNT_UCXQ) = ucx(k)
-!               valobs(i, IPNT_UCYQ) = ucy(k)
             end if
 
+            ! Vertical position (centre)
             if (model_is_3D()) then
-
-            ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
+               ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
                 do j = 2, ndkx
                    tmp_interp(j) = 0.5d0 * (zws(j) + zws(j - 1))
                 end do
                 call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
             end if
 
+            ! Salinity
             if (jasal > 0) then
                tmp_interp = constituents(isalt,:)
                call interpolate_horizontal (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
             end if
 
+            ! Temperature
+            if (jatem > 0) then
+               tmp_interp = constituents(itemp,:)
+               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
+            end if
+
+            ! Wind (at the links)
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0d0
                valobs(i, IPNT_wy) = 0d0
@@ -281,29 +289,42 @@ contains
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
             end if
+
+            ! Air Pressure
             if (jaPATM > 0 .and. allocated(patm)) then
-               valobs(i, IPNT_PATM) = PATM(k)
+               call interpolate_horizontal (PATM,i,IPNT_PATM,UNC_LOC_S)
             end if
-
+            
+            ! R = Fetch? 
             if (jawave == 4 .and. allocated(R)) then
-               valobs(i, IPNT_WAVER) = R(k)
+                call interpolate_horizontal (R,i,IPNT_WAVER,UNC_LOC_S)
             end if
 
+            ! Wave height, period and orbital velocity
             if (jawave > 0 .and. allocated(hwav)) then
-               valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
-               valobs(i, IPNT_WAVET) = twav(k)
+
+               ! Allocate tmp_interp as 2D arry
+               call realloc(tmp_interp, ndx, keepExisting=.false., fill=0d0)
+
+               tmp_interp = hwav*wavfac
+               call interpolate_horizontal (tmp_interp,i,IPNT_WAVEH,UNC_LOC_S)
+               call interpolate_horizontal (twav      ,i,IPNT_WAVET,UNC_LOC_S)
+
                if (.not. flowWithoutWaves) then
-                  valobs(i, IPNT_WAVED) = modulo(270d0 - phiwav(k), 360d0) ! Direction from
-                  valobs(i, IPNT_WAVEL) = rlabda(k)
-                  valobs(i, IPNT_WAVEU) = uorb(k)
+                  tmp_interp = modulo(270d0 - phiwav, 360d0) ! Direction from
+                  call interpolate_horizontal (tmp_interp,i,IPNT_WAVED,UNC_LOC_S)
+                  call interpolate_horizontal (rlabda    ,i,IPNT_WAVEL,UNC_LOC_S)
+                  call interpolate_horizontal (uorb      ,i,IPNT_WAVEU,UNC_LOC_S)
                end if
             end if
 
+            ! Bed shear stress
             if (jahistaucurrent > 0) then
-               valobs(i, IPNT_TAUX) = workx(k)
-               valobs(i, IPNT_TAUY) = worky(k)
+               call interpolate_horizontal (workx,i,IPNT_TAUX,UNC_LOC_S)
+               call interpolate_horizontal (worky,i,IPNT_TAUY,UNC_LOC_S)
             end if
 
+            ! time series of morphological parameters
             if (stm_included .and. jased > 0) then
                do j = IVAL_SBCX1, IVAL_SBCXN
                   ii = j - IVAL_SBCX1 + 1
@@ -429,10 +450,10 @@ contains
                end do
             end if
 
-            if (model_is_3D()) then
-               valobs(i, IPNT_UCXQ) = ucx(k)
-               valobs(i, IPNT_UCYQ) = ucy(k)
-            end if
+!            if (model_is_3D()) then
+!               valobs(i, IPNT_UCXQ) = ucx(k)
+!               valobs(i, IPNT_UCYQ) = ucy(k)
+!            end if
 
             do kk = kb, kt
                klay = kk - kb + nlayb
@@ -464,9 +485,9 @@ contains
 !              if (jasal > 0) then
 !                 valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
 !              end if
-               if (jatem > 0) then
-                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-               end if
+!              if (jatem > 0) then
+!                 valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
+!              end if
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
@@ -476,14 +497,10 @@ contains
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-               if (jahisvelocity > 0) then
-                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-               end if
+!               if (jahisvelocity > 0) then
+!                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
+!               end if
                valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
-
-               if (kmx == 0) then
-                  kmx_const = 1 ! to make numbering below work
-               end if
 
                if (IVAL_TRA1 > 0) then
                   do j = IVAL_TRA1, IVAL_TRAN
@@ -664,7 +681,7 @@ contains
       integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay, oneDown
 
       oneDown = 0
-      
+
       do iwght = 1, 3
           if (model_is_3D() .and. (locType == UNC_LOC_S3D .or. LocType == UNC_LOC_W)) then
               call getkbotktop    (neighbour_nodes_obs(iwght,istat), kb_tmp(iwght), kt_tmp(iwght))
@@ -682,11 +699,11 @@ contains
           nrlay_tmp = nrlay_tmp + 1
           oneDown   = 1
       end if
-           
+
       ! Determine start and stop layer nr for interpolated values (for now only layers where 3 stations have a value
       kstart = minval(nlayb_tmp)
       kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
-      
+
       do klay = kstart, kstop
 
          value     = 0.0d0
