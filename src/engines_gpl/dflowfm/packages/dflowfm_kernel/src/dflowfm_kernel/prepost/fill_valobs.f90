@@ -94,7 +94,7 @@ contains
          kmx_const = 1 ! to make numbering work
       end if
       nlyrs = 0
-
+      
 
       if (timon) call timstrt("fill_valobs", handle_extra(55))
       !
