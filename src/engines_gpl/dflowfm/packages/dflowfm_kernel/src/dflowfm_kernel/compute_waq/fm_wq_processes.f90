@@ -110,16 +110,19 @@ contains
          end if
       end if
 
-      !     check if proc_def file exists
-      inquire (file=proc_def_file, exist=Lpdf)
-      if (.not. Lpdf) then
-         call mess(LEVEL_WARN, 'Process library file does not exist: ', trim(proc_def_file))
+      ! check if proc_def file exists
+      if (proc_def_file /= ' ') then
+         inquire (file=proc_def_file, exist=Lpdf)
+         if (.not. Lpdf) then
+            call mess(LEVEL_ERROR, 'Specified process library file does not exist: ', trim(proc_def_file))
+         end if
+      else
          proc_def_file = trim(share_dir)//'proc_def.dat'
          inquire (file=proc_def_file, exist=Lpdf)
          if (Lpdf) then
             call mess(LEVEL_INFO, 'Using default Process library file: ', trim(proc_def_file))
          else
-            call mess(LEVEL_ERROR, 'No process library file specified. Use commandline argument --processlibrary "<path>/<name>"')
+            call mess(LEVEL_ERROR, 'Default process library file does not exist: ', trim(proc_def_file))
          end if
       end if
 
@@ -132,15 +135,18 @@ contains
       end if
 
       ! check if bloom file exists
-      inquire (file=bloom_file, exist=Lblm)
-      if (.not. Lblm) then
-         call mess(LEVEL_WARN, 'BLOOM species definition file does not exist: ', trim(bloom_file))
+      if (bloom_file /= ' ') then
+         inquire (file=bloom_file, exist=Lblm)
+         if (.not. Lblm) then
+            call mess(LEVEL_ERROR, 'Specified BLOOM species definition file does not exist: ', trim(bloom_file))
+         end if
+      else
          bloom_file = trim(share_dir)//'bloom.spe'
          inquire (file=bloom_file, exist=Lblm)
          if (Lblm) then
             call mess(LEVEL_INFO, 'Using default BLOOM species definition file: ', trim(bloom_file))
          else
-            call mess(LEVEL_ERROR, 'No BLOOM species definition file specified. Use commandline argument --bloomspecies "<path>/<name>"')
+            call mess(LEVEL_ERROR, 'Default BLOOM species definition file does not exist: ', trim(bloom_file))
          end if
       end if
 
