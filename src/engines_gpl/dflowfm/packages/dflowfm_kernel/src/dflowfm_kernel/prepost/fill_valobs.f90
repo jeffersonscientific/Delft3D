@@ -276,6 +276,18 @@ contains
                tmp_interp = constituents(itemp,:)
                call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
             end if
+            
+            ! Horizontal and vertical viscosity
+            if (jahistur > 0) then   
+               call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D)
+               if (iturbulencemodel >= 2) then
+                  call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W)
+               end if      
+            end if
+
+            ! squ en sqi = ?
+            tmp_interp =  0.5d0 * (squ + sqi)
+            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)   
 
             ! Wind (at the links)
             if (jawind > 0) then
@@ -450,22 +462,9 @@ contains
                end do
             end if
 
-!            if (model_is_3D()) then
-!               valobs(i, IPNT_UCXQ) = ucx(k)
-!               valobs(i, IPNT_UCYQ) = ucy(k)
-!            end if
 
             do kk = kb, kt
                klay = kk - kb + nlayb
-
-!              if (model_is_3D()) then
-!                 valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
-!              end if
-
-!              if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-!                 valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
-!                 valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-!              end if
 
                if (jawave > 0 .and. .not. flowWithoutWaves) then
                   if (hs(k) > epshu) then
@@ -482,12 +481,7 @@ contains
                if (model_is_3D()) then
                   valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
                end if
-!              if (jasal > 0) then
-!                 valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
-!              end if
-!              if (jatem > 0) then
-!                 valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-!              end if
+
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
@@ -497,10 +491,7 @@ contains
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-!               if (jahisvelocity > 0) then
-!                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-!               end if
-               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
+
 
                if (IVAL_TRA1 > 0) then
                   do j = IVAL_TRA1, IVAL_TRAN
