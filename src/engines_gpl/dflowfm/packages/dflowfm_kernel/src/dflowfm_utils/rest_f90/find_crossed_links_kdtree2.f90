@@ -32,10 +32,10 @@
 module m_find_crossed_links_kdtree2
    implicit none
 
-   integer, parameter :: ITYPE_NETLINK_DUAL = 1  !< cross with dual netlink 
-   integer, parameter :: ITYPE_FLOWLINK = 2 !< cross with flowlink 
-   integer, parameter :: ITYPE_NETLINK = 3  !< cross with netlink 
-   integer, parameter :: ITYPE_FLOWLINK_1D_DUAL = 4 !< cross with dual 1D flowlink 
+   integer, parameter :: ITYPE_NETLINK_DUAL = 1 !< cross with dual netlink
+   integer, parameter :: ITYPE_FLOWLINK = 2 !< cross with flowlink
+   integer, parameter :: ITYPE_NETLINK = 3 !< cross with netlink
+   integer, parameter :: ITYPE_FLOWLINK_1D_DUAL = 4 !< cross with dual 1D flowlink
 
    integer, parameter :: BOUNDARY_NONE = 0 !< do not include boundary links
    integer, parameter :: BOUNDARY_ALL = 1 !< include all boundary links
@@ -100,7 +100,7 @@ contains
 
       if (itype == ITYPE_NETLINK_DUAL .or. itype == ITYPE_NETLINK) then ! netlinks
          LnxiORLnx = numL
-      else  ! flowlinks
+      else ! flowlinks
          if (jaboundarylinks == BOUNDARY_ALL .or. jaboundarylinks == BOUNDARY_2D) then
             LnxiORLnx = Lnx
          else
