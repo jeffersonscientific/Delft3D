@@ -48,6 +48,8 @@ contains
       if (allocated(NMK0)) then
          deallocate (NMK0)
       end if
+      allocate (NMK0(NUMK))
+      NMK0 = 0
 
       LC = 0; NRL1D = 0; NRL1D6 = 0
       do L = 1, NUML
