@@ -83,7 +83,9 @@ contains
 
       ! Get executable directory
       call get_command_argument(0, exe_fullpath, status=ierr)
+      call mess(LEVEL_INFO, 'Debug output: ', trim(exe_fullpath))
       call split_filename(exe_fullpath, share_dir, exe_name)
+      call mess(LEVEL_INFO, 'Debug output: ', trim(share_dir))
       share_dir = trim(share_dir)//'../share/delft3d/'
 
       ! check if substance file exists
