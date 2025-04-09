@@ -375,7 +375,7 @@ contains
                k3 = lncn(1, L); k4 = lncn(2, L)
                wu(L) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) ! set 2D link width
 
-               wu(L) = wu(L) * abs(xn * csu(L) + yn * snu(L)) * fixedweircontraction ! projected length of fixed weir
+               wu(L) = wu(L) * abs(xn * csu(L) + yn * snu(L)) ! projected length of fixed weir
 
                if (jakol45 == 2) then ! use local type definition
                   !
@@ -601,6 +601,8 @@ contains
          call doclose(mout)
       end if
 
+      call apply_fixed_weir_contraction()
+
       deallocate (ihu, csh, snh, zcrest, dzsillu, dzsilld, crestlen, taludu, taludd, vegetat, iweirtyp, ztoeu, ztoed)
       if (jatabellenboekorvillemonte == 0 .and. jashp_fxw == 0 .and. allocated(shlxw)) then
          deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
@@ -738,6 +740,15 @@ contains
          end if
 
       end function is_value_inside_limits
+
+      !< apply fixedweircontraction to the width of the link
+      subroutine apply_fixed_weir_contraction()
+         do L = 1, lnxi
+            if (ihu(L) > 0) then
+               wu(L) = wu(L) * fixedweircontraction
+            end if
+         end do
+      end subroutine apply_fixed_weir_contraction
 
    end subroutine setfixedweirs
 
