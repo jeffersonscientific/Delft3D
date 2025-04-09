@@ -55,7 +55,7 @@ contains
       integer :: ierr_eho !< error status
 
       character(256) :: cerr !< error message
-      character(len=256) :: exe_fullpath, share_dir, exe_name
+      character(len=1024) :: exe_fullpath, share_dir, exe_name
       ! Other
       integer(4) :: nosys_eho, notot_eho, nocons_eho
       integer(4) :: i
@@ -83,9 +83,10 @@ contains
 
       ! Get executable directory
       call get_command_argument(0, exe_fullpath, status=ierr)
-      call mess(LEVEL_INFO, 'Debug output: ', trim(exe_fullpath))
+      if (ierr /= 0) then
+         call mess(LEVEL_INFO, 'Failed to retrieve executable path, error status:', ierr)
+      end if
       call split_filename(exe_fullpath, share_dir, exe_name)
-      call mess(LEVEL_INFO, 'Debug output: ', trim(share_dir))
       share_dir = trim(share_dir)//'../share/delft3d/'
 
       ! check if substance file exists
