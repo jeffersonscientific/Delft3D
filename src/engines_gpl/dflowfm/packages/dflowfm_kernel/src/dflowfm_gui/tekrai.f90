@@ -107,21 +107,21 @@ contains
       real(kind=dp), allocatable :: plotlin2(:)
       integer, allocatable :: ip(:), ip2(:)
 
-      integer, allocatable :: iLink(:), iPol(:)
-      real(kind=dp), allocatable :: dSL(:)
+      integer, allocatable :: crossed_links(:), polygon_nodes(:)
+      real(kind=dp), allocatable :: polygon_segment_weights(:)
 
       if (ndx < 1) return
 
       if (npl > 1) then
          if (japol == 0) then
             kc = 0
-            allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
-            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK_1D_DUAL, Lnx, BOUNDARY_ALL, intersection_count, iLink, iPol, dSL, ierror)
+            allocate (crossed_links(Lnx), polygon_nodes(Lnx), polygon_segment_weights(Lnx))
+            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK_1D_DUAL, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
             do LL = 1, intersection_count
-               L = ilink(LL)
+               L = crossed_links(LL)
                kc(ln(1, L)) = 1; kc(ln(2, L)) = 1
             end do
-            deallocate (iLink, ipol, dSL)
+            deallocate (crossed_links, polygon_nodes, polygon_segment_weights)
             japol = 1
          end if
       else

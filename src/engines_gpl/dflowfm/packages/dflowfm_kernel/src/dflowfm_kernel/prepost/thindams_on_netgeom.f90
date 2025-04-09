@@ -59,8 +59,8 @@ contains
       use unstruc_caching, only: cache_retrieved, cache_thin_dams, copy_cached_thin_dams
       use precision, only: dp
 
-      real(kind=dp), dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLink, ipol, idum
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links, polygon_nodes, idum
       real(kind=dp) :: xza, yza, xzb, yzb
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
@@ -95,9 +95,9 @@ contains
             call wall_clock_time(t0)
 
 !         determine set of links that are connected by a path
-            allocate (iLink(numL))
-            allocate (iPol(numL))
-            allocate (dSL(numL))
+            allocate (crossed_links(numL))
+            allocate (polygon_nodes(numL))
+            allocate (polygon_segment_weights(numL))
             allocate (idum(3 * nthd))
 
             call delpol()
@@ -114,7 +114,7 @@ contains
                end if
             end do
 
-            call find_crossed_links_kdtree2(treeglob, NPL, xpl, ypl, ITYPE_NETLINK_DUAL, numL, BOUNDARY_NONE, intersection_count, iLink, iPol, dSL, ierror)
+            call find_crossed_links_kdtree2(treeglob, NPL, xpl, ypl, ITYPE_NETLINK_DUAL, numL, BOUNDARY_NONE, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
             if (ierror /= 0) then
                !          disable kdtree
                jakdtree = 0
@@ -126,9 +126,9 @@ contains
 
                do iL = 1, intersection_count
 !               get link number
-                  L = iLink(iL)
+                  L = crossed_links(iL)
 !               get thin dam number
-                  ic = idum(iPol(iL))
+                  ic = idum(polygon_nodes(iL))
                   call get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
                   if (isactive == 1) then
                      call crspath_on_singlelink(thd(ic), L, xk(kn(1, L)), yk(kn(1, L)), xk(kn(2, L)), yk(kn(2, L)), xza, yza, xzb, yzb, 1)
@@ -146,9 +146,9 @@ contains
             write (mesg, "('thin dams with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
             call mess(LEVEL_INFO, trim(mesg))
 
-            if (allocated(iLink)) deallocate (iLink)
-            if (allocated(iPol)) deallocate (iPol)
-            if (allocated(dSL)) deallocate (dSL)
+            if (allocated(crossed_links)) deallocate (crossed_links)
+            if (allocated(polygon_nodes)) deallocate (polygon_nodes)
+            if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
             if (allocated(idum)) deallocate (idum)
          end if ! if (jakdtree == 1) then
 

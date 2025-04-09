@@ -58,8 +58,8 @@ contains
       integer :: ic, icmod
 
       real(kind=dp), dimension(:), allocatable :: xx, yy
-      real(kind=dp), dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLink, ipol, istartcrs, numlist
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links, polygon_nodes, istartcrs, numlist
       integer, dimension(:, :), allocatable :: linklist
       integer, dimension(:), allocatable :: idum
 
@@ -85,10 +85,10 @@ contains
          call wall_clock_time(t0)
 
          ! to do: chaching
-         !call copy_cached_cross_sections( iLink, ipol, success )
+         !call copy_cached_cross_sections( crossed_links, polygon_nodes, success )
 
          !if ( success ) then
-         !    intersection_count = size(iLink)
+         !    intersection_count = size(crossed_links)
          !    ierror          = 0
          !else
          num = 0
@@ -116,16 +116,16 @@ contains
          end do
 
 !           allocate
-         allocate (iLink(Lnx))
-         iLink = 0
-         allocate (ipol(Lnx))
-         ipol = 0
-         allocate (dSL(Lnx))
-         dSL = 0d0
+         allocate (crossed_links(Lnx))
+         crossed_links = 0
+         allocate (polygon_nodes(Lnx))
+         polygon_nodes = 0
+         allocate (polygon_segment_weights(Lnx))
+         polygon_segment_weights = 0d0
          ! use itype 3, as we want crossing the edge, not the connection between adjoint cells
-         call find_crossed_links_kdtree2(treeglob, num, xx, yy, ITYPE_NETLINK, Lnx, BOUNDARY_ALL, intersection_count, iLink, ipol, dSL, ierror)
+         call find_crossed_links_kdtree2(treeglob, num, xx, yy, ITYPE_NETLINK, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
 
-         !call save_link_list( intersection_count, iLink, ipol )   to do caching
+         !call save_link_list( intersection_count, crossed_links, polygon_nodes )   to do caching
          !endif
 
          if (ierror == 0 .and. intersection_count > 0) then
@@ -140,9 +140,9 @@ contains
                do ic = 1, num_rugs
                   istart = istartcrs(ic)
                   iend = istartcrs(ic + 1) - 1
-                  if (ipol(i) >= istart .and. ipol(i) <= iend) then
+                  if (polygon_nodes(i) >= istart .and. polygon_nodes(i) <= iend) then
                      numlist(ic) = numlist(ic) + 1
-                     linklist(numlist(ic), ic) = abs(lne2ln(iLink(i)))
+                     linklist(numlist(ic), ic) = abs(lne2ln(crossed_links(i)))
                   end if
                end do
             end do
@@ -152,9 +152,9 @@ contains
             jakdtree = 0
 
 !          deallocate
-            if (allocated(iLink)) deallocate (iLink)
-            if (allocated(ipol)) deallocate (ipol)
-            if (allocated(dSL)) deallocate (dSL)
+            if (allocated(crossed_links)) deallocate (crossed_links)
+            if (allocated(polygon_nodes)) deallocate (polygon_nodes)
+            if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
          end if
 
 !       deallocate
@@ -172,7 +172,7 @@ contains
       call realloc(linklist, (/max(intersection_count, 1), num_rugs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
       ! todo: caching
-      !call copy_cached_cross_sections( iLink, ipol, success )
+      !call copy_cached_cross_sections( crossed_links, polygon_nodes, success )
 
       call READYY('Enabling runup gauges on grid', 0d0)
       do ic = 1, num_rugs
@@ -195,9 +195,9 @@ contains
 
 !   deallocate
       if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
+         if (allocated(crossed_links)) deallocate (crossed_links)
+         if (allocated(polygon_nodes)) deallocate (polygon_nodes)
+         if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
          if (allocated(numlist)) deallocate (numlist)
          if (allocated(linklist)) deallocate (linklist)
       end if

@@ -61,8 +61,8 @@ contains
       integer :: i, k, L, n1, n2, k1, k2, nt, nt2, minp, lastfoundk, kL, kint, kf, jacros
       integer :: iL, numLL, intersection_count, ierror, jakdtree = 1, inp, n, ip, ip1, ip2, ierr
       real(kind=dp) :: SL, SM, XCR, YCR, CRP, Xa, Ya, Xb, Yb, zc, af
-      real(kind=dp), allocatable :: dSL(:), blav(:)
-      integer, allocatable :: iLink(:), iPol(:), nblav(:)
+      real(kind=dp), allocatable :: polygon_segment_weights(:), blav(:)
+      integer, allocatable :: crossed_links(:), polygon_nodes(:), nblav(:)
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
 
@@ -98,11 +98,11 @@ contains
 
       if (jakdtree == 1) then
          call wall_clock_time(t0)
-         allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, Lnxi, BOUNDARY_NONE, intersection_count, iLink, iPol, dSL, ierror)
+         allocate (crossed_links(Lnx), polygon_nodes(Lnx), polygon_segment_weights(Lnx))
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, Lnxi, BOUNDARY_NONE, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
          numLL = intersection_count
          if (ierror /= 0) then !   check if kdtree was succesfull, disable if not so
-            deallocate (iLink, ipoL, dSL)
+            deallocate (crossed_links, polygon_nodes, polygon_segment_weights)
             jakdtree = 0
          end if
          call wall_clock_time(t1)
@@ -128,9 +128,9 @@ contains
             if (jakdtree == 0) then
                L = iL
             else
-               L = iLink(iL)
+               L = crossed_links(iL)
                if (L <= 0) cycle
-               k = iPol(iL)
+               k = polygon_nodes(iL)
             end if
 
             if (kcu(L) /= 2) then
@@ -174,9 +174,9 @@ contains
 
                end do iloop
             else ! use kdtree to find nearest dike
-               k = iPol(iL)
+               k = polygon_nodes(iL)
                jacros = 1
-               sL = dSL(iL)
+               sL = polygon_segment_weights(iL)
             end if
 
             if (jacros == 1) then !  set roofgutterheight
@@ -232,9 +232,9 @@ contains
          if (jakdtree == 0) then
             L = iL
          else
-            L = iLink(iL)
+            L = crossed_links(iL)
             if (L <= 0) cycle
-            k = iPol(iL)
+            k = polygon_nodes(iL)
          end if
 
          if (kcu(L) /= 2) then
@@ -278,9 +278,9 @@ contains
 
             end do iloop2
          else ! use kdtree to find nearest dike
-            k = iPol(iL)
+            k = polygon_nodes(iL)
             jacros = 1
-            sL = dSL(iL)
+            sL = polygon_segment_weights(iL)
          end if
 
          if (jacros == 1) then !  set roofgutterheight
@@ -334,9 +334,9 @@ contains
 
 ! deallocate
       if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
+         if (allocated(crossed_links)) deallocate (crossed_links)
+         if (allocated(polygon_nodes)) deallocate (polygon_nodes)
+         if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
       end if
 
       call deallocpoladm()

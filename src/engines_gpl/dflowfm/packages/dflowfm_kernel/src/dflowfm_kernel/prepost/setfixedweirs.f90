@@ -76,10 +76,10 @@ contains
       integer, allocatable :: iweirtyp(:)
       integer, allocatable :: ifirstweir(:)
 
-      real(kind=dp), dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLink
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links
       integer, dimension(:), allocatable :: iLcr ! link crossed yes no
-      integer, dimension(:), allocatable :: iPol
+      integer, dimension(:), allocatable :: polygon_nodes
 
       integer :: iL, intersection_count, ii, LLL, LLLa, nx
       integer :: mout, jatabellenboekorvillemonte
@@ -178,26 +178,26 @@ contains
       num_intersections = max(NPL, lnx)
 
       call wall_clock_time(t_extra(1, 3))
-      allocate (iLink(num_intersections))
+      allocate (crossed_links(num_intersections))
       allocate (iLcr(num_intersections)); Ilcr = 0
-      allocate (ipol(num_intersections))
-      allocate (dSL(num_intersections))
+      allocate (polygon_nodes(num_intersections))
+      allocate (polygon_segment_weights(num_intersections))
       if (cache_retrieved()) then
          ierror = 0
-         call copy_cached_fixed_weirs(npl, xpl, ypl, intersection_count, iLink, iPol, dSL, success)
+         call copy_cached_fixed_weirs(npl, xpl, ypl, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, success)
       else
          success = .false.
       end if
       if (.not. success) then
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count, iLink, iPol, dSL, ierror)
-         call cache_fixed_weirs(npl, xpl, ypl, intersection_count, iLink, iPol, dSL)
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, num_intersections, BOUNDARY_2D, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+         call cache_fixed_weirs(npl, xpl, ypl, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights)
       end if
       call wall_clock_time(t_extra(2, 3))
 
       call wall_clock_time(t_extra(1, 4))
       if (ierror == 0) then ! find_crossed_links_kdtree2 succeeded
          do iL = 1, intersection_count
-            L = iLink(il)
+            L = crossed_links(il)
             iLcr(L) = 1
          end do
       else ! find_crossed_links_kdtree2 did not succeed
@@ -233,9 +233,9 @@ contains
                      if (jacros == 1) then
                         Lastfoundk = k
                         n = n + 1
-                        ilink(n) = L
-                        ipol(n) = k
-                        dsl(n) = SL
+                        crossed_links(n) = L
+                        polygon_nodes(n) = k
+                        polygon_segment_weights(n) = SL
                         iLcr(L) = 1
                         exit iloop
                      end if
@@ -246,7 +246,7 @@ contains
 
          end do
          intersection_count = n
-         call sort_crossed_links(iLink, iPol, dSL, Lnx, intersection_count)
+         call sort_crossed_links(crossed_links, polygon_nodes, polygon_segment_weights, Lnx, intersection_count)
       end if
       call wall_clock_time(t_extra(2, 4))
 
@@ -265,9 +265,9 @@ contains
       nh = 0
       do iL = 1, intersection_count
 
-         L = ilink(iL)
-         k = ipol(iL)
-         SL = dsl(iL)
+         L = crossed_links(iL)
+         k = polygon_nodes(iL)
+         SL = polygon_segment_weights(iL)
          n1 = ln(1, L); n2 = ln(2, L)
 
          if (kcu(L) == 1 .or. kcu(L) == 5) then
@@ -618,13 +618,13 @@ contains
       call readyy(' ', -1d0)
 
       if (ifixedweirscheme1D2D > 0) then
-         call find_1d2d_fixedweirs(iLink, intersection_count)
+         call find_1d2d_fixedweirs(crossed_links, intersection_count)
       end if
 
 ! deallocate
-      if (allocated(iLink)) deallocate (iLink)
-      if (allocated(iPol)) deallocate (iPol)
-      if (allocated(dSL)) deallocate (dSL)
+      if (allocated(crossed_links)) deallocate (crossed_links)
+      if (allocated(polygon_nodes)) deallocate (polygon_nodes)
+      if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
 
    contains
 

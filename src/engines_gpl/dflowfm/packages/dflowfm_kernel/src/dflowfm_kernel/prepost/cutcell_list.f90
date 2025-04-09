@@ -333,8 +333,8 @@ contains
 
          real(kind=dp), dimension(:), allocatable :: x, y
 
-         real(kind=dp), dimension(:), allocatable :: dsL
-         integer, dimension(:), allocatable :: iLink, iPol
+         real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+         integer, dimension(:), allocatable :: crossed_links, polygon_nodes
          integer, dimension(:), allocatable :: numcrossed
          integer, dimension(:), allocatable :: polynum
          integer, dimension(:), allocatable :: polysec
@@ -351,9 +351,9 @@ contains
          end do
 
 !       allocate
-         allocate (iLink(numL))
-         allocate (iPol(numL))
-         allocate (dSL(numL))
+         allocate (crossed_links(numL))
+         allocate (polygon_nodes(numL))
+         allocate (polygon_segment_weights(numL))
          allocate (x(num))
          allocate (y(num))
          allocate (polynum(num))
@@ -390,7 +390,7 @@ contains
          end do
 
 !       find crossed links
-         call find_crossed_links_kdtree2(kdtree, num, x, y, ITYPE_NETLINK, numL, BOUNDARY_ALL, intersection_count, iLink, iPol, dsL, ierror)
+         call find_crossed_links_kdtree2(kdtree, num, x, y, ITYPE_NETLINK, numL, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
          deallocate (x, y)
          if (ierror /= 0) goto 1234
 
@@ -403,7 +403,7 @@ contains
          allocate (numcrossed(numL))
          numcrossed = 0
          do i = 1, intersection_count
-            L = iLink(i)
+            L = crossed_links(i)
             numcrossed(L) = numcrossed(L) + 1
          end do
 
@@ -415,9 +415,9 @@ contains
 
          numcrossed = 0
          do i = 1, intersection_count
-            L = iLink(i)
+            L = crossed_links(i)
             num = idxL(L) + numcrossed(L)
-            j = iPol(i)
+            j = polygon_nodes(i)
             jdxL(num) = polysec(j)
             pdxL(num) = polynum(j)
             numcrossed(L) = numcrossed(L) + 1
@@ -429,9 +429,9 @@ contains
          write (mesg, "('cutcell with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
          call mess(LEVEL_INFO, trim(mesg))
 !       deallocate
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dsL)) deallocate (dsL)
+         if (allocated(crossed_links)) deallocate (crossed_links)
+         if (allocated(polygon_nodes)) deallocate (polygon_nodes)
+         if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
          if (allocated(numcrossed)) deallocate (numcrossed)
          if (allocated(polynum)) deallocate (polynum)
          if (allocated(polysec)) deallocate (polysec)
