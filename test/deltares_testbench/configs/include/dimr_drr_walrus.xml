@@ -414,7 +414,7 @@
             <!-- seconds -->
         </testCase>
 
-        <testCase name="e108(drr)_f03(walrus)_c12_HEC-HMS_unit_hydrograph" ref="drr_default">
+        <testCase name="e108(drr)_f03(walrus)_c12_HEC-HMS_unit_hydrograph" ref="drr_windows">
             <path version="2025-05-05T07:40:00">e108_drr/f03_walrus/c12_HEC-HMS_unit_hydrograph</path>
             <checks>
                 <file name="RR/output/rrrunoff.his" type="HIS">
