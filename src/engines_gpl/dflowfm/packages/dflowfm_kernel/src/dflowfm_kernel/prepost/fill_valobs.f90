@@ -95,7 +95,6 @@ contains
       end if
       nlyrs = 0
 
-
       if (timon) call timstrt("fill_valobs", handle_extra(55))
       !
       if (.not. allocated(ueux)) then
