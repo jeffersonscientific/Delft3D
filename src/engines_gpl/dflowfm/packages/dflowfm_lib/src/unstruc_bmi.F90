@@ -787,6 +787,8 @@ contains
          type_name = "type(t_voltable)"
       case ('network')
          type_name = "type(t_network)"
+      case('weirs/weir1/crestlevel')
+          type_name = "double"
       end select
 
       if (numconst > 0) then
@@ -860,6 +862,9 @@ contains
          rank = 2
       case ("tem1Surf")
          rank = 1
+      case default 
+      rank=1
+         
       end select
 
       if (numconst > 0) then
@@ -990,6 +995,8 @@ contains
          shape(1) = 1
          shape(2) = len_trim(md_ident)
          return
+      case default
+      SHAPE(1) = 1
       end select
 
       include "bmi_get_var_shape.inc"
@@ -1600,7 +1607,7 @@ contains
       tmp_var_name = var_name
       call str_token(tmp_var_name, varset_name, DELIMS='/')
       select case (varset_name)
-      case ("laterals")
+      case ("laterals","weirs")
          ! A valid group name, now parse the location id first...
          call str_token(tmp_var_name, item_name, DELIMS='/')
          if (len_trim(item_name) > 0) then
