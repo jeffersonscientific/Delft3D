@@ -152,13 +152,21 @@ contains
             jakdtree = 0
 
 !          deallocate
-            if (allocated(crossed_links)) deallocate (crossed_links)
-            if (allocated(polygon_nodes)) deallocate (polygon_nodes)
-            if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
+            if (allocated(crossed_links)) then
+               deallocate (crossed_links)
+            end if
+            if (allocated(polygon_nodes)) then
+               deallocate (polygon_nodes)
+            end if
+            if (allocated(polygon_segment_weights)) then
+               deallocate (polygon_segment_weights)
+            end if
          end if
 
 !       deallocate
-         if (allocated(istartcrs)) deallocate (istartcrs)
+         if (allocated(istartcrs)) then
+            deallocate (istartcrs)
+         end if
          if (allocated(xx)) deallocate (xx, yy)
 
          call wall_clock_time(t1)
@@ -195,14 +203,26 @@ contains
 
 !   deallocate
       if (jakdtree == 1) then
-         if (allocated(crossed_links)) deallocate (crossed_links)
-         if (allocated(polygon_nodes)) deallocate (polygon_nodes)
-         if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
-         if (allocated(numlist)) deallocate (numlist)
-         if (allocated(linklist)) deallocate (linklist)
+         if (allocated(crossed_links)) then
+            deallocate (crossed_links)
+         end if
+         if (allocated(polygon_nodes)) then
+            deallocate (polygon_nodes)
+         end if
+         if (allocated(polygon_segment_weights)) then
+            deallocate (polygon_segment_weights)
+         end if
+         if (allocated(numlist)) then
+            deallocate (numlist)
+         end if
+         if (allocated(linklist)) then
+            deallocate (linklist)
+         end if
       end if
 
-      if (allocated(idum)) deallocate (idum)
+      if (allocated(idum)) then
+         deallocate (idum)
+      end if
 
       return
    end subroutine runupgauges_on_flowgeom

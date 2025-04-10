@@ -540,7 +540,9 @@ contains
 
       if (nfxw > 0) then
          if (allocated(lnfxw)) deallocate (nfxwL, lnfxw)
-         if (allocated(weirdte)) deallocate (weirdte)
+         if (allocated(weirdte)) then
+            deallocate (weirdte)
+         end if
          if (allocated(shlxw)) deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
          allocate (nfxwL(Lnx), stat=ierr)
          call aerr('nfxwL(Lnx)', ierr, lnx)
@@ -624,9 +626,17 @@ contains
       end if
 
 ! deallocate
-      if (allocated(crossed_links)) deallocate (crossed_links)
-      if (allocated(polygon_nodes)) deallocate (polygon_nodes)
-      if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
+      if (jakdtree == 1) then
+         if (allocated(crossed_links)) then
+            deallocate (crossed_links)
+         end if
+         if (allocated(polygon_nodes)) then
+            deallocate (polygon_nodes)
+         end if
+         if (allocated(polygon_segment_weights)) then
+            deallocate (polygon_segment_weights)
+         end if
+      end if
 
    contains
 

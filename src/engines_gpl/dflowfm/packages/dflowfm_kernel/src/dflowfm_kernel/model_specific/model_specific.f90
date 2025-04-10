@@ -1039,10 +1039,18 @@ contains
       end if ! if time0.gt.time2write
 
 ! deallocate
-      if (allocated(dcrs)) deallocate (dcrs)
-      if (allocated(perm)) deallocate (perm)
-      if (allocated(var)) deallocate (var)
-      if (allocated(var1)) deallocate (var1)
+      if (allocated(dcrs)) then
+         deallocate (dcrs)
+      end if
+      if (allocated(perm)) then
+         deallocate (perm)
+      end if
+      if (allocated(var)) then
+         deallocate (var)
+      end if
+      if (allocated(var1)) then
+         deallocate (var1)
+      end if
 
    end subroutine poiseuille
 

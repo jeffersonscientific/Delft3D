@@ -250,9 +250,15 @@ contains
 
 !     deallocate
       if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
-      if (allocated(ipolsection)) deallocate (ipolsection)
-      if (allocated(x)) deallocate (x)
-      if (allocated(y)) deallocate (y)
+      if (allocated(ipolsection)) then
+         deallocate (ipolsection)
+      end if
+      if (allocated(x)) then
+         deallocate (x)
+      end if
+      if (allocated(y)) then
+         deallocate (y)
+      end if
 
       return
    end subroutine find_crossed_links_kdtree2

@@ -456,7 +456,9 @@ contains
       integer :: error
 
       if (Corioadamsbashfordfac > OFF) then
-         if (allocated(fvcoro)) deallocate (fvcoro)
+         if (allocated(fvcoro)) then
+            deallocate (fvcoro)
+         end if
          allocate (fvcoro(lnkx), stat=error)
          call aerr('fvcoro(lnkx)', error, lnkx)
          fvcoro(:) = 0d0
@@ -1183,7 +1185,9 @@ contains
 
       end do
 
-      if (allocated(h_unsat)) deallocate (h_unsat)
+      if (allocated(h_unsat)) then
+         deallocate (h_unsat)
+      end if
       sgrw0(:) = sgrw1(:)
 
    end subroutine include_ground_water

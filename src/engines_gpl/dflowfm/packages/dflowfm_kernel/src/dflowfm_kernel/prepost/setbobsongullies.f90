@@ -182,9 +182,15 @@ contains
 
 ! deallocate
       if (jakdtree == 1) then
-         if (allocated(crossed_links)) deallocate (crossed_links)
-         if (allocated(polygon_nodes)) deallocate (polygon_nodes)
-         if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
+         if (allocated(crossed_links)) then
+            deallocate (crossed_links)
+         end if
+         if (allocated(polygon_nodes)) then
+            deallocate (polygon_nodes)
+         end if
+         if (allocated(polygon_segment_weights)) then
+            deallocate (polygon_segment_weights)
+         end if
       end if
 
    end subroutine setbobsongullies
