@@ -614,7 +614,9 @@ contains
       if (len_trim(md_pillarfile) > 0) then
          call strsplit(md_pillarfile, 1, fnames, 1)
          i = size(fnames)
-         if (allocated(pillar)) deallocate (pillar)
+         if (allocated(pillar)) then
+            deallocate (pillar)
+         end if
          allocate (pillar(i))
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
@@ -4189,8 +4191,12 @@ contains
       logical :: success
 
       warn = 0
-      if (allocated(ti_tv)) deallocate (ti_tv)
-      if (allocated(ti_tv_rel)) deallocate (ti_tv_rel)
+      if (allocated(ti_tv)) then
+         deallocate (ti_tv)
+      end if
+      if (allocated(ti_tv_rel)) then
+         deallocate (ti_tv_rel)
+      end if
       !
       inquire (file=trim(md_tvfil), exist=success)
       if (success) then
@@ -4231,8 +4237,12 @@ contains
       end if
       !
       if (warn == 1) then
-         if (allocated(ti_tv)) deallocate (ti_tv)
-         if (allocated(ti_tv_rel)) deallocate (ti_tv_rel)
+         if (allocated(ti_tv)) then
+            deallocate (ti_tv)
+         end if
+         if (allocated(ti_tv_rel)) then
+            deallocate (ti_tv_rel)
+         end if
          allocate (ti_tv(1))
          allocate (ti_tv_rel(1))
          ti_tv = 0.0_dp

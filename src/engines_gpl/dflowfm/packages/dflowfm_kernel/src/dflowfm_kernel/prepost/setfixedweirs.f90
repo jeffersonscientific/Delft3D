@@ -554,7 +554,9 @@ contains
 
       if (nfxw > 0) then
          if (allocated(lnfxw)) deallocate (nfxwL, lnfxw)
-         if (allocated(weirdte)) deallocate (weirdte)
+         if (allocated(weirdte)) then
+            deallocate (weirdte)
+         end if
          if (allocated(shlxw)) deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
          allocate (nfxwL(Lnx), stat=ierr)
          call aerr('nfxwL(Lnx)', ierr, lnx)
@@ -635,9 +637,15 @@ contains
 
 ! deallocate
       if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
+         if (allocated(iLink)) then
+            deallocate (iLink)
+         end if
+         if (allocated(iPol)) then
+            deallocate (iPol)
+         end if
+         if (allocated(dSL)) then
+            deallocate (dSL)
+         end if
       end if
 
    contains

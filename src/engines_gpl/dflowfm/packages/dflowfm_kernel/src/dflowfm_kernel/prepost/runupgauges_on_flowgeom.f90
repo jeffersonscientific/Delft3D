@@ -152,13 +152,21 @@ contains
             jakdtree = 0
 
 !          deallocate
-            if (allocated(iLink)) deallocate (iLink)
-            if (allocated(ipol)) deallocate (ipol)
-            if (allocated(dSL)) deallocate (dSL)
+            if (allocated(iLink)) then
+               deallocate (iLink)
+            end if
+            if (allocated(ipol)) then
+               deallocate (ipol)
+            end if
+            if (allocated(dSL)) then
+               deallocate (dSL)
+            end if
          end if
 
 !       deallocate
-         if (allocated(istartcrs)) deallocate (istartcrs)
+         if (allocated(istartcrs)) then
+            deallocate (istartcrs)
+         end if
          if (allocated(xx)) deallocate (xx, yy)
 
          call wall_clock_time(t1)
@@ -195,14 +203,26 @@ contains
 
 !   deallocate
       if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
-         if (allocated(numlist)) deallocate (numlist)
-         if (allocated(linklist)) deallocate (linklist)
+         if (allocated(iLink)) then
+            deallocate (iLink)
+         end if
+         if (allocated(iPol)) then
+            deallocate (iPol)
+         end if
+         if (allocated(dSL)) then
+            deallocate (dSL)
+         end if
+         if (allocated(numlist)) then
+            deallocate (numlist)
+         end if
+         if (allocated(linklist)) then
+            deallocate (linklist)
+         end if
       end if
 
-      if (allocated(idum)) deallocate (idum)
+      if (allocated(idum)) then
+         deallocate (idum)
+      end if
 
       return
    end subroutine runupgauges_on_flowgeom

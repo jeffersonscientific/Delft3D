@@ -180,8 +180,12 @@ contains
       end do
       threshold_abort = initial_threshold_abort
 
-      if (allocated(itpenzr)) deallocate (itpenzr)
-      if (allocated(itpenur)) deallocate (itpenur)
+      if (allocated(itpenzr)) then
+         deallocate (itpenzr)
+      end if
+      if (allocated(itpenur)) then
+         deallocate (itpenur)
+      end if
       if (numlatsg > 0) then
          do n = 1, numlatsg
             balat(n) = 0d0

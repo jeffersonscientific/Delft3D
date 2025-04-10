@@ -10137,7 +10137,9 @@ contains
                end if
             end do
 
-            if (allocated(dum)) deallocate (dum)
+            if (allocated(dum)) then
+               deallocate (dum)
+            end if
          end if
 
          ! water quality bottom variables outputs
@@ -10163,7 +10165,9 @@ contains
                   ierr = nf90_put_var(imapfile, id_wqb3d(iid, j), work1(1:kmx, 1:ndxndxi), [1, 1, itim], [kmx, ndxndxi, 1])
                end do
             end if
-            if (allocated(dum)) deallocate (dum)
+            if (allocated(dum)) then
+               deallocate (dum)
+            end if
          end if
 
          ! WAQ extra outputs
@@ -10303,7 +10307,9 @@ contains
                      ierr = nf90_put_var(imapfile, id_const(iid, j), dum, [1, itim], [NdxNdxi, 1])
                   end if
                end do
-               if (allocated(dum)) deallocate (dum)
+               if (allocated(dum)) then
+                  deallocate (dum)
+               end if
             end if
 
             if (stmpar%morpar%moroutput%dzduuvv) then ! bedslope
@@ -10751,7 +10757,9 @@ contains
 
 !   deallocate
       if (NUMCONST > 0) then
-         if (allocated(idum)) deallocate (idum)
+         if (allocated(idum)) then
+            deallocate (idum)
+         end if
       end if
 
       if (jaseparate_ == 2 .and. javeg > 0) then
@@ -15700,7 +15708,9 @@ contains
             numContPts = max(numContPts, size(nd(ndx2d + i)%x))
          end do
 
-         if (allocated(work2)) deallocate (work2)
+         if (allocated(work2)) then
+            deallocate (work2)
+         end if
          allocate (work2(numContPts, n1d_write)); work2 = dmiss
 
          ierr = nf90_def_dim(ncid, 'n'//trim(mesh1dname)//'_FlowElemContourPts', numContPts, id_flowelemcontourptsdim)
@@ -15879,7 +15889,9 @@ contains
          numContPts = max(numContPts, size(nd(i)%x))
       end do
 
-      if (allocated(work2)) deallocate (work2)
+      if (allocated(work2)) then
+         deallocate (work2)
+      end if
       allocate (work2(numContPts, ndxndxi)); work2 = dmiss
 
       ierr = ncu_ensure_define_mode(igeomfile, jaInDefine)
@@ -16704,7 +16716,9 @@ contains
             end if
          end if
          if (ndomains == 0) then ! no subdomain numbers in netfile
-            if (allocated(idomain)) deallocate (idomain)
+            if (allocated(idomain)) then
+               deallocate (idomain)
+            end if
          end if
       end if
 
@@ -16757,7 +16771,9 @@ contains
             end if
          end if
          if (Nglobal_s == 0) then ! no global cell numbers in netfile (not a problem)
-            if (allocated(iglobal_s)) deallocate (iglobal_s)
+            if (allocated(iglobal_s)) then
+               deallocate (iglobal_s)
+            end if
          end if
 !      restore nerr_
          nerr_ = nerr_store
