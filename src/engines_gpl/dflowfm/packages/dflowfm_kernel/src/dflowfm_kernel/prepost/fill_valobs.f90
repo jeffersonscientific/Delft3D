@@ -256,6 +256,12 @@ contains
                call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
             end if
 
+            ! Bed shear stress
+            if (jahistaucurrent > 0) then
+               call interpolate_horizontal (workx,i,IPNT_TAUX,UNC_LOC_S)
+               call interpolate_horizontal (worky,i,IPNT_TAUY,UNC_LOC_S)
+            end if
+
             ! Vertical position (centre)
             if (model_is_3D()) then
                ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
@@ -277,6 +283,14 @@ contains
                call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
             end if
 
+! Horizontal and vertical viscosity
+            if (jahistur > 0) then   
+               call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D)
+            end if
+
+            ! squ en sqi = ?
+            tmp_interp =  0.5d0 * (squ + sqi)
+            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)   
             ! Wind (at the links)
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0d0
@@ -318,13 +332,7 @@ contains
                end if
             end if
 
-            ! Bed shear stress
-            if (jahistaucurrent > 0) then
-               call interpolate_horizontal (workx,i,IPNT_TAUX,UNC_LOC_S)
-               call interpolate_horizontal (worky,i,IPNT_TAUY,UNC_LOC_S)
-            end if
-
-            ! time series of morphological parameters
+           ! time series of sediment transport/morphological parameters
             if (stm_included .and. jased > 0) then
                do j = IVAL_SBCX1, IVAL_SBCXN
                   ii = j - IVAL_SBCX1 + 1
@@ -489,7 +497,7 @@ contains
 !                 valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
 !              end if
                if (jahistur > 0) then
-                  valobs(i, IPNT_VIU + klay - 1) = vius(kk)
+!                 valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
                if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                   valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
