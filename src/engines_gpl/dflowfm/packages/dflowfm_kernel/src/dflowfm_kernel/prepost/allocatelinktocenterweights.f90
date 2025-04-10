@@ -48,12 +48,24 @@ contains
 
       integer :: ierr
 
-      if (allocated(wcx1)) deallocate (wcx1)
-      if (allocated(wcy1)) deallocate (wcy1)
-      if (allocated(wcx2)) deallocate (wcx2)
-      if (allocated(wcy2)) deallocate (wcy2)
-      if (allocated(wcL)) deallocate (wcL)
-      if (allocated(wc)) deallocate (wc)
+      if (allocated(wcx1)) then
+         deallocate (wcx1)
+      end if
+      if (allocated(wcy1)) then
+         deallocate (wcy1)
+      end if
+      if (allocated(wcx2)) then
+         deallocate (wcx2)
+      end if
+      if (allocated(wcy2)) then
+         deallocate (wcy2)
+      end if
+      if (allocated(wcL)) then
+         deallocate (wcL)
+      end if
+      if (allocated(wc)) then
+         deallocate (wc)
+      end if
 
       allocate (wcx1(lnx), stat=ierr); 
       call aerr('wcx1(lnx)', ierr, lnx)

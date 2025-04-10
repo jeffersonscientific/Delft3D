@@ -228,10 +228,18 @@ contains
       ierror = 0
 1234  continue
 
-      if (allocated(ipolnr)) deallocate (ipolnr)
-      if (allocated(iLink)) deallocate (iLink)
-      if (allocated(iPol)) deallocate (iPol)
-      if (allocated(dSL)) deallocate (dSL)
+      if (allocated(ipolnr)) then
+         deallocate (ipolnr)
+      end if
+      if (allocated(iLink)) then
+         deallocate (iLink)
+      end if
+      if (allocated(iPol)) then
+         deallocate (iPol)
+      end if
+      if (allocated(dSL)) then
+         deallocate (dSL)
+      end if
 
       call restorepol()
 
@@ -312,8 +320,12 @@ contains
 1234  continue
 
 !    deallocate
-      if (allocated(namobs)) deallocate (namobs)
-      if (allocated(kobs)) deallocate (kobs)
+      if (allocated(namobs)) then
+         deallocate (namobs)
+      end if
+      if (allocated(kobs)) then
+         deallocate (kobs)
+      end if
 
       return
    end subroutine snappnt
@@ -645,16 +657,36 @@ contains
 1234  continue
 
 !    deallocate
-      if (allocated(xe)) deallocate (xe)
-      if (allocated(ye)) deallocate (ye)
-      if (allocated(xyen)) deallocate (xyen)
-      if (allocated(kce)) deallocate (kce)
-      if (allocated(ke)) deallocate (ke)
-      if (allocated(ki)) deallocate (ki)
-      if (allocated(kcs)) deallocate (kcs)
-      if (allocated(xdum)) deallocate (xdum)
-      if (allocated(ydum)) deallocate (ydum)
-      if (allocated(idx)) deallocate (idx)
+      if (allocated(xe)) then
+         deallocate (xe)
+      end if
+      if (allocated(ye)) then
+         deallocate (ye)
+      end if
+      if (allocated(xyen)) then
+         deallocate (xyen)
+      end if
+      if (allocated(kce)) then
+         deallocate (kce)
+      end if
+      if (allocated(ke)) then
+         deallocate (ke)
+      end if
+      if (allocated(ki)) then
+         deallocate (ki)
+      end if
+      if (allocated(kcs)) then
+         deallocate (kcs)
+      end if
+      if (allocated(xdum)) then
+         deallocate (xdum)
+      end if
+      if (allocated(ydum)) then
+         deallocate (ydum)
+      end if
+      if (allocated(idx)) then
+         deallocate (idx)
+      end if
 
       call restorepol()
 

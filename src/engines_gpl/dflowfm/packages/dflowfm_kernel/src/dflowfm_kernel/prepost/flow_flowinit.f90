@@ -380,10 +380,6 @@ contains
 
       call initialise_density_at_cell_centres()
 
-      if (allocated(rho0)) then
-         rho0(:) = rho(:)
-      end if
-
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
          call reducept(Ndx, Lnx) ! also alloc arrays for reduce
          if (icgsolver == 10) then
@@ -461,7 +457,9 @@ contains
       integer :: error
 
       if (Corioadamsbashfordfac > OFF) then
-         if (allocated(fvcoro)) deallocate (fvcoro)
+         if (allocated(fvcoro)) then
+            deallocate (fvcoro)
+         end if
          allocate (fvcoro(lnkx), stat=error)
          call aerr('fvcoro(lnkx)', error, lnkx)
          fvcoro(:) = 0.0_dp
@@ -1188,7 +1186,9 @@ contains
 
       end do
 
-      if (allocated(h_unsat)) deallocate (h_unsat)
+      if (allocated(h_unsat)) then
+         deallocate (h_unsat)
+      end if
       sgrw0(:) = sgrw1(:)
 
    end subroutine include_ground_water
