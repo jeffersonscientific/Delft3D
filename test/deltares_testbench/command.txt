@@ -1,0 +1,2 @@
+pypython.exe TestBench.py --compare --config configs\dimr\dimr_dflowfm_processes_win64.xml --log-level INFO --parallel --filter
+testcase="c001_frisianinlet_dynamo"
