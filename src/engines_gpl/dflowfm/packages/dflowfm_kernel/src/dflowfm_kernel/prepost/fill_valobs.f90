@@ -262,15 +262,17 @@ contains
                call interpolate_horizontal (worky,i,IPNT_TAUY,UNC_LOC_S)
             end if
 
-            ! Vertical position (centre)
             if (model_is_3D()) then
-               ! make temporary array with cellcentres (maybe not right place, dont have to do this for every station)
+               ! Vertical position interface
+               call interpolate_horizontal (zws,i,IPNT_ZWS,UNC_LOC_W)
+               ! Vertical position centre; make temporary array with cellcentres
                 do j = 2, ndkx
                    tmp_interp(j) = 0.5d0 * (zws(j) + zws(j - 1))
                 end do
                 call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
+                
             end if
-
+            
             ! Salinity
             if (jasal > 0) then
                tmp_interp = constituents(isalt,:)
@@ -283,14 +285,18 @@ contains
                call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
             end if
 
-! Horizontal and vertical viscosity
+            ! Horizontal and vertical viscosity
             if (jahistur > 0) then   
                call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D)
+              if (iturbulencemodel >= 2 .and. model_is_3D()) then
+                 call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W)
+               end if      
             end if
 
             ! squ en sqi = ?
             tmp_interp =  0.5d0 * (squ + sqi)
-            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)   
+            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)
+            
             ! Wind (at the links)
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0d0
@@ -309,7 +315,7 @@ contains
                call interpolate_horizontal (PATM,i,IPNT_PATM,UNC_LOC_S)
             end if
             
-            ! R = Fetch? 
+            ! R = ?????? 
             if (jawave == 4 .and. allocated(R)) then
                 call interpolate_horizontal (R,i,IPNT_WAVER,UNC_LOC_S)
             end if
@@ -557,9 +563,9 @@ contains
                call getlayerindices(k, nlayb, nrlay)
                do kk = kb - 1, kt
                   klay = kk - kb + nlayb + 1
-                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
+!                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
                   if (iturbulencemodel >= 2 .and. jahistur > 0) then
-                     valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+!                     valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                   end if
                   if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
