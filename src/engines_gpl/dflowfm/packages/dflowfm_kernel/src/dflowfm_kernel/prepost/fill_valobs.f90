@@ -95,6 +95,7 @@ contains
       end if
       nlyrs = 0
 
+
       if (timon) call timstrt("fill_valobs", handle_extra(55))
       !
       if (.not. allocated(ueux)) then
@@ -254,6 +255,12 @@ contains
                call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
                call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
             end if
+            
+            ! Bed shear stress
+            if (jahistaucurrent > 0) then
+               call interpolate_horizontal (workx,i,IPNT_TAUX,UNC_LOC_S)
+               call interpolate_horizontal (worky,i,IPNT_TAUY,UNC_LOC_S)
+            end if
 
             ! Vertical position (centre)
             if (model_is_3D()) then
@@ -275,6 +282,18 @@ contains
                tmp_interp = constituents(itemp,:)
                call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
             end if
+            
+            ! Horizontal and vertical viscosity
+            if (jahistur > 0) then   
+               call interpolate_horizontal (vius,i,IPNT_VIU,UNC_LOC_S3D)
+               if (iturbulencemodel >= 2 .and. model_is_3D()) then
+                  call interpolate_horizontal (vicwws,i,IPNT_VICWWS, UNC_LOC_W)
+               end if      
+            end if
+
+            ! squ en sqi = ?
+            tmp_interp =  0.5d0 * (squ + sqi)
+            call interpolate_horizontal (tmp_interp,i,IPNT_QMAG,UNC_LOC_S3D)   
 
             ! Wind (at the links)
             if (jawind > 0) then
@@ -317,57 +336,68 @@ contains
                end if
             end if
 
-            ! Bed shear stress
-            if (jahistaucurrent > 0) then
-               call interpolate_horizontal (workx,i,IPNT_TAUX,UNC_LOC_S)
-               call interpolate_horizontal (worky,i,IPNT_TAUY,UNC_LOC_S)
-            end if
-
-            ! time series of morphological parameters
+            ! time series of sediment transport/morphological parameters
             if (stm_included .and. jased > 0) then
+
+               ! Allocate tmp_interp as 2D array
+               call realloc(tmp_interp, ndx, keepExisting=.false., fill=0d0)
+               
                do j = IVAL_SBCX1, IVAL_SBCXN
                   ii = j - IVAL_SBCX1 + 1
-                  valobs(i, IPNT_SBCX1 + ii - 1) = sedtra%sbcx(k, ii)
+                  tmp_interp = sedtra%sbcx(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SBCX1 + ii - 1,UNC_LOC_S)
                end do
                do j = IVAL_SBCY1, IVAL_SBCYN
                   ii = j - IVAL_SBCY1 + 1
-                  valobs(i, IPNT_SBCY1 + ii - 1) = sedtra%sbcy(k, ii)
+                  tmp_interp = sedtra%sbcy(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SBCY1 + ii - 1,UNC_LOC_S)
                end do
                do j = IVAL_SSCX1, IVAL_SSCXN
                   ii = j - IVAL_SSCX1 + 1
-                  valobs(i, IPNT_SSCX1 + ii - 1) = sedtra%sscx(k, ii)
+                  tmp_interp = sedtra%sscx(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SSCX1 + ii - 1,UNC_LOC_S)
                end do
                do j = IVAL_SSCY1, IVAL_SSCYN
                   ii = j - IVAL_SSCY1 + 1
-                  valobs(i, IPNT_SSCY1 + ii - 1) = sedtra%sscy(k, ii)
+                  tmp_interp = sedtra%sscy(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SSCY1 + ii - 1,UNC_LOC_S)
                end do
                if (jawave > 0 .and. .not. flowWithoutWaves) then
                   do j = IVAL_SBWX1, IVAL_SBWXN
                      ii = j - IVAL_SBWX1 + 1
-                     valobs(i, IPNT_SBWX1 + ii - 1) = sedtra%sbwx(k, ii)
+                     tmp_interp = sedtra%sbwx(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SBWX1 + ii - 1,UNC_LOC_S)
                   end do
                   do j = IVAL_SBWY1, IVAL_SBWYN
                      ii = j - IVAL_SBWY1 + 1
-                     valobs(i, IPNT_SBWY1 + ii - 1) = sedtra%sbwy(k, ii)
+                     tmp_interp = sedtra%sbwy(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SBWY1 + ii - 1,UNC_LOC_S)
                   end do
                   do j = IVAL_SSWX1, IVAL_SSWXN
                      ii = j - IVAL_SSWX1 + 1
-                     valobs(i, IPNT_SSWX1 + ii - 1) = sedtra%sswx(k, ii)
+                     tmp_interp = sedtra%sswx(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SSWX1 + ii - 1,UNC_LOC_S)
                   end do
                   do j = IVAL_SSWY1, IVAL_SSWYN
                      ii = j - IVAL_SSWY1 + 1
-                     valobs(i, IPNT_SSWY1 + ii - 1) = sedtra%sswy(k, ii)
+                     tmp_interp = sedtra%sswy(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SSWY1 + ii - 1,UNC_LOC_S)
                   end do
                end if
                !
-               valobs(i, IPNT_TAUB) = sedtra%taub(k) ! contains tausmax or Soulsby-Clarke shear stresses
+               tmp_interp = sedtra%taub
+               call interpolate_horizontal (tmp_interp,i,IPNT_TAUB,UNC_LOC_S) ! contains tausmax or Soulsby-Clarke shear stresses
+
                ! bed composition
                if (stmpar%morlyr%settings%iunderlyr == 1) then
                   do j = IVAL_BODSED1, IVAL_BODSEDN
                      ii = j - IVAL_BODSED1 + 1
-                     valobs(i, IPNT_BODSED1 + ii - 1) = stmpar%morlyr%state%bodsed(ii, k)
+                     tmp_interp = stmpar%morlyr%state%bodsed(ii, :)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_BODSED1 + ii - 1,UNC_LOC_S)
                   end do
-                  valobs(i, IPNT_DPSED) = stmpar%morlyr%state%dpsed(k)
+
+                  tmp_interp = stmpar%morlyr%state%dpsed
+                  call interpolate_horizontal (tmp_interp,i,IPNT_DPSED,UNC_LOC_S)
                elseif (stmpar%morlyr%settings%iunderlyr == 2) then
                   nlyrs = stmpar%morlyr%settings%nlyr
                   do l = 1, stmpar%lsedtot
@@ -393,8 +423,9 @@ contains
                   do klay = 1, nlyrs
                      do j = IVAL_MSED1, IVAL_MSEDN
                         ii = j - IVAL_MSED1 + 1
-                        valobs(i, IPNT_MSED1 + (ii - 1) * nlyrs + klay - 1) = stmpar%morlyr%state%msed(ii, klay, k)
-                     end do
+                        tmp_interp = stmpar%morlyr%state%msed(ii, klay, :)
+                        call interpolate_horizontal (tmp_interp,i,IPNT_MSED1 + (ii - 1) * nlyrs + klay - 1,UNC_LOC_S)
+                      end do
                      !
                      do j = IVAL_LYRFRAC1, IVAL_LYRFRACN
                         ii = j - IVAL_LYRFRAC1 + 1
@@ -402,69 +433,61 @@ contains
                      end do
                      !
                      valobs(i, IPNT_POROS + klay - 1) = poros(klay)
-                     valobs(i, IPNT_THLYR + klay - 1) = stmpar%morlyr%state%thlyr(klay, k)
+                     tmp_interp = stmpar%morlyr%state%thlyr(klay, :)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_THLYR + klay - 1,UNC_LOC_S)
                   end do
                end if
                !
                do j = IVAL_FRAC1, IVAL_FRACN
                   ii = j - IVAL_FRAC1 + 1
-                  valobs(i, IPNT_FRAC1 + ii - 1) = sedtra%frac(k, ii)
+                  tmp_interp = sedtra%frac(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_FRAC1 + ii - 1,UNC_LOC_S)
                end do
-               valobs(i, IPNT_MUDFRAC) = sedtra%mudfrac(k)
-               valobs(i, IPNT_SANDFRAC) = sedtra%sandfrac(k)
+ 
+               tmp_interp = sedtra%mudfrac
+               call interpolate_horizontal (tmp_interp,i,IPNT_MUDFRAC,UNC_LOC_S)
+ 
+               tmp_interp = sedtra%sandfrac
+               call interpolate_horizontal (tmp_interp,i,IPNT_SANDFRAC,UNC_LOC_S)
                !
                if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
                   do j = IVAL_MFLUFF1, IVAL_MFLUFFN
                      ii = j - IVAL_MFLUFF1 + 1
-                     valobs(i, IPNT_MFLUFF1 + ii - 1) = stmpar%morpar%flufflyr%mfluff(ii, k)
+                     tmp_interp = stmpar%morpar%flufflyr%mfluff(ii, :)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_MFLUFF1 + ii - 1,UNC_LOC_S)
                   end do
                end if
                !
                do j = IVAL_FIXFAC1, IVAL_FIXFACN
                   ii = j - IVAL_FIXFAC1 + 1
-                  valobs(i, IPNT_FIXFAC1 + ii - 1) = sedtra%fixfac(k, ii)
+                  tmp_interp = sedtra%fixfac(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_FIXFAC1 + ii - 1,UNC_LOC_S)
                end do
                !
                do j = IVAL_HIDEXP1, IVAL_HIDEXPN
                   ii = j - IVAL_HIDEXP1 + 1
-                  valobs(i, IPNT_HIDEXP1 + ii - 1) = sedtra%hidexp(k, ii)
+                  tmp_interp = sedtra%hidexp(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_HIDEXP1 + ii - 1,UNC_LOC_S)
                end do
                !
                if (stmpar%lsedsus > 0) then
                   do j = IVAL_SOUR1, IVAL_SOURN
                      ii = j - IVAL_SOUR1 + 1
-                     valobs(i, IPNT_SOUR1 + ii - 1) = sedtra%sourse(k, ii)
+                     tmp_interp = sedtra%sourse(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SOUR1 + ii - 1,UNC_LOC_S)
                   end do
+
                   do j = IVAL_SINK1, IVAL_SINKN
                      ii = j - IVAL_SINK1 + 1
-                     valobs(i, IPNT_SINK1 + ii - 1) = sedtra%sinkse(k, ii)
+                     tmp_interp = sedtra%sinkse(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SINK1 + ii - 1,UNC_LOC_S)
                   end do
                end if
-            end if
-            !
-            if (IVAL_WQB1 > 0) then
-               do j = IVAL_WQB1, IVAL_WQBN
-                  ii = j - IVAL_WQB1 + 1
-                  valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
-               end do
-            end if
+            end if        
 
-!            if (model_is_3D()) then
-!               valobs(i, IPNT_UCXQ) = ucx(k)
-!               valobs(i, IPNT_UCYQ) = ucy(k)
-!            end if
-
+           ! Water quality paramters    
             do kk = kb, kt
                klay = kk - kb + nlayb
-
-!              if (model_is_3D()) then
-!                 valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
-!              end if
-
-!              if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-!                 valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
-!                 valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-!              end if
 
                if (jawave > 0 .and. .not. flowWithoutWaves) then
                   if (hs(k) > epshu) then
@@ -481,12 +504,7 @@ contains
                if (model_is_3D()) then
                   valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
                end if
-!              if (jasal > 0) then
-!                 valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
-!              end if
-!              if (jatem > 0) then
-!                 valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-!              end if
+
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
@@ -496,10 +514,7 @@ contains
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-!               if (jahisvelocity > 0) then
-!                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-!               end if
-               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
+
 
                if (IVAL_TRA1 > 0) then
                   do j = IVAL_TRA1, IVAL_TRAN
@@ -711,7 +726,7 @@ contains
          do iwght = 1, 3
              if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
                pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay - oneDown
-               value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
+                value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
                weighttot = weighttot + neighbour_weights_obs(iwght,istat)
              end if
          end do
