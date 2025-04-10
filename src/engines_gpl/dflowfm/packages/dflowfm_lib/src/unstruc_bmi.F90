@@ -758,9 +758,13 @@ contains
    subroutine get_var_type(c_var_name, c_type) bind(C, name="get_var_type")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_type
 
+      use string_module, only: str_token
+      
       character(kind=c_char), intent(in) :: c_var_name(*)
       character(kind=c_char), intent(out) :: c_type(MAXSTRLEN)
       character(len=MAXSTRLEN) :: type_name, var_name
+      character(len=strlen(c_var_name)) :: tmp_var_name
+      character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
 
       ! Use one of the following types
       ! BMI datatype        C datatype        NumPy datatype
@@ -787,10 +791,16 @@ contains
          type_name = "type(t_voltable)"
       case ('network')
          type_name = "type(t_network)"
-      case('weirs/weir1/crestlevel')
-          type_name = "double"
       end select
 
+      ! Try to parse variable name as slash-separated id (e.g., 'laterals/sealock_A/water_discharge')
+      tmp_var_name = var_name
+      call str_token(tmp_var_name, varset_name, DELIMS='/')
+      select case (varset_name)
+      case ('pumps', 'weirs', 'orifices', 'gates', 'generalstructures', 'culverts', 'sourcesinks', 'dambreak', 'observations', 'crosssections', 'laterals')
+          type_name = "double"
+      end select
+      
       if (numconst > 0) then
          iconst = find_name(const_names, var_name)
       end if
