@@ -456,32 +456,40 @@ contains
                if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
                   do j = IVAL_MFLUFF1, IVAL_MFLUFFN
                      ii = j - IVAL_MFLUFF1 + 1
-                     valobs(i, IPNT_MFLUFF1 + ii - 1) = stmpar%morpar%flufflyr%mfluff(ii, k)
+                     tmp_interp = stmpar%morpar%flufflyr%mfluff(ii, :)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_MFLUFF1 + ii - 1,UNC_LOC_S)
                   end do
                end if
                !
                do j = IVAL_FIXFAC1, IVAL_FIXFACN
                   ii = j - IVAL_FIXFAC1 + 1
-                  valobs(i, IPNT_FIXFAC1 + ii - 1) = sedtra%fixfac(k, ii)
+                  tmp_interp = sedtra%fixfac(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_FIXFAC1 + ii - 1,UNC_LOC_S)
                end do
                !
                do j = IVAL_HIDEXP1, IVAL_HIDEXPN
                   ii = j - IVAL_HIDEXP1 + 1
-                  valobs(i, IPNT_HIDEXP1 + ii - 1) = sedtra%hidexp(k, ii)
+                  tmp_interp = sedtra%hidexp(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_HIDEXP1 + ii - 1,UNC_LOC_S)
                end do
                !
                if (stmpar%lsedsus > 0) then
                   do j = IVAL_SOUR1, IVAL_SOURN
                      ii = j - IVAL_SOUR1 + 1
-                     valobs(i, IPNT_SOUR1 + ii - 1) = sedtra%sourse(k, ii)
+                    tmp_interp = sedtra%sourse(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SOUR1 + ii - 1,UNC_LOC_S)
                   end do
+                  
                   do j = IVAL_SINK1, IVAL_SINKN
                      ii = j - IVAL_SINK1 + 1
-                     valobs(i, IPNT_SINK1 + ii - 1) = sedtra%sinkse(k, ii)
+                     tmp_interp = sedtra%sinkse(:, ii)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_SINK1 + ii - 1,UNC_LOC_S)
                   end do
                end if
             end if
-            !
+
+            ! Water quality parameters
+            
             if (IVAL_WQB1 > 0) then
                do j = IVAL_WQB1, IVAL_WQBN
                   ii = j - IVAL_WQB1 + 1
