@@ -239,10 +239,15 @@ contains
             ! First       : allocate tmp_interp for 3D quantities
             call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0d0)
 
-            ! Velocities (3D)
+            ! Horizontal velocities (3D)
             if (jahisvelocity > 0 .or. jahisvelvec > 0) then
                call interpolate_horizontal (ueux,i,IPNT_UCX,UNC_LOC_S3D)
                call interpolate_horizontal (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
+            end if
+            
+            ! Vertical velocities (3D)              
+            if (model_is_3D()) then
+               call interpolate_horizontal (ucz,i,IPNT_UCZ,UNC_LOC_S3D)
             end if
 
             ! Velocity magnitude (3D)
@@ -386,14 +391,18 @@ contains
                   end do 
                end if
                !
-               valobs(i, IPNT_TAUB) = sedtra%taub(k) ! contains tausmax or Soulsby-Clarke shear stresses
-               ! bed composition
+              tmp_interp = sedtra%taub
+               call interpolate_horizontal (tmp_interp,i,IPNT_TAUB,UNC_LOC_S) ! contains tausmax or Soulsby-Clarke shear stresses
+
+   
                if (stmpar%morlyr%settings%iunderlyr == 1) then
                   do j = IVAL_BODSED1, IVAL_BODSEDN
                      ii = j - IVAL_BODSED1 + 1
-                     valobs(i, IPNT_BODSED1 + ii - 1) = stmpar%morlyr%state%bodsed(ii, k)
+                     tmp_interp = stmpar%morlyr%state%bodsed(ii, :)
+                     call interpolate_horizontal (tmp_interp,i,IPNT_BODSED1 + ii - 1,UNC_LOC_S)
                   end do
-                  valobs(i, IPNT_DPSED) = stmpar%morlyr%state%dpsed(k)
+
+               ! Underlayers, skip for now following advice of Bert (pragmatic!)
                elseif (stmpar%morlyr%settings%iunderlyr == 2) then
                   nlyrs = stmpar%morlyr%settings%nlyr
                   do l = 1, stmpar%lsedtot
@@ -434,10 +443,15 @@ contains
                !
                do j = IVAL_FRAC1, IVAL_FRACN
                   ii = j - IVAL_FRAC1 + 1
-                  valobs(i, IPNT_FRAC1 + ii - 1) = sedtra%frac(k, ii)
+                  tmp_interp = sedtra%frac(:, ii)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_FRAC1 + ii - 1,UNC_LOC_S)
                end do
-               valobs(i, IPNT_MUDFRAC) = sedtra%mudfrac(k)
-               valobs(i, IPNT_SANDFRAC) = sedtra%sandfrac(k)
+ 
+               tmp_interp = sedtra%mudfrac
+               call interpolate_horizontal (tmp_interp,i,IPNT_MUDFRAC,UNC_LOC_S)
+ 
+               tmp_interp = sedtra%sandfrac
+               call interpolate_horizontal (tmp_interp,i,IPNT_SANDFRAC,UNC_LOC_S)
                !
                if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
                   do j = IVAL_MFLUFF1, IVAL_MFLUFFN
@@ -504,9 +518,9 @@ contains
                   end if
                end if
 
-               if (model_is_3D()) then
-                  valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
-               end if
+!               if (model_is_3D()) then
+!                  valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
+!               end if
 !              if (jasal > 0) then
 !                 valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
 !              end if
@@ -525,7 +539,7 @@ contains
 !               if (jahisvelocity > 0) then
 !                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
 !               end if
-               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
+!               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
                if (IVAL_TRA1 > 0) then
                   do j = IVAL_TRA1, IVAL_TRAN
