@@ -626,16 +626,14 @@ contains
       end if
 
 ! deallocate
-      if (jakdtree == 1) then
-         if (allocated(crossed_links)) then
-            deallocate (crossed_links)
-         end if
-         if (allocated(polygon_nodes)) then
-            deallocate (polygon_nodes)
-         end if
-         if (allocated(polygon_segment_weights)) then
-            deallocate (polygon_segment_weights)
-         end if
+      if (allocated(crossed_links)) then
+         deallocate (crossed_links)
+      end if
+      if (allocated(polygon_nodes)) then
+         deallocate (polygon_nodes)
+      end if
+      if (allocated(polygon_segment_weights)) then
+         deallocate (polygon_segment_weights)
       end if
 
    contains
