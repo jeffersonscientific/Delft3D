@@ -145,6 +145,11 @@ if(NOT TARGET FLAP)
     add_subdirectory(${checkout_src_root}/${FLAP_module} FLAP)
 endif()
 
+if(WIN32)
+   if (NOT TARGET gdal)
+      add_subdirectory(${checkout_src_root}/${gdal_module} gdal)
+   endif()
+endif(WIN32)
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
@@ -217,9 +222,6 @@ endif()
 #intel MPI & MKL
 if(NOT TARGET intelredist)
     add_subdirectory(${checkout_src_root}/${intelredist_module} intelredist)
-endif()
-if(NOT TARGET microsoftredist)
-    add_subdirectory(${checkout_src_root}/${microsoftredist_module} microsoftredist)
 endif()
 
 # Unit tests for dflowfm and io_netcdf
