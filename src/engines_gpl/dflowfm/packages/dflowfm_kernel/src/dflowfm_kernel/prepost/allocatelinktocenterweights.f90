@@ -49,7 +49,7 @@ contains
       integer :: ierr
 
       if (allocated(wcxy)) then
-         deallocate(wcxy)
+         deallocate (wcxy)
       end if
       if (allocated(wcx1)) then
          deallocate (wcx1)
@@ -70,7 +70,7 @@ contains
          deallocate (wc)
       end if
 
-      allocate(wcxy(2, ndx))
+      allocate (wcxy(2, ndx), stat=ierr)
       call aerr('wcxy(2, ndx)', ierr, 2 * ndx)
       allocate (wcx1(lnx), stat=ierr)
       call aerr('wcx1(lnx)', ierr, lnx)
@@ -81,10 +81,8 @@ contains
       allocate (wcy2(lnx), stat=ierr)
       call aerr('wcy2(lnx)', ierr, lnx)
       allocate (wcL(2, lnx), stat=ierr)
-      call aerr('wcL  (2,lnx)', ierr, 2 * lnx)
+      call aerr('wcL(2,lnx)', ierr, 2 * lnx)
       allocate (wc(ndx), stat=ierr)
-      call aerr('wc     (ndx)', ierr, ndx)
-
+      call aerr('wc(ndx)', ierr, ndx)
    end subroutine allocatelinktocenterweights
-
 end module m_allocate_linktocenterweights
