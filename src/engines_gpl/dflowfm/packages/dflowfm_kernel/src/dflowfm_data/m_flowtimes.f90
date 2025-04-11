@@ -268,7 +268,9 @@ contains
       ti_classmaps = 0.0_dp !< Start class map output (s)
       ti_classmape = 0.0_dp !< End   class map output (s)
       map_classes_ucdirstep = -999.0_dp !< default no step size given for classes of flow direction
-      if (allocated(map_classes_ucdir)) deallocate (map_classes_ucdir)
+      if (allocated(map_classes_ucdir)) then
+         deallocate (map_classes_ucdir)
+      end if
 
       tmini = -1d9 !< initial time for updating the 4 above
 
