@@ -487,7 +487,25 @@ contains
                   end do
                end if
             end if
-
+                        
+            if (IVAL_SF1 > 0) then
+               do j = IVAL_SF1, IVAL_SFN
+                  ii = j - IVAL_SF1 + 1
+                  tmp_interp =  constituents(ISED1 + ii - 1, :)
+                  call interpolate_horizontal (tmp_interp,i,IPNT_SF1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
+!                 valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
+               end do
+            end if
+            
+            if (IVAL_SEDDIF1 > 0) then
+               do j = IVAL_SEDDIF1, IVAL_SEDDIFN
+                  ii = j - IVAL_SEDDIF1 + 1
+                  tmp_interp =  mtd%seddif(ii,:)
+                  call interpolate_horizontal (tmp_interp,i,IVAL_SEDDIF1 + (ii - 1)*kmx_const, UNC_LOC_W)
+!                 valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
+               end do
+            end if
+ 
             ! Water quality parameters
             if (IVAL_TRA1 > 0) then
                 do j = IVAL_TRA1, IVAL_TRAN
@@ -497,7 +515,8 @@ contains
 
                  end do
             end if
-    
+   
+            ! To Do, store kb values in tmp_interp 2D (1, ndx)
             if (IVAL_WQB1 > 0) then
                do j = IVAL_WQB1, IVAL_WQBN
                   ii = j - IVAL_WQB1 + 1
@@ -510,10 +529,10 @@ contains
                   ii = j - IVAL_WQB3D1 + 1
                   tmp_interp = wqbot(ii, :)
                   call interpolate_horizontal (tmp_interp,i,IPNT_WQB3D1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
-!                  valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
                end do
             end if
-    
+ 
+!           From here still to do            
             do kk = kb, kt
                klay = kk - kb + nlayb
 
@@ -544,12 +563,6 @@ contains
                   end do
                end if
 
-               if (IVAL_SF1 > 0) then
-                  do j = IVAL_SF1, IVAL_SFN
-                     ii = j - IVAL_SF1 + 1
-                     valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
-                  end do
-               end if
 
                if (kmx == 0 .and. IVAL_WS1 > 0) then
                   do j = IVAL_WS1, IVAL_WSN
@@ -595,7 +608,7 @@ contains
                   if (IVAL_SEDDIF1 > 0) then
                      do j = IVAL_SEDDIF1, IVAL_SEDDIFN
                         ii = j - IVAL_SEDDIF1 + 1
-                        valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
+!                        valobs(i, IPNT_SEDDIF1 + (ii - 1) * (kmx + 1) + klay - 1) = mtd%seddif(ii, kb + klay - 2)
                      end do
                   end if
                end do
