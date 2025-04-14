@@ -420,8 +420,8 @@ type morpar_type
     real(fp):: bedw       !  calibration factor for wave-related bed-load sand transport (included in bed-load)
     real(fp):: factsd     !  calibration factor for 2D suspended load relaxation time
 	real(fp):: bed_general_structures ! calibration factor for bedload transport vector magnitude at general structures
-	real(fp):: bed_weirs              ! calibration factor for bedload transport vector magnitude at fixed weirs    
-    logical :: adjust_sediment_at_structures ! logical to adjust sediment at structures, true when bed_general_structures /= 1.0 or bed_weirs /= 1.0
+	real(fp):: bed_general_structures_above_discharge ! bedload transport possible above discharge at general structures
+    logical :: adjust_sediment_at_structures ! logical to adjust sediment at structures, true when bed_general_structures /= 1.0 or bed_general_structures_above_discharge > 0.0
     real(fp):: rdw
     real(fp):: rdc
     real(fp):: espir      !  factor for weighing the effect of the spiral flow intensity in 2D simulations
@@ -1401,7 +1401,7 @@ subroutine nullmorpar(morpar)
     real(fp)                             , pointer :: thetsduni
     real(fp)                             , pointer :: susw
     real(fp)                             , pointer :: bed_general_structures
-    real(fp)                             , pointer :: bed_weirs
+    real(fp)                             , pointer :: bed_general_structures_above_discharge
     logical                              , pointer :: adjust_sediment_at_structures
     real(fp)                             , pointer :: sedthr
     real(fp)                             , pointer :: hmaxth
@@ -1494,7 +1494,7 @@ subroutine nullmorpar(morpar)
     thetsduni           => morpar%thetsduni
     susw                => morpar%susw
     bed_general_structures => morpar%bed_general_structures
-    bed_weirs           => morpar%bed_weirs
+    bed_general_structures_above_discharge => morpar%bed_general_structures_above_discharge
     adjust_sediment_at_structures => morpar%adjust_sediment_at_structures
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
@@ -1621,7 +1621,7 @@ subroutine nullmorpar(morpar)
     thetsduni          = 0.0_fp
     susw               = 1.0_fp
     bed_general_structures = 1.0_fp
-    bed_weirs          = 1.0_fp
+    bed_general_structures_above_discharge = 0.0_fp
     adjust_sediment_at_structures = .false.
     sedthr             = 0.5_fp
     hmaxth             = 1.0_fp

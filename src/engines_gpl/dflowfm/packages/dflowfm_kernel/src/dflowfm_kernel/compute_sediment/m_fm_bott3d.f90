@@ -191,7 +191,7 @@ contains
          call fm_bed_boundary_conditions(timhr)
 
          if (stmpar%morpar%adjust_sediment_at_structures) then
-            call fm_block_bedload_at_structures()
+            call fm_adjust_bedload_at_structures()
          end if 
 
          call fm_change_in_sediment_thickness(dtmor)
@@ -1822,9 +1822,10 @@ contains
    end subroutine fm_blchg_no_cmpupd
 
    !> Block sediment at structures 
-   subroutine fm_block_bedload_at_structures()
+   subroutine fm_adjust_bedload_at_structures()
       use precision, only: dp
       use m_flowgeom, only: iadv, lnx
+      use m_flow, only: q1
       use m_fm_erosed, only: lsedtot, e_sbn
       use m_sediment, only: stmpar
       
@@ -1833,17 +1834,18 @@ contains
       
       do Lf = 1, lnx
          if (iadv(Lf) == 22) then 
-            do lsed = 1, lsedtot
-               e_sbn(Lf, lsed) = e_sbn(Lf, lsed)*stmpar%morpar%bed_general_structures
-            end do 
-         end if 
-         if (iadv(Lf) == 21 .or. iadv(Lf) == 23 .or. iadv(Lf) == 24 .or. iadv(Lf) == 25) then 
-            do lsed = 1, lsedtot
-               e_sbn(Lf, lsed) = e_sbn(Lf, lsed)*stmpar%morpar%bed_weirs
-            end do 
+            if (abs(q1(Lf)) >= stmpar%morpar%bed_general_structures_above_discharge) then 
+               do lsed = 1, lsedtot
+                  e_sbn(Lf, lsed) = e_sbn(Lf, lsed)*stmpar%morpar%bed_general_structures
+               end do 
+            else
+               do lsed = 1, lsedtot
+                  e_sbn(Lf, lsed) = 0.0_fp
+               end do 
+            end if 
          end if 
       end do   
-   end subroutine fm_block_bedload_at_structures
+   end subroutine fm_adjust_bedload_at_structures
    
    !> Update bottom elevation
    subroutine fm_update_bed_level(dtmor)

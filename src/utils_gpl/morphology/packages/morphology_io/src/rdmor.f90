@@ -480,10 +480,11 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'BedGeneralStructures', morpar%bed_general_structures)
     !
-    ! === bed-load sediment factor at weirs
+    ! === bed-load sediment factor at general structures
     !
-    call prop_get(mor_ptr, 'Morphology', 'BedWeirs', morpar%bed_weirs)
-    if (morpar%bed_general_structures /= 1.0_fp .or. morpar%bed_weirs /= 1.0_fp) then
+    call prop_get(mor_ptr, 'Morphology', 'BedGeneralStructuresAboveDischarge', morpar%bed_general_structures_above_discharge)
+    !
+    if (morpar%bed_general_structures /= 1.0_fp .or. morpar%bed_general_structures_above_discharge > 0.0_fp) then
         morpar%adjust_sediment_at_structures = .true.
     end if
     !
@@ -1411,7 +1412,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: suscorfac
     real(fp)              , dimension(:)   , pointer :: xx
     real(fp)                               , pointer :: bed_general_structures
-    real(fp)                               , pointer :: bed_weirs
+    real(fp)                               , pointer :: bed_general_structures_above_discharge
     logical                                , pointer :: bedupd
     logical                                , pointer :: adjust_sediment_at_structures
     logical                                , pointer :: cmpupd
@@ -1462,7 +1463,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     integer                                                           :: l
     integer                                                           :: nval
     character(20)                                                     :: parname
-    character(45)                                                     :: txtput1
+    character(60)                                                     :: txtput1
     character(20)                                                     :: txtput2
     character(120)                                                    :: txtput3
     character(256)                                                    :: errmsg
@@ -1557,7 +1558,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     upwindbedload       => mornum%upwindbedload
     pure1d_mor          => mornum%pure1d
     bed_general_structures => morpar%bed_general_structures
-    bed_weirs => morpar%bed_weirs
+    bed_general_structures_above_discharge => morpar%bed_general_structures_above_discharge
     !
     ! output values to file
     !
@@ -1690,8 +1691,8 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     write (lundia, '(2a,e20.4)') txtput1, ':', bedw
     txtput1 = 'Bed load transp. multiplication factor at general structures'
     write (lundia, '(2a,e20.4)') txtput1, ':', bed_general_structures
-    txtput1 = 'Bed load transp. multiplication factor at weirs'
-    write (lundia, '(2a,e20.4)') txtput1, ':', bed_weirs
+    txtput1 = 'Bed load transp. at general structures above discharge'    
+    write (lundia, '(2a,e20.4)') txtput1, ':', bed_general_structures_above_discharge
     txtput1 = 'Min.depth for sed. calculations(SEDTHR)'
     write (lundia, '(2a,e20.4)') txtput1, ':', sedthr
     if (flsthetsd /= ' ') then
