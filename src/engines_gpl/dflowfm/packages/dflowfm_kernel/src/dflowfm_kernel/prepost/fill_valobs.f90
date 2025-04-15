@@ -501,7 +501,6 @@ contains
                   ii = j - IVAL_WS1 + 1
                   tmp_interp =  mtd%ws(:, ii)
                   call interpolate_horizontal (tmp_interp,i,IPNT_WS1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
-!                  valobs(i, IPNT_WS1 + (ii - 1) * kmx_const + klay - 1) = mtd%ws(kk, ii) ! 1:lsedsus
                end do
             end if
  
@@ -520,7 +519,6 @@ contains
                   call interpolate_horizontal (tmp_interp,i,IPNT_SEDDIF1 + (ii - 1)*(kmx + 1), UNC_LOC_W)
                end do
             end if
-            
  
             ! Water quality parameters
             if (IVAL_TRA1 > 0) then
@@ -532,11 +530,16 @@ contains
                  end do
             end if
    
-            ! To Do, store kb values in tmp_interp 2D (1, ndx)
+            ! To Do, store kb values index array (1:ndx) and use that to fill tmp_interp
             if (IVAL_WQB1 > 0) then
                do j = IVAL_WQB1, IVAL_WQBN
                   ii = j - IVAL_WQB1 + 1
-                  valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
+                  do i_tmp = 1, ndx
+                      call getkbotktop(i_tmp, kb_tmp, kt_tmp)
+                      tmp_interp(i_tmp) = wqbot(ii,kb)
+                  end do
+                  call interpolate_horizontal (tmp_interp,i,IPNT_WQB1 + ii - 1, UNC_LOC_S)
+!                 valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
                end do
             end if
                         
@@ -560,6 +563,71 @@ contains
                   end do
                   call interpolate_horizontal (tmp_interp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D)
                end do                                                                                   
+            end if
+            
+!           Additional parameters, start with Rainfall
+            if (jarain > 0 .and. jahisrain > 0) then
+               call interpolate_horizontal (rain,i,IPNT_RAIN,UNC_LOC_S)
+!              valobs(i, IPNT_RAIN) = rain(k)
+            end if
+
+            if (allocated(airdensity) .and. jahis_airdensity > 0) then
+               call interpolate_horizontal (airdensity,i,IPNT_AIRDENSITY,UNC_LOC_S)
+!              valobs(i, IPNT_AIRDENSITY) = airdensity(k)
+            end if
+
+!           Infiltration
+            if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
+               tmp_interp = infiltcap * 1d3 * 3600d0 ! m/s -> mm/hr
+               call interpolate_horizontal (tmp_interp,i,IPNT_INFILTCAP,UNC_LOC_S)
+!              valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1d3 * 3600d0 ! m/s -> mm/hr
+               if (ba(k) > 0d0) then
+                  tmp_interp = infilt / ba * 1d3 * 3600d0 ! m/s -> mm/hr! m/s -> mm/hr
+                  call interpolate_horizontal (tmp_interp,i,IPNT_INFILTACT,UNC_LOC_S)
+!                 valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1d3 * 3600d0 ! m/s -> mm/hr
+               else
+                  valobs(i, IPNT_INFILTACT) = 0d0
+               end if
+            end if
+
+!           Heatflux
+            if (jatem > 0 .and. jahisheatflux > 0) then
+               call getlink1(k, LL)
+               if (jawind > 0) then
+                  valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
+               end if
+
+               if (jatem > 1) then ! also heat modelling involved
+                  call interpolate_horizontal (Tair,i,IPNT_TAIR,UNC_LOC_S)
+                  valobs(i, IPNT_TAIR) = Tair(k)
+               end if
+
+               if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
+                  call interpolate_horizontal (Rhum,i,IPNT_RHUM,UNC_LOC_S)
+!                 valobs(i, IPNT_RHUM) = Rhum(k)
+                  call interpolate_horizontal (CLOU,i,IPNT_CLOU,UNC_LOC_S)
+!                 valobs(i, IPNT_CLOU) = Clou(k)
+               end if
+
+               if (jatem == 5) then
+                  call interpolate_horizontal (Qsunmap,i,IPNT_QSUN,UNC_LOC_S)
+!                 valobs(i, IPNT_QSUN) = Qsunmap(k)
+                  call interpolate_horizontal (Qevamap,i,IPNT_QEVA,UNC_LOC_S)
+!                 valobs(i, IPNT_QEVA) = Qevamap(k)
+                  call interpolate_horizontal (Qconmap,i,IPNT_QCON,UNC_LOC_S)
+!                 valobs(i, IPNT_QCON) = Qconmap(k)
+                  call interpolate_horizontal (Qlongmap,i,IPNT_QCON,UNC_LOC_S)
+!                 valobs(i, IPNT_QLON) = Qlongmap(k)
+                  call interpolate_horizontal (Qfrevamap,i,IPNT_QFRE,UNC_LOC_S)
+!                 valobs(i, IPNT_QFRE) = Qfrevamap(k)
+                  call interpolate_horizontal (Qfrconmap,i,IPNT_QFRC,UNC_LOC_S)
+!                 valobs(i, IPNT_QFRC) = Qfrconmap(k)
+               end if
+
+               if (jatem > 1) then
+                  call interpolate_horizontal (Qtotmap,i,IPNT_QTOT,UNC_LOC_S)
+!                 valobs(i, IPNT_QTOT) = Qtotmap(k)!
+               end if
             end if
             
 !           From here still to do (gets messy from here on)            
@@ -645,55 +713,6 @@ contains
                         valobs(i, IPNT_RICH + klay - 1) = rich(L)
                      end if
                   end do
-               end if
-            end if
-
-!        Rainfall
-            if (jarain > 0 .and. jahisrain > 0) then
-               valobs(i, IPNT_RAIN) = rain(k)
-            end if
-
-            if (allocated(airdensity) .and. jahis_airdensity > 0) then
-               valobs(i, IPNT_AIRDENSITY) = airdensity(k)
-            end if
-
-!        Infiltration
-            if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-               valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1d3 * 3600d0 ! m/s -> mm/hr
-               if (ba(k) > 0d0) then
-                  valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1d3 * 3600d0 ! m/s -> mm/hr
-               else
-                  valobs(i, IPNT_INFILTACT) = 0d0
-               end if
-            end if
-
-!        Heatflux
-            if (jatem > 0 .and. jahisheatflux > 0) then
-               call getlink1(k, LL)
-               if (jawind > 0) then
-                  valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
-               end if
-
-               if (jatem > 1) then ! also heat modelling involved
-                  valobs(i, IPNT_TAIR) = Tair(k)
-               end if
-
-               if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
-                  valobs(i, IPNT_RHUM) = Rhum(k)
-                  valobs(i, IPNT_CLOU) = Clou(k)
-               end if
-
-               if (jatem == 5) then
-                  valobs(i, IPNT_QSUN) = Qsunmap(k)
-                  valobs(i, IPNT_QEVA) = Qevamap(k)
-                  valobs(i, IPNT_QCON) = Qconmap(k)
-                  valobs(i, IPNT_QLON) = Qlongmap(k)
-                  valobs(i, IPNT_QFRE) = Qfrevamap(k)
-                  valobs(i, IPNT_QFRC) = Qfrconmap(k)
-               end if
-
-               if (jatem > 1) then
-                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
             end if
          else
