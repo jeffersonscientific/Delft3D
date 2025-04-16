@@ -53,7 +53,7 @@ contains
       integer :: L, n, kk, n12, lnxmax
       integer :: k1, k2, LL
       integer :: ilongc, L1dlink
-      real(kind=dp) :: aa1, wcw, alf           
+      real(kind=dp) :: aa1, wcw, alf
 
       wcx1 = 0
       wcy1 = 0
@@ -229,12 +229,16 @@ contains
 
       end do
 
-      if (Perot_weight_update == PEROT_STATIC) then 
-         if (allocated(wc)) deallocate (wc)
-         if (allocated(wwL)) deallocate (wwL)
-         if (allocated(wcxy)) deallocate (wcxy)
+      if (Perot_weight_update == PEROT_STATIC) then
+         if (allocated(wc)) then
+            deallocate (wc)
+         end if
+         if (allocated(wwL)) then
+            deallocate (wwL)
+         end if
+         if (allocated(wcxy)) then
+            deallocate (wcxy)
+         end if
       end if
-
    end subroutine setlinktocenterweights
-
 end module m_setlinktocenterweights

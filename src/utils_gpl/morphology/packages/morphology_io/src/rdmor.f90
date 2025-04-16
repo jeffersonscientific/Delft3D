@@ -849,6 +849,17 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
         error = .true.
         return
     end if
+    select case (moroutput%transptype)
+    case (0)
+        moroutput%unit_sediment_amount = 'kg'
+        moroutput%unit_transport_rate = 'kg s-1 m-1'
+        moroutput%unit_transport_per_crs  = 'kg s-1'
+    case (1, 2)
+        moroutput%unit_sediment_amount = 'm3'
+        moroutput%unit_transport_rate = 'm3 s-1 m-1'
+        moroutput%unit_transport_per_crs  = 'm3 s-1'
+    end select
+    !
     call prop_get(mor_ptr, 'Output', 'BedTranspAtFlux'             , moroutput%sbuuvv)
     call prop_get(mor_ptr, 'Output', 'SuspTranspAtFlux'            , moroutput%ssuuvv)
     call prop_get(mor_ptr, 'Output', 'BedTranspDueToCurrentsAtZeta', moroutput%sbcuv)
@@ -896,7 +907,10 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     !
     call prop_get(mor_ptr, 'Output', 'MainChannelWidthAtFlux'      , moroutput%wumor)
     !
+    call prop_get(mor_ptr, 'Output', 'ALDiff'                      , moroutput%aldiff)
+    !    
     call prop_get(mor_ptr,         'Output', 'MorStatsOutputInterval'      , moroutput%avgintv, 3, exist)
+
     if (exist) then
         moroutput%morstats = .true.    ! only used in FM, separate _sed.nc file
     end if

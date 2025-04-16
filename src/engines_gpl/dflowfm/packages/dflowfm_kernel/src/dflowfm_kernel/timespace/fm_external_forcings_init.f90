@@ -180,8 +180,12 @@ contains
       end do
       threshold_abort = initial_threshold_abort
 
-      if (allocated(itpenzr)) deallocate (itpenzr)
-      if (allocated(itpenur)) deallocate (itpenur)
+      if (allocated(itpenzr)) then
+         deallocate (itpenzr)
+      end if
+      if (allocated(itpenur)) then
+         deallocate (itpenur)
+      end if
       if (numlatsg > 0) then
          do n = 1, numlatsg
             balat(n) = 0d0
@@ -248,7 +252,8 @@ contains
       logical :: is_successful
       integer :: method, num_items_in_block, j
 
-      res = .false.
+      res = .true.
+
       ! First check for required input:
       call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
@@ -363,8 +368,6 @@ contains
          call mess(LEVEL_ERROR, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
                    '''. Check preceding log lines for details.')
       end if
-
-      res = .true.
 
    end function init_boundary_forcings
 
@@ -615,17 +618,17 @@ contains
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
-         update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
-         convert_file_type_string_to_integer
+                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
+                           convert_file_type_string_to_integer
       use fm_external_forcings_data, only: filetype, transformcoef, kx, tair_available, dewpoint_available
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: airdensity, jawindstressgiven, jaspacevarcharn, ja_airdensity, japatm, jawind, jarain, &
-         jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
-         ec_charnock, wcharnock, rain, qext
+                        jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
+                        ec_charnock, wcharnock, rain, qext
       use m_flowgeom, only: ndx, lnx, xz, yz
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, &
-         itempforcingtyp
+                                  itempforcingtyp
       use timespace, only: timespaceinitialfield
       use m_meteo, only: ec_addtimespacerelation
       use dfm_error, only: DFM_NOERR
@@ -1028,24 +1031,24 @@ contains
          call addsorsin_from_polyline_file(location_file, sourcesink_id, z_range_source, z_range_sink, area, ierr)
       else
          call addsorsin(sourcesink_id, x_coordinates, y_coordinates, &
-                     z_range_source, z_range_sink, area, ierr)
+                        z_range_source, z_range_sink, area, ierr)
       end if
-      
+
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            // 'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
+            //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
       end if
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1)*(numsrc-1) + 1, &
-                                               1, qstss)
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
+                                                     1, qstss)
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            // 'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
          call err_flush()
          return
       end if
@@ -1083,10 +1086,10 @@ contains
             call prop_get(node_ptr, '', property_name, constituent_delta_file(i_const), is_read)
 
             if (is_read) then
-               quantity_id = 'sourcesink_' // trim(property_name)  ! New quantity name in .bc files
+               quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
                is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1)*(numsrc-1) + 1 + i_const, &
-                                                        1, qstss)
+                                                              1, qstss)
                continue
             end if
          end do
