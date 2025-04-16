@@ -121,6 +121,9 @@ module m_turbulence
 
    integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
 
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_ON=1.0_dp
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_OFF=0.0_dp
+   
 contains
 
    !> Sets (underived) variables in this module to their default values.
