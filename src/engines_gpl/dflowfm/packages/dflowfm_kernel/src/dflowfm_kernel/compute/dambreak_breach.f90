@@ -34,7 +34,7 @@ module m_dambreak_breach
 
    private
 
-   public :: adjust_bobs_on_dambreak_breach
+   public :: adjust_bobs_for_dambreaks
    public :: allocate_and_initialize_dambreak_data
    public :: update_dambreak_breach
    public :: add_dambreaklocation_upstream
@@ -470,5 +470,29 @@ contains
       averaging_mapping(n_averaging(up_down), up_down) = n_signal
 
    end subroutine add_averaging_signal
-
+   
+   subroutine adjust_bobs_for_dambreaks()
+      use fm_external_forcings_data, only: n_db_links, n_db_signals, dambreaks, breach_start_link, &
+                                           db_first_link, db_last_link
+      use unstruc_channel_flow, only: network
+ 
+      integer :: n !< index of the current dambreak signal
+      integer :: istru !< index of the structure
+      
+      if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
+         do n = 1, n_db_signals
+            istru = dambreaks(n)
+            if (istru /= 0 .and. db_first_link(n) <= db_last_link(n)) then
+               ! Update the crest/bed levels
+               call adjust_bobs_on_dambreak_breach(network%sts%struct(istru)%dambreak%width, &
+                                                 & network%sts%struct(istru)%dambreak%maximum_width, &
+                                                 & network%sts%struct(istru)%dambreak%crest_level, &
+                                                 & breach_start_link(n), &
+                                                 & db_first_link(n), &
+                                                 & db_last_link(n), &
+                                                 & network%sts%struct(istru)%id)
+            end if
+         end do
+      end if
+   end subroutine  adjust_bobs_for_dambreaks
 end module m_dambreak_breach

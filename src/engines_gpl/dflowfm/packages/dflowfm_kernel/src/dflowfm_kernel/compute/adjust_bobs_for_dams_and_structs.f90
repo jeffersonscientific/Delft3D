@@ -31,8 +31,6 @@
 !
 
 module m_adjust_bobs_for_dams_and_structs
-   use m_switchiadvnearlink, only: switchiadvnearlink
-   use m_dambreak_breach, only: adjust_bobs_on_dambreak_breach
 
    implicit none
 
@@ -56,7 +54,9 @@ contains
       use m_compound
       use m_1d2d_fixedweirs, only: set_iadvec
       use messagehandling, only: warn_flush
-
+      use m_switchiadvnearlink, only: switchiadvnearlink
+      use m_dambreak_breach, only: adjust_bobs_for_dambreaks
+   
       real(kind=dp) :: zcdamn, minzcdamn, blmx
       type(t_structure), pointer :: pstru
       type(t_compound), pointer :: pcompound
@@ -162,22 +162,8 @@ contains
       end do
 
       ! Adjust bobs for dambreak
-      if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
-         do n = 1, n_db_signals
-            istru = dambreaks(n)
-            if (istru /= 0 .and. db_first_link(n) <= db_last_link(n)) then
-               ! Update the crest/bed levels
-               call adjust_bobs_on_dambreak_breach(network%sts%struct(istru)%dambreak%width, &
-                                                 & network%sts%struct(istru)%dambreak%maximum_width, &
-                                                 & network%sts%struct(istru)%dambreak%crest_level, &
-                                                 & breach_start_link(n), &
-                                                 & db_first_link(n), &
-                                                 & db_last_link(n), &
-                                                 & network%sts%struct(istru)%id)
-            end if
-         end do
-      end if
-
+      call adjust_bobs_for_dambreaks()
+      
       if (ifixedweirscheme1D2D == 1) then
          call set_iadvec()
       end if
