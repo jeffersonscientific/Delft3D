@@ -14,7 +14,8 @@ object LinuxRuntimeContainers : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Runtime-environment Containers"
@@ -114,23 +115,6 @@ object LinuxRuntimeContainers : BuildType({
                     containers.deltares.nl/delft3d/delft3d-runtime-environment:alma8-%build.vcs.number%
                     containers.deltares.nl/delft3d/test/delft3d-test-environment:alma8-%build.vcs.number%
                 """.trimIndent()
-            }
-        }
-    }
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
-            }
-        }
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
-        }
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
             }
         }
     }
