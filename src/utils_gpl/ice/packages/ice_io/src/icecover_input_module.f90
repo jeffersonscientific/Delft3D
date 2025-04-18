@@ -161,7 +161,7 @@ function echo_icecover(icecover, lundia) result (error)
     use icecover_module, only: icecover_type, alloc_icecover, &
         & ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER, FRICT_AS_DRAG_COEFF, &
         & ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, ICE_WINDDRAG_AN10, &
-        & ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS
+        & ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS, ICE_WINDDRAG_JOYCE19
     use MessageHandling, only: mess, LEVEL_ERROR
     !
     implicit none
@@ -234,19 +234,24 @@ function echo_icecover(icecover, lundia) result (error)
     txtput1 = '  Modify wind drag'
     select case (icecover%modify_winddrag)
     case (ICE_WINDDRAG_NONE)
-        txtput2 = 'No'
+        write (lundia, '(2a)') txtput1, ': No'
     case (ICE_WINDDRAG_CUBIC)
-        txtput2 = 'Cubic (Chapman & Massey)'
+        write (lundia, '(2a)') txtput1, ': Cubic (Chapman & Massey)'
     case (ICE_WINDDRAG_RAYS)
-        txtput2 = 'RaysIce (Chapman et al.)'
+        write (lundia, '(2a)') txtput1, ': RaysIce (Chapman et al.)'
     case (ICE_WINDDRAG_LB05)
-        txtput2 = 'Lupes & Birnbaum (2005)'
+        write (lundia, '(2a)') txtput1, ': Lupkes & Birnbaum (2005)'
     case (ICE_WINDDRAG_AN10)
-        txtput2 = 'Andreas et al. (2010)'
+        write (lundia, '(2a)') txtput1, ': Andreas et al. (2010)'
+    case (ICE_WINDDRAG_JOYCE19)
+        write (lundia, '(2a)') txtput1, ': Joyce et al. (2019)'
+        txtput1 = 'Skin drag for ice floes'
+        write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%ice_skin_drag
+        txtput1 = 'Max form drag for ice floes'
+        write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%maximum_ice_form_drag
     case (ICE_WINDDRAG_LINEAR)
-        txtput2 = 'No drag below ice'
+        write (lundia, '(2a)') txtput1, ': No drag below ice'
     end select
-    write (lundia, '(3a)') txtput1, ': ', txtput2
 
     !
     ! parameters
