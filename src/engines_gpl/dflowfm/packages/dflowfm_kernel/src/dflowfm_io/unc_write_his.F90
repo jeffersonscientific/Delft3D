@@ -127,6 +127,7 @@ contains
       use MessageHandling, only: err, mess, LEVEL_WARN, LEVEL_ERROR
       use m_ug_nc_attribute, only: ug_nc_attribute
       use unstruc_channel_flow, only: network
+      use m_dambreak_data, only: n_db_links, n_db_signals
 
       implicit none
 
@@ -1453,7 +1454,8 @@ contains
 
    !> Write static data such as names, coordintates, and geometry of structures to the history file
    subroutine unc_put_his_structure_static_vars(ncid)
-      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, db_ids, n_db_signals, cdam_ids, ncdamsg, srcname, numsrc, gate2cgen, ngategen
+      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, srcname, numsrc, gate2cgen, ngategen
+      use m_dambreak_data, only: db_ids, n_db_signals
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: jahisweir, jahisorif, jahispump, jahisgate, jahiscgen, jahisuniweir, jahisdambreak, jahisculv, jahisbridge, jahiscmpstru, jahislongculv, jahiscdam, jahissourcesink, jahislateral
       use m_longculverts, only: longculverts, nlongculverts

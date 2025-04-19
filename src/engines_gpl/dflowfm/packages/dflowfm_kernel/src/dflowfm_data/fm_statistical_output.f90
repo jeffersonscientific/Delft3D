@@ -2186,6 +2186,7 @@ contains
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       use m_sferic, only: jsferic
       use m_wind, only: japatm, jawind, jarain, ja_airdensity, ja_computed_airdensity, clou, rhum
+      use m_dambreak_data, only: n_db_signals
       use, intrinsic :: iso_c_binding
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.

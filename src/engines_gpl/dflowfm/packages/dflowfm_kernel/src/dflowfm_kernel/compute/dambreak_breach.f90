@@ -64,7 +64,7 @@ contains
    !> allocate arrays and initialize variables
    subroutine allocate_and_initialize_dambreak_data(n_db_signals)
       use m_alloc, only: realloc
-      use fm_external_forcings_data, only: dambreaks, db_ids, db_levels_widths_table, n_db_links, &
+      use m_dambreak_data, only: dambreaks, db_ids, db_levels_widths_table, n_db_links, &
           breach_start_link, db_active_links
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
@@ -93,7 +93,7 @@ contains
       use m_missing, only: dmiss
       use unstruc_channel_flow, only: network
       use m_partitioninfo, only: get_average_quantity_from_links
-      use fm_external_forcings_data, only: success, n_db_links, n_db_signals, dambreaks, &
+      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, &
                                            db_first_link, db_last_link, db_link_ids, db_active_links
 
       real(kind=dp), intent(in) :: start_time !< start time
@@ -102,6 +102,7 @@ contains
       integer :: error !< error code
       integer :: n !< index of the current dambreak signal
       integer :: i_structure !< index of the structure
+      logical :: success !< success flag
 
       if (n_db_signals <= 0) then
          return
@@ -151,7 +152,7 @@ contains
 
    !> reset dambreak variables like water levels, averaged values etc.
    subroutine reset_dambreak_variables(n_db_signals)
-      use fm_external_forcings_data, only: dambreaks
+      use m_dambreak_data, only: dambreaks
       use unstruc_channel_flow, only: network
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
@@ -177,7 +178,7 @@ contains
    subroutine update_dambreak_water_levels(start_time, up_down, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
-      use fm_external_forcings_data, only: n_db_links, dambreaks, breach_start_link, db_first_link, db_last_link, &
+      use m_dambreak_data, only: n_db_links, dambreaks, breach_start_link, db_first_link, db_last_link, &
                                            db_link_ids, db_active_links
       use m_flowgeom, only: wu
       use m_missing, only: dmiss
@@ -230,7 +231,7 @@ contains
       use m_dambreak, only: prepare_dambreak_calculation, BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP, &
                             BREACH_GROWTH_TIMESERIES
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_db_levels_widths_table
-      use fm_external_forcings_data, only: success, n_db_signals, dambreaks, db_levels_widths_table
+      use m_dambreak_data, only: n_db_signals, dambreaks, db_levels_widths_table
       use m_flowtimes, only: irefdate, tunit, tzone
 
       real(kind=dp), intent(in) :: start_time !< start_time
@@ -238,6 +239,7 @@ contains
 
       integer :: n !< index of the current dambreak signal
       integer :: i_structure !< index of the structure
+      logical :: success !< success flag
       real(kind=dp) :: s_max, s_min, h_max, h_min
 
       do n = 1, n_db_signals
@@ -295,7 +297,7 @@ contains
    subroutine adjust_bobs_on_dambreak_breach(width, max_width, crest_level, starting_link, left_link, right_link, &
                                              structure_id)
       use m_flowgeom, only: bob, bob0
-      use fm_external_forcings_data, only: db_link_ids, db_active_links, db_link_effective_width, db_link_actual_width
+      use m_dambreak_data, only: db_link_ids, db_active_links, db_link_effective_width, db_link_actual_width
       use m_dambreak, only: dambreak_widening, DBW_SYMM, DBW_PROP, DBW_SYMM_ASYMM
       use messagehandling, only: msgbuf, LEVEL_WARN, SetMessage
 
@@ -481,7 +483,7 @@ contains
    end subroutine add_averaging_signal
    
    subroutine adjust_bobs_for_dambreaks()
-      use fm_external_forcings_data, only: n_db_links, n_db_signals, dambreaks, breach_start_link, &
+      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, breach_start_link, &
                                            db_first_link, db_last_link
       use unstruc_channel_flow, only: network
  

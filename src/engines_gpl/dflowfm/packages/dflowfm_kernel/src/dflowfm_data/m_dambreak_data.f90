@@ -26,3 +26,34 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+
+module m_dambreak_data
+   use precision, only: dp
+
+   implicit none
+
+   public
+
+   integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
+   integer :: n_db_links !< nr of dambreak links
+   integer :: n_db_signals !< nr of dambreak signals
+   integer, allocatable :: db_first_link(:) !< first dambreak link for each signal
+   integer, allocatable :: db_last_link(:) !< last dambreak link for each signal
+   integer, allocatable :: db_active_links(:) !< db_active_links, open dambreak links
+   integer, allocatable :: breach_start_link(:) !< the starting link, the closest to the breach point
+   integer, allocatable :: db_link_ids(:, :) !< dambreak links index array
+   real(kind=dp), allocatable, target :: db_levels_widths_table(:) !< dambreak widths and heights
+   character(len=128), allocatable, target :: db_ids(:) !< the dambreak ids
+   real(kind=dp), dimension(:), allocatable, public :: db_link_effective_width !< dambreak effective flow widths
+   real(kind=dp), dimension(:), allocatable, public :: db_link_actual_width !< dambreak actual flow widths
+
+contains
+
+   subroutine default_dambreak_data()
+
+      n_db_links = 0 ! nr of dambreak links
+      n_db_signals = 0 ! nr of dambreak signals
+
+   end subroutine default_dambreak_data
+
+end module m_dambreak_data

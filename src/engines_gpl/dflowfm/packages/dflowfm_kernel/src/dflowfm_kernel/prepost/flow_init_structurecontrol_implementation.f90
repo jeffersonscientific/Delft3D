@@ -62,6 +62,7 @@ contains
       use m_partitioninfo, only: jampi
       use string_module, only: strcmpi
       use messagehandling, only: IDLEN
+      use m_dambreak_data, only: n_db_signals, db_first_link, db_last_link, n_db_links
 
       implicit none
       logical :: status
@@ -322,7 +323,8 @@ contains
    subroutine allocate_structure_arrays(nstr, widths, lftopol, pumpidx, gateidx, cdamidx, cgenidx, dambridx)
       use precision_basics, only: dp
       use m_alloc, only: realloc
-      use fm_external_forcings_data, only: dambreakPolygons, db_link_effective_width, db_link_actual_width
+      use fm_external_forcings_data, only: dambreakPolygons
+      use m_dambreak_data, only: db_link_effective_width, db_link_actual_width
       use network_data, only: numl
 
       integer, intent(in) :: nstr !< nstr is the number of (potential) structures
@@ -398,7 +400,7 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
-      use fm_external_forcings_data, only: db_link_ids, breach_start_link, db_ids, &
+      use m_dambreak_data, only: db_link_ids, breach_start_link, db_ids, &
                                            dambreaks, n_db_links, db_link_effective_width
       use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
@@ -615,7 +617,8 @@ contains
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, add_averaging_upstream_signal, &
                                    add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use fm_external_forcings_data, only: db_link_effective_width, db_link_actual_width
+      use m_dambreak_data, only: n_db_links, n_db_signals, db_first_link, db_last_link, db_link_effective_width, &
+          db_link_actual_width, db_link_ids, dambreaks, breach_start_link, db_ids, db_active_links
 
       implicit none
       logical :: status

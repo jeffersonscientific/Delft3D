@@ -34,8 +34,8 @@ contains
    pure function build_structures_and_weirs_list() result(links_with_structures_or_weirs)
       use m_flowgeom, only: lnx, bob, bob0
       use m_flowparameters, only: ChangeVelocityAtStructures
-      use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen, &
-                                           n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link, db_link_ids
+      use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen
+      use m_dambreak_data, only: n_db_links, n_db_signals, dambreaks, db_first_link, db_last_link, db_link_ids
       use unstruc_channel_flow, only: network
       use m_GlobalParameters, only: ST_PUMP
       use array_module, only: convert_mask_to_indices

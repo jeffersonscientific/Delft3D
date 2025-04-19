@@ -48,7 +48,8 @@ contains
       use unstruc_shapefile
       use m_monitoring_crosssections, only: ncrs, crs
       use m_observations_data, only: numobs, kobs
-      use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, n_db_signals, db_first_link, db_last_link
+      use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen
+      use m_dambreak_data, only: n_db_signals, db_first_link, db_last_link
       use m_thindams
       use m_sobekdfm, only: nbnd1d2d
       use m_fixedweirs, only: nfxw

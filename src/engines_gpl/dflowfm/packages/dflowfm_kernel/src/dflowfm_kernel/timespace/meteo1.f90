@@ -6303,6 +6303,7 @@ module m_meteo
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
    use m_fm_icecover, only: ice_af, ice_h
+   use m_dambreak_data, only: db_levels_widths_table
 
    implicit none
 

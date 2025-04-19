@@ -267,10 +267,11 @@ contains
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, n_db_signals
+      use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen
       use m_alloc
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
+      use m_dambreak_data, only: n_db_signals
       implicit none
 
       if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
@@ -983,8 +984,9 @@ contains
 !> Get the total number of structures of a certain type
    function get_number_of_structures(struc_type_id) result(number_of_structures)
       use m_GlobalParameters
-      use fm_external_forcings_data, only: ncdamsg, n_db_signals, ngatesg
+      use fm_external_forcings_data, only: ncdamsg, ngatesg
       use unstruc_channel_flow, only: network
+      use m_dambreak_data, only: n_db_signals
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       integer :: number_of_structures
@@ -1757,7 +1759,7 @@ contains
 
 !> Retrieve the set of snapped flowlinks for a dambreak
    subroutine retrieve_set_of_flowlinks_dambreak(i_dambreak, links)
-      use fm_external_forcings_data, only: db_first_link, db_last_link, db_link_ids
+      use m_dambreak_data, only: db_first_link, db_last_link, db_link_ids
 
       integer, intent(in) :: i_dambreak !< Index of the dambreak
       integer, dimension(:), allocatable, intent(out) :: links !< The set of flowlinks that this dambreak has been snapped to
