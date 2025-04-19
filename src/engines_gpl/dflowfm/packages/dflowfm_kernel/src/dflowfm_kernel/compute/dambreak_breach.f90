@@ -175,7 +175,7 @@ contains
    end subroutine reset_dambreak_variables
 
    !> update water levels for dambreaks
-   subroutine update_dambreak_water_levels(start_time, up_down, db_updowns_link_ids, water_levels, error)
+   subroutine update_dambreak_water_levels(start_time, up_down, updowns_link_ids, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
       use m_dambreak_data, only: n_db_links, dambreaks, breach_start_link, db_first_link, db_last_link, &
@@ -186,7 +186,7 @@ contains
 
       real(kind=dp), intent(in) :: start_time !< start time
       integer, intent(in) :: up_down !< 1 - upstream, 2 - downstream
-      integer, dimension(:), intent(in) :: db_updowns_link_ids !< upstream or downstream link ids
+      integer, dimension(:), intent(in) :: updowns_link_ids !< upstream or downstream link ids
       real(kind=dp), dimension(:), intent(inout) :: water_levels !< water levels
       integer, intent(out) :: error !< error code
 
@@ -202,7 +202,7 @@ contains
       if (n_averaging(up_down) > 0) then
          error = get_average_quantity_from_links(db_first_link(averaging_mapping(1:n_averaging(up_down), up_down)), &
                                                  db_last_link(averaging_mapping(1:n_averaging(up_down), up_down)), wu, &
-                                                 db_link_ids, s1, db_updowns_link_ids, db_weight_averaged_values, &
+                                                 db_link_ids, s1, updowns_link_ids, db_weight_averaged_values, &
                                                  0, hu, dmiss, db_active_links, 0)
          if (error /= 0) then
             return
@@ -216,7 +216,7 @@ contains
                else if (abs(start_time - &
                             network%sts%struct(dambreaks(averaging_mapping(n, up_down)))%dambreak%T0) < 1e-10_dp) then
                   water_levels(averaging_mapping(n, up_down)) = &
-                     s1(db_updowns_link_ids(breach_start_link(averaging_mapping(n, up_down))))
+                     s1(updowns_link_ids(breach_start_link(averaging_mapping(n, up_down))))
                else
                   continue
                end if
@@ -241,7 +241,6 @@ contains
       integer :: n !< index of the current dambreak signal
       integer :: i_structure !< index of the structure
       logical :: success !< success flag
-      real(kind=dp) :: s_max, s_min, h_max, h_min
 
       do n = 1, n_db_signals
          i_structure = dambreaks(n)
@@ -283,17 +282,33 @@ contains
             db_breach_depths(n) = dambreak%crest_level
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
-               s_max = max(db_upstream_levels(n), db_downstream_levels(n))
-               s_min = min(db_upstream_levels(n), db_downstream_levels(n))
-               h_max = max(0.0_dp, s_max - dambreak%crest_level)
-               h_min = max(0.0_dp, s_min - dambreak%crest_level)
-               dambreak%water_level_jump = h_max - h_min
+               dambreak%water_level_jump = calculate_water_level_jump(db_upstream_levels(n), &
+                                                db_downstream_levels(n), db_breach_depths(n))
             end if
          end associate
       end do
 
    end subroutine calculate_dambreak_widths
+   
+   !> calculate the water level jump for dambreaks
+   pure function calculate_water_level_jump(upstream_level, downstream_level, crest_level) result(water_level_jump)
+   
+      real(kind=dp), intent(in) :: upstream_level !< upstream water level [m]
+      real(kind=dp), intent(in) :: downstream_level !< downstream water level [m]
+      real(kind=dp), intent(in) :: crest_level !< crest level [m]
 
+      real(kind=dp) :: water_level_jump !< water level jump [m]
+   
+      real(kind=dp) :: s_max, s_min, h_max, h_min
+
+      s_max = max(upstream_level, downstream_level)
+      s_min = min(upstream_level, downstream_level)
+      h_max = max(0.0_dp, s_max - crest_level)
+      h_min = max(0.0_dp, s_min - crest_level)
+      water_level_jump = h_max - h_min
+
+   end function calculate_water_level_jump
+               
    !> update the crest/bed levels for dambreak breach
    subroutine adjust_bobs_on_dambreak_breach(width, max_width, crest_level, starting_link, left_link, right_link, &
                                              structure_id)
