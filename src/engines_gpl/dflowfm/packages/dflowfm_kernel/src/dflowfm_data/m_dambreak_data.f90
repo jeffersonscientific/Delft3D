@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-    
+
 !> Module for handling dambreak data in the model
 module m_dambreak_data
    use precision, only: dp
@@ -35,23 +35,22 @@ module m_dambreak_data
 
    public
 
-   integer, allocatable :: dambreaks(:) !< store the dambreaks indexes among all structures
    integer, target :: n_db_links !< nr of dambreak links
    integer, target :: n_db_signals !< nr of dambreak signals
-   integer, allocatable :: db_first_link(:) !< first dambreak link for each signal
-   integer, allocatable :: db_last_link(:) !< last dambreak link for each signal
-   integer, allocatable :: db_active_links(:) !< db_active_links, open dambreak links
-   integer, allocatable :: breach_start_link(:) !< the starting link, the closest to the breach point
-   integer, allocatable :: db_upstream_link_ids(:) !< dambreak links index array
-   integer, allocatable :: db_downstream_link_ids(:) !< dambreak links index array
-   integer, allocatable :: db_link_ids(:) !< dambreak links index array
-   character(len=128), allocatable, target :: db_ids(:) !< the dambreak ids
+   integer, dimension(:), allocatable :: dambreaks !< store the dambreaks indexes among all structures
+   integer, dimension(:), allocatable :: db_first_link !< first dambreak link for each signal
+   integer, dimension(:), allocatable :: db_last_link !< last dambreak link for each signal
+   integer, dimension(:), allocatable :: db_active_links !< db_active_links, open dambreak links
+   integer, dimension(:), allocatable :: breach_start_link !< the starting link, the closest to the breach point
+   integer, dimension(:), allocatable :: db_upstream_link_ids !< dambreak upstream links index array
+   integer, dimension(:), allocatable :: db_downstream_link_ids !< dambreak downstream links index array
+   integer, dimension(:), allocatable :: db_link_ids !< dambreak links index array
+   character(len=128), dimension(:), allocatable, target :: db_ids !< the dambreak ids
    real(kind=dp), dimension(:), allocatable, public :: db_link_effective_width !< dambreak effective flow widths
    real(kind=dp), dimension(:), allocatable, public :: db_link_actual_width !< dambreak actual flow widths
-   
+
    integer, protected, pointer :: p_n_db_links => n_db_links
    integer, protected, pointer :: p_n_db_signals => n_db_signals
-   
 
 contains
 
@@ -62,7 +61,7 @@ contains
       n_db_signals = 0 ! nr of dambreak signals
 
    end subroutine default_dambreak_data
-   
+
    !> Check if there are any dambreak links
    pure function exist_dambreak_links() result(res)
       logical :: res !< True if there are any dambreak links
@@ -70,7 +69,7 @@ contains
       res = n_db_links > 0
 
    end function exist_dambreak_links
-   
+
    !> Retrieve the set of snapped flowlinks for a dambreak
    pure function retrieve_set_of_flowlinks_dambreak(i_dambreak) result(links)
 
@@ -92,8 +91,8 @@ contains
    end function retrieve_set_of_flowlinks_dambreak
 
    pure function should_write_dambreaks() result(res)
-   
-      logical :: res 
+
+      logical :: res
       integer :: objects !< total number of objects to write
       integer :: n !< loop index
 
@@ -104,38 +103,37 @@ contains
             objects = objects - 1
          end if
       end do
-        
+
       res = objects > 0
    end function should_write_dambreaks
-   
-   
+
    !> set correct flow areas for dambreaks, using the actual flow width
    subroutine multiply_by_dambreak_link_actual_width(hu, au)
-   
-      real(kind=dp) , intent(in) :: hu(:) !< source
-      real(kind=dp) , intent(inout) :: au(:) !< results
+
+      real(kind=dp), intent(in) :: hu(:) !< source
+      real(kind=dp), intent(inout) :: au(:) !< results
 
       integer :: n !< loop index
       integer :: k !< loop index
       integer :: link !< link index
-      
+
       do n = 1, n_db_signals
          do k = db_first_link(n), db_last_link(n)
             link = abs(db_link_ids(k))
             au(link) = hu(link) * db_link_actual_width(k)
          end do
       end do
-         
+
    end subroutine multiply_by_dambreak_link_actual_width
-   
+
    !> update array of logicals indicating if the link contains dambreaks
    pure subroutine indicate_links_that_contain_dambreaks(does_link_contain_structures)
-   
+
       logical, intent(inout) :: does_link_contain_structures(:) !< array of logicals indicating if the link contains structures
-   
+
       integer :: n !< loop index
       integer :: k !< loop index
-      
+
       if (exist_dambreak_links()) then
          do n = 1, n_db_signals
             if (dambreaks(n) /= 0) then
@@ -145,7 +143,26 @@ contains
             end if
          end do
       end if
-      
-   end subroutine indicate_links_that_contain_dambreaks    
-         
+
+   end subroutine indicate_links_that_contain_dambreaks
+
+   !> Get the index of the active dambreak for a given dambreak name
+   pure function get_active_dambreak_index(dambreak_name) result(index)
+      character(len=*), intent(in) :: dambreak_name !< Id/name of the requested dambreak
+      integer :: index !< Returned index of the found dambreak; -1 when not found.
+
+      integer :: i !< loop index
+
+      index = -1
+      do i = 1, n_db_signals
+         if (trim(db_ids(i)) == trim(dambreak_name)) then
+            if (db_last_link(i) - db_first_link(i) >= 0) then
+               ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
+               index = i
+               exit
+            end if
+         end if
+      end do
+   end function get_active_dambreak_index
+
 end module m_dambreak_data
