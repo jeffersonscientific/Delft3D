@@ -398,9 +398,9 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: ln, kcu, wu, lncn, snu, csu
       use m_inquire_flowgeom, only: findnode
-      use fm_external_forcings_data, only: db_link_ids, breach_start_link, db_ids, db_active_links, &
-                                           db_levels_widths_table, dambreaks, n_db_links, db_link_effective_width
-      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, db_breach_depths, db_breach_widths, &
+      use fm_external_forcings_data, only: db_link_ids, breach_start_link, db_ids, &
+                                           dambreaks, n_db_links, db_link_effective_width
+      use m_dambreak_breach, only: allocate_and_initialize_dambreak_data, &
                                    add_dambreaklocation_upstream, add_dambreaklocation_downstream, &
                                    add_averaging_upstream_signal, add_averaging_downstream_signal
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
@@ -428,15 +428,8 @@ contains
 
       n_db_links = db_last_link(n_db_signals)
 
-      call realloc(db_link_ids, [3, n_db_links], fill=0)
-      call realloc(dambreaks, n_db_signals, fill=0)
-      call realloc(breach_start_link, n_db_signals, fill=-1)
       call allocate_and_initialize_dambreak_data(n_db_signals)
-      call realloc(db_breach_depths, n_db_signals, fill=0.0_dp)
-      call realloc(db_breach_widths, n_db_signals, fill=0.0_dp)
-      call realloc(db_ids, n_db_signals)
-      call realloc(db_active_links, n_db_links, fill=0)
-      call realloc(db_levels_widths_table, n_db_signals * 2, fill=0.0_dp)
+      call realloc(db_link_ids, [3, n_db_links], fill=0)
 
       do n = 1, n_db_signals
          associate (pstru => network%sts%struct(dambridx(n)))
@@ -450,7 +443,6 @@ contains
                   kb = ln(2, Lf)
                   kbi = ln(1, Lf)
                end if
-               ! db_link_ids
                db_link_ids(1, k) = kb
                db_link_ids(2, k) = kbi
                db_link_ids(3, k) = L
@@ -460,8 +452,6 @@ contains
 
       ! number of columns in the dambreak heights and widths tim file
       do n = 1, n_db_signals
-
-         !The index of the structure
          index_in_structure = dambridx(n)
          if (index_in_structure == -1) then
             cycle
