@@ -45,18 +45,18 @@ module m_dambreak_data
    real(kind=dp), dimension(:), allocatable, public :: db_link_effective_width !< dambreak effective flow widths
    real(kind=dp), dimension(:), allocatable, public :: db_link_actual_width !< dambreak actual flow widths
 
-   integer, protected, pointer :: p_n_db_links => n_db_links
-   integer, protected, pointer :: p_n_db_signals => n_db_signals
+   integer, protected, pointer :: n_db_links_protected => n_db_links
+   integer, protected, pointer :: n_db_signals_protected => n_db_signals
 
 contains
 
 !> Initialize the dambreak data
-   subroutine set_zero_dambreak_signals_links()
+   subroutine reset_dambreak_counters()
 
       n_db_links = 0 ! nr of dambreak links
       n_db_signals = 0 ! nr of dambreak signals
 
-   end subroutine set_zero_dambreak_signals_links
+   end subroutine reset_dambreak_counters
 
    !> Check if there are any dambreak links
    pure function exist_dambreak_links() result(res)

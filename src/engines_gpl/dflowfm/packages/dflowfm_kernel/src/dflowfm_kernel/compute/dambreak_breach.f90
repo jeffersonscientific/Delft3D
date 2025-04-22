@@ -183,7 +183,7 @@ contains
    end subroutine reset_dambreak_variables
 
    !> update water levels for dambreaks
-   subroutine update_dambreak_water_levels(start_time, up_down, updowns_link_ids, water_levels, error)
+   subroutine update_dambreak_water_levels(start_time, up_down, link_ids, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
       use m_dambreak_data, only: n_db_links, dambreaks, db_first_link, db_last_link, db_link_ids
@@ -193,7 +193,7 @@ contains
 
       real(kind=dp), intent(in) :: start_time !< start time
       integer, intent(in) :: up_down !< 1 - upstream, 2 - downstream
-      integer, dimension(:), intent(in) :: updowns_link_ids !< upstream or downstream link ids
+      integer, dimension(:), intent(in) :: link_ids !< upstream or downstream link ids
       real(kind=dp), dimension(:), intent(inout) :: water_levels !< water levels
       integer, intent(out) :: error !< error code
 
@@ -209,7 +209,7 @@ contains
       if (n_averaging(up_down) > 0) then
          error = get_average_quantity_from_links(db_first_link(averaging_mapping(1:n_averaging(up_down), up_down)), &
                                                  db_last_link(averaging_mapping(1:n_averaging(up_down), up_down)), wu, &
-                                                 db_link_ids, s1, updowns_link_ids, db_weight_averaged_values, &
+                                                 db_link_ids, s1, link_ids, db_weight_averaged_values, &
                                                  0, hu, dmiss, db_active_links, 0)
          if (error /= 0) then
             return
@@ -223,7 +223,7 @@ contains
                else if (abs(start_time - &
                             network%sts%struct(dambreaks(averaging_mapping(n, up_down)))%dambreak%T0) < 1e-10_dp) then
                   water_levels(averaging_mapping(n, up_down)) = &
-                     s1(updowns_link_ids(breach_start_link(averaging_mapping(n, up_down))))
+                     s1(link_ids(breach_start_link(averaging_mapping(n, up_down))))
                else
                   continue
                end if

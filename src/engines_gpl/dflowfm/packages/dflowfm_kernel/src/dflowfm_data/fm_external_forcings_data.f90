@@ -443,7 +443,7 @@ contains
 !! For external forcings it is equivalent with reset_flowexternalforcings().
    subroutine default_fm_external_forcing_data()
 
-      use m_dambreak_data, only: set_zero_dambreak_signals_links
+      use m_dambreak_data, only: reset_dambreak_counters
 
       jatimespace = 0 ! doen ja/nee 1/0
       mhis = 0 ! unit nr external forcings history *.exthis
@@ -474,7 +474,7 @@ contains
       ngenstru = 0 ! nr of real general structures in the generalstructure set
       npump = 0 ! npump dimension
       npumpsg = 0 ! nr of pump signals
-      call set_zero_dambreak_signals_links()
+      call reset_dambreak_counters()
       nklep = 0 ! nr of kleps
       nvalv = 0 ! nr of valves
       nqbnd = 0 ! nr of q bnd's

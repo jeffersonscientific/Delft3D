@@ -50,7 +50,7 @@ contains
       use m_longculverts, only: nlongculverts, longculverts, newculverts
       use m_dambreak_breach, only: db_upstream_levels, db_downstream_levels, is_not_db_active_link, &
           get_dambreak_breach_start_link, db_upstream_link_ids
-      use m_dambreak_data, only: p_n_db_signals, db_first_link, db_last_link, dambreaks, db_link_ids, db_link_actual_width
+      use m_dambreak_data, only: n_db_signals_protected, db_first_link, db_last_link, dambreaks, db_link_ids, db_link_actual_width
 
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
       real(kind=dp) :: dir
@@ -64,7 +64,7 @@ contains
          if (.not. allocated(reducebuf)) then
             nreducebuf = npumpsg * NUMVALS_PUMP + ngatesg * NUMVALS_GATE + ncdamsg * NUMVALS_CDAM + ncgensg * NUMVALS_CGEN &
                          + ngategen * NUMVALS_GATEGEN + nweirgen * NUMVALS_WEIRGEN + ngenstru * NUMVALS_GENSTRU + ngenstru * NUMVALS_GENSTRU &
-                         + p_n_db_signals * NUMVALS_DAMBREAK + network%sts%numUniWeirs * NUMVALS_UNIWEIR + network%sts%numOrifices * NUMVALS_ORIFGEN &
+                         + n_db_signals_protected * NUMVALS_DAMBREAK + network%sts%numUniWeirs * NUMVALS_UNIWEIR + network%sts%numOrifices * NUMVALS_ORIFGEN &
                          + network%sts%numCulverts * NUMVALS_CULVERT + network%sts%numBridges * NUMVALS_BRIDGE + network%cmps%count * NUMVALS_CMPSTRU &
                          + nlongculverts * NUMVALS_LONGCULVERT
             allocate (reducebuf(nreducebuf), stat=ierr)
@@ -528,7 +528,7 @@ contains
       ! == dambreak
       !
       if (allocated(valdambreak)) then
-         do n = 1, p_n_db_signals
+         do n = 1, n_db_signals_protected
             ! valdambreak(NUMVALS_DAMBREAK,n) is the cumulative over time, we do not reset it to 0
             valdambreak(1:NUMVALS_DAMBREAK - 1, n) = 0.0_dp
             istru = dambreaks(n)
@@ -721,8 +721,8 @@ contains
             call fill_reduce_buffer(valgenstru, ngenstru * NUMVALS_GENSTRU)
             n = 1
          end if
-         if (p_n_db_signals > 0 .and. allocated(valdambreak)) then
-            call fill_reduce_buffer(valdambreak, p_n_db_signals * NUMVALS_DAMBREAK)
+         if (n_db_signals_protected > 0 .and. allocated(valdambreak)) then
+            call fill_reduce_buffer(valdambreak, n_db_signals_protected * NUMVALS_DAMBREAK)
             n = 1
          end if
          if (allocated(valuniweir) .and. network%sts%numUniWeirs > 0) then
@@ -829,8 +829,8 @@ contains
 
       ! === Dambreak
       if (jampi > 0 .and. ti_his > 0) then
-         if (p_n_db_signals > 0 .and. allocated(valdambreak)) then
-            call substitute_reduce_buffer(valdambreak, p_n_db_signals * NUMVALS_DAMBREAK)
+         if (n_db_signals_protected > 0 .and. allocated(valdambreak)) then
+            call substitute_reduce_buffer(valdambreak, n_db_signals_protected * NUMVALS_DAMBREAK)
          end if
       end if
 
