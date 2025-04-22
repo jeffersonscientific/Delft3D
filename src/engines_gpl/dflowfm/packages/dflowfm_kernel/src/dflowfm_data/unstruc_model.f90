@@ -614,7 +614,9 @@ contains
       if (len_trim(md_pillarfile) > 0) then
          call strsplit(md_pillarfile, 1, fnames, 1)
          i = size(fnames)
-         if (allocated(pillar)) deallocate (pillar)
+         if (allocated(pillar)) then
+            deallocate (pillar)
+         end if
          allocate (pillar(i))
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
@@ -683,7 +685,7 @@ contains
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_Dambreak, only: set_dambreak_widening_method
+      use m_dambreak, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
@@ -747,7 +749,6 @@ contains
       real(kind=dp), parameter :: tolSumLay = 1.0e-12_dp
       integer, parameter :: maxLayers = 300
       integer :: major, minor
-      integer :: ignore_value
 
       istat = 0 ! Success
 
@@ -1173,7 +1174,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem)
       call prop_get(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
       call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
-      call prop_get(md_ptr, 'numerics', 'Jadrhodz', jadrhodz)
       call prop_get(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
       call prop_get(md_ptr, 'numerics', 'FacLaxTurbVer', turbulence_lax_vertical)
       call prop_get(md_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal)
@@ -1183,17 +1183,8 @@ contains
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
 
-      call prop_get(md_ptr, 'numerics', 'Orgbarockeywords', jaorgbarockeywords)
-      if (jaorgbarockeywords == 1) then
-         call prop_get(md_ptr, 'numerics', 'Barocterm', jabarocterm)
-         call prop_get(md_ptr, 'numerics', 'Baroctimeint', jabaroctimeint)
-      else
-         call prop_get(md_ptr, 'numerics', 'Barocterm', ignore_value)
-         call prop_get(md_ptr, 'numerics', 'Baroctimeint', ignore_value)
-      end if
-      call prop_get(md_ptr, 'numerics', 'Baroczlaybed', jabaroczlaybed)
       call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
-      call prop_get(md_ptr, 'numerics', 'Maxitpresdens', maxitpresdens)
+      call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces)
 
       call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
@@ -1365,11 +1356,6 @@ contains
       call prop_get(md_ptr, 'physics', 'idensform', idensform)
       call prop_get(md_ptr, 'physics', 'thermobaricity', apply_thermobaricity)
       call validate_density_settings(idensform, apply_thermobaricity)
-
-      !call prop_get(md_ptr, 'physics', 'Baroczlaybed'   , jabaroczlaybed)
-      !call prop_get(md_ptr, 'physics', 'Barocponbnd'    , jaBarocponbnd)
-      !call prop_get(md_ptr, 'physics', 'Maxitpresdens'  , maxitpresdens)
-      !call prop_get(md_ptr, 'physics', 'Rhointerfaces'  , jarhointerfaces)
 
       call prop_get(md_ptr, 'physics', 'Temperature', jatem)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
@@ -3130,10 +3116,6 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Turbulenceadvection', javakeps, 'Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)')
       end if
 
-      if (writeall .or. (jadrhodz /= 1 .and. kmx > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'Jadrhodz', jadrhodz, '(1:central org, 2:centralnew, 3:upw cell, 4:most stratf. cell, 5:least stratf. cell)')
-      end if
-
       if (writeall .or. (turbulence_lax_factor > 0 .and. kmx > 0)) then
          call prop_set(prop_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor, 'LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)')
          call prop_set(prop_ptr, 'numerics', 'FacLaxTurbVer', turbulence_lax_vertical, 'Vertical distribution of turbulence_lax_factor (1: linear increasing from 0.0 to 1.0 in top half only, 2: uniform 1.0 over vertical)')
@@ -3156,20 +3138,11 @@ contains
          call prop_set(prop_ptr, 'numerics', 'AntiCreep', jacreep, 'Include anti-creep to suppress artifical vertical diffusion (0: no, 1: yes).')
       end if
 
-      if (jaorgbarockeywords == 1) then
-         call prop_set(prop_ptr, 'numerics', 'orgbarockeywords', jaorgbarockeywords, '(1=yes)')
-         call prop_set(prop_ptr, 'numerics', 'Barocterm', jabarocterm, '(     )')
-         call prop_set(prop_ptr, 'numerics', 'Baroctimeint', jabaroctimeint, '(     )')
-      end if
-
-      if (writeall .or. Jabaroczlaybed /= 0) then
-         call prop_set(prop_ptr, 'numerics', 'Baroczlaybed', jabaroczlaybed, 'Use fix in barocp for zlaybed 0,1, 1=default)')
-      end if
       if (writeall .or. Jabarocponbnd /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Barocponbnd', jabarocponbnd, 'Use fix in barocp for zlaybed 0,1, 1=default)')
       end if
-      if (writeall .or. Maxitpresdens /= 1) then
-         call prop_set(prop_ptr, 'numerics', 'Maxitpresdens', Maxitpresdens, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true)')
+      if (writeall .or. max_iterations_pressure_density /= 1) then
+         call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
       if (writeall .or. jarhointerfaces /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces, 'Evaluate rho at interfaces, 0=org at centers, 1=at interfaces )')
@@ -3421,7 +3394,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'Equili', jaequili, 'Equilibrium spiral flow intensity (0: no, 1: yes)')
       end if
 
-      if (ndambreaklinks > 0) then
+      if (n_db_links > 0) then
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
@@ -4195,8 +4168,12 @@ contains
       logical :: success
 
       warn = 0
-      if (allocated(ti_tv)) deallocate (ti_tv)
-      if (allocated(ti_tv_rel)) deallocate (ti_tv_rel)
+      if (allocated(ti_tv)) then
+         deallocate (ti_tv)
+      end if
+      if (allocated(ti_tv_rel)) then
+         deallocate (ti_tv_rel)
+      end if
       !
       inquire (file=trim(md_tvfil), exist=success)
       if (success) then
@@ -4237,8 +4214,12 @@ contains
       end if
       !
       if (warn == 1) then
-         if (allocated(ti_tv)) deallocate (ti_tv)
-         if (allocated(ti_tv_rel)) deallocate (ti_tv_rel)
+         if (allocated(ti_tv)) then
+            deallocate (ti_tv)
+         end if
+         if (allocated(ti_tv_rel)) then
+            deallocate (ti_tv_rel)
+         end if
          allocate (ti_tv(1))
          allocate (ti_tv_rel(1))
          ti_tv = 0.0_dp
