@@ -1195,7 +1195,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
 
       call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
-      call prop_get(md_ptr, 'numerics', 'Maxitpresdens', maxitpresdens)
+      call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces)
 
       call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
@@ -2610,6 +2610,7 @@ contains
       use m_map_his_precision
       use m_datum
       use geometry_module, only: INTERNAL_NETLINKS_EDGE
+      use m_dambreak_data, only: exist_dambreak_links
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3155,8 +3156,8 @@ contains
       if (writeall .or. Jabarocponbnd /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Barocponbnd', jabarocponbnd, 'Use fix in barocp for zlaybed 0,1, 1=default)')
       end if
-      if (writeall .or. Maxitpresdens /= 1) then
-         call prop_set(prop_ptr, 'numerics', 'Maxitpresdens', Maxitpresdens, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true)')
+      if (writeall .or. max_iterations_pressure_density /= 1) then
+         call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
       if (writeall .or. jarhointerfaces /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces, 'Evaluate rho at interfaces, 0=org at centers, 1=at interfaces )')
@@ -3408,7 +3409,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'Equili', jaequili, 'Equilibrium spiral flow intensity (0: no, 1: yes)')
       end if
 
-      if (n_db_links > 0) then
+      if (exist_dambreak_links()) then
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
