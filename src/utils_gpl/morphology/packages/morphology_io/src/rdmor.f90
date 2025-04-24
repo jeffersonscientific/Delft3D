@@ -912,9 +912,9 @@ contains
       !
       call prop_get(mor_ptr, 'Output', 'MainChannelWidthAtFlux', moroutput%wumor)
       !
-    call prop_get(mor_ptr, 'Output', 'ALDiff'                      , moroutput%aldiff)
-    !    
-    call prop_get(mor_ptr,         'Output', 'MorStatsOutputInterval'      , moroutput%avgintv, 3, exist)
+      call prop_get(mor_ptr, 'Output', 'ALDiff', moroutput%aldiff)
+      !
+      call prop_get(mor_ptr, 'Output', 'MorStatsOutputInterval', moroutput%avgintv, 3, exist)
 
       if (exist) then
          moroutput%morstats = .true. ! only used in FM, separate _sed.nc file
