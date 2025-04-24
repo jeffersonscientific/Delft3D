@@ -135,9 +135,10 @@ contains
                     if (fracs2 > 0.0) b2 = fburs2 * fracs2
                 
                     ! check conservation of bed mass (resuspension and burial)
-                    res1 = r1
-                    res2 = r2
-                    bur1 = b1 ! min(b1, max(0.0, ims1 / delt + fsed - r1)) ! sedimentation only towards S1
+                    ! sedimentation only towards S1
+                    res1 = min(r1, max(0.0, ims1 / delt + fsed)) ! r1
+                    res2 = min(r2, max(0.0, ims2 / delt)) ! r2
+                    bur1 = min(b1, max(0.0, ims1 / delt + fsed - r1)) ! b1
                     bur2 = b2 ! no burial from S2 to beneath layer
                     
                     ! store results
