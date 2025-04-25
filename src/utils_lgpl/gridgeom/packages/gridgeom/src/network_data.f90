@@ -58,7 +58,6 @@ module network_data
    use m_dimens
    use m_landboundary
    use m_polygon
-   use m_circumcenter_method, only: circumcenter_method, INTERNAL_NETLINKS_EDGE
 
    implicit none
 
@@ -340,7 +339,6 @@ contains
       JOCHECKNET = 0
       zkUNI = -5d0
       dcenterinside = 1d0
-      circumcenter_method = ALL_NETLINKS_LOOP
       removesmalllinkstrsh = 1d-1
       maxfaceallow = 4
       numitcourant = 0

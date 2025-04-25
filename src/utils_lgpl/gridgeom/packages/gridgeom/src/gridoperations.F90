@@ -1083,6 +1083,7 @@ contains
    !! See also getcellcircumcenter
    subroutine getcellcircumcenter(n, xz, yz, zz) ! circumcenter etc, depending on celltype
       use network_data
+      use m_circumcenter_method, only: circumcenter_method
       use geometry_module, only: getcircumcenter
       use m_missing, only: dmiss, jins, dxymis
       use m_sferic, only: jsferic, jasfer3D, jglobe

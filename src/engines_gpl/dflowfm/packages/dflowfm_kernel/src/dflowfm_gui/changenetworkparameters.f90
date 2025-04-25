@@ -40,6 +40,7 @@ contains
    subroutine changenetworkPARAMETERS()
       use m_sferic, only: jamidlat
       use network_data
+      use m_circumcenter_method, only: circumcenter_method
       use unstruc_colors
       use unstruc_display_data
       use m_missing
