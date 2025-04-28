@@ -2617,13 +2617,13 @@ contains
       double precision :: dfac
       integer :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
 
-      ! set tolerance for convergence 
+      ! set tolerance for convergence
       if (jsferic == 1) then
-         eps = 0.1_hp*circumcenter_tolerance/earth_radius/degrad_hp  ! Convert metres to equivalent degrees
-      else 
-         eps = circumcenter_tolerance 
+         eps = 0.1_hp * circumcenter_tolerance / earth_radius / degrad_hp ! Convert metres to equivalent degrees
+      else
+         eps = circumcenter_tolerance
       end if
-      
+
       xzw = 0d0; yzw = 0d0
       if (jsferic == 1) then ! jglobe                 ! regularise sferic coordinates
          xmx = maxval(xv(1:nn))
