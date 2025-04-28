@@ -388,8 +388,8 @@ contains
 
                      dzc1 = 0.5_dp * (zws(k1u) - zws(k1 - 1)) ! vertical distance between cell centers on left side
                      if (dzc1 > 0) then
-                        if (.not. apply_thermobaricity) then
-                           drhodz1 = (rho(k1u) - rho(k1)) / dzc1
+                        if ((.not. apply_thermobaricity) .or. (.not. thermobaricity_in_brunt_vaisala_frequency)) then
+                           drhodz1 = (in_situ_density(k1u) - in_situ_density(k1)) / dzc1
                         else
                            prsappr = ag * rhomean * (zws(ktop(ln(1, LL))) - zws(k1))
                            drhodz1 = (density_at_cell(k1u, prsappr) - density_at_cell(k1, prsappr)) / dzc1

@@ -36,15 +36,16 @@ module m_addbarocn
 
 contains
 
-   subroutine addbarocn(n) ! rho at cell centers
+   subroutine addbarocn(n) ! density at cell centers
       use precision, only: dp
-      use m_turbulence, only: rho, grn, rvdn
+      use m_turbulence, only: grn, rvdn, in_situ_density, potential_density
       use m_flowparameters, only: epshu
       use m_flow, only: zws
-      use m_physcoef, only: rhomean
+      use m_physcoef, only: rhomean, thermobaricity_in_baroclinic_pressure_gradient
       use m_get_kbot_ktop, only: getkbotktop
 
       integer, intent(in) :: n
+      real(kind=dp), dimension(:), pointer :: density ! local pointer
 
       integer :: k, kb, kt
       real(kind=dp) :: pu, pd, gr, dzz
@@ -57,31 +58,38 @@ contains
          return
       end if
 
+      ! Associate density with the potential density or in-situ density
+      if (thermobaricity_in_baroclinic_pressure_gradient) then
+         density => in_situ_density
+      else
+         density => potential_density
+      end if
+
       grn(kt) = 0.0_dp
       rvdn(kt) = 0.0_dp
       pd = 0.0_dp
       do k = kt, kb, -1
          dzz = zws(k) - zws(k - 1)
          if (kb == kt) then
-            roup = rho(k) - rhomean
-            rodo = rho(k) - rhomean
+            roup = density(k) - rhomean
+            rodo = density(k) - rhomean
          else if (k > kb .and. k < kt) then
             dzu = zws(k + 1) - zws(k)
             dzd = zws(k - 1) - zws(k - 2)
             fuu = dzu / (dzu + dzz); fud = 1.0_dp - fuu
             fdu = dzz / (dzd + dzz); fdd = 1.0_dp - fdu
-            roup = fuu * rho(k + 1) + fud * rho(k) - rhomean
-            rodo = fdu * rho(k) + fdd * rho(k - 1) - rhomean
+            roup = fuu * density(k + 1) + fud * density(k) - rhomean
+            rodo = fdu * density(k) + fdd * density(k - 1) - rhomean
          else if (k == kb) then
             dzu = zws(k + 1) - zws(k)
             fuu = dzu / (dzu + dzz); fud = 1.0_dp - fuu
-            roup = fuu * rho(k + 1) + fud * rho(k) - rhomean
-            rodo = 2.0_dp * (rho(k) - rhomean) - roup
+            roup = fuu * density(k + 1) + fud * density(k) - rhomean
+            rodo = 2.0_dp * (density(k) - rhomean) - roup
          else if (k == kt) then
             dzd = zws(k - 1) - zws(k - 2)
             fdu = dzz / (dzd + dzz); fdd = 1.0_dp - fdu
-            rodo = fdu * rho(k) + fdd * rho(k - 1) - rhomean
-            roup = 2.0_dp * (rho(k) - rhomean) - rodo
+            rodo = fdu * density(k) + fdd * density(k - 1) - rhomean
+            roup = 2.0_dp * (density(k) - rhomean) - rodo
          end if
          rvk = 0.5_dp * (roup + rodo) * dzz
          pu = pd
@@ -94,24 +102,23 @@ contains
 
    end subroutine addbarocn
 
-   subroutine addbarocnrho_w(n) ! rho at interfaces (w points)
+   subroutine addbarocnrho_w(n) ! density at interfaces (w points)
       use precision, only: dp
       use m_turbulence, only: grn, rvdn, kmxx, rhosww, rho
       use m_flowparameters, only: epshu
       use m_flow, only: zws
       use m_transport, only: ISALT, ITEMP, constituents
-      use m_physcoef, only: rhomean, max_iterations_pressure_density, apply_thermobaricity, ag
+      use m_physcoef, only: rhomean, max_iterations_pressure_density, ag, apply_thermobaricity
       use m_get_kbot_ktop, only: getkbotktop
       use m_density, only: calculate_density
 
       integer, intent(in) :: n
 
       integer :: k, kb, kt, i
-      real(kind=dp) :: saw(0:kmxx), tmw(0:kmxx) ! rho at pressure point layer interfaces
+      real(kind=dp) :: saw(0:kmxx), tmw(0:kmxx) ! density at pressure point layer interfaces
       real(kind=dp) :: fzu, fzd, pu, pd, dzz, p0d, pdb, rhosk
 
       call getkbotktop(n, kb, kt)
-      ! if (kt < kb) return
       if (zws(kt) - zws(kb - 1) < epshu) then
          grn(kb:kt) = 0.0_dp
          rvdn(kb:kt) = 1e-10_dp
@@ -138,7 +145,7 @@ contains
       pd = 0.0_dp ! baroclinic pressure/ag
       pdb = 0.0_dp ! barotropic pressure/ag
 
-      rhosww(kt) = calculate_density(saw(kt - kb + 1), tmw(kt - kb + 1)) - rhomean ! rho at interface
+      rhosww(kt) = calculate_density(saw(kt - kb + 1), tmw(kt - kb + 1)) - rhomean ! density at interface
 
       do k = kt, kb, -1
          dzz = zws(k) - zws(k - 1)
