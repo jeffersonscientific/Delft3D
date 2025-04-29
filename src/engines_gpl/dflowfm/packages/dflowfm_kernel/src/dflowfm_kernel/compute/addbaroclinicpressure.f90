@@ -40,6 +40,7 @@ module m_addbaroclinicpressure
 
 contains
 
+   !> Computes and adds the baroclinic pressure gradient contributions to the momentum equations
    subroutine addbaroclinicpressure()
       use precision, only: dp, comparereal
       use m_addbarocl, only: addbarocL, addbarocLrho_w, addbarocL_use_rho_directly
@@ -48,12 +49,11 @@ contains
       use m_flowgeom, only: lnxi, lnx, ndx
       use m_flow, only: hu, kmx
       use m_turbulence, only: rvdn, grn
-      use m_flowtimes
-      use m_get_Lbot_Ltop
       use m_physcoef, only: jabarocponbnd, rhointerfaces
 
       implicit none
-      integer :: LL, Lb, Lt, n, lnxbc
+
+      integer :: LL, l_bot, l_top, cell_index_2d, lnxbc
 
       if (jabarocponbnd == 0) then
          lnxbc = lnxi
@@ -79,69 +79,69 @@ contains
          if (rhointerfaces == 0) then
 
             !$OMP PARALLEL DO &
-            !$OMP PRIVATE(n)
-            do n = 1, ndx
-               call addbarocn(n)
+            !$OMP PRIVATE(cell_index_2d)
+            do cell_index_2d = 1, ndx
+               call addbarocn(cell_index_2d)
             end do
             !$OMP END PARALLEL DO
 
             !$OMP PARALLEL DO &
-            !$OMP PRIVATE(LL,Lb,Lt)
+            !$OMP PRIVATE(LL,l_bot,l_top)
             do LL = 1, lnxbc
                if (comparereal(hu(LL), 0.0_dp) == 0) then
                   cycle
                end if
-               call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) then
+               call getLbotLtop(LL, l_bot, l_top)
+               if (l_top < l_bot) then
                   cycle
                end if
-               call addbarocL(LL, Lb, Lt)
+               call addbarocL(LL, l_bot, l_top)
             end do
             !$OMP END PARALLEL DO
 
          elseif (rhointerfaces == 1) then
 
             !$OMP PARALLEL DO &
-            !$OMP PRIVATE(n)
-            do n = 1, ndx
-               call addbarocnrho_w(n)
+            !$OMP PRIVATE(cell_index_2d)
+            do cell_index_2d = 1, ndx
+               call addbarocnrho_w(cell_index_2d)
             end do
             !$OMP END PARALLEL DO
 
             !$OMP PARALLEL DO &
-            !$OMP PRIVATE(LL,Lb,Lt)
+            !$OMP PRIVATE(LL,l_bot,l_top)
             do LL = 1, lnxbc
                if (comparereal(hu(LL), 0.0_dp) == 0) then
                   cycle
                end if
-               call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) then
+               call getLbotLtop(LL, l_bot, l_top)
+               if (l_top < l_bot) then
                   cycle
                end if
-               call addbarocLrho_w(LL, Lb, Lt)
+               call addbarocLrho_w(LL, l_bot, l_top)
             end do
             !$OMP END PARALLEL DO
 
          elseif (rhointerfaces == 2) then
 
             !$OMP PARALLEL DO &
-            !$OMP PRIVATE(n)
-            do n = 1, ndx
-               call addbarocn_use_rho_directly(n)
+            !$OMP PRIVATE(cell_index_2d)
+            do cell_index_2d = 1, ndx
+               call addbarocn_use_rho_directly(cell_index_2d)
             end do
             !$OMP END PARALLEL DO
 
             !$OMP PARALLEL DO &
-            !$OMP PRIVATE(LL,Lb,Lt)
+            !$OMP PRIVATE(LL,l_bot,l_top)
             do LL = 1, lnxbc
                if (comparereal(hu(LL), 0.0_dp) == 0) then
                   cycle
                end if
-               call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) then
+               call getLbotLtop(LL, l_bot, l_top)
+               if (l_top < l_bot) then
                   cycle
                end if
-               call addbarocL_use_rho_directly(LL, Lb, Lt)
+               call addbarocL_use_rho_directly(LL, l_bot, l_top)
             end do
             !$OMP END PARALLEL DO
 

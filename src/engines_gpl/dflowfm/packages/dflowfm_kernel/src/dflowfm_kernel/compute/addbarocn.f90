@@ -36,7 +36,9 @@ module m_addbarocn
 
 contains
 
-   subroutine addbarocn(n) ! rho at cell centers
+   !> Computes baroclinic pressure gradients across layers for a horizontal cell.
+   !! Density is based on linear interpolation of density at vertical interfaces.
+   subroutine addbarocn(cell_index_2d)
       use precision, only: dp
       use m_turbulence, only: rho, grn, rvdn
       use m_flowparameters, only: epshu
@@ -44,13 +46,13 @@ contains
       use m_physcoef, only: rhomean
       use m_get_kbot_ktop, only: getkbotktop
 
-      integer, intent(in) :: n
+      integer, intent(in) :: cell_index_2d !< xxx
 
       integer :: k, kb, kt
       real(kind=dp) :: pu, pd, gr, dzz
       real(kind=dp) :: fuu, fud, fdu, fdd, dzu, dzd, roup, rodo, rvk
 
-      call getkbotktop(n, kb, kt)
+      call getkbotktop(cell_index_2d, kb, kt)
       if (zws(kt) - zws(kb - 1) < epshu) then
          grn(kb:kt) = 0.0_dp
          rvdn(kb:kt) = 1e-10_dp
@@ -96,7 +98,9 @@ contains
       end do
    end subroutine addbarocn
 
-   subroutine addbarocnrho_w(n) ! rho at interfaces (w points)
+   !> Computes baroclinic pressure gradients across layers for a horizontal cell.
+   !! Density is based on linear interpolation of recomputed density (from salinity, temperature (and pressure)) at vertical interfaces.
+   subroutine addbarocnrho_w(cell_index_2d)
       use precision, only: dp
       use m_turbulence, only: grn, rvdn, kmxx, rhosww, rho
       use m_flowparameters, only: epshu
@@ -106,14 +110,13 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_density, only: calculate_density
 
-      integer, intent(in) :: n
+      integer, intent(in) :: cell_index_2d !< xxx
 
       integer :: k, kb, kt, i
       real(kind=dp) :: saw(0:kmxx), tmw(0:kmxx) ! rho at pressure point layer interfaces
       real(kind=dp) :: fzu, fzd, pu, pd, dzz, p0d, pdb, rhosk
 
-      call getkbotktop(n, kb, kt)
-      ! if (kt < kb) return
+      call getkbotktop(cell_index_2d, kb, kt)
       if (zws(kt) - zws(kb - 1) < epshu) then
          grn(kb:kt) = 0.0_dp
          rvdn(kb:kt) = 1e-10_dp
@@ -164,7 +167,9 @@ contains
       end do
    end subroutine addbarocnrho_w
 
-   subroutine addbarocn_use_rho_directly(n)
+   !> Computes baroclinic pressure gradients across layers for a horizontal cell.
+   !! Cell density (i.e. rho(k)) is used
+   subroutine addbarocn_use_rho_directly(cell_index_2d)
       use precision, only: dp
       use m_turbulence, only: rho, grn, rvdn
       use m_flowparameters, only: epshu
@@ -172,12 +177,12 @@ contains
       use m_physcoef, only: rhomean
       use m_get_kbot_ktop, only: getkbotktop
 
-      integer, intent(in) :: n
+      integer, intent(in) :: cell_index_2d !< xxx
 
       integer :: k, kb, kt
       real(kind=dp) :: pu, pd, gr, dzz, rvk
 
-      call getkbotktop(n, kb, kt)
+      call getkbotktop(cell_index_2d, kb, kt)
       if (zws(kt) - zws(kb - 1) < epshu) then
          grn(kb:kt) = 0.0_dp
          rvdn(kb:kt) = 1e-10_dp
@@ -197,5 +202,4 @@ contains
          grn(k) = gr
       end do
    end subroutine addbarocn_use_rho_directly
-
 end module m_addbarocn

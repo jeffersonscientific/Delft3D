@@ -36,7 +36,9 @@ module m_addbarocl
 
 contains
 
-   subroutine addbarocL(LL, Lb, Lt)
+   !> Computes baroclinic pressure gradients across layers for a horizontal link.
+   !! Density is based on linear interpolation of density at vertical interfaces.
+   subroutine addbarocL(link_index_2d, l_bot, l_top)
       use precision, only: dp
       use m_turbulence, only: kmxx, rho, rhou, rvdn, grn
       use m_flowgeom, only: ln, dx
@@ -44,66 +46,68 @@ contains
       use m_flowparameters, only: jarhoxu
       use m_physcoef, only: rhomean
 
-      integer, intent(in) :: LL, Lb, Lt
+      integer, intent(in) :: link_index_2d !< Horizontal link index
+      integer, intent(in) :: l_bot !< bottom link
+      integer, intent(in) :: l_top !< top link
 
       integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft
       real(kind=dp) :: gradpu(kmxx), rhovol(kmxx), gr3
       real(kind=dp) :: rv1, rv2, gr1, gr2, rvk, grk, fzu, fzd, dzz, rhow0, rhow1
 
-      gradpu(1:Lt - Lb + 1) = 0.0_dp
+      gradpu(1:l_top - l_bot + 1) = 0.0_dp
 
-      if (zws(ln(1, Lt)) - zws(ln(1, Lb)) < 0.1_dp .or. zws(ln(2, Lt)) - zws(ln(2, Lb)) < 0.1_dp) then
+      if (zws(ln(1, l_top)) - zws(ln(1, l_bot)) < 0.1_dp .or. zws(ln(2, l_top)) - zws(ln(2, l_bot)) < 0.1_dp) then
          return ! no baroclinic pressure in thin water layers
       end if
 
       insigpart = 0
       if (numtopsig > 0) then
-         if (kmxn(ln(1, LL)) <= numtopsig .or. kmxn(ln(2, LL)) <= numtopsig) then
+         if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
             insigpart = 1 ! one of the nodes is in the sigma part
          end if
       end if
 
-      if (kmxn(ln(1, LL)) > kmxn(ln(2, LL))) then
+      if (kmxn(ln(1, link_index_2d)) > kmxn(ln(2, link_index_2d))) then
          morelayersleft = 1
-      else if (kmxn(ln(1, LL)) < kmxn(ln(2, LL))) then
+      else if (kmxn(ln(1, link_index_2d)) < kmxn(ln(2, link_index_2d))) then
          morelayersleft = 2
       else
          morelayersleft = 0
       end if
 
-      do L = Lt, Lb, -1
+      do L = l_top, l_bot, -1
          k1 = ln(1, L)
          k1t = k1
          k2 = ln(2, L)
          k2t = k2
-         if (L == Lt) then
-            k1t = ktop(ln(1, LL))
-            k2t = ktop(ln(2, LL))
+         if (L == l_top) then
+            k1t = ktop(ln(1, link_index_2d))
+            k2t = ktop(ln(2, link_index_2d))
          end if
 
-         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
+         rhovol(L - l_bot + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
          if (jarhoxu > 0) then
-            rhou(L) = rhovol(L - Lb + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
+            rhou(L) = rhovol(L - l_bot + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
          end if
-         rhovol(L - Lb + 1) = rhovol(L - Lb + 1) * dx(LL)
+         rhovol(L - l_bot + 1) = rhovol(L - l_bot + 1) * dx(link_index_2d)
 
          rv1 = rvdn(k1)
          rv2 = rvdn(k2)
          gr1 = grn(k1)
          gr2 = grn(k2)
 
-         if (L == Lb .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
+         if (L == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
 
             if (morelayersleft == 1) then ! k=deep side, kz=shallow side
                k = k1
-               kt = ktop(ln(1, LL))
+               kt = ktop(ln(1, link_index_2d))
                kz = k2
-               ktz = ktop(ln(2, LL))
+               ktz = ktop(ln(2, link_index_2d))
             else
                k = k2
-               kt = ktop(ln(2, LL))
+               kt = ktop(ln(2, link_index_2d))
                kz = k1
-               ktz = ktop(ln(1, LL))
+               ktz = ktop(ln(1, link_index_2d))
             end if
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
@@ -121,7 +125,7 @@ contains
             if (insigpart == 0) then
                dzz = zws(kz) - zws(kz - 1) ! shallow side
 
-               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(LL)
+               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(link_index_2d)
                if (jarhoxu > 0) then
                   rhou(L) = 0.5_dp * (rho(k) + rho(kz))
                end if
@@ -151,16 +155,18 @@ contains
             gr3 = 0.5_dp * (rv1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         gradpu(L - Lb + 1) = gradpu(L - Lb + 1) + gr1 - gr2 + gr3
-         if (L > Lb) then
-            gradpu(L - Lb) = gradpu(L - Lb) - gr3 ! ceiling of ff# downstairs neighbours
+         gradpu(L - l_bot + 1) = gradpu(L - l_bot + 1) + gr1 - gr2 + gr3
+         if (L > l_bot) then
+            gradpu(L - l_bot) = gradpu(L - l_bot) - gr3 ! ceiling of ff# downstairs neighbours
          end if
       end do
 
-      call barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
+      call barocLtimeint(gradpu, rhovol, link_index_2d, l_bot, l_top)
    end subroutine addbarocL
 
-   subroutine addbarocLrho_w(LL, Lb, Lt)
+   !> Computes baroclinic pressure gradients across layers for a horizontal link.
+   !! Density is based on linear interpolation of recomputed density (from salinity, temperature (and pressure)) at vertical interfaces.
+   subroutine addbarocLrho_w(link_index_2d, l_bot, l_top)
       use precision, only: dp
       use m_turbulence, only: kmxx, rho, rhou, rvdn, grn, rhosww
       use m_flowgeom, only: ln, dx
@@ -170,66 +176,68 @@ contains
       use m_physcoef, only: rhomean, max_iterations_pressure_density, ag, apply_thermobaricity
       use m_density, only: calculate_density
 
-      integer, intent(in) :: LL, Lb, Lt
+      integer, intent(in) :: link_index_2d !< Horizontal link index
+      integer, intent(in) :: l_bot !< bottom link
+      integer, intent(in) :: l_top !< top link
 
       integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft, i
       real(kind=dp) :: gradpu(kmxx), rhovol(kmxx), gr3
       real(kind=dp) :: rv1, rv2, gr1, gr2, rvk, grk, saw0, saw1, tmw0, tmw1, fzu, fzd, dzz, rhow0, rhow1, pdb, p0d
 
-      gradpu(1:Lt - Lb + 1) = 0.0_dp
+      gradpu(1:l_top - l_bot + 1) = 0.0_dp
 
-      if (zws(ln(1, Lt)) - zws(ln(1, Lb)) < 0.1_dp .or. zws(ln(2, Lt)) - zws(ln(2, Lb)) < 0.1_dp) then
+      if (zws(ln(1, l_top)) - zws(ln(1, l_bot)) < 0.1_dp .or. zws(ln(2, l_top)) - zws(ln(2, l_bot)) < 0.1_dp) then
          return ! no baroclini pressure in thin water layers
       end if
 
       insigpart = 0
       if (numtopsig > 0) then
-         if (kmxn(ln(1, LL)) <= numtopsig .or. kmxn(ln(2, LL)) <= numtopsig) then
+         if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
             insigpart = 1 ! one of the nodes is in the sigma part
          end if
       end if
 
-      if (kmxn(ln(1, LL)) > kmxn(ln(2, LL))) then
+      if (kmxn(ln(1, link_index_2d)) > kmxn(ln(2, link_index_2d))) then
          morelayersleft = 1
-      else if (kmxn(ln(1, LL)) < kmxn(ln(2, LL))) then
+      else if (kmxn(ln(1, link_index_2d)) < kmxn(ln(2, link_index_2d))) then
          morelayersleft = 2
       else
          morelayersleft = 0
       end if
 
-      do L = Lt, Lb, -1
+      do L = l_top, l_bot, -1
          k1 = ln(1, L)
          k1t = k1
          k2 = ln(2, L)
          k2t = k2
-         if (L == Lt) then
-            k1t = ktop(ln(1, LL))
-            k2t = ktop(ln(2, LL))
+         if (L == l_top) then
+            k1t = ktop(ln(1, link_index_2d))
+            k2t = ktop(ln(2, link_index_2d))
          end if
 
-         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
+         rhovol(L - l_bot + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
          if (jarhoxu > 0) then
-            rhou(L) = rhovol(L - Lb + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
+            rhou(L) = rhovol(L - l_bot + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
          end if
-         rhovol(L - Lb + 1) = rhovol(L - Lb + 1) * dx(LL)
+         rhovol(L - l_bot + 1) = rhovol(L - l_bot + 1) * dx(link_index_2d)
 
          rv1 = rvdn(k1)
          rv2 = rvdn(k2)
          gr1 = grn(k1)
          gr2 = grn(k2)
 
-         if (L == Lb .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
+         if (L == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
 
             if (morelayersleft == 1) then ! k=deep side, kz=shallow side
                k = k1
-               kt = ktop(ln(1, LL))
+               kt = ktop(ln(1, link_index_2d))
                kz = k2
-               ktz = ktop(ln(2, LL))
+               ktz = ktop(ln(2, link_index_2d))
             else
                k = k2
-               kt = ktop(ln(2, LL))
+               kt = ktop(ln(2, link_index_2d))
                kz = k1
-               ktz = ktop(ln(1, LL))
+               ktz = ktop(ln(1, link_index_2d))
             end if
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
@@ -247,7 +255,7 @@ contains
             if (insigpart == 0) then
                dzz = zws(kz) - zws(kz - 1) ! shallow side
 
-               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(LL)
+               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(link_index_2d)
                if (jarhoxu > 0) then
                   rhou(L) = 0.5_dp * (rho(k) + rho(kz))
                end if
@@ -294,16 +302,18 @@ contains
             gr3 = 0.5_dp * (rv1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         gradpu(L - Lb + 1) = gradpu(L - Lb + 1) + gr1 - gr2 + gr3
-         if (L > Lb) then
-            gradpu(L - Lb) = gradpu(L - Lb) - gr3 ! ceiling of ff# downstairs neighbours
+         gradpu(L - l_bot + 1) = gradpu(L - l_bot + 1) + gr1 - gr2 + gr3
+         if (L > l_bot) then
+            gradpu(L - l_bot) = gradpu(L - l_bot) - gr3 ! ceiling of ff# downstairs neighbours
          end if
       end do
 
-      call barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
+      call barocLtimeint(gradpu, rhovol, link_index_2d, l_bot, l_top)
    end subroutine addbarocLrho_w
 
-   subroutine addbarocL_use_rho_directly(LL, Lb, Lt)
+   !> Computes baroclinic pressure gradients across layers for a horizontal link.
+   !! Cell density (i.e. rho(k)) is used
+   subroutine addbarocL_use_rho_directly(link_index_2d, l_bot, l_top)
       use precision, only: dp
       use m_turbulence, only: kmxx, rho, rhou, rvdn, grn
       use m_flowgeom, only: ln, dx
@@ -311,72 +321,74 @@ contains
       use m_flowparameters, only: jarhoxu
       use m_physcoef, only: rhomean
 
-      integer, intent(in) :: LL, Lb, Lt
+      integer, intent(in) :: link_index_2d !< Horizontal link index
+      integer, intent(in) :: l_bot !< bottom link
+      integer, intent(in) :: l_top !< top link
 
       integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft
       real(kind=dp) :: gradpu(kmxx), rhovol(kmxx), gr3
       real(kind=dp) :: rv1, rv2, gr1, gr2, rvk, grk, dzz
 
-      gradpu(1:Lt - Lb + 1) = 0.0_dp
+      gradpu(1:l_top - l_bot + 1) = 0.0_dp
 
-      if (zws(ln(1, Lt)) - zws(ln(1, Lb)) < 0.1_dp .or. zws(ln(2, Lt)) - zws(ln(2, Lb)) < 0.1_dp) then
+      if (zws(ln(1, l_top)) - zws(ln(1, l_bot)) < 0.1_dp .or. zws(ln(2, l_top)) - zws(ln(2, l_bot)) < 0.1_dp) then
          return ! no baroclinic pressure in thin water layers
       end if
 
       insigpart = 0
       if (numtopsig > 0) then
-         if (kmxn(ln(1, LL)) <= numtopsig .or. kmxn(ln(2, LL)) <= numtopsig) then
+         if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
             insigpart = 1 ! one of the nodes is in the sigma part
          end if
       end if
 
-      if (kmxn(ln(1, LL)) > kmxn(ln(2, LL))) then
+      if (kmxn(ln(1, link_index_2d)) > kmxn(ln(2, link_index_2d))) then
          morelayersleft = 1
-      else if (kmxn(ln(1, LL)) < kmxn(ln(2, LL))) then
+      else if (kmxn(ln(1, link_index_2d)) < kmxn(ln(2, link_index_2d))) then
          morelayersleft = 2
       else
          morelayersleft = 0
       end if
 
-      do L = Lt, Lb, -1
+      do L = l_top, l_bot, -1
          k1 = ln(1, L)
          k1t = k1
          k2 = ln(2, L)
          k2t = k2
-         if (L == Lt) then
-            k1t = ktop(ln(1, LL))
-            k2t = ktop(ln(2, LL))
+         if (L == l_top) then
+            k1t = ktop(ln(1, link_index_2d))
+            k2t = ktop(ln(2, link_index_2d))
          end if
 
-         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
+         rhovol(L - l_bot + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
          if (jarhoxu > 0) then
-            rhou(L) = rhovol(L - Lb + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
+            rhou(L) = rhovol(L - l_bot + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
          end if
-         rhovol(L - Lb + 1) = rhovol(L - Lb + 1) * dx(LL)
+         rhovol(L - l_bot + 1) = rhovol(L - l_bot + 1) * dx(link_index_2d)
 
          rv1 = rvdn(k1)
          rv2 = rvdn(k2)
          gr1 = grn(k1)
          gr2 = grn(k2)
 
-         if (L == Lb .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
+         if (L == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
 
             if (morelayersleft == 1) then ! k=deep side, kz=shallow side
                k = k1
-               kt = ktop(ln(1, LL))
+               kt = ktop(ln(1, link_index_2d))
                kz = k2
-               ktz = ktop(ln(2, LL))
+               ktz = ktop(ln(2, link_index_2d))
             else
                k = k2
-               kt = ktop(ln(2, LL))
+               kt = ktop(ln(2, link_index_2d))
                kz = k1
-               ktz = ktop(ln(1, LL))
+               ktz = ktop(ln(1, link_index_2d))
             end if
 
             if (insigpart == 0) then
                dzz = zws(kz) - zws(kz - 1) ! shallow side
 
-               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(LL)
+               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(link_index_2d)
                if (jarhoxu > 0) then
                   rhou(L) = 0.5_dp * (rho(k) + rho(kz))
                end if
@@ -406,32 +418,37 @@ contains
             gr3 = 0.5_dp * (rv1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         gradpu(L - Lb + 1) = gradpu(L - Lb + 1) + gr1 - gr2 + gr3
-         if (L > Lb) then
-            gradpu(L - Lb) = gradpu(L - Lb) - gr3 ! ceiling of ff# downstairs neighbours
+         gradpu(L - l_bot + 1) = gradpu(L - l_bot + 1) + gr1 - gr2 + gr3
+         if (L > l_bot) then
+            gradpu(L - l_bot) = gradpu(L - l_bot) - gr3 ! ceiling of ff# downstairs neighbours
          end if
       end do
 
-      call barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
+      call barocLtimeint(gradpu, rhovol, link_index_2d, l_bot, l_top)
    end subroutine addbarocL_use_rho_directly
-   
-   subroutine barocLtimeint(gradpu, rhovol, LL, Lb, Lt)
+
+   !> Applies time integration of baroclinic pressure gradients and updates the momentum terms.
+   subroutine barocLtimeint(gradpu, rhovol, link_index_2d, l_bot, l_top)
       use precision, only: dp
       use m_flow, only: adve, kmxL
       use m_flowtimes, only: dts, dtprev
       use m_turbulence, only: kmxx, dpbdx0
       use m_physcoef, only: ag
 
-      integer :: LL, Lb, Lt
-      real(kind=dp) :: gradpu(kmxx), rhovol(kmxx)
+      real(kind=dp), dimension(1:kmxx), intent(in) :: gradpu !> Baroclinic pressure gradient for each layer
+      real(kind=dp), dimension(1:kmxx), intent(in) :: rhovol !> Volume-averaged density for each layer
+
+      integer, intent(in) :: link_index_2d !< Horizontal link index
+      integer, intent(in) :: l_bot !< bottom link
+      integer, intent(in) :: l_top !< top link
 
       integer :: L
       real(kind=dp) :: barocL, ft
 
       ft = 0.5_dp * dts / dtprev
-      do L = Lb, Lt
-         if (rhovol(L - Lb + 1) > 0.0_dp) then
-            barocl = ag * gradpu(L - Lb + 1) / rhovol(L - Lb + 1)
+      do L = l_bot, l_top
+         if (rhovol(L - l_bot + 1) > 0.0_dp) then
+            barocl = ag * gradpu(L - l_bot + 1) / rhovol(L - l_bot + 1)
             if (dpbdx0(L) /= 0.0_dp) then
                adve(L) = adve(L) - (1.0_dp + ft) * barocl + ft * dpbdx0(L)
             else
@@ -441,7 +458,7 @@ contains
          end if
       end do
 
-      do L = Lt + 1, Lb + kmxL(LL) - 1
+      do L = l_top + 1, l_bot + kmxL(link_index_2d) - 1
          dpbdx0(L) = 0.0_dp
       end do
    end subroutine barocLtimeint
