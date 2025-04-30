@@ -215,5 +215,109 @@
             </file>
         </checks>
         </testCase>
+        <testCase name="e02_f004_c21_Chezy_all_roughness_settings" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f004_bottomfriction/c021_Chezy_all_roughness_settings</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
+        <testCase name="e02_f004_c22_Manning_all_roughness_settings" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f004_bottomfriction/c022_Manning_all_roughness_settings</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
+        <testCase name="e02_f004_c23_Stickler_kn_all_roughness_settings" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f004_bottomfriction/c023_Strickler_kn_all_roughness_settings</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
+        <testCase name="e02_f004_c24_Strickler_ks_all_roughness_settings" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f004_bottomfriction/c024_Stickler_ks_all_roughness_settings</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
+        <testCase name="e02_f004_c25_White_Colebrook_all_roughness_settings" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f004_bottomfriction/c025_White_Colebrook_all_roughness_settings</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
+        <testCase name="e02_f004_c26_Bos_Bijkerk_all_roughness_settings" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f004_bottomfriction/c026_Bos_Bijkerk_all_roughness_settings</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
+        <testCase name="e02_f105_c20_profile_2_floodplains" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f105_cross-sections/c020_profile_2_floodplains</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
+        <testCase name="e02_f105_c21_trapezium_profile" ref="dflowfm_default">
+        <path version="2025-04-30T15:30:00">e02_dflowfm/f105_cross-sections/c021_trapezium_profile</path>
+        <maxRunTime>15.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
+            <parameters>
+                <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                <parameter name="waterdepth" toleranceAbsolute="0.0001" />
+                <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+        </testCase>
     </testCases>
 </deltaresTestbench_v3>
