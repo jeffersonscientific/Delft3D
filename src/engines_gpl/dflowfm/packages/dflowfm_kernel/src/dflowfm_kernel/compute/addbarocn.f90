@@ -27,6 +27,10 @@
 !
 !-------------------------------------------------------------------------------
 
+! "Baroclinic" here refers to density-driven pressure components.
+! Variables like baroclinic_pressures are intermediate values. They are converted to physical pressures
+! later by multiplying with gravity (ag) in baroclinic_pressure_link_time_integration (addbarocl.f90).
+
 module m_add_baroclinic_pressure_cell
    use precision, only: dp
 
@@ -34,7 +38,7 @@ module m_add_baroclinic_pressure_cell
 
    private
 
-   real(kind=dp), parameter :: MIN_DENSITY_ANOMALY = 1e-10_dp ! Small value (to avoid zero) at cells with small waterdepth
+   real(kind=dp), parameter :: MIN_BAROCLINIC_PRESSURE = 1e-10_dp ! Small value (to avoid zero) at cells with small waterdepth
 
    public :: add_baroclinic_pressure_cell, add_baroclinic_pressure_cell_interface, add_baroclinic_pressure_cell_use_rho_directly
 
@@ -43,7 +47,7 @@ contains
    !> Computes baroclinic pressure gradients across layers for a horizontal cell.
    !! Density is based on linear interpolation of density at vertical interfaces.
    subroutine add_baroclinic_pressure_cell(cell_index_2d)
-      use m_turbulence, only: rho, baroclinic_pressure_term, vertical_density_anomaly
+      use m_turbulence, only: rho, integrated_baroclinic_pressures, baroclinic_pressures
       use m_flowparameters, only: epshu
       use m_flow, only: zws
       use m_physcoef, only: rhomean
@@ -52,59 +56,59 @@ contains
       integer, intent(in) :: cell_index_2d !< horizontal cell index
 
       integer :: cell_index_3d, k_bot, k_top
-      real(kind=dp) :: pressure_up, pressure_down, gr, layer_tichkness
-      real(kind=dp) :: fuu, fud, fdu, fdd, dzu, dzd, rho_up, rho_down, layer_density_anomaly
+      real(kind=dp) :: baroclinic_pressure_up, baroclinic_pressure_down, integrated_baroclinic_pressure, delta_z
+      real(kind=dp) :: rho_up_weight_up, rho_up_weight_down, rho_down_weight_up, rho_down_weight_down, delta_z_up, delta_z_down, rho_up, rho_down, baroclinic_pressure
 
       call getkbotktop(cell_index_2d, k_bot, k_top)
       if (zws(k_top) - zws(k_bot - 1) < epshu) then
-         baroclinic_pressure_term(k_bot:k_top) = 0.0_dp
-         vertical_density_anomaly(k_bot:k_top) = MIN_DENSITY_ANOMALY
+         baroclinic_pressures(k_bot:k_top) = MIN_BAROCLINIC_PRESSURE
+         integrated_baroclinic_pressures(k_bot:k_top) = 0.0_dp
          return
       end if
 
-      baroclinic_pressure_term(k_top) = 0.0_dp
-      vertical_density_anomaly(k_top) = 0.0_dp
-      pressure_down = 0.0_dp
+      baroclinic_pressures(k_top) = 0.0_dp
+      integrated_baroclinic_pressures(k_top) = 0.0_dp
+      baroclinic_pressure_down = 0.0_dp
       do cell_index_3d = k_top, k_bot, -1
-         layer_tichkness = zws(cell_index_3d) - zws(cell_index_3d - 1)
+         delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1)
          if (k_bot == k_top) then
             rho_up = rho(cell_index_3d) - rhomean
-            rho_down = rho(cell_index_3d) - rhomean
+            rho_down = rho_up
          else if (cell_index_3d > k_bot .and. cell_index_3d < k_top) then
-            dzu = zws(cell_index_3d + 1) - zws(cell_index_3d)
-            dzd = zws(cell_index_3d - 1) - zws(cell_index_3d - 2)
-            fuu = dzu / (dzu + layer_tichkness)
-            fud = 1.0_dp - fuu
-            fdu = layer_tichkness / (dzd + layer_tichkness)
-            fdd = 1.0_dp - fdu
-            rho_up = fuu * rho(cell_index_3d + 1) + fud * rho(cell_index_3d) - rhomean
-            rho_down = fdu * rho(cell_index_3d) + fdd * rho(cell_index_3d - 1) - rhomean
+            delta_z_up = zws(cell_index_3d + 1) - zws(cell_index_3d)
+            delta_z_down = zws(cell_index_3d - 1) - zws(cell_index_3d - 2)
+            rho_up_weight_up = delta_z_up / (delta_z_up + delta_z)
+            rho_up_weight_down = 1.0_dp - rho_up_weight_up
+            rho_down_weight_up = delta_z / (delta_z_down + delta_z)
+            rho_down_weight_down = 1.0_dp - rho_down_weight_up
+            rho_up = rho_up_weight_up * rho(cell_index_3d + 1) + rho_up_weight_down * rho(cell_index_3d) - rhomean
+            rho_down = rho_down_weight_up * rho(cell_index_3d) + rho_down_weight_down * rho(cell_index_3d - 1) - rhomean
          else if (cell_index_3d == k_bot) then
-            dzu = zws(cell_index_3d + 1) - zws(cell_index_3d)
-            fuu = dzu / (dzu + layer_tichkness)
-            fud = 1.0_dp - fuu
-            rho_up = fuu * rho(cell_index_3d + 1) + fud * rho(cell_index_3d) - rhomean
+            delta_z_up = zws(cell_index_3d + 1) - zws(cell_index_3d)
+            rho_up_weight_up = delta_z_up / (delta_z_up + delta_z)
+            rho_up_weight_down = 1.0_dp - rho_up_weight_up
+            rho_up = rho_up_weight_up * rho(cell_index_3d + 1) + rho_up_weight_down * rho(cell_index_3d) - rhomean
             rho_down = 2.0_dp * (rho(cell_index_3d) - rhomean) - rho_up
          else if (cell_index_3d == k_top) then
-            dzd = zws(cell_index_3d - 1) - zws(cell_index_3d - 2)
-            fdu = layer_tichkness / (dzd + layer_tichkness)
-            fdd = 1.0_dp - fdu
-            rho_down = fdu * rho(cell_index_3d) + fdd * rho(cell_index_3d - 1) - rhomean
+            delta_z_down = zws(cell_index_3d - 1) - zws(cell_index_3d - 2)
+            rho_down_weight_up = delta_z / (delta_z_down + delta_z)
+            rho_down_weight_down = 1.0_dp - rho_down_weight_up
+            rho_down = rho_down_weight_up * rho(cell_index_3d) + rho_down_weight_down * rho(cell_index_3d - 1) - rhomean
             rho_up = 2.0_dp * (rho(cell_index_3d) - rhomean) - rho_down
          end if
-         layer_density_anomaly = 0.5_dp * (rho_up + rho_down) * layer_tichkness
-         pressure_up = pressure_down
-         pressure_down = pressure_up + layer_density_anomaly
-         vertical_density_anomaly(cell_index_3d) = pressure_down
-         gr = pressure_up * layer_tichkness + 0.5_dp * ((2.0_dp * rho_up + rho_down) / 3.0_dp) * layer_tichkness * layer_tichkness ! your left  wall
-         baroclinic_pressure_term(cell_index_3d) = gr
+         baroclinic_pressure = 0.5_dp * (rho_up + rho_down) * delta_z
+         baroclinic_pressure_up = baroclinic_pressure_down
+         baroclinic_pressure_down = baroclinic_pressure_up + baroclinic_pressure
+         baroclinic_pressures(cell_index_3d) = baroclinic_pressure_down
+         integrated_baroclinic_pressure = baroclinic_pressure_up * delta_z + 0.5_dp * ((2.0_dp * rho_up + rho_down) / 3.0_dp) * delta_z * delta_z ! your left  wall
+         integrated_baroclinic_pressures(cell_index_3d) = integrated_baroclinic_pressure
       end do
    end subroutine add_baroclinic_pressure_cell
 
    !> Computes baroclinic pressure gradients across layers for a horizontal cell.
    !! Density is based on linear interpolation of recomputed density (from salinity, temperature (and pressure)) at vertical interfaces.
    subroutine add_baroclinic_pressure_cell_interface(cell_index_2d)
-      use m_turbulence, only: baroclinic_pressure_term, vertical_density_anomaly, kmxx, rhosww, rho
+      use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures, kmxx, rhosww, rho
       use m_flowparameters, only: epshu
       use m_flow, only: zws
       use m_transport, only: ISALT, ITEMP, constituents
@@ -116,21 +120,21 @@ contains
 
       integer :: cell_index_3d, k_bot, k_top, i
       real(kind=dp) :: salinity_at_interface(0:kmxx), temperature_at_interface(0:kmxx) ! salinity and temperature at pressure point layer interfaces
-      real(kind=dp) :: fzu, fzd, pressure_up, pressure_down, layer_tichkness, p0d, pdb, rhosk
+      real(kind=dp) :: weight_up, weight_down, baroclinic_pressure_up, baroclinic_pressure_down, delta_z, total_pressure, barotropic_pressure, density_anomaly
 
       call getkbotktop(cell_index_2d, k_bot, k_top)
       if (zws(k_top) - zws(k_bot - 1) < epshu) then
-         baroclinic_pressure_term(k_bot:k_top) = 0.0_dp
-         vertical_density_anomaly(k_bot:k_top) = MIN_DENSITY_ANOMALY
+         integrated_baroclinic_pressures(k_bot:k_top) = 0.0_dp
+         baroclinic_pressures(k_bot:k_top) = MIN_BAROCLINIC_PRESSURE
          return
       end if
 
       if (k_top > k_bot) then
          do cell_index_3d = k_bot, k_top - 1
-            fzu = (zws(cell_index_3d + 1) - zws(cell_index_3d)) / (zws(cell_index_3d + 1) - zws(cell_index_3d - 1))
-            fzd = 1.0_dp - fzu
-            salinity_at_interface(cell_index_3d - k_bot + 1) = fzu * constituents(isalt, cell_index_3d + 1) + fzd * constituents(isalt, cell_index_3d)
-            temperature_at_interface(cell_index_3d - k_bot + 1) = fzu * constituents(itemp, cell_index_3d + 1) + fzd * constituents(itemp, cell_index_3d)
+            weight_up = (zws(cell_index_3d + 1) - zws(cell_index_3d)) / (zws(cell_index_3d + 1) - zws(cell_index_3d - 1))
+            weight_down = 1.0_dp - weight_up
+            salinity_at_interface(cell_index_3d - k_bot + 1) = weight_up * constituents(isalt, cell_index_3d + 1) + weight_down * constituents(isalt, cell_index_3d)
+            temperature_at_interface(cell_index_3d - k_bot + 1) = weight_up * constituents(itemp, cell_index_3d + 1) + weight_down * constituents(itemp, cell_index_3d)
          end do
          salinity_at_interface(0) = 2.0_dp * constituents(isalt, k_bot) - salinity_at_interface(1)
          temperature_at_interface(0) = 2.0_dp * constituents(itemp, k_bot) - temperature_at_interface(1)
@@ -143,36 +147,36 @@ contains
          temperature_at_interface(1) = temperature_at_interface(0)
       end if
 
-      pressure_down = 0.0_dp ! baroclinic pressure/ag
-      pdb = 0.0_dp ! barotropic pressure/ag
+      baroclinic_pressure_up = 0.0_dp
+      barotropic_pressure = 0.0_dp
 
       rhosww(k_top) = calculate_density(salinity_at_interface(k_top - k_bot + 1), temperature_at_interface(k_top - k_bot + 1)) - rhomean ! rho at interface
 
       do cell_index_3d = k_top, k_bot, -1
-         layer_tichkness = zws(cell_index_3d) - zws(cell_index_3d - 1)
-         pressure_up = pressure_down
+         delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1)
+         baroclinic_pressure_up = baroclinic_pressure_down
          if (.not. apply_thermobaricity) then
             rhosww(cell_index_3d - 1) = calculate_density(salinity_at_interface(cell_index_3d - k_bot), temperature_at_interface(cell_index_3d - k_bot)) - rhomean
          else
-            pdb = pdb + rhomean * layer_tichkness
+            barotropic_pressure = barotropic_pressure + rhomean * delta_z
             do i = 1, max_iterations_pressure_density
-               pressure_down = pressure_up + 0.5_dp * (rhosww(cell_index_3d) + rhosww(cell_index_3d - 1)) * layer_tichkness ! start with previous step estimate
-               p0d = ag * (pressure_down + pdb) ! total pressure
-               rhosww(cell_index_3d - 1) = calculate_density(salinity_at_interface(cell_index_3d - k_bot), temperature_at_interface(cell_index_3d - k_bot), p0d) - rhomean
+               baroclinic_pressure_down = baroclinic_pressure_up + 0.5_dp * (rhosww(cell_index_3d) + rhosww(cell_index_3d - 1)) * delta_z ! start with previous step estimate
+               total_pressure = ag * (baroclinic_pressure_down + barotropic_pressure)
+               rhosww(cell_index_3d - 1) = calculate_density(salinity_at_interface(cell_index_3d - k_bot), temperature_at_interface(cell_index_3d - k_bot), total_pressure) - rhomean
             end do
          end if
-         rhosk = 0.5_dp * (rhosww(cell_index_3d) + rhosww(cell_index_3d - 1))
-         rho(cell_index_3d) = rhomean + rhosk
-         pressure_down = pressure_up + layer_tichkness * rhosk
-         vertical_density_anomaly(cell_index_3d) = pressure_down
-         baroclinic_pressure_term(cell_index_3d) = (pressure_up + 0.5_dp * layer_tichkness * (2.0_dp * rhosww(cell_index_3d) + rhosww(cell_index_3d - 1)) / 3.0_dp) * layer_tichkness ! wall contribution
+         density_anomaly = 0.5_dp * (rhosww(cell_index_3d) + rhosww(cell_index_3d - 1))
+         rho(cell_index_3d) = rhomean + density_anomaly
+         baroclinic_pressure_down = baroclinic_pressure_up + delta_z * density_anomaly
+         baroclinic_pressures(cell_index_3d) = baroclinic_pressure_down
+         integrated_baroclinic_pressures(cell_index_3d) = (baroclinic_pressure_up + 0.5_dp * delta_z * (2.0_dp * rhosww(cell_index_3d) + rhosww(cell_index_3d - 1)) / 3.0_dp) * delta_z ! wall contribution
       end do
    end subroutine add_baroclinic_pressure_cell_interface
 
    !> Computes baroclinic pressure gradients across layers for a horizontal cell.
    !! Cell density (i.e. rho(cell_index_3d)) is used
    subroutine add_baroclinic_pressure_cell_use_rho_directly(cell_index_2d)
-      use m_turbulence, only: rho, baroclinic_pressure_term, vertical_density_anomaly
+      use m_turbulence, only: rho, integrated_baroclinic_pressures, baroclinic_pressures
       use m_flowparameters, only: epshu
       use m_flow, only: zws
       use m_physcoef, only: rhomean
@@ -181,26 +185,26 @@ contains
       integer, intent(in) :: cell_index_2d !< horizontal cell index
 
       integer :: cell_index_3d, k_bot, k_top
-      real(kind=dp) :: pressure_up, pressure_down, gr, layer_tichkness, layer_density_anomaly
+      real(kind=dp) :: baroclinic_pressure_up, baroclinic_pressure_down, integrated_baroclinic_pressure, delta_z, baroclinic_pressure
 
       call getkbotktop(cell_index_2d, k_bot, k_top)
       if (zws(k_top) - zws(k_bot - 1) < epshu) then
-         baroclinic_pressure_term(k_bot:k_top) = 0.0_dp
-         vertical_density_anomaly(k_bot:k_top) = MIN_DENSITY_ANOMALY
+         baroclinic_pressures(k_bot:k_top) = MIN_BAROCLINIC_PRESSURE
+         integrated_baroclinic_pressures(k_bot:k_top) = 0.0_dp
          return
       end if
 
-      baroclinic_pressure_term(k_top) = 0.0_dp
-      vertical_density_anomaly(k_top) = 0.0_dp
-      pressure_down = 0.0_dp
+      baroclinic_pressures(k_top) = 0.0_dp
+      integrated_baroclinic_pressures(k_top) = 0.0_dp
+      baroclinic_pressure_down = 0.0_dp
       do cell_index_3d = k_top, k_bot, -1
-         layer_tichkness = zws(cell_index_3d) - zws(cell_index_3d - 1)
-         layer_density_anomaly = (rho(cell_index_3d) - rhomean) * layer_tichkness
-         pressure_up = pressure_down
-         pressure_down = pressure_up + layer_density_anomaly
-         vertical_density_anomaly(cell_index_3d) = pressure_down
-         gr = pressure_up * layer_tichkness + 0.5_dp * (rho(cell_index_3d) - rhomean) * layer_tichkness * layer_tichkness ! your left  wall
-         baroclinic_pressure_term(cell_index_3d) = gr
+         delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1)
+         baroclinic_pressure = (rho(cell_index_3d) - rhomean) * delta_z
+         baroclinic_pressure_up = baroclinic_pressure_down
+         baroclinic_pressure_down = baroclinic_pressure_up + baroclinic_pressure
+         baroclinic_pressures(cell_index_3d) = baroclinic_pressure_down
+         integrated_baroclinic_pressure = baroclinic_pressure_up * delta_z + 0.5_dp * (rho(cell_index_3d) - rhomean) * delta_z * delta_z ! your left  wall
+         integrated_baroclinic_pressures(cell_index_3d) = integrated_baroclinic_pressure
       end do
    end subroutine add_baroclinic_pressure_cell_use_rho_directly
 end module m_add_baroclinic_pressure_cell

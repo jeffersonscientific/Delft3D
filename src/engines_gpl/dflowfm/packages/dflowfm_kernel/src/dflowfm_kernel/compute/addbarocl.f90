@@ -27,6 +27,10 @@
 !
 !-------------------------------------------------------------------------------
 
+! "Baroclinic" here refers to density-driven pressure components.
+! Variables like baroclinic_pressures are intermediate values. They are converted to physical pressures
+! later by multiplying with gravity (ag) in baroclinic_pressure_link_time_integration (addbarocl.f90).
+
 module m_add_baroclinic_pressure_link
    use precision, only: dp
 
@@ -43,7 +47,7 @@ contains
    !> Computes baroclinic pressure gradients across layers for a horizontal link.
    !! Density is based on linear interpolation of density at vertical interfaces.
    subroutine add_baroclinic_pressure_link(link_index_2d, l_bot, l_top)
-      use m_turbulence, only: kmxx, rho, rhou, vertical_density_anomaly, baroclinic_pressure_term
+      use m_turbulence, only: kmxx, rho, rhou, baroclinic_pressures, integrated_baroclinic_pressures
       use m_flowgeom, only: ln, dx
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
@@ -54,10 +58,10 @@ contains
       integer, intent(in) :: l_top !< top link
 
       integer :: link_index_3d, k1, k2, k1t, k2t, cell_index_3d, k_top, kz, ktz, insigpart, morelayersleft
-      real(kind=dp) :: baroclinic_pressure_gradient(kmxx), volume_averaged_density(kmxx), gr3
-      real(kind=dp) :: vertical_density_anomaly1, rv2, gr1, gr2, layer_density_anomaly, grk, fzu, fzd, layer_tichkness, rhow0, rhow1
+      real(kind=dp) :: baroclinic_pressure_gradients(kmxx), volume_averaged_density(kmxx), baroclinic_pressure3
+      real(kind=dp) :: baroclinic_pressure1, baroclinic_pressure2, integrated_baroclinic_pressure1, integrated_baroclinic_pressure2, baroclinic_pressure, integrated_baroclinic_pressure, weight_up, weight_down, delta_z, rho_down, rho_up
 
-      baroclinic_pressure_gradient(1:l_top - l_bot + 1) = 0.0_dp
+      baroclinic_pressure_gradients(1:l_top - l_bot + 1) = 0.0_dp
 
       if (zws(ln(1, l_top)) - zws(ln(1, l_bot)) < MIN_LAYER_THICKNESS .or. zws(ln(2, l_top)) - zws(ln(2, l_bot)) < MIN_LAYER_THICKNESS) then
          return
@@ -94,10 +98,10 @@ contains
          end if
          volume_averaged_density(link_index_3d - l_bot + 1) = volume_averaged_density(link_index_3d - l_bot + 1) * dx(link_index_2d)
 
-         vertical_density_anomaly1 = vertical_density_anomaly(k1)
-         rv2 = vertical_density_anomaly(k2)
-         gr1 = baroclinic_pressure_term(k1)
-         gr2 = baroclinic_pressure_term(k2)
+         baroclinic_pressure1 = baroclinic_pressures(k1)
+         baroclinic_pressure2 = baroclinic_pressures(k2)
+         integrated_baroclinic_pressure1 = integrated_baroclinic_pressures(k1)
+         integrated_baroclinic_pressure2 = integrated_baroclinic_pressures(k2)
 
          if (link_index_3d == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
 
@@ -114,63 +118,63 @@ contains
             end if
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
-               fzu = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
-               fzd = 1.0_dp - fzu
-               rhow1 = fzu * rho(cell_index_3d + 1) + fzd * rho(cell_index_3d)
-               rhow0 = 2.0_dp * rho(cell_index_3d) - rhow1
-            else ! one layerr
-               rhow1 = rho(cell_index_3d)
-               rhow0 = rhow1
+               weight_up = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
+               weight_down = 1.0_dp - weight_up
+               rho_up = weight_up * rho(cell_index_3d + 1) + weight_down * rho(cell_index_3d)
+               rho_down = 2.0_dp * rho(cell_index_3d) - rho_up
+            else ! one layer
+               rho_up = rho(cell_index_3d)
+               rho_down = rho_up
             end if
 
-            rhow1 = rhow1 - rhomean
-            rhow0 = rhow0 - rhomean
+            rho_up = rho_up - rhomean
+            rho_down = rho_down - rhomean
             if (insigpart == 0) then
-               layer_tichkness = zws(kz) - zws(kz - 1) ! shallow side
+               delta_z = zws(kz) - zws(kz - 1) ! shallow side
 
-               volume_averaged_density(1) = layer_tichkness * 0.5_dp * (rho(cell_index_3d) + rho(kz)) * dx(link_index_2d)
+               volume_averaged_density(1) = delta_z * 0.5_dp * (rho(cell_index_3d) + rho(kz)) * dx(link_index_2d)
                if (jarhoxu > 0) then
                   rhou(link_index_3d) = 0.5_dp * (rho(cell_index_3d) + rho(kz))
                end if
 
             else
-               layer_tichkness = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
+               delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
             end if
 
-            layer_density_anomaly = vertical_density_anomaly(cell_index_3d + 1) + 0.5_dp * layer_tichkness * (rhow1 + rhow0)
-            grk = (vertical_density_anomaly(cell_index_3d + 1) + 0.5_dp * layer_tichkness * (2.0_dp * rhow1 + rhow0) / 3.0_dp) * layer_tichkness
+            baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rho_up + rho_down)
+            integrated_baroclinic_pressure = (baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (2.0_dp * rho_up + rho_down) / 3.0_dp) * delta_z
 
             if (morelayersleft == 1) then ! k1=deepest
-               vertical_density_anomaly1 = layer_density_anomaly
-               gr1 = grk
+               baroclinic_pressure1 = baroclinic_pressure
+               integrated_baroclinic_pressure1 = integrated_baroclinic_pressure
             else
-               rv2 = layer_density_anomaly
-               gr2 = grk
+               baroclinic_pressure2 = baroclinic_pressure
+               integrated_baroclinic_pressure2 = integrated_baroclinic_pressure
             end if
 
             if (insigpart == 0) then
-               gr3 = 0.0_dp ! no skewness for zlay jump at bed
+               baroclinic_pressure3 = 0.0_dp ! no skewness for zlay jump at bed
             else
-               gr3 = 0.5_dp * (vertical_density_anomaly1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+               baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
             end if
 
          else
-            gr3 = 0.5_dp * (vertical_density_anomaly1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+            baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         baroclinic_pressure_gradient(link_index_3d - l_bot + 1) = baroclinic_pressure_gradient(link_index_3d - l_bot + 1) + gr1 - gr2 + gr3
+         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
-            baroclinic_pressure_gradient(link_index_3d - l_bot) = baroclinic_pressure_gradient(link_index_3d - l_bot) - gr3 ! ceiling of ff# downstairs neighbours
+            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of ff# downstairs neighbours
          end if
       end do
 
-      call baroclinic_pressure_link_time_integration(baroclinic_pressure_gradient, volume_averaged_density, link_index_2d, l_bot, l_top)
+      call baroclinic_pressure_link_time_integration(baroclinic_pressure_gradients, volume_averaged_density, link_index_2d, l_bot, l_top)
    end subroutine add_baroclinic_pressure_link
 
    !> Computes baroclinic pressure gradients across layers for a horizontal link.
    !! Density is based on linear interpolation of recomputed density (from salinity, temperature (and pressure)) at vertical interfaces.
    subroutine add_baroclinic_pressure_link_interface(link_index_2d, l_bot, l_top)
-      use m_turbulence, only: kmxx, rho, rhou, vertical_density_anomaly, baroclinic_pressure_term, rhosww
+      use m_turbulence, only: kmxx, rho, rhou, baroclinic_pressures, integrated_baroclinic_pressures, rhosww
       use m_flowgeom, only: ln, dx
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
@@ -183,10 +187,10 @@ contains
       integer, intent(in) :: l_top !< top link
 
       integer :: link_index_3d, k1, k2, k1t, k2t, cell_index_3d, k_top, kz, ktz, insigpart, morelayersleft, i
-      real(kind=dp) :: baroclinic_pressure_gradient(kmxx), volume_averaged_density(kmxx), gr3
-      real(kind=dp) :: vertical_density_anomaly1, rv2, gr1, gr2, layer_density_anomaly, grk, salinity_at_interface0, salinity_at_interface1, temperature_at_interface0, temperature_at_interface1, fzu, fzd, layer_tichkness, rhow0, rhow1, pdb, p0d
+      real(kind=dp) :: baroclinic_pressure_gradients(kmxx), volume_averaged_density(kmxx), baroclinic_pressure3
+      real(kind=dp) :: baroclinic_pressure1, baroclinic_pressure2, integrated_baroclinic_pressure1, integrated_baroclinic_pressure2, baroclinic_pressure, integrated_baroclinic_pressure, salinity_down, salinity_up, temperature_down, temperature_up, weight_up, weight_down, delta_z, rho_down, rho_up, barotropic_pressure, total_pressure
 
-      baroclinic_pressure_gradient(1:l_top - l_bot + 1) = 0.0_dp
+      baroclinic_pressure_gradients(1:l_top - l_bot + 1) = 0.0_dp
 
       if (zws(ln(1, l_top)) - zws(ln(1, l_bot)) < MIN_LAYER_THICKNESS .or. zws(ln(2, l_top)) - zws(ln(2, l_bot)) < MIN_LAYER_THICKNESS) then
          return
@@ -223,10 +227,10 @@ contains
          end if
          volume_averaged_density(link_index_3d - l_bot + 1) = volume_averaged_density(link_index_3d - l_bot + 1) * dx(link_index_2d)
 
-         vertical_density_anomaly1 = vertical_density_anomaly(k1)
-         rv2 = vertical_density_anomaly(k2)
-         gr1 = baroclinic_pressure_term(k1)
-         gr2 = baroclinic_pressure_term(k2)
+         baroclinic_pressure1 = baroclinic_pressures(k1)
+         baroclinic_pressure2 = baroclinic_pressures(k2)
+         integrated_baroclinic_pressure1 = integrated_baroclinic_pressures(k1)
+         integrated_baroclinic_pressure2 = integrated_baroclinic_pressures(k2)
 
          if (link_index_3d == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
 
@@ -243,80 +247,80 @@ contains
             end if
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
-               fzu = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
-               fzd = 1.0_dp - fzu
-               rhow1 = fzu * rho(cell_index_3d + 1) + fzd * rho(cell_index_3d)
-               rhow0 = 2.0_dp * rho(cell_index_3d) - rhow1
+               weight_up = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
+               weight_down = 1.0_dp - weight_up
+               rho_up = weight_up * rho(cell_index_3d + 1) + weight_down * rho(cell_index_3d)
+               rho_down = 2.0_dp * rho(cell_index_3d) - rho_up
             else ! one layer
-               rhow1 = rho(cell_index_3d)
-               rhow0 = rhow1
+               rho_up = rho(cell_index_3d)
+               rho_down = rho_up
             end if
 
-            rhow1 = rhow1 - rhomean
-            rhow0 = rhow0 - rhomean
+            rho_up = rho_up - rhomean
+            rho_down = rho_down - rhomean
             if (insigpart == 0) then
-               layer_tichkness = zws(kz) - zws(kz - 1) ! shallow side
+               delta_z = zws(kz) - zws(kz - 1) ! shallow side
 
-               volume_averaged_density(1) = layer_tichkness * 0.5_dp * (rho(cell_index_3d) + rho(kz)) * dx(link_index_2d)
+               volume_averaged_density(1) = delta_z * 0.5_dp * (rho(cell_index_3d) + rho(kz)) * dx(link_index_2d)
                if (jarhoxu > 0) then
                   rhou(link_index_3d) = 0.5_dp * (rho(cell_index_3d) + rho(kz))
                end if
 
             else
-               layer_tichkness = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
+               delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
             end if
 
-            salinity_at_interface1 = fzu * constituents(isalt, cell_index_3d + 1) + fzd * constituents(isalt, cell_index_3d)
-            temperature_at_interface1 = fzu * constituents(itemp, cell_index_3d + 1) + fzd * constituents(itemp, cell_index_3d)
-            salinity_at_interface0 = 2.0_dp * constituents(isalt, cell_index_3d) - salinity_at_interface1
-            temperature_at_interface0 = 2.0_dp * constituents(itemp, cell_index_3d) - temperature_at_interface1
+            salinity_up = weight_up * constituents(isalt, cell_index_3d + 1) + weight_down * constituents(isalt, cell_index_3d)
+            temperature_up = weight_up * constituents(itemp, cell_index_3d + 1) + weight_down * constituents(itemp, cell_index_3d)
+            salinity_down = 2.0_dp * constituents(isalt, cell_index_3d) - salinity_up
+            temperature_down = 2.0_dp * constituents(itemp, cell_index_3d) - temperature_up
 
             if (.not. apply_thermobaricity) then
-               rhow0 = calculate_density(salinity_at_interface0, temperature_at_interface0) - rhomean
+               rho_down = calculate_density(salinity_down, temperature_down) - rhomean
             else
-               pdb = (zws(ktz) - zws(kz - 1)) * rhomean
-               layer_density_anomaly = vertical_density_anomaly(cell_index_3d + 1) + 0.5_dp * layer_tichkness * (rhosww(cell_index_3d) + rhosww(cell_index_3d - 1))
+               barotropic_pressure = (zws(ktz) - zws(kz - 1)) * rhomean
+               baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rhosww(cell_index_3d) + rhosww(cell_index_3d - 1))
                do i = 1, max_iterations_pressure_density
-                  p0d = ag * (layer_density_anomaly + pdb) ! total pressure
-                  rhow0 = calculate_density(salinity_at_interface0, temperature_at_interface0, p0d) - rhomean
-                  layer_density_anomaly = vertical_density_anomaly(cell_index_3d + 1) + 0.5_dp * layer_tichkness * (rhosww(cell_index_3d) + rhow0)
+                  total_pressure = ag * (baroclinic_pressure + barotropic_pressure)
+                  rho_down = calculate_density(salinity_down, temperature_down, total_pressure) - rhomean
+                  baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rhosww(cell_index_3d) + rho_down)
                end do
             end if
 
-            layer_density_anomaly = vertical_density_anomaly(cell_index_3d + 1) + 0.5_dp * layer_tichkness * (rhosww(cell_index_3d) + rhow0)
-            grk = (vertical_density_anomaly(cell_index_3d + 1) + 0.5_dp * layer_tichkness * (2.0_dp * rhosww(cell_index_3d) + rhow0) / 3.0_dp) * layer_tichkness
+            baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rhosww(cell_index_3d) + rho_down)
+            integrated_baroclinic_pressure = (baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (2.0_dp * rhosww(cell_index_3d) + rho_down) / 3.0_dp) * delta_z
 
             if (morelayersleft == 1) then ! k1=deepest
-               vertical_density_anomaly1 = layer_density_anomaly
-               gr1 = grk
+               baroclinic_pressure1 = baroclinic_pressure
+               integrated_baroclinic_pressure1 = integrated_baroclinic_pressure
             else
-               rv2 = layer_density_anomaly
-               gr2 = grk
+               baroclinic_pressure2 = baroclinic_pressure
+               integrated_baroclinic_pressure2 = integrated_baroclinic_pressure
             end if
 
             if (insigpart == 0) then
-               gr3 = 0.0_dp ! no skewness for zlay jump at bed
+               baroclinic_pressure3 = 0.0_dp ! no skewness for zlay jump at bed
             else
-               gr3 = 0.5_dp * (vertical_density_anomaly1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+               baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
             end if
 
          else
-            gr3 = 0.5_dp * (vertical_density_anomaly1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+            baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         baroclinic_pressure_gradient(link_index_3d - l_bot + 1) = baroclinic_pressure_gradient(link_index_3d - l_bot + 1) + gr1 - gr2 + gr3
+         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
-            baroclinic_pressure_gradient(link_index_3d - l_bot) = baroclinic_pressure_gradient(link_index_3d - l_bot) - gr3 ! ceiling of ff# downstairs neighbours
+            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of ff# downstairs neighbours
          end if
       end do
 
-      call baroclinic_pressure_link_time_integration(baroclinic_pressure_gradient, volume_averaged_density, link_index_2d, l_bot, l_top)
+      call baroclinic_pressure_link_time_integration(baroclinic_pressure_gradients, volume_averaged_density, link_index_2d, l_bot, l_top)
    end subroutine add_baroclinic_pressure_link_interface
 
    !> Computes baroclinic pressure gradients across layers for a horizontal link.
    !! Cell density (i.e. rho(cell_index_3d)) is used
    subroutine add_baroclinic_pressure_link_use_rho_directly(link_index_2d, l_bot, l_top)
-      use m_turbulence, only: kmxx, rho, rhou, vertical_density_anomaly, baroclinic_pressure_term
+      use m_turbulence, only: kmxx, rho, rhou, baroclinic_pressures, integrated_baroclinic_pressures
       use m_flowgeom, only: ln, dx
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
@@ -327,10 +331,10 @@ contains
       integer, intent(in) :: l_top !< top link
 
       integer :: link_index_3d, k1, k2, k1t, k2t, cell_index_3d, k_top, kz, ktz, insigpart, morelayersleft
-      real(kind=dp) :: baroclinic_pressure_gradient(kmxx), volume_averaged_density(kmxx), gr3
-      real(kind=dp) :: vertical_density_anomaly1, rv2, gr1, gr2, layer_density_anomaly, grk, layer_tichkness
+      real(kind=dp) :: baroclinic_pressure_gradients(kmxx), volume_averaged_density(kmxx), baroclinic_pressure3
+      real(kind=dp) :: baroclinic_pressure1, baroclinic_pressure2, integrated_baroclinic_pressure1, integrated_baroclinic_pressure2, baroclinic_pressure, integrated_baroclinic_pressure, delta_z
 
-      baroclinic_pressure_gradient(1:l_top - l_bot + 1) = 0.0_dp
+      baroclinic_pressure_gradients(1:l_top - l_bot + 1) = 0.0_dp
 
       if (zws(ln(1, l_top)) - zws(ln(1, l_bot)) < MIN_LAYER_THICKNESS .or. zws(ln(2, l_top)) - zws(ln(2, l_bot)) < MIN_LAYER_THICKNESS) then
          return
@@ -367,10 +371,10 @@ contains
          end if
          volume_averaged_density(link_index_3d - l_bot + 1) = volume_averaged_density(link_index_3d - l_bot + 1) * dx(link_index_2d)
 
-         vertical_density_anomaly1 = vertical_density_anomaly(k1)
-         rv2 = vertical_density_anomaly(k2)
-         gr1 = baroclinic_pressure_term(k1)
-         gr2 = baroclinic_pressure_term(k2)
+         baroclinic_pressure1 = baroclinic_pressures(k1)
+         baroclinic_pressure2 = baroclinic_pressures(k2)
+         integrated_baroclinic_pressure1 = integrated_baroclinic_pressures(k1)
+         integrated_baroclinic_pressure2 = integrated_baroclinic_pressures(k2)
 
          if (link_index_3d == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
 
@@ -387,57 +391,56 @@ contains
             end if
 
             if (insigpart == 0) then
-               layer_tichkness = zws(kz) - zws(kz - 1) ! shallow side
+               delta_z = zws(kz) - zws(kz - 1) ! shallow side
 
-               volume_averaged_density(1) = layer_tichkness * 0.5_dp * (rho(cell_index_3d) + rho(kz)) * dx(link_index_2d)
+               volume_averaged_density(1) = delta_z * 0.5_dp * (rho(cell_index_3d) + rho(kz)) * dx(link_index_2d)
                if (jarhoxu > 0) then
                   rhou(link_index_3d) = 0.5_dp * (rho(cell_index_3d) + rho(kz))
                end if
 
             else
-               layer_tichkness = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
+               delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
             end if
 
-            layer_density_anomaly = vertical_density_anomaly(cell_index_3d + 1) + layer_tichkness * (rho(cell_index_3d) - rhomean)
-            grk = (vertical_density_anomaly(cell_index_3d + 1) + layer_tichkness * (rho(cell_index_3d) - rhomean)) * layer_tichkness
+            baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + delta_z * (rho(cell_index_3d) - rhomean)
+            integrated_baroclinic_pressure = (baroclinic_pressures(cell_index_3d + 1) + delta_z * (rho(cell_index_3d) - rhomean)) * delta_z
 
             if (morelayersleft == 1) then ! k1=deepest
-               vertical_density_anomaly1 = layer_density_anomaly
-               gr1 = grk
+               baroclinic_pressure1 = baroclinic_pressure
+               integrated_baroclinic_pressure1 = integrated_baroclinic_pressure
             else
-               rv2 = layer_density_anomaly
-               gr2 = grk
+               baroclinic_pressure2 = baroclinic_pressure
+               integrated_baroclinic_pressure2 = integrated_baroclinic_pressure
             end if
 
             if (insigpart == 0) then
-               gr3 = 0.0_dp ! no skewness for zlay jump at bed
+               baroclinic_pressure3 = 0.0_dp ! no skewness for zlay jump at bed
             else
-               gr3 = 0.5_dp * (vertical_density_anomaly1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+               baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
             end if
 
          else
-            gr3 = 0.5_dp * (vertical_density_anomaly1 + rv2) * (zws(k1 - 1) - zws(k2 - 1))
+            baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         baroclinic_pressure_gradient(link_index_3d - l_bot + 1) = baroclinic_pressure_gradient(link_index_3d - l_bot + 1) + gr1 - gr2 + gr3
+         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
-            baroclinic_pressure_gradient(link_index_3d - l_bot) = baroclinic_pressure_gradient(link_index_3d - l_bot) - gr3 ! ceiling of ff# downstairs neighbours
+            baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of cell below
          end if
       end do
 
-      call baroclinic_pressure_link_time_integration(baroclinic_pressure_gradient, volume_averaged_density, link_index_2d, l_bot, l_top)
+      call baroclinic_pressure_link_time_integration(baroclinic_pressure_gradients, volume_averaged_density, link_index_2d, l_bot, l_top)
    end subroutine add_baroclinic_pressure_link_use_rho_directly
 
    !> Applies time integration of baroclinic pressure gradients and updates the momentum terms.
-   subroutine baroclinic_pressure_link_time_integration(baroclinic_pressure_gradient, volume_averaged_density, link_index_2d, l_bot, l_top)
+   subroutine baroclinic_pressure_link_time_integration(baroclinic_pressure_gradients, volume_averaged_density, link_index_2d, l_bot, l_top)
       use m_flow, only: adve, kmxL
       use m_flowtimes, only: dts, dtprev
-      use m_turbulence, only: kmxx, dpbdx0
+      use m_turbulence, only: kmxx, baroclinic_force_prev
       use m_physcoef, only: ag
 
-      real(kind=dp), dimension(1:kmxx), intent(in) :: baroclinic_pressure_gradient !> Baroclinic pressure gradient for each layer
+      real(kind=dp), dimension(1:kmxx), intent(in) :: baroclinic_pressure_gradients !> Baroclinic pressure gradient for each layer
       real(kind=dp), dimension(1:kmxx), intent(in) :: volume_averaged_density !> Volume-averaged density for each layer
-
       integer, intent(in) :: link_index_2d !< Horizontal link index
       integer, intent(in) :: l_bot !< bottom link
       integer, intent(in) :: l_top !< top link
@@ -445,22 +448,21 @@ contains
       integer :: link_index_3d
       real(kind=dp) :: baroclinic_force, time_weight_factor
 
-
       time_weight_factor = 0.5_dp * dts / dtprev
       do link_index_3d = l_bot, l_top
          if (volume_averaged_density(link_index_3d - l_bot + 1) > 0.0_dp) then
-            baroclinic_force = ag * baroclinic_pressure_gradient(link_index_3d - l_bot + 1) / volume_averaged_density(link_index_3d - l_bot + 1)
-            if (dpbdx0(link_index_3d) /= 0.0_dp) then
-               adve(link_index_3d) = adve(link_index_3d) - (1.0_dp + time_weight_factor) * baroclinic_force + time_weight_factor * dpbdx0(link_index_3d)
+            baroclinic_force = ag * baroclinic_pressure_gradients(link_index_3d - l_bot + 1) / volume_averaged_density(link_index_3d - l_bot + 1)
+            if (baroclinic_force_prev(link_index_3d) /= 0.0_dp) then
+               adve(link_index_3d) = adve(link_index_3d) - (1.0_dp + time_weight_factor) * baroclinic_force + time_weight_factor * baroclinic_force_prev(link_index_3d)
             else
                adve(link_index_3d) = adve(link_index_3d) - baroclinic_force
             end if
-            dpbdx0(link_index_3d) = baroclinic_force
+            baroclinic_force_prev(link_index_3d) = baroclinic_force
          end if
       end do
 
       do link_index_3d = l_top + 1, l_bot + kmxL(link_index_2d) - 1
-         dpbdx0(link_index_3d) = 0.0_dp
+         baroclinic_force_prev(link_index_3d) = 0.0_dp
       end do
    end subroutine baroclinic_pressure_link_time_integration
 end module m_add_baroclinic_pressure_link

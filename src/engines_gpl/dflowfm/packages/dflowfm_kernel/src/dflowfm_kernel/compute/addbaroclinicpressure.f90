@@ -27,7 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-
 module m_add_baroclinic_pressure
 
    implicit none
@@ -43,37 +42,37 @@ contains
       use precision, only: dp, comparereal
       use m_add_baroclinic_pressure_link, only: add_baroclinic_pressure_link, add_baroclinic_pressure_link_interface, add_baroclinic_pressure_link_use_rho_directly
       use m_add_baroclinic_pressure_cell, only: add_baroclinic_pressure_cell, add_baroclinic_pressure_cell_interface, add_baroclinic_pressure_cell_use_rho_directly
-      use m_addbaroc, only: addbaroc
+      use m_add_baroclinic_pressure_2d, only: add_baroclinic_pressure_2d
       use m_flowgeom, only: lnxi, lnx, ndx
       use m_flow, only: hu, kmx
-      use m_turbulence, only: vertical_density_anomaly, baroclinic_pressure_term
+      use m_turbulence, only: baroclinic_pressures, integrated_baroclinic_pressures
       use m_physcoef, only: jabarocponbnd, rhointerfaces
       use m_get_Lbot_Ltop, only: getLbotLtop
 
       implicit none
 
-      integer :: link_index_2d, l_bot, l_top, cell_index_2d, link_upper_bound
+      integer :: link_index_2d, l_bot, l_top, cell_index_2d, nr_of_links
 
       if (jabarocponbnd == 0) then
-         link_upper_bound = lnxi
+         nr_of_links = lnxi
       else
-         link_upper_bound = lnx
+         nr_of_links = lnx
       end if
 
       if (kmx == 0) then
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(link_index_2d)
-         do link_index_2d = 1, link_upper_bound
+         do link_index_2d = 1, nr_of_links
             if (comparereal(hu(link_index_2d), 0.0_dp) == 0) then
                cycle
             end if
-            call addbaroc(link_index_2d)
+            call add_baroclinic_pressure_2d(link_index_2d)
          end do
          !$OMP END PARALLEL DO
       else
 
-         vertical_density_anomaly(:) = 0.0_dp
-         baroclinic_pressure_term(:) = 0.0_dp
+         baroclinic_pressures(:) = 0.0_dp
+         integrated_baroclinic_pressures(:) = 0.0_dp
 
          if (rhointerfaces == 0) then
 
@@ -86,7 +85,7 @@ contains
 
             !$OMP PARALLEL DO &
             !$OMP PRIVATE(link_index_2d,l_bot,l_top)
-            do link_index_2d = 1, link_upper_bound
+            do link_index_2d = 1, nr_of_links
                if (comparereal(hu(link_index_2d), 0.0_dp) == 0) then
                   cycle
                end if
@@ -109,7 +108,7 @@ contains
 
             !$OMP PARALLEL DO &
             !$OMP PRIVATE(link_index_2d,l_bot,l_top)
-            do link_index_2d = 1, link_upper_bound
+            do link_index_2d = 1, nr_of_links
                if (comparereal(hu(link_index_2d), 0.0_dp) == 0) then
                   cycle
                end if
@@ -132,7 +131,7 @@ contains
 
             !$OMP PARALLEL DO &
             !$OMP PRIVATE(link_index_2d,l_bot,l_top)
-            do link_index_2d = 1, link_upper_bound
+            do link_index_2d = 1, nr_of_links
                if (comparereal(hu(link_index_2d), 0.0_dp) == 0) then
                   cycle
                end if
