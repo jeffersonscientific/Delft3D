@@ -688,7 +688,8 @@ contains
       use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
       use m_alloc
       use m_equatorial
@@ -727,7 +728,7 @@ contains
       use m_map_his_precision
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush, warn_flush
-      use geometry_module, only: INTERNAL_NETLINKS_EDGE, ALL_NETLINKS_LOOP
+      use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -993,13 +994,10 @@ contains
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
       call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
-      call prop_get(md_ptr, 'geometry', 'Circumcenter', circumcenter_method)
-      if (circumcenter_method < INTERNAL_NETLINKS_EDGE .or. circumcenter_method > ALL_NETLINKS_LOOP) then
-         call mess(LEVEL_ERROR, '"[geometry] Circumcenter" expects an integer between 1 and 3.')
-      end if
-      if (circumcenter_method == INTERNAL_NETLINKS_EDGE) then
-         call mess(LEVEL_WARN, '"[geometry] Circumcenter = 1" will be deprecated and will be removed in future. Please update this in your model. "Circumcenter = 2" is the improved current inplementation using internal net links only. "Circumcenter = 3" is a stricter implemention considering also the net links on the outline of the grid. The new options may require an update of your grid.')
-      end if
+      call prop_get(md_ptr, 'geometry', 'circumcenterMethod', md_circumcenter_method, success)
+      circumcenter_method = extract_circumcenter_method(md_circumcenter_method, success)
+      call prop_get(md_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, success)
+
       call prop_get(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
       if (jampi == 1 .and. md_japartition /= 1) then
          if (len_trim(md_partitionfile) < 1) then
@@ -2584,7 +2582,8 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_wind
-      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh, circumcenter_method
+      use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
+      use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
       use m_physcoef, only: apply_thermobaricity
       use unstruc_netcdf, only: unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
@@ -2609,7 +2608,7 @@ contains
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
       use m_datum
-      use geometry_module, only: INTERNAL_NETLINKS_EDGE
+      use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: exist_dambreak_links
 
       integer, intent(in) :: mout !< File pointer where to write to.
@@ -2814,7 +2813,10 @@ contains
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
       end if
       if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
-         call prop_set(prop_ptr, 'geometry', 'Circumcenter', circumcenter_method, 'Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)')
+         call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge: internalNetlinksEdge; iterate each loop: internalNetlinksLoop or allNetlinksLoop)')
+      end if
+      if (writeall .or. (circumcenter_tolerance /= 1.0e-3_dp)) then
+         call prop_set(prop_ptr, 'geometry', 'circumcenterTolerance', circumcenter_tolerance, 'Tolerance for convergence of circumcenter method (m) (default: 1.0e-3')
       end if
       if (writeall .or. (bamin > 1.0e-6_dp)) then
          call prop_set(prop_ptr, 'geometry', 'Bamin', Bamin, 'Minimum grid cell area, in combination with cut cells')
