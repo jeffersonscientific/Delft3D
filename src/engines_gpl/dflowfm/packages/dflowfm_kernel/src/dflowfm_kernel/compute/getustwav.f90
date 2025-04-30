@@ -53,6 +53,8 @@ subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uor
    integer :: k1, k2, Lb, Lt, L
    double precision :: Tsig, Hrms, asg, rk, shs, phi1, phi2, dks, aks, omeg, f1u, f2u, f3u, sintu
    double precision :: p1, p2, h, z, uusto, fac
+   
+   double precision, parameter :: alfaw = 20d0
 
    Dfu = 0d0; Dfuc = 0d0; deltau = 0d0; uorbu = 0d0; csw = 1d0; snw = 0d0; costu = 1d0; fw = 0d0
 
@@ -151,13 +153,14 @@ subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uor
       aks = asg * shs / dks * fac ! uorbu/(omega*ks), uorbu/omega = particle excursion length
 
       deltau = 0.09d0 * dks * aks**0.82d0 ! thickness of wave boundary layer from Fredsoe and Deigaard (1992)
-      deltau = max(deltau, ee * z00) ! ustar / karman
-      deltau = min(0.5d0 * hu(LL), deltau) !
+      deltau = max(deltau, ee * z00) ! alfaw makes wbl at least ~2ks thick
 
       call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
       Dfu = 0.2821d0 * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
-      Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by 3 deltau    (m2/s3)      see van Rijn, streaming layer about 3 times wbl
+      Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by 3 deltau    (m2/s3) see van Rijn, streaming layer about 3-5 times wbl
       Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
+      deltau = alfaw*deltau ! as in delft3d
+      deltau = min(0.5d0 * hu(LL), deltau) !
    else
       ustw2 = 0d0
       Dfu = 0d0

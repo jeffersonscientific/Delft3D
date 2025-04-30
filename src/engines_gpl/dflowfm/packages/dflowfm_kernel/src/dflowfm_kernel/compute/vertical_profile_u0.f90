@@ -140,7 +140,7 @@
           c(k) = c(k) - (vstress - adv) / dzu(k)
 
        else if (javau == 0 .or. javau >= 6) then ! 3D checkerboard
-
+          ! vertical advection explicit in advec()
           if (jarhoxu < 3) then
              b(k + 1) = b(k + 1) + vstress / dzu(k + 1)
              a(k + 1) = a(k + 1) - vstress / dzu(k + 1)

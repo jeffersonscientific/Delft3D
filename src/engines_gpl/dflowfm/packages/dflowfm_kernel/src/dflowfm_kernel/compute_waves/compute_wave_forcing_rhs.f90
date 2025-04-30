@@ -84,8 +84,8 @@
          !
          if (kmx == 0) then
             call tauwave()
-            call xbeach_flow_bc()
          end if
+         call xbeach_flow_bc()
       end if
       !
       ! Uniform wave field

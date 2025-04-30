@@ -929,7 +929,7 @@
                   if (mfltot > 0.0_fp) fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
                end if
                !
-               kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
+               kmaxsd = kmaxlc ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
                thick0 = max(thicklc(kmaxsd) * h0, epshs)
                thick1 = max(thicklc(kmaxsd) * h1, epshs)
                !
@@ -1138,7 +1138,7 @@
                   rsedeq(nm, l) = rsdqlc(kmaxsd)
                   !
                   thick0 = max(thicklc(kmaxsd) * h0, epshu)
-                  !thick1 = max(thicklc(kmaxsd) * h1, epshu)
+                  thick1 = max(thicklc(kmaxsd) * h1, epshu)
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation

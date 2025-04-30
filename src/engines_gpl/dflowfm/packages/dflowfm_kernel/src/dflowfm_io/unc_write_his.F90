@@ -144,7 +144,7 @@ contains
       integer :: ntot, i, j, ierr, nNodeTot, nNodes, k1, k2, nlinks
 
       character(len=255) :: filename
-      character(len=25) :: transpunit
+      character(len=255) :: transpunit
       character(len=1024) :: statcoordstring, local_statcoordstring
       integer :: ndims
       integer :: jawrizc = 0

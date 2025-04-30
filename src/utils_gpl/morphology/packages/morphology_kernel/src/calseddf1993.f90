@@ -91,8 +91,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
     endif
     !
     epsmxc = 0.25_fp * vonkar * beta * ustarc * h1
-    !if (ltur==0 .or. ltur==1 .or. difvr) then
-    if (.false.) then
+    if (ltur==0 .or. ltur==1 .or. difvr) then
        !
        ! if algebraic or K-L turbulence model or difvr = .true. then
        ! calculate sediment mixing according to Van Rijn based on Coleman's

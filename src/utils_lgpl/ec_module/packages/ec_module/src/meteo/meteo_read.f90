@@ -580,7 +580,9 @@ function read_spiderweb_block(minp, d, mx, grid_width, meteoitem, x_spw_eye, y_s
    do j = 2, grid_width
       read(minp,*,end = 100, err=203) ( d(i,j,3), i = 1, mx-1 )
       do i = 1, mx-1
-        if (ieee_is_nan(d(i,j,3))) goto 303
+        if (ieee_is_nan(d(i,j,3))) then
+           goto 303
+        end if
       enddo
    enddo
    do i = 1, mx-1

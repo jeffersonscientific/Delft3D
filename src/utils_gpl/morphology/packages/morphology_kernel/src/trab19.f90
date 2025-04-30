@@ -124,8 +124,8 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     delta = par(4)
     facua = par(11)
     if (comparereal(facua, 0.0_fp, 1d-10) == 0) then
-    facas = par(12)
-    facsk = par(13)
+       facas = par(12)
+       facsk = par(13)
     else
        facas = facua
        facsk = facua

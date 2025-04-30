@@ -47,7 +47,6 @@ contains
    subroutine extrapolate_bedlevel_at_boundaries()
 
       use m_flowgeom, only: bl, dxi, csu, snu
-
       use fm_external_forcings_data, only: kbndz, kbndu, nbndz, nbndu
 
       implicit none
@@ -99,10 +98,12 @@ contains
          !solution, we assume flow is towards the model.
 
          !if flow is towards the model:
-         bl(k1) = bl(k2) + csu(L) * dzdx(k2) / dxi(L) + snu(L) * dzdy(k2) / dxi(L)
-
-         !if flow is out of the model:
-         !bl(k1)=bl(k2)+bedslopex/dxi(L)*csu(L)-bedslopey/dxi(L)*snu(L)
+         !if (u1(kb) >= 0d0) then
+            bl(k1) = bl(k2) + csu(L) * dzdx(k2) / dxi(L) + snu(L) * dzdy(k2) / dxi(L)
+         !else
+            !if flow is out of the model:
+            !bl(k1) = bl(k2) + dzdx(k2) / dxi(L) * csu(L) - dzdy(k2) / dxi(L) * snu(L)
+         !end if
       end do
 
 !deallocate

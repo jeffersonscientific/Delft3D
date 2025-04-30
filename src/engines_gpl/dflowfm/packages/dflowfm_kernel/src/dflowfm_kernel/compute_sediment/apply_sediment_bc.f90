@@ -121,7 +121,7 @@
                   kb = ln(1, L); ki = ln(2, L)
                   kk = kmxd * (k - 1) + L - Lb + 1
                   if (q1(L) > 0) then ! inflow
-                     constituents(iconst, kb) = bndsf(ll)%z(k)
+                     constituents(iconst, kb) = bndsf(ll)%z(kk)
                   else ! outflow
                      constituents(iconst, kb) = constituents(iconst, ki)
                   end if
