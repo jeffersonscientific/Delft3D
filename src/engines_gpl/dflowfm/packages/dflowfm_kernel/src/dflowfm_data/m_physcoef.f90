@@ -102,7 +102,7 @@ module m_physcoef
    logical :: thermobaricity_in_brunt_vaisala_frequency !< Apply thermobaricity in computing the Brunt-Vaisala frequency
    logical :: thermobaricity_in_baroclinic_pressure_gradient !< Apply thermobaricity in computing the baroclinic pressure gradient
    integer :: max_iterations_pressure_density = 1 !< max nr of density-pressure iterations
-   integer :: Jarhointerfaces = 0 !< rho computed at vertical interfaces, yes=1, 0=cell center
+   integer :: rhointerfaces = 0 !< Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density
    integer :: Jabarocponbnd = 1 !< baroclini pressure on open boundaries yes/no
 
    integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
