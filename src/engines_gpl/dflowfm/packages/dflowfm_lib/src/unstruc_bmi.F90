@@ -25,9 +25,9 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
+!> \page BMI_Unstruc Unstruc BMI docs
+!! Below is the flow structure of the unstructured grid flow solver when called from the BMI interface
+!! \image html inc\BMI_Logical_Call_sequence.svg
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
