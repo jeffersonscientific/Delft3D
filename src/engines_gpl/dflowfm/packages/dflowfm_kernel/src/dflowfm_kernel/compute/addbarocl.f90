@@ -38,13 +38,14 @@ contains
 
    subroutine addbarocL(LL, Lb, Lt)
       use precision, only: dp
-      use m_turbulence, only: kmxx, rho, rhou, rvdn, grn
+      use m_turbulence, only: kmxx, rhou, rvdn, grn, in_situ_density, potential_density
       use m_flowgeom, only: ln, dx
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
-      use m_physcoef, only: rhomean
+      use m_physcoef, only: rhomean, thermobaricity_in_baroclinic_pressure_gradient
 
       integer, intent(in) :: LL, Lb, Lt
+      real(kind=dp), dimension(:), pointer :: density ! local pointer
 
       integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft
       real(kind=dp) :: gradpu(kmxx), rhovol(kmxx), gr3
@@ -54,6 +55,13 @@ contains
 
       if (zws(ln(1, Lt)) - zws(ln(1, Lb)) < 0.1_dp .or. zws(ln(2, Lt)) - zws(ln(2, Lb)) < 0.1_dp) then
          return ! no baroclinic pressure in thin water layers
+      end if
+
+      ! Associate density with the potential density or in-situ density
+      if (thermobaricity_in_baroclinic_pressure_gradient) then
+         density => in_situ_density
+      else
+         density => potential_density
       end if
 
       insigpart = 0
@@ -78,7 +86,7 @@ contains
             k1t = ktop(ln(1, LL)); k2t = ktop(ln(2, LL))
          end if
 
-         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
+         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * density(k1) + (zws(k2t) - zws(k2 - 1)) * density(k2))
          if (jarhoxu > 0) then
             rhou(L) = rhovol(L - Lb + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
          end if
@@ -101,10 +109,10 @@ contains
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
                fzu = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1)); fzd = 1.0_dp - fzu
-               rhow1 = fzu * rho(k + 1) + fzd * rho(k)
-               rhow0 = 2.0_dp * rho(k) - rhow1
+               rhow1 = fzu * density(k + 1) + fzd * density(k)
+               rhow0 = 2.0_dp * density(k) - rhow1
             else ! one layerr
-               rhow1 = rho(k)
+               rhow1 = density(k)
                rhow0 = rhow1
             end if
 
@@ -113,9 +121,9 @@ contains
             if (insigpart == 0) then
                dzz = zws(kz) - zws(kz - 1) ! shallow side
 
-               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(LL)
+               rhovol(1) = dzz * 0.5_dp * (density(k) + density(kz)) * dx(LL)
                if (jarhoxu > 0) then
-                  rhou(L) = 0.5_dp * (rho(k) + rho(kz))
+                  rhou(L) = 0.5_dp * (density(k) + density(kz))
                end if
 
             else
@@ -152,15 +160,16 @@ contains
 
    subroutine addbarocLrho_w(LL, Lb, Lt)
       use precision, only: dp
-      use m_turbulence, only: kmxx, rho, rhou, rvdn, grn, rhosww
+      use m_turbulence, only: kmxx, rhou, rvdn, grn, rhosww, in_situ_density, potential_density
       use m_flowgeom, only: ln, dx
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
       use m_transport, only: ISALT, ITEMP, constituents
-      use m_physcoef, only: rhomean, max_iterations_pressure_density, ag, apply_thermobaricity
+      use m_physcoef, only: rhomean, max_iterations_pressure_density, ag, apply_thermobaricity, thermobaricity_in_baroclinic_pressure_gradient
       use m_density, only: calculate_density
 
       integer, intent(in) :: LL, Lb, Lt
+      real(kind=dp), dimension(:), pointer :: density ! local pointer
 
       integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft, i
       real(kind=dp) :: gradpu(kmxx), rhovol(kmxx), gr3
@@ -179,6 +188,13 @@ contains
          end if
       end if
 
+      ! Associate density with the potential density or in-situ density
+      if (thermobaricity_in_baroclinic_pressure_gradient) then
+         density => in_situ_density
+      else
+         density => potential_density
+      end if
+
       if (kmxn(ln(1, LL)) > kmxn(ln(2, LL))) then
          morelayersleft = 1
       else if (kmxn(ln(1, LL)) < kmxn(ln(2, LL))) then
@@ -194,7 +210,7 @@ contains
             k1t = ktop(ln(1, LL)); k2t = ktop(ln(2, LL))
          end if
 
-         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * rho(k1) + (zws(k2t) - zws(k2 - 1)) * rho(k2))
+         rhovol(L - Lb + 1) = 0.5_dp * ((zws(k1t) - zws(k1 - 1)) * density(k1) + (zws(k2t) - zws(k2 - 1)) * density(k2))
          if (jarhoxu > 0) then
             rhou(L) = rhovol(L - Lb + 1) / (0.5_dp * (zws(k1t) - zws(k1 - 1) + zws(k2t) - zws(k2 - 1)))
          end if
@@ -217,10 +233,10 @@ contains
 
             if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
                fzu = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1)); fzd = 1.0_dp - fzu
-               rhow1 = fzu * rho(k + 1) + fzd * rho(k)
-               rhow0 = 2.0_dp * rho(k) - rhow1
+               rhow1 = fzu * density(k + 1) + fzd * density(k)
+               rhow0 = 2.0_dp * density(k) - rhow1
             else ! one layer
-               rhow1 = rho(k)
+               rhow1 = density(k)
                rhow0 = rhow1
             end if
 
@@ -229,9 +245,9 @@ contains
             if (insigpart == 0) then
                dzz = zws(kz) - zws(kz - 1) ! shallow side
 
-               rhovol(1) = dzz * 0.5_dp * (rho(k) + rho(kz)) * dx(LL)
+               rhovol(1) = dzz * 0.5_dp * (density(k) + density(kz)) * dx(LL)
                if (jarhoxu > 0) then
-                  rhou(L) = 0.5_dp * (rho(k) + rho(kz))
+                  rhou(L) = 0.5_dp * (density(k) + density(kz))
                end if
 
             else
