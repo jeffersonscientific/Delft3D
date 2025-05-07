@@ -1,3 +1,8 @@
+!! This is essentially morphology_data_module.f90 in version
+!! 65936, but with the insertion of all the pieces pertaining to "repose"
+!! from the University of Ottawa version.
+!! Guglielmo Stecca and Richard Measures, NIWA, October 2024
+module m_rdmor
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -240,13 +245,19 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
              call skipstarlines(ilun)
              !
              if (version == 0) then
-                call rdmor0(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, morpar%eqmbcsand, morpar%densin, &
-                       morpar%aksfac, morpar%rwave, morpar%rouse, morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, &
-                       morpar%susw, morpar%bedw, morpar%sedthr, morpar%thetsduni, morpar%hmaxth, fwfac)
+                call rdmor0(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, &
+                            morpar%eqmbcsand, morpar%densin, morpar%aksfac, morpar%rwave, &
+                            morpar%rouse, morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, &
+                            morpar%susw, morpar%bedw, morpar%sedthr, morpar%thetsduni, morpar%hmaxth, &
+                            morpar%repose , morpar%dryrepose, morpar%reposeredfac, morpar%reposemaxdz, &
+                            fwfac)
              else
-                call rdmor1(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, morpar%eqmbcsand, morpar%densin, &
-                    morpar%aksfac, morpar%rwave, morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, morpar%susw, morpar%bedw, &
-                    morpar%sedthr, morpar%thetsduni, morpar%hmaxth, fwfac, morpar%epspar, morpar%iopkcw, morpar%rdc, morpar%rdw)
+                call rdmor1(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, &
+                            morpar%eqmbcsand, morpar%densin, morpar%aksfac, morpar%rwave, &
+                            morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, morpar%susw, &
+                            morpar%bedw, morpar%sedthr, morpar%thetsduni, morpar%hmaxth, &
+                            morpar%repose , morpar%dryrepose, morpar%reposeredfac, morpar%reposemaxdz, &
+                            fwfac, morpar%epspar, morpar%iopkcw, morpar%rdc, morpar%rdw)
              end if
              morpar%thetsd = max(0.0_fp,min(morpar%thetsduni,1.0_fp))
              morpar%tcmp = morpar%tmor
@@ -520,6 +531,14 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     ! === maximum depth for variable dry cell erosion factor
     !
     call prop_get(mor_ptr, 'Morphology', 'HMaxTH', morpar%hmaxth)
+    !
+    !
+    ! === repose slope for slope failure bank erosion (m/m)
+    !
+    call prop_get(mor_ptr, 'Morphology', 'Repose', morpar%repose)
+    call prop_get(mor_ptr, 'Morphology', 'DryRepose', morpar%dryrepose)
+    call prop_get(mor_ptr, 'Morphology', 'ReposeRedFac', morpar%reposeredfac)
+    call prop_get(mor_ptr, 'Morphology', 'ReposeMaxDz', morpar%reposemaxdz)
     !
     ! === factor for adjusting intensity of energy dissipation in wave boundary layer
     ! fwfac should be read from mdf-file (see rdnum)
@@ -1157,7 +1176,9 @@ end subroutine copy_and_sort_percentiles
 subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
                 & eqmbc     ,densin    ,aksfac    ,rwave     ,rouse     , &
                 & alfabs    ,alfabn    ,sus       ,bed       ,susw      , &
-                & bedw      ,sedthr    ,thetsd    ,hmaxth    ,fwfac     )
+                & bedw      ,sedthr    ,thetsd    ,hmaxth    , &
+                & repose    , dryrepose, reposeredfac, reposemaxdz, &
+                & fwfac     )
 !!--declarations----------------------------------------------------------------
     use precision
     implicit none
@@ -1176,6 +1197,10 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     real(fp), intent(out)    :: fwfac !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: hmaxth !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: morfac !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: repose !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: dryrepose !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: reposeredfac !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: reposemaxdz  !  Description and declaration in morpar.igs
     logical, intent(out)    :: rouse !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: rwave !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: sedthr !  Description and declaration in morpar.igs
@@ -1225,6 +1250,14 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     read (ilun, *) thetsd
     ! maximum depth for variable dry cell erosion factor
     read (ilun, *) hmaxth
+    ! repose slope for slope based bank erosion
+    read (ilun, *) repose
+    ! repose slope for slope based bank erosion in dry areas
+    read (ilun, *) dryrepose
+    ! repose reduction factor for slope for slope based bank erosion. Default value 16
+    read (ilun, *) reposeredfac
+    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
+    read (ilun, *) reposemaxdz
     ! factor for adjusting intensity of energy dissipation in wave boundary layer
     read (ilun, *) fwfac
 end subroutine rdmor0
@@ -1236,7 +1269,9 @@ end subroutine rdmor0
 subroutine rdmor1(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
                 & eqmbc     ,densin    ,aksfac    ,rwave     ,alfabs    , &
                 & alfabn    ,sus       ,bed       ,susw      ,bedw      , &
-                & sedthr    ,thetsd    ,hmaxth    ,fwfac     ,epspar    , &
+                & sedthr    ,thetsd    ,hmaxth    , &
+                & repose    , dryrepose, reposeredfac, reposemaxdz, &
+                & fwfac     ,epspar    , &
                 & iopkcw    ,rdc       ,rdw       )
 !!--declarations----------------------------------------------------------------
     use precision
@@ -1258,6 +1293,10 @@ subroutine rdmor1(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     real(fp), intent(out)    :: fwfac !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: hmaxth !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: morfac !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: repose !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: dryrepose !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: reposeredfac !  Description and declaration in morpar.igs
+    real(fp), intent(out)    :: reposemaxdz !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: rdc
     real(fp), intent(out)    :: rdw
     real(fp), intent(out)    :: rwave !  Description and declaration in morpar.igs
@@ -1318,6 +1357,14 @@ subroutine rdmor1(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     read (ilun, *) thetsd
     ! maximum depth for variable dry cell erosion factor
     read (ilun, *) hmaxth
+    ! repose slope for slope based bank erosion
+    read (ilun, *) repose
+    ! repose slope for slope based bank erosion in dry areas
+    read (ilun, *) dryrepose
+   ! repose reduction factor for slope for slope based bank erosion. Default value 16
+    read (ilun, *) reposeredfac
+    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
+    read (ilun, *) reposemaxdz
     ! factor for adjusting intensity of energy dissipation in wave boundary layer
     read (ilun, *) fwfac
     ! flag for parametric epsilon distribution in case of K-Eps model
@@ -1373,6 +1420,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: tmor
     real(fp)                               , pointer :: tcmp
     real(fp)              , dimension(:)   , pointer :: thetsd
+    real(fp)                               , pointer :: repose
+    real(fp)                               , pointer :: dryrepose
+    real(fp)                               , pointer :: reposeredfac
+    real(fp)                               , pointer :: reposemaxdz
     real(fp)                               , pointer :: thetsduni
     real(fp)                               , pointer :: susw
     real(fp)                               , pointer :: sedthr
@@ -1476,6 +1527,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     tmor                => morpar%tmor
     tcmp                => morpar%tcmp
     thetsd              => morpar%thetsd
+    repose              => morpar%repose
+    dryrepose           => morpar%dryrepose
+    reposeredfac        => morpar%reposeredfac
+    reposemaxdz         => morpar%reposemaxdz
     susw                => morpar%susw
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
@@ -1693,6 +1748,24 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        txtput1 = 'Computing THETSD for dry bank erosion'
     end if
     write (lundia, '(a)') txtput1
+    
+    if (repose > 0) then
+       txtput1 = 'Slope failure erosion mechanism active'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'Repose slope for slope erosion (Repose)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', repose
+       txtput1 = 'dry Repose slope for slope erosion (DryRepose)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', dryrepose
+       txtput1 = 'Reduction factor in erosion flux calculation (default: 16.)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', reposeredfac
+       txtput1 = 'Max bed change due to erosion per cell face per (half) timestep (default: 1cm)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', reposemaxdz
+       
+    else
+       txtput1 = 'Slope failure erosion mechanism off'
+       write (lundia, '(a)') txtput1
+    end if
+    
     txtput1 = 'Tuning param. Shields Taucr (FACTCR)'
     write (lundia, '(2a,e20.4)') txtput1, ':', factcr
     txtput3 = 'Eulerian velocities i.s.o GLM velocities for' //       &
@@ -1932,6 +2005,35 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        errmsg = 'THETSD must be in range 0 - 1'
        call write_error(errmsg, unit=lundia)
     end if
+    !
+    ! errortrap using THETSD and REPOSE
+    !
+    if (repose > 0.0_fp .and. thetsd > 0.0_fp) then
+       error  = .true.
+       errmsg = 'THETSD and REPOSE should not be used simultaneously'
+       call write_error(errmsg, unit=lundia)
+    endif
+    if (repose > 0.0_fp) then
+       if(dryrepose < repose) then
+          error  = .true.
+          errmsg = 'DryRepose must be >= Repose'
+          call write_error(errmsg, unit=lundia)
+       endif
+       if(reposeredfac<8._fp)then
+           error  = .true.
+          errmsg = 'ReposeRedFac cannot be smaller than 8.'
+          call write_error(errmsg, unit=lundia)
+       endif
+       if(reposemaxdz<0._fp)then
+           error  = .true.
+           errmsg = 'ReposeMaxDz must be a positive real number'
+           call write_error(errmsg, unit=lundia)
+       elseif(reposemaxdz<0.001_fp)then
+           error  = .true.
+           errmsg = 'ReposeMaxDz must be greater than 0.001m (1mm) per (half) timestep per cell face.'
+           call write_error(errmsg, unit=lundia)
+       endif
+    endif
     !
     allocate(parnames(lsedtot*2), stat = istat)
     if (istat /= 0) then
