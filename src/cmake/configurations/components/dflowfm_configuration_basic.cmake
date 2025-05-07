@@ -1,4 +1,13 @@
 # Specify the modules to be included
+
+if (NOT TARGET googletest)
+    add_subdirectory(${checkout_src_root}/${googletest_module} googletest)
+endif()
+
+if (NOT TARGET f90tw_gtest)
+    add_subdirectory(${checkout_src_root}/${f90tw_module} f90tw)
+endif()
+
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
@@ -234,11 +243,11 @@ if(NOT WITH_INTERACTER)
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
-    
+
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
     endif()
-    
+
     if(NOT TARGET test_ec_module)
         add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
     endif()

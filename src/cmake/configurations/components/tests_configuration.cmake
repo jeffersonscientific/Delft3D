@@ -18,6 +18,14 @@ if(NOT TARGET ftnunit)
     add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
 endif()
 
+if(NOT TARGET googletest)
+    add_subdirectory(${checkout_src_root}/${googletest_module} googletest)
+endif()
+
+if (NOT TARGET f90tw_gtest)
+    add_subdirectory(${checkout_src_root}/${f90tw_module} f90tw)
+endif()
+
 # Ice
 if(NOT TARGET ice_data)
     add_subdirectory(${checkout_src_root}/${ice_data_module} ice_data)
