@@ -6,5 +6,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/fbc_configuration.
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/tools_configuration.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/windows_postbuild_configuration.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/d_hydro_configuration.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/rtc_configuration.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/flow2d3d_configuration.cmake)
 project(wave)
