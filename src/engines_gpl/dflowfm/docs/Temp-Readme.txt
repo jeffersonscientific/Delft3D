@@ -1,3 +1,9 @@
+Install the below software tools:
+- Doxygen 1.13.2 (installed in C:\Program Files\doxygen, by default)
+- DrawIO v26.2.15 (installed from Microsoft store)
+- Graphviz 12.2.1 (installed in C:\Program Files\Graphviz, by default)
+
+
 The structure for developer documentation per project:
 
 .\docs
