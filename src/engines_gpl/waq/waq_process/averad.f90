@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_dayrad
+module m_averad
     use m_waq_precision
 
     implicit none
@@ -28,7 +28,7 @@ module m_dayrad
 contains
 
 
-    SUBROUTINE DAYRAD (process_space_real, FL, IPOINT, INCREM, num_cells, &
+    SUBROUTINE AVERAD (process_space_real, FL, IPOINT, INCREM, num_cells, &
             NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
@@ -61,14 +61,14 @@ contains
 
         !     from process_space_real array
 
-        REAL(kind = real_wp) :: RADSURF            ! 1  in  irradiation at the water surface            (W/m2)
+        REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
         REAL(kind = real_wp) :: TIME               ! 2  in  DELWAQ time                                  (scu)
         DOUBLE PRECISION :: LATITUDE           ! 3  in  latitude of study area                   (degrees)
         REAL(kind = real_wp) :: REFDAY             ! 4  in  daynumber of reference day simulation          (d)
         REAL(kind = real_wp) :: AUXSYS             ! 5  in  ratio between days and system clock        (scu/d)
-        REAL(kind = real_wp) :: DAYRADSURF         ! 6  out actual irradiance over the day              (W/m2)
-        DOUBLE PRECISION :: RADDAY             ! 7  out actual irradiance                           (W/m2)
-        DOUBLE PRECISION :: RADTIME            ! 8  out actual irradiance                           (W/m2)
+        REAL(kind = real_wp) :: RedSurfAve         ! 6  out average irradiance over the day              (W/m2)
+        DOUBLE PRECISION :: RadAve             ! 7  out average irradiance                           (W/m2)
+        DOUBLE PRECISION :: RADTIME            ! 8  out average irradiance                           (W/m2)
 
         !     local decalrations
 
@@ -150,7 +150,7 @@ contains
             COS_OMEGA = COS(OMEGA)
             RADTIME = I0 * RDIST * (SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * COS_OMEGA)
             RADTIME = MAX(0.0D0, RADTIME)
-            RADDAY = I0 / PI * RDIST * (OMEGA0 * SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * SIN_OMEGA0)
+            RadAve = I0 / PI * RDIST * (OMEGA0 * SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * SIN_OMEGA0)
         ENDIF
         !
         DO ISEG = 1, num_cells
@@ -191,14 +191,14 @@ contains
                 COS_OMEGA = COS(OMEGA)
                 RADTIME = I0 * RDIST * (SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * COS_OMEGA)
                 RADTIME = MAX(0.0D0, RADTIME)
-                RADDAY = I0 / PI * RDIST * (OMEGA0 * SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * SIN_OMEGA0)
+                RadAve = I0 / PI * RDIST * (OMEGA0 * SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * SIN_OMEGA0)
             ENDIF
             !
-            DAYRADSURF = RADTIME * RADSURF / RADDAY
+            RadSurfAve = RADTIME * RADSURF / RadAve
 
-            process_space_real (IP6) = DAYRADSURF
+            process_space_real (IP6) = RadSurfAve
             process_space_real (IP7) = RADTIME
-            process_space_real (IP8) = RADDAY
+            process_space_real (IP8) = RadAve
             !
             !        ENDIF
             !
@@ -217,4 +217,4 @@ contains
         !
     END
 
-end module m_dayrad
+end module m_averad
