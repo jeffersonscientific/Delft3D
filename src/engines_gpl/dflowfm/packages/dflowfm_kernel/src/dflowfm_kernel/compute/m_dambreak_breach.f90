@@ -39,7 +39,6 @@ module m_dambreak_breach
    integer, public, protected :: n_db_signals !< number of dambreak signals
    real(kind=dp), dimension(:), allocatable :: link_effective_width !< dambreak effective flow widths
    real(kind=dp), dimension(:), allocatable :: link_actual_width !< dambreak actual flow widths
-   character(len=128), dimension(:), allocatable :: dambreak_names !< dambreak names
 
    ! This module also holds pulic functions/subroutines after contains
    ! They use 1) only basic modules, 2) only data from the module, and 3) they are small!
@@ -146,6 +145,10 @@ module m_dambreak_breach
       integer, intent(in) :: n_current_dambreak_links !< the number of flow links for the current dambreak signal.
     end subroutine add_dambreak_signal
       
+    pure module function get_dambreak_names() result(names)
+       character(len=128), dimension(:), allocatable :: names !< the dambreak names
+    end function get_dambreak_names
+    
     end interface
 
 contains
@@ -165,14 +168,6 @@ contains
       res = n_db_links > 0
 
    end function exist_dambreak_links
-
-   !> provides dambreak names
-   pure function get_dambreak_names() result(names)
-      character(len=128), dimension(:), allocatable :: names !< the dambreak names
-
-      names = [(dambreak_names(i), integer :: i=1, n_db_signals)]
-
-   end function get_dambreak_names
 
    !> allocate and intialize dambreak link arrays 
    subroutine allocate_dambreak_width_arrays(numl)

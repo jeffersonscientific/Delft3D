@@ -60,7 +60,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       integer :: breach_starting_link = -1
       real(kind=dp) :: breach_depth = 0.0_dp
       real(kind=dp) :: breach_width = 0.0_dp
-      character(len=128) :: dambreak_name = ""
+      character(len=128) :: name = ""
       real(kind=dp) :: level_from_table = 0.0_dp
       real(kind=dp) :: width_from_table = 0.0_dp
       real(kind=dp) :: upstream_level
@@ -112,7 +112,6 @@ contains
       end do
 
       call realloc(breach_start_link, n_db_signals, fill=-1)
-      call realloc(dambreak_names, n_db_signals, fill="")
       call realloc(active_links, n_db_links, fill=0)
       call realloc(levels_widths_from_table, n_db_signals * 2, fill=0.0_dp)
       call realloc(upstream_levels, n_db_signals)
@@ -958,7 +957,7 @@ contains
 
          associate (pstru => network%sts%struct(dambridx(n)))
             associate (dambreak => pstru%dambreak)
-               dambreak_names(n) = network%sts%struct(index_in_structure)%id
+               dambreak_signals(n)%name = network%sts%struct(index_in_structure)%id
 
                ! mapping
                dambreak_signals(n)%index_structure = index_in_structure
@@ -977,7 +976,7 @@ contains
                      kx = 2
                      success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx
                      if (.not. success) then
-                        write (msgbuf, '(5a)') 'Cannot process a tim file for ''', qid, ''' for the dambreak ''', trim(dambreak_names(n)), '''.'
+                        write (msgbuf, '(5a)') 'Cannot process a tim file for ''', qid, ''' for the dambreak ''', trim(dambreak_signals(n)%name), '''.'
                         call err_flush()
                      end if
                   end if
@@ -992,7 +991,7 @@ contains
                      ierr = findnode(dambreak%water_level_upstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
                         write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', trim(dambreak%water_level_upstream_node_id), &
-                           ''' in dambreak ''', trim(dambreak_names(n)), '''.'
+                           ''' in dambreak ''', trim(dambreak_signals(n)%name), '''.'
                         call err_flush()
                      else
                         call add_dambreaklocation_upstream(n, k)
@@ -1016,7 +1015,7 @@ contains
                      ierr = findnode(dambreak%water_level_downstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
                         write (msgbuf, '(5a)') 'Cannot find the node for water_level_downstream_node_id = ''', trim(dambreak%water_level_downstream_node_id), &
-                           ''' in dambreak ''', trim(dambreak_names(n)), '''.'
+                           ''' in dambreak ''', trim(dambreak_signals(n)%name), '''.'
                         call err_flush()
                      else
                         call add_dambreaklocation_downstream(n, k)
@@ -1157,7 +1156,7 @@ contains
             ! read the id first
             strid = ' '
             call prop_get(str_ptr, '', 'id', strid, success)
-            dambreak_names(n) = strid
+            dambreak_signals(n)%name = strid
 
             istrtmp = hashsearch(network%sts%hashlist_structure, strid) ! Assumes unique names across all structure types.
             if (istrtmp /= -1) then
@@ -1404,7 +1403,7 @@ contains
 
       index = -1
       do i = 1, n_db_signals
-         if (trim(dambreak_names(i)) == trim(dambreak_name)) then
+         if (trim(dambreak_signals(i)%name) == trim(dambreak_name)) then
             if (dambreak_signals(i)%number_of_links > 0) then
                ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
                index = i
@@ -1471,4 +1470,12 @@ contains
 
    end subroutine add_dambreak_signal
 
+   !> provides dambreak names
+   pure module function get_dambreak_names() result(names)
+      character(len=128), dimension(:), allocatable :: names !< the dambreak names
+
+      names = dambreak_signals%name
+
+   end function get_dambreak_names
+    
 end submodule m_dambreak_breach_submodule
