@@ -37,7 +37,6 @@ module m_dambreak_breach
 
    integer, public, protected :: n_db_links !< number of dambreak links
    integer, public, protected :: n_db_signals !< number of dambreak signals
-   integer, dimension(:), allocatable :: link_index !< dambreak links index array
    real(kind=dp), dimension(:), allocatable :: link_effective_width !< dambreak effective flow widths
    real(kind=dp), dimension(:), allocatable :: link_actual_width !< dambreak actual flow widths
    character(len=128), dimension(:), allocatable :: dambreak_names !< dambreak names

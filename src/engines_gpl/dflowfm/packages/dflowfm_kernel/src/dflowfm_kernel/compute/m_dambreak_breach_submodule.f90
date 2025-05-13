@@ -49,11 +49,12 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    integer, dimension(:), allocatable :: downstream_link_ids !< dambreak downstream links index array
    integer, dimension(:), allocatable :: first_link !< first dambreak link for each signal
    integer, dimension(:), allocatable :: last_link !< last dambreak link for each signal
+   integer, dimension(:), allocatable :: link_index !< dambreak links index array
 
    ! time varying, values can be retrieved via BMI interface
    real(kind=dp), dimension(:), allocatable, target :: upstream_levels !< upstream water levels computed each time step
    real(kind=dp), dimension(:), allocatable, target :: downstream_levels !< downstream water levels computed each time step
-   
+
    type :: t_dambreak_signal !< dambreak signal data
       integer :: index_structure = 0
       integer :: breach_starting_link = -1
@@ -75,9 +76,9 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       real(kind=dp) :: crest_level
       real(kind=dp) :: crest_level_ini
    end type
-   
+
    type(t_dambreak_signal), target, dimension(:), allocatable :: dambreak_signals(:) !< array of dambreak signals
-   
+
    procedure(calculate_dambreak_widening_any), pointer :: calculate_dambreak_widening
 
    abstract interface
@@ -99,8 +100,8 @@ contains
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
 
-      allocate(dambreak_signals(n_db_signals))
-      
+      allocate (dambreak_signals(n_db_signals))
+
       call realloc(breach_start_link, n_db_signals, fill=-1)
       call realloc(dambreak_names, n_db_signals, fill="")
       call realloc(active_links, n_db_links, fill=0)
@@ -217,37 +218,39 @@ contains
       integer, intent(out) :: error !< error code
 
       integer :: n !< index of the current dambreak signal
+      integer :: signal
 
       error = 0
 
-      if (n_locations(up_down) > 0) then
-         water_levels(location_mapping(1:n_locations(up_down), up_down)) = s1(locations(1:n_locations(up_down), up_down))
-      end if
+      do n = 1, n_locations(up_down)
+         water_levels(location_mapping(n, up_down)) = s1(locations(n, up_down))
+      end do
 
       !call this code only if something has to be averaged
-      if (n_averaging(up_down) > 0) then
-         error = get_average_quantity_from_links(first_link(averaging_mapping(1:n_averaging(up_down), up_down)), &
-                                                 last_link(averaging_mapping(1:n_averaging(up_down), up_down)), wu, &
+      do n = 1, n_averaging(up_down)
+         signal = averaging_mapping(n, up_down)
+         error = get_average_quantity_from_links(first_link(signal:signal), &
+                                                 last_link(signal:signal), wu, &
                                                  link_index, s1, link_index, weight_averaged_values, &
                                                  0, hu, dmiss, active_links, 0)
          if (error /= 0) then
             return
          end if
+      end do
 
-         if (n_db_links > 0) then
-            do n = 1, n_averaging(up_down)
-               if (weight_averaged_values(2, n) > 0.0_dp) then
-                  water_levels(averaging_mapping(n, up_down)) = &
-                     weight_averaged_values(1, n) / weight_averaged_values(2, n)
-               else if (abs(start_time - &
-                            network%sts%struct(dambreak_signals(averaging_mapping(n, up_down))%index_structure)%dambreak%T0) < 1e-10_dp) then
-                  water_levels(averaging_mapping(n, up_down)) = &
-                     s1(link_index(breach_start_link(averaging_mapping(n, up_down))))
-               else
-                  continue
-               end if
-            end do
-         end if
+      if (n_averaging(up_down) > 0 .and. n_db_links > 0) then
+         do n = 1, n_averaging(up_down)
+            if (weight_averaged_values(2, n) > 0.0_dp) then
+               water_levels(averaging_mapping(n, up_down)) = &
+                  weight_averaged_values(1, n) / weight_averaged_values(2, n)
+            else if (abs(start_time - &
+                         network%sts%struct(dambreak_signals(averaging_mapping(n, up_down))%index_structure)%dambreak%T0) < 1e-10_dp) then
+               water_levels(averaging_mapping(n, up_down)) = &
+                  s1(link_index(breach_start_link(averaging_mapping(n, up_down))))
+            else
+               continue
+            end if
+         end do
       end if
 
    end subroutine update_dambreak_water_levels
@@ -308,7 +311,7 @@ contains
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                dambreak%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
-                             downstream_levels(n), dambreak_signals(n)%breach_depth)
+                                                                      downstream_levels(n), dambreak_signals(n)%breach_depth)
             end if
          end associate
       end do
@@ -907,7 +910,7 @@ contains
       real(kind=dp), dimension(1) :: xdum, ydum
 
       character(len=Idlen) :: qid
-      
+
       if (n_db_signals <= 0) then
          n_db_links = 0
          return
@@ -957,9 +960,9 @@ contains
                      kdum = 1
                      kx = 2
                      success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx
-                     if(.not. success) then
-                         write (msgbuf, '(5a)') 'Cannot process a tim file for ''', qid, ''' for the dambreak ''', trim(dambreak_names(n)), '''.'
-                         call err_flush()
+                     if (.not. success) then
+                        write (msgbuf, '(5a)') 'Cannot process a tim file for ''', qid, ''' for the dambreak ''', trim(dambreak_names(n)), '''.'
+                        call err_flush()
                      end if
                   end if
                end if
@@ -1055,7 +1058,7 @@ contains
                      ylb = pstru%yCoordinates(kpol + 1)
 
                      call normalout(xla, yla, xlb, ylb, xn, yn, jsferic, jasfer3D, dmiss, dxymis)
-                     link_effective_width(k) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) *&
+                     link_effective_width(k) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) * &
                                                abs(xn * csu(link) + yn * snu(link))
                   end if
 
@@ -1075,7 +1078,7 @@ contains
       use m_flowgeom, only: wu, ln, xz, yz, kcu, lncn, snu, csu
       use m_netw, only: xk, yk
       use unstruc_channel_flow, only: addstructure, getstructype_from_string
-      use m_structures! Jan's channel_flow for Sobek's generalstructure (TODO)
+      use m_structures ! Jan's channel_flow for Sobek's generalstructure (TODO)
       use timespace, only: UNIFORM, SPACEANDTIME
       use m_meteo, only: kedb, success, qid, kx, ec_addtimespacerelation, dambreakPolygons
       use m_readstructures, only: readdambreak
@@ -1085,7 +1088,7 @@ contains
       use m_inquire_flowgeom, only: findnode
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_missing, only: dmiss, dxymis
-      
+
       integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
       integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
 
@@ -1103,7 +1106,7 @@ contains
       integer :: nDambreakCoordinates, k3, k4, kpol, indexInStructure, indexInPliset, indexLink, Lstart
       real(kind=dp) :: xla, xlb, yla, ylb
       real(kind=dp), allocatable :: xl(:, :), yl(:, :)
-      
+
       if (n_db_signals > 0) then
 
          call allocate_and_initialize_dambreak_data(n_db_links)
@@ -1315,7 +1318,7 @@ contains
             deallocate (dambreakPolygons(indexInPliset)%xp)
          end do
       end if
-         
+
    end subroutine update_dambreak_administration_old
 
    !> update array of logicals indicating if the link contains dambreaks
@@ -1354,7 +1357,7 @@ contains
       end do
 
       res = objects > 0
-    end function should_write_dambreaks
+   end function should_write_dambreaks
 
    !> set correct flow areas for dambreaks, using the actual flow width
    module subroutine multiply_by_dambreak_link_actual_width(hu, au)
@@ -1373,7 +1376,7 @@ contains
          end do
       end do
 
-   end subroutine multiply_by_dambreak_link_actual_width    
+   end subroutine multiply_by_dambreak_link_actual_width
 
    !> Get the index of the active dambreak for a given dambreak name
    pure module function get_active_dambreak_index(dambreak_name) result(index)
@@ -1392,27 +1395,26 @@ contains
             end if
          end if
       end do
-    end function get_active_dambreak_index
-    
-   
+   end function get_active_dambreak_index
+
    !> Get the dambreak links for a given dambreak index
    module function retrieve_set_of_flowlinks_dambreak(index) result(res)
       use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
       integer, intent(in) :: index !< index of the dambreak
       integer, dimension(:), allocatable :: res !< the dambreak links
-      
+
       if (index < 1 .or. index > n_db_signals) then
          write (msgbuf, *) 'get_dambreak_links: the index ', index, &
             ' is out of range. The range is 1 to ', n_db_signals
          call SetMessage(LEVEL_ERROR, msgbuf)
-         allocate(res(0))
+         allocate (res(0))
       else
-         res = [(link_index(i), integer :: i = first_link(index), last_link(index))]
+         res = [(link_index(i), integer :: i=first_link(index), last_link(index))]
       end if
-      
-    end function retrieve_set_of_flowlinks_dambreak
-    
-    !> Update the counters for the dambreaks
+
+   end function retrieve_set_of_flowlinks_dambreak
+
+   !> Update the counters for the dambreaks
    module subroutine update_counters_for_dambreaks(id, numgen, dambridx, i, kedb, kegen)
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
       character(len=*), intent(in) :: id !< the id of the structure.
@@ -1424,10 +1426,10 @@ contains
 
       call update_counters_for_dambreak_or_pump(id, numgen, n_db_signals, first_link, last_link, dambridx, i)
       kedb(first_link(n_db_signals):last_link(n_db_signals)) = kegen(1:numgen)
-      
-    end subroutine update_counters_for_dambreaks
-    
-    !> Add a new dambreak signal to the list of signals
+
+   end subroutine update_counters_for_dambreaks
+
+   !> Add a new dambreak signal to the list of signals
    module subroutine add_dambreak_signal(index_in_structure, dambridx, n_dambreak_links, n_current_dambreak_links)
       use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
       use m_alloc, only: realloc
@@ -1436,7 +1438,7 @@ contains
       integer, dimension(:), intent(inout) :: dambridx !< the index of the dambreak in the structure list.
       integer, intent(inout) :: n_dambreak_links !< the total number of flow links for dambreaks.
       integer, intent(in) :: n_current_dambreak_links !< the number of flow links for the current dambreak signal.
-      
+
       if (n_dambreak_links /= n_db_links) then
          write (msgbuf, '(a,i8,a,i8)') 'n_dambreak_links = ', n_dambreak_links, ' /= n_db_links = ', n_db_links
          call SetMessage(LEVEL_ERROR, msgbuf)
@@ -1449,7 +1451,7 @@ contains
       last_link(n_db_signals) = n_dambreak_links + n_current_dambreak_links
       n_dambreak_links = n_dambreak_links + n_current_dambreak_links
       n_db_links = n_dambreak_links
-      
-    end subroutine add_dambreak_signal
-    
+
+   end subroutine add_dambreak_signal
+
 end submodule m_dambreak_breach_submodule
