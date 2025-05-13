@@ -72,6 +72,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       integer, dimension(:), allocatable :: downstream_link_indices
       integer :: algorithm = 0
       integer :: phase = 0
+      real(kind=dp) :: t0 = 0.0_dp
       real(kind=dp) :: width = 0.0_dp
       real(kind=dp) :: maximum_width = 0.0_dp
       real(kind=dp) :: crest_level
@@ -105,13 +106,13 @@ contains
       integer :: n !< loop index
       allocate (dambreaks(n_db_signals))
       do n = 1, n_db_signals
-          dambreaks(n)%shift_in_link_array = first_link(n) - 1
-          if(first_link(n) > last_link(n)) then
-             allocate (dambreaks(n)%link_indices(0))
-          else
-             allocate (dambreaks(n)%link_indices(last_link(n)-first_link(n)+1))
-          end if
-          dambreaks(n)%number_of_links = size(dambreaks(n)%link_indices)
+         dambreaks(n)%shift_in_link_array = first_link(n) - 1
+         if (first_link(n) > last_link(n)) then
+            allocate (dambreaks(n)%link_indices(0))
+         else
+            allocate (dambreaks(n)%link_indices(last_link(n) - first_link(n) + 1))
+         end if
+         dambreaks(n)%number_of_links = size(dambreaks(n)%link_indices)
       end do
 
       call realloc(breach_start_link, n_db_signals, fill=-1)
@@ -162,7 +163,7 @@ contains
       do n = 1, n_locations(DOWNSTREAM)
          downstream_levels(location_mapping(n, DOWNSTREAM)) = s1(locations(n, DOWNSTREAM))
       end do
-      
+
       call update_water_levels_with_averaging(start_time, UPSTREAM, upstream_link_ids, upstream_levels, error)
       if (error /= 0) then
          return
@@ -235,7 +236,7 @@ contains
       error = 0
 
       if (n_averaging(up_down) == 0) then
-          return
+         return
       end if
 
       do n = 1, n_averaging(up_down)
@@ -285,46 +286,44 @@ contains
          if (i_structure == 0) then
             continue
          end if
-         associate (dambreak_settings => network%sts%struct(i_structure)%dambreak)
-            if (dambreak_settings%algorithm == BREACH_GROWTH_VDKNAAP .or. &
-                dambreak_settings%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
-               call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, dambreaks(n), &
-                   upstream_levels(n), downstream_levels(n), start_time, delta_time)
+         if (dambreaks(n)%algorithm == BREACH_GROWTH_VDKNAAP .or. &
+             dambreaks(n)%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
+            call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, dambreaks(n), &
+                                              upstream_levels(n), downstream_levels(n), start_time, delta_time)
+         end if
+         if (dambreaks(n)%algorithm == BREACH_GROWTH_TIMESERIES .and. &
+             start_time > dambreaks(n)%t0) then
+            !Time in the tim file is relative to the start time
+            success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_db_levels_widths_table, &
+                                                     irefdate, tzone, tunit, start_time - dambreaks(n)%t0, &
+                                                     levels_widths_from_table)
+            ! NOTE: AvD: the code above works correctly, but is dangerous:
+            ! the addtimespace for dambreak has added each dambreak separately with a targetoffset.
+            ! The gettimespace above, however, gets the values for *all* dambreaks, but with the relative time
+            ! of the *current* dambreak #n.
+            ! This means that if t0 values for all dambreaks are different, then the levels_widths_from_table(1:n-1) have become obsolete now.
+            ! It works, because in the previous loop iterations the values that were then still correct
+            ! have already been set into the %crest_level and %width values.
+            if (success) then
+               dambreaks(n)%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
+               dambreaks(n)%width = levels_widths_from_table((n - 1) * 2 + 2)
+            else
+               return
             end if
-            if (dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES .and. &
-                start_time > dambreak_settings%t0) then
-               !Time in the tim file is relative to the start time
-               success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_db_levels_widths_table, &
-                                                        irefdate, tzone, tunit, start_time - dambreak_settings%t0, &
-                                                        levels_widths_from_table)
-               ! NOTE: AvD: the code above works correctly, but is dangerous:
-               ! the addtimespace for dambreak has added each dambreak separately with a targetoffset.
-               ! The gettimespace above, however, gets the values for *all* dambreaks, but with the relative time
-               ! of the *current* dambreak #n.
-               ! This means that if t0 values for all dambreaks are different, then the levels_widths_from_table(1:n-1) have become obsolete now.
-               ! It works, because in the previous loop iterations the values that were then still correct
-               ! have already been set into the %crest_level and %width values.
-               if (success) then
-                  dambreaks(n)%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
-                  dambreaks(n)%width = levels_widths_from_table((n - 1) * 2 + 2)
-               else
-                  return
-               end if
-            end if
+         end if
 
-            if (dambreak_settings%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
-               dambreaks(n)%breach_width_derivative = &
-                  (dambreaks(n)%width - dambreaks(n)%breach_width) / delta_time
-            end if
+         if (dambreaks(n)%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
+            dambreaks(n)%breach_width_derivative = &
+               (dambreaks(n)%width - dambreaks(n)%breach_width) / delta_time
+         end if
 
-            dambreaks(n)%breach_width = dambreaks(n)%width
-            dambreaks(n)%breach_depth = dambreaks(n)%crest_level
+         dambreaks(n)%breach_width = dambreaks(n)%width
+         dambreaks(n)%breach_depth = dambreaks(n)%crest_level
 
-            if (dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then
-               dambreaks(n)%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
-                                                         downstream_levels(n), dambreaks(n)%breach_depth)
-            end if
-         end associate
+         if (dambreaks(n)%algorithm == BREACH_GROWTH_TIMESERIES) then
+            dambreaks(n)%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
+                                                                       downstream_levels(n), dambreaks(n)%breach_depth)
+         end if
       end do
 
    end subroutine calculate_dambreak_widths
@@ -332,7 +331,7 @@ contains
    !> This routine sets dambreak%crest_level and dambreak%width, these varuables are needed
    !! in the actual dambreak computation in dflowfm_kernel
    subroutine prepare_dambreak_calculation(dambreak_settings, dambreak, upstream_water_level, &
-       downstream_water_level, time, time_step)
+                                           downstream_water_level, time, time_step)
       use ieee_arithmetic, only: ieee_is_nan
       use m_dambreak, only: t_dambreak_settings, BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP
       use m_physcoef, only: gravity => ag
@@ -354,7 +353,7 @@ contains
       real(kind=dp) :: water_level_jump_dambreak
       real(kind=dp) :: breach_width_derivative
 
-      time_from_breaching = time - dambreak_settings%t0
+      time_from_breaching = time - dambreak%t0
 
       ! breaching not started
       if (time_from_breaching < 0) return
@@ -364,13 +363,13 @@ contains
       width_increment = 0.0d0
 
       !vdKnaap(2000) formula: to do: implement table
-      if (dambreak_settings%algorithm == BREACH_GROWTH_VDKNAAP) then
+      if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
 
          ! The linear part
          if (time_from_breaching < dambreak_settings%time_to_breach_to_maximum_depth) then
             dambreak%crest_level = dambreak%crest_level_ini - &
-                                 time_from_breaching / dambreak_settings%time_to_breach_to_maximum_depth * &
-                                 (dambreak%crest_level_ini - dambreak_settings%crest_level_min)
+                                   time_from_breaching / dambreak_settings%time_to_breach_to_maximum_depth * &
+                                   (dambreak%crest_level_ini - dambreak_settings%crest_level_min)
             breach_width = dambreak_settings%breach_width_ini
          else
             ! The logarithmic part, time_from_breaching in seconds
@@ -383,7 +382,7 @@ contains
          end if
 
          ! Verheij-vdKnaap(2002) formula
-      else if (dambreak_settings%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
+      else if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
 
          if (time <= dambreak_settings%end_time_first_phase) then
             ! phase 1: lowering
@@ -405,7 +404,7 @@ contains
                breach_width_derivative = (dambreak_settings%f1 * dambreak_settings%f2 / log(10D0)) * &
                                          (delta_level / (dambreak_settings%u_crit * dambreak_settings%u_crit)) * &
                                          (1.0 / (1.0 + (dambreak_settings%f2 * gravity * time_from_first_phase / &
-                                         (dambreak_settings%u_crit * SECONDS_IN_HOUR))))
+                                                        (dambreak_settings%u_crit * SECONDS_IN_HOUR))))
                width_increment = breach_width_derivative * (time_step / SECONDS_IN_HOUR)
                !ensure monotonically increasing dambreak%width
                if (width_increment > 0) then
@@ -418,7 +417,7 @@ contains
       end if
 
       ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and set_dambreak_coefficients subroutine below)
-      if (dambreak_settings%algorithm == BREACH_GROWTH_VDKNAAP) then
+      if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
          actual_maximum_width = min(dambreak_settings%maximum_allowed_width, dambreak%maximum_width)
       else
          actual_maximum_width = dambreak%maximum_width
@@ -685,7 +684,7 @@ contains
          values(1:NUMVALS_DAMBREAK - 1, n) = 0.0_dp
          index_structure = dambreaks(n)%index_structure
          do link = 1, dambreaks(n)%number_of_links
-            if (is_not_db_active_link(link+dambreaks(n)%shift_in_link_array)) then
+            if (is_not_db_active_link(link + dambreaks(n)%shift_in_link_array)) then
                cycle
             end if
 
@@ -965,6 +964,8 @@ contains
                dambreaks(n)%maximum_width = 0.0_dp
                dambreaks(n)%crest_level = dambreak_settings%crest_level_ini
                dambreaks(n)%crest_level_ini = dambreak_settings%crest_level_ini
+               dambreaks(n)%algorithm = dambreak_settings%algorithm
+               dambreaks(n)%t0 = dambreak_settings%t0
                if (dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*kx+1) when calling ec_gettimespacevalue.
                   if (index(trim(dambreak_settings%levels_and_widths)//'|', '.tim|') > 0) then
@@ -974,7 +975,7 @@ contains
                      kdum = 1
                      kx = 2
                      success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, dambreak_settings%levels_and_widths, uniform, &
-                               spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx
+                                                       spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx
                      if (.not. success) then
                         write (msgbuf, '(5a)') 'Cannot process a tim file for ''', qid, ''' for the dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
@@ -991,7 +992,7 @@ contains
                      ierr = findnode(dambreak_settings%water_level_upstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
                         write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', &
-                            trim(dambreak_settings%water_level_upstream_node_id), &
+                           trim(dambreak_settings%water_level_upstream_node_id), &
                            ''' in dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
                      else
@@ -1016,7 +1017,7 @@ contains
                      ierr = findnode(dambreak_settings%water_level_downstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
                         write (msgbuf, '(5a)') 'Cannot find the node for water_level_downstream_node_id = ''', &
-                            trim(dambreak_settings%water_level_downstream_node_id), &
+                           trim(dambreak_settings%water_level_downstream_node_id), &
                            ''' in dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
                      else
@@ -1196,6 +1197,9 @@ contains
                dambreaks(n)%maximum_width = 0.0_dp
                dambreaks(n)%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
                dambreaks(n)%crest_level_ini = network%sts%struct(istrtmp)%dambreak%crest_level_ini
+               dambreaks(n)%algorithm = network%sts%struct(istrtmp)%dambreak%algorithm
+               dambreaks(n)%t0 = network%sts%struct(istrtmp)%dambreak%t0
+               
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                   network%sts%struct(istrtmp)%dambreak%levels_and_widths = trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)
@@ -1471,5 +1475,5 @@ contains
       names = dambreaks%name
 
    end function get_dambreak_names
-    
+
 end submodule m_dambreak_breach_submodule
