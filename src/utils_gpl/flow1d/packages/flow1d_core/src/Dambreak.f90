@@ -42,7 +42,7 @@ module m_dambreak
    integer, parameter, public :: BREACH_GROWTH_VERHEIJVDKNAAP = 2
    integer, parameter, public :: BREACH_GROWTH_TIMESERIES = 3
 
-   type, public :: t_dambreak
+   type, public :: t_dambreak_settings
       integer :: algorithm
       integer :: material_type = 1 !for algorithm BREACH_GROWTH_VDKNAAP, default material type is clay
       real(kind=dp) :: start_location_x
@@ -72,7 +72,7 @@ contains
 
    subroutine set_dambreak_coefficients(dambreak)
 
-      type(t_dambreak), pointer, intent(inout) :: dambreak
+      type(t_dambreak_settings), pointer, intent(inout) :: dambreak
 
       if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
          ! clay
