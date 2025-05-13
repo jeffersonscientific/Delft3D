@@ -208,7 +208,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "AVERAD    ","RadSurf   ",   1,"Y","x",1
 "AVERAD    ","ITIME     ",   2,"N"," ",1
 "AVERAD    ","Latitude  ",   3,"Y","x",1
-"AVERAD    ","RadAve    ",   4,"Y","x",1
+"AVERAD    ","RefDay    ",   4,"Y","x",1
 "AVERAD    ","AuxSys    ",   5,"Y"," ",1
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
@@ -596,7 +596,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalcRadAve","fRefl     ",   8,"Y","x",1
 "Daylength ","ITIME     ",   1,"N","x",1
 "Daylength ","Latitude  ",   2,"Y","x",1
-"Daylength ","RadAve    ",   3,"Y","x",1
+"Daylength ","RefDay    ",   3,"Y","x",1
 "Daylength ","AuxSys    ",   4,"Y","x",1
 "Reflection","ITIME     ",   1,"N","x",1
 "Reflection","Latitude  ",   2,"Y","x",1
