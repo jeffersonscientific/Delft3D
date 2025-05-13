@@ -49,7 +49,6 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    integer, dimension(:), allocatable :: downstream_link_ids !< dambreak downstream links index array
 
    ! time varying, values can be retrieved via BMI interface
-   real(kind=dp), dimension(:), allocatable, target :: breach_widths !< dambreak breach widths (as a level)
    real(kind=dp), dimension(:), allocatable, target :: upstream_levels !< upstream water levels computed each time step
    real(kind=dp), dimension(:), allocatable, target :: downstream_levels !< downstream water levels computed each time step
    
@@ -102,7 +101,6 @@ contains
       
       call realloc(dambreak_structure, n_db_signals, fill=0)
       call realloc(breach_start_link, n_db_signals, fill=-1)
-      call realloc(breach_widths, n_db_signals, fill=0.0_dp)
       call realloc(dambreak_names, n_db_signals, fill="")
       call realloc(active_links, n_db_links, fill=0)
       call realloc(levels_widths_from_table, n_db_signals * 2, fill=0.0_dp)
@@ -301,10 +299,10 @@ contains
 
             if (dambreak%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
                dambreak%breach_width_derivative = &
-                  (dambreak%width - breach_widths(n)) / delta_time
+                  (dambreak%width - dambreak_signals(n)%breach_width) / delta_time
             end if
 
-            breach_widths(n) = dambreak%width
+            dambreak_signals(n)%breach_width = dambreak%width
             dambreak_signals(n)%breach_depth = dambreak%crest_level
 
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
@@ -830,7 +828,7 @@ contains
          call SetMessage(LEVEL_ERROR, msgbuf)
          res = c_null_ptr
       else
-         res = c_loc(breach_widths(item_index))
+         res = c_loc(dambreak_signals(item_index)%breach_width)
       end if
 
    end function get_dambreak_breach_width_c_loc
