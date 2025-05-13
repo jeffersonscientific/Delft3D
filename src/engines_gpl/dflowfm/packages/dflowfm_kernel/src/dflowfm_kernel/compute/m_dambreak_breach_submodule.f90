@@ -285,17 +285,17 @@ contains
          if (i_structure == 0) then
             continue
          end if
-         associate (dambreak => network%sts%struct(i_structure)%dambreak)
-            if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP .or. &
-                dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
+         associate (dambreak_settings => network%sts%struct(i_structure)%dambreak)
+            if (dambreak_settings%algorithm == BREACH_GROWTH_VDKNAAP .or. &
+                dambreak_settings%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
                call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, dambreaks(n), &
                    upstream_levels(n), downstream_levels(n), start_time, delta_time)
             end if
-            if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES .and. &
-                start_time > dambreak%t0) then
+            if (dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES .and. &
+                start_time > dambreak_settings%t0) then
                !Time in the tim file is relative to the start time
                success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_db_levels_widths_table, &
-                                                        irefdate, tzone, tunit, start_time - dambreak%t0, &
+                                                        irefdate, tzone, tunit, start_time - dambreak_settings%t0, &
                                                         levels_widths_from_table)
                ! NOTE: AvD: the code above works correctly, but is dangerous:
                ! the addtimespace for dambreak has added each dambreak separately with a targetoffset.
@@ -312,7 +312,7 @@ contains
                end if
             end if
 
-            if (dambreak%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
+            if (dambreak_settings%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
                dambreaks(n)%breach_width_derivative = &
                   (dambreaks(n)%width - dambreaks(n)%breach_width) / delta_time
             end if
@@ -320,9 +320,9 @@ contains
             dambreaks(n)%breach_width = dambreaks(n)%width
             dambreaks(n)%breach_depth = dambreaks(n)%crest_level
 
-            if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
+            if (dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then
                dambreaks(n)%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
-                                                                      downstream_levels(n), dambreaks(n)%breach_depth)
+                                                         downstream_levels(n), dambreaks(n)%breach_depth)
             end if
          end associate
       end do
@@ -331,14 +331,14 @@ contains
 
    !> This routine sets dambreak%crest_level and dambreak%width, these varuables are needed
    !! in the actual dambreak computation in dflowfm_kernel
-   subroutine prepare_dambreak_calculation(dambreak_settings, signal, upstream_water_level, &
+   subroutine prepare_dambreak_calculation(dambreak_settings, dambreak, upstream_water_level, &
        downstream_water_level, time, time_step)
       use ieee_arithmetic, only: ieee_is_nan
       use m_dambreak, only: t_dambreak_settings, BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP
       use m_physcoef, only: gravity => ag
 
-      type(t_dambreak_settings), pointer, intent(inout) :: dambreak_settings !< dambreak settings for a single dambreak
-      type(t_dambreak), intent(inout) :: signal !< dambreak settings for a single dambreak
+      type(t_dambreak_settings), pointer, intent(in) :: dambreak_settings !< dambreak settings for a single dambreak
+      type(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
       real(kind=dp), intent(in) :: upstream_water_level !< waterlevel at upstream link from dambreak position
       real(kind=dp), intent(in) :: downstream_water_level !< waterlevel at downstream link from dambreak position
       real(kind=dp), intent(in) :: time !< current time
@@ -368,9 +368,9 @@ contains
 
          ! The linear part
          if (time_from_breaching < dambreak_settings%time_to_breach_to_maximum_depth) then
-            signal%crest_level = signal%crest_level_ini - &
+            dambreak%crest_level = dambreak%crest_level_ini - &
                                  time_from_breaching / dambreak_settings%time_to_breach_to_maximum_depth * &
-                                 (signal%crest_level_ini - dambreak_settings%crest_level_min)
+                                 (dambreak%crest_level_ini - dambreak_settings%crest_level_min)
             breach_width = dambreak_settings%breach_width_ini
          else
             ! The logarithmic part, time_from_breaching in seconds
@@ -378,8 +378,8 @@ contains
          end if
 
          ! breach width must increase monotonically
-         if (breach_width > signal%width) then
-            signal%width = breach_width
+         if (breach_width > dambreak%width) then
+            dambreak%width = breach_width
          end if
 
          ! Verheij-vdKnaap(2002) formula
@@ -387,21 +387,21 @@ contains
 
          if (time <= dambreak_settings%end_time_first_phase) then
             ! phase 1: lowering
-            signal%crest_level = signal%crest_level_ini - &
+            dambreak%crest_level = dambreak%crest_level_ini - &
                                    time_from_breaching / dambreak_settings%time_to_breach_to_maximum_depth * &
-                                   (signal%crest_level_ini - dambreak_settings%crest_level_min)
-            signal%width = dambreak_settings%breach_width_ini
-            signal%phase = 1
+                                   (dambreak%crest_level_ini - dambreak_settings%crest_level_min)
+            dambreak%width = dambreak_settings%breach_width_ini
+            dambreak%phase = 1
          else
             ! phase 2: widening
-            signal%crest_level = dambreak_settings%crest_level_min
+            dambreak%crest_level = dambreak_settings%crest_level_min
             water_level_jump_dambreak = calculate_water_level_jump(upstream_water_level, downstream_water_level, &
-                                                                   signal%crest_level)
+                                                                   dambreak%crest_level)
             delta_level = (gravity * water_level_jump_dambreak)**1.5d0
             time_from_first_phase = time - dambreak_settings%end_time_first_phase
 
-            if (signal%width < signal%maximum_width .and. (.not. ieee_is_nan(signal%normal_velocity)) &
-                .and. dabs(signal%normal_velocity) > dambreak_settings%u_crit) then
+            if (dambreak%width < dambreak%maximum_width .and. (.not. ieee_is_nan(dambreak%normal_velocity)) &
+                .and. dabs(dambreak%normal_velocity) > dambreak_settings%u_crit) then
                breach_width_derivative = (dambreak_settings%f1 * dambreak_settings%f2 / log(10D0)) * &
                                          (delta_level / (dambreak_settings%u_crit * dambreak_settings%u_crit)) * &
                                          (1.0 / (1.0 + (dambreak_settings%f2 * gravity * time_from_first_phase / &
@@ -409,24 +409,24 @@ contains
                width_increment = breach_width_derivative * (time_step / SECONDS_IN_HOUR)
                !ensure monotonically increasing dambreak%width
                if (width_increment > 0) then
-                  signal%width = signal%width + width_increment
+                  dambreak%width = dambreak%width + width_increment
                end if
             end if
          end if
-         signal%breach_width_derivative = breach_width_derivative
-         signal%water_level_jump = water_level_jump_dambreak
+         dambreak%breach_width_derivative = breach_width_derivative
+         dambreak%water_level_jump = water_level_jump_dambreak
       end if
 
       ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and set_dambreak_coefficients subroutine below)
       if (dambreak_settings%algorithm == BREACH_GROWTH_VDKNAAP) then
-         actual_maximum_width = min(dambreak_settings%maximum_allowed_width, signal%maximum_width)
+         actual_maximum_width = min(dambreak_settings%maximum_allowed_width, dambreak%maximum_width)
       else
-         actual_maximum_width = signal%maximum_width
+         actual_maximum_width = dambreak%maximum_width
       end if
 
       !width cannot exceed the width of the snapped polyline
-      if (signal%width >= actual_maximum_width) then
-         signal%width = actual_maximum_width
+      if (dambreak%width > actual_maximum_width) then
+         dambreak%width = actual_maximum_width
       end if
 
    end subroutine prepare_dambreak_calculation
