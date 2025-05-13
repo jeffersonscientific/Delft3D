@@ -685,8 +685,8 @@ contains
          ! values(NUMVALS_DAMBREAK,n) is the cumulative over time, we do not reset it to 0
          values(1:NUMVALS_DAMBREAK - 1, n) = 0.0_dp
          index_structure = dambreak_signals(n)%index_structure
-         do link = first_link(n), last_link(n)
-            if (is_not_db_active_link(link)) then
+         do link = 1, dambreak_signals(n)%number_of_links
+            if (is_not_db_active_link(link+dambreak_signals(n)%shift_in_link_array)) then
                cycle
             end if
 
@@ -935,8 +935,8 @@ contains
       call allocate_and_initialize_dambreak_data()
 
       do n = 1, n_db_signals
-         do k = first_link(n), last_link(n)
-            link_index(k) = network%sts%struct(dambridx(n))%linknumbers(k - first_link(n) + 1)
+         do k = 1, dambreak_signals(n)%number_of_links
+            link_index(k) = network%sts%struct(dambridx(n))%linknumbers(k)
             link = abs(link_index(k))
             if (link_index(k) > 0) then
                upstream_link_ids(k) = ln(1, link)
@@ -1040,10 +1040,10 @@ contains
                call realloc(xl, [nDambreakCoordinates, 2])
                call realloc(yl, [nDambreakCoordinates, 2])
                indexLink = 0
-               do k = first_link(n), last_link(n)
+               do k = 1, dambreak_signals(n)%number_of_links
                   indexLink = indexLink + 1
                   ! compute the mid point
-                  link = abs(link_index(k))
+                  link = abs(dambreak_signals(n)%link_indices(k))
                   k1 = ln(1, link)
                   k2 = ln(2, link)
                   xl(indexLink, 1) = xz(k1)
@@ -1060,8 +1060,8 @@ contains
                call set_breach_start_link(n, Lstart)
 
                ! compute the normal projections of the start and endpoints of the flow links
-               do k = first_link(n), last_link(n)
-                  link = abs(link_index(k))
+               do k = 1, dambreak_signals(n)%number_of_links
+                  link = abs(dambreak_signals(n)%link_indices(k))
                   if (kcu(link) == 3) then ! 1d2d flow link
                      link_effective_width(k) = wu(link)
                   else
@@ -1285,10 +1285,10 @@ contains
             allocate (xl(nDambreakCoordinates, 2))
             allocate (yl(nDambreakCoordinates, 2))
             indexLink = 0
-            do k = first_link(n), last_link(n)
+            do k = 1, dambreak_signals(n)%number_of_links
                indexLink = indexLink + 1
                ! compute the mid point
-               Lf = abs(link_index(k))
+               Lf = abs(dambreak_signals(n)%link_indices(k))
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
                xl(indexLink, 1) = xz(k1)
@@ -1308,8 +1308,8 @@ contains
             call set_breach_start_link(n, Lstart)
 
             ! compute the normal projections of the start and endpoints of the flow links
-            do k = first_link(n), last_link(n)
-               Lf = abs(link_index(k))
+            do k = 1, dambreak_signals(n)%number_of_links
+               Lf = abs(dambreak_signals(n)%link_indices(k))
                if (kcu(Lf) == 3) then ! 1d2d flow link
                   link_effective_width(k) = wu(Lf)
                else
@@ -1349,8 +1349,8 @@ contains
       if (exist_dambreak_links()) then
          do n = 1, n_db_signals
             if (dambreak_signals(n)%index_structure /= 0) then
-               do k = first_link(n), last_link(n)
-                  does_link_contain_structures(abs(link_index(k))) = .true.
+               do k = 1, dambreak_signals(n)%number_of_links
+                  does_link_contain_structures(abs(dambreak_signals(n)%link_indices(k))) = .true.
                end do
             end if
          end do
@@ -1387,8 +1387,8 @@ contains
       integer :: link !< link index
 
       do n = 1, n_db_signals
-         do k = first_link(n), last_link(n)
-            link = abs(link_index(k))
+         do k = 1, dambreak_signals(n)%number_of_links
+            link = abs(dambreak_signals(n)%link_indices(k))
             au(link) = hu(link) * link_actual_width(k)
          end do
       end do
