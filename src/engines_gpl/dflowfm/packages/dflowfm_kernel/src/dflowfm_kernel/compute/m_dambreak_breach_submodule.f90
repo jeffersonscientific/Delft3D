@@ -368,8 +368,8 @@ contains
 
          ! The linear part
          if (time_from_breaching < dambreak%time_to_breach_to_maximum_depth) then
-            signal%crest_level = dambreak%crest_level_ini - &
-                                   time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
+            signal%crest_level = signal%crest_level_ini - &
+                                   time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (signal%crest_level_ini - dambreak%crest_level_min)
             breach_width = dambreak%breach_width_ini
          else
             ! The logarithmic part, time_from_breaching in seconds
@@ -386,8 +386,8 @@ contains
 
          if (time <= dambreak%end_time_first_phase) then
             ! phase 1: lowering
-            signal%crest_level = dambreak%crest_level_ini - &
-                                   time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
+            signal%crest_level = signal%crest_level_ini - &
+                                   time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (signal%crest_level_ini - dambreak%crest_level_min)
             signal%width = dambreak%breach_width_ini
             signal%phase = 1
          else
@@ -911,7 +911,6 @@ contains
       integer :: ierr
       integer :: n, k, link, index_in_structure
       integer :: k1, k2, kx, k3, k4, kpol
-      integer :: ndambreakcoordinates, indexlink
       integer :: lStart
       integer, dimension(1) :: kdum
       logical :: success
@@ -919,7 +918,6 @@ contains
       real(kind=dp) :: x_breach, y_breach
       real(kind=dp), allocatable, dimension(:, :) :: xl, yl
       real(kind=dp), dimension(1) :: xdum, ydum
-
       character(len=Idlen) :: qid
 
       if (n_db_signals <= 0) then
@@ -963,6 +961,7 @@ contains
                dambreak_signals(n)%width = 0.0_dp
                dambreak_signals(n)%maximum_width = 0.0_dp
                dambreak_signals(n)%crest_level = dambreak%crest_level_ini
+               dambreak_signals(n)%crest_level_ini = dambreak%crest_level_ini
                if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*kx+1) when calling ec_gettimespacevalue.
                   if (index(trim(dambreak%levels_and_widths)//'|', '.tim|') > 0) then
@@ -1032,20 +1031,17 @@ contains
                if (.not. associated(pstru%yCoordinates)) cycle
 
                ! Create the array with the coordinates of the flow links
-               nDambreakCoordinates = dambreak_signals(n)%number_of_links
-               call realloc(xl, [nDambreakCoordinates, 2])
-               call realloc(yl, [nDambreakCoordinates, 2])
-               indexLink = 0
+               call realloc(xl, [dambreak_signals(n)%number_of_links, 2])
+               call realloc(yl, [dambreak_signals(n)%number_of_links, 2])
                do k = 1, dambreak_signals(n)%number_of_links
-                  indexLink = indexLink + 1
                   ! compute the mid point
                   link = abs(dambreak_signals(n)%link_indices(k))
                   k1 = ln(1, link)
                   k2 = ln(2, link)
-                  xl(indexLink, 1) = xz(k1)
-                  xl(indexLink, 2) = xz(k2)
-                  yl(indexLink, 1) = yz(k1)
-                  yl(indexLink, 2) = yz(k2)
+                  xl(k, 1) = xz(k1)
+                  xl(k, 2) = xz(k2)
+                  yl(k, 1) = yz(k1)
+                  yl(k, 2) = yz(k2)
                end do
 
                ! comp_breach_point takes plain arrays to compute the breach point (also used in unstruct_bmi)
@@ -1112,10 +1108,9 @@ contains
       character(len=IdLen) :: strid ! TODO: where to put IdLen (now in MessageHandling)
       character(len=IdLen) :: strtype ! TODO: where to put IdLen (now in MessageHandling)
       integer :: istrtmp
-
+      integer :: k3, k4, kpol, index_structure, indexInPliset, Lstart
       real(kind=dp) :: x_breach, y_breach
       real(kind=dp) :: xn, yn
-      integer :: nDambreakCoordinates, k3, k4, kpol, indexInStructure, indexInPliset, indexLink, Lstart
       real(kind=dp) :: xla, xlb, yla, ylb
       real(kind=dp), allocatable :: xl(:, :), yl(:, :)
 
@@ -1141,14 +1136,12 @@ contains
             dambreak_signals(n)%link_indices = link_index(first_link(n):last_link(n))
          end do
 
-         ! number of columns in the dambreak hights and widths tim file
          do n = 1, n_db_signals
 
-            !The index of the structure
-            indexInStructure = dambridx(n)
-            if (indexInStructure == -1) cycle
+            index_structure = dambridx(n)
+            if (index_structure == -1) cycle
 
-            str_ptr => strs_ptr%child_nodes(indexInStructure)%node_ptr
+            str_ptr => strs_ptr%child_nodes(index_structure)%node_ptr
 
             ! read the id first
             strid = ' '
@@ -1161,7 +1154,7 @@ contains
                success = .true.
             else
                ! Postponed read, because this is with old-style .pli ifile
-               indexInPliset = indexInStructure ! dambreakPolygons were already read in old style .pli count+selectelset loop above.
+               indexInPliset = index_structure ! dambreakPolygons were already read in old style .pli count+selectelset loop above.
 
                ! read the type
                strtype = ' '
@@ -1196,6 +1189,7 @@ contains
                dambreak_signals(n)%width = 0.0_dp
                dambreak_signals(n)%maximum_width = 0.0_dp
                dambreak_signals(n)%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
+               dambreak_signals(n)%crest_level_ini = network%sts%struct(istrtmp)%dambreak%crest_level_ini
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                   network%sts%struct(istrtmp)%dambreak%levels_and_widths = trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)
@@ -1277,20 +1271,17 @@ contains
             if (allocated(yl)) then
                deallocate (yl)
             end if
-            nDambreakCoordinates = dambreak_signals(n)%number_of_links
-            allocate (xl(nDambreakCoordinates, 2))
-            allocate (yl(nDambreakCoordinates, 2))
-            indexLink = 0
+            allocate (xl(dambreak_signals(n)%number_of_links, 2))
+            allocate (yl(dambreak_signals(n)%number_of_links, 2))
             do k = 1, dambreak_signals(n)%number_of_links
-               indexLink = indexLink + 1
                ! compute the mid point
                Lf = abs(dambreak_signals(n)%link_indices(k))
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
-               xl(indexLink, 1) = xz(k1)
-               xl(indexLink, 2) = xz(k2)
-               yl(indexLink, 1) = yz(k1)
-               yl(indexLink, 2) = yz(k2)
+               xl(k, 1) = xz(k1)
+               xl(k, 2) = xz(k2)
+               yl(k, 1) = yz(k1)
+               yl(k, 2) = yz(k2)
             end do
 
             ! comp_breach_point takes plain arrays to compute the breach point (also used in unstruct_bmi)
