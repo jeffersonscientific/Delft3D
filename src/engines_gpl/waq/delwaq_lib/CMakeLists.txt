@@ -14,7 +14,7 @@ create_target(
 )
 
 # Set dependencies
-set(oss_dependencies waq_external_access_layer)
+set(oss_dependencies waq_external_access_layer waq_plugin_wasteload)
 
 if(WIN32)
         target_link_libraries(${library_name} PRIVATE ${oss_dependencies})

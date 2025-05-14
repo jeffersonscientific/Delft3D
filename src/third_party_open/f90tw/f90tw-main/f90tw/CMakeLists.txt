@@ -42,7 +42,7 @@ function(F90TWFPP INFILE OUTFILE)
         find_program(SED_EXE NAMES "sed" REQUIRED)
         find_program(TR_EXE NAMES "tr" REQUIRED)
         add_custom_command(
-            OUTPUT "${OUTFILE"
+            OUTPUT "${OUTFILE}"
             COMMAND "${FPP_EXE}" ${FPPOPTS} ${FPPDEFS} ${FPPINCL} "${INFILE}" | ${SED_EXE} \"/^[ \\t]*\#/d\" | ${TR_EXE} \"\;\" \"\\n\" > "${OUTFILE}"
             DEPENDS "${INFILE}" ${FPP_DEPENDS}
             COMMENT "precompile ${INFILE}"

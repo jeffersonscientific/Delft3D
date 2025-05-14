@@ -33,10 +33,11 @@
 #define CONCAT5(a,b,c,d,e,w) CONCAT(a,CONCAT(w,CONCAT4(b,c,d,e,w)))
 #define CONCAT6(a,b,c,d,e,f,w) CONCAT(a,CONCAT(w,CONCAT5(b,c,d,e,f,w)))
 #define PREPENDF90(x) CONCAT2(F90,x,_)
-#define REVERSE(a,b) b,a
-#define REVERSE(a) a
+#define REVERSE2(a, b) b,a
+#define REVERSE1(a) a
+#define GET_MACRO(_0,_1,NAME,...) NAME
+#define REVERSE(...) GET_MACRO(__VA_ARGS__,REVERSE2,REVERSE1)(__VA_ARGS__)
 
-/* set boost as the default test framework TESTFRK =(boost|gtest) */
 #define TESTFRK gtest
 
 /* version */
