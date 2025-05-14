@@ -150,53 +150,23 @@ function(F90TWTEST NAME)
     gtest_discover_tests(${NAME})
 endfunction()
 
-# resolve the preprocessor to be used. it is assumed that on unix bases systems
-# cpp or clang  will be found in the path and in addition, on windows based
-# systems, cl.exe may be abailable. On mac os cpp in interface to clang with
-# "-traditional-cpp" locked. To avoid this we use directly the clang frond end.
-if(WIN32)
-    find_program(FPP_EXE NAMES cpp.exe clang.exe cl.exe REQUIRED)
-else()
-    find_program(FPP_EXE NAMES clang cpp REQUIRED)
-endif()
-
-# we have prioritized clang in find_program. otherwise we
-# have to chech the cpp flavor and swtch to clang in the
-# of LLVM where the option "-traditional-cpp" is locked
-if(NOT WIN32)
-    execute_process(
-        COMMAND ${FPP_EXE} --version
-        OUTPUT_VARIABLE FPPEXETMP
-    )
-    if(FPPEXETMP MATCHES LLVM AND (NOT FPP_EXE MATCHES clang))
-        unset(FPP_EXE CACHE)
-        find_program(FPP_EXE NAMES clang REQUIRED)
-    endif()
+set(FPP_EXE "${CMAKE_C_COMPILER}")
+if(NOT FPP_EXE)
+    message (FATAL_ERROR "C preprocessor was not found")
 endif()
 
 # resolve preprocessor options
-if (NOT FPP_EXE)
-    message (FATAL_ERROR "C preprocessor was not found")
-elseif(FPP_EXE MATCHES "clang*")
-    set(FPP_ID LLVM)
-    set(FPP_OPTIONS -cc1 -E)
-    set(FPP_SWITCH -)
-elseif(FPP_EXE MATCHES "cpp*")
-    set(FPP_ID GNU)
-    set(FPP_OPTIONS -E)
-    set(FPP_SWITCH -)
-else()
-    set(FPP_ID MSVC)
+if(WIN32)
     set(FPP_OPTIONS /E)
     set(FPP_SWITCH /)
+else()
+    set(FPP_OPTIONS -E)
+    set(FPP_SWITCH -)
 endif()
 
-# make available the preprocessor and the options through the FPP_ID and FPP_OPTIONS variables
-set(FPP_ID ${FPP_ID} CACHE STRING "preprocessor id")
+# make available the preprocessor and the options through FPP_OPTIONS variables
 set(FPP_OPTIONS ${FPP_OPTIONS} CACHE STRING "preprocessor options")
 set(FPP_SWITCH ${FPP_SWITCH} CACHE STRING "preprocessor switch")
-
-message(STATUS "Found cpp: ${FPP_EXE} of ${FPP_ID} flavor")
 
 add_library(f90tw_gtest STATIC gtest_assertions.cpp)
 set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
