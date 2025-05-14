@@ -51,7 +51,7 @@ def create_destination_directory(dest_dir: Path, logger: Logger) -> bool:
             logger.log(f"Unable to create directory - {dest_dir}", LogLevel.ERROR)
             success = False
     else:
-        logger.log("Directory exists, deleting contents...", LogLevel.NORMAL)
+        logger.log("Directory exists, deleting contents...")
         for item in dest_dir.iterdir():
             try:
                 if item.is_file():
@@ -67,7 +67,7 @@ def create_destination_directory(dest_dir: Path, logger: Logger) -> bool:
     return success
 
 
-def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: Path, logger: Logger) -> int:
+def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: Path, logger: Logger) -> bool:
     """Copy all files to the destination directory.
 
     Take example cases from example_directory and the apptainer scripts from the apptainer_directory.
@@ -75,13 +75,14 @@ def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: 
 
     Returns
     -------
-        int: 1 if error, 0 if success
+        bool: True if successful, False if there were errors
     """
     h7_scripts = ["run_native_h7.sh", "submit_singularity_h7.sh"]
     exclude_patterns = ["run-all-examples-*"]
-
-    try:
-        for src_item in example_directory.rglob("*"):
+    success = True
+    # Copy examples
+    for src_item in example_directory.rglob("*"):
+        try:
             if any(src_item.match(pattern) for pattern in exclude_patterns):
                 logger.log(f"Excluding file: {src_item}")
                 continue
@@ -94,18 +95,24 @@ def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: 
             elif src_item.is_dir():
                 dest_file.mkdir(parents=True, exist_ok=True)
                 logger.log(f"Creating directory: {dest_file}")
+        except shutil.Error as e:
+            logger.log(f"Copy failed: {e}", LogLevel.ERROR)
+            success = False
 
-        for subdir in dest_dir.iterdir():
+    # Copy Apptainer scripts
+    for subdir in dest_dir.iterdir():
+        try:
             if subdir.is_dir():
                 for file in apptainer_directory.glob("*.sh"):
                     if file.name in h7_scripts:
                         dest_file = subdir / file.name
                         logger.log(f"Copying file: {file} to {dest_file}")
                         shutil.copy2(file, dest_file)
-    except shutil.Error as e:
-        logger.log(f"Copy failed: {e}", LogLevel.ERROR)
-        return 1
-    return 0
+        except shutil.Error as e:
+            logger.log(f"Copy failed: {e}", LogLevel.ERROR)
+            success = False
+    logger.log("Copy completed.")
+    return success
 
 
 def get_base_directory_ci_python_scripts(relative_path: str) -> Path:
@@ -141,8 +148,6 @@ if __name__ == "__main__":
     logger.log("Copy files from the examples directory to the destination.")
     if copy_examples(examples_dir, apptainer_dir, dest_dir, logger):
         has_errors = True
-
-    logger.log("Copy completed.")
 
     if has_errors:
         sys.exit(1)
