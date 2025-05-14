@@ -52,7 +52,7 @@ contains
       use m_dambreak_breach, only: adjust_bobs_for_dambreaks
    
       real(kind=dp) :: zcdamn, minzcdamn, blmx
-      type(t_structure), pointer :: pstru
+      class(t_structure), pointer :: pstru
       type(t_compound), pointer :: pcompound
 
       integer :: L0
@@ -84,7 +84,7 @@ contains
       end do
 
       do istru = 1, network%sts%count
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          do L0 = 1, pstru%numlinks
             L = abs(pstru%linknumbers(L0))
             k1 = ln(1, L)
@@ -104,26 +104,8 @@ contains
             bob(2, L) = max(zcdamn, bob0(2, L))
             iadv(L) = IADV_GENERAL_STRUCTURE
             call switchiadvnearlink(L)
-            if (pstru%type == ST_CULVERT) then
-               ! Culverts remain on the given invert level. The Bobs and bed level will be changed in case the invert level
-               ! is below the bed level of the channel.
-               if (pstru%culvert%leftlevel < bob0(1, L)) then
-                  write (msgbuf, '(a,f8.2,a,f8.2,a)') 'The bedlevel of the channel at the left side for '''//trim(pstru%id)//''' is changed from ', &
-                     bob0(1, L), ' into ', pstru%culvert%leftlevel, '.'
-                  call warn_flush()
-                  bob0(1, L) = pstru%culvert%leftlevel
-                  bob(1, L) = pstru%culvert%leftlevel
-                  bl(k1) = min(bl(k1), bob0(1, L))
-               end if
-               if (pstru%culvert%rightlevel < bob0(2, L)) then
-                  write (msgbuf, '(a,f8.2,a,f8.2,a)') 'The bedlevel of the channel at the right side for '''//trim(pstru%id)//''' is changed from ', &
-                     bob0(2, L), ' into ', pstru%culvert%rightlevel, '.'
-                  call warn_flush()
-                  bob0(2, L) = pstru%culvert%rightlevel
-                  bob(2, L) = pstru%culvert%rightlevel
-                  bl(k2) = min(bl(k2), bob0(2, L))
-               end if
-            end if
+            call pstru%check_left_level(bob0(1,L), bob(1,L), bl(k1))
+            call pstru%check_right_level(bob0(2,L), bob(2,L), bl(k2))
          end do
 
       end do
@@ -134,7 +116,7 @@ contains
          minzcdamn = huge(1d0)
          do i = 1, pcompound%numstructs
             istru = pcompound%structure_indices(i)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             zcdamn = get_crest_level(pstru)
             if (zcdamn == huge(1d0)) then
                ! Obviously this is a pump. So do not adust the bob
