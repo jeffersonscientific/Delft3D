@@ -932,7 +932,7 @@ contains
 
       do n = 1, n_db_signals
          do k = 1, dambreaks(n)%number_of_links
-            link_index(k) = network%sts%struct(dambridx(n))%linknumbers(k)
+            link_index(k) = network%sts%struct(dambridx(n))%linknumbers(k+dambreaks(n)%shift_in_link_array)
             link = abs(link_index(k))
             if (link_index(k) > 0) then
                upstream_link_ids(k) = ln(1, link)
