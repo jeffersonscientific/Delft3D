@@ -1472,7 +1472,11 @@ contains
    pure module function get_dambreak_names() result(names)
       character(len=128), dimension(:), allocatable :: names !< the dambreak names
 
-      names = dambreaks%name
+      if (allocated(dambreaks)) then
+         names = dambreaks%name
+     else 
+         allocate(names(0))
+     end if
 
    end function get_dambreak_names
 
