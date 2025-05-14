@@ -417,7 +417,7 @@ contains
 
       ! u1q1 for flow1d structures on links
       do istru = 1, network%sts%count
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          do L0 = 1, pstru%numlinks
             L = abs(pstru%linknumbers(L0))
             if (L < 1) then

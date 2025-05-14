@@ -228,7 +228,7 @@ contains
          valgategen(:, :) = 0.0_dp
          if (network%sts%numGates > 0) then
             do n = 1, network%sts%numGates
-               associate (pstru => network%sts%struct(network%sts%gateIndices(n)))
+               associate (pstru => network%sts%struct(network%sts%gateIndices(n))%p)
                   do i = 1, pstru%numlinks
                      La = abs(pstru%linknumbers(i))
                      if (jampi > 0) then
@@ -380,7 +380,7 @@ contains
             do n = 1, nweirgen
                valweirgen(1:NUMVALS_WEIRGEN, n) = 0.0_dp
                istru = network%sts%weirIndices(n)
-               pstru => network%sts%struct(istru)
+               pstru => network%sts%struct(istru)%p
                nlinks = pstru%numlinks
                jaghost = 0
                do L = 1, nlinks
@@ -426,7 +426,7 @@ contains
          do n = 1, network%sts%numOrifices
             valorifgen(1:NUMVALS_ORIFGEN, n) = 0.0_dp
             istru = network%sts%orificeIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             jaghost = 0
             do L = 1, nlinks
@@ -452,7 +452,7 @@ contains
          do n = 1, network%sts%numBridges
             valbridge(1:NUMVALS_BRIDGE, n) = 0.0_dp
             istru = network%sts%bridgeIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             do L = 1, nlinks ! Currently bridges have always only 1 link.
                Lf = pstru%linknumbers(L)
@@ -474,7 +474,7 @@ contains
          do n = 1, network%sts%numCulverts
             valculvert(1:NUMVALS_CULVERT, n) = 0.0_dp
             istru = network%sts%culvertIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             jaghost = 0
             do L = 1, nlinks
@@ -504,7 +504,7 @@ contains
          do n = 1, network%sts%numuniweirs
             valuniweir(1:NUMVALS_UNIWEIR, n) = 0.0_dp
             istru = network%sts%uniweirIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             jaghost = 0
             do L = 1, nlinks
@@ -537,7 +537,7 @@ contains
             do n = 1, ngenstru
                valgenstru(1:NUMVALS_GENSTRU, n) = 0.0_dp
                istru = network%sts%generalStructureIndices(n)
-               pstru => network%sts%struct(istru)
+               pstru => network%sts%struct(istru)%p
                nlinks = pstru%numlinks
                jaghost = 0
                do L = 1, nlinks
@@ -729,7 +729,7 @@ contains
          end if
          do n = 1, network%sts%numBridges
             istru = network%sts%bridgeIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             call average_valstruct(valbridge(:, n), ST_BRIDGE, istru)
          end do
@@ -741,7 +741,7 @@ contains
          end if
          do n = 1, network%sts%numCulverts
             istru = network%sts%culvertIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             call average_valstruct(valculvert(:, n), ST_CULVERT, istru)
          end do
@@ -753,7 +753,7 @@ contains
          end if
          do n = 1, network%sts%numOrifices
             istru = network%sts%orificeIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             call average_valstruct(valorifgen(:, n), ST_ORIFICE, istru)
          end do
@@ -765,7 +765,7 @@ contains
          end if
          do n = 1, network%sts%numUniWeirs
             istru = network%sts%uniweirIndices(n)
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             nlinks = pstru%numlinks
             call average_valstruct(valuniweir(:, n), ST_UNI_WEIR, istru)
             if (valuniweir(IVAL_WIDTH, n) == 0) then
@@ -790,7 +790,7 @@ contains
          if (network%sts%numGeneralStructures > 0) then ! new general structure
             do n = 1, ngenstru
                istru = network%sts%generalStructureIndices(n)
-               pstru => network%sts%struct(istru)
+               pstru => network%sts%struct(istru)%p
                nlinks = pstru%numlinks
                call average_valstruct(valgenstru(:, n), ST_GENERAL_ST, istru)
             end do
@@ -816,7 +816,7 @@ contains
          if (network%sts%numWeirs > 0) then ! new weir
             do n = 1, nweirgen
                istru = network%sts%weirIndices(n)
-               pstru => network%sts%struct(istru)
+               pstru => network%sts%struct(istru)%p
                nlinks = pstru%numlinks
                call average_valstruct(valweirgen(:, n), ST_WEIR, istru)
             end do
@@ -944,7 +944,7 @@ contains
                   istru = -1
                end if
                if (istru > 0) then ! TODO: UNST-2587: once all pump code is done, remove this temp IF.
-                  pstru => network%sts%struct(istru)
+                  pstru => network%sts%struct(istru)%p
                   valpump(IVAL_PP_CAP, n) = GetPumpCapacity(pstru)
                   valpump(IVAL_PP_DISDIR, n) = sign(1, pstru%pump%direction) * valpump(IVAL_DIS, n) ! Discharge w.r.t. pump direction (same sign as capacity)
                   valpump(IVAL_PP_STAG, n) = GetPumpStage(pstru)

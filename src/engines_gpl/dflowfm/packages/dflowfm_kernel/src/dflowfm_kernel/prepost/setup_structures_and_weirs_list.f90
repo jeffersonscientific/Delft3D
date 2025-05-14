@@ -76,7 +76,7 @@ contains
       end do
 
       do istru = 1, network%sts%count
-         associate (p_structure => network%sts%struct(istru))
+         associate (p_structure => network%sts%struct(istru)%p)
             if (p_structure%type == ST_PUMP) then
                ! skip pump structures
                cycle

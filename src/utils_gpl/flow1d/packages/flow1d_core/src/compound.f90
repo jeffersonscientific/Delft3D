@@ -157,26 +157,26 @@ end subroutine
       
       do i = 1, cmps%count
          istru = cmps%compound(i)%structure_indices(1)
-         numlinks = sts%struct(istru)%numlinks
+         numlinks = sts%struct(istru)%p%numlinks
          if (numlinks > 0) then
             allocate(cmps%compound(i)%linknumbers(numlinks))
-            cmps%compound(i)%linknumbers = sts%struct(istru)%linknumbers
+            cmps%compound(i)%linknumbers = sts%struct(istru)%p%linknumbers
          end if
          cmps%compound(i)%numlinks = numlinks
          ! now check if other members contain the same links
          do j = 2, cmps%compound(i)%numstructs
             istru = cmps%compound(i)%structure_indices(j)
-            if (cmps%compound(i)%numlinks /= sts%struct(istru)%numlinks) then
+            if (cmps%compound(i)%numlinks /= sts%struct(istru)%p%numlinks) then
                msgbuf = 'Error in compound ''' // trim(cmps%compound(i)%id) //''' the number of links in structure element ''' // &
-                  trim(sts%struct(istru)%id) //''' is different from the first structure element.'
+                  trim(sts%struct(istru)%p%id) //''' is different from the first structure element.'
                call err_flush()
                istat = 1
                cycle
             endif
             do L0 = 1, numlinks
-               if (cmps%compound(i)%linknumbers(L0) /= sts%struct(istru)%linknumbers(L0)) then
+               if (cmps%compound(i)%linknumbers(L0) /= sts%struct(istru)%p%linknumbers(L0)) then
                   msgbuf = 'Error in compound ''' // trim(cmps%compound(i)%id) //''' the link numbers in structure element ''' // &
-                     trim(sts%struct(istru)%id) //''' is inconsistent with the first structure element.'
+                     trim(sts%struct(istru)%p%id) //''' is inconsistent with the first structure element.'
                   call err_flush()
                   istat = 1
                   cycle
@@ -192,7 +192,7 @@ end subroutine
       use m_1d_structures
       
       type(t_compound),                intent(in   )  :: compound  !< Compound structure object.
-      type(t_structure), dimension(:), intent(in   )  :: struct    !< Array containing structures.
+      type(t_structurepointer), dimension(:), intent(in   )  :: struct    !< Array containing structures.
       integer,                         intent(in   )  :: L0        !< Internal link number.
       double precision,                intent(in   )  :: u0        !< Flow velocity at previous time step.
       double precision,                intent(in   )  :: teta      !< Teta at flow link.
@@ -221,9 +221,9 @@ end subroutine
       !   RU = sum_for_all_structures_in_compound(teta * Au_stru * ru_stru + (1-teta)*au_stru*u0_stru)/AU - (1-teta)*u0 /
       do i = 1, compound%numstructs
          istru = compound%structure_indices(i)
-         fu = fu + struct(istru)%fu(L0)*struct(istru)%au(L0) 
-         ru = ru + struct(istru)%au(L0) * (teta*struct(istru)%ru(L0)+ (1d0-teta)*struct(istru)%u0(L0))
-         au = au + struct(istru)%au(L0) 
+         fu = fu + struct(istru)%p%fu(L0)*struct(istru)%p%au(L0) 
+         ru = ru + struct(istru)%p%au(L0) * (teta*struct(istru)%p%ru(L0)+ (1d0-teta)*struct(istru)%p%u0(L0))
+         au = au + struct(istru)%p%au(L0) 
       enddo
       if (au > 0d0) then
          fu = fu/au

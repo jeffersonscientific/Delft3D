@@ -122,7 +122,7 @@ contains
       ! Find the flow link numbers for the structures.
       num_dambreak_links = 0
       do i = 1, network%sts%count
-         associate (pstru => network%sts%struct(i))
+         associate (pstru => network%sts%struct(i)%p)
 
             loc_spec_type = LOCTP_UNKNOWN
             if (pstru%ibran > 0) then
@@ -249,7 +249,7 @@ contains
             ! read the id first
             strid = ' '
             call prop_get(str_ptr, '', 'id', strid, success)
-            pump_ids(n) = network%sts%struct(pumpidx(n))%id
+            pump_ids(n) = network%sts%struct(pumpidx(n))%p%id
 
          end do
       end if
@@ -431,7 +431,7 @@ contains
       call allocate_and_initialize_dambreak_data(n_db_signals)
 
       do n = 1, n_db_signals
-         associate (pstru => network%sts%struct(dambridx(n)))
+         associate (pstru => network%sts%struct(dambridx(n))%p)
             do k = db_first_link(n), db_last_link(n)
                L = pstru%linknumbers(k - db_first_link(n) + 1)
                Lf = abs(L)
@@ -456,9 +456,9 @@ contains
             cycle
          end if
 
-         associate (pstru => network%sts%struct(dambridx(n)))
+         associate (pstru => network%sts%struct(dambridx(n))%p)
             associate (dambreak => pstru%dambreak)
-               db_ids(n) = network%sts%struct(index_in_structure)%id
+               db_ids(n) = network%sts%struct(index_in_structure)%p%id
 
                ! mapping
                dambreaks(n) = index_in_structure
@@ -742,7 +742,7 @@ contains
 
 ! NOTE: readStructures(network, md_structurefile) has already been called.
       do i = 1, network%sts%count
-         pstru => network%sts%struct(i)
+         pstru => network%sts%struct(i)%p
 
          loc_spec_type = LOCTP_UNKNOWN
          if (pstru%ibran > 0) then
@@ -848,7 +848,7 @@ contains
                cycle
             end if
 
-            pstru => network%sts%struct(istrtmp)
+            pstru => network%sts%struct(istrtmp)%p
 
             loc_spec_type = LOCTP_UNKNOWN
             if (pstru%ibran > 0) then
@@ -1684,13 +1684,13 @@ contains
             call prop_get(str_ptr, 'structure', 'numStages', itmp, success) ! UNST-2709: new consistent keyword
             if (success) then
                ! flow1d_io library: add and read SOBEK pump
-               ! just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number  is not used in computations)
+               ! just use the first link of the the structure (the network%sts%struct(istrtmp)%p%link_number  is not used in computations)
                if (L1pumpsg(n) <= L2pumpsg(n)) then
                   istrtmp = hashsearch(network%sts%hashlist_pump, strid)
                   if (istrtmp == -1) then
                      k = L1pumpsg(n)
                      istrtmp = addStructure(network%sts, kpump(1, k), kpump(2, k), abs(kpump(3, k)), -1, "", strid, istrtype)
-                     call readPump(network%sts%struct(istrtmp)%pump, str_ptr, strid, network%forcinglist, success)
+                     call readPump(network%sts%struct(istrtmp)%p%pump, str_ptr, strid, network%forcinglist, success)
                   end if
                end if
             end if
@@ -1803,7 +1803,7 @@ contains
                istrtype = getStructype_from_string(strtype)
                ! flow1d_io library: add and read SOBEK dambreak
                if (db_last_link(n) >= db_first_link(n)) then
-                  ! structure is active in current grid on one or more flow links: just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number is not used in computations)
+                  ! structure is active in current grid on one or more flow links: just use the first link of the the structure (the network%sts%struct(istrtmp)%p%link_number is not used in computations)
                   k = db_first_link(n)
                   k1 = db_upstream_link_ids(k)
                   k2 = db_downstream_link_ids(k)
@@ -1815,7 +1815,7 @@ contains
                   Lf = 0
                end if
                istrtmp = addStructure(network%sts, k1, k2, Lf, -1, "", strid, istrtype)
-               call readDambreak(network%sts%struct(istrtmp)%dambreak, str_ptr, strid, network%forcinglist, success)
+               call readDambreak(network%sts%struct(istrtmp)%p%dambreak, str_ptr, strid, network%forcinglist, success)
             end if
 
 ! TODO UNST-3308 ^^^
@@ -1826,30 +1826,30 @@ contains
                ! mapping
                dambreaks(n) = istrtmp
                ! set initial phase, width, crest level, coefficents if algorithm is 1
-               network%sts%struct(istrtmp)%dambreak%phase = 0
-               network%sts%struct(istrtmp)%dambreak%width = 0.0_dp
-               network%sts%struct(istrtmp)%dambreak%maximum_width = 0.0_dp
-               network%sts%struct(istrtmp)%dambreak%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
-               if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
+               network%sts%struct(istrtmp)%p%dambreak%phase = 0
+               network%sts%struct(istrtmp)%p%dambreak%width = 0.0_dp
+               network%sts%struct(istrtmp)%p%dambreak%maximum_width = 0.0_dp
+               network%sts%struct(istrtmp)%p%dambreak%crest_level = network%sts%struct(istrtmp)%p%dambreak%crest_level_ini
+               if (network%sts%struct(istrtmp)%p%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                   qid = 'dambreakLevelsAndWidths'
-                  network%sts%struct(istrtmp)%dambreak%levels_and_widths = trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)
-                  if (index(trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)//'|', '.tim|') > 0) then
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, network%sts%struct(istrtmp)%dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx=3
+                  network%sts%struct(istrtmp)%p%dambreak%levels_and_widths = trim(network%sts%struct(istrtmp)%p%dambreak%levels_and_widths)
+                  if (index(trim(network%sts%struct(istrtmp)%p%dambreak%levels_and_widths)//'|', '.tim|') > 0) then
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, network%sts%struct(istrtmp)%p%dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx=3
                   else
                      success = .false.
                   end if
                end if
 
                ! inquire if the water level upstream has to be taken from a location or be a result of averaging
-               if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
-                   .or. network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
-                  xla = network%sts%struct(istrtmp)%dambreak%water_level_upstream_location_x
-                  yla = network%sts%struct(istrtmp)%dambreak%water_level_upstream_location_y
-                  if (network%sts%struct(istrtmp)%dambreak%water_level_upstream_node_id /= '') then
-                     ierr = findnode(network%sts%struct(istrtmp)%dambreak%water_level_upstream_node_id, k)
+               if (network%sts%struct(istrtmp)%p%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. network%sts%struct(istrtmp)%p%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
+                  xla = network%sts%struct(istrtmp)%p%dambreak%water_level_upstream_location_x
+                  yla = network%sts%struct(istrtmp)%p%dambreak%water_level_upstream_location_y
+                  if (network%sts%struct(istrtmp)%p%dambreak%water_level_upstream_node_id /= '') then
+                     ierr = findnode(network%sts%struct(istrtmp)%p%dambreak%water_level_upstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
-                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', trim(network%sts%struct(istrtmp)%dambreak%water_level_upstream_node_id), &
+                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', trim(network%sts%struct(istrtmp)%p%dambreak%water_level_upstream_node_id), &
                            ''' in dambreak ''', trim(strid), '''.'
                         call err_flush()
                      else
@@ -1866,14 +1866,14 @@ contains
                end if
 
                ! inquire if the water level downstream has to be taken from a location or be a result of averaging
-               if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
-                   .or. network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
-                  xla = network%sts%struct(istrtmp)%dambreak%water_level_downstream_location_x
-                  yla = network%sts%struct(istrtmp)%dambreak%water_level_downstream_location_y
-                  if (network%sts%struct(istrtmp)%dambreak%water_level_downstream_node_id /= '') then
-                     ierr = findnode(network%sts%struct(istrtmp)%dambreak%water_level_downstream_node_id, k)
+               if (network%sts%struct(istrtmp)%p%dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. network%sts%struct(istrtmp)%p%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
+                  xla = network%sts%struct(istrtmp)%p%dambreak%water_level_downstream_location_x
+                  yla = network%sts%struct(istrtmp)%p%dambreak%water_level_downstream_location_y
+                  if (network%sts%struct(istrtmp)%p%dambreak%water_level_downstream_node_id /= '') then
+                     ierr = findnode(network%sts%struct(istrtmp)%p%dambreak%water_level_downstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
-                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_downstream_node_id = ''', trim(network%sts%struct(istrtmp)%dambreak%water_level_downstream_node_id), &
+                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_downstream_node_id = ''', trim(network%sts%struct(istrtmp)%p%dambreak%water_level_downstream_node_id), &
                            ''' in dambreak ''', trim(strid), '''.'
                         call err_flush()
                      else
@@ -1924,8 +1924,8 @@ contains
             end do
 
             ! comp_breach_point takes plain arrays to compute the breach point (also used in unstruct_bmi)
-            call comp_breach_point(network%sts%struct(istrtmp)%dambreak%start_location_x, &
-                                   network%sts%struct(istrtmp)%dambreak%start_location_y, &
+            call comp_breach_point(network%sts%struct(istrtmp)%p%dambreak%start_location_x, &
+                                   network%sts%struct(istrtmp)%p%dambreak%start_location_y, &
                                    dambreakPolygons(indexInPliset)%xp, &
                                    dambreakPolygons(indexInPliset)%yp, &
                                    dambreakPolygons(indexInPliset)%np, &
@@ -1960,7 +1960,7 @@ contains
                end if
 
                ! Sum the length of the intersected flow links (required to bound maximum breach width)
-               network%sts%struct(istrtmp)%dambreak%maximum_width = network%sts%struct(istrtmp)%dambreak%maximum_width + db_link_effective_width(k)
+               network%sts%struct(istrtmp)%p%dambreak%maximum_width = network%sts%struct(istrtmp)%p%dambreak%maximum_width + db_link_effective_width(k)
             end do
 
             ! Now we can deallocate the polygon

@@ -135,7 +135,7 @@ contains
          end do
          if (network%sts%numGates > 0) then
             do n = 1, network%sts%numGates
-               associate (pstru => network%sts%struct(network%sts%gateIndices(n)))
+               associate (pstru => network%sts%struct(network%sts%gateIndices(n))%p)
                   do i = 1, pstru%numlinks
                      L = pstru%linknumbers(i)
                      kd = ln(1, L); ku = ln(2, L)

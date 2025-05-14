@@ -398,7 +398,7 @@
 !!         adm%hasStructures = .false.
 !!      endif
 !!      do istru = 1, network%sts%Count
-!!         adm%lin2str(network%sts%struct(istru)%link_number) = istru
+!!         adm%lin2str(network%sts%struct(istru)%p%link_number) = istru
 !!      enddo
 !!      
 !!      adm%lin2ibr   = -huge(1)
@@ -725,7 +725,7 @@
 !!      enddo
 !!   
 !!      do i = 1, network%sts%Count
-!!         pstru => network%sts%struct(i)
+!!         pstru => network%sts%struct(i)%p
 !!         select case (pstru%st_type) 
 !!         case (ST_CULVERT, ST_SIPHON, ST_INV_SIPHON) 
 !!            pcul => pstru%culvert
@@ -749,10 +749,10 @@
 !!   
 !!      ! Program code
 !!      do istru = 1, network%sts%count
-!!         if (network%sts%struct(istru)%st_type==ST_CULVERT) then
-!!            icrs = network%sts%struct(istru)%culvert%crosssectionnr
+!!         if (network%sts%struct(istru)%p%st_type==ST_CULVERT) then
+!!            icrs = network%sts%struct(istru)%p%culvert%crosssectionnr
 !!            pcross => network%crs%cross(icrs)
-!!            network%sts%struct(istru)%culvert%pcross => pcross
+!!            network%sts%struct(istru)%p%culvert%pcross => pcross
 !!         endif
 !!      enddo
 !!   

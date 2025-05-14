@@ -1054,7 +1054,7 @@ contains
       type(t_structure), pointer :: pstru
 
       do structure_number = 1, network%sts%count
-         pstru => network%sts%struct(structure_number)
+         pstru => network%sts%struct(structure_number)%p
          do link_index = 1, pstru%numlinks
             link = abs(pstru%linknumbers(link_index))
             teta(link) = 1.0_dp

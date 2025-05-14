@@ -551,7 +551,7 @@ contains
       ! First step is to initialise all structure bobs to huge
       nstruc = network%sts%count
       do i = 1, nstruc
-         pstruc => network%sts%struct(i)
+         pstruc => network%sts%struct(i)%p
          do L0 = 1, pstruc%numlinks
             L = abs(pstruc%linknumbers(L0))
             bob(:, L) = huge(1d0)
@@ -560,7 +560,7 @@ contains
 
       nstruc = network%sts%count
       do i = 1, nstruc
-         pstruc => network%sts%struct(i)
+         pstruc => network%sts%struct(i)%p
          crest_level = get_crest_level(pstruc)
          do L0 = 1, pstruc%numlinks
             L = abs(pstruc%linknumbers(L0))

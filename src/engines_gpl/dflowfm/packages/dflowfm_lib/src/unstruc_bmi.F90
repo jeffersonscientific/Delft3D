@@ -1951,7 +1951,7 @@ contains
          select case (field_name)
          case ("capacity")
             if (is_in_network) then
-               x = get_pump_capacity_c_loc(network%sts%struct(item_index))
+               x = get_pump_capacity_c_loc(network%sts%struct(item_index)%p)
             else
                x = c_loc(qpump(item_index))
             end if
@@ -1968,7 +1968,7 @@ contains
          select case (field_name)
          case ("crestlevel")
             if (is_in_network) then
-               x = get_crest_level_c_loc(network%sts%struct(item_index))
+               x = get_crest_level_c_loc(network%sts%struct(item_index)%p)
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 1))
             end if
@@ -1988,12 +1988,12 @@ contains
          select case (field_name)
          case ("gateloweredgelevel")
             if (is_in_network) then
-               x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index)%p)
             end if
             return
          case ("crestlevel")
             if (is_in_network) then
-               x = get_crest_level_c_loc(network%sts%struct(item_index))
+               x = get_crest_level_c_loc(network%sts%struct(item_index)%p)
             end if
             return
          end select
@@ -2032,14 +2032,14 @@ contains
          select case (field_name)
          case ("crestlevel")
             if (is_in_network) then
-               x = get_crest_level_c_loc(network%sts%struct(item_index))
+               x = get_crest_level_c_loc(network%sts%struct(item_index)%p)
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 1))
             end if
             return
          case ("gateheight")
             if (is_in_network) then
-               x = get_gate_door_height_c_loc(network%sts%struct(item_index))
+               x = get_gate_door_height_c_loc(network%sts%struct(item_index)%p)
             else
                x = c_loc(generalstruc(item_index)%gatedoorheight)
             end if
@@ -2047,14 +2047,14 @@ contains
             return
          case ("gateloweredgelevel")
             if (is_in_network) then
-               x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index)%p)
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 2))
             end if
             return
          case ("gateopeningwidth")
             if (is_in_network) then
-               x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+               x = get_gate_opening_width_c_loc(network%sts%struct(item_index)%p)
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 3))
             end if
@@ -2074,7 +2074,7 @@ contains
          select case (field_name)
          case ("valveopeningheight")
             if (is_in_network) then
-               x = get_valve_opening_height_c_loc(network%sts%struct(item_index))
+               x = get_valve_opening_height_c_loc(network%sts%struct(item_index)%p)
             end if
             return
          end select
@@ -2458,14 +2458,14 @@ contains
             return
          end if
 
-         if (network%sts%struct(item_index)%pump%nrstages > 0) then
+         if (network%sts%struct(item_index)%p%pump%nrstages > 0) then
             call mess(LEVEL_ERROR, 'set_compound_field for '''//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name)//''' : a staged pump cannot be controlled by RTC.')
          end if
 
          select case (field_name)
          case ("capacity")
             if (is_in_network) then
-               fieldptr = get_pump_capacity_c_loc(network%sts%struct(item_index))
+               fieldptr = get_pump_capacity_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2483,7 +2483,7 @@ contains
          select case (field_name)
          case ("crest_level", "CrestLevel", "crestLevel")
             if (is_in_network) then
-               fieldptr = get_crest_level_c_loc(network%sts%struct(item_index))
+               fieldptr = get_crest_level_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2505,12 +2505,12 @@ contains
          select case (field_name)
          case ("gateLowerEdgeLevel")
             if (is_in_network) then
-               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             end if
             return
          end select
-         call update_widths(network%sts%struct(item_index)%generalst, network%sts%struct(item_index)%numlinks, network%sts%struct(item_index)%linknumbers, wu, .true.)
+         call update_widths(network%sts%struct(item_index)%p%generalst, network%sts%struct(item_index)%p%numlinks, network%sts%struct(item_index)%p%linknumbers, wu, .true.)
 
          ! GATES
       case ("gates")
@@ -2551,7 +2551,7 @@ contains
          select case (field_name)
          case ("CrestLevel", "crestLevel")
             if (is_in_network) then
-               fieldptr = get_crest_level_c_loc(network%sts%struct(item_index))
+               fieldptr = get_crest_level_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2560,7 +2560,7 @@ contains
             return
          case ("GateHeight", "gateHeight")
             if (is_in_network) then
-               fieldptr = get_gate_door_height_c_loc(network%sts%struct(item_index))
+               fieldptr = get_gate_door_height_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2570,7 +2570,7 @@ contains
             return
          case ("GateLowerEdgeLevel", "gateLowerEdgeLevel")
             if (is_in_network) then
-               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2579,7 +2579,7 @@ contains
             return
          case ("GateOpeningWidth", "gateOpeningWidth")
             if (is_in_network) then
-               fieldptr = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+               fieldptr = get_gate_opening_width_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2601,7 +2601,7 @@ contains
          select case (field_name)
          case ("valveOpeningHeight")
             if (is_in_network) then
-               fieldptr = get_valve_opening_height_c_loc(network%sts%struct(item_index))
+               fieldptr = get_valve_opening_height_c_loc(network%sts%struct(item_index)%p)
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             end if
             return

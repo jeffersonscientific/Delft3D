@@ -143,7 +143,7 @@ contains
          do n = 1, n_db_signals
             i_structure = dambreaks(n)
             if (i_structure /= 0 .and. weight_averaged_values(2, n) > 0.0_dp) then
-               network%sts%struct(i_structure)%dambreak%normal_velocity = &
+               network%sts%struct(i_structure)%p%dambreak%normal_velocity = &
                   weight_averaged_values(1, n) / weight_averaged_values(2, n)
             end if
          end do
@@ -171,9 +171,9 @@ contains
          if (i_structure <= 0) then
             continue
          end if
-         network%sts%struct(i_structure)%dambreak%normal_velocity = 0.0_dp
-         network%sts%struct(i_structure)%dambreak%breach_width_derivative = 0.0_dp
-         network%sts%struct(i_structure)%dambreak%water_level_jump = 0.0_dp
+         network%sts%struct(i_structure)%p%dambreak%normal_velocity = 0.0_dp
+         network%sts%struct(i_structure)%p%dambreak%breach_width_derivative = 0.0_dp
+         network%sts%struct(i_structure)%p%dambreak%water_level_jump = 0.0_dp
       end do
    end subroutine reset_dambreak_variables
 
@@ -215,7 +215,7 @@ contains
                   water_levels(averaging_mapping(n, up_down)) = &
                      weight_averaged_values(1, n) / weight_averaged_values(2, n)
                else if (abs(start_time - &
-                            network%sts%struct(dambreaks(averaging_mapping(n, up_down)))%dambreak%T0) < 1e-10_dp) then
+                            network%sts%struct(dambreaks(averaging_mapping(n, up_down)))%p%dambreak%T0) < 1e-10_dp) then
                   water_levels(averaging_mapping(n, up_down)) = &
                      s1(link_ids(breach_start_link(averaging_mapping(n, up_down))))
                else
@@ -246,10 +246,10 @@ contains
          if (i_structure == 0) then
             continue
          end if
-         associate (dambreak => network%sts%struct(i_structure)%dambreak)
+         associate (dambreak => network%sts%struct(i_structure)%p%dambreak)
             if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP .or. &
                 dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
-               call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, upstream_levels(n), &
+               call prepare_dambreak_calculation(network%sts%struct(i_structure)%p%dambreak, upstream_levels(n), &
                                                  downstream_levels(n), start_time, delta_time)
             end if
             if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES .and. &
@@ -575,11 +575,11 @@ contains
             if (dambreaks(n) == 0 .or. db_first_link(n) > db_last_link(n)) then
                cycle
             end if
-            associate (dambreak => network%sts%struct(dambreaks(n))%dambreak)
+            associate (dambreak => network%sts%struct(dambreaks(n))%p%dambreak)
                ! Update the crest/bed levels
                call adjust_bobs_on_dambreak_breach(dambreak%width, dambreak%maximum_width, dambreak%crest_level, &
                                                  & breach_start_link(n), db_first_link(n), db_last_link(n), &
-                                                 & network%sts%struct(dambreaks(n))%id)
+                                                 & network%sts%struct(dambreaks(n))%p%id)
             end associate
          end do
       end if
@@ -670,8 +670,8 @@ contains
             ! not contribute to the cumulative discharge in the coming mpi communication so we set it to 0.
             values(IVAL_DB_DISCUM, n) = 0.0_dp
          else
-            if (network%sts%struct(index_structure)%dambreak%width > 0.0_dp) then
-               values(IVAL_DB_CRESTH, n) = network%sts%struct(index_structure)%dambreak%crest_level
+            if (network%sts%struct(index_structure)%p%dambreak%width > 0.0_dp) then
+               values(IVAL_DB_CRESTH, n) = network%sts%struct(index_structure)%p%dambreak%crest_level
             else
                values(1:NUMVALS_DAMBREAK - 1, n) = dmiss ! No breach started yet, set FillValue
                flow_link = get_dambreak_breach_start_link(n)
@@ -685,9 +685,9 @@ contains
             values(IVAL_S1UP, n) = upstream_levels(n)
             values(IVAL_S1DN, n) = downstream_levels(n)
             values(IVAL_HEAD, n) = values(IVAL_S1UP, n) - values(IVAL_S1DN, n)
-            values(IVAL_VEL, n) = network%sts%struct(index_structure)%dambreak%normal_velocity
-            values(IVAL_DB_JUMP, n) = network%sts%struct(index_structure)%dambreak%water_level_jump
-            values(IVAL_DB_TIMEDIV, n) = network%sts%struct(index_structure)%dambreak%breach_width_derivative
+            values(IVAL_VEL, n) = network%sts%struct(index_structure)%p%dambreak%normal_velocity
+            values(IVAL_DB_JUMP, n) = network%sts%struct(index_structure)%p%dambreak%water_level_jump
+            values(IVAL_DB_TIMEDIV, n) = network%sts%struct(index_structure)%p%dambreak%breach_width_derivative
             values(IVAL_DB_DISCUM, n) = values(IVAL_DB_DISCUM, n) + values(IVAL_DIS, n) * time_step ! cumulative discharge
          end if
       end do
