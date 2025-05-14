@@ -377,7 +377,7 @@ contains
             nNodeTot = 0
             if (network%sts%numGates > 0) then ! new gate
                do n = 1, network%sts%numGates
-                  associate (pstru => network%sts%struct(network%sts%gateIndices(n)))
+                  associate (pstru => network%sts%struct(network%sts%gateIndices(n))%p)
                      nlinks = pstru%numlinks
                      if (nlinks > 0) then
                         nNodes = nlinks + 1
@@ -1476,14 +1476,14 @@ contains
          structure_names = [(trimexact(cgen_ids(indices(i)), strlen_netcdf), integer :: i=1, nweirgen)]
       else if (network%sts%numWeirs > 0) then
          indices = [(network%sts%weirIndices(i), integer :: i=1, nweirgen)]
-         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, nweirgen)]
+         structure_names = [(trimexact(network%sts%struct(indices(i))%p%id, strlen_netcdf), integer :: i=1, nweirgen)]
       else
          allocate (structure_names(0))
       end if
       call unc_put_his_structure_names(ncid, jahisweir, id_weirgen_id, structure_names)
 
       indices = [(network%sts%orificeIndices(i), integer :: i=1, network%sts%numOrifices)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numOrifices)]
+      structure_names = [(trimexact(network%sts%struct(indices(i))%p%id, strlen_netcdf), integer :: i=1, network%sts%numOrifices)]
       call unc_put_his_structure_names(ncid, jahisorif, id_orifgen_id, structure_names)
 
       structure_names = [(pump_ids(i), integer :: i=1, npumpsg)]
@@ -1497,7 +1497,7 @@ contains
          structure_names = [(cgen_ids(i), integer :: i=1, ncgensg)]
       else if (network%sts%numGeneralStructures > 0) then
          indices = [(network%sts%generalStructureIndices(i), integer :: i=1, ngenstru)]
-         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, ngenstru)]
+         structure_names = [(trimexact(network%sts%struct(indices(i))%p%id, strlen_netcdf), integer :: i=1, ngenstru)]
       else
          indices = [(genstru2cgen(i), integer :: i=1, ngenstru)]
          structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngenstru)]
@@ -1505,18 +1505,18 @@ contains
       call unc_put_his_structure_names(ncid, jahiscgen, id_genstru_id, structure_names)
 
       indices = [(network%sts%uniweirIndices(i), integer :: i=1, network%sts%numuniweirs)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numuniweirs)]
+      structure_names = [(trimexact(network%sts%struct(indices(i))%p%id, strlen_netcdf), integer :: i=1, network%sts%numuniweirs)]
       call unc_put_his_structure_names(ncid, jahisuniweir, id_uniweir_id, structure_names)
 
       structure_names = get_dambreak_names()
       call unc_put_his_structure_names(ncid, jahisdambreak, id_dambreak_id, structure_names)
 
       indices = [(network%sts%culvertIndices(i), integer :: i=1, network%sts%numCulverts)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numCulverts)]
+      structure_names = [(trimexact(network%sts%struct(indices(i))%p%id, strlen_netcdf), integer :: i=1, network%sts%numCulverts)]
       call unc_put_his_structure_names(ncid, jahisculv, id_culvert_id, structure_names)
 
       indices = [(network%sts%bridgeIndices(i), integer :: i=1, network%sts%numBridges)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numBridges)]
+      structure_names = [(trimexact(network%sts%struct(indices(i))%p%id, strlen_netcdf), integer :: i=1, network%sts%numBridges)]
       call unc_put_his_structure_names(ncid, jahisbridge, id_bridge_id, structure_names)
 
       structure_names = [(network%cmps%compound(i)%id, integer :: i=1, network%cmps%count)]
@@ -1542,7 +1542,7 @@ contains
 
       if (network%sts%numGates > 0) then
          indices = [(network%sts%gateIndices(i), integer :: i=1, ngategen)]
-         structure_names = [(trimexact(network%sts%struct(network%sts%gateIndices(i))%id, strlen_netcdf), integer :: i=1, ngategen)]
+         structure_names = [(trimexact(network%sts%struct(network%sts%gateIndices(i))%p%id, strlen_netcdf), integer :: i=1, ngategen)]
       else
          indices = [(gate2cgen(i), integer :: i=1, ngategen)]
          structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngategen)]

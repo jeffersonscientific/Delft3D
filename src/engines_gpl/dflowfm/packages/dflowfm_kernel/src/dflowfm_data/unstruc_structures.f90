@@ -386,7 +386,7 @@ contains
       valstruct(IVAL_WIDTH) = valstruct(IVAL_WIDTH) + wu(L)
 
       if (istru > 0 .and. (istrtypein /= ST_LONGCULVERT)) then ! When it is not old weir and not old general structure and not a compound structure
-         in_compound = (network%sts%struct(istru)%compound > 0)
+         in_compound = (network%sts%struct(istru)%p%compound > 0)
       end if
 
       if (hs(ku) > epshs) then
@@ -408,7 +408,7 @@ contains
          if (in_compound) then ! for a structure that belongs to a compound structure
             k1 = ln(1, L)
             k2 = ln(2, L)
-            qcmp = get_discharge_under_compound_struc(network%sts%struct(istru), L0, s1(k1), s1(k2), teta(L))
+            qcmp = get_discharge_under_compound_struc(network%sts%struct(istru)%p, L0, s1(k1), s1(k2), teta(L))
             valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + qcmp * dir
          else
             valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + q1(L) * dir
@@ -417,7 +417,7 @@ contains
          if (istrtypein /= ST_PUMP) then ! Compute flow area for structures except for pump
             if (istru > 0) then ! When it is not old weir and not old general structure and not a compound structure
                if (in_compound) then ! for a structure that belongs to a compound structure
-                  valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + network%sts%struct(istru)%au(L0)
+                  valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + network%sts%struct(istru)%p%au(L0)
                else
                   valstruct(IVAL_AREA) = valstruct(IVAL_AREA) + au(L)
                end if
@@ -430,7 +430,7 @@ contains
 
          ! 2a. General structure-based structures with a crest.
          if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
-            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0) * wu(L)
+            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%p%generalst%sOnCrest(L0) * wu(L)
             valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L) * wu(L)
          end if
 
@@ -438,7 +438,7 @@ contains
          if (any(istrtypein == (/ST_GENERAL_ST/))) then ! TODO: ST_GATE
             k1 = ln(1, L)
             k2 = ln(2, L)
-            genstr => network%sts%struct(istru)%generalst
+            genstr => network%sts%struct(istru)%p%generalst
 
             valstruct(IVAL_DIS_OPEN) = valstruct(IVAL_DIS_OPEN) + get_discharge_through_gate_opening(genstr, L0, s1(k1), s1(k2)) * dir
             valstruct(IVAL_DIS_OVER) = valstruct(IVAL_DIS_OVER) + get_discharge_over_gate(genstr, L0, s1(k1), s1(k2)) * dir
@@ -459,7 +459,7 @@ contains
       if (istrtypein == ST_BRIDGE) then
          valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP) + bl(ku) * wu(L)
          valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN) + bl(kd) * wu(L)
-         valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) + network%sts%struct(istru)%bridge%bedLevel_actual * wu(L)
+         valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) + network%sts%struct(istru)%p%bridge%bedLevel_actual * wu(L)
       end if
 
    end subroutine fill_valstruct_perlink
@@ -559,7 +559,7 @@ contains
          end if
 
          if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
-            pstru => network%sts%struct(istru)
+            pstru => network%sts%struct(istru)%p
             valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) / valstruct(IVAL_WIDTHWET) ! water level on crest
             valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) / valstruct(IVAL_WIDTHWET) ! force difference per unit width
          end if
@@ -630,7 +630,7 @@ contains
       integer :: k1, k2
       real(kind=dp) :: rholeft, rhoright
 
-      crestl = get_crest_level(network%sts%struct(istru))
+      crestl = get_crest_level(network%sts%struct(istru)%p)
 
       k1 = ln(1, L)
       k2 = ln(2, L)
@@ -730,23 +730,23 @@ contains
 
       do n = 1, network%sts%numCulverts
          istru = network%sts%culvertIndices(n)
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          valculvert(11, n) = get_opening_height(pstru)
       end do
 
       do n = 1, network%sts%numGeneralStructures
          istru = network%sts%generalStructureIndices(n)
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          valgenstru(9, n) = get_crest_level(pstru)
          valgenstru(10, n) = get_width(pstru)
          valgenstru(14, n) = get_gle(pstru)
-         valgenstru(13, n) = network%sts%struct(istru)%generalst%gateopeningwidth_actual
+         valgenstru(13, n) = network%sts%struct(istru)%p%generalst%gateopeningwidth_actual
          ! fu, ru, au have been computed in each computational time step, so skip computing them again
       end do
 
       do n = 1, network%sts%numWeirs
          istru = network%sts%weirIndices(n)
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          valweirgen(9, n) = get_crest_level(pstru)
          valweirgen(10, n) = get_width(pstru)
          ! fu, ru have been computed in each computational time step, so skip computing them again
@@ -754,17 +754,17 @@ contains
 
       do n = 1, network%sts%numOrifices
          istru = network%sts%orificeIndices(n)
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          valorifgen(9, n) = get_crest_level(pstru)
          valorifgen(10, n) = get_width(pstru)
          valorifgen(14, n) = get_gle(pstru)
-         valorifgen(13, n) = network%sts%struct(istru)%generalst%gateopeningwidth_actual
+         valorifgen(13, n) = network%sts%struct(istru)%p%generalst%gateopeningwidth_actual
          ! fu, ru have been computed in each computational time step, so skip computing them again
       end do
 
       do n = 1, network%sts%numPumps
          istru = network%sts%pumpIndices(n)
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          valpump(6, n) = GetPumpCapacity(pstru)
       end do
 
@@ -786,11 +786,11 @@ contains
       do i = 1, nstru
          select case (istrtypein)
          case (ST_WEIR)
-            get_max_numLinks = max(get_max_numLinks, network%sts%struct(network%sts%weirIndices(i))%numlinks)
+            get_max_numLinks = max(get_max_numLinks, network%sts%struct(network%sts%weirIndices(i))%p%numlinks)
          case (ST_ORIFICE)
-            get_max_numLinks = max(get_max_numLinks, network%sts%struct(network%sts%orificeIndices(i))%numlinks)
+            get_max_numLinks = max(get_max_numLinks, network%sts%struct(network%sts%orificeIndices(i))%p%numlinks)
          case (ST_GENERAL_ST)
-            get_max_numLinks = max(get_max_numLinks, network%sts%struct(network%sts%generalStructureIndices(i))%numlinks)
+            get_max_numLinks = max(get_max_numLinks, network%sts%struct(network%sts%generalStructureIndices(i))%p%numlinks)
          end select
       end do
 
@@ -849,7 +849,7 @@ contains
       else
          istru = get_istru(istrtypein, i)
 
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          nLinks = pstru%numlinks
       end if
 
@@ -941,7 +941,7 @@ contains
          Ls = 1
       else
          istru = get_istru(istrtypein, i)
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          nLinks = pstru%numlinks
       end if
 
@@ -1411,7 +1411,7 @@ contains
       type(t_GeneralStructure), pointer :: genstr
 
       if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
-         pstru => network%sts%struct(istru)
+         pstru => network%sts%struct(istru)%p
          valstruct(IVAL_CRESTL) = get_crest_level(pstru) ! crest level
          valstruct(IVAL_CRESTW) = get_width(pstru) ! crest width
 
@@ -1433,7 +1433,7 @@ contains
 
       if (any(istrtypein == (/ST_GENERAL_ST, ST_ORIFICE/))) then ! TODO: ST_GATE
          if (nlinks > 0) then ! If it is a new general structure, and there are links
-            genstr => network%sts%struct(istru)%generalst
+            genstr => network%sts%struct(istru)%p%generalst
             valstruct(IVAL_OPENW) = genstr%gateopeningwidth_actual ! gate opening width
             valstruct(IVAL_EDGEL) = get_gle(pstru) ! gate lower edge level
             valstruct(IVAL_OPENH) = get_opening_height(pstru) ! gate opening height
@@ -1508,10 +1508,10 @@ contains
          allocate (nNodesStructInput(numstructs))
          do n = 1, numstructs
             j = structindex(n)
-            nodes = network%sts%struct(j)%NUMCOORDINATES
+            nodes = network%sts%struct(j)%p%NUMCOORDINATES
             if (nodes > 0) then
                nNodeTot = nNodeTot + nodes
-            else if (network%sts%struct(j)%ibran > -1) then
+            else if (network%sts%struct(j)%p%ibran > -1) then
                nNodeTot = nNodeTot + 1
             end if
          end do
@@ -1519,22 +1519,22 @@ contains
          allocate (geomXStructInput(nNodeTot), geomYStructInput(nNodeTot))
          do n = 1, numstructs
             j = structindex(n)
-            nodes = network%sts%struct(j)%NUMCOORDINATES
+            nodes = network%sts%struct(j)%p%NUMCOORDINATES
             if (nodes > 0) then
 
-               geomXStructInput(i:i + nodes - 1) = network%sts%struct(j)%XCOORDINATES
-               geomYStructInput(i:i + nodes - 1) = network%sts%struct(j)%YCOORDINATES
+               geomXStructInput(i:i + nodes - 1) = network%sts%struct(j)%p%XCOORDINATES
+               geomYStructInput(i:i + nodes - 1) = network%sts%struct(j)%p%YCOORDINATES
                nNodesStructInput(n) = nodes
 
                i = i + nodes
-            else if (network%sts%struct(j)%ibran > -1) then
+            else if (network%sts%struct(j)%p%ibran > -1) then
 
-               associate (branch => network%brs%branch(network%sts%struct(j)%IBRAN))
+               associate (branch => network%brs%branch(network%sts%struct(j)%p%IBRAN))
                   if (branch%GRIDPOINTSCOUNT > 0) then
-                     ierr = odu_get_xy_coordinates((/1/), network%sts%struct(j:j)%CHAINAGE, branch%xs, branch%ys, &
+                     ierr = odu_get_xy_coordinates((/1/), [network%sts%struct(j)%p%CHAINAGE], branch%xs, branch%ys, &
                                                    (/branch%gridpointscount/), (/branch%length/), jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   else
-                     ierr = odu_get_xy_coordinates((/1/), network%sts%struct(j:j)%CHAINAGE, (/branch%FROMNODE%X, branch%TONODE%X/), (/branch%FROMNODE%Y, branch%TONODE%Y/), &
+                     ierr = odu_get_xy_coordinates((/1/), [network%sts%struct(j)%p%CHAINAGE], (/branch%FROMNODE%X, branch%TONODE%X/), (/branch%FROMNODE%Y, branch%TONODE%Y/), &
                                                    (/2/), (/branch%length/), jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   end if
                   nNodesStructInput(n) = 1

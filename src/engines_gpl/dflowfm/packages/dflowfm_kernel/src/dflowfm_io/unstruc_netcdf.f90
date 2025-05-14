@@ -4107,7 +4107,7 @@ contains
             maxNumStages = 0
             do i = 1, nlen
                istru = network%sts%pumpIndices(i)
-               maxNumStages = max(maxNumStages, network%sts%struct(istru)%pump%nrstages)
+               maxNumStages = max(maxNumStages, network%sts%struct(istru)%p%pump%nrstages)
             end do
             ierr = nf90_def_dim(irstfile, 'nPump_max_numstages', maxNumStages, id_pump_stagedim)
 
@@ -4853,9 +4853,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%generalStructureIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%au(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%au(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_genstru_area, work2d, [1, 1, itim])
@@ -4863,9 +4863,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%generalStructureIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%generalst%gateclosedfractiononlink(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%generalst%gateclosedfractiononlink(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_genstru_linkw, work2d, [1, 1, itim])
@@ -4873,9 +4873,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%generalStructureIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%fu(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%fu(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_genstru_fu, work3d, [1, 1, 1, itim])
@@ -4883,9 +4883,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%generalStructureIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%ru(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%ru(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_genstru_ru, work3d, [1, 1, 1, itim])
@@ -4893,9 +4893,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%generalStructureIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%au(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%au(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_genstru_au, work3d, [1, 1, 1, itim])
@@ -4903,9 +4903,9 @@ contains
             call realloc(work3di, [nfuru, maxNumLinks, nlen], keepExisting=.false.)
             do i = 1, nlen
                istru = network%sts%generalStructureIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3di(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%state(1:nfuru, L0)
+                  work3di(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%state(1:nfuru, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_genstru_state, work3di, [1, 1, 1, itim])
@@ -4913,9 +4913,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%generalStructureIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%generalst%sOnCrest(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%generalst%sOnCrest(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_genstru_sOnCrest, work2d, [1, 1, itim])
@@ -4931,9 +4931,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%weirIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%au(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%au(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_weirgen_area, work2d, [1, 1, itim])
@@ -4941,9 +4941,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%weirIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%generalst%gateclosedfractiononlink(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%generalst%gateclosedfractiononlink(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_weirgen_linkw, work2d, [1, 1, itim])
@@ -4951,9 +4951,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%weirIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%fu(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%fu(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_weirgen_fu, work3d, [1, 1, 1, itim])
@@ -4961,9 +4961,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%weirIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%ru(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%ru(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_weirgen_ru, work3d, [1, 1, 1, itim])
@@ -4971,9 +4971,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%weirIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%au(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%au(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_weirgen_au, work3d, [1, 1, 1, itim])
@@ -4981,9 +4981,9 @@ contains
             call realloc(work3di, [nfuru, maxNumLinks, nlen], keepExisting=.false.)
             do i = 1, nlen
                istru = network%sts%weirIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3di(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%state(1:nfuru, L0)
+                  work3di(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%state(1:nfuru, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_weirgen_state, work3di, [1, 1, 1, itim])
@@ -4991,9 +4991,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%weirIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%generalst%sOnCrest(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%generalst%sOnCrest(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_weirgen_sOnCrest, work2d, [1, 1, itim])
@@ -5011,9 +5011,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%orificeIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%au(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%au(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_orifgen_area, work2d, [1, 1, itim])
@@ -5021,9 +5021,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%orificeIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%generalst%gateclosedfractiononlink(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%generalst%gateclosedfractiononlink(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_orifgen_linkw, work2d, [1, 1, itim])
@@ -5031,9 +5031,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%orificeIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%fu(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%fu(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_orifgen_fu, work3d, [1, 1, 1, itim])
@@ -5041,9 +5041,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%orificeIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%ru(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%ru(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_orifgen_ru, work3d, [1, 1, 1, itim])
@@ -5051,9 +5051,9 @@ contains
             call realloc(work3d, [nfuru, maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%orificeIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%au(:, L0)
+                  work3d(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%au(:, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_orifgen_au, work3d, [1, 1, 1, itim])
@@ -5061,9 +5061,9 @@ contains
             call realloc(work3di, [nfuru, maxNumLinks, nlen], keepExisting=.false.)
             do i = 1, nlen
                istru = network%sts%orificeIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work3di(1:nfuru, L0, i) = network%sts%struct(istru)%generalst%state(1:nfuru, L0)
+                  work3di(1:nfuru, L0, i) = network%sts%struct(istru)%p%generalst%state(1:nfuru, L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_orifgen_state, work3di, [1, 1, 1, itim])
@@ -5071,9 +5071,9 @@ contains
             call realloc(work2d, [maxNumLinks, nlen], keepExisting=.false., fill=dmiss)
             do i = 1, nlen
                istru = network%sts%orificeIndices(i)
-               numLinks = network%sts%struct(istru)%numlinks
+               numLinks = network%sts%struct(istru)%p%numlinks
                do L0 = 1, numLinks
-                  work2d(L0, i) = network%sts%struct(istru)%generalst%sOnCrest(L0)
+                  work2d(L0, i) = network%sts%struct(istru)%p%generalst%sOnCrest(L0)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_orifgen_sOnCrest, work2d, [1, 1, itim])
@@ -5087,7 +5087,7 @@ contains
             call realloc(work2di, [maxNumStages, nlen], keepExisting=.false.)
             do i = 1, nlen
                istru = network%sts%pumpIndices(i)
-               pstru => network%sts%struct(istru)
+               pstru => network%sts%struct(istru)%p
                numStages = pstru%pump%nrstages
                do L0 = 1, numStages
                   if (pstru%pump%ss_trigger(L0)) then
@@ -5102,7 +5102,7 @@ contains
             call realloc(work2di, [maxNumStages, nlen], keepExisting=.false.)
             do i = 1, nlen
                istru = network%sts%pumpIndices(i)
-               pstru => network%sts%struct(istru)
+               pstru => network%sts%struct(istru)%p
                numStages = pstru%pump%nrstages
                do L0 = 1, numStages
                   if (pstru%pump%ds_trigger(L0)) then
@@ -17263,7 +17263,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%culvertIndices(i)
-                  network%sts%struct(istru)%culvert%valveOpening = tmpvar(i)
+                  !network%sts%struct(istru)%p%valveOpening = tmpvar(i)
                end do
             end if
 
@@ -17294,7 +17294,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%generalStructureIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%zs_actual = tmpvar(i)
                   genstr%zs = tmpvar(i)
                end do
@@ -17308,7 +17308,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%generalStructureIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%ws_actual = tmpvar(i)
                   genstr%ws = tmpvar(i)
                end do
@@ -17322,7 +17322,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%generalStructureIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%gateLowerEdgeLevel_actual = tmpvar(i)
                   genstr%gateLowerEdgeLevel = tmpvar(i)
                end do
@@ -17336,7 +17336,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%generalStructureIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%gateopeningwidth_actual = tmpvar(i)
                   genstr%gateopeningwidth = tmpvar(i)
                end do
@@ -17355,7 +17355,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%generalStructureIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%au(1:nLinks) = tmpvar2d(1:nLinks, i)
                      do L0 = 1, nLinks
@@ -17373,7 +17373,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%generalStructureIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%gateclosedfractiononlink(1:nLinks) = tmpvar2d(1:nLinks, i)
                   end do
@@ -17387,7 +17387,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%generalStructureIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%fu(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17401,7 +17401,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%generalStructureIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%ru(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17415,7 +17415,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%generalStructureIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%au(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17430,7 +17430,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%generalStructureIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%state(1:nfuru, 1:nLinks) = tmpvar3di(1:nfuru, 1:nLinks, i)
                   end do
@@ -17444,7 +17444,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%generalStructureIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%sOnCrest(1:nLinks) = tmpvar2d(1:nLinks, i)
                   end do
@@ -17479,7 +17479,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%weirIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%zs_actual = tmpvar(i)
                   genstr%zs = tmpvar(i)
                end do
@@ -17493,7 +17493,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%weirIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%ws_actual = tmpvar(i)
                   genstr%ws = tmpvar(i)
                end do
@@ -17512,7 +17512,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%weirIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%au(1:nLinks) = tmpvar2d(1:nLinks, i)
                      do L0 = 1, nLinks
@@ -17530,7 +17530,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%weirIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%gateclosedfractiononlink(1:nLinks) = tmpvar2d(1:nLinks, i)
                   end do
@@ -17544,7 +17544,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%weirIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%fu(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17558,7 +17558,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%weirIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%ru(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17572,7 +17572,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%weirIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%au(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17587,7 +17587,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%weirIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%state(1:nfuru, 1:nLinks) = tmpvar3di(1:nfuru, 1:nLinks, i)
                   end do
@@ -17601,7 +17601,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%weirIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%sOnCrest(1:nLinks) = tmpvar2d(1:nLinks, i)
                   end do
@@ -17636,7 +17636,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%orificeIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%zs_actual = tmpvar(i)
                   genstr%zs = tmpvar(i)
                end do
@@ -17650,7 +17650,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%orificeIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%ws_actual = tmpvar(i)
                   genstr%ws = tmpvar(i)
                end do
@@ -17664,7 +17664,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%orificeIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%gateLowerEdgeLevel_actual = tmpvar(i)
                   genstr%gateLowerEdgeLevel = tmpvar(i)
                end do
@@ -17678,7 +17678,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%orificeIndices(i)
-                  genstr => network%sts%struct(istru)%generalst
+                  genstr => network%sts%struct(istru)%p%generalst
                   genstr%gateopeningwidth_actual = tmpvar(i)
                   genstr%gateopeningwidth = tmpvar(i)
                end do
@@ -17697,7 +17697,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%orificeIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%au(1:nLinks) = tmpvar2d(1:nLinks, i)
                      do L0 = 1, nLinks
@@ -17715,7 +17715,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%orificeIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%gateclosedfractiononlink(1:nLinks) = tmpvar2d(1:nLinks, i)
                   end do
@@ -17728,7 +17728,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%orificeIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%fu(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17742,7 +17742,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%orificeIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%ru(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17756,7 +17756,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%orificeIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%au(1:nfuru, 1:nLinks) = tmpvar3d(1:nfuru, 1:nLinks, i)
                   end do
@@ -17771,7 +17771,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%orificeIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%state(1:nfuru, 1:nLinks) = tmpvar3di(1:nfuru, 1:nLinks, i)
                   end do
@@ -17785,7 +17785,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%orificeIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nLinks = pstru%numlinks
                      pstru%generalst%sOnCrest(1:nLinks) = tmpvar2d(1:nLinks, i)
                   end do
@@ -17819,7 +17819,7 @@ contains
             if (ierr == 0) then
                do i = 1, nStru
                   istru = network%sts%pumpIndices(i)
-                  pstru => network%sts%struct(istru)
+                  pstru => network%sts%struct(istru)%p
                   pstru%pump%current_capacity = tmpvar(i)
                end do
             end if
@@ -17834,7 +17834,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%pumpIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nstages = pstru%pump%nrstages
                      do L0 = 1, nstages
                         if (tmpvar2di(L0, i) == 1) then
@@ -17854,7 +17854,7 @@ contains
                if (ierr == 0) then
                   do i = 1, nStru
                      istru = network%sts%pumpIndices(i)
-                     pstru => network%sts%struct(istru)
+                     pstru => network%sts%struct(istru)%p
                      nstages = pstru%pump%nrstages
                      do L0 = 1, nstages
                         if (tmpvar2di(L0, i) == 1) then
