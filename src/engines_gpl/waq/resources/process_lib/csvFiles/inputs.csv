@@ -15851,8 +15851,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB2Temp  ","AuxSys    ",   6,"Y"," ",1
 "MPB2Temp  ","MPB2ftmp  ",   7,"N"," ",1
 "MPB2Temp  ","WSMPB2ftmp",   8,"N"," ",1
-"MPB1LLim  ","RadSurf",   1,"N","x",1
-"MPB1LLim  ","Rad    ",   2,"N","x",1
+"MPB1LLim  ","RadSurf   ",   1,"N","x",1
+"MPB1LLim  ","Rad       ",   2,"N","x",1
 "MPB1LLim  ","ExtVl     ",   3,"N","x",1
 "MPB1LLim  ","a_enh     ",   4,"Y","x",1
 "MPB1LLim  ","fPAR      ",   5,"Y","x",1
@@ -15868,15 +15868,15 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB1LLim  ","ITSTRT    ",  15,"N"," ",1
 "MPB1LLim  ","AuxSys    ",  16,"Y"," ",1
 "MPB1LLim  ","SwMPBGEM  ",  17,"Y","x",1
-"MPB1LLim  ","RadBotAve ",  18,"N","x",1
+"MPB1LLim  ","RadBot    ",  18,"N","x",1
 "MPB1LLim  ","ExtVlSed  ",  19,"Y","x",1
 "MPB1LLim  ","ZSED      ",  20,"Y","x",1
 "MPB1LLim  ","MPB1WS01  ",  21,"N"," ",1
 "MPB1LLim  ","MPB1WS02  ",  22,"N"," ",1
 "MPB1LLim  ","MPB1WS03  ",  23,"N"," ",1
 "MPB1LLim  ","MPB1WS04  ",  24,"N"," ",1
-"MPB2LLim  ","RadSurf",   1,"N","x",1
-"MPB2LLim  ","Rad    ",   2,"N","x",1
+"MPB2LLim  ","RadSurf   ",   1,"N","x",1
+"MPB2LLim  ","Rad       ",   2,"N","x",1
 "MPB2LLim  ","ExtVl     ",   3,"N","x",1
 "MPB2LLim  ","a_enh     ",   4,"Y","x",1
 "MPB2LLim  ","fPAR      ",   5,"Y","x",1
@@ -15892,7 +15892,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB2LLim  ","ITSTRT    ",  15,"N"," ",1
 "MPB2LLim  ","AuxSys    ",  16,"Y"," ",1
 "MPB2LLim  ","SwMPBGEM  ",  17,"Y","x",1
-"MPB2LLim  ","RadBotAve ",  18,"N","x",1
+"MPB2LLim  ","RadBot    ",  18,"N","x",1
 "MPB2LLim  ","ExtVlSed  ",  19,"Y","x",1
 "MPB2LLim  ","ZSED      ",  20,"Y","x",1
 "MPB2LLim  ","MPB2WS01  ",  21,"N"," ",1
