@@ -253,7 +253,8 @@ contains
       
       fu = genstr%fu(:,L0) 
       ru = genstr%ru(:,L0) 
-      au = genstr%au(:,L0) 
+      au = genstr%au(:,L0)
+            
       if (gatefraction > gatefrac_eps) then
          ! calculate flow under gate
          dg = gle - zs
@@ -262,8 +263,10 @@ contains
          qL = Au(1)*u1L
 
          call flqhgs(fu(1), ru(1), u1L, dxL, dt, structwidth, au(1), qL, flowDir, &
-                     hu, hd, uu, zs, gatefraction*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
+                     hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(1,L0), velheight)
+         
+         au(1) = gatefraction*au(1)
          genstr%sOnCrest(L0) = ds + crest     ! waterlevel on crest
          
          ! Flow limiter is only available for an orifice type structure. In this case only flow under the door 
@@ -296,8 +299,10 @@ contains
          qL = Au(2)*u1L
 
          call flqhgs(fu(2), ru(2), u1L, dxL, dt, structwidth, au(2), qL, flowDir, &
-                     hu, hd, uu, zgate, gatefraction*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
+                     hu, hd, uu, zgate, wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, 0d0, 0d0, dx_struc, ds, genstr%state(2,L0), velheight)
+         
+         au(2) = gatefraction*au(2)
       else
          fu(1) = 0d0
          ru(1) = 0d0
@@ -312,8 +317,10 @@ contains
          qL = Au(3)*u1L
          
          call flqhgs(fu(3), ru(3), u1L, dxL, dt, structwidth, au(3), qL, flowDir, &
-                     hu, hd, uu, zs, (1d0-gatefraction)*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
+                     hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(3,L0), velheight)
+         
+         au(3) = (1d0-gatefraction)*au(3)
          genstr%sOnCrest(L0) = ds + crest     ! waterlevel on crest
 
       else
