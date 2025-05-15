@@ -234,119 +234,119 @@ contains
 !  2D
       i = 0
       i0 = i; 
-      i = i + 1; IVAL_S1 = i
-      i = i + 1; IVAL_HS = i
-      i = i + 1; IVAL_BL = i
-      i = i + 1; IVAL_SMX = i
-      i = i + 1; IVAL_CMX = i
+      IVAL_S1 = next_index(i)
+      IVAL_HS = next_index(i)
+      IVAL_BL = next_index(i)
+      IVAL_SMX = next_index(i)
+      IVAL_CMX = next_index(i)
       if (jawind > 0) then
-         i = i + 1; IVAL_WX = i
-         i = i + 1; IVAL_WY = i
+         IVAL_WX = next_index(i)
+         IVAL_WY = next_index(i)
       end if
       if (japatm > 0) then
-         i = i + 1; IVAL_PATM = i
+         IVAL_PATM = next_index(i)
       end if
       if (jawave > 0) then
-         i = i + 1; IVAL_WAVEH = i
-         i = i + 1; IVAL_WAVED = i
-         i = i + 1; IVAL_WAVET = i
-         i = i + 1; IVAL_WAVEL = i
-         i = i + 1; IVAL_WAVER = i
-         i = i + 1; IVAL_WAVEU = i
+         IVAL_WAVEH = next_index(i)
+         IVAL_WAVED = next_index(i)
+         IVAL_WAVET = next_index(i)
+         IVAL_WAVEL = next_index(i)
+         IVAL_WAVER = next_index(i)
+         IVAL_WAVEU = next_index(i)
       end if
       if (jahistaucurrent > 0) then
-         i = i + 1; IVAL_TAUX = i
-         i = i + 1; IVAL_TAUY = i
+         IVAL_TAUX = next_index(i)
+         IVAL_TAUY = next_index(i)
       end if
       if (jatem > 1) then
-         i = i + 1; IVAL_TAIR = i
+         IVAL_TAIR = next_index(i)
       end if
       if (jawind > 0) then
-         i = i + 1; IVAL_WIND = i
+         IVAL_WIND = next_index(i)
       end if
       if (jatem == 5) then
-         i = i + 1; IVAL_RHUM = i
-         i = i + 1; IVAL_CLOU = i
-         i = i + 1; IVAL_QSUN = i
-         i = i + 1; IVAL_QEVA = i
-         i = i + 1; IVAL_QCON = i
-         i = i + 1; IVAL_QLON = i
-         i = i + 1; IVAL_QFRE = i
-         i = i + 1; IVAL_QFRC = i
+         IVAL_RHUM = next_index(i)
+         IVAL_CLOU = next_index(i)
+         IVAL_QSUN = next_index(i)
+         IVAL_QEVA = next_index(i)
+         IVAL_QCON = next_index(i)
+         IVAL_QLON = next_index(i)
+         IVAL_QFRE = next_index(i)
+         IVAL_QFRC = next_index(i)
       end if
       if (jatem > 1) then
-         i = i + 1; IVAL_QTOT = i
+         IVAL_QTOT = next_index(i)
       end if
       if (ja_icecover /= ICECOVER_NONE) then
-         i = i + 1; IVAL_ICE_S1 = i
-         i = i + 1; IVAL_ICE_ZMIN = i
-         i = i + 1; IVAL_ICE_ZMAX = i
-         i = i + 1; IVAL_ICE_AREA_FRACTION = i
-         i = i + 1; IVAL_ICE_THICKNESS = i
-         i = i + 1; IVAL_ICE_PRESSURE = i
+         IVAL_ICE_S1 = next_index(i)
+         IVAL_ICE_ZMIN = next_index(i)
+         IVAL_ICE_ZMAX = next_index(i)
+         IVAL_ICE_AREA_FRACTION = next_index(i)
+         IVAL_ICE_THICKNESS = next_index(i)
+         IVAL_ICE_PRESSURE = next_index(i)
          if (ja_icecover == ICECOVER_SEMTNER) then
-            i = i + 1; IVAL_ICE_TEMPERATURE = i
-            i = i + 1; IVAL_SNOW_THICKNESS = i
-            i = i + 1; IVAL_SNOW_TEMPERATURE = i
+            IVAL_ICE_TEMPERATURE = next_index(i)
+            IVAL_SNOW_THICKNESS = next_index(i)
+            IVAL_SNOW_TEMPERATURE = next_index(i)
          end if
       end if
       if (jahisrain > 0) then
-         i = i + 1; IVAL_RAIN = i
+         IVAL_RAIN = next_index(i)
       end if
       if (jahis_airdensity > 0) then
-         i = i + 1; IVAL_AIRDENSITY = i
+         IVAL_AIRDENSITY = next_index(i)
       end if
       if (jahisinfilt > 0) then
-         i = i + 1; IVAL_INFILTCAP = i
-         i = i + 1; IVAL_INFILTACT = i
+         IVAL_INFILTCAP = next_index(i)
+         IVAL_INFILTACT = next_index(i)
       end if
       if (numwqbots > 0) then
-         i = i + 1; IVAL_WQB1 = i
-         i = i + numwqbots - 1; IVAL_WQBN = i
+         IVAL_WQB1 = next_index(i)
+         IVAL_WQBN = next_index(i, numwqbots - 1)
       end if
       if (stm_included .and. jased > 0) then
          numfracs = stmpar%lsedtot
-         i = i + 1; IVAL_MUDFRAC = i
-         i = i + 1; IVAL_SANDFRAC = i
-         i = i + 1; IVAL_SBCX1 = i ! should be done per fraction
-         i = i + numfracs - 1; IVAL_SBCXN = i
-         i = i + 1; IVAL_SBCY1 = i
-         i = i + numfracs - 1; IVAL_SBCYN = i
-         i = i + 1; IVAL_SSCX1 = i
-         i = i + numfracs - 1; IVAL_SSCXN = i ! on purpose lsedtot, see alloc in morphology_data_module
-         i = i + 1; IVAL_SSCY1 = i
-         i = i + numfracs - 1; IVAL_SSCYN = i
+         IVAL_MUDFRAC = next_index(i)
+         IVAL_SANDFRAC = next_index(i)
+         IVAL_SBCX1 = next_index(i) ! should be done per fraction
+         IVAL_SBCXN = next_index(i, numfracs - 1)
+         IVAL_SBCY1 = next_index(i)
+         IVAL_SBCYN = next_index(i, numfracs - 1)
+         IVAL_SSCX1 = next_index(i)
+         IVAL_SSCXN = next_index(i, numfracs - 1)
+         IVAL_SSCY1 = next_index(i)
+         IVAL_SSCYN = next_index(i, numfracs - 1)
          if (jawave > 0) then
-            i = i + 1; IVAL_SBWX1 = i
-            i = i + numfracs - 1; IVAL_SBWXN = i
-            i = i + 1; IVAL_SBWY1 = i
-            i = i + numfracs - 1; IVAL_SBWYN = i
-            i = i + 1; IVAL_SSWX1 = i
-            i = i + numfracs - 1; IVAL_SSWXN = i
-            i = i + 1; IVAL_SSWY1 = i
-            i = i + numfracs - 1; IVAL_SSWYN = i
+            IVAL_SBWX1 = next_index(i)
+            IVAL_SBWXN = next_index(i, numfracs - 1)
+            IVAL_SBWY1 = next_index(i)
+            IVAL_SBWYN = next_index(i, numfracs - 1)
+            IVAL_SSWX1 = next_index(i)
+            IVAL_SSWXN = next_index(i, numfracs - 1)
+            IVAL_SSWY1 = next_index(i)
+            IVAL_SSWYN = next_index(i, numfracs - 1)
          end if
-         i = i + 1; IVAL_TAUB = i
+         IVAL_TAUB = next_index(i)
          if (stmpar%morlyr%settings%iunderlyr == 1) then
-            i = i + 1; IVAL_DPSED = i
-            i = i + 1; IVAL_BODSED1 = i
-            i = i + numfracs - 1; IVAL_BODSEDN = i
+            IVAL_DPSED = next_index(i)
+            IVAL_BODSED1 = next_index(i)
+            IVAL_BODSEDN = next_index(i, numfracs - 1)
          end if
-         i = i + 1; IVAL_FRAC1 = i
-         i = i + numfracs - 1; IVAL_FRACN = i
-         i = i + 1; IVAL_FIXFAC1 = i
-         i = i + numfracs - 1; IVAL_FIXFACN = i
-         i = i + 1; IVAL_HIDEXP1 = i
-         i = i + numfracs - 1; IVAL_HIDEXPN = i
+         IVAL_FRAC1 = next_index(i)
+         IVAL_FRACN = next_index(i, numfracs - 1)
+         IVAL_FIXFAC1 = next_index(i)
+         IVAL_FIXFACN = next_index(i, numfracs - 1)
+         IVAL_HIDEXP1 = next_index(i)
+         IVAL_HIDEXPN = next_index(i, numfracs - 1)
          if (stmpar%lsedsus > 0) then
             numfracs = stmpar%lsedsus
-            i = i + 1; IVAL_SOUR1 = i
-            i = i + numfracs - 1; IVAL_SOURN = i
-            i = i + 1; IVAL_SINK1 = i
-            i = i + numfracs - 1; IVAL_SINKN = i
+            IVAL_SOUR1 = next_index(i)
+            IVAL_SOURN = next_index(i, numfracs - 1)
+            IVAL_SINK1 = next_index(i)
+            IVAL_SINKN = next_index(i, numfracs - 1)
             if (stmpar%morpar%flufflyr%iflufflyr > 0) then
-               i = i + 1; IVAL_MFLUFF1 = i
-               i = i + numfracs - 1; IVAL_MFLUFFN = i
+               IVAL_MFLUFF1 = next_index(i)
+               IVAL_MFLUFFN = next_index(i, numfracs - 1)
             end if
          end if
       end if
@@ -354,83 +354,83 @@ contains
 
 !  3D, layer centered
       i0 = i; 
-      i = i + 1; IVAL_UCX = i
-      i = i + 1; IVAL_UCY = i
+      IVAL_UCX = next_index(i)
+      IVAL_UCY = next_index(i)
       if (kmx > 0) then
-         i = i + 1; IVAL_UCZ = i
-         i = i + 1; IVAL_UCXQ = i
-         i = i + 1; IVAL_UCYQ = i
+         IVAL_UCZ = next_index(i)
+         IVAL_UCXQ = next_index(i)
+         IVAL_UCYQ = next_index(i)
       end if
       if (jawave > 0) then
-         i = i + 1; IVAL_UCXST = i
-         i = i + 1; IVAL_UCYST = i
+         IVAL_UCXST = next_index(i)
+         IVAL_UCYST = next_index(i)
       end if
       if (jasal > 0) then
-         i = i + 1; IVAL_SA1 = i
+         IVAL_SA1 = next_index(i)
       end if
       if (jatem > 0) then
-         i = i + 1; IVAL_TEM1 = i
+         IVAL_TEM1 = next_index(i)
       end if
-      i = i + 1; IVAL_UMAG = i
-      i = i + 1; IVAL_QMAG = i
+      IVAL_UMAG = next_index(i)
+      IVAL_QMAG = next_index(i)
       if (ITRA1 > 0) then
-         i = i + 1; IVAL_TRA1 = i
-         i = i + ITRAN - ITRA1; IVAL_TRAN = i !< All tracers (NOT only the ones with bnd)
+         IVAL_TRA1 = next_index(i)
+         IVAL_TRAN = next_index(i, ITRAN - ITRA1) !< All tracers (NOT only the ones with bnd)
       end if
       if (noout > 0) then
-         i = i + 1; IVAL_HWQ1 = i
-         i = i + noout - 1; IVAL_HWQN = i !< All waq history outputs
+         IVAL_HWQ1 = next_index(i)
+         IVAL_HWQN = next_index(i, noout - 1) !< All waq history outputs
       end if
       if (numwqbots > 0 .and. jahiswqbot3d == 1) then
-         i = i + 1; IVAL_WQB3D1 = i
-         i = i + numwqbots - 1; IVAL_WQB3DN = i !< All 3D waqbot history outputs
+         IVAL_WQB3D1 = next_index(i)
+         IVAL_WQB3DN = next_index(i, numwqbots - 1) !< All 3D waqbot history outputs
       end if
       if (stm_included .and. ISED1 > 0) then
-         i = i + 1; IVAL_SF1 = i
-         i = i + ISEDN - ISED1; IVAL_SFN = i
+         IVAL_SF1 = next_index(i)
+         IVAL_SFN = next_index(i, ISEDN - ISED1)
       end if
       if (jased > 0 .and. .not. stm_included) then
-         i = i + 1; IVAL_SED = i
+         IVAL_SED = next_index(i)
       end if
       if (kmx > 0) then
-         i = i + 1; IVAL_ZCS = i
+         IVAL_ZCS = next_index(i)
       end if
       if (jasal > 0 .or. jatem > 0 .or. jased > 0) then
-         i = i + 1; IVAL_RHOP = i
+         IVAL_RHOP = next_index(i)
          if (apply_thermobaricity) then
-            i = i + 1; IVAL_RHO = i
+            IVAL_RHO = next_index(i)
          end if
       end if
       if (jahistur > 0) then
-         i = i + 1; IVAL_VIU = i
+         IVAL_VIU = next_index(i)
       end if
       MAXNUMVALOBS3D = i - i0
 
 !  3D, layer interfaces
       i0 = i
       if (kmx > 0) then
-         i = i + 1; IVAL_ZWS = i
-         i = i + 1; IVAL_ZWU = i
-         i = i + 1; IVAL_BRUV = i
+         IVAL_ZWS = next_index(i)
+         IVAL_ZWU = next_index(i)
+         IVAL_BRUV = next_index(i)
          if (iturbulencemodel > 0 .and. jahistur > 0) then
-            i = i + 1; IVAL_TKIN = i
-            i = i + 1; IVAL_TEPS = i
-            i = i + 1; IVAL_VICWWS = i
-            i = i + 1; IVAL_DIFWWS = i
-            i = i + 1; IVAL_VICWWU = i
+            IVAL_TKIN = next_index(i)
+            IVAL_TEPS = next_index(i)
+            IVAL_VICWWS = next_index(i)
+            IVAL_DIFWWS = next_index(i)
+            IVAL_VICWWU = next_index(i)
          end if
          if (idensform > 0) then
-            i = i + 1; IVAL_RICH = i
-            i = i + 1; IVAL_RICHS = i
+            IVAL_RICH = next_index(i)
+            IVAL_RICHS = next_index(i)
          end if
          if (jased > 0 .and. stm_included .and. ISED1 > 0) then
-            i = i + 1; IVAL_SEDDIF1 = i
-            i = i + ISEDN - ISED1; IVAL_SEDDIFN = i
+            IVAL_SEDDIF1 = next_index(i)
+            IVAL_SEDDIFN = next_index(i, ISEDN - ISED1)
          end if
       end if
       if (jased > 0 .and. stm_included .and. ISED1 > 0) then ! also 2d
-         i = i + 1; IVAL_WS1 = i
-         i = i + ISEDN - ISED1; IVAL_WSN = i
+         IVAL_WS1 = next_index(i)
+         IVAL_WSN = next_index(i, ISEDN - ISED1)
       end if
       MAXNUMVALOBS3Dw = i - i0
 
@@ -440,12 +440,12 @@ contains
          numfracs = stmpar%lsedtot
          if (stmpar%morlyr%settings%iunderlyr == 2) then
             nlyrs = stmpar%morlyr%settings%nlyr
-            i = i + 1; IVAL_POROS = i
-            i = i + 1; IVAL_THLYR = i
-            i = i + 1; IVAL_MSED1 = i
-            i = i + numfracs - 1; IVAL_MSEDN = i
-            i = i + 1; IVAL_LYRFRAC1 = i
-            i = i + numfracs - 1; IVAL_LYRFRACN = i
+            IVAL_POROS = next_index(i)
+            IVAL_THLYR = next_index(i)
+            IVAL_MSED1 = next_index(i)
+            IVAL_MSEDN = next_index(i, numfracs - 1)
+            IVAL_LYRFRAC1 = next_index(i)
+            IVAL_LYRFRACN = next_index(i, numfracs - 1)
          end if
       end if
       MAXNUMVALOBSLYR = i - i0
@@ -556,11 +556,22 @@ contains
 
       IPNT_NUM = ivalpoint(0, kmx, nlyrs) - 1
 
-      return
-
    end subroutine init_valobs_pointers
 
-!> pointer of variable in valobs work array
+   !> increment the current index and returns it
+   integer function next_index(current_index, increment)
+      integer, intent(inout) :: current_index !< current index
+      integer, optional, intent(in) :: increment !< increment value
+      
+      if (present(increment)) then
+         current_index = current_index + increment
+      else
+         current_index = current_index + 1
+      end if
+      next_index = current_index
+   end function next_index
+
+   !> pointer of variable in valobs work array
    integer function ivalpoint(ivar, kmx, nlyrs)
       use messageHandling
 
