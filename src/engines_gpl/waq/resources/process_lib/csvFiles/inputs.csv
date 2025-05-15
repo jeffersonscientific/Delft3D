@@ -205,11 +205,11 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Coverage  ","PotEM05   ",  12,"Y","x",1
 "Coverage  ","IBotSeg   ",  13,"N","x",1
 "Coverage  ","RadMacrop ",  14,"N","x",1
-"AVERAD    ","RadSurf   ",   1,"Y","x",1
-"AVERAD    ","ITIME     ",   2,"N"," ",1
-"AVERAD    ","Latitude  ",   3,"Y","x",1
-"AVERAD    ","RefDay    ",   4,"Y","x",1
-"AVERAD    ","AuxSys    ",   5,"Y"," ",1
+"AveRad    ","RadSurf   ",   1,"Y","x",1
+"AveRad    ","ITIME     ",   2,"N"," ",1
+"AveRad    ","Latitude  ",   3,"Y","x",1
+"AveRad    ","RefDay    ",   4,"Y","x",1
+"AveRad    ","AuxSys    ",   5,"Y"," ",1
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
 "TempMode  ","SwitchTemp",   3,"Y","x",1
