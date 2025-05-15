@@ -2102,7 +2102,6 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_Qin', jamapqin, success)
       call prop_get(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
       call prop_get(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_ice', jamapice, success)
       call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, success)
       if (kmx == 0 .and. jamapwqbot3d == 1) then
          jamapwqbot3d = 0
@@ -2378,7 +2377,7 @@ contains
       end if
 
       ierror = DFM_NOERR
-      call fm_ice_read(md_ptr, jamapice, ierror)
+      call fm_ice_read(md_ptr, ierror)
       if (ierror /= DFM_NOERR) then
          call mess(LEVEL_ERROR, 'Error reading ice properties from the MDU file. Error code: ', ierror)
          return

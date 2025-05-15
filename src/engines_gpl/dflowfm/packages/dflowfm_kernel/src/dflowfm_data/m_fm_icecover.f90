@@ -218,14 +218,13 @@ contains
    end subroutine fm_ice_clr
 
 !> Read the ice cover module configuration from the mdu file
-   subroutine fm_ice_read(md_ptr, jamapice, ierror)
+   subroutine fm_ice_read(md_ptr, ierror)
       use dfm_error, only: DFM_WRONGINPUT
       use properties, only: tree_data
       !
       ! Function/routine arguments
       !
       type(tree_data), pointer :: md_ptr !< pointer to the input file
-      integer, intent(in) :: jamapice !< flag indicating whether ice data should be written to the map file
       integer, intent(inout) :: ierror !< D-Flow FM error flag
       !
       ! Local variables
@@ -234,7 +233,7 @@ contains
 !
 !! executable statements -------------------------------------------------------
 !
-      call read_icecover(ice_data, md_ptr, 'ice', error, jamapice=jamapice)
+      call read_icecover(ice_data, md_ptr, 'ice', error)
       call fm_ice_update_spatial_pointers()
       !
       if (error) then
