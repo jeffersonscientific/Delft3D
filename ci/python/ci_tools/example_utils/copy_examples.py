@@ -87,7 +87,7 @@ def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: 
         bool: True if all operations succeed, False otherwise.
     """
     h7_scripts = {"run_native_h7.sh", "submit_singularity_h7.sh"}
-    exclude_patterns = ["run-all-examples-*"]
+    exclude_patterns = {"run-all-examples-*"}
     success = True
 
     # Copy example files
@@ -106,7 +106,7 @@ def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: 
                 dest_file.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src_item, dest_file)
                 logger.log(f"Copied file: {src_item} to {dest_file}")
-        except Exception as e:
+        except (FileNotFoundError, PermissionError, OSError) as e:
             logger.log(f"Error copying {src_item} to {dest_file}: {e}", LogLevel.ERROR)
             success = False
 
@@ -120,7 +120,7 @@ def copy_examples(example_directory: Path, apptainer_directory: Path, dest_dir: 
                     dest_script = subdir / script.name
                     shutil.copy2(script, dest_script)
                     logger.log(f"Copied script: {script} to {dest_script}")
-                except Exception as e:
+                except (FileNotFoundError, PermissionError, OSError) as e:
                     logger.log(f"Error copying script {script} to {dest_script}: {e}", LogLevel.ERROR)
                     success = False
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         has_errors = True
 
     logger.log("Copy files from the examples directory to the destination.")
-    if copy_examples(examples_dir, apptainer_dir, dest_dir, logger):
+    if not copy_examples(examples_dir, apptainer_dir, dest_dir, logger):
         has_errors = True
 
     if has_errors:
