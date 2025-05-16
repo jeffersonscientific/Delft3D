@@ -26,6 +26,11 @@ module icecover_input_module
 !                                                                               
 !-------------------------------------------------------------------------------!
 
+use icecover_module, only: icecover_type
+use properties, only: tree_data, prop_get
+use MessageHandling, only: mess, LEVEL_ERROR
+use string_module, only: str_lower
+
 private
 
 !
@@ -36,42 +41,46 @@ public echo_icecover
 
 contains
 
-!> Read ice cover parameters (Note: the meteo module should already have been initialized)
+!> Read ice cover settings (Note: the meteo module should already have been initialized)
 subroutine read_icecover(icecover, md_ptr, chapter, error)
 !!--declarations----------------------------------------------------------------
    use precision
-   use icecover_module, only: icecover_type, alloc_icecover, select_icecover_model, &
-      & set_default_output_flags
-   use icecover_module, only: ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER
-   use icecover_module, only: FRICT_AS_DRAG_COEFF
-   use icecover_module, only: ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, &
-      & ICE_WINDDRAG_AN10, ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS, ICE_WINDDRAG_JOYCE19
-   use MessageHandling, only: mess, LEVEL_ERROR
-   use properties, only: tree_data, prop_get
-   use string_module, only: str_lower
-   !
+
    implicit none
-   !
-!
-! Arguments
-! 
-   type (icecover_type)         , intent(inout) :: icecover !< ice cover data structure containing the data read
-   type(tree_data)              , pointer       :: md_ptr   !< pointer to the input file
-   character(len=*)             , intent(in)    :: chapter  !< chapter name of the ice section
-   logical                      , intent(out)   :: error    !< flag indicating an execution error
-!
-! Local variables
-!
-   logical                                      :: default_mapout  !< local logical
-   integer                                      :: istat !< reading status flag
-   integer                                      :: model !< local ice cover model
-   character(256)                               :: tmp   !< temporary string for input processing
-!
-!! executable statements -------------------------------------------------------
-!
+
+   type (icecover_type), intent(inout) :: icecover !< ice cover data structure containing the data read
+   type(tree_data), pointer :: md_ptr !< pointer to the input file
+   character(len=*), intent(in) :: chapter !< chapter name of the ice section
+   logical, intent(out) :: error !< flag indicating an execution error
+
+   integer :: model !< local ice cover model
+
+   call determine_icecover_model(icecover, md_ptr, chapter, model, error)
+   if (error) return
+
+   call read_icecover_parameters(icecover, md_ptr, chapter, error)
+   if (error) return
+   
+   call read_icecover_output(md_ptr, 'output', 'wriMap', model, icecover%mapout)
+end subroutine read_icecover
+
+
+!> Support routine to determine which icecover model has been selected
+subroutine determine_icecover_model(icecover, md_ptr, chapter, model, error)
+   use icecover_module, only: select_icecover_model
+
+   type (icecover_type), intent(inout) :: icecover !< ice cover data structure containing the data read
+   type(tree_data), pointer :: md_ptr !< pointer to the input file
+   character(len=*), intent(in) :: chapter !< chapter name of the ice section
+   integer, intent(out) :: model !< local ice cover model
+   logical, intent(out) :: error !< flag indicating an execution error
+
+   integer :: istat !< reading status flag
+   character(256) :: tmp !< temporary string for input processing
+
    error = .false.
    model =  ICECOVER_NONE
-   
+      
    tmp = ' '
    call prop_get(md_ptr,chapter,'iceCoverModel',tmp)
    call str_lower(tmp,len(tmp))
@@ -88,23 +97,40 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
       ! still want to properly initialize the icecover module, so don't return immediately
    end select
    istat = select_icecover_model(icecover, model)
-   if (error) return
+end subroutine determine_icecover_model
+
+
+!> Support routine to read ice cover parameters
+subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
+   use precision
+   use icecover_module, only: ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER
+   use icecover_module, only: FRICT_AS_DRAG_COEFF
+   use icecover_module, only: ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, &
+      & ICE_WINDDRAG_AN10, ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS, ICE_WINDDRAG_JOYCE19
    !
-   ! Process flags
+   implicit none
    !
-   call prop_get(md_ptr,chapter,'applyPressure',icecover%apply_pressure)
-   call prop_get(md_ptr,chapter,'applyFriction',icecover%apply_friction)
-   call prop_get(md_ptr,chapter,'reduceSurfExch',icecover%reduce_surface_exchange)
-   call prop_get(md_ptr,chapter,'reduceWaves',icecover%reduce_waves)
+   type (icecover_type)         , intent(inout) :: icecover !< ice cover data structure containing the data read
+   type(tree_data)              , pointer       :: md_ptr   !< pointer to the input file
+   character(len=*)             , intent(in)    :: chapter  !< chapter name of the ice section
+   logical                      , intent(out)   :: error    !< flag indicating an execution error
+   !
+   integer                                      :: model !< local ice cover model
+   character(256)                               :: tmp   !< temporary string for input processing
+
+   call prop_get(md_ptr, chapter, 'applyPressure', icecover%apply_pressure)
+   call prop_get(md_ptr, chapter, 'applyFriction', icecover%apply_friction)
+   call prop_get(md_ptr, chapter, 'reduceSurfExch', icecover%reduce_surface_exchange)
+   call prop_get(md_ptr, chapter, 'reduceWaves', icecover%reduce_waves)
    tmp = ' '
-   call prop_get(md_ptr,chapter,'modifyWindDrag',tmp)
-   call str_lower(tmp,len(tmp))
+   call prop_get(md_ptr, chapter, 'modifyWindDrag', tmp)
+   call str_lower(tmp, len(tmp))
    select case (tmp)
-   case ('none',' ')
+   case ('none', ' ')
       model = ICE_WINDDRAG_NONE
    case ('linear')
       model = ICE_WINDDRAG_LINEAR
-   case ('cubic','icecube')
+   case ('cubic', 'icecube')
       model = ICE_WINDDRAG_CUBIC
    case ('lupkes_birnbaum')
       model = ICE_WINDDRAG_LB05
@@ -114,8 +140,8 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
       model = ICE_WINDDRAG_RAYS
    case ('joyce')
       model = ICE_WINDDRAG_JOYCE19
-      call prop_get(md_ptr,chapter,'iceSkinDrag',icecover%ice_skin_drag)
-      call prop_get(md_ptr,chapter,'maximumIceFormDrag',icecover%maximum_ice_form_drag)
+      call prop_get(md_ptr, chapter, 'iceSkinDrag', icecover%ice_skin_drag)
+      call prop_get(md_ptr, chapter, 'maximumIceFormDrag', icecover%maximum_ice_form_drag)
    case default
       call mess(LEVEL_ERROR, 'invalid wind drag option "'//trim(tmp)//'"')
       error = .true.
@@ -123,15 +149,13 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
    end select
    icecover%modify_winddrag = model
    !
-   ! Parameters
-   !
-   call prop_get(md_ptr,chapter,'iceDensity',icecover%ice_density)
-   call prop_get(md_ptr,chapter,'iceAlbedo' ,icecover%ice_albedo)
-   call prop_get(md_ptr,chapter,'snowAlbedo',icecover%snow_albedo)
+   call prop_get(md_ptr, chapter, 'iceDensity', icecover%ice_density)
+   call prop_get(md_ptr, chapter, 'iceAlbedo', icecover%ice_albedo)
+   call prop_get(md_ptr, chapter, 'snowAlbedo', icecover%snow_albedo)
    !
    tmp = ' '
-   call prop_get(md_ptr,chapter,'iceFricType',tmp)
-   call str_lower(tmp,len(tmp))
+   call prop_get(md_ptr, chapter, 'iceFricType', tmp)
+   call str_lower(tmp, len(tmp))
    select case (tmp)
    case ('cdrag', ' ')
       ! default selected
@@ -141,7 +165,7 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
       error = .true.
       return
    end select
-   call prop_get(md_ptr,chapter,'iceFricValue',icecover%frict_val)
+   call prop_get(md_ptr, chapter, 'iceFricValue', icecover%frict_val)
    !
    select case (icecover%modeltype)
    case (ICECOVER_EXT)
@@ -149,48 +173,61 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
    case default
    
    end select
-   !
-   ! Output flags
-   !
-   default_mapout = .false.
-   call prop_get(md_ptr, 'output', 'wriMap_ice', default_mapout)
-   call prop_get(md_ptr, chapter, 'addIceToMap', default_mapout)
-   call set_default_output_flags(icecover%mapout, model, default_mapout)
-   call read_icecover_output(md_ptr, 'output', 'wriMap', icecover%mapout)
-end subroutine read_icecover
+end subroutine read_icecover_parameters
 
 
-!> Write ice cover parametersto diagnostic
+!> Support routine to read ice cover output settings
+subroutine read_icecover_output(md_ptr, chapter, prefix, model, outflags)
+   use properties, only: tree_data, prop_get
+   use icecover_module, only: set_default_output_flags, icecover_output_flags
+
+   type(tree_data)              , pointer       :: md_ptr   !< pointer to the input file
+   character(len=*)             , intent(in)    :: chapter  !< chapter name of the ice section
+   character(len=*)             , intent(in)    :: prefix   !< name of output file
+   integer                      , intent(in)    :: model    !< ice cover model
+   type(icecover_output_flags)  , intent(inout) :: outflags !< output flags structure
+
+   logical :: default_out !< default output flag!
+
+   default_out = .false.
+   call prop_get(md_ptr, chapter, prefix//'_ice', default_out)
+   call prop_get(md_ptr, chapter, 'addIceToMap', default_out)
+   call set_default_output_flags(outflags, model, default_out)
+   
+   call prop_get(md_ptr, chapter, prefix//'_open_water_level', outflags%ice_s1)
+   call prop_get(md_ptr, chapter, prefix//'_ice_lower_surface_height', outflags%ice_zmin)
+   call prop_get(md_ptr, chapter, prefix//'_ice_surface_height', outflags%ice_zmax)
+   call prop_get(md_ptr, chapter, prefix//'_ice_area_fraction', outflags%ice_area_fraction)
+   call prop_get(md_ptr, chapter, prefix//'_ice_thickness', outflags%ice_thickness)
+   call prop_get(md_ptr, chapter, prefix//'_ice_pressure', outflags%ice_pressure)
+   call prop_get(md_ptr, chapter, prefix//'_ice_temperature', outflags%ice_temperature)
+   call prop_get(md_ptr, chapter, prefix//'_snow_thickness', outflags%snow_thickness)
+   call prop_get(md_ptr, chapter, prefix//'_snow_temperature', outflags%snow_temperature)
+end subroutine read_icecover_output
+
+
+!> Write ice cover settings to diagnostic
 function echo_icecover(icecover, lundia) result (error)
-!!--declarations----------------------------------------------------------------
    use precision
-   use icecover_module, only: icecover_type, alloc_icecover, &
+   use icecover_module, only: icecover_type, &
        & ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER, FRICT_AS_DRAG_COEFF, &
        & ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, ICE_WINDDRAG_AN10, &
        & ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS, ICE_WINDDRAG_JOYCE19
    use MessageHandling, only: mess, LEVEL_ERROR
    !
    implicit none
-!
-! Arguments
-!
+
    type (icecover_type)         , intent(inout) :: icecover !< ice cover data structure containing the data read
    integer                      , intent(in)    :: lundia   !< unit number of diagnostics file
    logical                                      :: error    !< flag indicating an execution error
-!
-! Local variables
-!
-   character(45)                                                     :: txtput1
-   character(120)                                                    :: txtput2
-!
-!! executable statements -------------------------------------------------------
-!
-   !
+
+   character(45) :: txtput1
+   character(120) :: txtput2
+
    ! don't print any ice messages if there is no ice cover
-   !
    error = .false.
    if (icecover%modeltype == ICECOVER_NONE) return
-   !
+
    write (lundia, '(a)' ) '*** Start  of ice cover input'
    
    txtput1 = '  Ice cover model'
@@ -222,9 +259,7 @@ function echo_icecover(icecover, lundia) result (error)
          error = .true.
       endif
    endif
-   !
-   ! process flags
-   !
+
    txtput1 = '  Apply pressure'
    call write_logical(lundia, txtput1, icecover%apply_pressure)
 
@@ -259,9 +294,6 @@ function echo_icecover(icecover, lundia) result (error)
        write (lundia, '(2a)') txtput1, ': No drag below ice'
    end select
 
-   !
-   ! parameters
-   !
    txtput1 = '  Albedo of ice cover'
    write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%ice_albedo
    txtput1 = '  Albedo of snow cover'
@@ -280,9 +312,6 @@ function echo_icecover(icecover, lundia) result (error)
    txtput1 = '  Ice Cover Friction Value'
    write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%frict_val
 
-   !
-   ! output flags
-   !
    txtput1 = '  Map File Output'
    write (lundia, '(1a)') txtput1
    call echo_icecover_output(lundia, icecover%mapout)
@@ -291,33 +320,8 @@ function echo_icecover(icecover, lundia) result (error)
    write (lundia, *)
 end function echo_icecover
 
-subroutine read_icecover_output(md_ptr, chapter, prefix, outflags)
-   use properties, only: tree_data, prop_get
-   use icecover_module, only: icecover_output_flags
-!
-! Arguments
-!
-   type(tree_data)              , pointer       :: md_ptr   !< pointer to the input file
-   character(len=*)             , intent(in)    :: chapter  !< chapter name of the ice section
-   character(len=*)             , intent(in)    :: prefix   !< name of output file
-   type(icecover_output_flags)  , intent(inout) :: outflags !< output flags structure
-!
-   character(:), allocatable :: prefix_ !< prefix including underscore
-!
-!! executable statements -------------------------------------------------------
-!
-   prefix_ = prefix//'_'
-   call prop_get(md_ptr, chapter, prefix//'open_water_level', outflags%ice_s1)
-   call prop_get(md_ptr, chapter, prefix//'ice_lower_surface_height', outflags%ice_zmin)
-   call prop_get(md_ptr, chapter, prefix//'ice_surface_height', outflags%ice_zmax)
-   call prop_get(md_ptr, chapter, prefix//'ice_area_fraction', outflags%ice_area_fraction)
-   call prop_get(md_ptr, chapter, prefix//'ice_thickness', outflags%ice_thickness)
-   call prop_get(md_ptr, chapter, prefix//'ice_pressure', outflags%ice_pressure)
-   call prop_get(md_ptr, chapter, prefix//'ice_temperature', outflags%ice_temperature)
-   call prop_get(md_ptr, chapter, prefix//'snow_thickness', outflags%snow_thickness)
-   call prop_get(md_ptr, chapter, prefix//'snow_temperature', outflags%snow_temperature)
-end subroutine read_icecover_output
 
+!> Support routine to write ice cover output settings to diagnostic
 subroutine echo_icecover_output(lundia, outflags)
    use icecover_module, only: icecover_output_flags
 !
