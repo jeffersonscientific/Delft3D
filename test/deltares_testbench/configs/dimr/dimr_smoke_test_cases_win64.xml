@@ -25,6 +25,10 @@
 			<location name="local">
 				<root>./data/engines</root>
 			</location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>./data/engines</root>
+            </location>
 			<location name="tools">
 				<root>./tools</root>
 			</location>
@@ -32,18 +36,12 @@
 	</config>
 
 	<programs>
-        <program name="command_prompt" addSearchPaths="false">
+        <program name="command_prompt">
             <path>cmd</path>
             <arguments>
                 <argument>/C</argument>
             </arguments>
         </program>
-		<program name="execute_container" logOutputToFile="true" programStringRemoveQuotes="true">
-			<location ref="tools" type="check">
-                <from>.</from>
-            </location>
-			<path>execute_docker_tc.sh</path>
-		</program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
             <path>bin/run_dimr.bat</path>
             <shell ref="command_prompt"/>
@@ -87,7 +85,7 @@
 				<from>.</from>				<!-- if "to" is not specified, "from" is used as target -->
 			</location>
 			<location ref="reference_results" type="reference">
-				<from>lnx64</from>
+				<from>win64</from>
 			</location>
 			<maxRunTime>6000.0</maxRunTime>
 		</testCase>
