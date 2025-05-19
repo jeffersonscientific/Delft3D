@@ -27,6 +27,28 @@ object CopyExamples : BuildType({
 
     steps {
         python {
+            name = "Run TestBench.py"
+            workingDir = "test/deltares_testbench/"
+            environment = venv {
+                requirementsFile = "pip/win-requirements.txt"
+            }
+            command = file {
+                filename = "TestBench.py"
+                scriptArguments = """
+                    --username "%s3_dsctestbench_accesskey%"
+                    --password "%s3_dsctestbench_secret%"
+                    --reference
+                    --config "configs/singularity/dimr/dimr_smoke_test_lnx64.xml"
+                    --filter "testcase=e02_f014_c001,e109_f01_c010,e112_f01_c11"
+                    --skip-run
+                    --skip-post-processing
+                    --log-level DEBUG
+                    --parallel
+                    --teamcity
+                """.trimIndent()
+            }
+        }
+        python {
             name = "Copy example files to P drive"
             environment = venv {
                 requirementsFile = ""
