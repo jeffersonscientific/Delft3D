@@ -32,7 +32,8 @@ contains
             NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
-
+        use m_logger_helper, only: get_log_unit_number
+        
         IMPLICIT NONE
 
         !     arguments
