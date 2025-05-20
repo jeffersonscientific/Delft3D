@@ -32,8 +32,8 @@ contains
             NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
-        use m_logger_helper, only: get_log_unit_number
-        
+        use m_logger_helper, only: get_log_unit_number,write_error_message
+
         IMPLICIT NONE
 
         !     arguments
@@ -111,7 +111,9 @@ contains
         DELT = process_space_real(IP5)
         !Sum_AVERAD = process_space_real(IP6)        ! Work array for summing over time
         !TCOUNT_AVERAD = process_space_real(IP7)      ! time
-
+        if (PERIOD < DELT) then
+            CALL write_error_message('AveRadSurf: Period of averaging should be larger than DELWAQ time step.')                
+        endif
         !
         !      Start and stop criteria are somewhat involved:
         !      - The first time for the first period is special, as this
@@ -183,11 +185,11 @@ contains
                 !
                 !           Reset for the next round
                 !
+
                 process_space_real(IP8) = 0.0
                 process_space_real(IP9) = 0.0
 
             ENDIF
-
             IP1 = IP1 + IN1
             IP6 = IP6 + IN6
             IP7 = IP7 + IN7
