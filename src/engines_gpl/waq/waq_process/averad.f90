@@ -21,197 +21,193 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_averad
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine AVERAD(process_space_real, FL, IPOINT, INCREM, num_cells, &
+                     NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+                     num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_extract_waq_attribute
+      use m_logger_helper, only: get_log_unit_number, write_error_message, stop_with_error
 
-    SUBROUTINE AVERAD (process_space_real, FL, IPOINT, INCREM, num_cells, &
-            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_extract_waq_attribute
-        use m_logger_helper, only: get_log_unit_number,write_error_message,stop_with_error
+      implicit none
 
-        IMPLICIT NONE
+      !     arguments
 
-        !     arguments
+      real(kind=real_wp) :: process_space_real(*) ! in/out input-output array space to be adressed with IPOINT/INCREM
+      real(kind=real_wp) :: FL(*) ! in/out flux array
+      integer(kind=int_wp) :: IPOINT(*) ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+      integer(kind=int_wp) :: INCREM(*) ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+      integer(kind=int_wp) :: num_cells ! in     number of segments
+      integer(kind=int_wp) :: NOFLUX ! in     total number of fluxes (increment in FL array)
+      integer(kind=int_wp) :: IEXPNT(4, *) ! in     exchange pointer table
+      integer(kind=int_wp) :: IKNMRK(*) ! in     segment features array
+      integer(kind=int_wp) :: num_exchanges_u_dir ! in     number of exchanges in first direction
+      integer(kind=int_wp) :: num_exchanges_v_dir ! in     number of exchanges in second direction
+      integer(kind=int_wp) :: num_exchanges_z_dir ! in     number of exchanges in third direction
+      integer(kind=int_wp) :: num_exchanges_bottom_dir ! in     number of exchanges in fourth direction
 
-        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
-        REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
-        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
-        INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
-        INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
-        INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
+      !     from process_space_real array
 
-        !     from process_space_real array
-        
-        !     8 inputs, 3 outputs.
+      !     8 inputs, 3 outputs.
 
-        !REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
-        !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             (d)
-        !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            (d)
-        !REAL(kind = real_wp) :: ITIME              ! 4  in  DELWAQ time                         (s)
-        !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (d)
-        !REAL(kind = real_wp) :: AuxSys             ! 6  in  Timestep          (scu/d)
-        !REAL(kind = real_wp) :: SumAveRad          ! 7/9  in/out Work array for summing over time  (W/m2)
-        !REAL(kind = real_wp) :: SumAveRadT         ! 8/10  in/out Count of times   TCOUNT  (d)
-        !REAL(kind = real_wp) :: RadSurfAve         ! 11  out average irradiance over the day              (W/m2)
+      !REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
+      !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             (d)
+      !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            (d)
+      !REAL(kind = real_wp) :: ITIME              ! 4  in  DELWAQ time                         (s)
+      !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (d)
+      !REAL(kind = real_wp) :: AuxSys             ! 6  in  Timestep          (scu/d)
+      !REAL(kind = real_wp) :: SumAveRad          ! 7/9  in/out Work array for summing over time  (W/m2)
+      !REAL(kind = real_wp) :: SumAveRadT         ! 8/10  in/out Count of times   TCOUNT  (d)
+      !REAL(kind = real_wp) :: RadSurfAve         ! 11  out average irradiance over the day              (W/m2)
 
+      integer(kind=int_wp) :: IP1, IP2, IP3, IP4, IP5, &
+                              IP6, IP7, IP8, IP9, IP10, IP11, &
+                              IN1, IN2, IN3, IN4, IN5, &
+                              IN6, IN7, IN8, IN9, IN10, IN11
+      integer(kind=int_wp) :: IKMRK, ISEG
+      integer(kind=int_wp) :: IACTION, lunrep
+      integer(kind=int_wp) :: ATTRIB
+      real(kind=real_wp) :: TINIT, PERIOD, TIME, DELT, TCOUNT, AuxSys
 
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
-                IP6, IP7, IP8, IP9, IP10, IP11, &
-                IN1, IN2, IN3, IN4, IN5, &
-                IN6, IN7, IN8, IN9, IN10, IN11 
-        INTEGER(kind = int_wp) :: IKMRK, ISEG
-        INTEGER(kind = int_wp) :: IACTION, lunrep
-        INTEGER(kind = int_wp) :: ATTRIB
-        REAL(kind = real_wp) :: TINIT, PERIOD, TIME, DELT, TCOUNT, AuxSys
+      integer(kind=int_wp), parameter :: MAXWARN = 50
+      integer(kind=int_wp), save :: NOWARN = 0
 
-        INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
-        INTEGER(kind = int_wp), SAVE :: NOWARN = 0
+      call get_log_unit_number(lunrep)
 
-        call get_log_unit_number(lunrep)
-        
-        !     IACTION is in 3 parts. 0, 2, 3.
+      !     IACTION is in 3 parts. 0, 2, 3.
 
+      IP1 = IPOINT(1)
+      IP2 = IPOINT(2)
+      IP3 = IPOINT(3)
+      IP4 = IPOINT(4)
+      IP5 = IPOINT(5)
+      IP6 = IPOINT(6)
+      IP7 = IPOINT(7)
+      IP8 = IPOINT(8)
+      IP9 = IPOINT(9)
+      IP10 = IPOINT(10)
+      IP11 = IPOINT(11)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        IP11 = IPOINT(11)
+      IN1 = INCREM(1)
+      IN2 = INCREM(2)
+      IN3 = INCREM(3)
+      IN4 = INCREM(4)
+      IN5 = INCREM(5)
+      IN6 = INCREM(6)
+      IN7 = INCREM(7)
+      IN8 = INCREM(8)
+      IN9 = INCREM(9)
+      IN10 = INCREM(10)
+      IN11 = INCREM(11)
 
+      TINIT = process_space_real(IP2)
+      PERIOD = process_space_real(IP3)
+      TIME = process_space_real(IP4)
+      DELT = process_space_real(IP5)
+      AuxSys = process_space_real(IP6)
 
-        IN1 = INCREM(1)
-        IN2 = INCREM(2)
-        IN3 = INCREM(3)
-        IN4 = INCREM(4)
-        IN5 = INCREM(5)
-        IN6 = INCREM(6)
-        IN7 = INCREM(7)
-        IN8 = INCREM(8)
-        IN9 = INCREM(9)
-        IN10 = INCREM(10)
-        IN11 = INCREM(11)
+      if (PERIOD < DELT) then
+         call write_error_message('AveRadSurf: Period of averaging should be larger than DELWAQ time step.')
+      end if
 
-        TINIT = process_space_real(IP2)
-        PERIOD = process_space_real(IP3)
-        TIME = process_space_real(IP4)
-        DELT = process_space_real(IP5)
-        AuxSys = process_space_real(IP6) 
-        
-        if (PERIOD < DELT) then
-            call write_error_message('AveRadSurf: Period of averaging should be larger than DELWAQ time step.')         
-        endif
-        
-        !
-        ! TIME in second should be changed to TIME in days.
-        !
-        TIME = TIME/AuxSys   
-        !
-        !      Start and stop criteria are somewhat involved:
-        !      - The first time for the first period is special, as this
-        !        is the only time there is no previous period.
-        !      - If there is a previous period, update the averages
-        !        for that period and reset the accumulative values
-        !        for the next
-        !
-        !      To formulate the ideas more clearly:
-        !      - The first period is a closed interval
-        !      - All other periods are half-open intervals (the last time
-        !        of the previous period should not be reused.)
-        !
-        IACTION = 0
-        IF (TIME >= TINIT - 0.5 * DELT) THEN
-            IACTION = 2
-            IF (TIME <= TINIT + 0.5 * DELT) THEN
-                DO ISEG = 1, num_cells
-                    IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
-                    IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
-                    process_space_real(IP9) = 0.0
-                    process_space_real(IP10) = 0.0
-                ENDDO
-            ENDIF
-        ENDIF
+      !
+      ! TIME in second should be changed to TIME in days.
+      !
+      TIME = TIME / AuxSys
+      !
+      !      Start and stop criteria are somewhat involved:
+      !      - The first time for the first period is special, as this
+      !        is the only time there is no previous period.
+      !      - If there is a previous period, update the averages
+      !        for that period and reset the accumulative values
+      !        for the next
+      !
+      !      To formulate the ideas more clearly:
+      !      - The first period is a closed interval
+      !      - All other periods are half-open intervals (the last time
+      !        of the previous period should not be reused.)
+      !
+      IACTION = 0
+      if (TIME >= TINIT - 0.5 * DELT) then
+         IACTION = 2
+         if (TIME <= TINIT + 0.5 * DELT) then
+            do ISEG = 1, num_cells
+               IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
+               IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
+               process_space_real(IP9) = 0.0
+               process_space_real(IP10) = 0.0
+            end do
+         end if
+      end if
 
-        IF (TIME >= TINIT + PERIOD - 0.5 * DELT .AND. TIME <= TINIT + PERIOD + 0.5 * DELT) THEN
-            IACTION = 3
-        ENDIF
+      if (TIME >= TINIT + PERIOD - 0.5 * DELT .and. TIME <= TINIT + PERIOD + 0.5 * DELT) then
+         IACTION = 3
+      end if
 
-        IF (IACTION == 0) RETURN
+      if (IACTION == 0) return
 
-        DO ISEG = 1, num_cells
-                !
-                !           Keep track of the time within the current quantile specification
-                !           that each segment is active
-                !
-                TCOUNT = process_space_real(IP8) + DELT
-                process_space_real(IP10) = TCOUNT
+      do ISEG = 1, num_cells
+         !
+         !           Keep track of the time within the current quantile specification
+         !           that each segment is active
+         !
+         TCOUNT = process_space_real(IP8) + DELT
+         process_space_real(IP10) = TCOUNT
 
-                process_space_real(IP9) = process_space_real(IP7) + process_space_real(IP1) * DELT
+         process_space_real(IP9) = process_space_real(IP7) + process_space_real(IP1) * DELT
+
+         !
+         !        Always do the final processing whether the segment is active at this moment or not
+         !
+
+         if (IACTION == 3) then
+            if (TCOUNT > 0.0) then
+               process_space_real(IP11) = process_space_real(IP9) / TCOUNT
+            else
+               process_space_real(IP11) = 0.0
+
+               if (NOWARN < MAXWARN) then
+                  call extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
+                  if (ATTRIB /= 0) then
+                     NOWARN = NOWARN + 1
+                     write (lunrep, '(a,i0)') 'Periodic average of RadSurf could not be determined for segment ', ISEG
+                     write (lunrep, '(a)') '    - division by zero. Average set to zero'
+
+                     if (NOWARN == MAXWARN) then
+                        write (lunrep, '(a)') '(Further messages suppressed)'
+                     end if
+                  end if
+               end if
+            end if
 
             !
-            !        Always do the final processing whether the segment is active at this moment or not
+            !           Reset for the next round
             !
 
-            IF (IACTION == 3) THEN
-                IF (TCOUNT > 0.0) THEN
-                    process_space_real(IP11) = process_space_real(IP9) / TCOUNT
-                ELSE
-                    process_space_real(IP11) = 0.0
+            process_space_real(IP9) = 0.0
+            process_space_real(IP10) = 0.0
 
-                    IF (NOWARN < MAXWARN) THEN
-                        CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
-                        IF (ATTRIB /= 0) THEN
-                            NOWARN = NOWARN + 1
-                            WRITE(lunrep, '(a,i0)') 'Periodic average of RadSurf could not be determined for segment ', ISEG
-                            WRITE(lunrep, '(a)')    '    - division by zero. Average set to zero'
+         end if
 
-                            IF (NOWARN == MAXWARN) THEN
-                                WRITE(lunrep, '(a)') '(Further messages suppressed)'
-                            ENDIF
-                        ENDIF
-                    ENDIF
-                ENDIF
+         IP1 = IP1 + IN1
+         IP7 = IP7 + IN7
+         IP8 = IP8 + IN8
+         IP9 = IP9 + IN9
+         IP10 = IP10 + IN10
+         IP11 = IP11 + IN11
+      end do
+      !
+      !     Be sure to also reset the initial time, so that we can restart the
+      !     averaging for the next period
+      !
+      if (IACTION == 3) then
+         process_space_real(IP2) = TINIT + PERIOD
+      end if
 
-                !
-                !           Reset for the next round
-                !
-
-                process_space_real(IP9) = 0.0
-                process_space_real(IP10) = 0.0
-
-            ENDIF
-
-            IP1 = IP1 + IN1
-            IP7 = IP7 + IN7
-            IP8 = IP8 + IN8
-            IP9 = IP9 + IN9
-            IP10 = IP10 + IN10
-            IP11 = IP11 + IN11
-        end do
-        !
-        !     Be sure to also reset the initial time, so that we can restart the
-        !     averaging for the next period
-        !
-        IF (IACTION == 3) THEN
-            process_space_real(IP2) = TINIT + PERIOD
-        ENDIF
-
-        RETURN
-    END
+      return
+   end
 end module m_averad
