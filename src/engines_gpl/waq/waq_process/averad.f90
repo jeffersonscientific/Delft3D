@@ -56,13 +56,13 @@ contains
         !     8 inputs, 3 outputs.
 
         !REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
-        !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             (s)
-        !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            (s)
+        !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             (d)
+        !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            (d)
         !REAL(kind = real_wp) :: ITIME              ! 4  in  DELWAQ time                         (s)
         !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (d)
-        !REAL(kind = real_wp) :: AuxSys             ! 6  in  Timestep          (d)
+        !REAL(kind = real_wp) :: AuxSys             ! 6  in  Timestep          (scu/d)
         !REAL(kind = real_wp) :: SumAveRad          ! 7/9  in/out Work array for summing over time  (W/m2)
-        !REAL(kind = real_wp) :: SumAveRadT         ! 8/10  in/out Count of times   TCOUNT  (s)
+        !REAL(kind = real_wp) :: SumAveRadT         ! 8/10  in/out Count of times   TCOUNT  (d)
         !REAL(kind = real_wp) :: RadSurfAve         ! 11  out average irradiance over the day              (W/m2)
 
 
@@ -118,7 +118,7 @@ contains
         write(2,*) PERIOD, TIME, DELT
         
         
-        if (PERIOD < TIME) then
+        if (PERIOD < DELT) then
             call write_error_message('AveRadSurf: Period of averaging should be larger than DELWAQ time step.')         
         endif
         
@@ -158,8 +158,8 @@ contains
 
         IF (IACTION == 0) RETURN
 
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
+        !IP9 = IPOINT(9)
+        !IP10 = IPOINT(10)
         DO ISEG = 1, num_cells
                 !
                 !           Keep track of the time within the current quantile specification
@@ -198,12 +198,12 @@ contains
                 !           Reset for the next round
                 !
 
+                process_space_real(IP9) = 0.0
                 process_space_real(IP10) = 0.0
-                process_space_real(IP11) = 0.0
 
             ENDIF
-            IP1 = IP1 + IN1
 
+            IP1 = IP1 + IN1
             IP7 = IP7 + IN7
             IP8 = IP8 + IN8
             IP9 = IP9 + IN9
