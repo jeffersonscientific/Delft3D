@@ -53,26 +53,27 @@ contains
 
         !     from process_space_real array
         
-        !     7 inputs, 3 outputs.
+        !     8 inputs, 3 outputs.
 
         !REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
-        !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             ()
-        !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            ()
-        !REAL(kind = real_wp) :: ITIME              ! 4  in  DELWAQ time                         (d)
-        !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (scu/d)
-        !REAL(kind = real_wp) :: SumAveRad          ! 6/8  in/out Work array for summing over time
-        !REAL(kind = real_wp) :: SumAveRadT         ! 7/9  in/out Count of times   TCOUNT
-        !REAL(kind = real_wp) :: RadSurfAve         ! 10  out average irradiance over the day              (W/m2)
+        !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             (s)
+        !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            (s)
+        !REAL(kind = real_wp) :: ITIME              ! 4  in  DELWAQ time                         (s)
+        !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (d)
+        !REAL(kind = real_wp) :: AuxSys             ! 6  in  Timestep          (d)
+        !REAL(kind = real_wp) :: SumAveRad          ! 7/9  in/out Work array for summing over time  (W/m2)
+        !REAL(kind = real_wp) :: SumAveRadT         ! 8/10  in/out Count of times   TCOUNT  (s)
+        !REAL(kind = real_wp) :: RadSurfAve         ! 11  out average irradiance over the day              (W/m2)
 
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
-                IP6, IP7, IP8, IP9, IP10, &
+                IP6, IP7, IP8, IP9, IP10, IP11, &
                 IN1, IN2, IN3, IN4, IN5, &
-                IN6, IN7, IN8, IN9, IN10 
+                IN6, IN7, IN8, IN9, IN10, IN11 
         INTEGER(kind = int_wp) :: IKMRK, ISEG
         INTEGER(kind = int_wp) :: IACTION, lunrep
         INTEGER(kind = int_wp) :: ATTRIB
-        REAL(kind = real_wp) :: TINIT, PERIOD, TIME, DELT, TCOUNT
+        REAL(kind = real_wp) :: TINIT, PERIOD, TIME, DELT, TCOUNT, AuxSys
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
@@ -92,6 +93,7 @@ contains
         IP8 = IPOINT(8)
         IP9 = IPOINT(9)
         IP10 = IPOINT(10)
+        IP11 = IPOINT(11)
 
 
         IN1 = INCREM(1)
@@ -104,17 +106,26 @@ contains
         IN8 = INCREM(8)
         IN9 = INCREM(9)
         IN10 = INCREM(10)
+        IN11 = INCREM(11)
 
         TINIT = process_space_real(IP2)
         PERIOD = process_space_real(IP3)
         TIME = process_space_real(IP4)
         DELT = process_space_real(IP5)
-        !Sum_AVERAD = process_space_real(IP6)        ! Work array for summing over time
-        !TCOUNT_AVERAD = process_space_real(IP7)      ! time
-        if (PERIOD < DELT) then
+        AuxSys = process_space_real(IP6) 
+        !Sum_AVERAD = process_space_real(IP7)        ! Work array for summing over time
+        !TCOUNT_AVERAD = process_space_real(IP8)      ! time
+        write(2,*) PERIOD, TIME, DELT
+        
+        
+        if (PERIOD < TIME) then
             call write_error_message('AveRadSurf: Period of averaging should be larger than DELWAQ time step.')         
-            call stop_with_error()
         endif
+        
+        !
+        ! TIME in second should be changed to TIME in days.
+        !
+        TIME = TIME/AuxSys   
         !
         !      Start and stop criteria are somewhat involved:
         !      - The first time for the first period is special, as this
@@ -133,10 +144,10 @@ contains
             IACTION = 2
             IF (TIME <= TINIT + 0.5 * DELT) THEN
                 DO ISEG = 1, num_cells
-                    IP8 = IPOINT(8) + (ISEG - 1) * INCREM(8)
                     IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
-                    process_space_real(IP8) = 0.0
+                    IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
                     process_space_real(IP9) = 0.0
+                    process_space_real(IP10) = 0.0
                 ENDDO
             ENDIF
         ENDIF
@@ -147,17 +158,17 @@ contains
 
         IF (IACTION == 0) RETURN
 
-        IP8 = IPOINT(8)
         IP9 = IPOINT(9)
+        IP10 = IPOINT(10)
         DO ISEG = 1, num_cells
                 !
                 !           Keep track of the time within the current quantile specification
                 !           that each segment is active
                 !
-                TCOUNT = process_space_real(IP7) + DELT
-                process_space_real(IP9) = TCOUNT
+                TCOUNT = process_space_real(IP8) + DELT
+                process_space_real(IP10) = TCOUNT
 
-                process_space_real(IP8) = process_space_real(IP6) + process_space_real(IP1) * DELT
+                process_space_real(IP9) = process_space_real(IP7) + process_space_real(IP1) * DELT
 
             !
             !        Always do the final processing whether the segment is active at this moment or not
@@ -165,9 +176,9 @@ contains
 
             IF (IACTION == 3) THEN
                 IF (TCOUNT > 0.0) THEN
-                    process_space_real(IP10) = process_space_real(IP8) / TCOUNT
+                    process_space_real(IP11) = process_space_real(IP9) / TCOUNT
                 ELSE
-                    process_space_real(IP10) = 0.0
+                    process_space_real(IP11) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
                         CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
@@ -187,16 +198,17 @@ contains
                 !           Reset for the next round
                 !
 
-                process_space_real(IP8) = 0.0
-                process_space_real(IP9) = 0.0
+                process_space_real(IP10) = 0.0
+                process_space_real(IP11) = 0.0
 
             ENDIF
             IP1 = IP1 + IN1
-            IP6 = IP6 + IN6
+
             IP7 = IP7 + IN7
             IP8 = IP8 + IN8
             IP9 = IP9 + IN9
             IP10 = IP10 + IN10
+            IP11 = IP11 + IN11
         end do
         !
         !     Be sure to also reset the initial time, so that we can restart the
