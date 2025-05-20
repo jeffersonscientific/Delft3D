@@ -54,19 +54,19 @@ contains
 
       !     8 inputs, 3 outputs.
 
-      !REAL(kind = real_wp) :: RADSURF            ! 1  in  actual irradiation at the water surface            (W/m2)
-      !REAL(kind = real_wp) :: AveRadTIni         ! 2  in  Initial time (reset at end period)     TINIT             (d)
-      !REAL(kind = real_wp) :: AveRadPeri         ! 3  in  Period of the periodic average    PERIOD            (d)
-      !REAL(kind = real_wp) :: ITIME              ! 4  in  DELWAQ time                         (s)
-      !REAL(kind = real_wp) :: DELT               ! 5  in  Timestep          (d)
-      !REAL(kind = real_wp) :: AuxSys             ! 6  in  Timestep          (scu/d)
-      !REAL(kind = real_wp) :: SumAveRad          ! 7/9  in/out Work array for summing over time  (W/m2)
-      !REAL(kind = real_wp) :: SumAveRadT         ! 8/10  in/out Count of times   TCOUNT  (d)
-      !REAL(kind = real_wp) :: RadSurfAve         ! 11  out average irradiance over the day              (W/m2)
+      integer(kind=int_wp) :: IP1 !<REAL RADSURF        input 1, actual irradiation at the water surface            (W/m2)
+      integer(kind=int_wp) :: IP2 !<REAL AveRadTIni     input 2, starting time for average irradiance      TINIT       (d)
+      integer(kind=int_wp) :: IP3 !<REAL AveRadPeri     input 3, averaging period of irradiance    PERIOD           (d)
+      integer(kind=int_wp) :: IP4 !<REAL ITIME          input 4, DELWAQ time                                        (s)
+      integer(kind=int_wp) :: IP5 !<REAL DELT           input 5, timestep for processes          (d)
+      integer(kind=int_wp) :: IP6 !<REAL AuxSys         input 6, ratio between days and system clock   (scu/d, i.e. system clock unit/day)
+      integer(kind=int_wp) :: IP7 !<REAL SumAveRad      input 7,   Work array for summing over time  (W/m2)
+      integer(kind=int_wp) :: IP8 !<REAL SumAveRadT     input 8,   Count of times   TCOUNT  (d)
+      integer(kind=int_wp) :: IP9 !<REAL  SumAveRad     output 9,   Work array for summing over time  (W/m2)
+      integer(kind=int_wp) :: IP10 !<REAL SumAveRadT    output 10,  Count of times   TCOUNT  (d)
+      integer(kind=int_wp) :: IP11 !<REAL RadSurfAve    output 11,  average irradiance over the period              (W/m2)
 
-      integer(kind=int_wp) :: IP1, IP2, IP3, IP4, IP5, &
-                              IP6, IP7, IP8, IP9, IP10, IP11, &
-                              IN1, IN2, IN3, IN4, IN5, &
+      integer(kind=int_wp) :: IN1, IN2, IN3, IN4, IN5, &
                               IN6, IN7, IN8, IN9, IN10, IN11
       integer(kind=int_wp) :: IKMRK, ISEG
       integer(kind=int_wp) :: IACTION, lunrep
