@@ -113,10 +113,6 @@ contains
         TIME = process_space_real(IP4)
         DELT = process_space_real(IP5)
         AuxSys = process_space_real(IP6) 
-        !Sum_AVERAD = process_space_real(IP7)        ! Work array for summing over time
-        !TCOUNT_AVERAD = process_space_real(IP8)      ! time
-        write(2,*) PERIOD, TIME, DELT
-        
         
         if (PERIOD < DELT) then
             call write_error_message('AveRadSurf: Period of averaging should be larger than DELWAQ time step.')         
@@ -158,8 +154,6 @@ contains
 
         IF (IACTION == 0) RETURN
 
-        !IP9 = IPOINT(9)
-        !IP10 = IPOINT(10)
         DO ISEG = 1, num_cells
                 !
                 !           Keep track of the time within the current quantile specification
