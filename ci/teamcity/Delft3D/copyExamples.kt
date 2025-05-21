@@ -34,7 +34,7 @@ object CopyExamples : BuildType({
 
     steps {
         python {
-            name = "Run TestBench.py"
+            name = "Download examples using TestBench.py"
             workingDir = "test/deltares_testbench/"
             environment = venv {
                 requirementsFile = "pip/win-requirements.txt"
@@ -45,7 +45,7 @@ object CopyExamples : BuildType({
                     --username "%s3_dsctestbench_accesskey%"
                     --password "%s3_dsctestbench_secret%"
                     --reference
-                    --config "configs\\dimr\\dimr_smoke_test_cases_win64.xml"
+                    --config "configs/dimr/dimr_smoke_test_cases_win64.xml"
                     --filter "testcase=e100_f00_c00"
                     --skip-run
                     --skip-post-processing

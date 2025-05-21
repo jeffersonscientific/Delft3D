@@ -40,7 +40,7 @@ object LinuxRunAllDockerExamples : BuildType({
                     --username "%s3_dsctestbench_accesskey%"
                     --password "%s3_dsctestbench_secret%"
                     --reference
-                    --config "configs/singularity/dimr/dimr_smoke_test_win64.xml"
+                    --config "configs/dimr/dimr_smoke_test_cases_win64.xml"
                     --filter "testcase=e100_f00_c00"
                     --skip-run
                     --skip-post-processing
@@ -51,9 +51,9 @@ object LinuxRunAllDockerExamples : BuildType({
             }
         }
         script {
-            name = "Move examples to the right location"
+            name = "Move examples to the right location and rename"
             scriptContent = """
-                mv -v test/deltares_testbench/data/cases/e100_f00_c00 ./examples/dflowfm/08_dflowfm_sequential_dwaves
+                mv -v test/deltares_testbench/data/cases/e100_f00_c00/* ./examples/dflowfm/08_dflowfm_sequential_dwaves
             """.trimIndent()
         }
         script {
