@@ -53,8 +53,7 @@ object LinuxRunAllDockerExamples : BuildType({
         script {
             name = "Move examples to the right location"
             scriptContent = """
-                rm -rf ./examples/dflowfm/08_dflowfm_sequential_dwaves
-                mv test/deltares_testbench/data/cases/e100_f00_c00 ./examples/dflowfm/08_dflowfm_sequential_dwaves
+                mv -v test/deltares_testbench/data/cases/e100_f00_c00 ./examples/dflowfm/08_dflowfm_sequential_dwaves
             """.trimIndent()
         }
         script {
