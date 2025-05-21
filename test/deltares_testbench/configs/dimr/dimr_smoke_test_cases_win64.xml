@@ -72,11 +72,11 @@
 
 	<defaultTestCases>
 		<testCase name="dflowfm_swantau_to_waq_default">
-		<location ref="dsctestbench-cases" type="input">
+		<location ref="cases" type="input">
 			<!-- if "to" is not specified, "from" is used as target -->
 			<from>.</from>
 		</location>
-		<location ref="dsctestbench-references" type="reference">
+		<location ref="reference_results" type="reference">
 			<from>win64</from>
 		</location>
 		<programs>
