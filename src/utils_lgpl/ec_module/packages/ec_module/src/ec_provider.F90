@@ -2418,10 +2418,10 @@ contains
    !> Determine if provider data in file is transposed.
    function ecProviderDataIsTranposed(column_id, row_id, lonx_id, laty_id) result (is_transposed)
       logical :: is_transposed !< result: data in file is transposed
-	  integer :: column_id !< intent(in), id of column dimension variable
-	  integer :: row_id !< intent(in), id of row dimension variable
-	  integer :: lonx_id !< intent(in), id of X (or longitude) dimension variable
-	  integer :: laty_id !< intent(in), id of Y (or latitude) dimension variable
+	  integer, intent(in) :: column_id !< id of column dimension variable
+	  integer, intent(in) :: row_id !< id of row dimension variable
+	  integer, intent(in) :: lonx_id !< id of X (or longitude) dimension variable
+	  integer, intent(in) :: laty_id !< id of Y (or latitude) dimension variable
 	  is_transposed = (column_id == laty_id .and. row_id == lonx_id)
    end function
 
