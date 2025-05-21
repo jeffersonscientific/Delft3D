@@ -23,7 +23,7 @@ object CopyExamples : BuildType({
     }
 
     params {
-        param("DEST_DIR", """\\directory.intra\PROJECT\d-hydro\dimrset\examples-test""")
+        param("DEST_DIR", """\\directory.intra\PROJECT\d-hydro\dimrset\examples-DEVOPSDSC-535""")
     }
 
     steps {
