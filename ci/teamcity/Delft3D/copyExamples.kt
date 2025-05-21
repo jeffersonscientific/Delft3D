@@ -44,7 +44,7 @@ object CopyExamples : BuildType({
                 scriptArguments = """
                     --username "%s3_dsctestbench_accesskey%"
                     --password "%s3_dsctestbench_secret%"
-                    --reference,
+                    --reference
                     --config "configs\\dimr\\dimr_smoke_test_cases_win64.xml"
                     --filter "testcase=e100_f00_c00"
                     --skip-run
