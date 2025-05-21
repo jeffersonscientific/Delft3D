@@ -2415,6 +2415,18 @@ contains
 
    ! =======================================================================
 
+   !> Determine if provider data in file is transposed.
+   function ecProviderDataIsTranposed(column_id, row_id, lonx_id, laty_id) result (is_transposed)
+      logical :: is_transposed !< result: data in file is transposed
+	  integer :: column_id !< intent(in), id of column dimension variable
+	  integer :: row_id !< intent(in), id of row dimension variable
+	  integer :: lonx_id !< intent(in), id of X (or longitude) dimension variable
+	  integer :: laty_id !< intent(in), id of Y (or latitude) dimension variable
+	  is_transposed = (column_id == laty_id .and. row_id == lonx_id)
+   end function
+
+   ! =======================================================================
+
    !> Create source Items and their contained types, based on a NetCDF file's header.
    function ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityName, varname) result(success)
       use transform_poleshift
@@ -2984,8 +2996,8 @@ contains
                nlay = 0
                if (size(dimids) >= 2) then
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
-                  ! flag files that are stored (X,Y) instead of (Y,X), so make sure the values are oriented row,column after reading.
-                  fileReaderPtr%is_transposed_field = (dimids(2) == fileReaderPtr%lonx_id .and. dimids(1) == fileReaderPtr%laty_id)
+                  ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
+                  fileReaderPtr%is_transposed_field = ecProviderDataIsTranposed(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
                   if (size(dimids) > 3 + dim_offset) then
                      nlay = fileReaderPtr%dim_length(dimids(3 + dim_offset))
                   end if
@@ -3609,7 +3621,7 @@ contains
       integer :: istat !< status of allocation operation
       integer :: i !< column index loop variable
       integer :: j !< row index loop variable
-      logical :: is_transposed !< file data is transposed (X,Y) instead of (Y,X)
+      logical :: is_transposed !< file data is transposed: (X,Y) instead of (Y,X)
       !
       success = .false.
       is_transposed = .false.
@@ -3669,8 +3681,7 @@ contains
       ! Load phase data.
       if (.not. ecSupportNetcdfCheckError(nf90_get_var(fileReaderPtr%fileHandle, phase_id, data_block, start=(/1, 1/), count=dim_sizes), "obtain phase data", fileReaderPtr%fileName)) return
 
-      is_transposed = (dimids(2) == fileReaderPtr%lonx_id .and. dimids(1) == fileReaderPtr%laty_id)
-      !fileReaderPtr%is_transposed_field = is_transposed
+      is_transposed = ecProviderDataIsTranposed(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
 
       if (is_transposed) then
          fileReaderPtr%hframe%phase_dims = (/dim_sizes(2), dim_sizes(1)/)

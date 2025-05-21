@@ -437,10 +437,8 @@ contains
          case (elmSetType_spheric_ortho, elmSetType_Cartesian_ortho)
             src_x => sourceElementSet%x
             src_y => sourceElementSet%y
-            !nsx = n_cols
-            !nsy = n_rows
-            nsx = SIZE(src_x)
-            nsy = SIZE(src_y)
+            nsx = size(src_x)
+            nsy = size(src_y)
             iimin = nsx
             jjmin = nsy
 
@@ -449,7 +447,6 @@ contains
             end if
 
             if (issparse == 1) then
-               !call realloc(imask, (/n_cols, n_rows/), fill=0)
                call realloc(imask, (/nsx, nsy/), fill=0)
             end if
 
