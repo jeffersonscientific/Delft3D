@@ -7342,7 +7342,7 @@ contains
 
    !> Computes relative humidity (%) from dew point and air temperature (Kelvin)
    pure elemental function calculate_relative_humidity(td, tm) result(rh)
-      use physicalconsts, only: CtoKelvin
+      use physicalconsts, only: celsius_to_kelvin
 
       real(kind=dp), intent(in) :: td !< dew point temperature temperature (K)
       real(kind=dp), intent(in) :: tm !< air temperature (K)
@@ -7352,7 +7352,7 @@ contains
       real(kind=dp), parameter :: C = -32.19_dp
 
       ! Convert to Celsius for the Magnus formula
-      rh = exp(B * td / (C + td + CtoKelvin) - B * tm / (C + tm + CtoKelvin)) * 100.0_dp
+      rh = exp(B * td / (C + celsius_to_kelvin(td)) - B * tm / (C + celsius_to_kelvin(tm))) * 100.0_dp
    end function calculate_relative_humidity
 
 end module m_meteo

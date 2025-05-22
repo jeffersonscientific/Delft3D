@@ -168,7 +168,7 @@ module m_ec_quantity
          use netcdf
          use netcdf_utils, only: ncu_get_att
          use string_module
-         use physicalconsts, only : CtoKelvin
+         use physicalconsts, only : celsius_to_kelvin
          use io_ugrid 
 
          implicit none
@@ -219,7 +219,7 @@ module m_ec_quantity
 
          if (units == 'K' .or. units == 'KELVIN') then
             ! convert Kelvin to degrees Celsius (kernel expects degrees Celsius)
-            add_offset = add_offset - CtoKelvin
+            add_offset = celsius_to_kelvin(add_offset)
          end if
 
          if (add_offset /= 0.0_hp) then

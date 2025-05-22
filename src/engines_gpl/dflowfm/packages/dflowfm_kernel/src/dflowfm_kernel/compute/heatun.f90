@@ -39,11 +39,11 @@ contains
 
    subroutine heatun(n, timhr, qsno)
       use precision, only: dp, comparereal, fp
-      use physicalconsts, only: stf
+      use physicalconsts, only: stf, celsius_to_kelvin
       use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, Soiltempthick, &
                             BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, Secchidepth2, surftempsmofac, &
                             jadelvappos, zab
-      use m_heatfluxes, only: em, albedo, cpa, tkelvn, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
+      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
                               fwind, Qtotmap, Qsunmap, Qevamap, Qconmap, Qlongmap, Qfrevamap, Qfrconmap, Qsunav, Qlongav, Qconav, &
                               Qevaav, Qfrconav, Qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
@@ -301,7 +301,7 @@ contains
 
          Qcon = -ch * air_density_in_cell * cpa * wind_speed_in_cell * (surface_temperature - air_temperature_in_cell) ! heat loss of water by convection eq.(A.23); Stanton number is ch:
 
-         twatK = surface_temperature + tkelvn
+         twatK = celsius_to_kelvin(surface_temperature)
          if (long_wave_radiation_available) then
             Qlong = em * (long_wave_radiation(n) - stf * (twatK**4)) ! difference between prescribed long wave downward flux and calculated upward flux
          else
@@ -310,8 +310,8 @@ contains
          end if
 
          Qfree = 0.0_dp; Qfrcon = 0.0_dp; Qfreva = 0.0_dp ! Contribution by free convection:
-         rhoa0 = ((air_pressure_in_cell - pvtwmx) / rdry + pvtwmx / rvap) / (surface_temperature + Tkelvn)
-         rhoa10 = ((air_pressure_in_cell - pvtahu) / rdry + pvtahu / rvap) / (air_temperature_in_cell + Tkelvn)
+         rhoa0 = ((air_pressure_in_cell - pvtwmx) / rdry + pvtwmx / rvap) / celsius_to_kelvin(surface_temperature)
+         rhoa10 = ((air_pressure_in_cell - pvtahu) / rdry + pvtahu / rvap) / celsius_to_kelvin(air_temperature_in_cell)
          gred = 2.0_dp * ag * (rhoa10 - rhoa0) / (rhoa0 + rhoa10)
          if (gred > 0.0_dp) then ! Ri= (gred/DZ)/ (du/dz)2, Ri>0.25 stable
             wfree = gred * xnuair / pr2

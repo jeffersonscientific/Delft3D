@@ -5290,7 +5290,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density
-      use physicalconsts, only: CtoKelvin
+      use physicalconsts, only: celsius_to_kelvin
 
       implicit none
 
@@ -7521,14 +7521,14 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_pressure, UNC_LOC_S, ice_pressure, jabndnd=jabndnd_)
          end if
          if (ice_mapout%ice_temperature) then
-            work1d = real(ice_temperature, dp) + CtoKelvin
+            work1d = real(celsius_to_kelvin(ice_temperature),dp)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_temperature, UNC_LOC_S, work1d, jabndnd=jabndnd_)
          end if
          if (ice_mapout%snow_thickness) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_thickness, UNC_LOC_S, snow_thickness, jabndnd=jabndnd_)
          end if
          if (ice_mapout%snow_temperature) then
-            work1d = real(snow_temperature, dp) + CtoKelvin
+            work1d = real(celsius_to_kelvin(snow_temperature), dp)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, UNC_LOC_S, work1d, jabndnd=jabndnd_)
          end if
       end if
@@ -10799,14 +10799,14 @@ contains
             ierr = nf90_put_var(imapfile, id_ice_pressure(iid), ice_pressure, [1, itim], [ndxndxi, 1])
          end if
          if (ice_mapout%ice_temperature) then
-            work1d = real(ice_temperature, dp) + CtoKelvin
+            work1d = real(celsius_to_kelvin(ice_temperature), dp)
             ierr = nf90_put_var(imapfile, id_ice_temperature(iid), work1d, [1, itim], [ndxndxi, 1])
          end if
          if (ice_mapout%snow_thickness) then
             ierr = nf90_put_var(imapfile, id_snow_thickness(iid), snow_thickness, [1, itim], [ndxndxi, 1])
          end if
          if (ice_mapout%snow_temperature) then
-            work1d = real(snow_temperature, dp) + CtoKelvin
+            work1d = real(celsius_to_kelvin(snow_temperature), dp)
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), work1d, [1, itim], [ndxndxi, 1])
          end if
       end if

@@ -183,36 +183,20 @@ contains
 
 !> Allocate the arrays of ice data structure.
    subroutine fm_ice_alloc(ndx)
-      !
-      ! Function/routine arguments
-      !
       integer, intent(in) :: ndx !< number of cells in the D-Flow FM domain
-      !
-      ! Local variables
-      !
-      integer :: istat !< status flag for allocation
-!
-!! executable statements -------------------------------------------------------
-!
-      if (associated(ice_area_fraction)) return ! don't allocate if already allocated - or should we deallocate and realloc?
 
+      integer :: istat !< status flag for allocation
+
+      if (.not.associated(ice_area_fraction)) then
       istat = alloc_icecover(ice_data, 1, ndx)
       call fm_ice_update_spatial_pointers()
+      end if
    end subroutine fm_ice_alloc
 
 !> Clear the arrays of ice data structure.
    subroutine fm_ice_clr()
-      !
-      ! Function/routine arguments
-      !
-      ! NONE
-      !
-      ! Local variables
-      !
       integer :: istat !< status flag for allocation
-!
-!! executable statements -------------------------------------------------------
-!
+
       istat = clr_icecover(ice_data)
       call fm_ice_null()
    end subroutine fm_ice_clr
@@ -221,21 +205,15 @@ contains
    subroutine fm_ice_read(md_ptr, ierror)
       use dfm_error, only: DFM_WRONGINPUT
       use properties, only: tree_data
-      !
-      ! Function/routine arguments
-      !
+
       type(tree_data), pointer :: md_ptr !< pointer to the input file
       integer, intent(inout) :: ierror !< D-Flow FM error flag
-      !
-      ! Local variables
-      !
+
       logical :: error !< ice module error flag
-!
-!! executable statements -------------------------------------------------------
-!
+
       call read_icecover(ice_data, md_ptr, 'ice', error)
       call fm_ice_update_spatial_pointers()
-      !
+
       if (error) then
          ierror = DFM_WRONGINPUT
       end if
@@ -243,33 +221,19 @@ contains
 
 !> Report the ice configuration to the diagnostic output.
    subroutine fm_ice_echo(mdia)
-      !
-      ! Function/routine arguments
-      !
       integer, intent(in) :: mdia !< unit number of diagnostic output
-      !
-      ! Local variables
-      !
+
       logical :: error !< ice module error flag
-!
-!! executable statements -------------------------------------------------------
-!
+
       error = echo_icecover(ice_data, mdia)
    end subroutine fm_ice_echo
 
 !> Update the ice pressure array.
    subroutine fm_ice_update_press(ag)
-      !
-      ! Function/routine arguments
-      !
       real(dp), intent(in) :: ag !< gravitational acceleration (m/s2)
-      !
-      ! Local variables
-      !
+
       real(fp) :: ag_fp !< gravitational acceleration (m/s2)
-!
-!! executable statements -------------------------------------------------------
-!
+
       ag_fp = real(ag, fp)
       call update_icepress(ice_data, ag_fp)
    end subroutine fm_ice_update_press
@@ -281,21 +245,17 @@ contains
       use m_flow, only: hu
       use m_flowgeom, only: nd
       use m_physcoef, only: vonkar
-      use physicalconsts, only: CtoKelvin
+      use physicalconsts, only: celsius_to_kelvin
       use m_heatfluxes, only: cpw
       use m_wind, only: air_temperature
       use ieee_arithmetic, only: ieee_is_nan
-      !
-      ! Function/routine arguments
-      !
+
       integer, intent(in) :: n !< node number
       real(fp), intent(in) :: Qlong_ice !< part of Qlong computed in HEATUN
       real(fp), intent(in) :: tempwat !< temperature of water at top layer [degC]
       real(fp), intent(in) :: saltcon !< salinity of water at top layer [degC]
       real(fp), intent(in) :: wind !< wind speed [m/s]
-      !
-      ! Local variables
-      !
+
       integer :: iter !< iteration number
       integer :: icount !< number of flow links
       integer :: LL !< flow link index
@@ -321,9 +281,6 @@ contains
       real(fp) :: rhow !< density of water (kg m-3)
       real(fp) :: Qlong !< effective back radiation, computed after convergence of iteration process (J m-2 s)
 
-!
-!! executable statements -------------------------------------------------------
-!
       ! Initialization
       b = 3.0_fp
       p_r = 13.0_fp
@@ -358,8 +315,8 @@ contains
          ! including an iteration proces
          !
          do iter = 1, 5
-            coef1 = Qlong_ice * (tsi + CtoKelvin)**4.0_fp
-            coef2 = 4.0_fp * Qlong_ice * (tsi + CtoKelvin)**3.0_fp
+            coef1 = Qlong_ice * (celsius_to_kelvin(tsi))**4.0_fp
+            coef2 = 4.0_fp * Qlong_ice * (celsius_to_kelvin(tsi))**3.0_fp
             D_t = (qh_air2ice(n) - coef1 - conduc * tsi / D_ice) / (coef2 + conduc / D_ice)
             tsi = tsi + D_t
             if (abs(D_t) < 1e-2_fp) then
@@ -451,24 +408,16 @@ contains
 !> update the ice cover -- initial coding here with full access to D-Flow FM arrays via use statements
 !! let's see if we can make it gradually more modular and move functionality to the icecover_module.
    subroutine update_icecover()
-      use precision, only: dp
+      use precision, only: fp
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
       use m_wind, only: air_temperature, rain, jarain
-      !
-      ! Function/routine arguments
-      !
-      ! NONE
-      !
-      ! Local variables
-      !
-      integer :: n
-      real(kind=dp) :: conv_factor
-!
-!! executable statements -------------------------------------------------------
-!
+      real(kind=fp), parameter :: MM_TO_M = 1.0_fp / 1000.0_fp !< factor for converting mm to m
+      real(kind=fp), parameter :: PER_DAY_TO_PER_S = 1.0_fp / 86400.0_fp !< factor for converting 1/day to 1/s
+      real(kind=fp), parameter :: CONV_FACTOR = MM_TO_M * PER_DAY_TO_PER_S !< factor for converting rain in mm/day to m/s
 
-      conv_factor = 1.0_fp / (1000.0_fp * 86400.0_fp)
+      integer :: n !< loop index, grid cell number
+
       select case (ja_icecover)
       case (ICECOVER_SEMTNER)
          ! follow Semtner (1975)
@@ -477,7 +426,7 @@ contains
          if (jarain == 1) then ! check whether rainfall input is prescribed
             do n = 1, ndx
                if (air_temperature(n) < 0.0_fp .and. ice_thickness(n) > 0.01_fp .and. rain(n) > 0.0_fp) then
-                  snow_thickness(n) = snow_thickness(n) + dts * rain(n) * conv_factor
+                  snow_thickness(n) = snow_thickness(n) + dts * rain(n) * CONV_FACTOR
                end if
             end do
          end if
