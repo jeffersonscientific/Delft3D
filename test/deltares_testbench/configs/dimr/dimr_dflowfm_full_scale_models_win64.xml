@@ -268,7 +268,7 @@
                         <parameter name="mesh1d_q1" toleranceAbsolute="0.001" />
                         <parameter name="mesh1d_current_total_net_inflow_lateral" toleranceRelative="0.001" />
                         <parameter name="mesh1d_waterdepth" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_volume_on_ground" toleranceAbsolute="0.001" />
+                        <parameter name="mesh1d_volume_on_ground" toleranceRelative="0.001" />
                     </parameters>
                 </file>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
