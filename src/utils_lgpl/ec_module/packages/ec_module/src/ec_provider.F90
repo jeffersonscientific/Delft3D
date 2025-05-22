@@ -2416,7 +2416,7 @@ contains
    ! =======================================================================
 
    !> Determine if provider data in file is transposed.
-   function ecProviderDataIsColumnMajor(column_id, row_id, lonx_id, laty_id) result (is_column_major)
+   pure function ecProviderDataIsColumnMajor(column_id, row_id, lonx_id, laty_id) result (is_column_major)
       logical :: is_column_major !< result: data in file is in a column major format
 	  integer, intent(in) :: column_id !< id of column dimension variable
 	  integer, intent(in) :: row_id !< id of row dimension variable
