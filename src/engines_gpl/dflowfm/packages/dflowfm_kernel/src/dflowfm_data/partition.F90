@@ -5151,6 +5151,10 @@ contains
       real(dp) :: xNew, yNew, xOld, yOld
       integer, allocatable :: maskBnd(:), maskBndAll(:), maskBndGat(:), indBndMPI(:), jaCoincide(:) ! Arrays for boundary nodes, only used in parallel run
 
+      if (ncrs <= 0) then
+         return
+      end if
+      
       ! Allocate and construct geometry variable arrays (on one subdomain)
       call realloc(nodeCountCrs, ncrs, keepExisting=.false., fill=0)
 
