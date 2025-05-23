@@ -139,10 +139,10 @@ subroutine wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
        if (filetype == FTYPE_NEFIS) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'ITMAPS', ' ', IO_INT4    , 0, longname='timestep number (ITMAPC*DT*TUNIT := time in sec from ITDATE)')
        endif
-       if (lsedtot > 0 .and. moroutput%morfacft) then
+       if (lsedtot > 0 .and. moroutput%morfac) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'MORFAC', ' ', io_prec , 0, longname='morphological acceleration factor (MORFAC)')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'MORFT' , ' ', IO_REAL8, 0, longname='morphological time (days since start of simulation)', unit='days')
        endif
+       call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'MORFT' , ' ', IO_REAL8, 0, longname='morphological time (days since start of simulation)', unit='days')
        !
        group4%grp_dim = iddim_time
        group5%grp_dim = iddim_time
@@ -161,15 +161,15 @@ subroutine wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           if (ierror/=0) goto 9999
        endif
        !
-       if (lsedtot > 0 .and. moroutput%morfacft) then
+       if (lsedtot > 0 .and. moroutput%morfac) then
           call wrtvar(fds, filename, filetype, grnam4, celidt, &
                     & gdp, ierror, lundia, morfac, 'MORFAC')
           if (ierror/=0) goto 9999
-          !
-          call wrtvar(fds, filename, filetype, grnam4, celidt, &
-                    & gdp, ierror, lundia, morft, 'MORFT')
-          if (ierror/=0) goto 9999
        endif
+          !
+       call wrtvar(fds, filename, filetype, grnam4, celidt, &
+               & gdp, ierror, lundia, morft, 'MORFT')
+       if (ierror/=0) goto 9999
        !
     end select
     !

@@ -180,10 +180,10 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'ITAVGS', ' ', IO_INT4, 0, longname='timestep number (ITAVG*DT*TUNIT := time in sec from ITDATE)')
        endif
        
-       if (moroutput%morfacft) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MFTAVG', ' ', IO_REAL8, 0, longname='morphological time (days since start of simulation)', unit='days')
+       if (moroutput%morfac) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MORAVG', ' ', io_prec , 0, longname='average MORFAC used during averaging period')
        end if
+       call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MFTAVG', ' ', IO_REAL8, 0, longname='morphological time (days since start of simulation)', unit='days')
        !
        ! map-avg-series
        !
@@ -213,19 +213,20 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           if (ierror/=0) goto 9999
        endif
        !
-       if (moroutput%morfacft) then
-          !
-          ! element 'MFTAVG'
-          !
-          call wrtvar(fds, filename, filetype, grnam6, celidt, &
-                    & gdp, ierror, lundia, morft, 'MFTAVG')
-          if (ierror/=0) goto 9999
-          !
-          dmorft = morft - morft0
-          dmorfs = real(dmorft*86400.0_hp,fp)
-          !
-          ! element 'MORAVG'
-          !
+
+       !
+       ! element 'MFTAVG'
+       !
+       call wrtvar(fds, filename, filetype, grnam6, celidt, &
+               & gdp, ierror, lundia, morft, 'MFTAVG')
+       if (ierror/=0) goto 9999
+       !
+       dmorft = morft - morft0
+       dmorfs = real(dmorft*86400.0_hp,fp)
+       !
+       ! element 'MORAVG'
+       !
+       if (moroutput%morfac) then
           if (hydrt > hydrt0) then
              moravg = dmorft/(hydrt - hydrt0)
           else

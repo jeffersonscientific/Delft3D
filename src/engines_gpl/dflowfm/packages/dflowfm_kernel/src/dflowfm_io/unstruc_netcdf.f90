@@ -3626,12 +3626,10 @@ contains
          ierr = nf90_put_att(irstfile, id_morbl, 'long_name', 'Time-varying bottom level in flow cell center')
          ierr = nf90_put_att(irstfile, id_morbl, 'units', 'm')
          !
-         if (stmpar%morpar%moroutput%morfacft) then
-            ierr = nf90_def_var(irstfile, 'morft', nf90_double, id_timedim, id_morft)
-            ierr = nf90_put_att(irstfile, id_morft, 'units', 'morphological days since '//refdat(1:4)//'-'//refdat(5:6)//'-'//refdat(7:8)//' 00:00:00')
-            ierr = nf90_put_att(irstfile, id_morft, 'standard_name', 'morphological time')
-            ierr = nf90_put_att(irstfile, id_morbl, 'units', 'days')
-         end if
+        ierr = nf90_def_var(irstfile, 'morft', nf90_double, id_timedim, id_morft)
+        ierr = nf90_put_att(irstfile, id_morft, 'units', 'morphological days since '//refdat(1:4)//'-'//refdat(5:6)//'-'//refdat(7:8)//' 00:00:00')
+        ierr = nf90_put_att(irstfile, id_morft, 'standard_name', 'morphological time')
+        ierr = nf90_put_att(irstfile, id_morbl, 'units', 'days')
          !
          if (ndx1d > 0 .and. stm_included) then
             if (stmpar%morpar%bedupd) then
@@ -5877,18 +5875,16 @@ contains
          if ((jamapsed > 0 .and. jased > 0 .and. stm_included) .or. (jasubsupl > 0)) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mor_bl, nc_precision, UNC_LOC_S, 'mor_bl', '', 'Time-varying bottom level in flow cell center', 'm', dimids=[-2, -1], jabndnd=jabndnd_)
          end if
-         !
-         if (jasubsupl > 0 .and. stmpar%morpar%moroutput%cumsubsupl) then
-            select case (ibedlevtyp)
-            case (1)
-               iloc = UNC_LOC_S
-            case (2)
-               iloc = UNC_LOC_U
-            case (3, 4, 5, 6)
-               iloc = UNC_LOC_CN
-            end select
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_subsupl, nc_precision, iloc, 'subsupl', '', 'Cumulative subsidence/uplift', 'm', dimids=[-2, -1], jabndnd=jabndnd_)
-         end if
+        !
+        select case (ibedlevtyp)
+        case (1)
+            iloc = UNC_LOC_S
+        case (2)
+            iloc = UNC_LOC_U
+        case (3, 4, 5, 6)
+            iloc = UNC_LOC_CN
+        end select
+        ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_subsupl, nc_precision, iloc, 'subsupl', '', 'Cumulative subsidence/uplift', 'm', dimids=[-2, -1], jabndnd=jabndnd_)
          !
          if (jamapz0 > 0) then
             ! roughness heights for current and current and wave related roughness
@@ -5908,10 +5904,10 @@ contains
             !
             call realloc(mapids%id_dxx, [stmpar%morpar%nxx, 3], keepExisting=.false.)
             !
-            if (stmpar%morpar%moroutput%morfacft) then
+            if (stmpar%morpar%moroutput%morfac) then
                ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_morfac, nc_precision, [mapids%id_tsp%id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-')
-               ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_morft, nc_precision, [mapids%id_tsp%id_timedim], 'morft', '', 'Current morphological time', 's')
             end if
+            ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_morft, nc_precision, [mapids%id_tsp%id_timedim], 'morft', '', 'Current morphological time', 's')
                !
             ierr = unc_def_var_nonspatial(mapids%ncid, mapids%id_frac_name, nf90_char, [mapids%id_tsp%id_strlendim, mapids%id_tsp%id_sedtotdim], 'sedfrac_name', '', 'Sediment fraction name', '-')
             if (stmpar%lsedsus > 0) then
@@ -6845,19 +6841,19 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mor_bl, UNC_LOC_S, bl, jabndnd=jabndnd_)
       end if
 
-      if (jasubsupl > 0 .and. stmpar%morpar%moroutput%cumsubsupl) then
-         select case (ibedlevtyp)
-         case (1)
-            iloc = UNC_LOC_S
-         case (2)
-            iloc = UNC_LOC_U
-         case (3, 4, 5, 6)
-            iloc = UNC_LOC_CN
-         end select
-         do k = 1, size(subsupl)
-            subsout(k) = subsupl(k) - subsupl_t0(k)
-         end do
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_subsupl, iloc, subsout, jabndnd=jabndnd_)
+      if (jasubsupl > 0) then
+          select case (ibedlevtyp)
+          case (1)
+             iloc = UNC_LOC_S
+          case (2)
+             iloc = UNC_LOC_U
+          case (3, 4, 5, 6)
+             iloc = UNC_LOC_CN
+          end select
+          do k = 1, size(subsupl)
+             subsout(k) = subsupl(k) - subsupl_t0(k)
+          end do
+          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_subsupl, iloc, subsout, jabndnd=jabndnd_)
       end if
 
       if (jamapz0 > 0) then
@@ -7278,21 +7274,23 @@ contains
          end if
          !
          !morfac and morft
-         if (stmpar%morpar%moroutput%morfacft) then
-            ! Time averaged transports, could probably be more concise...
-            !morstarthyd = tstart_user + stmpar%morpar%tmor*tfac        ! seconds
-            dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
-            dmorfs = dmorft * 86400.0d0 ! seconds
-            mortime = stmpar%morpar%morft * 86400d0 ! seconds*morfac since tstart_user
-            if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
-               moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
-            else
-               moravg = 0d0
-            end if
-         !
-            ierr = nf90_put_var(mapids%ncid, mapids%id_morfac, moravg, [itim])
-            ierr = nf90_put_var(mapids%ncid, mapids%id_morft, mortime, [itim])
+         ! Time averaged transports, could probably be more concise...
+         !morstarthyd = tstart_user + stmpar%morpar%tmor*tfac        ! seconds
+         dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
+         dmorfs = dmorft * 86400.0d0 ! seconds
+         mortime = stmpar%morpar%morft * 86400d0 ! seconds*morfac since tstart_user
+         if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
+             moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
+         else
+             moravg = 0d0
          end if
+         !
+         if (stmpar%morpar%moroutput%morfac) then
+            ierr = nf90_put_var(mapids%ncid, mapids%id_morfac, moravg, [itim])
+         end if
+         
+         ierr = nf90_put_var(mapids%ncid, mapids%id_morft, mortime, [itim])
+
          !
          if (stmpar%morpar%moroutput%cumavg) then
             ! Bedload components

@@ -291,13 +291,12 @@ type moroutputtype
     logical :: bamor
     logical :: wumor
     !
-    logical :: cumsubsupl
     logical :: bodsed
     logical :: dpsed
     logical :: thlyr
     logical :: preload
     logical :: sedconc
-    logical :: morfacft
+    logical :: morfac
     logical :: sxytot
     logical :: sxyavg
 end type moroutputtype
@@ -1777,9 +1776,8 @@ subroutine initmoroutput(moroutput, def)
     moroutput%blave         = no
     moroutput%bamor         = no
     moroutput%wumor         = no
-    moroutput%cumsubsupl    = no
-    moroutput%preload       = no
-    moroutput%morfacft      = yes
+    moroutput%preload       = yes
+    moroutput%morfac        = yes
     
 end subroutine initmoroutput
 
