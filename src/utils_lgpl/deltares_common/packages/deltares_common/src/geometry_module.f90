@@ -2172,7 +2172,7 @@ contains
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
       real(kind=dp), intent(in) :: dmiss
-      
+
       real(kind=dp), dimension(N) :: xx, yy, zz !< 3D coordinates
       real(kind=dp), dimension(4, 4) :: A !< Jacobian matrix of the system, including the constraint that the center lies on the sphere.
       real(kind=dp), dimension(4) :: rhs !< Right hand side of linear system, residuals.
@@ -2180,10 +2180,10 @@ contains
       real(kind=dp) :: xx0, yy0, zz0 !< Coordinates of the current estimate of the mass center (centroid).
       real(kind=dp) :: qq0 !< Lagrange multiplier enforcing the constraint that the center lies on the sphere.
       real(kind=dp) :: xx00, yy00, zz00 !< backup of mass center coordinates
-      real(kind=dp) :: xxcg, yycg, zzcg !< Coordinates of the centroid of the tetrahedron formed by the center point and triangle i.
+      real(kind=dp) :: xxcg, yycg, zzcg !< Coordinates of the centroid of the tetrahedron formed by the center point and the current triangle.
       real(kind=dp) :: vol, voli, dvol !< Accumulated volume of the polyhedral region formed by the polygon and the center point, inverse and increment.
       real(kind=dp) :: Jx, Jy, Jz !< Accumulated first moments in each dimension (used in centroid computation).
-      
+
       real(kind=dp) :: Rai, scaled_diff
       real(kind=dp) :: sx, sy, sz
       integer :: i, ip1, iter
@@ -2296,7 +2296,7 @@ contains
          A(1, 4) = -xx0
          A(2, 4) = -yy0
          A(3, 4) = -zz0
-         
+
          A(4, 1) = A(1, 4)
          A(4, 2) = A(2, 4)
          A(4, 3) = A(3, 4)
@@ -2577,7 +2577,7 @@ contains
       real(kind=dp) :: xzw, yzw ! zwaartepunt
       integer :: m, k
       real(kind=dp) :: xe3, ye3, xe1, ye1, xe2, ye2, tex, tey, ds, &
-         xccf, yccf, xccfo, yccfo, alf
+                       xccf, yccf, xccfo, yccfo, alf
 
       integer, parameter :: num_columns = 10
 

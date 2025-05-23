@@ -98,7 +98,6 @@ contains
       use m_fm_update_crosssections, only: fm_update_mor_width_area, fm_update_mor_width_mean_bedlevel
       use unstruc_netcdf_map_class
       use unstruc_caching
-      use m_monitoring_crosssections, only: ncrs
       use m_setucxcuy_leastsquare, only: reconst2ndini
       use fm_external_forcings_data, only: nwbnd
       use m_sedtrails_network
