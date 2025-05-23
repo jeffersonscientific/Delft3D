@@ -15,7 +15,8 @@ object WindowsBuildDflowfmInteracter : BuildType({
     templates(
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateFailureCondition
+        TemplateFailureCondition,
+        TemplateDockerRegistry
     )
     allowExternalStatus = true
     artifactRules = """
@@ -43,7 +44,7 @@ object WindowsBuildDflowfmInteracter : BuildType({
         root(AbsoluteId("ReposDsRoot"), "+:trunk/src/third_party/interacter => ./src/third_party/interacter")
 
         cleanCheckout = true
-        checkoutDir = "ossbuild-lnx64"
+        checkoutDir = "ossbuild-win"
     }
 
     steps {
@@ -82,13 +83,6 @@ object WindowsBuildDflowfmInteracter : BuildType({
                 branchFilter = "+:<default>"
                 triggerBuild = always()
                 withPendingChangesOnly = false
-            }
-        }
-    }
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
             }
         }
     }
