@@ -1818,11 +1818,11 @@ contains
       !! Vector is of unit length in Cartesian world.
       !! Vector is almost unit length in spherical world, but its
       !! x-component is scaled 1/cos(phi) such that in later uses:
-      !! (theta_B, theta_A) = (theta_A, phi_A) + alpha*(theta_n, phi_n)
+      !! (theta_B, theta_A) = (theta_A, phi_A) + qq0*(theta_n, phi_n)
       !! the vectors 1->2 and A->B are perpendicular in Cartesian world,
       !! not in spherical world. NOTE: the LENGTH of A->B in Cartesian
       !! world implictly contains the earth radius and dg2rd already,
-      !! so make sure your alpha is in degrees.
+      !! so make sure your qq0 is in degrees.
    subroutine normalout(x1, y1, x2, y2, xn, yn, jsferic, jasfer3D, dmiss, dxymis) ! normals out edge 1  2
 
       use mathconsts, only: degrad_hp
@@ -1982,15 +1982,15 @@ contains
    ! xpav
    !
    ! compute coordinates (xu, yu) from coordinates (x,y) and vector (vx,vy) with
-   !    xu = x + alpha v, with v in reference frame of x
-   subroutine xpav(x, y, alpha, vx, vy, xu, yu, jsferic, jasfer3D)
+   !    xu = x + qq0 v, with v in reference frame of x
+   subroutine xpav(x, y, qq0, vx, vy, xu, yu, jsferic, jasfer3D)
 
       use mathconsts, only: degrad_hp
 
       implicit none
 
       double precision, intent(in) :: x, y
-      double precision, intent(in) :: alpha
+      double precision, intent(in) :: qq0
       double precision, intent(in) :: vx, vy
       double precision, intent(out) :: xu, yu
 
@@ -2004,8 +2004,8 @@ contains
       integer, intent(in) :: jsferic, jasfer3D
 
       if (jsferic == 0) then
-         xu = x + alpha * vx
-         yu = y + alpha * vy
+         xu = x + qq0 * vx
+         yu = y + qq0 * vy
       else
          if (jasfer3D == 1) then
             !     compute global base vectors at other point in 3D (xx,yy,zz) frame
@@ -2018,9 +2018,9 @@ contains
             vzz = (vx * elambda(3) + vy * ephi(3))
 
             call sphertoCart3D(x, y, xx, yy, zz)
-            xxu = xx + alpha * vxx
-            yyu = yy + alpha * vyy
-            zzu = zz + alpha * vzz
+            xxu = xx + qq0 * vxx
+            yyu = yy + qq0 * vyy
+            zzu = zz + qq0 * vzz
             call Cart3Dtospher(xxu, yyu, zzu, xu, yu, x)
          else
             ! LC to re-enable call mess(LEVEL_ERROR, 'xpav: not supported')
@@ -2183,7 +2183,7 @@ contains
 
       double precision, dimension(N) :: DvolDx, DvolDy, DvolDz
 
-      double precision :: xx0, yy0, zz0, alpha, xx00, yy00, zz00
+      double precision :: xx0, yy0, zz0, qq0, xx00, yy00, zz00
       double precision :: xxcg, yycg, zzcg
       double precision :: dvol, vol, voli
       double precision :: Jx, Jy, Jz
@@ -2194,7 +2194,6 @@ contains
 
       integer, parameter :: MAXITER = 100
       double precision, parameter :: dtol = 1d-8
-      double precision, parameter :: deps = 1d-8
       double precision, parameter :: onesixth = 0.166666666666666667d0
 
       area = 0d0
@@ -2230,11 +2229,10 @@ contains
       xx00 = xx0
       yy00 = yy0
       zz00 = zz0
-      alpha = 0.75d0
+      qq0 = 0.75d0
 
       !  Newton iterations
       do iter = 1, MAXITER
-
          !     compute volume
          vol = 0d0
          do i = 1, N
@@ -2250,15 +2248,8 @@ contains
 
          if (abs(vol) < dtol) then
             if (iter == 1) then ! no mass center can be defined, use first iterate
-
                exit
             else ! also use first iterate
-               !if (mout == 0) call newfil(mout,'dump.pli')
-               !write(mout,*) 'bl01'
-               !write(mout,*) n, ' 2 '
-               !do k = 1,n
-               !   write (mout,*) x(k), y(k)
-               !enddo
                xx0 = xx00
                yy0 = yy00
                zz0 = zz00
@@ -2267,12 +2258,8 @@ contains
          end if
 
          voli = 1d0 / vol
-
          A = 0d0
          rhs = 0d0
-         Jx = (0.25d0 - alpha) * xx0 !*vol
-         Jy = (0.25d0 - alpha) * yy0 !*vol
-         Jz = (0.25d0 - alpha) * zz0 !*vol
          do i = 1, N
             ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
 
@@ -2299,29 +2286,23 @@ contains
             A(3, 3) = A(3, 3) + zzcg * dvoldz(i)
          end do
 
-         A(1, 1) = voli * A(1, 1) + 0.25 - alpha
-         A(1, 2) = voli * A(1, 2)
-         A(1, 3) = voli * A(1, 3)
+         A(1:3, 1:3) = voli * A(1:3, 1:3)
+         
+         A(1, 1) = A(1, 1) + 0.25 - qq0
+         A(2, 2) = A(2, 2) + 0.25 - qq0
+         A(3, 3) = A(3, 3) + 0.25 - qq0
+         
          A(1, 4) = -xx0 * Rai
-
-         A(2, 1) = voli * A(2, 1)
-         A(2, 2) = voli * A(2, 2) + 0.25 - alpha
-         A(2, 3) = voli * A(2, 3)
          A(2, 4) = -yy0 * Rai
-
-         A(3, 1) = voli * A(3, 1)
-         A(3, 2) = voli * A(3, 2)
-         A(3, 3) = voli * A(3, 3) + 0.25 - alpha
          A(3, 4) = -zz0 * Rai
-
-         A(4, 1) = -xx0 * Rai
-         A(4, 2) = -yy0 * Rai
-         A(4, 3) = -zz0 * Rai
+         A(4, 1) = A(1, 4)
+         A(4, 2) = A(2, 4)
+         A(4, 3) = A(3, 4)
          A(4, 4) = 0d0
 
-         rhs(1) = -Jx ! *dvoli
-         rhs(2) = -Jy ! *dvoli
-         rhs(3) = -Jz ! *dvoli
+         rhs(1) = -(0.25d0 - qq0) * xx0
+         rhs(2) = -(0.25d0 - qq0) * yy0
+         rhs(3) = -(0.25d0 - qq0) * zz0
          rhs(4) = -0.5 * (earth_radius**2 - (xx0**2 + yy0**2 + zz0**2)) * Rai
 
          !     solve system
@@ -2331,10 +2312,10 @@ contains
          xx0 = xx0 + rhs(1)
          yy0 = yy0 + rhs(2)
          zz0 = zz0 + rhs(3)
-         alpha = alpha + rhs(4) * Rai
+         qq0 = qq0 + rhs(4) * Rai
 
          !     check convergence
-         if (rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 < deps) then
+         if (rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 < dtol) then
             exit
          end if
 
