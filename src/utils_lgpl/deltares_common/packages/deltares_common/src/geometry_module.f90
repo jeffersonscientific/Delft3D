@@ -2289,9 +2289,9 @@ contains
 
          A(1:3, 1:3) = voli * A(1:3, 1:3)
 
-         A(1, 1) = A(1, 1) + 0.25 - qq0
-         A(2, 2) = A(2, 2) + 0.25 - qq0
-         A(3, 3) = A(3, 3) + 0.25 - qq0
+         A(1, 1) = A(1, 1) + 0.25_dp - qq0
+         A(2, 2) = A(2, 2) + 0.25_dp - qq0
+         A(3, 3) = A(3, 3) + 0.25_dp - qq0
 
          A(1, 4) = -xx0
          A(2, 4) = -yy0
@@ -2306,7 +2306,7 @@ contains
          rhs(2) = -Jy
          rhs(3) = -Jz
          scaled_diff = 1 - (xx0**2 + yy0**2 + zz0**2) * Rai**2 ! avoid substracting two huge numbers
-         rhs(4) = -0.5 * scaled_diff * earth_radius**2
+         rhs(4) = -0.5_dp * scaled_diff * earth_radius**2
          !     solve system
          call gaussj(A, 4, 4, rhs, 1, 1) ! rhs contains solution
          !     update coordinates of centerpoint
