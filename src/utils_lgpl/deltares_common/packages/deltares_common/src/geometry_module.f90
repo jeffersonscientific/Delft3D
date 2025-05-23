@@ -1818,11 +1818,11 @@ contains
       !! Vector is of unit length in Cartesian world.
       !! Vector is almost unit length in spherical world, but its
       !! x-component is scaled 1/cos(phi) such that in later uses:
-      !! (theta_B, theta_A) = (theta_A, phi_A) + qq0*(theta_n, phi_n)
+      !! (theta_B, theta_A) = (theta_A, phi_A) + alpha*(theta_n, phi_n)
       !! the vectors 1->2 and A->B are perpendicular in Cartesian world,
       !! not in spherical world. NOTE: the LENGTH of A->B in Cartesian
       !! world implictly contains the earth radius and dg2rd already,
-      !! so make sure your qq0 is in degrees.
+      !! so make sure your alpha is in degrees.
    subroutine normalout(x1, y1, x2, y2, xn, yn, jsferic, jasfer3D, dmiss, dxymis) ! normals out edge 1  2
 
       use mathconsts, only: degrad_hp
@@ -1982,15 +1982,15 @@ contains
    ! xpav
    !
    ! compute coordinates (xu, yu) from coordinates (x,y) and vector (vx,vy) with
-   !    xu = x + qq0 v, with v in reference frame of x
-   subroutine xpav(x, y, qq0, vx, vy, xu, yu, jsferic, jasfer3D)
+   !    xu = x + alpha v, with v in reference frame of x
+   subroutine xpav(x, y, alpha, vx, vy, xu, yu, jsferic, jasfer3D)
 
       use mathconsts, only: degrad_hp
 
       implicit none
 
       double precision, intent(in) :: x, y
-      double precision, intent(in) :: qq0
+      double precision, intent(in) :: alpha
       double precision, intent(in) :: vx, vy
       double precision, intent(out) :: xu, yu
 
@@ -2004,8 +2004,8 @@ contains
       integer, intent(in) :: jsferic, jasfer3D
 
       if (jsferic == 0) then
-         xu = x + qq0 * vx
-         yu = y + qq0 * vy
+         xu = x + alpha * vx
+         yu = y + alpha * vy
       else
          if (jasfer3D == 1) then
             !     compute global base vectors at other point in 3D (xx,yy,zz) frame
@@ -2018,9 +2018,9 @@ contains
             vzz = (vx * elambda(3) + vy * ephi(3))
 
             call sphertoCart3D(x, y, xx, yy, zz)
-            xxu = xx + qq0 * vxx
-            yyu = yy + qq0 * vyy
-            zzu = zz + qq0 * vzz
+            xxu = xx + alpha * vxx
+            yyu = yy + alpha * vyy
+            zzu = zz + alpha * vzz
             call Cart3Dtospher(xxu, yyu, zzu, xu, yu, x)
          else
             ! LC to re-enable call mess(LEVEL_ERROR, 'xpav: not supported')
@@ -2187,7 +2187,7 @@ contains
       double precision :: xxcg, yycg, zzcg
       double precision :: dvol, vol, voli
       double precision :: Jx, Jy, Jz
-      double precision :: Rai
+      double precision :: Rai, scaled_diff
       double precision :: sx, sy, sz
 
       integer :: i, ip1, iter
@@ -2260,6 +2260,9 @@ contains
          voli = 1d0 / vol
          A = 0d0
          rhs = 0d0
+         Jx = (0.25d0 - qq0) * xx0
+         Jy = (0.25d0 - qq0) * yy0
+         Jz = (0.25d0 - qq0) * zz0
          do i = 1, N
             ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
 
@@ -2287,23 +2290,24 @@ contains
          end do
 
          A(1:3, 1:3) = voli * A(1:3, 1:3)
-         
+
          A(1, 1) = A(1, 1) + 0.25 - qq0
          A(2, 2) = A(2, 2) + 0.25 - qq0
          A(3, 3) = A(3, 3) + 0.25 - qq0
-         
-         A(1, 4) = -xx0 * Rai
-         A(2, 4) = -yy0 * Rai
-         A(3, 4) = -zz0 * Rai
+
+         A(1, 4) = -xx0
+         A(2, 4) = -yy0
+         A(3, 4) = -zz0
          A(4, 1) = A(1, 4)
          A(4, 2) = A(2, 4)
          A(4, 3) = A(3, 4)
          A(4, 4) = 0d0
 
-         rhs(1) = -(0.25d0 - qq0) * xx0
-         rhs(2) = -(0.25d0 - qq0) * yy0
-         rhs(3) = -(0.25d0 - qq0) * zz0
-         rhs(4) = -0.5 * (earth_radius**2 - (xx0**2 + yy0**2 + zz0**2)) * Rai
+         rhs(1) = -Jx
+         rhs(2) = -Jy
+         rhs(3) = -Jz
+         scaled_diff = 1 - (xx0**2 + yy0**2 + zz0**2) * Rai**2
+         rhs(4) = -0.5 * scaled_diff * earth_radius**2
 
          !     solve system
          call gaussj(A, 4, 4, rhs, 1, 1) ! rhs contains solution
@@ -2312,7 +2316,7 @@ contains
          xx0 = xx0 + rhs(1)
          yy0 = yy0 + rhs(2)
          zz0 = zz0 + rhs(3)
-         qq0 = qq0 + rhs(4) * Rai
+         qq0 = qq0 + rhs(4)
 
          !     check convergence
          if (rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 < dtol) then
