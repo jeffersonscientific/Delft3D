@@ -1,7 +1,6 @@
-!----- AGPL --------------------------------------------------------------------
+!----AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2024.
-!
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -26,50 +25,17 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
 !
 !
 
-module m_set_saltem_nudge
+module m_density_parameters
 
    implicit none
 
-   private
+   integer, public :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
+   logical, public :: apply_thermobaricity !< Check if density is pressure dependent
+   logical, public :: thermobaricity_in_pressure_gradient !< Apply thermobaricity in computing the baroclinic pressure gradient
+   integer, public :: max_iterations_pressure_density = 1 !< max nr of density-pressure iterations
+   integer, public :: Jabarocponbnd = 1 !< Baroclinic pressure on open boundaries yes/no
 
-   public :: set_saltem_nudge
-
-contains
-
-   !> fill initial salinity and temperature with nudge variables
-   subroutine set_saltem_nudge()
-      use m_flowgeom, only: ndx
-      use m_flow, only: tem1, sa1, kmxn
-      use m_transport, only: itemp, isalt
-      use m_nudge, only: nudge_temperature, nudge_salinity
-      use m_missing, only: DMISS
-      use m_get_kbot_ktop, only: getkbotktop
-
-      integer :: k, kk, KB, KT
-
-      do kk = 1, Ndx
-         call getkbotktop(kk, kb, kt)
-         do k = kb, kt
-            if (ITEMP > 0 .and. nudge_temperature(k) /= DMISS) then
-               tem1(k) = nudge_temperature(k)
-            end if
-
-            if (ISALT > 0 .and. nudge_salinity(k) /= DMISS) then
-               sa1(k) = nudge_salinity(k)
-            end if
-         end do
-
-         do k = kt + 1, kb + kmxn(kk) - 1
-            if (ITEMP > 0) tem1(k) = tem1(kt)
-            if (ISALT > 0) sa1(k) = sa1(kt)
-         end do
-
-      end do
-
-   end subroutine set_saltem_nudge
-
-end module m_set_saltem_nudge
+end module m_density_parameters

@@ -1,7 +1,6 @@
-!----- AGPL --------------------------------------------------------------------
+!----AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2024.
-!
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -26,50 +25,31 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
 !
 !
 
-module m_set_saltem_nudge
+module m_check_positive_value
 
    implicit none
 
-   private
-
-   public :: set_saltem_nudge
+   public check_positive_value
 
 contains
 
-   !> fill initial salinity and temperature with nudge variables
-   subroutine set_saltem_nudge()
-      use m_flowgeom, only: ndx
-      use m_flow, only: tem1, sa1, kmxn
-      use m_transport, only: itemp, isalt
-      use m_nudge, only: nudge_temperature, nudge_salinity
-      use m_missing, only: DMISS
-      use m_get_kbot_ktop, only: getkbotktop
+!> Raise an error when provided value is not positive (also to avoid division by zero)
+   subroutine check_positive_value(text, value)
+      use m_flowparameters, only: eps10
+      use messagehandling, only: LEVEL_ERROR, mess
+      use precision, only: dp
 
-      integer :: k, kk, KB, KT
+      implicit none
 
-      do kk = 1, Ndx
-         call getkbotktop(kk, kb, kt)
-         do k = kb, kt
-            if (ITEMP > 0 .and. nudge_temperature(k) /= DMISS) then
-               tem1(k) = nudge_temperature(k)
-            end if
+      character(*), intent(in) :: text !< E.g., keyword in the mdu-file
+      real(kind=dp), intent(in) :: value !< Corresponding value
 
-            if (ISALT > 0 .and. nudge_salinity(k) /= DMISS) then
-               sa1(k) = nudge_salinity(k)
-            end if
-         end do
+      if (value < eps10) then
+         call mess(LEVEL_ERROR, trim(text), ' should be larger than 0.')
+      end if
+   end subroutine check_positive_value
 
-         do k = kt + 1, kb + kmxn(kk) - 1
-            if (ITEMP > 0) tem1(k) = tem1(kt)
-            if (ISALT > 0) sa1(k) = sa1(kt)
-         end do
-
-      end do
-
-   end subroutine set_saltem_nudge
-
-end module m_set_saltem_nudge
+end module m_check_positive_value
