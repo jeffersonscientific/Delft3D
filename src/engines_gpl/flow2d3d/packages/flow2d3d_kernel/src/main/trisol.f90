@@ -540,6 +540,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: tprofu
     integer(pntrsize)                    , pointer :: namcon
     integer(pntrsize)                    , pointer :: ubnd
+    integer(pntrsize)                    , pointer :: umod
+    integer(pntrsize)                    , pointer :: uuu
+    integer(pntrsize)                    , pointer :: vvv
     integer(pntrsize), dimension(:, :)   , pointer :: nprptr
     integer                              , pointer :: nrcmp
     integer                              , pointer :: ifirst
@@ -614,13 +617,11 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                 :: nxx
     integer(pntrsize)       :: umor
     integer(pntrsize)       :: vmor
-    integer(pntrsize)       :: umod
-    integer(pntrsize)       :: uuu
-    integer(pntrsize)       :: vvv
     logical                 :: sscomp
     logical                 :: success
     logical                 :: assoc_dxx
     character(8)            :: stage       ! First or second half time step 
+    real(fp), dimension(:,:), allocatable :: dxx
     
     logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
 !
@@ -981,7 +982,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     umnldf              => gdp%gdr_i_ch%umnldf
     uorb                => gdp%gdr_i_ch%uorb
     ubot                => gdp%gdr_i_ch%ubot
+    umod                => gdp%gdr_i_ch%umod
     usus                => gdp%gdr_i_ch%usus
+    uuu                 => gdp%gdr_i_ch%uuu
     uwtypu              => gdp%gdr_i_ch%uwtypu
     uwtypv              => gdp%gdr_i_ch%uwtypv
     v0                  => gdp%gdr_i_ch%v0
@@ -999,6 +1002,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     volum1              => gdp%gdr_i_ch%volum1
     vortic              => gdp%gdr_i_ch%vortic
     vsus                => gdp%gdr_i_ch%vsus
+    vvv                 => gdp%gdr_i_ch%vvv
     w1                  => gdp%gdr_i_ch%w1
     w10mag              => gdp%gdr_i_ch%w10mag
     wenf                => gdp%gdr_i_ch%wenf
@@ -1131,9 +1135,16 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     icy     = 0
     nmaxddb = nmax + 2*gdp%d%ddbound
     assoc_dxx=associated(gdp%gderosed%dxx)
-    nxx=0
+    
     if (assoc_dxx) then
         nxx=SIZE(gdp%gderosed%dxx,2)
+        dxx=gdp%gderosed%dxx
+    else
+        nxx=0
+        if (allocated(dxx)) then
+            deallocate(dxx)
+        endif
+        allocate(dxx(gdp%d%nmlb:gdp%d%nmub,nxx))
     endif
     
     !
@@ -2855,7 +2866,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & rhow      ,ag        ,vonkar    ,vicmol    , & 
                     & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
                     & rksr      ,rksmr     ,rksd      ,error, & 
-                    & assoc_dxx ,nxx       ,lsedtot   ,gdp%gderosed%dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                    & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
                     & rhosol        )
           !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
           !          & r(cfurou) ,rouflo    ,.false.   ,r(guu)    ,r(gvu)    , &
