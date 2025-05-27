@@ -622,6 +622,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                 :: assoc_dxx
     character(8)            :: stage       ! First or second half time step 
     real(fp), dimension(:,:), allocatable :: dxx
+    !real(fp), dimension(:), allocatable :: rhosol_tmp
     
     logical, parameter :: TRACHY_WAQ = .false. !do trachytopes from WAQ
 !
@@ -1136,16 +1137,18 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     nmaxddb = nmax + 2*gdp%d%ddbound
     assoc_dxx=associated(gdp%gderosed%dxx)
     
-    if (assoc_dxx) then
-        nxx=SIZE(gdp%gderosed%dxx,2)
-        dxx=gdp%gderosed%dxx
-    else
-        nxx=0
-        if (allocated(dxx)) then
-            deallocate(dxx)
-        endif
-        allocate(dxx(gdp%d%nmlb:gdp%d%nmub,nxx))
-    endif
+    !if (assoc_dxx) then
+    !    nxx=SIZE(gdp%gderosed%dxx,2)
+    !    dxx=gdp%gderosed%dxx
+    !    rhosol_tmp=rhosol
+    !else
+    !    nxx=0
+    !    if (allocated(dxx)) then
+    !        deallocate(dxx)
+    !    endif
+    !    allocate(dxx(gdp%d%nmlb:gdp%d%nmub,nxx))
+    !    rhosol_tmp= 0.0
+    !endif
     
     !
     ! Domain decomposition:
@@ -2858,16 +2861,29 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                           & gdp, &
                           !output
                           & r(umod)   , r(uuu)  , r(vvv)) 
-          call trtrou(lundia    ,kmax      ,nmmax   , &
-                    & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
-                    & r(hu)     ,i(kcu)    ,r(sig)    , &
-                    & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
-                    & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
-                    & rhow      ,ag        ,vonkar    ,vicmol    , & 
-                    & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
-                    & rksr      ,rksmr     ,rksd      ,error, & 
-                    & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
-                    & rhosol        )
+          if (assoc_dxx) then
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                       & rhosol        )
+          else
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot )
+          endif
+          
           !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
           !          & r(cfurou) ,rouflo    ,.false.   ,r(guu)    ,r(gvu)    , &
           !          & r(hu)     ,i(kcu)    ,r(u1)     ,r(v1)     ,r(sig)    , &
@@ -2900,6 +2916,35 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        call timer_start(timer_trtrou, gdp)
        if (lftrto .and. (nst + 1)==ittrtu) then
+          call compute_umod(nmmax , kmax , icx       , &
+                          & i(kcs)   , i(kfu)  , i(kfv)       , i(kcu)    , i(kcv), &
+                          & d(dps)   , r(s1)   , r(deltau)    , r(deltav) , &
+                          & r(u1)    , r(v1)   , r(sig), &
+                          & gdp, &
+                          !output
+                          & r(umod)   , r(uuu)  , r(vvv)) 
+          if (assoc_dxx) then
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,gdp%gdmorpar%i50       ,gdp%gdmorpar%i90,       &
+                       & rhosol        )
+          else
+             call trtrou(lundia    ,kmax      ,nmmax   , &
+                       & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                       & r(hu)     ,i(kcu)    ,r(sig)    , &
+                       & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
+                       & r(umod)      ,gdp%d%nmlb      ,gdp%d%nmub      ,gdp%d%nmlb     , gdp%d%nmub    , & 
+                       & rhow      ,ag        ,vonkar    ,vicmol    , & 
+                       & gdp%gdconst%eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
+                       & rksr      ,rksmr     ,rksd      ,error, & 
+                       & assoc_dxx ,nxx       ,lsedtot )
+          endif
           !call trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
           !          & r(cfvrou) ,rouflo    ,.false.   ,r(gvv)    ,r(guv)    , &
           !          & r(hv)     ,i(kcv)    ,r(v1)     ,r(u1)     ,r(sig)    , &
