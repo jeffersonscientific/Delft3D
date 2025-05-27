@@ -4729,7 +4729,7 @@ contains
             ! lyrfrac
             if (stmpar%morpar%moroutput%lyrfrac) then
                if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
-               frac = -999d0
+               frac = -999.0_dp
                 
                if (stmpar%morlyr%settings%iporosity == 0) then
                   dens => stmpar%sedpar%cdryb
@@ -7433,7 +7433,7 @@ contains
             !
             if (stmpar%morpar%moroutput%lyrfrac) then
                 if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
-                frac = -999d0
+                frac = -999.0_dp
                 
                 if (stmpar%morlyr%settings%iporosity == 0) then
                    dens => stmpar%sedpar%cdryb
@@ -10745,7 +10745,7 @@ contains
                ! lyrfrac
                if (stmpar%morpar%moroutput%lyrfrac) then
                   if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
-                  frac = -999d0
+                  frac = -999.0_dp
                   
                   if (stmpar%morlyr%settings%iporosity == 0) then
                      dens => stmpar%sedpar%cdryb
