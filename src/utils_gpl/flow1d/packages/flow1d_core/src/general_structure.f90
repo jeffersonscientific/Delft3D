@@ -254,6 +254,11 @@ contains
       fu = genstr%fu(:,L0) 
       ru = genstr%ru(:,L0) 
       au = genstr%au(:,L0)
+      
+      ! temporry force with "old" values
+      ! hu = 6.116D-3
+      ! hd = 1.938D-3
+      ! uu = 6.827D-2
             
       if (gatefraction > gatefrac_eps) then
          ! calculate flow under gate
@@ -306,8 +311,10 @@ contains
       else
          fu(1) = 0d0
          ru(1) = 0d0
+         au(1) = 0d0
          fu(2) = 0d0
          ru(2) = 0d0
+         au(2) = 0d0 
       endif
       
       if (gatefraction< 1d0 - gatefrac_eps) then
@@ -326,6 +333,7 @@ contains
       else
          fu(3) = 0d0
          ru(3) = 0d0
+         au(3) = 0d0
       endif
       
       auL =  (au(1) + au(2)) + au(3)

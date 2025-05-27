@@ -270,9 +270,11 @@ contains
             end do
          end if
 
-         call furu_structures()
+!         call furu_structures()
 
       end if
+      
+      call furu_structures()
 
       if (kmx > 0) then
 

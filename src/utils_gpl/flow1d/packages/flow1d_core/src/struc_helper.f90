@@ -192,10 +192,12 @@ module m_struc_helper
       double precision                 :: bu
       double precision                 :: du
       double precision                 :: dxfrL
+      double precision                 :: dxTmp
 
       !
       !! executable statements -------------------------------------------------------
       !
+      dxTmp = 1000d0 ! Temporory
       dxfrL = 0d0
       if (present(Cz) .and. present(lambda) .and. present(hs1w) .and. present(dx_struc)) then
          if (lambda == 0d0 .and. Cz > 0d0 .and. hs1w > 0d0) then
@@ -203,6 +205,7 @@ module m_struc_helper
          endif
       endif
       
+      dxfrl = dxTmp*gravity/(Cz*Cz*hs1w)
       bu   = dxdt + (1+dxfrL) * fr
       du   = (strucalfa  * qL / max(auL, 1.0d-4) + (1 - strucalfa) * u1L) * dxdt + rhsc
       fuL  = cu / bu

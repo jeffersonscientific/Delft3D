@@ -6,7 +6,7 @@ contains
    subroutine distribute_linearized_3d_structure_coefficients(structure)
       use precision_basics, only: dp
       use m_1d_structures, only: t_structure
-      use m_General_Structure, only: t_GeneralStructure
+      use m_General_Structure, only: t_GeneralStructure 
       use m_flowparameters, only: jastructurelayersactive
       use m_flowgeom, only: ln
       use m_flow, only: u1, s1, zws, au, fu, ru, hu
@@ -25,8 +25,10 @@ contains
       real(kind=dp) :: au1, au2, au3
 
       genstr => structure%generalst
+      zbi(1:3) = genstr%ZS
+      
       do L0 = 1, structure%numlinks
-         Lf = structure%linknumbers(L0)
+         Lf = abs(structure%linknumbers(L0))
          k1 = ln(1, Lf); k2 = ln(2, Lf) ! 1 -> 2 flow link direction
 
          call getLbotLtop(Lf, Lb, Lt)
@@ -69,7 +71,7 @@ contains
                if (genstr%au(3, L0) > 0) ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
             end do
 
-            do LL = Lb, Lt
+             do LL = Lb, Lt
                au1 = genstr%au(1, L0) * (ff3(1, LL - Lb + 1) - ff3(1, LL - Lb))
                au2 = genstr%au(2, L0) * (ff3(2, LL - Lb + 1) - ff3(2, LL - Lb))
                au3 = genstr%au(3, L0) * (ff3(3, LL - Lb + 1) - ff3(3, LL - Lb))

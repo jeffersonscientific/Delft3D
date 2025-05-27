@@ -133,7 +133,7 @@ contains
                      au(L) = pstru%au(L0)
                      call computeGeneralStructure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
                                                   au(L), as1, as2, width, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)
-                     if (kmx > 0) then
+                     if (kmx > 0 .and. L0 == pstru%numlinks) then
                         call distribute_linearized_3d_structure_coefficients(pstru)
                      end if
                   case (ST_DAMBREAK)
