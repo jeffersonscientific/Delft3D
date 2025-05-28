@@ -228,49 +228,49 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     logical                             :: horiz          ! Flag=TRUE if open boundary lies parallel to x-/KSI-dir. 
     logical                             :: udir
     logical                             :: vdir
-    real(fp)                            :: amplik
-    real(fp)                            :: angle          ! The actual phase of the 'Harmonics' at this time step 
-    real(fp)                            :: czbed
-    real(fp)                            :: czeff
-    real(fp)                            :: diff           ! Difference between the actual bounda- ry value and the initial value at the openings 
-    real(fp)                            :: dini           ! Initial value of the prescribed sig- nal at open boundary. For water ele- cation type opening DINI = S0. For Other opening types DINI = 0.0 
-    real(fp)                            :: dist           ! Real distance between an open bounda- ry point to the begin point of the related opening section 
-    real(fp)                            :: distx          ! Incremental distance (in the x-dir.) between two consecutive open boundary points belonging to the same section 
-    real(fp)                            :: disty          ! Incremental distance (in the x-dir.) between two consecutive open boundary points belonging to the same section 
-    real(fp)                            :: dpvel
-    real(fp)                            :: dz0
-    real(fp)                            :: dz1
-    real(fp)                            :: frac           ! Fraction between DIST and the total length of an opening section 
-    real(fp)                            :: fbcr_array(2)  ! Corrective flow boundary conditions array
-    real(fp)                            :: guuz1
-    real(fp)                            :: guuz2
-    real(fp)                            :: gvvz1
-    real(fp)                            :: gvvz2
-    real(fp)                            :: grmass
-    real(fp)                            :: h0             ! Total depth in velocity point of open boundary point 
-    real(fp)                            :: hu0            ! Total depth in velocity point of open boundary U-point. MAX (HU,0.01) 
-    real(fp)                            :: hv0            ! Total depth in velocity point of open boundary V-point. MAX (HV,0.01) 
-    real(fp)                            :: pcr
-    real(fp)                            :: pdiff
-    real(fp)                            :: phasek
-    real(fp)                            :: q0avg
-    real(fp)                            :: qtfrc
-    real(fp)                            :: sig1           ! Layer thickness as fraction of previous layer 
-    real(fp)                            :: sig2           ! Layer thickness as fraction 
-    real(fp)                            :: tcur           ! Current time in hours since last nodal update time
-    real(fp)                            :: tdif           ! Time difference (in minutes) between TIMNOW and TSTART 
-    real(fp)                            :: tfrac          ! Fraction of TDIF and Smoothing time 
-    real(fp)                            :: thickOpen      ! When mnbnd(5,n) <> 0: sum of thickness of all open layers
-    real(fp)                            :: timscl         ! Multiple factor to create minutes from read times 
-    real(fp)                            :: totl           ! Actual length of an openbnd. section 
-    real(fp)                            :: ttfhsum        ! Temporary variable for depth-averaging RTTFU/V resistance
-    real(fp)                            :: width
-    real(fp)                            :: wlvl
-    real(fp)                            :: z1             ! Previous layer: (1+SIG1)*H0 
-    real(fp)                            :: z2             ! Currect layer: (1+SIG2)*H0 
-    real(fp)                            :: zbulk          ! Sommation of all layers ZLAYER*THICK 
-    real(fp)                            :: zl             ! Z for layer: (Z1+Z2)/2. 
-    real(fp)                            :: zlayer         ! Z layer: LOG (1.+ZL/Z0) 
+    real(fp)                            :: amplik = 0.0_fp
+    real(fp)                            :: angle = 0.0_fp     ! The actual phase of the 'Harmonics' at this time step 
+    real(fp)                            :: czbed = 0.0_fp
+    real(fp)                            :: czeff = 0.0_fp
+    real(fp)                            :: diff = 0.0_fp      ! Difference between the actual bounda- ry value and the initial value at the openings 
+    real(fp)                            :: dini = 0.0_fp      ! Initial value of the prescribed sig- nal at open boundary. For water ele- cation type opening DINI = S0. For Other opening types DINI = 0.0 
+    real(fp)                            :: dist = 0.0_fp      ! Real distance between an open bounda- ry point to the begin point of the related opening section 
+    real(fp)                            :: distx = 0.0_fp     ! Incremental distance (in the x-dir.) between two consecutive open boundary points belonging to the same section 
+    real(fp)                            :: disty = 0.0_fp     ! Incremental distance (in the x-dir.) between two consecutive open boundary points belonging to the same section 
+    real(fp)                            :: dpvel = 0.0_fp
+    real(fp)                            :: dz0 = 0.0_fp
+    real(fp)                            :: dz1 = 0.0_fp
+    real(fp)                            :: frac = 0.0_fp      ! Fraction between DIST and the total length of an opening section 
+    real(fp)                            :: fbcr_array(2) = 0.0_fp ! Corrective flow boundary conditions array
+    real(fp)                            :: guuz1 = 0.0_fp
+    real(fp)                            :: guuz2 = 0.0_fp
+    real(fp)                            :: gvvz1 = 0.0_fp
+    real(fp)                            :: gvvz2 = 0.0_fp
+    real(fp)                            :: grmass = 0.0_fp
+    real(fp)                            :: h0 = 0.0_fp        ! Total depth in velocity point of open boundary point 
+    real(fp)                            :: hu0 = 0.0_fp       ! Total depth in velocity point of open boundary U-point. MAX (HU,0.01) 
+    real(fp)                            :: hv0 = 0.0_fp       ! Total depth in velocity point of open boundary V-point. MAX (HV,0.01) 
+    real(fp)                            :: pcr = 0.0_fp
+    real(fp)                            :: pdiff = 0.0_fp
+    real(fp)                            :: phasek = 0.0_fp
+    real(fp)                            :: q0avg = 0.0_fp
+    real(fp)                            :: qtfrc = 0.0_fp
+    real(fp)                            :: sig1 = 0.0_fp      ! Layer thickness as fraction of previous layer 
+    real(fp)                            :: sig2 = 0.0_fp      ! Layer thickness as fraction 
+    real(fp)                            :: tcur = 0.0_fp      ! Current time in hours since last nodal update time
+    real(fp)                            :: tdif = 0.0_fp      ! Time difference (in minutes) between TIMNOW and TSTART 
+    real(fp)                            :: tfrac = 0.0_fp     ! Fraction of TDIF and Smoothing time 
+    real(fp)                            :: thickOpen = 0.0_fp ! When mnbnd(5,n) <> 0: sum of thickness of all open layers
+    real(fp)                            :: timscl = 0.0_fp    ! Multiple factor to create minutes from read times 
+    real(fp)                            :: totl = 0.0_fp      ! Actual length of an openbnd. section 
+    real(fp)                            :: ttfhsum = 0.0_fp   ! Temporary variable for depth-averaging RTTFU/V resistance
+    real(fp)                            :: width = 0.0_fp
+    real(fp)                            :: wlvl = 0.0_fp
+    real(fp)                            :: z1 = 0.0_fp        ! Previous layer: (1+SIG1)*H0 
+    real(fp)                            :: z2 = 0.0_fp        ! Currect layer: (1+SIG2)*H0 
+    real(fp)                            :: zbulk = 0.0_fp     ! Sommation of all layers ZLAYER*THICK 
+    real(fp)                            :: zl = 0.0_fp        ! Z for layer: (Z1+Z2)/2. 
+    real(fp)                            :: zlayer = 0.0_fp    ! Z layer: LOG (1.+ZL/Z0) 
     real(fp), dimension(:), allocatable :: qtfrct_global  ! work array
     integer                             :: nobcgl         ! global number of open boudnaries (i.e. original number excluding duplicate open boudnaries located in the halo regions)
     integer                             :: nobcto         ! total number of open boundaries (including "duplicate" open boudnaries located in halo regions)
