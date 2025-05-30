@@ -240,19 +240,13 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
              call skipstarlines(ilun)
              !
              if (version == 0) then
-                call rdmor0(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, &
-                            morpar%eqmbcsand, morpar%densin, morpar%aksfac, morpar%rwave, &
-                            morpar%rouse, morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, &
-                            morpar%susw, morpar%bedw, morpar%sedthr, morpar%thetsduni, morpar%hmaxth, &
-                            morpar%repose , morpar%dryrepose, morpar%reposeredfac, morpar%reposemaxdz, &
-                            fwfac)
+                call rdmor0(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, morpar%eqmbcsand, morpar%densin, &
+                       morpar%aksfac, morpar%rwave, morpar%rouse, morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, &
+                       morpar%susw, morpar%bedw, morpar%sedthr, morpar%thetsduni, morpar%hmaxth, fwfac)
              else
-                call rdmor1(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, &
-                            morpar%eqmbcsand, morpar%densin, morpar%aksfac, morpar%rwave, &
-                            morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, morpar%susw, &
-                            morpar%bedw, morpar%sedthr, morpar%thetsduni, morpar%hmaxth, &
-                            morpar%repose , morpar%dryrepose, morpar%reposeredfac, morpar%reposemaxdz, &
-                            fwfac, morpar%epspar, morpar%iopkcw, morpar%rdc, morpar%rdw)
+                call rdmor1(ilun, morpar%morfac, morpar%tmor, morpar%thresh, morpar%bedupd, morpar%eqmbcsand, morpar%densin, &
+                    morpar%aksfac, morpar%rwave, morpar%alfabs, morpar%alfabn, morpar%sus, morpar%bed, morpar%susw, morpar%bedw, &
+                    morpar%sedthr, morpar%thetsduni, morpar%hmaxth, fwfac, morpar%epspar, morpar%iopkcw, morpar%rdc, morpar%rdw)
              end if
              morpar%thetsd = max(0.0_fp,min(morpar%thetsduni,1.0_fp))
              morpar%tcmp = morpar%tmor
@@ -1173,9 +1167,7 @@ end subroutine copy_and_sort_percentiles
 subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
                 & eqmbc     ,densin    ,aksfac    ,rwave     ,rouse     , &
                 & alfabs    ,alfabn    ,sus       ,bed       ,susw      , &
-                & bedw      ,sedthr    ,thetsd    ,hmaxth    , &
-                & repose    , dryrepose, reposeredfac, reposemaxdz, &
-                & fwfac     )
+                & bedw      ,sedthr    ,thetsd    ,hmaxth    ,fwfac     )
 !!--declarations----------------------------------------------------------------
     use precision
     implicit none
@@ -1272,9 +1264,7 @@ end subroutine rdmor0
 subroutine rdmor1(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
                 & eqmbc     ,densin    ,aksfac    ,rwave     ,alfabs    , &
                 & alfabn    ,sus       ,bed       ,susw      ,bedw      , &
-                & sedthr    ,thetsd    ,hmaxth    , &
-                & repose    , dryrepose, reposeredfac, reposemaxdz, &
-                & fwfac     ,epspar    , &
+                & sedthr    ,thetsd    ,hmaxth    ,fwfac     ,epspar    , &
                 & iopkcw    ,rdc       ,rdw       )
 !!--declarations----------------------------------------------------------------
     use precision
