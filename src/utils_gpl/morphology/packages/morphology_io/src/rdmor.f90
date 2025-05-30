@@ -1162,8 +1162,6 @@ subroutine copy_and_sort_percentiles(morpar, nxxuser, nxxprog, xxprog, max_nuser
 end subroutine copy_and_sort_percentiles
 
 !> Reads morphology input version 0 (or no version number found)
-!! Inputs until `fwfac` are compulsory. Inputs for the repose angle functionality
-!! are optional, but either all or none are specified. 
 subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
                 & eqmbc     ,densin    ,aksfac    ,rwave     ,rouse     , &
                 & alfabs    ,alfabn    ,sus       ,bed       ,susw      , &
@@ -1186,10 +1184,6 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     real(fp), intent(out)    :: fwfac !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: hmaxth !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: morfac !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: repose !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: dryrepose !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: reposeredfac !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: reposemaxdz  !  Description and declaration in morpar.igs
     logical, intent(out)    :: rouse !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: rwave !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: sedthr !  Description and declaration in morpar.igs
@@ -1198,8 +1192,6 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     real(fp), intent(out)    :: thetsd !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: thresh !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: tmor !  Description and declaration in morpar.igs
-    
-    integer :: iost
 !
 !
 !! executable statements -------------------------------------------------------
@@ -1243,18 +1235,6 @@ subroutine rdmor0(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     read (ilun, *) hmaxth
     ! factor for adjusting intensity of energy dissipation in wave boundary layer
     read (ilun, *) fwfac
-    !
-    ! IOSTAT to prevent problems if variables are not given
-    !
-    ! repose slope for slope based bank erosion
-    read (ilun, *, iostat=iost) repose
-    ! repose slope for slope based bank erosion in dry areas
-    read (ilun, *, iostat=iost) dryrepose
-    ! repose reduction factor for slope for slope based bank erosion. Default value 16
-    read (ilun, *, iostat=iost) reposeredfac
-    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
-    read (ilun, *, iostat=iost) reposemaxdz
-    !
 end subroutine rdmor0
 
 
@@ -1286,10 +1266,6 @@ subroutine rdmor1(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     real(fp), intent(out)    :: fwfac !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: hmaxth !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: morfac !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: repose !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: dryrepose !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: reposeredfac !  Description and declaration in morpar.igs
-    real(fp), intent(out)    :: reposemaxdz !  Description and declaration in morpar.igs
     real(fp), intent(out)    :: rdc
     real(fp), intent(out)    :: rdw
     real(fp), intent(out)    :: rwave !  Description and declaration in morpar.igs
@@ -1355,17 +1331,8 @@ subroutine rdmor1(ilun      ,morfac    ,tmor      ,thresh    ,morupd    , &
     ! flag for parametric epsilon distribution in case of K-Eps model
     read (ilun, *) epspar
     !
-    ! IOSTAT to prevent problems if variables are not given
-    !
-    read (ilun, *, iostat = iost) iopkcw, rdc, rdw 
-    ! repose slope for slope based bank erosion
-    read (ilun, *, iostat = iost) repose
-    ! repose slope for slope based bank erosion in dry areas
-    read (ilun, *, iostat = iost) dryrepose
-   ! repose reduction factor for slope for slope based bank erosion. Default value 16
-    read (ilun, *, iostat = iost) reposeredfac
-    ! repose max bed change in 1 (half) time step per cell face. Default value 0.01m
-    read (ilun, *, iostat = iost) reposemaxdz
+    read (ilun, *, iostat = iost) iopkcw, rdc, rdw
+    ! IOSTAT to prevent problems if rdc and rdw are not given
 end subroutine rdmor1
 
 
