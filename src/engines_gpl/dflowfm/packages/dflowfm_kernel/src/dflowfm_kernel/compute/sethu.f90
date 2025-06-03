@@ -794,7 +794,7 @@ contains
       use m_flowgeom, only: lnx
       use m_get_Lbot_Ltop_max, only: getLbotLtopmax
       
-      integer link_index_2d, link_index_3d, link_bottom, link_top_max
+      integer :: link_index_2d, link_index_3d, link_bottom, link_top_max
       
       do link_index_2d = 1, lnx
          call getLbotLtopmax(link_index_2d, link_bottom, link_top_max)
