@@ -16,7 +16,7 @@ module m_waveconst
    
    ! offline wave force calculation
    integer, parameter :: WAVEFORCING_NO_WAVEFORCES = 0
-   integer, parameter :: WAVEFORCING_RADIATIONSTRESS = 1
+   integer, parameter :: WAVEFORCING_RADIATION_STRESS = 1
    integer, parameter :: WAVEFORCING_DISSIPATION_TOTAL = 2
    integer, parameter :: WAVEFORCING_DISSIPATION_3D = 3
    
@@ -24,8 +24,8 @@ module m_waveconst
    integer, parameter :: NO_STOKES_DRIFT = 0
    integer, parameter :: STOKES_DRIFT_DEPTHUNIFORM = 1
    integer, parameter :: STOKES_DRIFT_2NDORDER = 2
-   integer, parameter :: STOKES_DRIFT_2NDORDER_ADVE = 3
-   integer, parameter :: STOKES_DRIFT_2NDORDER_ADVE_VISC = 4
+   integer, parameter :: STOKES_DRIFT_2NDORDER_VISC = 3
+   integer, parameter :: STOKES_DRIFT_2NDORDER_VISC_ADVE = 4
    
    ! Wave boundary layer streaming
    integer, parameter :: WAVE_STREAMING_OFF = 0
@@ -36,7 +36,7 @@ module m_waveconst
    integer, parameter :: WAVE_BREAKER_TURB_ON = 1
    
    ! WAQ coupling shear stress
-   integer, parameter :: WAVE_WAQ_HYD_SHEAR_STRESS = 0
+   integer, parameter :: WAVE_WAQ_SHEAR_STRESS_HYD = 0
    integer, parameter :: WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM = 1
    integer, parameter :: WAVE_WAQ_SHEAR_STRESS_MAX_SHEAR_STRESS = 2
    

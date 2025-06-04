@@ -756,7 +756,7 @@ contains
 
       jawaveforces = WAVE_FORCES_ON
 
-      jawaveSwartDelwaq = WAVE_WAQ_HYD_SHEAR_STRESS !< communicate to Delwaq taucur + tauwave instead of taucur
+      jawaveSwartDelwaq = WAVE_WAQ_SHEAR_STRESS_HYD !< communicate to Delwaq taucur + tauwave instead of taucur
 
       modind = 0 !< Nr of wave-current bed friction model, 9 = vanrijn, 1 = fredsoe, etc like d3d
 

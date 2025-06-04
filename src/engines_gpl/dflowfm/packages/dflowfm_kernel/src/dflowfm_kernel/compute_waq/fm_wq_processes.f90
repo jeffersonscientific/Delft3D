@@ -491,7 +491,7 @@ contains
          end if
       end if
       if (isftau > 0) then
-         if (jawaveSwartDelwaq == WAVE_WAQ_HYD_SHEAR_STRESS) then
+         if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_HYD) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 0 so tau/tauflow = taucur or tau from wave-current interaction if waves activated')
          else if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 1 so tau/tauflow = taucur + ftauw*tauwave')

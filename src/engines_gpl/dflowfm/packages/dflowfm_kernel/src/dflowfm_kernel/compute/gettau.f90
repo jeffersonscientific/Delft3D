@@ -117,7 +117,7 @@ contains
          ust2 = ust * ust
       end if
       !
-      if (jawaveswartdelwaq_par == WAVE_WAQ_HYD_SHEAR_STRESS) then
+      if (jawaveswartdelwaq_par == WAVE_WAQ_SHEAR_STRESS_HYD) then
          taucurc = rhomean * ust2
       else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
          if (twav(n) > 1d-2) then

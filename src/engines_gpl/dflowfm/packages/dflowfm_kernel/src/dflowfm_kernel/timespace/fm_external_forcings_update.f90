@@ -402,7 +402,7 @@ contains
 
          if (.not. initialization) then
             !
-            if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_RADIATIONSTRESS) then
+            if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_RADIATION_STRESS) then
                !
                call set_parameters_for_radiation_stress_driven_forces()
                !

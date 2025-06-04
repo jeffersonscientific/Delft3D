@@ -2197,7 +2197,7 @@ contains
       call prop_get(md_ptr, 'waves', 'waveSwartDelwaq', jawaveSwartDelwaq, success)
       if (jawave == NO_WAVES) then
          if (jawaveSwartdelwaq == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
-            jawaveswartdelwaq = WAVE_WAQ_HYD_SHEAR_STRESS
+            jawaveswartdelwaq = WAVE_WAQ_SHEAR_STRESS_HYD
             call mess(LEVEL_WARN, 'Waves inactive and waveswartdelwaq=1; Reset waveswartdelwaq to 0.')
          end if
       end if
@@ -3578,7 +3578,7 @@ contains
             call prop_set(prop_ptr, 'waves', 'Twavuni', twavuni, 'root mean square wave period (s)')
             call prop_set(prop_ptr, 'waves', 'Phiwavuni', phiwavuni, 'root mean square wave direction, (deg), math convention')
          end if
-         if (writeall .or. jawaveswartdelwaq /= WAVE_WAQ_HYD_SHEAR_STRESS) then
+         if (writeall .or. jawaveswartdelwaq /= WAVE_WAQ_SHEAR_STRESS_HYD) then
             call prop_set(prop_ptr, 'waves', 'WaveSwartDelwaq', jaWaveSwartDelwaq, 'if WaveSwartDelwaq == 1 .and. Tiwaq > 0 then increase tauwave to Delwaq with 0.5rho*fw*uorbuorb')
          end if
          if (writeall .or. jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then

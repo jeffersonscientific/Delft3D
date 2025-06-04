@@ -60,7 +60,7 @@ contains
       !
       ! Body
       if (flowWithoutWaves .and. kernel == USE_DFLOWFM) then
-         jawaveswartdelwaq_local = WAVE_WAQ_HYD_SHEAR_STRESS
+         jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
       else
          jawaveswartdelwaq_local = jawaveswartdelwaq
       end if
