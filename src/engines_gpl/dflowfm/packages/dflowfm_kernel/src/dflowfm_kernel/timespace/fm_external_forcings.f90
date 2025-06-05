@@ -38,6 +38,8 @@ module fm_external_forcings
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+   use m_waveconst
+
    implicit none
 
    private
@@ -232,13 +234,13 @@ contains
 
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
-            if (comparereal(patm(k), dmiss, eps10) == 0) then
-               patm(k) = BACKGROUND_AIR_PRESSURE
+            if (comparereal(air_pressure(k), dmiss, eps10) == 0) then
+               air_pressure(k) = BACKGROUND_AIR_PRESSURE
             end if
          end do
       end if
 
-      if ((jawave == 1 .or. jawave == 2) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
          call tauwavefetch(time_in_seconds)
       end if
 
@@ -317,12 +319,12 @@ contains
 
 !> Gets windstress (and air pressure) from input files, and sets the windstress
    subroutine calculate_wind_stresses(time_in_seconds, iresult)
-      use m_wind, only: jawind, japatm
+      use m_wind, only: jawind, air_pressure_available
       use dfm_error, only: DFM_NOERR
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
-      if (jawind == 1 .or. japatm > 0) then
+      if (jawind == 1 .or. air_pressure_available > 0) then
          call prepare_wind_model_data(time_in_seconds, iresult)
          if (iresult /= DFM_NOERR) then
             return
@@ -393,7 +395,7 @@ contains
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
 
-      if (jawave == 7 .and. waveforcing == 2) then
+      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
          do link = 1, number_of_links
             kb = link2cell(1, link)
             ki = link2cell(2, link)
@@ -960,7 +962,7 @@ contains
             call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
             call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
-            if (.not. (jawave == 4)) then ! Safety to avoid allocation errors later on
+            if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
                call qnerror('Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.', '  ', ' ')
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
@@ -1685,9 +1687,6 @@ contains
 
       iresult = DFM_NOERR
 
-      tair_available = .false.
-      dewpoint_available = .false.
-
       if (.not. allocated(const_names)) then
          allocate (const_names(0))
       end if
@@ -1758,8 +1757,8 @@ contains
       if (allocated(ec_pwxwy_y)) then
          deallocate (ec_pwxwy_y)
       end if
-      if (allocated(patm)) then
-         deallocate (patm)
+      if (allocated(air_pressure)) then
+         deallocate (air_pressure)
       end if
       if (allocated(kbndz)) deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
       if (allocated(zkbndz)) then
@@ -2030,7 +2029,7 @@ contains
       call init_1d2d()
 
       ! JRE ================================================================
-      if (nbndw > 0 .and. .not. (jawave == 4)) then
+      if (nbndw > 0 .and. .not. (jawave == WAVE_SURFBEAT)) then
          call qnerror('Wave energy boundary defined without setting correct wavemodelnr.', ' ', ' ')
          iresult = DFM_WRONGINPUT
       end if
@@ -2480,7 +2479,7 @@ contains
       end if
 
       if (jawind == 0) then
-         if (jawave > 0 .and. jawave < 3) then
+         if (jawave > NO_WAVES .and. jawave < 3) then
             jawave = 0 ! no wind, no waves
             call mess(LEVEL_INFO, 'No wind, so waves is switched off ')
          end if
@@ -2491,17 +2490,24 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if ((japatm /= 1) .or. .not. tair_available .or. .not. dewpoint_available .or. &
-             (item_atmosphericpressure == ec_undef_int) .or. (item_airtemperature == ec_undef_int) .or. (item_dewpoint == ec_undef_int)) then
-            call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected, as separate quantities (e.g., QUANTITY = airpressure), in ext-file in combination with keyword computedAirdensity in mdu-file.')
+         if ((item_apwxwy_p == ec_undef_int) .and. (item_atmosphericpressure == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity airpressure must be provided in the .ext file.')
+         end if
+         if ((item_hac_air_temperature == ec_undef_int) .and. (item_hacs_air_temperature == ec_undef_int) .and. &
+             (item_dac_air_temperature == ec_undef_int) .and. (item_dacs_air_temperature == ec_undef_int) .and. &
+             (item_air_temperature == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity airtemperature must be provided in the .ext file.')
+         end if
+         if ((item_dac_dew_point_temperature == ec_undef_int) .and. (item_dacs_dew_point_temperature == ec_undef_int) .and. &
+             (item_dew_point_temperature == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity dewpoint must be provided in the .ext file.')
+         end if
+         if (ja_airdensity == 1) then
+            call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword "computedAirdensity = 1" in mdu-file.')
          else
-            if (ja_airdensity == 1) then
-               call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')
-            else
-               allocate (airdensity(ndx), stat=ierr)
-               call aerr('airdensity(ndx)', ierr, ndx)
-               airdensity = 0.0_dp
-            end if
+            allocate (air_density(ndx), stat=ierr)
+            call aerr('air_density(ndx)', ierr, ndx)
+            air_density(:) = 0.0_dp
          end if
       end if
 
@@ -2799,7 +2805,7 @@ contains
 
    !> Allocate and initialized atmosperic pressure variable(s)
    function allocate_patm(default_value) result(status)
-      use m_wind, only: patm
+      use m_wind, only: air_pressure
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr
       use precision_basics, only: hp
@@ -2808,9 +2814,9 @@ contains
       integer :: status
 
       status = 0
-      if (.not. allocated(patm)) then
-         allocate (patm(ndx), stat=status, source=default_value)
-         call aerr('patm(ndx)', status, ndx)
+      if (.not. allocated(air_pressure)) then
+         allocate (air_pressure(ndx), stat=status, source=default_value)
+         call aerr('air_pressure(ndx)', status, ndx)
       end if
 
    end function allocate_patm
