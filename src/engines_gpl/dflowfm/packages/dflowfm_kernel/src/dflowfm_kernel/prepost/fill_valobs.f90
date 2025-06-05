@@ -71,7 +71,6 @@ contains
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
       use m_turbulence, only: in_situ_density, potential_density, rich, richs
       use m_waveconst
-      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
 
       implicit none
 
@@ -233,19 +232,7 @@ contains
                valobs(i, IPNT_WAVER) = R(k)
             end if
             
-            if (ja_icecover /= ICECOVER_NONE) then
-               valobs(i, IPNT_ICE_S1) = ice_s1(k)
-               valobs(i, IPNT_ICE_ZMIN) = ice_zmin(k)
-               valobs(i, IPNT_ICE_ZMAX) = ice_zmax(k)
-               valobs(i, IPNT_ICE_AREA_FRACTION) = ice_area_fraction(k)
-               valobs(i, IPNT_ICE_THICKNESS) = ice_thickness(k)
-               valobs(i, IPNT_ICE_PRESSURE) = ice_pressure(k)
-               if (ja_icecover == ICECOVER_SEMTNER) then
-                  valobs(i, IPNT_ICE_TEMPERATURE) = ice_temperature(k)
-                  valobs(i, IPNT_SNOW_THICKNESS) = snow_thickness(k)
-                  valobs(i, IPNT_SNOW_TEMPERATURE) = snow_temperature(k)
-               end if
-            end if
+            call collect_ice_values(valobs, i, k)
 
             if (jawave > NO_WAVES .and. allocated(hwav)) then
                valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
@@ -598,7 +585,47 @@ contains
       end if
 
       if (timon) call timstop(handle_extra(55))
-      return
    end subroutine fill_valobs
+   
+   !> Support routine to collect the values of the ice quantities at the observation stations
+   subroutine collect_ice_values(valobs, i, k)
+      use precision, only: dp
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE
+      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature
+      use m_observations_data, only: IPNT_ICE_S1, IPNT_ICE_ZMIN, IPNT_ICE_ZMAX, &
+         IPNT_ICE_AREA_FRACTION, IPNT_ICE_THICKNESS, IPNT_ICE_PRESSURE, IPNT_ICE_TEMPERATURE, &
+         IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE
+      
+      real(kind=dp), dimension(:,:), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: k !< face index associated with the observation station
+      
+      if (ja_icecover == ICECOVER_NONE) return
+
+      call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMAX, ice_zmax, k)
+      call conditional_assign(valobs, i, IPNT_ICE_AREA_FRACTION, ice_area_fraction, k)
+      call conditional_assign(valobs, i, IPNT_ICE_THICKNESS, ice_thickness, k)
+      call conditional_assign(valobs, i, IPNT_ICE_PRESSURE, ice_pressure, k)
+      call conditional_assign(valobs, i, IPNT_ICE_TEMPERATURE, ice_temperature, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_THICKNESS, snow_thickness, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_TEMPERATURE, snow_temperature, k)
+   end subroutine collect_ice_values
+   
+   !> Support routine to conditionally assign values to the target variable
+   subroutine conditional_assign(valobs, i, ipnt, array, k)
+      use precision, only: dp, fp
+      
+      real(kind=dp), dimension(:,:), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: ipnt !< pointer index in valobs
+      real(kind=fp), dimension(:), intent(in) :: array !< array from which to assign value
+      integer, intent(in) :: k !< face index associated with the observation station
+      
+      if (ipnt > 0) then
+         valobs(i, ipnt) = array(k)
+      end if
+   end subroutine conditional_assign
 
 end module m_fill_valobs

@@ -57,19 +57,13 @@ contains
 
 !> (re)initialize valobs and set pointers for observation stations
    subroutine init_valobs()
-      implicit none
-
       call init_valobs_pointers()
-
       call alloc_valobs()
-
-      return
    end subroutine init_valobs
 
 !> (re)allocate valobs work array
    subroutine alloc_valobs()
       use m_partitioninfo
-      implicit none
 
       if (allocated(valobs)) then
          deallocate (valobs)
@@ -79,8 +73,6 @@ contains
          allocate (valobs(numobs + nummovobs, IPNT_NUM))
          valobs = 0d0 ! should not be DMISS, since DMISS is used for global reduction in parallel computations
       end if
-
-      return
    end subroutine alloc_valobs
 
 !> set the pointers in the valobs work array
@@ -95,8 +87,6 @@ contains
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
       use m_wind, only: air_pressure_available, jawind
-      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
-      implicit none
 
       integer :: i, i0, numfracs, nlyrs
 
@@ -171,16 +161,6 @@ contains
       IVAL_QFRE = 0
       IVAL_QFRC = 0
       IVAL_QTOT = 0
-      
-      IVAL_ICE_S1 = 0
-      IVAL_ICE_ZMIN = 0
-      IVAL_ICE_ZMAX = 0
-      IVAL_ICE_AREA_FRACTION = 0
-      IVAL_ICE_THICKNESS = 0
-      IVAL_ICE_PRESSURE = 0
-      IVAL_ICE_TEMPERATURE = 0
-      IVAL_SNOW_THICKNESS = 0
-      IVAL_SNOW_TEMPERATURE = 0
       
       IVAL_RAIN = 0
       IVAL_INFILTCAP = 0
@@ -278,19 +258,7 @@ contains
       if (jatem > 1) then
          IVAL_QTOT = next_index(i)
       end if
-      if (ja_icecover /= ICECOVER_NONE) then
-         IVAL_ICE_S1 = next_index(i)
-         IVAL_ICE_ZMIN = next_index(i)
-         IVAL_ICE_ZMAX = next_index(i)
-         IVAL_ICE_AREA_FRACTION = next_index(i)
-         IVAL_ICE_THICKNESS = next_index(i)
-         IVAL_ICE_PRESSURE = next_index(i)
-         if (ja_icecover == ICECOVER_SEMTNER) then
-            IVAL_ICE_TEMPERATURE = next_index(i)
-            IVAL_SNOW_THICKNESS = next_index(i)
-            IVAL_SNOW_TEMPERATURE = next_index(i)
-         end if
-      end if
+      call set_value_indices_for_ice(i)
       if (jahisrain > 0) then
          IVAL_RAIN = next_index(i)
       end if
@@ -526,15 +494,7 @@ contains
       IPNT_QFRE = ivalpoint(IVAL_QFRE, kmx, nlyrs)
       IPNT_QFRC = ivalpoint(IVAL_QFRC, kmx, nlyrs)
       IPNT_QTOT = ivalpoint(IVAL_QTOT, kmx, nlyrs)
-      IPNT_ICE_S1 = ivalpoint(IVAL_ICE_S1, kmx, nlyrs)
-      IPNT_ICE_ZMIN = ivalpoint(IVAL_ICE_ZMIN, kmx, nlyrs)
-      IPNT_ICE_ZMAX = ivalpoint(IVAL_ICE_ZMAX, kmx, nlyrs)
-      IPNT_ICE_AREA_FRACTION = ivalpoint(IVAL_ICE_AREA_FRACTION, kmx, nlyrs)
-      IPNT_ICE_THICKNESS = ivalpoint(IVAL_ICE_THICKNESS, kmx, nlyrs)
-      IPNT_ICE_PRESSURE = ivalpoint(IVAL_ICE_PRESSURE, kmx, nlyrs)
-      IPNT_ICE_TEMPERATURE = ivalpoint(IVAL_ICE_TEMPERATURE, kmx, nlyrs)
-      IPNT_SNOW_THICKNESS = ivalpoint(IVAL_SNOW_THICKNESS, kmx, nlyrs)
-      IPNT_SNOW_TEMPERATURE = ivalpoint(IVAL_SNOW_TEMPERATURE, kmx, nlyrs)
+      call set_valobs_pointers_for_ice(kmx, nlyrs)
       IPNT_RAIN = ivalpoint(IVAL_RAIN, kmx, nlyrs)
       IPNT_INFILTCAP = ivalpoint(IVAL_INFILTCAP, kmx, nlyrs)
       IPNT_INFILTACT = ivalpoint(IVAL_INFILTACT, kmx, nlyrs)
@@ -558,6 +518,26 @@ contains
       IPNT_NUM = ivalpoint(0, kmx, nlyrs) - 1
 
    end subroutine init_valobs_pointers
+   
+   !> set the value indices for ice variables
+   subroutine set_value_indices_for_ice(i)
+      use m_fm_icecover, only: ice_data, icecover_output_flags
+      
+      integer, intent(inout) :: i !< current index
+      
+      type(icecover_output_flags), pointer :: hisout
+
+      hisout => ice_data%hisout
+      IVAL_ICE_S1 = conditional_next_index(hisout%ice_s1, i)
+      IVAL_ICE_ZMIN = conditional_next_index(hisout%ice_zmin, i)
+      IVAL_ICE_ZMAX = conditional_next_index(hisout%ice_zmax, i)
+      IVAL_ICE_AREA_FRACTION = conditional_next_index(hisout%ice_area_fraction, i)
+      IVAL_ICE_THICKNESS = conditional_next_index(hisout%ice_thickness, i)
+      IVAL_ICE_PRESSURE = conditional_next_index(hisout%ice_pressure, i)
+      IVAL_ICE_TEMPERATURE = conditional_next_index(hisout%ice_temperature, i)
+      IVAL_SNOW_THICKNESS = conditional_next_index(hisout%snow_thickness, i)
+      IVAL_SNOW_TEMPERATURE = conditional_next_index(hisout%snow_temperature, i)
+   end subroutine set_value_indices_for_ice
 
    !> increment the current index and returns it
    function next_index(current_index, increment) result(res)
@@ -573,19 +553,47 @@ contains
       res = current_index
    end function next_index
 
-   !> pointer of variable in valobs work array
-   integer function ivalpoint(ivar, kmx, nlyrs)
-      use messageHandling
+   !> conditionally increments and returns the current index, or returns 0
+   function conditional_next_index(condition, current_index) result(res)
+      logical, intent(in) :: condition !< condition to check
+      integer, intent(inout) :: current_index !< current index
+      integer :: res
+      
+      if (condition) then
+         res = next_index(current_index)
+      else
+         res = 0
+      end if
+   end function conditional_next_index
+   
+   !> set pointers of ice variables in valobs work array
+   subroutine set_valobs_pointers_for_ice(kmx, nlyrs)
+      integer, intent(in) :: kmx !< number of layers
+      integer, intent(in) :: nlyrs !< number of bed layers
+      
+      IPNT_ICE_S1 = conditional_ivalpoint(IVAL_ICE_S1, kmx, nlyrs)
+      IPNT_ICE_ZMIN = conditional_ivalpoint(IVAL_ICE_ZMIN, kmx, nlyrs)
+      IPNT_ICE_ZMAX = conditional_ivalpoint(IVAL_ICE_ZMAX, kmx, nlyrs)
+      IPNT_ICE_AREA_FRACTION = conditional_ivalpoint(IVAL_ICE_AREA_FRACTION, kmx, nlyrs)
+      IPNT_ICE_THICKNESS = conditional_ivalpoint(IVAL_ICE_THICKNESS, kmx, nlyrs)
+      IPNT_ICE_PRESSURE = conditional_ivalpoint(IVAL_ICE_PRESSURE, kmx, nlyrs)
+      IPNT_ICE_TEMPERATURE = conditional_ivalpoint(IVAL_ICE_TEMPERATURE, kmx, nlyrs)
+      IPNT_SNOW_THICKNESS = conditional_ivalpoint(IVAL_SNOW_THICKNESS, kmx, nlyrs)
+      IPNT_SNOW_TEMPERATURE = conditional_ivalpoint(IVAL_SNOW_TEMPERATURE, kmx, nlyrs)
+   end subroutine set_valobs_pointers_for_ice
 
-      implicit none
+   !> retrieve pointer of variable in valobs work array
+   function ivalpoint(ivar, kmx, nlyrs) result(ipnt)
+      use messageHandling, only: mess, LEVEL_ERROR
 
       integer, intent(in) :: ivar !< observation station variable number
       integer, intent(in) :: kmx !< maximum number of layers
       integer, intent(in) :: nlyrs !< maximum number of bed layers
+      integer :: ipnt !< pointer to the variable in the valobs array
 
       integer :: i, istart, iend
 
-      ivalpoint = 1
+      ipnt = 1
 
       istart = 0
       iend = 0
@@ -595,7 +603,7 @@ contains
       iend = iend + MAXNUMVALOBS2D
       do i = 1, MAXNUMVALOBS2D
          if (i == ivar) return
-         ivalpoint = ivalpoint + 1
+         ipnt = ipnt + 1
       end do
 
 !  3D, layer centers (dim(kmx))
@@ -603,7 +611,7 @@ contains
       iend = iend + MAXNUMVALOBS3D
       do i = istart, iend
          if (i == ivar) return
-         ivalpoint = ivalpoint + max(kmx, 1)
+         ipnt = ipnt + max(kmx, 1)
       end do
 
 !  3D, layer interfaces (dim(kmx+1))
@@ -611,7 +619,7 @@ contains
       iend = iend + MAXNUMVALOBS3Dw
       do i = istart, iend
          if (i == ivar) return
-         ivalpoint = ivalpoint + max(kmx, 1) + 1
+         ipnt = ipnt + max(kmx, 1) + 1
       end do
 
       if (nlyrs > 0) then
@@ -620,16 +628,28 @@ contains
          iend = iend + MAXNUMVALOBSLYR
          do i = istart, iend
             if (i == ivar) return
-            ivalpoint = ivalpoint + nlyrs
+            ipnt = ipnt + nlyrs
          end do
       end if
 
       if (ivar /= 0) then
          call mess(LEVEL_ERROR, 'ivalpoint: numbering error')
       end if
-
-      return
    end function ivalpoint
+   
+   !> retrieve pointer of variable in valobs work array, or 0 if variable index is not set
+   function conditional_ivalpoint(ival, kmx, nlyrs) result(ipnt)
+      integer, intent(in) :: ival !< index of the variable
+      integer, intent(in) :: kmx !< number of layers
+      integer, intent(in) :: nlyrs !< number of bed layers
+      integer :: ipnt !< pointer to the variable in the valobs array
+      
+      if (ival > 0) then
+         ipnt = ivalpoint(ival, kmx, nlyrs)
+      else
+         ipnt = 0
+      end if
+   end function conditional_ivalpoint
 
 !> Returns the index/position of a named station in the global set arrays of this module.
    subroutine getObservationIndex(statname, index)
@@ -760,7 +780,7 @@ contains
       use odugrid
       use m_save_ugrid_state
       use dfm_error
-      implicit none
+
       type(t_network), intent(inout) :: network !< network
       character(len=*), intent(in) :: filename !< filename of the obs file
 
@@ -913,7 +933,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_inquire_flowgeom
       use dfm_error
-      implicit none
+
       character(len=*), intent(in) :: filename !< File containing the observation points. Either a *_obs.xyn or a *_obs.ini.
       integer, intent(in) :: jadoorladen !< Append to existing observation points or not
 
@@ -949,7 +969,6 @@ contains
       use dfm_error
       use m_filez, only: oldfil, readerror, doclose
 
-      implicit none
       character(len=*), intent(in) :: filename
 
       integer :: mobs, L, L2
@@ -986,8 +1005,6 @@ contains
    subroutine saveObservations(filename)
       use m_sferic, only: jsferic
       use m_filez, only: doclose, newfil
-
-      implicit none
 
       character(len=*), intent(in) :: filename
 
