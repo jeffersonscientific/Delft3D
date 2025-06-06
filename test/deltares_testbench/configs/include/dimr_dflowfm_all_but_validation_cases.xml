@@ -4517,6 +4517,27 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f006_c100_surface_netcdf_periodic_forcing" ref="dflowfm_default">
+      <path version="2025-06-06T10:10:10.100000">e02_dflowfm/f006_external_forcing/c100_surface_netcdf_periodic_forcing</path>
+      <programs>
+        <program ref="dflowfm">
+          <arguments>
+            <argument>channel.mdu</argument>
+            <argument>--autostartstop</argument>
+            <argument>--nodisplay</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Patm" toleranceAbsolute="0.1" />
+          </parameters>
+        </file>
+        <file name="channel.dia" ignore="true" />
+      </checks>
+    </testCase>
     <testCase name="e02_f006_c202_3d_layers_percentage" ref="dflowfm_default">
       <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f006_external_forcing/c202_3d_layers_percentage</path>
       <maxRunTime>15000.0000000</maxRunTime>
