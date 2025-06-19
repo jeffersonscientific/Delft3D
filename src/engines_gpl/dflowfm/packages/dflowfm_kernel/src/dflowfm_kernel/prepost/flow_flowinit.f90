@@ -2129,19 +2129,19 @@ contains
 
       else if (md_netfile == 'chan650.net') then
 
-         bl = -5.d0
+         bl = -5.0_dp
          ibedlevtyp = 1
          call setbobs()
-         s1 = 0.d0
+         s1 = 0.0_dp
 
          sa1(275:375) = 5.0_dp
 
       else if (md_netfile == '640x480.net') then
 
-         bl = -5.d0
+         bl = -5.0_dp
          ibedlevtyp = 1
          call setbobs()
-         s1 = 0.d0
+         s1 = 0.0_dp
 
       else if (md_netfile == 'rec10x10.net') then
 
