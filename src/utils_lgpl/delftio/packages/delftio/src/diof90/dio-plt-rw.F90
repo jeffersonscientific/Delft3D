@@ -30,7 +30,7 @@
 !!!
 !!! Dio-DS-PLT-RW: Param./Loc./Time datasets
 !!!
-!!! (c) Deltares, dec 2000
+!!! (c) Deltares, dec 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

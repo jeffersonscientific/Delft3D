@@ -30,7 +30,7 @@
 !!!
 !!! DIO-sync: synchronisation functions for DelftIO
 !!!
-!!! (c) Deltares, dec 2000
+!!! (c) Deltares, dec 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

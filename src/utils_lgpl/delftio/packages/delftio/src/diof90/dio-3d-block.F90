@@ -30,7 +30,7 @@
 !!!
 !!! Dio-3d-block: 2D+Time (=3d) block functions
 !!!
-!!! (c) Deltares, jun 2001
+!!! (c) Deltares, jun 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

@@ -30,7 +30,7 @@
 !!!
 !!! DIO-streams: f90-version of streams for Delft-IO
 !!!
-!!! (c) Deltares, apr 2001
+!!! (c) Deltares, apr 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

@@ -30,7 +30,7 @@
 !!!
 !!! module_restart: Triton Restart File
 !!!
-!!! (c) Deltares, dec 2002
+!!! (c) Deltares, dec 2025
 !!!
 !!! Stef.Hummel@deltares.nl / Ivo.Wenneker@deltares.nl
 !!!

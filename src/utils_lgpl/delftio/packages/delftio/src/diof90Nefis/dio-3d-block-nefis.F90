@@ -30,7 +30,7 @@
 !!!
 !!! Dio-3D-Block-Nefis: Nefis I/O for 3D-value blocks
 !!!
-!!! (c) Deltares, okt 2002
+!!! (c) Deltares, okt 2025
 !!!
 !!! David.Levelt@deltares.nl
 !!!

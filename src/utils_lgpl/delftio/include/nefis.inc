@@ -30,7 +30,7 @@
 !!!
 !!! nefis.inc: function types of Nefis Functions
 !!!
-!!! (c) Deltares, Mar 2000
+!!! (c) Deltares, Mar 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

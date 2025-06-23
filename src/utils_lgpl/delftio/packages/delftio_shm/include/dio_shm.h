@@ -33,7 +33,7 @@
 //
 //  stef.hummel@deltares.nl
 //
-//  (c) Deltares, july 2002
+//  (c) Deltares, july 2025
 //
 
 

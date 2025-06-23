@@ -30,7 +30,7 @@
 !!!
 !!! Dio-PLT-Shm: (sobek)HIS I/O for Param./Loc./Time datasets
 !!!
-!!! (c) Deltares, mar 2001
+!!! (c) Deltares, mar 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

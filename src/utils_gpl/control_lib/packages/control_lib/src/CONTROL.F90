@@ -39,7 +39,7 @@ end module M_control
 
 !                                 control.for
 !
-!     (C) 1996 Deltares
+!     (C) 2025 Deltares
 !
 !     E.A. Verschuur
 !
