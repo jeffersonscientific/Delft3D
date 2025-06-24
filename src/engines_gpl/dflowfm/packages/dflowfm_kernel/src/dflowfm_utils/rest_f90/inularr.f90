@@ -43,11 +43,11 @@ contains
    subroutine INULARR(X, MMAX, NMAX)
       integer :: i
       integer :: j
-      integer :: mmax
-      integer :: nmax
-      integer X(MMAX, NMAX)
-      do I = 1, MMAX
-         do J = 1, NMAX
+      integer, intent(in) :: mmax
+      integer, intent(in) :: nmax
+      integer, intent(inout) :: X(MMAX, NMAX)
+      do J = 1, NMAX
+         do I = 1, MMAX
             X(I, J) = 0d0
          end do
       end do
