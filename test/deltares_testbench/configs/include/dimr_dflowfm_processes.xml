@@ -851,7 +851,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c040_radsurfave_from_waqinput" ref="dflowfm_default">
-  <path version="2025-06-23T16:30:00">e02_dflowfm/f030_water_quality_processes/c040_radsurfave_from_waqinput</path>
+  <path version="2025-06-24T16:30:00">e02_dflowfm/f030_water_quality_processes/c040_radsurfave_from_waqinput</path>
   <checks>
     <file name="dflowfmoutput/FlowFM_map.nc" type="netCDF">
       <parameters>
