@@ -103,19 +103,18 @@ contains
 
     !> Writes the (possibly aggregated) unstructured network and edge type to a netCDF file for DelWAQ.
     !! If file exists, it will be overwritten.
-    subroutine unc_init_map(crs, hyd, meshgeom, nosegl, num_layers)
+    subroutine unc_init_map(hyd, num_layers)
 
         use partmem, only: nosubs, nfract, oil, substi
+        use m_part_flow, only: LAYTP_SIGMA, LAYTP_Z
         use io_ugrid
         use m_alloc
         use netcdf_utils, only: ncu_append_atts
         use m_hydmod, only: t_hydrodynamics
 
-        type(t_crs), intent(in) :: crs      !< Optional crs containing metadata of unsupported coordinate reference systems
         type(t_hydrodynamics), intent(in) :: hyd !< Data on the hydrodynamics as understood by D-Part
-        type(t_ug_meshgeom), intent(in) :: meshgeom !< The complete mesh geometry in a single struct.
-        integer, intent(in) :: nosegl   !< Number of segments per layer
-        integer, intent(in) :: num_layers    !< Number of layers (meshgeom%numlayer turns out to be -1)
+        integer, intent(in)               :: num_layers
+
 
         character(len = 10) :: cell_method   !< cell_method for this variable (one of 'mean', 'point', see CF for details).
         character(len = 50) :: cell_measures !< cell_measures for this variable (e.g. 'area: mesh2d_ba', see CF for details).
@@ -158,96 +157,108 @@ contains
         ierr = nf90_put_att(imapfile, id_map_time, 'units', trim(Tudunitstr))
         ierr = nf90_put_att(imapfile, id_map_time, 'standard_name', 'time')
 
-        ! Note: a bit of trickery here ... we should probably define the concentrations as a 2D array
-        if (num_layers > 1) then
-            ierr = nf90_def_dim(imapfile, trim(meshgeom%meshname)//'_nLayers', num_layers, meshids%dimids(mdim_layer))
-            ierr = nf90_def_dim(imapfile, trim(meshgeom%meshname)//'_nInterfaces', num_layers + 1, meshids%dimids(mdim_interface))
-        endif
+        ! Notes on associated variables:
+        !     crs           -- Optional crs containing metadata of unsupported coordinate reference systems
+        !     meshgeom      -- The complete mesh geometry in a single struct.
+        !     nosegl        -- Number of segments per layer
+        !     num_layers    -- Number of layers (meshgeom%numlayer turns out to be -1), not necessarily equal
+        !                      to the number of layers in the hydrodynamics, due to the bottom layer
 
-        ! Write mesh geometry, include the vertical layer information.
-        ! Note:
-        ! The names for the water level variable and the bathymetry are dummies
-        !
-        ierr = ug_write_mesh_struct(imapfile, meshids, networkids, crs, meshgeom)
-        if (ierr /= nf90_noerr) then
-            call mess(LEVEL_ERROR, 'Could not write geometry to file map')
-            return
-        end if
+        associate( crs => hyd%crs, meshgeom => hyd%waqgeom, nosegl => hyd%nosegl, &
+                   meshname => hyd%waqgeom%meshname )
 
-        if ( num_layers > 1 ) then
-            ! Ideally:
-            ! laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layertype == 1) - parameters from m_flow
-            ! But we would drag in yet another D-Flow FM module, so hardcode the values
+            ! Note: a bit of trickery here ... we should probably define the concentrations as a 2D array
+            if (num_layers > 1) then
+                ierr = nf90_def_dim(imapfile, trim(meshname)//'_nLayers', num_layers, meshids%dimids(mdim_layer))
+                ierr = nf90_def_dim(imapfile, trim(meshname)//'_nInterfaces', num_layers + 1, meshids%dimids(mdim_interface))
+            endif
+
+            ! Write mesh geometry, include the vertical layer information.
+            ! Note:
+            ! The names for the water level variable and the bathymetry are dummies
             !
-            laytp = merge( 1, 2, hyd%layer_type == 1)
-
-            call ug_define_mesh_layer_arrays(imapfile, trim(meshgeom%meshname), meshids, laytp, s1, bldepth, ierr)
-            if (ierr /= UG_NOERR) then
-                call mess(LEVEL_ERROR, 'Could not write geometry to file map')
-                return
-            end if
-            ierr = nf90_enddef(imapfile)
-
-            call construct_layer_coords( hyd, layer_zs, interface_zs )
-
-            call ug_write_mesh_layer_arrays(imapfile, meshids, ierr, num_layers, laytp, layer_zs, &
-                     interface_zs, num_layers)
-
-            deallocate( layer_zs, interface_zs )
-            ierr = nf90_redef(imapfile)
-
+            ierr = ug_write_mesh_struct(imapfile, meshids, networkids, crs, meshgeom)
             if (ierr /= nf90_noerr) then
                 call mess(LEVEL_ERROR, 'Could not write geometry to file map')
                 return
             end if
-        endif
 
-        cell_method = 'mean' !< Default cell average.
-        cell_measures = ''
-
-        ! add concentrations of all available substances
-        ! adapt units for surfcace and sticky oil
-        unit = 'kg.m-3'
-        if (oil) then
-            do ifract = 1, nfract
-                unit(1 + 3 * (ifract - 1)) = 'kg.m-2'
-                unit(3 + 3 * (ifract - 1)) = 'kg.m-2'
-            enddo
-        endif
-
-        do isub = 1, nosubs
-            substnc = substi(isub)
-
-            do i = 1, len_trim(substnc)
-                if (substnc(i:i) == ' ') then
-                    substnc(i:i) = '_'
-                endif
-            enddo
-
-            if (num_layers == 1) then
-                ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), [meshids%dimids(mdim_face), id_map_timedim], nf90_double, UG_LOC_FACE, &
-                        trim(meshgeom%meshName), substnc, 'depth_averaged_particle_concentration', &
-                        substi(isub), unit(isub), cell_method, cell_measures, crs, ifill = -999, dfill = dmiss)
-            else
-                ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), &
-                        [meshids%dimids(mdim_face), meshids%dimids(mdim_layer), id_map_timedim], nf90_double, UG_LOC_FACE, &
-                        trim(meshgeom%meshName), substnc, 'particle_concentration', &
-                        substi(isub), unit(isub), cell_method, cell_measures, crs, ifill = -999, dfill = dmiss)
-
-                ! Since ug_def_var does not append the vertical coordinate to the coordinates attribute, it needs to be done
-                ! explicitly:
-                ! Check which vertical coordinate variable is present in the file, and add it to the :coordinate attribute.
+            if ( num_layers > 1 ) then
+                ! Ideally:
+                ! laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layertype == 1) - parameters from m_flow
+                ! But we would drag in yet another D-Flow FM module, so hardcode the values
                 !
-                checkvars(1:3) = [character(len=50) :: 'layer_sigma_z', 'layer_z', 'layer_sigma']
-                do i = 1, 3
-                    if (nf90_inq_varid(imapfile, trim(meshgeom%meshname)//'_'//trim(checkvars(i)), dummy_id) == NF90_NOERR) then
-                        ierr = ncu_append_atts(imapfile, id_map_depth_averaged_particle_concentration(isub), 'coordinates', &
-                                   trim(meshgeom%meshname)//'_'//trim(checkvars(i)))
-                        exit
-                    end if
-                end do
+                laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layer_type == 1)
+
+                call ug_define_mesh_layer_arrays(imapfile, trim(meshname), meshids, laytp, s1, bldepth, ierr)
+                if (ierr /= UG_NOERR) then
+                    call mess(LEVEL_ERROR, 'Could not write geometry to file map')
+                    return
+                end if
+                ierr = nf90_enddef(imapfile)
+
+                call construct_layer_coords( hyd, layer_zs, interface_zs )
+
+                call ug_write_mesh_layer_arrays(imapfile, meshids, ierr, num_layers, laytp, layer_zs, &
+                         interface_zs, num_layers)
+
+                deallocate( layer_zs, interface_zs )
+                ierr = nf90_redef(imapfile)
+
+                if (ierr /= nf90_noerr) then
+                    call mess(LEVEL_ERROR, 'Could not write geometry to file map')
+                    return
+                end if
             endif
-        end do
+
+            cell_method = 'mean' !< Default cell average.
+            cell_measures = ''
+
+            ! add concentrations of all available substances
+            ! adapt units for surfcace and sticky oil
+            unit = 'kg.m-3'
+            if (oil) then
+                do ifract = 1, nfract
+                    unit(1 + 3 * (ifract - 1)) = 'kg.m-2'
+                    unit(3 + 3 * (ifract - 1)) = 'kg.m-2'
+                enddo
+            endif
+
+            do isub = 1, nosubs
+                substnc = substi(isub)
+
+                do i = 1, len_trim(substnc)
+                    if (substnc(i:i) == ' ') then
+                        substnc(i:i) = '_'
+                    endif
+                enddo
+
+                if (num_layers == 1) then
+                    ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), [meshids%dimids(mdim_face), id_map_timedim], nf90_double, UG_LOC_FACE, &
+                            trim(meshName), substnc, 'depth_averaged_particle_concentration', &
+                            substi(isub), unit(isub), cell_method, cell_measures, crs, ifill = -999, dfill = dmiss)
+                else
+                    ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), &
+                            [meshids%dimids(mdim_face), meshids%dimids(mdim_layer), id_map_timedim], nf90_double, UG_LOC_FACE, &
+                            trim(meshName), substnc, 'particle_concentration', &
+                            substi(isub), unit(isub), cell_method, cell_measures, crs, ifill = -999, dfill = dmiss)
+
+                    ! Since ug_def_var does not append the vertical coordinate to the coordinates attribute, it needs to be done
+                    ! explicitly:
+                    ! Check which vertical coordinate variable is present in the file, and add it to the :coordinate attribute.
+                    !
+                    checkvars(1:3) = [character(len=50) :: 'layer_sigma_z', 'layer_z', 'layer_sigma']
+                    do i = 1, 3
+                        if (nf90_inq_varid(imapfile, trim(meshname)//'_'//trim(checkvars(i)), dummy_id) == NF90_NOERR) then
+                            ierr = ncu_append_atts(imapfile, id_map_depth_averaged_particle_concentration(isub), 'coordinates', &
+                                       trim(meshname)//'_'//trim(checkvars(i)))
+                            exit
+                        end if
+                    end do
+                endif
+            end do
+
+        end associate
 
         if (ierr /= nf90_noerr) then
             call mess(LEVEL_ERROR, 'Could not create concentration variable in map file')
