@@ -65,7 +65,7 @@ contains
                         salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
                         jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
                         q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
-                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
+                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, use_density
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
@@ -742,7 +742,7 @@ contains
          call aerr('rhowat (ndkx)', ierr, ndkx); rhowat = rhomean
       end if
 
-      if (jasal > 0 .or. jatem > 0 .or. jased > 0 .or. stm_included) then
+      if (use_density() .or. stm_included) then
          if (allocated(baroclinic_force_prev)) then
             deallocate (baroclinic_force_prev)
          end if
@@ -910,7 +910,7 @@ contains
 ! endif
 
       ! Anti-creep
-      if (jacreep == 1 .and. (jasal > 0 .or. jatem > 0 .or. jased > 0 .and. jased < 4)) then
+      if (jacreep == 1 .and. (use_density() .and. jased < 4)) then
          if (allocated(dsalL)) then
             deallocate (dsalL, dtemL)
          end if

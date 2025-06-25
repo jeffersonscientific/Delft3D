@@ -260,7 +260,7 @@ contains
          call mess(LEVEL_INFO, 'Error : Anti-creep must be switched off in a 1d/2d model!')
       end if
 
-      if (idensform > 0) then ! Baroclinic pressure
+      if (use_density()) then ! Baroclinic pressure
          if (jacreep == 1) then
             dsalL = 0d0
             dtemL = 0d0

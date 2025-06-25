@@ -45,8 +45,8 @@ contains
                         eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, turbulence_lax_factor, turbulence_lax_vertical, eps20, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, epstke, kmxl, &
                         c1e, c1t, c2t, c9of1, eps6, epseps, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, turbulence_lax_horizontal, viskin, jawavebreakerturbulence, rhomean, idensform, bruva, buoflu, &
-                        vicwminb, dijdij, v, eddyviscositysurfacmax
+                        vicwws, kmxx, turbulence_lax_horizontal, viskin, jawavebreakerturbulence, rhomean, bruva, buoflu, &
+                        vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
@@ -372,7 +372,7 @@ contains
                   end if
 
                   !c Source and sink terms                                                                           k turkin
-                  if (idensform > 0) then
+                  if (use_density()) then
                      k1 = ln(1, L); k2 = ln(2, L)
 
                      ! Determine Brunt-Vaisala frequency at flowlinks. N.B., bruva = N**2 / sigrho.
