@@ -436,7 +436,7 @@ contains
             if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.001_fp) then
                if (qh_air2ice(n) > qh_ice2wat(n)) then
                   ! Melting of ice or snow
-                  ! 
+                  !
                   if (snow_thickness(n) < 0.001_fp) then
                      ! melting of ice because there is no snow on top of the ice
                      !
@@ -445,7 +445,7 @@ contains
                      ! melting of snow due to heat exchange with air and melting of ice due to heat exchange with water
                      !
                      snow_thickness(n) = max(0.0_fp, snow_thickness(n) + dts * (-qh_air2ice(n) + 0.0_fp) / snow_latentheat)
-                     ice_thickness(n) = max(0.0_fp, ice_thickness(n)   + dts * (0.0_fp  + qh_ice2wat(n)) / ice_latentheat)
+                     ice_thickness(n) = max(0.0_fp, ice_thickness(n) + dts * (0.0_fp + qh_ice2wat(n)) / ice_latentheat)
                   end if
                else
                   ! freezing of ice
