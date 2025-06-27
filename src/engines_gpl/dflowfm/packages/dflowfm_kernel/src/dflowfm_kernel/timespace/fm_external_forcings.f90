@@ -2810,40 +2810,37 @@ contains
       use m_wind, only: air_pressure
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr, realloc
-      use precision, only: dp
 
       real(kind=dp), intent(in) :: default_value !< default atmospheric pressure value
       integer :: status
 
-      call realloc(air_pressure, ndx, keepExisting=.false., fill=default_value, stat=status)
+      call realloc(air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
       call aerr('air_pressure(ndx)', status, ndx)
    end function allocate_patm
 
-   !> Allocate and initialized pseudo atmosperic pressure variable(s)
+   !> Allocate and initialized pseudo air pressure variable(s)
    function allocate_pseudo_air_pressure(default_value) result(status)
       use m_wind, only: pseudo_air_pressure
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr, realloc
-      use precision, only: dp
 
-      real(kind=dp), intent(in) :: default_value !< default atmospheric pressure value
+      real(kind=dp), intent(in) :: default_value !< default pseudo air pressure value
       integer :: status
 
-      call realloc(pseudo_air_pressure, ndx, keepExisting=.false., fill=default_value, stat=status)
+      call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
       call aerr('pseudo_air_pressure(ndx)', status, ndx)
    end function allocate_pseudo_air_pressure
 
-   !> Allocate and initialized pseudo atmosperic pressure variable(s)
+   !> Allocate and initialized water_level_correction variable(s)
    function allocate_water_level_correction(default_value) result(status)
       use m_wind, only: water_level_correction
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr, realloc
-      use precision, only: dp
 
-      real(kind=dp), intent(in) :: default_value !< default atmospheric pressure value
+      real(kind=dp), intent(in) :: default_value !< default water level correction value
       integer :: status
 
-      call realloc(water_level_correction, ndx, keepExisting=.false., fill=default_value, stat=status)
+      call realloc(water_level_correction, ndx, keepExisting=.true., fill=default_value, stat=status)
       call aerr('water_level_correction(ndx)', status, ndx)
    end function allocate_water_level_correction
 

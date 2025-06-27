@@ -921,7 +921,7 @@ contains
 
             else if (qid == 'airpressure' .or. qid == 'atmosphericpressure') then
 
-               call realloc(air_pressure, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
                call aerr('air_pressure(ndx)', ierr, ndx)
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
@@ -930,7 +930,7 @@ contains
 
             else if (qid == 'pseudoAirPressure') then
 
-               call realloc(pseudo_air_pressure, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
                call aerr('pseudo_air_pressure(ndx)', ierr, ndx)
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
@@ -939,7 +939,7 @@ contains
 
             else if (qid == 'waterLevelCorrection') then
 
-               call realloc(water_level_correction, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
                call aerr('water_level_correction(ndx)', ierr, ndx)
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then

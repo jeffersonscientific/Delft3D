@@ -613,7 +613,7 @@ contains
       !! and do required initialisation for that quantity.
    function init_meteo_forcings(node_ptr, base_dir, file_name, group_name) result(res)
       use string_module, only: strcmpi, str_tolower
-      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
+      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess, warn_flush
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
@@ -753,6 +753,9 @@ contains
          case ('pseudoAirPressure')
             kx = 1
             ierr = allocate_pseudo_air_pressure(0.0_dp)
+            write (msgbuf, '(a)') 'quantity '//trim(quantity)//' is found in file '//file_name// &
+                '. Quantity waterLevelCorrection is more preferable.' 
+            call warn_flush()
 
          case ('waterLevelCorrection')
             kx = 1
