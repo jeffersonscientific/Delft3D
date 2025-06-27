@@ -42,7 +42,7 @@ contains
 
    subroutine dobatch() !
       use precision, only: dp
-      use m_flow, only : kmx, iturbulencemodel, jaustarint, q1
+      use m_flow, only: kmx, iturbulencemodel, jaustarint, q1
       use unstruc_api, only: api_loadmodel, flow
 
       integer :: k, ierr, mout, km(100)
