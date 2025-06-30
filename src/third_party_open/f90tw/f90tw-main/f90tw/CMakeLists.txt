@@ -174,11 +174,6 @@ endif()
 set(FPP_OPTIONS ${FPP_OPTIONS} CACHE STRING "preprocessor options")
 set(FPP_SWITCH ${FPP_SWITCH} CACHE STRING "preprocessor switch")
 
-add_library(f90tw_gtest STATIC gtest_assertions.cpp)
-set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(f90tw_gtest PUBLIC ${gtest_INCLUDE_DIR})
-target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest gtest_main)
-
 set(file2fpp "${CMAKE_CURRENT_SOURCE_DIR}/assertions_gtest.fpp")
 set(file2 "${CMAKE_CURRENT_BINARY_DIR}/assertions_gtest.f90")
 add_library(f90twi_gtest OBJECT "${file2}")
@@ -191,7 +186,11 @@ F90TWFPP("${file2fpp}" "${file2}"
     OPTIONS ${FPP_OPTIONS}
     SWITCH ${FPP_SWITCH}
 )
-add_dependencies(f90tw_gtest f90twi_gtest)
+
+add_library(f90tw_gtest STATIC gtest_assertions.cpp)
+set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(f90tw_gtest PUBLIC ${gtest_INCLUDE_DIR})
+target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest gtest_main)
 
 # make available the include and module paths
 set(f90tw_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "f90tw include directory")

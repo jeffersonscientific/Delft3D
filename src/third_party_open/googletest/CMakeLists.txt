@@ -9,17 +9,10 @@ if(WIN32)
     set_target_properties(gtest PROPERTIES FOLDER third_party_open/googletest)
     set_target_properties(gtest_main PROPERTIES FOLDER third_party_open/googletest)
 else()
-    # On Linux, use pkg-config to find sytem (docker) installed Google Test
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GTEST REQUIRED gtest)
-    find_library(GTEST_STATIC_LIB NAMES libgtest.a gtest REQUIRED)
-
+    # On Linux, use CMake's built-in FindGTest to find system-installed Google Test
+    find_package(GTest REQUIRED)
     if(NOT TARGET gtest)
-        add_library(gtest STATIC IMPORTED)
-        set_target_properties(gtest PROPERTIES
-            IMPORTED_LOCATION ${GTEST_STATIC_LIB}
-            INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
-            INTERFACE_COMPILE_OPTIONS "${GTEST_CFLAGS_OTHER}"
-        )
+        add_library(gtest ALIAS GTest::gtest)
+        add_library(gtest_main ALIAS GTest::gtest_main)
     endif()
 endif()
