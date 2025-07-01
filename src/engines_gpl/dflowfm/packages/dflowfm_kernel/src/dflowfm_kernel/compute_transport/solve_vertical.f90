@@ -117,7 +117,7 @@ contains
 
       ! construct and solve system
       !$OMP PARALLEL DO                                                 &
-      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,ac,bc,cc,dc) &
+      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,ac,bc,cc,dc,nel) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
