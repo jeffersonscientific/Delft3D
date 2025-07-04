@@ -1,10 +1,5 @@
 #ifdef F90TESTWRAPPERS
 
-#ifdef DOINTERFACE
-/* version */
-VERSIONSUB
-#endif
-
 /* For each supported gtest assertion, a wrapper is created for
 // the various levels (see gtest_level.h) and arguments type (see
 // <implement|interfae>_gtest_wrapers.h) supported. The latter is
