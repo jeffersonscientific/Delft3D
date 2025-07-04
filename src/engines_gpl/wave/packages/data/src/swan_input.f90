@@ -100,6 +100,8 @@ module swan_input
    !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
+   integer, parameter :: NUM_ACCUR = 0
+   integer, parameter :: NUM_STOPC = 1
    !
    type swan_dom
       real :: freqmax ! maximum frequency
@@ -279,8 +281,11 @@ module swan_input
       real :: inthotf
       real :: depmin
       real :: diffr_coeff
-      real :: drel
-      real :: dabs
+      integer :: num_type !> Either NUM_ACCUR or NUM_STOPC
+      real :: drel !> Relative tolerance used with both "num stopc" and "num accur"
+      real :: dabs !> Absolute tolerance used with "num stopc"
+      real :: dh_abs !> Absolute tolerance for wave height used with "num accur"
+      real :: dt_abs !> Absolute tolerance for wave period used with "num accur"
       real :: dxw
       real :: dyw
       real :: excval
@@ -538,6 +543,8 @@ contains
       logical :: ex !< flag indicating whether file exists
       logical :: flag
       logical :: success
+      logical :: activate_num_accur !< TRUE when parameters are specified for "num accur"
+      logical :: activate_num_stopc !< TRUE when parameters are specified for "num stopc"
       real :: def_startdir
       real :: def_enddir
       real :: def_freqmin
@@ -1198,8 +1205,13 @@ contains
       sr%num_scheme = 1
       sr%cdd = 0.5
       sr%css = 0.5
-      sr%drel = 0.01
-      sr%dabs = 0.005
+      
+      activate_num_accur = .false.
+      activate_num_stopc = .false.
+      sr%drel = -1.0 ! Default value will be set after checking whether "num accur" or "num stopc" is used
+      sr%dabs = -1.0 ! Default value will be set after checking whether "num stopc" is used
+      sr%dh_abs = -1.0 ! Default value will be set after checking whether "num accur" is used
+      sr%dt_abs = -1.0 ! Default value will be set after checking whether "num accur" is used
       sr%percwet = 98.0
       sr%itermx = 15
       sr%gamma0 = 3.3
@@ -1222,31 +1234,66 @@ contains
       end select
       call prop_get(mdw_ptr, 'Numerics', 'DirSpaceCDD', sr%cdd)
       call prop_get(mdw_ptr, 'Numerics', 'FreqSpaceCSS', sr%css)
+      !
+      ! "num stopc" parameters
+      ! If the user specifies invalid values (e.g. negative values), the parameter will be treated as "not specified"
       call prop_get(mdw_ptr, 'Numerics', 'DRelHinc', sr%drel)
+      if (sr%drel > 0.0) then
+         activate_num_stopc = .true.
+      end if
       call prop_get(mdw_ptr, 'Numerics', 'DAbsHinc', sr%dabs)
+      if (sr%dabs > 0.0) then
+         activate_num_stopc = .true.
+      end if
+      !
+      ! "num accur" parameters. Use r_dummy for sr%d_rel, because it might be already set with "DRelHinc" above
+      ! If the user specifies invalid values (e.g. negative values), the parameter will be treated as "not specified"
+      r_dummy = -1.0
+      call prop_get(mdw_ptr, 'Numerics', 'RChHsTm01', r_dummy)
+      if (r_dummy > 0.0) then
+         activate_num_accur = .true.
+         sr%drel = r_dummy
+      end if
+      call prop_get(mdw_ptr, 'Numerics', 'RChMeanHs', sr%dh_abs)
+      if (sr%dh_abs > 0.0) then
+         activate_num_accur = .true.
+      end if
+      call prop_get(mdw_ptr, 'Numerics', 'RChMeanTm01', sr%dt_abs)
+      if (sr%dt_abs > 0.0) then
+         activate_num_accur = .true.
+      end if
+      if (activate_num_accur .and. activate_num_stopc) then
+         write (*, *) 'SWAN_INPUT: Tolerances specified for both "num_accur" and "num_stopc"'
+         call handle_errors_mdw(sr)
+      end if
+      if (activate_num_accur==.false. .and. activate_num_stopc==.false.) then
+         activate_num_stopc = .true.
+      end if
+      if (activate_num_stopc) then
+         sr%num_type = NUM_STOPC
+         if (sr%drel < 0.0) then
+            sr%drel = 0.01
+         end if
+         if (sr%dabs < 0.0) then
+            sr%dabs = 0.005
+         end if
+      end if
+      if (activate_num_accur) then
+         sr%num_type = NUM_ACCUR
+         if (sr%drel < 0.0) then
+            sr%drel = 0.02
+         end if
+         if (sr%dh_abs < 0.0) then
+            sr%dh_abs = 0.02
+         end if
+         if (sr%dt_abs < 0.0) then
+            sr%dt_abs = 0.02
+         end if
+      end if
+      !
       call prop_get(mdw_ptr, 'Numerics', 'PercWet', sr%percwet)
       call prop_get(mdw_ptr, 'Numerics', 'MaxIter', sr%itermx)
       call prop_get(mdw_ptr, 'Numerics', 'AlfaUnderRelax', sr%alfa)
-      !
-      ! Stop with an error message when an outdated stop criteria is specified
-      !
-      r_dummy = -999.9
-      call prop_get(mdw_ptr, 'Numerics', 'RChHsTm01', r_dummy)
-      if (r_dummy > -999.0) then
-         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChHsTm01. Use DAbsHinc/DRelHinc.'
-         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
-      endif
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanHs', r_dummy)
-      if (r_dummy > -999.0) then
-         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChMeanHs. Use DAbsHinc/DRelHinc.'
-         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
-      endif
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanTm01', r_dummy)
-      if (r_dummy > -999.0) then
-         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChMeanTm01. Use DAbsHinc/DRelHinc.'
-         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
-      endif
-      
       !
       ! General output options
       !
@@ -3468,13 +3515,30 @@ contains
       line(1:2) = '$ '
       write (luninp, '(1X,A)') line
       line = ' '
-      line(1:10) = 'NUM STOPC '
-      if (sr%modsim /= 3) then
-         write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0,A,F7.5)') &
-            & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' STAT MXITST=', sr%itermx, ' ALFA=', sr%alfa
+      if (sr%num_type == NUM_STOPC) then
+         line(1:10) = 'NUM STOPC '
+         if (sr%modsim /= 3) then
+            write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0,A,F7.5)') &
+               & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' STAT MXITST=', sr%itermx, ' ALFA=', sr%alfa
+         else
+            write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0)') &
+            & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' NONSTAT MXITNS=', sr%itermx
+         end if
       else
-         write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0)') &
-         & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' NONSTAT MXITNS=', sr%itermx
+         line(1:10) = 'NUM ACCUR '
+         if (sr%modsim /= 3) then
+            if (sr%alfa > 0.0) then
+               write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4,1X,F8.3)') &
+                    & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, 'STAT', sr%itermx, sr%alfa
+            else
+               write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,I4)') &
+               & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, sr%itermx
+            end if
+         else
+            write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4)') &
+            & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, &
+            & 'NONSTAT', sr%itermx
+         end if
       end if
       write (luninp, '(1X,A)') trim(line)
 !-----------------------------------------------------------------------
