@@ -36,9 +36,6 @@ object Publish : BuildType({
     }
 
     features {
-        approval {
-            approvalRules = "group:DIMR_BAKKERS:1"
-        }
         matrix {
             param("brand", listOf(
                 value("delft3dfm"),
