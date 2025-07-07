@@ -885,11 +885,6 @@ contains
          turkin0 = turkin1
          tureps0 = tureps1
 
-         call links_to_centers(vicwws, vicwwu)
-         if (jarichardsononoutput > 0) then
-            call links_to_centers(richs, rich)
-         end if
-
       else if (iturbulencemodel == 5) then
 
          call calculate_drhodz(zws, drhodz)
@@ -1265,6 +1260,14 @@ contains
          end do
 
       end if
+
+      if (iturbulencemodel < 5) then
+         call links_to_centers(vicwws, vicwwu)
+         if (jarichardsononoutput > 0) then
+            call links_to_centers(richs, rich)
+         end if
+      end if
+
    end subroutine update_verticalprofiles
 
    !> Calculates vertical density gradient for Brunt-Vaisala frequency
