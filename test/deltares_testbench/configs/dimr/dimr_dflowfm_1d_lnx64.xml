@@ -105,7 +105,7 @@
                         <argument>&gt;bmi_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                     <environments> 
-                        <environment name="D3D_HOME" type="path">[programpath(dimr)]/..</environment>
+                        <environment name="D3D_HOME_BIN" type="path">[programpath(dimr)]</environment>
                     </environments> 
                 </program>
             </programs>
