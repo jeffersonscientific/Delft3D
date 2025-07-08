@@ -43,6 +43,7 @@ module m_turbulence
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
    integer :: baroc_weight_flip
+   logical :: c3eTest
    real(kind=dp) :: c2e
    real(kind=dp) :: sigdif
    real(kind=dp) :: sigtke, sigtkei
@@ -146,6 +147,7 @@ contains
       c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
 
       baroc_weight_flip = 2
+      c3eTest = .false.
 
    end subroutine default_turbulence
 
