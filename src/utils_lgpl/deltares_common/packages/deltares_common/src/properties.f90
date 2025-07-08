@@ -237,6 +237,7 @@ contains
       ! Local variables
       !
       integer :: lu
+      character(len=50) :: str
 
       lu = 0
       if (present(japreproc)) then ! If preprocessor was requested
@@ -249,6 +250,8 @@ contains
          open (newunit=lu, file=filename, iostat=error, status='old')
          if (error /= 0) then
             return
+         else
+            inquire(unit=lu, NAME=str)
          end if
       end if
 
