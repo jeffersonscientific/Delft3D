@@ -4075,11 +4075,11 @@ stocfl,stocsu,stocsc
 "dG5_cmN2  ","cmN_2     ",  -1.00000
 "dG5_cmP2  ","cmP_2     ",  -1.00000
 "dG5_ncmC1 ","ncmC_1    ",  -1.00000
-"dG5_ncChl1","ncmChl_1  ",  -1.00000
+"dG5_ncmCh1","ncmChl_1  ",  -1.00000
 "dG5_ncmN1 ","ncmN_1    ",  -1.00000
 "dG5_ncmP1 ","ncmP_1    ",  -1.00000
 "dG5_ncmC2 ","ncmC_2    ",  -1.00000
-"dG5_ncChl2","ncmChl_2  ",  -1.00000
+"dG5_ncmCh2","ncmChl_2  ",  -1.00000
 "dG5_ncmN2 ","ncmN_2    ",  -1.00000
 "dG5_ncmP2 ","ncmP_2    ",  -1.00000
 "dG5_zooC1 ","zooC_1    ",  -1.00000
