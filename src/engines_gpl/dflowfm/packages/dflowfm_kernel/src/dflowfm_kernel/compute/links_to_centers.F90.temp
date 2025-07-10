@@ -30,9 +30,9 @@
 !
 !
 module m_links_to_centers
-use precision, only: dp, sp
-use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop
-use m_flowgeom, only: lnx, ln, wcL, ndx
+   use precision, only: dp, sp
+   use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop
+   use m_flowgeom, only: lnx, ln, wcL, ndx
 
    implicit none
    private
@@ -45,14 +45,14 @@ use m_flowgeom, only: lnx, ln, wcL, ndx
    end interface links_to_centers
 contains
    !> Set flow node value based on flow link values, where vlin is real(kind=dp)
-subroutine links_to_centers_dp(vnod, vlin)
-real(kind=dp), intent(in) :: vlin(lnkx)
-include 'links_to_centers_body.inc'
-end subroutine links_to_centers_dp
+   subroutine links_to_centers_dp(vnod, vlin)
+      real(kind=dp), intent(in) :: vlin(lnkx)
+      include 'links_to_centers_body.inc'
+   end subroutine links_to_centers_dp
 
-subroutine links_to_centers_sp(vnod, vlin)
-real(kind=sp), intent(in) :: vlin(lnkx)
-include 'links_to_centers_body.inc'
-end subroutine links_to_centers_sp
+   subroutine links_to_centers_sp(vnod, vlin)
+      real(kind=sp), intent(in) :: vlin(lnkx)
+      include 'links_to_centers_body.inc'
+   end subroutine links_to_centers_sp
 
 end module m_links_to_centers
