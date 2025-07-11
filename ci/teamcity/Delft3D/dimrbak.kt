@@ -4,6 +4,8 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
+import Delft3D.linux.*
+import Delft3D.windows.*
 
 object DIMRbak : BuildType({
 
@@ -14,6 +16,12 @@ object DIMRbak : BuildType({
     name = "Publish DIMRset"
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
+
+    features {
+        approval {
+            approvalRules = "group:DIMR_BAKKERS:1"
+        }
+    }
 
     artifactRules = """
         +:ci/DIMRset_delivery/output/*.html
@@ -35,16 +43,29 @@ object DIMRbak : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-        }
-        triggers {
-            finishBuildTrigger {
-                enabled = true
-                buildType = "DIMR_To_NGHS"
-                successfulOnly = true
-                branchFilter = """
-                    +:main
-                    +:release/*
-                """.trimIndent()
+            snapshot(AbsoluteId("LinuxTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("WindowsTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("LinuxUnitTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("WindowsUnitTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("LinuxRunAllDockerExamples")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("Delft3D_LinuxLegacyDockerTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
     }

@@ -5,6 +5,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.linux.*
+import Delft3D.windows.*
 
 object Publish : BuildType({
 
@@ -42,6 +43,9 @@ object Publish : BuildType({
                 value("dhydro")
             ))
         }
+        approval {
+            approvalRules = "group:DIMR_BAKKERS:1"
+        }
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
@@ -50,11 +54,29 @@ object Publish : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-            dependency(LinuxRuntimeContainers) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+            snapshot(AbsoluteId("LinuxTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("WindowsTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("LinuxUnitTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("WindowsUnitTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("LinuxRunAllDockerExamples")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            snapshot(AbsoluteId("Delft3D_LinuxLegacyDockerTest")) {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
         triggers {
