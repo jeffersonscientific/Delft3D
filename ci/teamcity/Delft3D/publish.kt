@@ -5,6 +5,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.linux.*
+import Delft3D.windows.*
 
 object Publish : BuildType({
 
