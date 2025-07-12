@@ -40,7 +40,7 @@ object LinuxCollect : BuildType({
             path = "/usr/bin/python3"
             arguments = "src/scripts_lgpl/artifacts_cleaner.py --product dimrset --root ."
             conditions {
-                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+                equals("dep.${LinuxBuild.id}.product", "fm-suite")
             }
         }
         exec {
