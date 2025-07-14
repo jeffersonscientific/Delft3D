@@ -53,7 +53,7 @@ class DimrAutomation(object):
         self.__get_kernel_versions()  # This step is crucial for the script to run, do not comment this one out!
         self.__download_and_install_artifacts()
         self.__git_client.tag_commit(
-            self.__kernel_versions["OSS_ver"], f"DIMRset_{self.__dimr_version}"
+            self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}"
         )
         self.__pin_and_tag_builds()
         self.__update_excel_sheet()
