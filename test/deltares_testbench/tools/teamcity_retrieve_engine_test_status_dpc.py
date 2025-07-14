@@ -5,7 +5,7 @@ import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from io import TextIOWrapper
-from typing import List
+from typing import List, Optional
 
 import requests
 from pyparsing import Enum
@@ -30,7 +30,7 @@ BASE_URL = "https://dpcbuild.deltares.nl"
 REST_API_URL = f"{BASE_URL}/httpAuth/app/rest"
 PROJECTS_URL = f"{REST_API_URL}/projects/id:"
 TEST_OCCURRENCES = "./testOccurrences"
-HEADER_FMT = "{:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s}  ---  {:24s} (#{:s})"
+HEADER_FMT = "{:>12s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s}  ---  {:24s} (#{:s})"
 
 
 class FILTERED_LIST(Enum):
@@ -55,7 +55,7 @@ class TestResultSummary(object):
 class TestResultExecutiveSummary(object):
     """A class to store data for test result summary."""
 
-    def __init__(self, passed, failed) -> None:
+    def __init__(self, passed: int, failed: int) -> None:
         self.passed = passed
         self.failed = failed
         self.total = passed + failed
@@ -298,9 +298,9 @@ def log_executive_summary(log_file: TextIOWrapper, summarydata: ExecutiveSummary
         log_to_file(log_file, f"    Percentage: {float(percentage):6.2f}")
 
 
-def log_engine(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTestResult]) -> None:
+def log_result_list(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTestResult]) -> None:
     """Log engine list to a file."""
-    log_to_file(log_file, f"        {name}")
+    log_to_file(log_file, f"{name}")
     log_to_file(
         log_file,
         HEADER_FMT.format("total", "passed", "failed", "except", "ignored", "muted", "%", "test case name", "build"),
@@ -310,9 +310,9 @@ def log_engine(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTe
     sum_test_result = get_sum_test_result(engines)
 
     configuration_summary = TestResultExecutiveSummary(sum_test_result.passed, sum_test_result.get_not_passed_total())
-    log_to_file(log_file, f"            Total     : {configuration_summary.total:6d}")
-    log_to_file(log_file, f"            Passed    : {configuration_summary.passed:6d}")
-    log_to_file(log_file, f"            Percentage: {configuration_summary.percentage:6.2f}")
+    log_to_file(log_file, f"    Total     : {configuration_summary.total:6d}")
+    log_to_file(log_file, f"    Passed    : {configuration_summary.passed:6d}")
+    log_to_file(log_file, f"    Percentage: {configuration_summary.percentage:6.2f}")
 
 
 def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult) -> None:
@@ -325,7 +325,7 @@ def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult
     if total > 0:
         log_to_file(
             log_file,
-            "{:20d} {:8d} {:8d} {:8d} {:8d} {:8d} {:8.2f}  ---  {:24s} (#{:s})".format(
+            "{:12d} {:8d} {:8d} {:8d} {:8d} {:8d} {:8.2f}  ---  {:24s} (#{:s})".format(
                 total,
                 line.test_result.passed,
                 line.test_result.failed,
@@ -356,23 +356,11 @@ def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult
 def create_argument_parser() -> argparse.ArgumentParser:
     """Create custom argument parser."""
     parser = argparse.ArgumentParser(description="Retrieve status of a testbench running on TeamCity")
-
-    parser.add_argument(
-        "-t",
-        "--tbroot",
-        help="ProjetcId of the testbench root for which the status is needed.",
-        dest="tbroot",
-        required=True,
-    )
-    parser.add_argument("-o", "--output", help="Output filename.", dest="out_put")
-    parser.add_argument("-b", "--build_config", help="Build configuration ID", dest="build_config")
-    parser.add_argument("-c", "--commit", help="Commit ID or build number", dest="commit")
-    parser.add_argument("-B", "--branch", help="Branch name", dest="branch")
     parser.add_argument("-u", "--username", help="Username for accessing TeamCity.", dest="username")
     parser.add_argument(
         "-p",
         "--password",
-        help="Password belonging to username for accessing TeamCity.",
+        help="Password for accessing TeamCity.",
         dest="password",
     )
     parser.add_argument(
@@ -380,12 +368,6 @@ def create_argument_parser() -> argparse.ArgumentParser:
         "--interactive",
         help="Must be True to enable username/password via keyboard.",
         dest="interactive",
-    )
-    parser.add_argument(
-        "-e",
-        "--engines",
-        help="Specify extra components to be summarized, between double quotes and separated by a comma",
-        dest="engines",
     )
     parser.add_argument(
         "--build_id",
@@ -396,7 +378,9 @@ def create_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def get_build_dependency_chain(build_id: str, username: str, password: str, filtered_list: FILTERED_LIST = None) -> list:
+def get_build_dependency_chain(
+    build_id: str, username: str, password: str, filtered_list: Optional[list[FILTERED_LIST]] = None
+) -> list:
     """
     Get dependency chain of all dependent builds for a given build ID from TeamCity.
 
@@ -437,7 +421,24 @@ def get_build_dependency_chain(build_id: str, username: str, password: str, filt
     return dependency_chain
 
 
-def get_xml_root_build_test_results(build_id: str, username: str, password: str):
+def get_xml_root_build_test_results(build_id: str, username: str, password: str) -> ET.Element:
+    """
+    Retrieve the XML root element containing build test results from TeamCity.
+
+    Parameters
+    ----------
+    build_id : str
+        The build ID to retrieve results for.
+    username : str
+        TeamCity username.
+    password : str
+        TeamCity password.
+
+    Returns
+    -------
+    xml.etree.ElementTree.Element
+        The XML root element containing the build test results.
+    """
     url = f"{BASE_URL}/httpAuth/app/rest/builds/id:{build_id}"
     response = get_request(url, username, password)
 
@@ -465,29 +466,48 @@ def has_test_results(xml_root: ET.Element) -> bool:
 
 def get_build_test_results(xml_root: ET.Element) -> ConfigurationTestResult:
     """
-    For each build ID, fetch its test results.
+    Fetch test results for a given build ID from a TeamCity XML root element.
 
-    Queries the TeamCity API for the build, checks for tests, and returns a ConfigurationTestResult.
-    Automatically retrieves the configuration name from the TeamCity API.
+    Parameters
+    ----------
+    xml_root : xml.etree.ElementTree.Element
+        The XML root element representing a TeamCity build; expected to contain 'buildType' and 'testOccurrences' children.
+
+    Returns
+    -------
+    ConfigurationTestResult
+        An object containing the parsed test results for the build.
+
+    Raises
+    ------
+    KeyError
+        If required attributes are missing from the XML.
+    Edge Cases
+    ----------
+    - If 'buildType' or 'testOccurrences' are missing, default values are used.
+    - If test counts are missing, they default to zero.
+    - If attributes like 'number' or 'status' are missing, fallback values are used.
     """
-    build_nr = xml_root.attrib.get("number", build_id)
+    build_nr = xml_root.attrib.get("number", "Unknown build number")
     status_text = xml_root.attrib.get("status", "No status available")
 
     # Build up config_name including parent project(s)
     config_name = "Unknown config"
+    parent = "Unknown parent"
     build_type_elem = xml_root.find("buildType")
     if build_type_elem is not None:
         config_name = build_type_elem.attrib.get("name", "Unknown config")
-        parent = build_type_elem.attrib.get("projectName")
+        parent = build_type_elem.attrib.get("projectName", "Unknown parent")
     config_name = f"{parent} / {config_name}"
 
     passed = failed = ignored = muted = 0
     test_occurrences = xml_root.find("testOccurrences")
 
-    passed = int(test_occurrences.attrib.get("passed", "0"))
-    failed = int(test_occurrences.attrib.get("failed", "0"))
-    ignored = int(test_occurrences.attrib.get("ignored", "0"))
-    muted = int(test_occurrences.attrib.get("muted", "0"))
+    if test_occurrences is not None:
+        passed = int(test_occurrences.attrib.get("passed", "0"))
+        failed = int(test_occurrences.attrib.get("failed", "0"))
+        ignored = int(test_occurrences.attrib.get("ignored", "0"))
+        muted = int(test_occurrences.attrib.get("muted", "0"))
     # TeamCity does not provide "exception" directly, so leave as 0
 
     return ConfigurationTestResult(
@@ -501,28 +521,20 @@ def get_build_test_results(xml_root: ET.Element) -> ConfigurationTestResult:
     )
 
 
-if __name__ == "__main__":
-    start_time = datetime.now()
+def get_credentials(args: argparse.Namespace) -> tuple[str, str]:
+    """
+    Retrieve TeamCity credentials from command-line arguments or interactively.
 
-    parser = create_argument_parser()
-    args = parser.parse_args()
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed command-line arguments.
 
-    out_put = "teamcity_retrieve_engine_test_status.txt"
-    given_build_config = []
-
-    if args.tbroot:
-        tbroot = args.tbroot
-    if args.build_config:
-        bconfig = args.build_config
-        given_build_config = bconfig.split(",")
-    if args.out_put:
-        out_put = args.out_put
-    if args.commit:
-        commit = args.commit
-    if args.branch:
-        branch = args.branch
-    if args.build_id:
-        build_id = args.build_id
+    Returns
+    -------
+    tuple[str, str]
+        A tuple containing the username and password.
+    """
     if args.interactive:
         interactive = args.interactive
     else:
@@ -543,24 +555,38 @@ if __name__ == "__main__":
         else:
             print('No password on commandline. add "-i True" to enable interactive input')
             exit()
-    if args.engines:
-        engines = args.engines
-    else:
-        engines = None
-    if os.path.exists(out_put):
-        os.remove(out_put)
-    log_file = open(out_put, "a")
+    return username, password
+
+
+if __name__ == "__main__":
+    start_time = datetime.now()
+
+    parser = create_argument_parser()
+    args = parser.parse_args()
+    username, password = get_credentials(args)
+
+    build_id = args.build_id
+    output_file = "teamcity_retrieve_release_engine_test_status.txt"
+    if os.path.exists(output_file):
+        os.remove(output_file)
+    log_file = open(output_file, "a")
 
     print("Start: {start_time}\n")
     log_to_file(log_file, f"Start: {start_time}\n")
 
-    print(f"Listing is written to: {out_put}")
+    print(f"Listing is written to: {output_file}")
 
     # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
-    dependency_chain = []
-    if "build_id" in locals() and build_id:
-        dependency_chain = get_build_dependency_chain(build_id, username, password, FILTERED_LIST)
-        print(f"Dependency chain for build {build_id}: {dependency_chain}")
+    dependency_chain = get_build_dependency_chain(
+        build_id,
+        username,
+        password,
+        [
+            FILTERED_LIST.DELFT3D_WINDOWS_TEST,
+            FILTERED_LIST.DELFT3D_LINUX_TEST,
+        ],
+    )
+    print(f"Dependency chain for build {build_id}: {dependency_chain}")
 
     # 2. Loop over the builds and retrieve the test results and write to file
     result_list = []
@@ -571,7 +597,7 @@ if __name__ == "__main__":
 
     # 3. Write test results to file
     result_list.sort(key=lambda x: x.name)
-    log_engine(log_file, "all tests", result_list)
+    log_result_list(log_file, "DIMR Testbench Release", result_list)
 
     # 4. Write executive summary to file
     summary = TestResultSummary("All")
@@ -582,7 +608,7 @@ if __name__ == "__main__":
         summary.sum_ignored += result.test_result.ignored
         summary.sum_muted += result.test_result.muted
 
-    executive_summary = ExecutiveSummary("Testbench Overview", [summary])
+    executive_summary = ExecutiveSummary("DIMR Testbench Release", [summary])
     log_executive_summary(log_file, executive_summary)
 
     tests_failed = sum(result.get_not_passed_total() for result in result_list)
