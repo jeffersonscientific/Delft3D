@@ -3306,10 +3306,10 @@ contains
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
          call prop_set(prop_ptr, 'physics', 'Xlozmidov', xlozmidov, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
-         if (epstke > 1.0e-32_dp) then
+         if (epstke > MINIMUM_VALUE_K_EPS_TAU) then
             call prop_set(prop_ptr, 'physics', 'EpsTKE', epstke, 'Minimum TKE value (TKE = max(TKE,EpsTKE), default = 1d-32)')
          end if
-         if (epseps > 1.0e-32_dp) then
+         if (epseps > MINIMUM_VALUE_K_EPS_TAU) then
             call prop_set(prop_ptr, 'physics', 'EpsEPS', epseps, 'Minimum EPS value (EPS = max(EPS,EpsEPS) [or TAU], default = 1d-32)')
          end if
       end if
