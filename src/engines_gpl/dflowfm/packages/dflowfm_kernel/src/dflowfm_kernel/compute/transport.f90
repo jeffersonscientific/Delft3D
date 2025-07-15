@@ -56,7 +56,7 @@ contains
                         vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
                         potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
-      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr
+      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
       use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
