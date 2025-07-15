@@ -527,22 +527,22 @@ contains
    end subroutine mba_update
 
    subroutine mba_datestr(time, datestr)
-      use m_flowtimes, only : refdate_mjd
-      use time_module, only : mjd2date
-      
-      double precision,  intent(in)  :: time    !< time represented in seconds since refdate
+      use m_flowtimes, only: refdate_mjd
+      use time_module, only: mjd2date
+
+      double precision, intent(in) :: time !< time represented in seconds since refdate
       character(len=19), intent(out) :: datestr !< time represented as string
-      
-      integer          :: iyear  !< year
-      integer          :: imonth !< month number
-      integer          :: iday   !< day number
-      integer          :: ihour  !< hours
-      integer          :: imin   !< minutes
-      double precision :: sec    !< (fractional) seconds
-      
+
+      integer :: iyear !< year
+      integer :: imonth !< month number
+      integer :: iday !< day number
+      integer :: ihour !< hours
+      integer :: imin !< minutes
+      double precision :: sec !< (fractional) seconds
+
       datestr = ""
-      if (mjd2date(refdate_mjd + time/86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write(datestr, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
+      if (mjd2date(refdate_mjd + time / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
+         write (datestr, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
       end if
    end subroutine mba_datestr
 

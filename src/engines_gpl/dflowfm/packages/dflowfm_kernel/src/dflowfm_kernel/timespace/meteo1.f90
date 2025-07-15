@@ -6943,7 +6943,7 @@ contains
       case ('damlevel')
          itemPtr1 => item_damlevel
       case ('dambreakLevelsAndWidths')
-          ! itemPtr1 and dataPtr1 are provided at a dambreak call
+         ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
