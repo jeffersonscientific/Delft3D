@@ -2623,7 +2623,7 @@ contains
       use m_datum
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
-      use m_add_baroclinic_pressure, only: DENSITY_TO_INTERFACES, rhointerfaces
+      use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3167,8 +3167,8 @@ contains
       if (writeall .or. max_iterations_pressure_density /= 1) then
          call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
-      if (writeall .or. rhointerfaces /= DENSITY_TO_INTERFACES) then
-         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', rhointerfaces, 'Baroclinic pressure gradient method: -1 = original method. Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
+      if (writeall .or. rhointerfaces /= BAROC_ORIGINAL) then
+         call prop_set(prop_ptr, 'numerics', 'rhoInterfaces', rhointerfaces, 'Estimate rho at 3D layer interfaces for baroclinic pressure gradient method; -1 = original linear interpolation, 0 = improved linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
       end if
 
       if (icgsolver == 8) then ! for parms solver
