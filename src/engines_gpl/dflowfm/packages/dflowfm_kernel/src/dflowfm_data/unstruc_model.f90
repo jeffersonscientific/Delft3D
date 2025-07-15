@@ -1322,8 +1322,12 @@ contains
       call prop_get(md_ptr, 'physics', 'Dicoww', dicoww)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
-      call prop_get(md_ptr, 'physics', 'EpsTKE', epstke)
-      call prop_get(md_ptr, 'physics', 'EpsEPS', epseps)
+      call prop_get(md_ptr, 'physics', 'TKEMin', epstke)
+      if (iturbulencemodel == 4) then ! k-tau
+         call prop_get(md_ptr, 'physics', 'TAUMin', epseps)
+      else
+         call prop_get(md_ptr, 'physics', 'EPSMin', epseps)
+      end if
 
       call prop_get(md_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity)
       call check_positive_value('SchmidtNumberSalinity', Schmidt_number_salinity)
@@ -3306,11 +3310,15 @@ contains
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
          call prop_set(prop_ptr, 'physics', 'Xlozmidov', xlozmidov, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
-         if (epstke > MINIMUM_VALUE_K_EPS_TAU) then
-            call prop_set(prop_ptr, 'physics', 'EpsTKE', epstke, 'Minimum TKE value (TKE = max(TKE,EpsTKE), default = 1d-32)')
+         if (comparereal(epstke, MINIMUM_VALUE_K_EPS_TAU) /= 0) then
+            call prop_set(prop_ptr, 'physics', 'TKEMin', epstke, 'Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model')
          end if
-         if (epseps > MINIMUM_VALUE_K_EPS_TAU) then
-            call prop_set(prop_ptr, 'physics', 'EpsEPS', epseps, 'Minimum EPS value (EPS = max(EPS,EpsEPS) [or TAU], default = 1d-32)')
+         if (comparereal(epseps, MINIMUM_VALUE_K_EPS_TAU) /= 0) then
+            if (iturbulencemodel /= 4) then
+               call prop_set(prop_ptr, 'physics', 'EPSMin', epseps, 'Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model')
+            else
+               call prop_set(prop_ptr, 'physics', 'TAUMin', epseps, 'Minimum turbulent time scale (TAU) value in k-tau turbulence model')
+            end if
          end if
       end if
 

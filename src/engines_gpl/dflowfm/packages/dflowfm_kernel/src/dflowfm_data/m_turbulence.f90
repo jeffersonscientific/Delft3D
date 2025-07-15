@@ -80,7 +80,7 @@ module m_turbulence
    real(kind=dp) :: hcref(kmxx) !< mid-layer heigths
    real(kind=dp) :: hwref(0:kmxx) !< layer interface height, 0=bed
 
-   real(kind=dp), parameter :: MINIMUM_VALUE_K_EPS_TAU = 1d-32
+   real(kind=dp), parameter :: MINIMUM_VALUE_K_EPS_TAU = 1e-32_dp
    real(kind=dp) :: epstke
    real(kind=dp) :: epseps
 

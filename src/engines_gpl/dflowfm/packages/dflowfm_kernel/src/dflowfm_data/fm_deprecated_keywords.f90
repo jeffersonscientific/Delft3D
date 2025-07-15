@@ -41,8 +41,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'barocTimeInt', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaDrhoDz', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jasfer3d', DEPRECATED)
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'EpsTKE', OBSOLETE, 'Use [Physics] EpsTKE instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'EpsEPS', OBSOLETE, 'Use [Physics] EpsEPS instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsTKE', OBSOLETE, 'Use [Physics] TKEMin instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsEPS', OBSOLETE, 'Use [Physics] EPSMin (k-epsilon turbulence model) or [Physics] TAUmin (k-tau turbulence model) instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Allowcoolingbelowzero', OBSOLETE, &
                                   'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'RhoairRhowater', OBSOLETE, &
