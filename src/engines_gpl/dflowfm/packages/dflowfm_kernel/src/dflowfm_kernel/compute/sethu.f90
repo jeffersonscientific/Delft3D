@@ -56,8 +56,9 @@ module m_sethu
    procedure(get_upstream_water_level_any), pointer :: get_upstream_water_level
 
    abstract interface
-      real(kind=dp) function get_upstream_water_level_any()
-         use precision, only: dp
+      real(kind=dp) function get_upstream_water_level_any(left_cell,right_cell,link)
+      use precision, only: dp
+      integer, intent(in) :: left_cell, right_cell, link
       end function
    end interface
 
@@ -161,7 +162,7 @@ contains
                                                       upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
          end if
 
-         upstream_water_level = get_upstream_water_level()
+         upstream_water_level = get_upstream_water_level(left_cell,right_cell,link)
 
          call getblu_from_bob(link, upstream_cell_index, bed_level_at_u_point)
          if (jafullgridoutput > 0) then ! is it possible to move to other subroutine?
@@ -699,53 +700,53 @@ contains
    end subroutine set_upstream_water_level_getter
 
 !> get_upstream_water_level_upwind
-   real(kind=dp) function get_upstream_water_level_upwind() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_upwind(left_cell, right_cell, link) result(upstream_water_level)
       use precision, only: dp
       use m_flow, only: s0
 
-      implicit none
+      integer, intent(in) :: left_cell, right_cell, link
 
-      upstream_water_level = s0(upstream_cell)
+      upstream_water_level = s0(left_cell)
 
    end function get_upstream_water_level_upwind
 
 !> get_upstream_water_level_central_limiter
-   real(kind=dp) function get_upstream_water_level_central_limiter() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_central_limiter(left_cell,right_cell,link) result(upstream_water_level)
       use precision, only: dp
       use m_flow, only: s0
 
-      implicit none
+      integer, intent(in) :: left_cell, right_cell, link
 
       upstream_water_level = 0.5d0 * (s0(left_cell) + s0(right_cell))
 
    end function get_upstream_water_level_central_limiter
 
    !> get_upstream_water_level_perot_alfa_limiter
-   real(kind=dp) function get_upstream_water_level_perot_alfa_limiter() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_perot_alfa_limiter(left_cell, right_cell, link) result(upstream_water_level)
       use precision, only: dp
       use m_flow, only: s0
       use m_flowgeom, only: acl
 
-      implicit none
+      integer, intent(in) :: left_cell, right_cell, link
 
       upstream_water_level = acl(link) * s0(left_cell) + (1d0 - acl(link)) * s0(right_cell)
 
    end function get_upstream_water_level_perot_alfa_limiter
 
 !> get_upstream_water_level_regular_linear_interpolation
-   real(kind=dp) function get_upstream_water_level_regular_linear_interpolation() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_regular_linear_interpolation(left_cell, right_cell, link) result(upstream_water_level)
       use precision, only: dp
       use m_flow, only: s0
       use m_flowgeom, only: acl
 
-      implicit none
+      integer, intent(in) :: left_cell, right_cell, link
 
       upstream_water_level = acl(link) * s0(right_cell) + (1d0 - acl(link)) * s0(left_cell)
 
    end function get_upstream_water_level_regular_linear_interpolation
 
 !> get_upstream_water_level_usual_limiters
-   real(kind=dp) function get_upstream_water_level_usual_limiters() result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_usual_limiters(left_cell, right_cell, link) result(upstream_water_level)
       use precision, only: dp
       use m_flowparameters, only: limtyphu
       use m_flow, only: s0
@@ -753,7 +754,7 @@ contains
       use m_missing, only: dmiss
       use m_dslim
 
-      implicit none
+      integer, intent(in) :: left_cell, right_cell, link
 
       integer :: klnup1
       integer :: klnup2
