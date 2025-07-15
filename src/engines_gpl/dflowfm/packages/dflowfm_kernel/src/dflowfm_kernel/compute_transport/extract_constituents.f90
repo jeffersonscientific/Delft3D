@@ -62,7 +62,7 @@ contains
                                   maxitverticalforestersal, maxitverticalforestertem
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
       use m_flowgeom, only: ndx, ndxi, bai_mor
-      use m_flowtimes, only: dts, tfac, time1, tstart_user
+      use m_flowtimes, only: dts
       use m_fm_icecover, only: freezing_temperature
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
