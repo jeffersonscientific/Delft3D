@@ -41,17 +41,11 @@ module m_sethu
    use m_adjust_bobs_for_dams_and_structs, only: adjust_bobs_for_dams_and_structs
    use stdlib_kinds, only: dp
 
+   implicit none
+   
    private
 
-   integer :: left_cell
-   integer :: right_cell
-   integer :: upstream_cell
-   integer :: downstream_cell
-   integer :: direction_sign
-   integer :: upstream_cell_index
-   integer :: link
-
-   real(kind=dp) :: velocity
+   real(kind=dp), pointer :: velocity_pointer(:)
 
    procedure(get_upstream_water_level_any), pointer :: get_upstream_water_level
 
@@ -96,10 +90,12 @@ contains
       real(kind=dp), parameter :: FOR_CUT_CELL = 0d0
       real(kind=dp), parameter :: TWO_THIRDS = 2d0 / 3d0
 
-      integer :: link_in_3d
+      integer :: link_in_3d, link
+      integer :: left_cell, right_cell, upstream_cell_index, upstream_cell, downstream_cell, direction_sign
       integer :: kb, kb0, kt, Lb
       integer :: kbd, ktd, kbd0, LLbc, kkd
       integer :: L_lowest, nq, n, L
+      real(kind=dp) :: velocity
       real(kind=dp) :: upstream_water_level
       real(kind=dp) :: bed_level_at_u_point
       real(kind=dp) :: water_height
@@ -111,8 +107,6 @@ contains
       real(kind=dp) :: ucx_up, ucy_up, u_in, vhei, eup
       real(kind=dp) :: lowest_bob
       logical :: dams_or_weirs, is_already_wet
-
-      real(kind=dp), pointer :: velocity_pointer(:)
 
       if (set_zws0 == DONT_SET_ZWS0 .or. len_trim(md_restartfile) == EMPTY_NAME) then
          call sets01zbnd(USE_S0, DO_NOT_SET_BlDepth)
@@ -705,7 +699,9 @@ contains
       use m_flow, only: s0
 
       integer, intent(in) :: left_cell, right_cell, link
-
+      integer :: dummy
+      dummy = link
+      dummy = right_cell
       upstream_water_level = s0(left_cell)
 
    end function get_upstream_water_level_upwind
@@ -716,7 +712,9 @@ contains
       use m_flow, only: s0
 
       integer, intent(in) :: left_cell, right_cell, link
-
+      integer :: dummy
+      
+      dummy = link
       upstream_water_level = 0.5d0 * (s0(left_cell) + s0(right_cell))
 
    end function get_upstream_water_level_central_limiter
@@ -746,7 +744,7 @@ contains
    end function get_upstream_water_level_regular_linear_interpolation
 
 !> get_upstream_water_level_usual_limiters
-   real(kind=dp) function get_upstream_water_level_usual_limiters(left_cell, right_cell, link) result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_usual_limiters(upstream_cell, downstream_cell, link) result(upstream_water_level)
       use precision, only: dp
       use m_flowparameters, only: limtyphu
       use m_flow, only: s0
@@ -754,7 +752,7 @@ contains
       use m_missing, only: dmiss
       use m_dslim
 
-      integer, intent(in) :: left_cell, right_cell, link
+      integer, intent(in) :: upstream_cell, downstream_cell, link
 
       integer :: klnup1
       integer :: klnup2
@@ -763,7 +761,7 @@ contains
       real(kind=dp) :: ds1
       real(kind=dp) :: ds2
 
-      if (velocity > 0) then
+      if (velocity_pointer(link) > 0) then
          ip = 0
       else
          ip = 3
