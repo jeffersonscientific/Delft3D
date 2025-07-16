@@ -671,7 +671,6 @@ contains
                      !c Source and sink terms                                                                epsilon
                      if (bruva(k) > 0.0_dp) then ! stable stratification
                         dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turkin1(L)
-                        bk(k) = bk(k) - (2.0_dp * cmukep * c3e_stable * bruva(k) * turkin1(L)) / tureps0(L)
                      elseif (bruva(k) < 0.0_dp) then ! unstable stratification
                         dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
                      end if
