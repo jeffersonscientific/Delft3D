@@ -851,7 +851,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c040_radsurfave_from_waqinput" ref="dflowfm_default">
-  <path version="2025-06-24T16:30:00">e02_dflowfm/f030_water_quality_processes/c040_radsurfave_from_waqinput</path>
+  <path version="2025-07-17T23:30:00">e02_dflowfm/f030_water_quality_processes/c040_radsurfave_from_waqinput</path>
   <checks>
     <file name="output/FlowFM_map.nc" type="netCDF">
       <parameters>
@@ -868,7 +868,24 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c041_radsurfave_from_flow" ref="dflowfm_default">
-  <path version="2025-06-23T16:30:00">e02_dflowfm/f030_water_quality_processes/c041_radsurfave_from_flow</path>
+  <path version="2025-07-17T23:30:00">e02_dflowfm/f030_water_quality_processes/c041_radsurfave_from_flow</path>
+  <checks>
+    <file name="output/FlowFM_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_water_quality_output_2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="output/FlowFM_his.nc" type="netCDF">
+      <parameters>
+        <parameter name="water_quality_output_1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        <parameter name="water_quality_output_2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+<testCase name="e02_f030_c042_radsurfave_from_flow_T0" ref="dflowfm_default">
+  <path version="2025-07-17T23:30:00">e02_dflowfm/f030_water_quality_processes/c042_radsurfave_from_flow_T0</path>
   <checks>
     <file name="output/FlowFM_map.nc" type="netCDF">
       <parameters>
