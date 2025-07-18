@@ -50,20 +50,19 @@ contains
       integer(kind=int_wp) :: num_exchanges_z_dir ! in     number of exchanges in third direction
       integer(kind=int_wp) :: num_exchanges_bottom_dir ! in     number of exchanges in fourth direction
 
-      !     from process_space_real array
+      ! from process_space_real array
+      ! Note: input 4 = output 1 = SumAveRad, to make sure that Delwaq stores it as a spatial variable.
 
-      !     8 inputs, 3 outputs.
+      integer(kind=int_wp) :: ip1 !<REAL RADSURF        input 1, actual irradiation at the water surface (W/m2)
+      integer(kind=int_wp) :: ip2 !<REAL AveRadPeri     input 2, averaging AveRadPeri of irradiance (d)
+      integer(kind=int_wp) :: ip3 !<REAL DELT           input 3, timestep for processes (d)
+      integer(kind=int_wp) :: ip4 !<REAL SumAveRad      input 4, work array for summing over time (W/m2)
+      integer(kind=int_wp) :: ip5 !<REAL SumAveRadT     input 5, count of time SumAveRadT (d)
 
-      integer(kind=int_wp) :: ip1 !<REAL RADSURF        input 1, actual irradiation at the water surface            (W/m2)
-      integer(kind=int_wp) :: ip2 !<REAL AveRadPeri     input 2, averaging AveRadPeri of irradiance    AveRadPeri           (d)
-      integer(kind=int_wp) :: ip3 !<REAL DELT           input 3, timestep for processes          (d)
-      integer(kind=int_wp) :: ip4 !<REAL SumAveRad      input 4, work array for summing over time  (W/m2)
-      integer(kind=int_wp) :: ip5 !<REAL SumAveRadT     input 5, count of time   SumAveRadT  (d)
+      integer(kind=int_wp) :: ip6 !<REAL SumAveRad     output 1, work array for summing over time (W/m2)
+      integer(kind=int_wp) :: ip7 !<REAL RadSurfAve    output 2, average irradiance over the AveRadPeri (W/m2)
 
-      integer(kind=int_wp) :: ip6 !<REAL SumAveRad     output 6,   Work array for summing over time  (W/m2)
-      integer(kind=int_wp) :: ip7 !<REAL RadSurfAve    output 8,  average irradiance over the AveRadPeri              (W/m2)
-
-      integer(kind=int_wp) :: in1, in2, in3, in4, in5, in6, in7, in8
+      integer(kind=int_wp) :: in1, in2, in3, in4, in5, in6, in7
       integer(kind=int_wp) :: ikmrk, iseg
       integer(kind=int_wp) :: iaction, lunrep
       integer(kind=int_wp) :: attrib
@@ -72,7 +71,7 @@ contains
       integer(kind=int_wp), parameter :: maxwarn = 50
       integer(kind=int_wp), save :: nowarn = 0
       logical, save :: first = .true.
-   
+
       call get_log_unit_number(lunrep)
 
       ip1 = ipoint(1)
@@ -95,6 +94,7 @@ contains
       AveRadPeri = process_space_real(ip2)
       SumAveRadT = process_space_real(ip5)
 
+      ! Initalize the accumulative values to zero
       if (first) then
          if (in2 /= 0) then
             call write_error_message('AveRadSurf: AveRadPeri should be a constant!')
@@ -104,33 +104,39 @@ contains
          end if
          ! Initialize the accumulative values for the first time
          do iseg = 1, num_cells
-            process_space_real(ip4) = 0.0  ! SumAveRad
+            process_space_real(ip4) = 0.0 ! SumAveRad
+            ! Increase the pointer
             ip4 = ip4 + in4
          end do
+         ! Reset the pointer
          ip4 = ipoint(4)
-         ! Reset the time accumulator 
+         ! Reset the time accumulator
          SumAveRadT = 0.0
          first = .false.
       end if
 
+      ! When the end of the period is reached, calculate the average, and reset the accumulative values
       if (SumAveRadT >= AveRadPeri - 0.5 * delt) then
          do iseg = 1, num_cells
             process_space_real(ip7) = process_space_real(ip4) / SumAveRadT ! RadSurfAve = SumAveRad / SumAveRadT
-             process_space_real(ip4) = 0.0
-             ip4 = ip4 + in4
-             ip7 = ip7 + in7
-        end do
-        ip4 = ipoint(4)
-        ip7 = ipoint(7)
-        ! Reset the time accumulator 
-        SumAveRadT = 0.0
+            process_space_real(ip4) = 0.0 ! SumAveRad = 0.0
+            ! Increase the pointers
+            ip4 = ip4 + in4
+            ip7 = ip7 + in7
+         end do
+         ! Reset the pointers
+         ip4 = ipoint(4)
+         ip7 = ipoint(7)
+         ! Reset the time accumulator
+         SumAveRadT = 0.0
       end if
 
+      ! For every time step, add the radiation to the accumulative value and increase the time accumulator
       SumAveRadT = SumAveRadT + delt
       do iseg = 1, num_cells
-         process_space_real(ip6) = process_space_real(ip4) + process_space_real(ip1) * delt ! SumAveRad = SumAveRad + RadSurf * DELT
+         process_space_real(ip6) = process_space_real(ip6) + process_space_real(ip1) * delt ! SumAveRad = SumAveRad + RadSurf * DELT
+         ! Increase the pointers
          ip1 = ip1 + in1
-         ip4 = ip4 + in4
          ip6 = ip6 + in6
       end do
       process_space_real(ip5) = SumAveRadT
