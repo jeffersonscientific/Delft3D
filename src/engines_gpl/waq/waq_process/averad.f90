@@ -79,7 +79,7 @@ contains
       ip3 = ipoint(3)
       ip4 = ipoint(4)
       ip5 = ipoint(5)
-      ip6 = ipoint(6)
+      ip6 = ipoint(6)   ! Note that this is a work array - identical to ip4
       ip7 = ipoint(7)
 
       in1 = increm(1)
@@ -116,6 +116,8 @@ contains
       end if
 
       ! When the end of the period is reached, calculate the average, and reset the accumulative values
+      ! Note: ip4 and ip6 are pointing to the same work array (this is a special feature in the
+      !       DELWAQ processes library)
       if (SumAveRadT >= AveRadPeri - 0.5 * delt) then
          do iseg = 1, num_cells
             process_space_real(ip7) = process_space_real(ip4) / SumAveRadT ! RadSurfAve = SumAveRad / SumAveRadT
