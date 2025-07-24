@@ -147,6 +147,16 @@ object Publish : BuildType({
                 """.trimIndent()
             }
         }
+        script {
+            name = "Generate Apptainer SIF file"
+            conditions {
+                equals("brand", "delft3dfm")
+            }
+            workingDir = "src/scripts_lgpl/singularity"
+            scriptContent = """
+                apptainer pull docker-daemon:%destination_image_specific%
+            """.trimIndent()
+        }
         dockerCommand {
             name = "Push generic and specific images"
             commandType = push {
@@ -182,16 +192,6 @@ object Publish : BuildType({
                 --brand %brand%
                 --release-version %release_version%
                 --commit-id-short %commit_id_short%
-            """.trimIndent()
-        }
-        script {
-            name = "Generate Apptainer SIF file"
-            conditions {
-                equals("brand", "delft3dfm")
-            }
-            workingDir = "src/scripts_lgpl/singularity"
-            scriptContent = """
-                apptainer pull docker-daemon:%destination_image_specific%
             """.trimIndent()
         }
         script {
