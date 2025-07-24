@@ -1272,8 +1272,7 @@ contains
          if (sr%tolerance_relative < 0.0) then
             sr%tolerance_relative = DEFAULT_TOLERANCE_RELATIVE_STOPC
          end if
-      end if
-      if (activate_num_accur) then
+      else if (activate_num_accur) then
          sr%num_type = NUM_ACCUR
          if (sr%tolerance_relative < 0.0) then
             sr%tolerance_relative = DEFAULT_TOLERANCE_ACCUR
