@@ -201,12 +201,10 @@ object Publish : BuildType({
             }
             workingDir = "src/scripts_lgpl/singularity"
             scriptContent = """
-                tar -czfv %brand%_%release_type%-%release_version%.tar.gz \
+                tar -vczf %brand%_%release_type%-%release_version%.tar.gz \
                     %brand%_%release_type%-%release_version%.sif \
-                    execute_singularity.sh \
                     readme.txt \
                     run_singularity.sh \
-                    submit_singularity.sh \
                     execute_singularity_h7.sh \
                     submit_singularity_h7.sh \
                     execute_singularity_tc.sh
