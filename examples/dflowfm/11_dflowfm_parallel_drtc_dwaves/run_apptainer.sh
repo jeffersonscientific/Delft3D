@@ -33,9 +33,9 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-apptainer run \
-    ${apptainer_options} \
-    --bind "${model_dir}:/data" \
-    --pwd "/data/${work_dir}" \
-    docker://$image \
-    $command
+run_cmd="apptainer run --no-cgroups ${apptainer_options} --bind \"${model_dir}:/data\" --pwd \"/data/${work_dir}\" $image \"$command\""
+
+echo "[INFO] $run_cmd"
+
+eval "$run_cmd"
+
