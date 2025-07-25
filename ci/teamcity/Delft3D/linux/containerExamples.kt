@@ -10,8 +10,9 @@ import Delft3D.template.*
 import Trigger
 
 object LinuxRunAllContainerExamples : BuildType({
-
+    name = "Run all container examples (Matrix)"
     description = "Run all container example cases for fm/ and all/ merge-requests using Docker and Apptainer."
+    buildNumberPattern = "%dep.${LinuxRuntimeContainers.id}.product%: %build.vcs.number%"
 
     templates(
         TemplateMergeRequest,
@@ -20,18 +21,15 @@ object LinuxRunAllContainerExamples : BuildType({
         TemplateMonitorPerformance
     )
 
-    name = "Run all container examples (Matrix)"
-    buildNumberPattern = "%dep.${LinuxRuntimeContainers.id}.product%: %build.vcs.number%"
-
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
     }
-    
+
     params {
         param("container_runtime", "")
     }
-    
+
     steps {
         script {
             name = "Execute run_all_examples_container.sh with %container_runtime%"
@@ -41,14 +39,14 @@ object LinuxRunAllContainerExamples : BuildType({
             """.trimIndent()
         }
     }
-  
+
     features {
         matrix {
             id = "container_matrix"
-            param("container_runtime", listOf("docker", "apptainer").map { MatrixFeature.Value(it) })
+            param("container_runtime", listOf(value("docker"), value("apptainer")))
         }
     }
-  
+
     failureConditions {
         executionTimeoutMin = 180
         errorMessage = true
