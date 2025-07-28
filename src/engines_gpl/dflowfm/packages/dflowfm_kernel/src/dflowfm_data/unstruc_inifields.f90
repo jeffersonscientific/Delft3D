@@ -1988,7 +1988,7 @@ contains
       call split_qid(qid, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
-      case ('waterdepth')
+      case ('initialwaterdepth', 'waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
       case ('bedrocksurfaceelevation')
          jasubsupl = 1
