@@ -8843,7 +8843,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f044_c01_waveforcing_1" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f044_offline_waves/c01_waveforcing_1</path>
+      <path version="2025-07-28T10:51:21.280000">e02_dflowfm/f044_offline_waves/c01_waveforcing_1</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="output/Borkum_map.nc" type="netCDF">
@@ -8858,7 +8858,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f044_c02_waveforcing_2" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f044_offline_waves/c02_waveforcing_2</path>
+      <path version="2025-07-28T10:51:26.222000">e02_dflowfm/f044_offline_waves/c02_waveforcing_2</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="output/Borkum_map.nc" type="netCDF">
@@ -8873,7 +8873,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f044_c03_waveforcing_3" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f044_offline_waves/c03_waveforcing_3</path>
+      <path version="2025-07-28T10:51:29.771000">e02_dflowfm/f044_offline_waves/c03_waveforcing_3</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="output/Borkum_map.nc" type="netCDF">
