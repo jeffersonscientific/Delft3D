@@ -76,6 +76,10 @@ object WindowsBuild : BuildType({
             name = "Build"
             scriptContent = """
                 call C:/set-env-vs2022.cmd
+                mpiexec -version
+                where mpiexec
+                ifx -version
+                where ifx
                 cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%product% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
                 cmake --build ./build_%product% -j --target install --config %build_type%
 
