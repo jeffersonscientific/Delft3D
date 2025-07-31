@@ -32,7 +32,7 @@ object WindowsBuild : BuildType({
 
     params {
         param("intel_fortran_compiler", "ifx")
-        param("container.tag", "3c6bde60581cce33d9bee7cae206e7ec7c015a93-vs2022-intel2025")
+        param("container.tag", "f1be3f5e8eb4e77c136b4a6e46144806ebdf4fde-vs2022-intel2025")
         param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
