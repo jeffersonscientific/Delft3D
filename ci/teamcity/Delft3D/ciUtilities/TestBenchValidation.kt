@@ -44,7 +44,7 @@ object TestBenchValidation : BuildType({
     )
 
     triggers {
-        if (DslContext.getParameter("environment") == "production") {
+        if (DslContext.getParameter("enable_testbench_validation_trigger").lowercase() == "true") {
             vcs { 
                 // Trigger this build only if there are changes to the files matching these rules.
                 // Absolute paths match paths relative to the VCS root.
@@ -60,7 +60,7 @@ object TestBenchValidation : BuildType({
                     +:/ci/teamcity/Delft3D/ciUtilities/scripts/validateReports.sh
                 """.trimIndent()
                 branchFilter = """
-                    +:merge-requests/*
+                    +:pull/*
                     +:all/release/*
                     +:<default>
                 """.trimIndent()
