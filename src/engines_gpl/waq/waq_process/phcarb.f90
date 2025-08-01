@@ -235,7 +235,7 @@ contains
                     ENDIF
                     ALKA = 1E-30
                 ENDIF
-                IF (celsius_to_kelvin(TEMP) <= -0.0_real_wp) THEN
+                IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) THEN
                     WRITE (ILUMON, *) ' WARNING: Temperature drops below 0 Kelvin', &
                             ' segment=', ISEG, ' Temp set to 15 oC (288.15 K)'
                     TEMP = 15.0E0
