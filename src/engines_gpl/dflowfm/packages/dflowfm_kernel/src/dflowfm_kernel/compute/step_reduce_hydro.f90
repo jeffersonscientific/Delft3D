@@ -107,7 +107,16 @@ contains
 
 !-----------------------------------------------------------------------------------------------
          hs = max(hs, 0d0)
+         write(msgbuf, '(''tijd = '' f17.3, '' dts = '', f10.5)') time1, dts
+         call msg_flush()
+         call findnans('voor furu: adve', adve)
+         call findnans('voor furu: advi', advi)
+         call findnans('voor furu: frculin', frculin)
          call furu() ! staat in s0
+         call findnans('na furu: fu', fu)
+         call findnans('na furu: ru', ru)
+         call findnans('na furu: au', au)
+         
 
          if (itstep /= 4) then ! implicit time-step
 
@@ -120,12 +129,20 @@ contains
                end if
 
                call s1ini()
+               call findnans('na s1ini: bb', bb)
+               call findnans('na s1ini: dd', dd)
+               call findnans('na s1ini: ccr', ccr)
+               
+               
                call pack_matrix()
 
                !-----------------------------------------------------------------------------------------------
 
                nonlincont: do ! entry point for non-linear continuity
                   call s1nod()
+                  call findnans('na s1nod: bbr', bbr)
+                  call findnans('na s1nod: ddr', ddr)
+                  
                   if (ifixedWeirScheme1d2d == 1) then
                      if (last_iteration) then
                         ! Impose previously computed 1d2d discharge on 1d2d fixed weirs to keep mass conservation
@@ -136,7 +153,8 @@ contains
                   end if
 
                   call solve_matrix(s1, ndx, itsol) ! solve s1
-
+                  call findnans('solve_matrix: s1', s1)
+                  
                   ! if (NDRAW(18) > 1) then
                   !    nsiz = ndraw(18)-1
                   !    call tekrai(nsiz,ja)
@@ -203,6 +221,8 @@ contains
                   end if
 
                   call volsur()
+                  call findnans('na volsur: vo1', vol1)
+                  
 
                   if (nonlin > 0) then
 
@@ -305,4 +325,22 @@ contains
 
    end subroutine step_reduce_hydro
 
+   subroutine findnans(text, arr)
+      use messagehandling
+      
+      character(len=*) :: text
+      double precision :: arr(:)
+      
+      integer :: i
+      
+      do i = 1, size(arr)
+         if (isnan(arr(i))) then
+            write(msgbuf,*) i
+            msgbuf = 'NAN found in '//trim(text)//' at :'//trim(msgbuf)
+            call msg_flush()
+         endif 
+      end do
+   end subroutine findnans
+   
+         
 end module m_step_reduce_hydro
