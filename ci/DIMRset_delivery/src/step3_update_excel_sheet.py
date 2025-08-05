@@ -57,7 +57,7 @@ def get_testbank_result_parser() -> TestbankResultParser:
 
 if __name__ == "__main__":
     args = parse_common_arguments()
-    context = create_context_from_args(args)
+    context = create_context_from_args(args, require_atlassian=False, require_git=False)
     
     print("Starting Excel sheet update...")
     update_excel_sheet(context)

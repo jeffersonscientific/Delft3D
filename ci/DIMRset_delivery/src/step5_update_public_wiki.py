@@ -32,7 +32,7 @@ def update_public_wiki(context: DimrAutomationContext) -> None:
 
 if __name__ == "__main__":
     args = parse_common_arguments()
-    context = create_context_from_args(args)
+    context = create_context_from_args(args, require_git=False, require_ssh=False)
     
     print("Starting public wiki update...")
     update_public_wiki(context)

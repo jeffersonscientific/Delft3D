@@ -23,7 +23,8 @@ class DimrAutomationContext:
                  teamcity_username: Optional[str] = None, teamcity_password: Optional[str] = None,
                  ssh_username: Optional[str] = None, ssh_password: Optional[str] = None,
                  git_username: Optional[str] = None, git_pat: Optional[str] = None,
-                 require_atlassian: bool = True, require_git: bool = True):
+                 require_atlassian: bool = True, require_git: bool = True,
+                 require_teamcity: bool = True, require_ssh: bool = True):
         self.build_id = build_id
         self.dry_run = dry_run
         
@@ -34,13 +35,13 @@ class DimrAutomationContext:
             atlassian_password = atlassian_password or getpass(prompt="Enter your Atlassian password:", stream=None)
         
         # Get TeamCity credentials
-        if not teamcity_username or not teamcity_password:
+        if require_teamcity and (not teamcity_username or not teamcity_password):
             print("TeamCity credentials:")
             teamcity_username = teamcity_username or input("Enter your TeamCity username:")
             teamcity_password = teamcity_password or getpass(prompt="Enter your TeamCity password:", stream=None)
         
         # Get SSH credentials
-        if not ssh_username or not ssh_password:
+        if require_ssh and (not ssh_username or not ssh_password):
             print("SSH (H7) credentials:")
             ssh_username = ssh_username or input("Enter your SSH username:")
             ssh_password = ssh_password or getpass(prompt="Enter your SSH password:", stream=None)
@@ -53,8 +54,8 @@ class DimrAutomationContext:
         
         # Initialize clients
         self.atlassian = Atlassian(username=atlassian_username, password=atlassian_password) if require_atlassian else None
-        self.teamcity = TeamCity(username=teamcity_username, password=teamcity_password)
-        self.ssh_client = SshClient(username=ssh_username, password=ssh_password, connect_timeout=30)
+        self.teamcity = TeamCity(username=teamcity_username, password=teamcity_password) if require_teamcity else None
+        self.ssh_client = SshClient(username=ssh_username, password=ssh_password, connect_timeout=30) if require_ssh else None
         self.git_client = GitClient(DELFT3D_GIT_REPO, git_username, git_pat) if require_git else None
         
         # Cache for commonly needed data
@@ -170,7 +171,7 @@ def parse_common_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def create_context_from_args(args: argparse.Namespace, require_atlassian: bool = True, require_git: bool = True) -> DimrAutomationContext:
+def create_context_from_args(args: argparse.Namespace, require_atlassian: bool = True, require_git: bool = True, require_teamcity: bool = True, require_ssh: bool = True) -> DimrAutomationContext:
     """Create automation context from parsed arguments."""
     # Use specific credentials if provided, otherwise fall back to general credentials
     atlassian_username = args.atlassian_username or args.username
@@ -195,5 +196,7 @@ def create_context_from_args(args: argparse.Namespace, require_atlassian: bool =
         git_username=git_username,
         git_pat=git_pat,
         require_atlassian=require_atlassian,
-        require_git=require_git
+        require_git=require_git,
+        require_teamcity=require_teamcity,
+        require_ssh=require_ssh
     )

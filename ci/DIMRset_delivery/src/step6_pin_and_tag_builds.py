@@ -37,7 +37,7 @@ def pin_and_tag_builds(context: DimrAutomationContext) -> None:
 
 if __name__ == "__main__":
     args = parse_common_arguments()
-    context = create_context_from_args(args)
+    context = create_context_from_args(args, require_atlassian=False, require_ssh=False)
     
     print("Starting build pinning and tagging...")
     pin_and_tag_builds(context)

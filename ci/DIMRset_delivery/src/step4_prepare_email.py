@@ -116,7 +116,7 @@ def parse_version(tag):
 
 if __name__ == "__main__":
     args = parse_common_arguments()
-    context = create_context_from_args(args)
+    context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
     
     print("Starting email template preparation...")
     prepare_email(context)
