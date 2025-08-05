@@ -9,6 +9,7 @@ import requests
 from pyparsing import Enum
 
 from dimr_context import DimrAutomationContext, parse_common_arguments, create_context_from_args
+from settings.general_settings import DRY_RUN_PREFIX
 
 """
 This script list the test bench results with status: passed, failed, exception, ignored and muted.
@@ -260,12 +261,8 @@ def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult
                 f"                                                                            xxx  Exception {exception}",
             )
 
-
-
-
-
 def get_build_dependency_chain(
-    teamcity_client, build_id: str, filtered_list: Optional[list[FILTERED_LIST]] = None
+    teamcity_client, build_id: str, filtered_list: Optional[list[FILTERED_LIST]] = None, dry_run: bool = False
 ) -> list:
     """
     Get dependency chain of all dependent builds for a given build ID from TeamCity.
@@ -278,12 +275,22 @@ def get_build_dependency_chain(
         The build ID to get dependencies for.
     filtered_list : FILTERED_LIST, optional
         Optional filter to include only builds whose buildTypeId matches one of the values.
+    dry_run : bool
+        If True, simulate the operation without making actual API calls.
 
     Returns
     -------
     list
         List of dependent build IDs (snapshot dependencies).
     """
+    if dry_run:
+        print(f"{DRY_RUN_PREFIX} Would get dependency chain for build {build_id}")
+        if filtered_list:
+            filter_values = [item.value for item in filtered_list]
+            print(f"{DRY_RUN_PREFIX} Would filter by build types: {filter_values}")
+        # Return mock dependency chain for dry run
+        return ["123456", "123457", "123458"]
+    
     # Use the existing TeamCity method to get filtered dependent builds
     if filtered_list:
         # For now, we'll use the existing method and then filter manually
@@ -311,7 +318,7 @@ def get_build_dependency_chain(
         return teamcity_client.get_filtered_dependent_build_ids(build_id)
 
 
-def get_build_test_results_from_teamcity(teamcity_client, build_id: str) -> Optional[ConfigurationTestResult]:
+def get_build_test_results_from_teamcity(teamcity_client, build_id: str, dry_run: bool = False) -> Optional[ConfigurationTestResult]:
     """
     Fetch test results for a given build ID using the TeamCity client.
 
@@ -321,12 +328,27 @@ def get_build_test_results_from_teamcity(teamcity_client, build_id: str) -> Opti
         The TeamCity client instance.
     build_id : str
         The build ID to retrieve results for.
+    dry_run : bool
+        If True, simulate the operation without making actual API calls.
 
     Returns
     -------
     Optional[ConfigurationTestResult]
         An object containing the parsed test results for the build, or None if no test results.
     """
+    if dry_run:
+        print(f"{DRY_RUN_PREFIX} Would get test results for build {build_id}")
+        # Return mock test result for dry run
+        return ConfigurationTestResult(
+            name=f"{DRY_RUN_PREFIX} Test Configuration / Build {build_id}",
+            build_nr=build_id,
+            passed=85,
+            failed=0,
+            ignored=0,
+            muted=0,
+            status_text=f"{DRY_RUN_PREFIX} SUCCESS",
+        )
+    
     build_info = teamcity_client.get_full_build_info_for_build_id(build_id)
     if not build_info:
         return None
@@ -395,13 +417,14 @@ if __name__ == "__main__":
             FILTERED_LIST.DELFT3D_WINDOWS_TEST,
             FILTERED_LIST.DELFT3D_LINUX_TEST,
         ],
+        dry_run=context.dry_run
     )
     print(f"Dependency chain for build {build_id}: {dependency_chain}")
 
     # 2. Loop over the builds and retrieve the test results and write to file
     result_list = []
     for dep_build_id in dependency_chain:
-        test_result = get_build_test_results_from_teamcity(context.teamcity, dep_build_id)
+        test_result = get_build_test_results_from_teamcity(context.teamcity, dep_build_id, dry_run=context.dry_run)
         if test_result:
             result_list.append(test_result)
 
@@ -423,11 +446,12 @@ if __name__ == "__main__":
 
     tests_failed = sum(result.get_not_passed_total() for result in result_list)
     print(f"Total test failed: {tests_failed}")
-
+    
     log_to_file(log_file, f"\nStart: {start_time}")
     log_to_file(log_file, f"End  : {datetime.now()}")
     log_to_file(log_file, "Ready")
     print(f"\nStart: {start_time}")
     print(f"End  : {datetime.now()}")
     print("Ready")
+    
     sys.exit(tests_failed)
