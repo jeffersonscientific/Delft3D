@@ -262,7 +262,7 @@ def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult
             )
 
 def get_build_dependency_chain(
-    teamcity_client, build_id: str, filtered_list: Optional[list[FILTERED_LIST]] = None, dry_run: bool = False
+    context: DimrAutomationContext, filtered_list: Optional[list[FILTERED_LIST]] = None
 ) -> list:
     """
     Get dependency chain of all dependent builds for a given build ID from TeamCity.
@@ -283,8 +283,8 @@ def get_build_dependency_chain(
     list
         List of dependent build IDs (snapshot dependencies).
     """
-    if dry_run:
-        print(f"{DRY_RUN_PREFIX} Would get dependency chain for build {build_id}")
+    if context.dry_run:
+        print(f"{DRY_RUN_PREFIX} Would get dependency chain for build {context.build_id}")
         if filtered_list:
             filter_values = [item.value for item in filtered_list]
             print(f"{DRY_RUN_PREFIX} Would filter by build types: {filter_values}")
@@ -295,9 +295,9 @@ def get_build_dependency_chain(
     if filtered_list:
         # For now, we'll use the existing method and then filter manually
         # as the TeamCity class method uses TEAMCITY_IDS enum, not our FILTERED_LIST
-        endpoint = f"{teamcity_client._TeamCity__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
+        endpoint = f"{context.teamcity._TeamCity__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
         result = requests.get(
-            url=endpoint, headers=teamcity_client._TeamCity__default_headers, auth=teamcity_client._TeamCity__auth
+            url=endpoint, headers=context.teamcity._TeamCity__default_headers, auth=context.teamcity._TeamCity__auth
         )
         if result.status_code == 200:
             build_data = result.json()
@@ -311,14 +311,13 @@ def get_build_dependency_chain(
                     dependency_chain.append(str(dep_id))
             return dependency_chain
         else:
-            print(f"Could not retrieve dependencies for build ID {build_id}")
+            print(f"Could not retrieve dependencies for build ID {context.build_id}")
             return []
     else:
         # If no filter, get all dependencies
-        return teamcity_client.get_filtered_dependent_build_ids(build_id)
+        return context.teamcity.get_filtered_dependent_build_ids(context.build_id)
 
-
-def get_build_test_results_from_teamcity(teamcity_client, build_id: str, dry_run: bool = False) -> Optional[ConfigurationTestResult]:
+def get_build_test_results_from_teamcity(context: DimrAutomationContext, build_id: int) -> Optional[ConfigurationTestResult]:
     """
     Fetch test results for a given build ID using the TeamCity client.
 
@@ -328,15 +327,13 @@ def get_build_test_results_from_teamcity(teamcity_client, build_id: str, dry_run
         The TeamCity client instance.
     build_id : str
         The build ID to retrieve results for.
-    dry_run : bool
-        If True, simulate the operation without making actual API calls.
 
     Returns
     -------
     Optional[ConfigurationTestResult]
         An object containing the parsed test results for the build, or None if no test results.
     """
-    if dry_run:
+    if context.dry_run:
         print(f"{DRY_RUN_PREFIX} Would get test results for build {build_id}")
         # Return mock test result for dry run
         return ConfigurationTestResult(
@@ -349,7 +346,7 @@ def get_build_test_results_from_teamcity(teamcity_client, build_id: str, dry_run
             status_text=f"{DRY_RUN_PREFIX} SUCCESS",
         )
     
-    build_info = teamcity_client.get_full_build_info_for_build_id(build_id)
+    build_info = context.teamcity.get_full_build_info_for_build_id(build_id)
     if not build_info:
         return None
     
@@ -411,20 +408,18 @@ if __name__ == "__main__":
 
     # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
     dependency_chain = get_build_dependency_chain(
-        context.teamcity,
-        build_id,
+        context,
         [
             FILTERED_LIST.DELFT3D_WINDOWS_TEST,
             FILTERED_LIST.DELFT3D_LINUX_TEST,
         ],
-        dry_run=context.dry_run
     )
     print(f"Dependency chain for build {build_id}: {dependency_chain}")
 
     # 2. Loop over the builds and retrieve the test results and write to file
     result_list = []
     for dep_build_id in dependency_chain:
-        test_result = get_build_test_results_from_teamcity(context.teamcity, dep_build_id, dry_run=context.dry_run)
+        test_result = get_build_test_results_from_teamcity(context, dep_build_id)
         if test_result:
             result_list.append(test_result)
 
