@@ -1,14 +1,12 @@
 import argparse
 import os
 import sys
-import xml.etree.ElementTree as ET
 from datetime import datetime
 from io import TextIOWrapper
 from typing import List, Optional
 
 import requests
 from pyparsing import Enum
-from requests.auth import HTTPBasicAuth
 
 from dimr_context import DimrAutomationContext, parse_common_arguments, create_context_from_args
 
@@ -185,97 +183,6 @@ def log_to_file(log_file: TextIOWrapper, *args: str) -> None:
     log_file.write(" ".join(map(str, args)) + "\n")
 
 
-def get_status_text(build: ET.Element) -> str:
-    """Get status text from xml node.
-
-    Returns
-    -------
-    str
-        The status text.
-    """
-    status_text = ""
-    if build.find(TEST_OCCURRENCES) is None:
-        status = build.find("statusText")
-        if status is not None:
-            return str(status.text)
-        else:
-            return "Build failed!"
-    return status_text
-
-
-def get_number_of_tests(build: ET.Element, test_result: str) -> int:
-    """Get number of tests from xml node.
-
-    Returns
-    -------
-    int
-        Number of tests that match the test result.
-    """
-    test_occurences = build.find(TEST_OCCURRENCES)
-    if test_occurences is not None:
-        test_occurences_attrib = test_occurences.attrib
-        if test_result in test_occurences_attrib:
-            return int(test_occurences_attrib[test_result])
-
-    return 0
-
-
-def create_configuration_test_result(build: ET.Element, name: str, status_text: str) -> ConfigurationTestResult:
-    """Create configuration test result from XML node.
-
-    Returns
-    -------
-    ConfigurationTestResult
-        Configuration test result from XML.
-    """
-    build_nr = ""
-    if "number" in build.attrib:
-        build_nr = build.attrib["number"]
-    passed = get_number_of_tests(build, "passed")
-    failed = get_number_of_tests(build, "failed")
-    ignored = get_number_of_tests(build, "ignored")
-    muted = get_number_of_tests(build, "muted")
-    return ConfigurationTestResult(name, build_nr, passed, failed, ignored, muted, status_text)
-
-
-def get_request(url: str, username: str, password: str) -> requests.Response:
-    """Send an HTTP GET request with authentication.
-
-    Returns
-    -------
-    requests.Response
-        The response object from the request.
-    """
-    headers = {"Accept": "application/xml"}
-    return requests.get(url=url, auth=HTTPBasicAuth(username, password), headers=headers, stream=True, verify=True)
-
-
-def text_in_xml_message(text: str) -> bool:
-    """Check if HTTP GET response has text.
-
-    Parameters
-    ----------
-    text : str
-        The HTTP GET response to check.
-
-    Returns
-    -------
-    bool
-        true or false depending on the text.
-    """
-    try:
-        ET.fromstring(text)
-        return True
-    except:
-        print(f"Text is not in XML format: {text}")
-        return False
-
-
-def project_is_archived(project: ET.Element) -> bool:
-    """Determine if project is archived."""
-    return bool(project.attrib.get("archived", False))
-
-
 def log_executive_summary(log_file: TextIOWrapper, summarydata: ExecutiveSummary) -> None:
     """Log executive summary to a file."""
     log_to_file(log_file, f"\nTestbench root: {summarydata.name}")
@@ -358,19 +265,17 @@ def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult
 
 
 def get_build_dependency_chain(
-    build_id: str, username: str, password: str, filtered_list: Optional[list[FILTERED_LIST]] = None
+    teamcity_client, build_id: str, filtered_list: Optional[list[FILTERED_LIST]] = None
 ) -> list:
     """
     Get dependency chain of all dependent builds for a given build ID from TeamCity.
 
     Parameters
     ----------
+    teamcity_client : TeamCity
+        The TeamCity client instance.
     build_id : str
         The build ID to get dependencies for.
-    username : str
-        TeamCity username.
-    password : str
-        TeamCity password.
     filtered_list : FILTERED_LIST, optional
         Optional filter to include only builds whose buildTypeId matches one of the values.
 
@@ -379,115 +284,76 @@ def get_build_dependency_chain(
     list
         List of dependent build IDs (snapshot dependencies).
     """
-    url = f"{BASE_URL}/httpAuth/app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
-    response = get_request(url, username, password)
-    if not text_in_xml_message(response.text):
-        print(f"Could not retrieve dependencies for build ID {build_id}")
-        return []
-    xml_root = ET.fromstring(response.text)
-    dependency_chain = []
-    for dep in xml_root.findall("build"):
-        dep_id = dep.attrib.get("id")
-        build_type_id = dep.attrib.get("buildTypeId")
-        if dep_id:
-            if filter is not None:
-                # Accept if build_type_id matches any value in filter
-                filter_values = [item.value for item in filtered_list]
-                if build_type_id in filter_values:
-                    dependency_chain.append(dep_id)
-            else:
-                dependency_chain.append(dep_id)
-    return dependency_chain
+    # Use the existing TeamCity method to get filtered dependent builds
+    if filtered_list:
+        # For now, we'll use the existing method and then filter manually
+        # as the TeamCity class method uses TEAMCITY_IDS enum, not our FILTERED_LIST
+        endpoint = f"{teamcity_client._TeamCity__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
+        result = requests.get(
+            url=endpoint, headers=teamcity_client._TeamCity__default_headers, auth=teamcity_client._TeamCity__auth
+        )
+        if result.status_code == 200:
+            build_data = result.json()
+            dependency_chain = []
+            filter_values = [item.value for item in filtered_list]
+            
+            for build in build_data.get("build", []):
+                dep_id = build.get("id")
+                build_type_id = build.get("buildTypeId")
+                if dep_id and build_type_id in filter_values:
+                    dependency_chain.append(str(dep_id))
+            return dependency_chain
+        else:
+            print(f"Could not retrieve dependencies for build ID {build_id}")
+            return []
+    else:
+        # If no filter, get all dependencies
+        return teamcity_client.get_filtered_dependent_build_ids(build_id)
 
 
-def get_xml_root_build_test_results(build_id: str, username: str, password: str) -> ET.Element:
+def get_build_test_results_from_teamcity(teamcity_client, build_id: str) -> Optional[ConfigurationTestResult]:
     """
-    Retrieve the XML root element containing build test results from TeamCity.
+    Fetch test results for a given build ID using the TeamCity client.
 
     Parameters
     ----------
+    teamcity_client : TeamCity
+        The TeamCity client instance.
     build_id : str
         The build ID to retrieve results for.
-    username : str
-        TeamCity username.
-    password : str
-        TeamCity password.
 
     Returns
     -------
-    xml.etree.ElementTree.Element
-        The XML root element containing the build test results.
+    Optional[ConfigurationTestResult]
+        An object containing the parsed test results for the build, or None if no test results.
     """
-    url = f"{BASE_URL}/httpAuth/app/rest/builds/id:{build_id}"
-    response = get_request(url, username, password)
-
-    xml_root = ET.fromstring(response.text)
-    return xml_root
-
-
-def has_test_results(xml_root: ET.Element) -> bool:
-    """
-    Check if the XML root element has test results.
-
-    Parameters
-    ----------
-    xml_root : ET.Element
-        The XML root element to check.
-
-    Returns
-    -------
-    bool
-        True if test results are present, False otherwise.
-    """
-    test_occurrences = xml_root.find("testOccurrences")
-    return test_occurrences is not None and int(test_occurrences.attrib.get("count", "0")) > 0
-
-
-def get_build_test_results(xml_root: ET.Element) -> ConfigurationTestResult:
-    """
-    Fetch test results for a given build ID from a TeamCity XML root element.
-
-    Parameters
-    ----------
-    xml_root : xml.etree.ElementTree.Element
-        The XML root element representing a TeamCity build; expected to contain 'buildType' and 'testOccurrences' children.
-
-    Returns
-    -------
-    ConfigurationTestResult
-        An object containing the parsed test results for the build.
-
-    Raises
-    ------
-    KeyError
-        If required attributes are missing from the XML.
-    Edge Cases
-    ----------
-    - If 'buildType' or 'testOccurrences' are missing, default values are used.
-    - If test counts are missing, they default to zero.
-    - If attributes like 'number' or 'status' are missing, fallback values are used.
-    """
-    build_nr = xml_root.attrib.get("number", "Unknown build number")
-    status_text = xml_root.attrib.get("status", "No status available")
+    build_info = teamcity_client.get_full_build_info_for_build_id(build_id)
+    if not build_info:
+        return None
+    
+    # Check if there are test results
+    test_occurrences = build_info.get("testOccurrences", {})
+    if not test_occurrences or int(test_occurrences.get("count", "0")) == 0:
+        return None
+    
+    # Extract build information
+    build_nr = build_info.get("number", "Unknown build number")
+    status_text = build_info.get("status", "No status available")
 
     # Build up config_name including parent project(s)
     config_name = "Unknown config"
     parent = "Unknown parent"
-    build_type_elem = xml_root.find("buildType")
-    if build_type_elem is not None:
-        config_name = build_type_elem.attrib.get("name", "Unknown config")
-        parent = build_type_elem.attrib.get("projectName", "Unknown parent")
+    build_type = build_info.get("buildType", {})
+    if build_type:
+        config_name = build_type.get("name", "Unknown config")
+        parent = build_type.get("projectName", "Unknown parent")
     config_name = f"{parent} / {config_name}"
 
-    passed = failed = ignored = muted = 0
-    test_occurrences = xml_root.find("testOccurrences")
-
-    if test_occurrences is not None:
-        passed = int(test_occurrences.attrib.get("passed", "0"))
-        failed = int(test_occurrences.attrib.get("failed", "0"))
-        ignored = int(test_occurrences.attrib.get("ignored", "0"))
-        muted = int(test_occurrences.attrib.get("muted", "0"))
-    # TeamCity does not provide "exception" directly, so leave as 0
+    # Extract test counts
+    passed = int(test_occurrences.get("passed", "0"))
+    failed = int(test_occurrences.get("failed", "0"))
+    ignored = int(test_occurrences.get("ignored", "0"))
+    muted = int(test_occurrences.get("muted", "0"))
 
     return ConfigurationTestResult(
         name=config_name,
@@ -499,20 +365,14 @@ def get_build_test_results(xml_root: ET.Element) -> ConfigurationTestResult:
         status_text=status_text,
     )
 
-
-
-
-
 if __name__ == "__main__":
     start_time = datetime.now()
 
     args = parse_common_arguments()
     context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
     
-    # Extract credentials from the context
-    if context.teamcity and hasattr(context.teamcity, '_TeamCity__auth'):
-        username, password = context.teamcity._TeamCity__auth
-    else:
+    # Extract TeamCity client from context
+    if not context.teamcity:
         print("Error: TeamCity credentials are required for this script")
         sys.exit(1)
 
@@ -522,16 +382,15 @@ if __name__ == "__main__":
         os.remove(output_file)
     log_file = open(output_file, "a")
 
-    print("Start: {start_time}\n")
+    print(f"Start: {start_time}\n")
     log_to_file(log_file, f"Start: {start_time}\n")
 
     print(f"Listing is written to: {output_file}")
 
     # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
     dependency_chain = get_build_dependency_chain(
+        context.teamcity,
         build_id,
-        username,
-        password,
         [
             FILTERED_LIST.DELFT3D_WINDOWS_TEST,
             FILTERED_LIST.DELFT3D_LINUX_TEST,
@@ -541,10 +400,10 @@ if __name__ == "__main__":
 
     # 2. Loop over the builds and retrieve the test results and write to file
     result_list = []
-    for build_id in dependency_chain:
-        xml_root = get_xml_root_build_test_results(build_id, username, password)
-        if has_test_results(xml_root):
-            result_list.append(get_build_test_results(xml_root))
+    for dep_build_id in dependency_chain:
+        test_result = get_build_test_results_from_teamcity(context.teamcity, dep_build_id)
+        if test_result:
+            result_list.append(test_result)
 
     # 3. Write test results to file
     result_list.sort(key=lambda x: x.name)
