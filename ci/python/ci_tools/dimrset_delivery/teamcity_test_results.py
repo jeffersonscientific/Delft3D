@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from io import TextIOWrapper
 from typing import List, Optional
 
-import requests
 from pyparsing import Enum
 
 from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
@@ -297,38 +296,35 @@ def get_build_dependency_chain(
         # Return mock dependency chain for dry run
         return ["123456", "123457", "123458"]
 
+    if not context.teamcity:
+        raise ValueError("TeamCity client is required but not initialized")
+
     # Use the existing TeamCity method to get filtered dependent builds
     if filtered_list:
-        # For now, we'll use the existing method and then filter manually
-        # as the TeamCity class method uses TeamcityIds enum, not our FilteredList
-        endpoint = (
-            f"{context.teamcity._TeamCity__rest_uri}builds?locator=defaultFilter:false,"
-            f"snapshotDependency(to:(id:{context.build_id})),count:1000&fields=build(id,buildTypeId)"
-        )
-        result = requests.get(
-            url=endpoint, headers=context.teamcity._TeamCity__default_headers, auth=context.teamcity._TeamCity__auth
-        )
-        if result.status_code == 200:
-            build_data = result.json()
-            dependency_chain = []
-            filter_values = [item.value for item in filtered_list]
+        # Get all dependent builds first, then filter by build type
+        all_dependent_builds = context.teamcity.get_filtered_dependent_build_ids(context.build_id)
 
-            for build in build_data.get("build", []):
-                dep_id = build.get("id")
-                build_type_id = build.get("buildTypeId")
-                if dep_id and build_type_id in filter_values:
-                    dependency_chain.append(str(dep_id))
-            return dependency_chain
-        else:
-            print(f"Could not retrieve dependencies for build ID {context.build_id}")
-            return []
+        # If we need to filter by specific build types, we need to check each build
+        dependency_chain = []
+        filter_values = [item.value for item in filtered_list]
+
+        # For each dependent build, check if it matches our filter
+        for dep_build_id in all_dependent_builds:
+            build_info = context.teamcity.get_build_info_for_build_id(dep_build_id)
+            if build_info:
+                build_type = build_info.get("buildType", {})
+                build_type_id = build_type.get("id", "")
+                if build_type_id in filter_values:
+                    dependency_chain.append(dep_build_id)
+
+        return dependency_chain
     else:
         # If no filter, get all dependencies
         return context.teamcity.get_filtered_dependent_build_ids(context.build_id)
 
 
 def get_build_test_results_from_teamcity(
-    context: DimrAutomationContext, build_id: int
+    context: DimrAutomationContext, build_id: str
 ) -> Optional[ConfigurationTestResult]:
     """
     Fetch test results for a given build ID using the TeamCity client.
@@ -337,7 +333,7 @@ def get_build_test_results_from_teamcity(
     ----------
     context : DimrAutomationContext
         The automation context containing TeamCity client and build configuration.
-    build_id : int
+    build_id : str
         The build ID to retrieve results for.
 
     Returns
@@ -357,6 +353,9 @@ def get_build_test_results_from_teamcity(
             muted=0,
             status_text=f"{DRY_RUN_PREFIX} SUCCESS",
         )
+
+    if not context.teamcity:
+        raise ValueError("TeamCity client is required but not initialized")
 
     build_info = context.teamcity.get_full_build_info_for_build_id(build_id)
     if not build_info:

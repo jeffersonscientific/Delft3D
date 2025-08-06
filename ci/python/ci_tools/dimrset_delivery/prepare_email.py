@@ -56,8 +56,17 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
     Optional[TestbankResultParser]
         Parser for previous test results, or None if not found.
     """
+    if not context.teamcity:
+        raise ValueError("TeamCity client is required but not initialized")
+
     current_build_info = context.teamcity.get_full_build_info_for_build_id(context.build_id)
+    if not current_build_info:
+        return None
+
     build_type_id = current_build_info.get("buildTypeId")
+    if not build_type_id:
+        return None
+
     current_tag_name = get_tag_from_build_info(current_build_info)
 
     # Get all builds for the publish build type
@@ -68,18 +77,22 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
     )
 
     if latest_builds is None:
-        latest_builds = []
+        return None
 
     previous_build_id = None
     previous_version = None
 
     # Find previous versioned tagged build (major.minor.patch < current)
-    for build in latest_builds.get("build", {}):
+    builds_list = latest_builds.get("build", []) if isinstance(latest_builds, dict) else []
+    for build in builds_list:
         build_id = build.get("id")
         if build_id == int(context.build_id):
             continue
 
-        loop_build_info = context.teamcity.get_full_build_info_for_build_id(build_id)
+        loop_build_info = context.teamcity.get_full_build_info_for_build_id(str(build_id))
+        if not loop_build_info:
+            continue
+
         loop_tag_name = get_tag_from_build_info(loop_build_info)
 
         if loop_tag_name and loop_tag_name != (0, 0, 0) and current_tag_name and loop_tag_name < current_tag_name:
@@ -96,6 +109,9 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
         build_id=f"{previous_build_id}",
         path_to_artifact=PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT,
     )
+    if artifact is None:
+        return None
+
     return TestbankResultParser(artifact.decode())
 
 
@@ -116,8 +132,10 @@ def get_tag_from_build_info(current_build_info: dict) -> tuple:
     tags = current_build_info.get("tags", {}).get("tag", [])
     for tag in tags:
         tag_name = tag.get("name")
-        if tag_name.startswith("DIMRset_"):
-            current_tag_name = parse_version(tag_name)
+        if tag_name and tag_name.startswith("DIMRset_"):
+            parsed_version = parse_version(tag_name)
+            if parsed_version is not None:
+                current_tag_name = parsed_version
     return current_tag_name
 
 

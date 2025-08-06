@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, Optional
 
 from ..settings.email_settings import (
     LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS,
@@ -18,7 +18,7 @@ class EmailHelper(object):
         dimr_version: str,
         kernel_versions: Dict[str, str],
         current_parser: TestbankResultParser,
-        previous_parser: TestbankResultParser,
+        previous_parser: Optional[TestbankResultParser],
     ) -> None:
         """
         Create a new instance of EmailHelper.
@@ -27,7 +27,7 @@ class EmailHelper(object):
             dimr_version (str): The latest DIMR version.
             kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
             current_parser (TestbankResultParser): A parser for the latest test bench results.
-            previous_parser (TestbankResultParser): A parser for the previous test bench results.
+            previous_parser (Optional[TestbankResultParser]): A parser for the previous test bench results.
         """
         self.__dimr_version = dimr_version
         self.__kernel_versions = kernel_versions
@@ -94,38 +94,55 @@ class EmailHelper(object):
         else:
             html += f'<td><span class="success">{passing_test_percentage}%</span></td>'
 
-        previous_percentage_passing_tests = self.__previous_parser.get_percentage_total_passing()
-        html += "<td><table><tr><td><br />"
-        if float(previous_percentage_passing_tests) < LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS:
-            html += f'Green testbank was (<span class="fail">{previous_percentage_passing_tests}%</span>)'
+        if self.__previous_parser is not None:
+            previous_percentage_passing_tests = self.__previous_parser.get_percentage_total_passing()
+            html += "<td><table><tr><td><br />"
+            if float(previous_percentage_passing_tests) < LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS:
+                html += f'Green testbank was (<span class="fail">{previous_percentage_passing_tests}%</span>)'
+            else:
+                html += f'Green testbank was (<span class="success">{previous_percentage_passing_tests}%</span>)'
+            html += "<br />"
+            html += (
+                f"Total tests: {self.__current_parser.get_total_tests()} "
+                f"was ({self.__previous_parser.get_total_tests()})"
+            )
+            html += "<br />"
+            html += (
+                f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()} "
+                f"was ({self.__previous_parser.get_total_passing()})"
+            )
         else:
-            html += f'Green testbank was (<span class="success">{previous_percentage_passing_tests}%</span>)'
-        html += "<br />"
-        html += (
-            f"Total tests: {self.__current_parser.get_total_tests()} was ({self.__previous_parser.get_total_tests()})"
-        )
-        html += "<br />"
-        html += (
-            f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()} "
-            f"was ({self.__previous_parser.get_total_passing()})"
-        )
+            html += "<td><table><tr><td><br />"
+            html += f'Green testbank: <span class="success">{passing_test_percentage}%</span>'
+            html += "<br />"
+            html += f"Total tests: {self.__current_parser.get_total_tests()}"
+            html += "<br />"
+            html += f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()}"
 
         html += "</tr></table>"
         html += "</td>"
         html += "</tr>"
 
         total_exceptions = self.__current_parser.get_total_exceptions()
-        previous_total_exceptions = self.__previous_parser.get_total_exceptions()
+        if self.__previous_parser is not None:
+            previous_total_exceptions = self.__previous_parser.get_total_exceptions()
+        else:
+            previous_total_exceptions = "N/A"
+
         html += "<tr>"
         html += "<td></td>"
         if int(total_exceptions) > 0:
             html += f'<td><span class="fail">{total_exceptions}</span></td>'
         else:
             html += f'<td><span class="success">{total_exceptions}</span></td>'
-        if int(previous_total_exceptions) > 0:
-            html += f'<td>Crashes in testbank (was <span class="fail">{previous_total_exceptions}</span>)</td>'
+
+        if self.__previous_parser is not None:
+            if int(previous_total_exceptions) > 0:
+                html += f'<td>Crashes in testbank (was <span class="fail">{previous_total_exceptions}</span>)</td>'
+            else:
+                html += f'<td>Crashes in testbank (was <span class="success">{previous_total_exceptions}</span>)</td>'
         else:
-            html += f'<td>Crashes in testbank (was <span class="success">{previous_total_exceptions}</span>)</td>'
+            html += "<td>Crashes in testbank (no previous data)</td>"
         html += "</tr>"
 
         return html
