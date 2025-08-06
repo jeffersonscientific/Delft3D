@@ -1166,7 +1166,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = -1.0_dp
                   if (ustbs(kk) > 0 .and. kxL > 1) then
-                     hdzbs = 0.5_dp * zws(kb) + c9of1 * z00 ! half bottom layer plus 9z0
+                     hdzbs = 0.5_dp * dzs(1) + c9of1 * z00 ! half bottom layer plus 9z0
                      dk(0) = dzs(1) * abs(ustbs(kk))**3 / (vonkar * hdzbs * hdzbs)
                   else
                      dk(0) = 0.0_dp
