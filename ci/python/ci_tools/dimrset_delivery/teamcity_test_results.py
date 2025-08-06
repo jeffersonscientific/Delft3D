@@ -300,7 +300,7 @@ def get_build_dependency_chain(
     # Use the existing TeamCity method to get filtered dependent builds
     if filtered_list:
         # For now, we'll use the existing method and then filter manually
-        # as the TeamCity class method uses TEAMCITY_IDS enum, not our FilteredList
+        # as the TeamCity class method uses TeamcityIds enum, not our FilteredList
         endpoint = (
             f"{context.teamcity._TeamCity__rest_uri}builds?locator=defaultFilter:false,"
             f"snapshotDependency(to:(id:{context.build_id})),count:1000&fields=build(id,buildTypeId)"

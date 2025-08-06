@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from ..settings.general_settings import DRY_RUN_PREFIX
-from ..settings.teamcity_settings import TEAMCITY_IDS
+from ..settings.teamcity_settings import TeamcityIds
 
 
 class TeamCity(object):
@@ -672,7 +672,7 @@ class TeamCity(object):
 
     def get_filtered_dependent_build_ids(self, build_id: str) -> List[str]:
         """
-        Get a list of build IDs for builds related to a specific build, filtered by buildTypeIds from TEAMCITY_IDS Enum.
+        Get a list of build IDs for builds related to a specific build, filtered by buildTypeIds from TeamcityIds Enum.
 
         Uses the following TeamCity REST API endpoint:
         /app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:<build_id>)),count:1000&fields=build(id,buildTypeId)
@@ -686,10 +686,10 @@ class TeamCity(object):
         -------
         List[str]
             A list of build IDs for builds matching the snapshot dependency
-            and whose buildTypeId is in TEAMCITY_IDS.
+            and whose buildTypeId is in TeamcityIds.
             Returns an empty list if the request failed or no matching builds are found.
         """
-        build_type_ids = [member.value for member in TEAMCITY_IDS]
+        build_type_ids = [member.value for member in TeamcityIds]
         endpoint = (
             f"{self.__rest_uri}builds?locator=defaultFilter:false,"
             f"snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"

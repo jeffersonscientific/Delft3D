@@ -9,7 +9,9 @@ KERNELS = [
 ]
 
 
-class TEAMCITY_IDS(Enum):
+class TeamcityIds(Enum):
+    """Enumeration of TeamCity build configuration IDs used in DIMR automation."""
+
     DIMR_PUBLISH = "Delft3D_DIMRbak"
     DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID = "Delft3D_LinuxCollect"
     DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID = "Delft3D_WindowsCollect"

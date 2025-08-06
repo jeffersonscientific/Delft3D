@@ -8,7 +8,7 @@ from ..settings.general_settings import LINUX_ADDRESS
 from ..settings.teamcity_settings import (
     NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT,
     NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT,
-    TEAMCITY_IDS,
+    TeamcityIds,
 )
 from .ssh_client import SshClient
 
@@ -69,10 +69,10 @@ class ArtifactInstallHelper(object):
     def publish_artifacts_to_network_drive(self, build_id_chain: str) -> None:
         """Download the DIMR artifacts to the network drive."""
         windows_collect_id = self.__teamcity.get_dependent_build_id(
-            build_id_chain, TEAMCITY_IDS.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
+            build_id_chain, TeamcityIds.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
         )
         linux_collect_id = self.__teamcity.get_dependent_build_id(
-            build_id_chain, TEAMCITY_IDS.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
+            build_id_chain, TeamcityIds.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
         )
 
         self.__publish_artifact_to_file_share(windows_collect_id, NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT)
