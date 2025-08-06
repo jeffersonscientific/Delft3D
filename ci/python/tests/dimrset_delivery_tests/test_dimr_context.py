@@ -136,11 +136,14 @@ class TestDimrAutomationContext:
     def test_init_raises_error_for_missing_required_credentials(self) -> None:
         """Test initialization raises error when required credentials are missing."""
         # Mock input to return empty strings (simulating user not providing credentials)
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            input=Mock(return_value=""),
-            getpass=Mock(return_value=""),
-        ), pytest.raises(ValueError, match="Atlassian credentials are required but not provided"):
+        with (
+            patch.multiple(
+                "ci_tools.dimrset_delivery.dimr_context",
+                input=Mock(return_value=""),
+                getpass=Mock(return_value=""),
+            ),
+            pytest.raises(ValueError, match="Atlassian credentials are required but not provided"),
+        ):
             DimrAutomationContext(
                 build_id="12345",
                 dry_run=False,
@@ -423,7 +426,7 @@ class TestDimrAutomationContext:
         )
 
         # Mock get_kernel_versions to return None to trigger the AssertionError
-        with patch.object(context, 'get_kernel_versions', return_value=None):
+        with patch.object(context, "get_kernel_versions", return_value=None):
             with pytest.raises(AssertionError, match="Could not extract the DIMR version"):
                 context.get_dimr_version()
 
