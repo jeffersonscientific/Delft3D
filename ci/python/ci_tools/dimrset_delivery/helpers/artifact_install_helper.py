@@ -3,14 +3,14 @@ import tarfile
 import zipfile
 from typing import List
 
-from ..lib.TeamCity import TeamCity
+from ..lib.teamcity import TeamCity
 from ..settings.general_settings import LINUX_ADDRESS
 from ..settings.teamcity_settings import (
     NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT,
     NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT,
     TEAMCITY_IDS,
 )
-from .SshClient import SshClient
+from .ssh_client import SshClient
 
 
 def extract_archive(archive_path: str, target_path: str) -> None:

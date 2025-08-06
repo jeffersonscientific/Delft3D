@@ -2,8 +2,8 @@ import os
 from datetime import datetime, timezone
 from typing import Tuple
 
-from ..lib.Atlassian import Atlassian
-from ..lib.TeamCity import TeamCity
+from ..lib.atlassian import Atlassian
+from ..lib.teamcity import TeamCity
 from ..settings.atlassian_settings import (
     DIMR_MAJOR_PAGE_PREFIX,
     DIMR_MINOR_PAGE_PREFIX,

@@ -3,9 +3,9 @@ from typing import Dict, List
 
 from openpyxl import load_workbook, worksheet
 
-from ..lib.TeamCity import TeamCity
+from ..lib.teamcity import TeamCity
 from ..settings.general_settings import NAME_COLUMN, SHEET_NAME
-from .TestbankResultParser import TestbankResultParser
+from .testbank_result_parser import TestbankResultParser
 
 
 class ExcelHelper(object):

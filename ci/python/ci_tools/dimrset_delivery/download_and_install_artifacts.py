@@ -2,7 +2,7 @@
 """Download the artifacts and install them on Linux machine."""
 
 from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
-from .helpers.ArtifactInstallHelper import ArtifactInstallHelper
+from .helpers.artifact_install_helper import ArtifactInstallHelper
 from .settings.general_settings import DRY_RUN_PREFIX
 
 

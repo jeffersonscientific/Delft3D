@@ -4,8 +4,8 @@
 from typing import Optional
 
 from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
-from .helpers.EmailHelper import EmailHelper
-from .helpers.TestbankResultParser import TestbankResultParser
+from .helpers.email_helper import EmailHelper
+from .helpers.testbank_result_parser import TestbankResultParser
 from .settings.general_settings import DRY_RUN_PREFIX
 from .settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
 

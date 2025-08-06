@@ -7,7 +7,7 @@ from ..settings.email_settings import (
 )
 from ..settings.general_settings import RELATIVE_PATH_TO_OUTPUT_FOLDER
 from ..settings.teamcity_settings import KERNELS
-from .TestbankResultParser import TestbankResultParser
+from .testbank_result_parser import TestbankResultParser
 
 
 class EmailHelper(object):

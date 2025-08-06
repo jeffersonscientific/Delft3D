@@ -2,9 +2,9 @@
 """Update the Excel sheet with this week's release information."""
 
 from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
-from .helpers.ExcelHelper import ExcelHelper
-from .helpers.SshClient import Direction
-from .helpers.TestbankResultParser import TestbankResultParser
+from .helpers.excel_helper import ExcelHelper
+from .helpers.ssh_client import Direction
+from .helpers.testbank_result_parser import TestbankResultParser
 from .settings.general_settings import DRY_RUN_PREFIX, LINUX_ADDRESS, VERSIONS_EXCEL_FILENAME
 from .settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
 

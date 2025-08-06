@@ -2,7 +2,7 @@
 """Assert preconditions are met before the DIMR release process is run."""
 
 from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
-from .helpers.PreconditionsHelper import PreconditionsHelper
+from .helpers.preconditions_helper import PreconditionsHelper
 
 
 def assert_preconditions(context: DimrAutomationContext) -> None:

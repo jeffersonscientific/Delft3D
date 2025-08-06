@@ -2,7 +2,7 @@
 """Pin and tag the appropriate builds in TeamCity."""
 
 from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
-from .helpers.PinHelper import PinHelper
+from .helpers.pin_helper import PinHelper
 from .settings.general_settings import DRY_RUN_PREFIX
 
 

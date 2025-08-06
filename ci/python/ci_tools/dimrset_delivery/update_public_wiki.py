@@ -2,7 +2,7 @@
 """Update the Public Wiki with the new DIMR release information."""
 
 from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
-from .helpers.PublicWikiHelper import PublicWikiHelper
+from .helpers.public_wiki_helper import PublicWikiHelper
 from .settings.general_settings import DRY_RUN_PREFIX
 
 
