@@ -1,7 +1,7 @@
 from enum import Enum
 
 import paramiko
-from scp import SCPClient
+from scp import SCPClient  # type: ignore[import-untyped]
 
 from ..settings.general_settings import DRY_RUN_PREFIX
 
