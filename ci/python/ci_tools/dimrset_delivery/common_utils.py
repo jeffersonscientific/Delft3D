@@ -4,8 +4,6 @@ Common utilities for DIMR automation scripts.
 Provides shared initialization and helper functions.
 """
 
-import argparse
-from getpass import getpass
 from typing import Tuple
 
 from .helpers.git_client import GitClient
