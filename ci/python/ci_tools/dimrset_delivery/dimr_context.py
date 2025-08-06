@@ -220,14 +220,13 @@ def create_context_from_args(
     require_ssh: bool = True,
 ) -> DimrAutomationContext:
     """Create automation context from parsed arguments."""
-    # Use specific credentials if provided, otherwise fall back to general credentials
-    atlassian_username = args.atlassian_username or args.username
-    atlassian_password = args.atlassian_password or args.password
-    teamcity_username = args.teamcity_username or args.username
-    teamcity_password = args.teamcity_password or args.password
-    ssh_username = args.ssh_username or args.username
-    ssh_password = args.ssh_password or args.password
-    git_username = args.git_username or args.username
+    atlassian_username = args.atlassian_username
+    atlassian_password = args.atlassian_password
+    teamcity_username = args.teamcity_username
+    teamcity_password = args.teamcity_password
+    ssh_username = args.ssh_username
+    ssh_password = args.ssh_password
+    git_username = args.git_username
     git_pat = getattr(args, "git_PAT", None)
     dry_run = args.dry_run
 
