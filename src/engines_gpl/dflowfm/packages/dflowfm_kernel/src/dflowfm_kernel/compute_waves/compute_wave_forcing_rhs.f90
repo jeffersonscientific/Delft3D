@@ -31,7 +31,7 @@
 !
 
 module m_compute_wave_forcing_rhs
-   use m_xbeachwaves, only: xbeach_waves, xbeach_flow_bc, xbeach_wave_compute_flowforcing2D, xbeach_apply_wave_bc, xbeach_wave_bc, xbeach_wave_compute_flowforcing3D
+   use m_surfbeatwaves, only: surfbeat_waves, surfbeat_flow_bc, surfbeat_wave_compute_flowforcing2D, surfbeat_apply_wave_bc, surfbeat_wave_bc, surfbeat_wave_compute_flowforcing3D
    use m_wave_makeplotvars, only: wave_makeplotvars
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
@@ -47,13 +47,13 @@ module m_compute_wave_forcing_rhs
 contains
 
    subroutine compute_wave_forcing_RHS()
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_waves
       use m_flow
       use m_flowgeom
       use m_sferic
       use m_flowtimes
-      use m_xbeach_netcdf
+      use m_surfbeat_netcdf
 
       use unstruc_display
 
@@ -81,17 +81,17 @@ contains
       ! Surfbeat model
       if (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. nwbnd > 0 .and. .not. flowWithoutWaves) then
          if (swave == 1) then
-            call xbeach_wave_bc()
-            call xbeach_apply_wave_bc()
-            call xbeach_waves(ierror)
+            call surfbeat_wave_bc()
+            call surfbeat_apply_wave_bc()
+            call surfbeat_waves(ierror)
             !
-            call xbeach_wave_compute_flowforcing2D() ! Always: sets fx, fy based on radiation stress gradients
+            call surfbeat_wave_compute_flowforcing2D() ! Always: sets fx, fy based on radiation stress gradients
             if (kmx > 0) then
-               call xbeach_wave_compute_flowforcing3D() ! set wavfu 3D
+               call surfbeat_wave_compute_flowforcing3D() ! set wavfu 3D
             end if
             !
             if (jaavgwavquant == 1) then
-               call xbeach_makeaverages(dts) ! time-averaged stats
+               call surfbeat_makeaverages(dts) ! time-averaged stats
             end if
          else
             uin = 0d0
@@ -100,7 +100,7 @@ contains
          !
          if (kmx == 0) then
             call tauwave()
-            call xbeach_flow_bc()
+            call surfbeat_flow_bc()
          end if
       end if
       !

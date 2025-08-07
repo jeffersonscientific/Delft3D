@@ -30,7 +30,7 @@
 !
 !
 
-module m_xbeachwaves_getcellcentergradients
+module m_surfbeatwaves_getcellcentergradients
 
    implicit none
 
@@ -86,4 +86,4 @@ contains
 
    end subroutine getcellcentergradients
 
-end module m_xbeachwaves_getcellcentergradients
+end module m_surfbeatwaves_getcellcentergradients

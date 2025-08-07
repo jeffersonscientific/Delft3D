@@ -73,7 +73,7 @@ contains
       use m_waveconst
       use m_mormerge_mpi
       use m_partitioninfo, only: jampi, my_rank, ndomains, DFM_COMM_DFMWORLD
-      use m_xbeach_data, only: gammaxxb
+      use m_surfbeat_data, only: gammaxxb
       use m_waves, only: gammax
       use m_turbulence, only: sigsed
 

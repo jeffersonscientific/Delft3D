@@ -113,9 +113,9 @@ contains
 
    subroutine generate_wave_boundary_surfbeat(ibnd, durationlength)
 
-      use m_xbeach_filefunctions
-      use m_xbeach_typesandkinds
-      use m_xbeach_data
+      use m_surfbeat_filefunctions
+      use m_surfbeat_typesandkinds
+      use m_surfbeat_data
 
       use wave_boundary_datastore
       implicit none
@@ -341,8 +341,8 @@ contains
    ! --------------------------------------------------------------
    subroutine read_spectrum_input(ibnd, wp, fn, specin)
 
-      use m_xbeach_filefunctions
-      use m_xbeach_data
+      use m_surfbeat_filefunctions
+      use m_surfbeat_data
 
       implicit none
       ! Interface
@@ -424,10 +424,10 @@ contains
    ! --------------------------------------------------------------
    subroutine read_jonswap_file(wp, readfile, listline, specin)
 
-      use m_xbeach_filefunctions
-      use m_xbeach_data
-      use m_xbeach_readkey
-      use m_xbeach_errorhandling
+      use m_surfbeat_filefunctions
+      use m_surfbeat_data
+      use m_surfbeat_readkey
+      use m_surfbeat_errorhandling
 
       implicit none
 
@@ -468,7 +468,7 @@ contains
          nmodal = readkey_int(readfile, 'nmodal', 1, 1, 4)
          if (nmodal < 1) then
             call writelog('lswe', '', 'Error: number of spectral partions may not be less than 1 in ', trim(readfile))
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
          !
          ! Allocate space for all spectral parameters
@@ -493,7 +493,7 @@ contains
             fp = readkey_dblvec(readfile, 'fp', nmodal, nmodal, 0.08d0, 0.0625d0, 0.4d0, bcast=.false.)
          elseif (.not. isSetParameter(readfile, 'fp', bcast=.false.) .and. .not. isSetParameter(readfile, 'Tp', bcast=.false.)) then
             call writelog('lswe', '', 'Error: missing required value for parameter ''Tp'' or ''fp'' in ', trim(readfile))
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else
             fp = 1.d0 / readkey_dblvec(readfile, 'Tp', nmodal, nmodal, 12.5d0, 2.5d0, 20.0d0, bcast=.false.)
             call writelog('lsw', '', 'Warning: selecting to read peak period (Tp) instead of frequency (fp) in ', trim(readfile))
@@ -567,7 +567,7 @@ contains
          if (ier /= 0) then
             call writelog('lswe', '', 'Error reading file ', trim(readfile))
             close (fid)
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
          ! move the line pointer in the file
          listline = listline + 1
@@ -817,7 +817,7 @@ contains
                                 ' Check spectral partitioning in ', trim(readfile))
                   call writelog('lswe', '', 'If the partitioning should be carried out regardles of energy loss, ', &
                                 'set ''forcepartition = 1'' in ', trim(readfile))
-                  call xbeach_errorhandler()
+                  call surfbeat_errorhandler()
                end if
             elseif (scalefac1(ip) > 0.2d0 .and. scalefac1(ip) <= 0.5d0) then
                call writelog('lsw', '(a,f0.0,a,i0,a,a,a)', &
@@ -925,10 +925,10 @@ contains
    ! --------------------------------------------------------------
    subroutine read_swan_file(ibnd, readfile, specin)
 
-      use m_xbeach_filefunctions
-      use m_xbeach_errorhandling, only: xbeach_errorhandler
+      use m_surfbeat_filefunctions
+      use m_surfbeat_errorhandling, only: surfbeat_errorhandler
       use math_tools, only: flipv, flipa
-      use m_xbeach_data, only: DTHETAS_XB
+      use m_surfbeat_data, only: DTHETAS_XB
 
       implicit none
 
@@ -999,7 +999,7 @@ contains
          switch = 2
       else
          call writelog('ewls', '', 'SWAN directional bins keyword not found')
-         call xbeach_errorhandler()
+         call surfbeat_errorhandler()
       end if
 
       ! Read ndir, theta
@@ -1082,7 +1082,7 @@ contains
          switch = 2
       else
          call writelog('slwe', '', 'SWAN VaDens/EnDens keyword not found')
-         call xbeach_errorhandler()
+         call surfbeat_errorhandler()
       end if
       read (fid, '(a)', iostat=ier) rtext
       read (fid, *, iostat=ier2) exc
@@ -1101,10 +1101,10 @@ contains
             i = 1
          elseif (rtext == 'ZERO  ') then
             call writelog('lswe', '', 'Zero energy density input for this point')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          elseif (rtext == 'NODATA') then
             call writelog('lwse', '', 'SWAN file has no data for this point')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
       end do
       read (fid, *, iostat=ier) factor
@@ -1192,8 +1192,8 @@ contains
    ! --------------------------------------------------------------
    subroutine read_vardens_file(readfile, specin)
 
-      use m_xbeach_filefunctions
-      use m_xbeach_errorhandling, only: xbeach_errorhandler
+      use m_surfbeat_filefunctions
+      use m_surfbeat_errorhandling, only: surfbeat_errorhandler
       use math_tools, only: flipv, flipa
 
       implicit none
@@ -1625,7 +1625,7 @@ contains
    ! --------------------- combined spectrum ----------------------
    subroutine generate_wavetrain_components(ibnd, combspec, wp)
 
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       use interp
 
       use wave_boundary_datastore
@@ -2085,7 +2085,7 @@ contains
    subroutine generate_wave_train_Fourier(ibnd, wp)
 
       use interp
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
 
       use math_tools
       use wave_boundary_datastore
@@ -2150,7 +2150,7 @@ contains
    ! ------------- each wave train component belongs --------------
    subroutine distribute_wave_train_directions(ibnd, wp, nspr)
 
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       use m_sferic
       use wave_boundary_datastore
 
@@ -2257,7 +2257,7 @@ contains
    ! -------- Fourier components, and write to output file --------
    subroutine generate_ebcf(ibnd, wp)
       use interp
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       use math_tools
 
       implicit none
@@ -2514,7 +2514,7 @@ contains
    ! --------------------------- boundary -------------------------
    subroutine generate_swts(ibnd, wp)
 
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
 
       use wave_boundary_datastore
 
@@ -2609,7 +2609,7 @@ contains
    ! --------------------------------------------------------------
    subroutine generate_qbcf(ibnd, wp)
 
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       use interp
 
       use math_tools
@@ -2924,7 +2924,7 @@ contains
    ! ---------------- series file generation ----------------------
    subroutine generate_nhtimeseries_file(ibnd, wp)
 
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
 
       use wave_boundary_datastore
 

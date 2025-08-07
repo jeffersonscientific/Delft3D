@@ -38,7 +38,7 @@ contains
    subroutine KPLOTPLUSMIN(IPM)
       use M_FLOWGEOM, only: ntheta
       use M_FLOW, only: kmx, kplotfrombedorsurface, kplot, jawave
-      use m_xbeach_data, only: itheta_view
+      use m_surfbeat_data, only: itheta_view
 
       integer :: IP, IPM
 

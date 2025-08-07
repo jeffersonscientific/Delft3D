@@ -58,7 +58,7 @@ contains
       use m_ship
       use m_partitioninfo
       use m_timer
-      use m_xbeach_data
+      use m_surfbeat_data
       use MessageHandling
       use m_sobekdfm
       use unstruc_display

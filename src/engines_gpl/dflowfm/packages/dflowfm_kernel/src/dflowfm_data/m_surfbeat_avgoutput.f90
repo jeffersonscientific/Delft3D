@@ -30,7 +30,7 @@
 !
 !
 
-module m_xbeach_avgoutput
+module m_surfbeat_avgoutput
    use precision, only: dp
 
    real(kind=dp), allocatable :: H_mean(:), H_var(:), H_min(:), H_max(:), H_varcross(:), H_varsquare(:) !< Sign wave height
@@ -74,7 +74,7 @@ module m_xbeach_avgoutput
 
 contains
 
-   subroutine default_xbeach_avgoutput()
+   subroutine default_surfbeat_avgoutput()
       implicit none
       jaavgwriteall = 0
       jaavgwriteH = 0
@@ -91,4 +91,4 @@ contains
 
    end subroutine
 
-end module m_xbeach_avgoutput
+end module m_surfbeat_avgoutput

@@ -57,7 +57,7 @@ contains
       use unstruc_model
       use unstruc_netcdf
       use unstruc_netcdf_map_class
-      use m_xbeach_netcdf
+      use m_surfbeat_netcdf
       use waq
       use m_timer
       use m_partitioninfo, only: jampi, my_rank

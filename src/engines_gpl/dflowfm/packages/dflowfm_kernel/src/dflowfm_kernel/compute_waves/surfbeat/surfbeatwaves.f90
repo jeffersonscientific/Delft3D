@@ -30,26 +30,26 @@
 !
 !
 
-module m_xbeachwaves
-   use m_xbeachwaves_getcellcentergradients, only: getcellcentergradients
+module m_surfbeatwaves
+   use m_surfbeatwaves_getcellcentergradients, only: getcellcentergradients
    use m_waveconst
 
    implicit none
 
    private
 
-   public :: xbeach_waves, xbeach_flow_bc, xbeach_wave_compute_flowforcing2D, xbeach_apply_wave_bc, xbeach_wave_bc, xbeach_wave_compute_flowforcing3D, xbeach_makethetagrid, &
-             xbeach_wave_init, xbeach_wave_input, allocstatsolverarrays, rollerturbulence, xbeach_reset, xbeach_wave_maxtimestep
+   public :: surfbeat_waves, surfbeat_flow_bc, surfbeat_wave_compute_flowforcing2D, surfbeat_apply_wave_bc, surfbeat_wave_bc, surfbeat_wave_compute_flowforcing3D, surfbeat_makethetagrid, &
+             surfbeat_wave_init, surfbeat_wave_input, allocstatsolverarrays, rollerturbulence, surfbeat_reset, surfbeat_wave_maxtimestep
 
 contains
 
-   subroutine xbeach_wave_input
+   subroutine surfbeat_wave_input
 !! Start logging
 !! Read input from params.txt
       use m_flowgeom
-      use m_xbeach_data
-      use m_xbeach_readkey
-      use m_xbeach_filefunctions
+      use m_surfbeat_data
+      use m_surfbeat_readkey
+      use m_surfbeat_filefunctions
 
       logical, save :: init = .false.
 
@@ -57,24 +57,24 @@ contains
          ! Start logging
          call start_logfiles(0)
          call writelog_startup()
-         call xbeach_all_input()
+         call surfbeat_all_input()
          call writelog('ls', '', 'Initializing .....')
       else
          call writelog_startup()
-         call xbeach_all_input()
+         call surfbeat_all_input()
          call writelog('ls', '', 'Reinitialized model .....')
       end if
       init = .true.
-   end subroutine xbeach_wave_input
+   end subroutine surfbeat_wave_input
 
-   subroutine xbeach_all_input()
+   subroutine surfbeat_all_input()
       use m_physcoef
       use m_flowgeom
-      use m_xbeach_data
-      use m_xbeach_readkey
-      use m_xbeach_filefunctions
-      use m_xbeach_errorhandling
-      use m_xbeach_paramsconst
+      use m_surfbeat_data
+      use m_surfbeat_readkey
+      use m_surfbeat_filefunctions
+      use m_surfbeat_errorhandling
+      use m_surfbeat_paramsconst
       use m_flowtimes
       use m_samples
       use m_missing
@@ -210,11 +210,11 @@ contains
          !   elseif (.not. fe2) then
          !      call writelog('lswe','','Model currently missing qbcflist.bcf')
          !   endif
-         !   call xbeach_errorhandler()
+         !   call surfbeat_errorhandler()
          !else
          !   call writelog('lswe','','If ''instat=reuse'' the model directory must contain boundary definition files.')
          !   call writelog('lswe','','Use ebcflist.bcf and qbcflist.bcf')
-         !   call xbeach_errorhandler()
+         !   call surfbeat_errorhandler()
          !endif
       else
          filetype = -1
@@ -362,23 +362,23 @@ contains
             if (trim(break) == 'roelvink_daly') then
                call writelog('lwse', '', 'Error: Roelvink-Daly formulations not implemented in stationary wave mode,')
                call writelog('lwse', '', '         use Baldock or Janssen formulation.')
-               call xbeach_errorhandler()
+               call surfbeat_errorhandler()
             else
                call writelog('lwse', '', 'Error: Roelvink formulations not implemented in stationary wave mode,')
                call writelog('lwse', '', '         use Baldock or Janssen formulation.')
-               call xbeach_errorhandler()
+               call surfbeat_errorhandler()
             end if
          end if
       else
          if (trim(break) == 'baldock') then
             call writelog('lwse', '', 'Error: Baldock formulation not allowed in non-stationary mode, use a Roelvink')
             call writelog('lwse', '', '       formulation.')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
          if (trim(break) == 'janssen') then
             call writelog('lwse', '', 'Error: Janssen formulation not allowed in non-stationary mode, use a Roelvink')
             call writelog('lwse', '', '       formulation.')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
       end if
       !
@@ -404,13 +404,13 @@ contains
          call writelog('lws', '', 'Warning: swave is 0, so lwave set to 0.')
       end if
 
-   end subroutine xbeach_all_input
+   end subroutine surfbeat_all_input
 
-   subroutine xbeach_wave_init()
+   subroutine surfbeat_wave_init()
       use precision, only: dp
       use m_flowgeom
       use fm_external_forcings_data
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_sferic, only: pi, twopi
       use m_physcoef
       use network_data
@@ -454,7 +454,7 @@ contains
           trim(instat) == 'jons_table' .or. &
           trim(instat) == 'swan' .or. &
           trim(instat) == 'vardens') then
-         call xbeach_spectral_wave_init()
+         call surfbeat_spectral_wave_init()
       end if
 
       if (ntheta > 0) then
@@ -487,9 +487,9 @@ contains
 
          ! initialize celerities
          !if (windmodel .eq. 1) then
-         !    call xbeach_dispersion_windmodel()
+         !    call surfbeat_dispersion_windmodel()
          !else
-         call xbeach_dispersion(hhw)
+         call surfbeat_dispersion(hhw)
          !endif
 
       end if
@@ -564,7 +564,7 @@ contains
       !      CT2 = 1d0/bb2 -1d0
       !   endif
       !   !map wind field to cell centers
-      !   call xbeach_map_wind_field(wx, wy, mwind, wmagcc, windspreadfac)
+      !   call surfbeat_map_wind_field(wx, wy, mwind, wmagcc, windspreadfac)
       !endif
 
       if (trim(instat) == 'stat' .or. trim(instat) == 'stat_table' .or. single_dir > 0) then
@@ -615,12 +615,12 @@ contains
          ! Find upwind neighbours for each grid point and wave direction
          call find_upwind_neighbours(xk, yk, numk, thetalocal, nthetalocal, kp, np, w, prev, ds, ierror)
          ! set e01 (filling of zbndw not necessary for statsolver)
-         call xbeach_wave_bc()
+         call surfbeat_wave_bc()
          ! compute advection and refraction velocities, will be interpolated to netnodes in solve_wave_stationary
          if (single_dir > 0) then
-            call xbeach_wave_dispersion(1)
+            call surfbeat_wave_dispersion(1)
          else
-            call xbeach_wave_dispersion(0)
+            call surfbeat_wave_dispersion(0)
          end if
 
          newstatbc = 0 !to check if needed
@@ -631,13 +631,13 @@ contains
       end if
 
       return
-   end subroutine xbeach_wave_init
+   end subroutine surfbeat_wave_init
 
 !> make the thetagrid, in init_flowgeom
-   subroutine xbeach_makethetagrid()
+   subroutine surfbeat_makethetagrid()
       use precision, only: dp
       use m_flowgeom
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_sferic
       use m_alloc
       implicit none
@@ -761,15 +761,15 @@ contains
          end do
       end if
 
-   end subroutine xbeach_makethetagrid
+   end subroutine surfbeat_makethetagrid
 
-   subroutine xbeach_dispersion(hh)
+   subroutine surfbeat_dispersion(hh)
       use precision, only: dp
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       use m_flowgeom
       use m_flowparameters, only: epshu
       use m_sferic, only: pi
-      use m_xbeach_data, only: sigmwav, L0, L1, Ltemp, cwav, nwav, cgwav, kwav
+      use m_surfbeat_data, only: sigmwav, L0, L1, Ltemp, cwav, nwav, cgwav, kwav
       use m_physcoef, only: ag
       use m_flowtimes, only: time0
       use fm_external_forcings_data
@@ -831,7 +831,7 @@ contains
          cgwav = sqrt(ag * epshu)
       end where
 
-   end subroutine xbeach_dispersion
+   end subroutine surfbeat_dispersion
 
    function iteratedispersion(L0, Lestimate, px, h) result(L)
       use precision, only: dp
@@ -872,15 +872,15 @@ contains
 
    end function iteratedispersion
 
-   subroutine xbeach_wave_instationary()
+   subroutine surfbeat_wave_instationary()
       use precision, only: dp
       use m_sferic, only: pi, rd2dg
       use m_physcoef, only: ag
       use m_flowgeom
       use m_flow, only: epshu, vol1, rhomean, epshu, hs
       use m_flowparameters, only: limtypw
-      use m_xbeach_data, m_xbeach_data_hminlw => hminlw
-      use m_xbeach_paramsconst
+      use m_surfbeat_data, m_surfbeat_data_hminlw => hminlw
+      use m_surfbeat_paramsconst
       use m_partitioninfo
       use m_timer
       use m_alloc
@@ -935,9 +935,9 @@ contains
       end where
       !
       if (wci > 0) then
-         call xbeach_wave_dispersion(2)
+         call surfbeat_wave_dispersion(2)
       else
-         call xbeach_wave_dispersion(0)
+         call surfbeat_wave_dispersion(0)
       end if
 
       if (single_dir == 0) then
@@ -994,9 +994,9 @@ contains
       !     tt1=twopi/sigt
       !   endif
       !
-      !   call xbeach_wave_dispersion(0)
+      !   call surfbeat_wave_dispersion(0)
       !
-      !else !regular xbeach approach, fixed period
+      !else !regular surfbeat approach, fixed period
       !
       ! Slopes of water depth
       call getcellcentergradients(hh, dhsdx, dhsdy)
@@ -1017,7 +1017,7 @@ contains
          sinh2kh = 3000.d0
       end where
       !
-      call xbeach_compute_wave_velocities(1, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
+      call surfbeat_compute_wave_velocities(1, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
       !
       ee1 = ee1 / sigt
       call advec_horz(dts, sinth, costh, limtypw, ee1, cgwav, horadvec)
@@ -1068,8 +1068,8 @@ contains
       end where
 
       !   Breaker dissipation
-      !call xbeach_wave_breaker_dissipation(dts, break, DeltaH, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, E, D, sigmwav, wci, 0)
-      call xbeach_wave_breaker_dissipation(dts, break, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, H, D, sigmwav, wci, 0)
+      !call surfbeat_wave_breaker_dissipation(dts, break, DeltaH, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, E, D, sigmwav, wci, 0)
+      call surfbeat_wave_breaker_dissipation(dts, break, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, H, D, sigmwav, wci, 0)
 
       !   Dissipation by bed friction
       dfac = 2.d0 * fw * rhomean / (3.d0 * pi)
@@ -1095,7 +1095,7 @@ contains
 
       !if (windmodel.eq.1) then
       !  ! wave period depth limitation
-      !   call xbeach_wave_compute_period_depth_limitation( 1.d0/8.d0*rhomean*ag*(gammaxxb*hh**2) , Tdeplim)
+      !   call surfbeat_wave_compute_period_depth_limitation( 1.d0/8.d0*rhomean*ag*(gammaxxb*hh**2) , Tdeplim)
       !   do itheta=1,ntheta
       !      tt1(itheta,:) = min(tt1(itheta,:) , Tdeplim )
       !   enddo
@@ -1103,11 +1103,11 @@ contains
       !   sigmwav=sum(sigt,dim=1)/ntheta
       !
       !   ! wave period breaker dissipation
-      !   call xbeach_wave_period_breaker_dissipation( D, E, sigmwav, cgwav, kwav, ddT)
+      !   call surfbeat_wave_period_breaker_dissipation( D, E, sigmwav, cgwav, kwav, ddT)
       !
       !   !  Wind source term
       !   if (jawsource.eq.1) then
-      !      call xbeach_windsource(ee1, E, tt1, sigmwav , cgwavt, cgwav, hh, dtmaxwav, wsorE, wsorT,egradcg,SwE,SwT)
+      !      call surfbeat_windsource(ee1, E, tt1, sigmwav , cgwavt, cgwav, hh, dtmaxwav, wsorE, wsorT,egradcg,SwE,SwT)
       !   else
       !       wsorE=0.d0
       !       wsorT=0.d0
@@ -1290,13 +1290,13 @@ contains
       deallocate (RH, stat=ierr)
       deallocate (gammax_correct, stat=ierr)
 
-   end subroutine xbeach_wave_instationary
+   end subroutine surfbeat_wave_instationary
 
-   subroutine xbeach_wave_compute_flowforcing2D()
+   subroutine surfbeat_wave_compute_flowforcing2D()
       use precision, only: dp
       use m_flowgeom
       use m_flow
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_flowgeom
       use m_partitioninfo
       !use m_turbulence, only:rho
@@ -1382,7 +1382,7 @@ contains
       end if
 
       ! Compute wavfu for 2D runs;
-      ! For 3D, this is done in setwavfu using results of xbeach_wave_compute_flowforcing3D; we only need the Fx_cc, Fy_cc values
+      ! For 3D, this is done in setwavfu using results of surfbeat_wave_compute_flowforcing3D; we only need the Fx_cc, Fy_cc values
       if (kmx == 0) then
          do L = 1, Lnx
             k1 = ln(1, L); k2 = ln(2, L)
@@ -1400,14 +1400,14 @@ contains
          end where
       end if
 
-   end subroutine xbeach_wave_compute_flowforcing2D
+   end subroutine surfbeat_wave_compute_flowforcing2D
 
-   subroutine xbeach_wave_maxtimestep()
+   subroutine surfbeat_wave_maxtimestep()
       use precision, only: dp
       use m_flowtimes
       use m_flow
       use m_flowgeom
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_partitioninfo
 
       implicit none
@@ -1468,16 +1468,16 @@ contains
 
       dts = dtmaxwav
 
-   end subroutine xbeach_wave_maxtimestep
+   end subroutine surfbeat_wave_maxtimestep
 
-   subroutine xbeach_wave_dispersion(callType)
+   subroutine surfbeat_wave_dispersion(callType)
       use precision, only: dp
       use m_flow, only: ucx, ucy
       use m_flowgeom
       use m_flowparameters, only: epshu
       use m_flowtimes
       use m_sferic, only: pi
-      use m_xbeach_data
+      use m_surfbeat_data
       use fm_external_forcings_data, only: nbndw, kbndw, nbndz, kbndz, nbndu, kbndu
       use m_physcoef, only: ag
 
@@ -1516,7 +1516,7 @@ contains
             L1 = -huge(0.d0)
          end if
          Trepold = 0.d0
-         call xbeach_dispersion(hhw) ! at initialisation, water depth is always hhw==hs
+         call surfbeat_dispersion(hhw) ! at initialisation, water depth is always hhw==hs
          km = kwav
       end if
 
@@ -1636,15 +1636,15 @@ contains
                sigt(itheta, :) = sigmwav
             end do
          end if
-         call xbeach_dispersion(hh) ! gives k, c, cg, n for non-wci
+         call surfbeat_dispersion(hh) ! gives k, c, cg, n for non-wci
       end if ! wci>0
-   end subroutine ! xbeach_wave_dispersion
+   end subroutine ! surfbeat_wave_dispersion
 
 !> compute wave boundary conditions
-   subroutine xbeach_wave_bc()
+   subroutine surfbeat_wave_bc()
       use precision, only: dp
       use m_flowgeom
-      use m_xbeach_data
+      use m_surfbeat_data
       use fm_external_forcings_data
       use wave_boundary_main_module
       use m_flowtimes, only: time0, tstop_user, tstart_user
@@ -1653,7 +1653,7 @@ contains
       use m_flowparameters, only: epshu
       use m_flow, only: hs
       use m_alloc
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       use wave_boundary_datastore
       use interp
       use m_partitioninfo
@@ -1697,7 +1697,7 @@ contains
       qxbc = 0d0
       qybc = 0d0
       !
-      !  note: also in xbeach_spectral_wave_init
+      !  note: also in surfbeat_spectral_wave_init
       call get_hboundary(hboundary)
       !
       startbcf = .false.
@@ -1822,7 +1822,7 @@ contains
                end do
                close (lunfil)
                Emean = sum(dataE) / nt
-               call xbeach_dispersion(hs)
+               call surfbeat_dispersion(hs)
 
             elseif (trim(instat) == 'ts_2') then
                open (newunit=lunfil, file='bc/gen.ezs')
@@ -1848,7 +1848,7 @@ contains
                end do
                close (lunfil)
                Emean = sum(dataE) / nt
-               call xbeach_dispersion(hs)
+               call surfbeat_dispersion(hs)
 
             elseif (trim(instat) == 'stat_table') then
                open (newunit=lunfil, file=bcfile)
@@ -1867,7 +1867,7 @@ contains
                   sigt(itheta, :) = 2.d0 * pi / Trep
                end do
                sigmwav = max(sum(sigt, 1) / dble(ntheta), waveps)
-               call xbeach_dispersion(hs)
+               call surfbeat_dispersion(hs)
             end if
             !
             ! Directional distribution
@@ -1893,7 +1893,7 @@ contains
             e01 = max(e01, 0.0d0); 
             if (jampi == 0) then
                if (nbndw > 0) then
-                  Llong = Tlong * maxval(cgwav(kbndw(1, 1:nbndw))) !! cg at some boundary point, xbeach_dispersion(). This implies that this value is the same everywhere!!
+                  Llong = Tlong * maxval(cgwav(kbndw(1, 1:nbndw))) !! cg at some boundary point, surfbeat_dispersion(). This implies that this value is the same everywhere!!
                else
                   Llong = -huge(0d0) !! Llong only for bichrom waves
                end if
@@ -1940,7 +1940,7 @@ contains
                end do
 
                sigmwav = max(sum(sigt, 1) / dble(ntheta), epshu)
-               call xbeach_dispersion(hs)
+               call surfbeat_dispersion(hs)
 
                dist = (cos(thetabin - theta0))**m
                do itheta = 1, ntheta
@@ -2119,14 +2119,14 @@ contains
 
 1234  continue
       return
-   end subroutine xbeach_wave_bc
+   end subroutine surfbeat_wave_bc
 
 !> apply computed boundary conditions
-   subroutine xbeach_apply_wave_bc()
+   subroutine surfbeat_apply_wave_bc()
       use m_sferic
       use m_flowgeom
       use fm_external_forcings_data
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_physcoef
 
       implicit none
@@ -2165,9 +2165,9 @@ contains
       !    sigt  = twopi/tt1
       !endif
 
-   end subroutine xbeach_apply_wave_bc
+   end subroutine surfbeat_apply_wave_bc
 
-   subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, &
+   subroutine surfbeat_wave_breaker_dissipation(dtmaxwav, break, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, &
                                               & QB, alpha, Trep, cwav, thetamean, hwav, D, sigmwav, wci, windmodel)
       use precision, only: dp
       use m_flow
@@ -2175,7 +2175,7 @@ contains
       use m_sferic, only: pi
       use m_physcoef, only: rhomean
       use math_tools, only: xerf
-      use m_xbeach_typesandkinds, only: slen
+      use m_surfbeat_typesandkinds, only: slen
       use m_debug
 
       implicit none
@@ -2334,7 +2334,7 @@ contains
 
       !deallocate(hh, hr, kmr, arg, kh, Hb, Qb_advec, H, R, stat = ierr)
 
-   end subroutine xbeach_wave_breaker_dissipation
+   end subroutine surfbeat_wave_breaker_dissipation
 
    subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
       use precision, only: dp
@@ -2533,7 +2533,7 @@ contains
       use m_physcoef
       use m_flowgeom
       use m_flow
-      use m_xbeach_data
+      use m_surfbeat_data
 
       implicit none
 
@@ -2595,16 +2595,16 @@ contains
    end subroutine advec_dir
 
 !> reset XBeach wave data
-   subroutine xbeach_reset()
-      use m_xbeach_readkey ! for reset_paramfile
+   subroutine surfbeat_reset()
+      use m_surfbeat_readkey ! for reset_paramfile
       implicit none
 
       call reset_paramfile()
 
-   end subroutine xbeach_reset
+   end subroutine surfbeat_reset
 
 !> compute flow boundary conditions
-   subroutine xbeach_flow_bc()
+   subroutine surfbeat_flow_bc()
       use fm_external_forcings_data, only: nbndu
       use m_partitioninfo, only: jampi
       implicit none
@@ -2615,24 +2615,24 @@ contains
 
       if (nbndu < 1 .and. jampi == 0) goto 1234
 
-      call xbeach_absgen_bc()
+      call surfbeat_absgen_bc()
 
       ierror = 0
 1234  continue
 
       return
-   end subroutine xbeach_flow_bc
+   end subroutine surfbeat_flow_bc
 
 !> initialize wave spectra
-   subroutine xbeach_spectral_wave_init()
+   subroutine surfbeat_spectral_wave_init()
       use precision, only: dp
 
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       use wave_boundary_datastore
-      use m_xbeach_data
+      use m_surfbeat_data
       use fm_external_forcings_data
       use m_flowgeom
-      use m_xbeach_errorhandling
+      use m_surfbeat_errorhandling
       use m_polygon
       use m_missing, only: dmiss
       use m_sferic, only: twopi, jsferic, jasfer3D
@@ -2726,7 +2726,7 @@ contains
                call writelog('lswe', 'a,i0,a,a)', 'Error reading line ', i + 1, ' of file ', bcfile)
                call writelog('lswe', '', 'Check file for format errors and ensure the number of  ', &
                              'lines is equal to nspectrumloc.')
-               call xbeach_errorhandler()
+               call surfbeat_errorhandler()
             end if
             xx(i) = xt
             yy(i) = yt
@@ -2820,7 +2820,7 @@ contains
 
             if (nspectrumloc < 1) then
                call writelog('ewls', '', 'Number of boundary spectra (''nspectrumloc'') may not be less than 1 for spectral boundary conditions.')
-               call xbeach_errorhandler()
+               call surfbeat_errorhandler()
             end if
 
             ! open location list file
@@ -2867,7 +2867,7 @@ contains
                      call writelog('lswe', 'a,i0,a,a)', 'Error reading line ', i + 1, ' of file ', bcfile)
                      call writelog('lswe', '', 'Check file for format errors and ensure the number of  ', &
                                    'lines is equal to nspectrumloc')
-                     call xbeach_errorhandler()
+                     call surfbeat_errorhandler()
                   end if
 
                end do
@@ -2984,7 +2984,7 @@ contains
                else
                   call writelog('ewls', '', 'If nspectrumloc>1 then bcfile should contain spectra locations with LOCLIST header')
                   close (fid)
-                  call xbeach_errorhandler()
+                  call surfbeat_errorhandler()
                end if
             end if
 
@@ -3013,7 +3013,7 @@ contains
       ierr = 0
 1234  continue
       return
-   end subroutine xbeach_spectral_wave_init
+   end subroutine surfbeat_spectral_wave_init
 
 !> get reference point for wave energy bc
    subroutine get_refpoint(xref0, yref0)
@@ -3047,7 +3047,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowparameters
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_partitioninfo
       implicit none
 
@@ -3116,11 +3116,11 @@ contains
       return
    end subroutine get_hboundary
 
-   subroutine xbeach_waves(ierr)
+   subroutine surfbeat_waves(ierr)
       use precision, only: dp
       use m_flowtimes
-      use m_xbeach_data, m_xbeach_data_hminlw => hminlw
-      use m_xbeach_netcdf
+      use m_surfbeat_data, m_surfbeat_data_hminlw => hminlw
+      use m_surfbeat_netcdf
       use m_flowparameters
       use m_flow, only: hs, kmx
       use m_flowgeom, only: ndx
@@ -3143,7 +3143,7 @@ contains
       end if
       !
       if (oldhmin == 1) then
-         hstokes = max(hs, m_xbeach_data_hminlw)
+         hstokes = max(hs, m_surfbeat_data_hminlw)
       else
          do k = 1, ndx
             gammal = H(k) / hhw(k)
@@ -3160,8 +3160,8 @@ contains
       select case (trim(instat))
       case ('stat', 'stat_table')
          if ((abs(mod(time0, wavint)) < 0.001d0 * dts) .or. newstatbc == 1) then
-            call xbeach_wave_dispersion(0)
-            call xbeach_wave_stationary(0)
+            call surfbeat_wave_dispersion(0)
+            call surfbeat_wave_stationary(0)
             newstatbc = 0
          end if
       case default
@@ -3171,8 +3171,8 @@ contains
             !
             ! do refraction
             if ((abs(mod(time0, wavint)) < 0.001d0 * dts) .or. newstatbc == 1 .or. time0 == dts) then
-               call xbeach_wave_dispersion(1)
-               call xbeach_wave_stationary(1)
+               call surfbeat_wave_dispersion(1)
+               call surfbeat_wave_stationary(1)
                newstatbc = 0
             end if
             !
@@ -3180,47 +3180,47 @@ contains
             !
             ! need to call dispersion again, because dispersion is different in timestep and direction computation
             if (wci > 0) then
-               call xbeach_wave_dispersion(2)
+               call surfbeat_wave_dispersion(2)
             else
-               call xbeach_wave_dispersion(0)
+               call surfbeat_wave_dispersion(0)
             end if
-            call xbeach_wave_instationary() ! update wave groups along thetamean
+            call surfbeat_wave_instationary() ! update wave groups along thetamean
          else
             newstatbc = 0
             if (wci > 0) then
                !
                call update_means_wave_flow()
-               call xbeach_wave_dispersion(2)
+               call surfbeat_wave_dispersion(2)
             else
-               call xbeach_wave_dispersion(0)
+               call surfbeat_wave_dispersion(0)
             end if
-            call xbeach_wave_instationary()
+            call surfbeat_wave_instationary()
          end if
       end select
 
       ! update stokes drift on every timestep
       if (kmx == 0) then ! otherwise postponed to update_verticalprofiles
-         call xbeach_compute_stokesdrift()
+         call surfbeat_compute_stokesdrift()
       end if
 
       !if (jaavgwavquant .eq. 1) then
-      !   call xbeach_makeaverages(dts)          ! time-averaged stats
+      !   call surfbeat_makeaverages(dts)          ! time-averaged stats
       !end if
 
-   end subroutine xbeach_waves
+   end subroutine surfbeat_waves
 
 !> compute bc for absorbing generating boundary
-   subroutine xbeach_absgen_bc()
+   subroutine surfbeat_absgen_bc()
       use precision, only: dp
       use m_sferic
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_flowgeom
       use m_flow
       use m_physcoef, only: ag, rhomean
       use fm_external_forcings_data
       use m_alloc
       use messagehandling, only: LEVEL_ERROR, mess
-      use m_xbeach_errorhandling
+      use m_surfbeat_errorhandling
       use m_missing
       use m_partitioninfo
       use m_flowtimes, only: dts
@@ -3344,8 +3344,8 @@ contains
 
             !  check array size
             if (NLNX > MAXLNX) then
-               call mess(LEVEL_ERROR, 'xbeach_absgen_bc: array size error')
-               call xbeach_errorhandler()
+               call mess(LEVEL_ERROR, 'surfbeat_absgen_bc: array size error')
+               call surfbeat_errorhandler()
             end if
 
             if (trim(absgentype) == 'abs_1d') then
@@ -3486,12 +3486,12 @@ contains
 
 1234  continue
       return
-   end subroutine xbeach_absgen_bc
+   end subroutine surfbeat_absgen_bc
 
    subroutine rollerturbulence(k)
       use precision, only: dp
-      use m_xbeach_data
-      use m_xbeach_paramsconst
+      use m_surfbeat_data
+      use m_surfbeat_paramsconst
       use m_waves
       use m_physcoef
       use m_sferic
@@ -3548,7 +3548,7 @@ contains
 
    subroutine borecharacter()
       use precision, only: dp
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_flow, only: s1, epshu
       use m_flowgeom, only: ndx, bl
       use m_physcoef
@@ -3626,7 +3626,7 @@ contains
       Tbore = Tbfac * max(Trep / 25.d0, min(Trep / 4.d0, H / (max(cwav, sqrt(H * ag)) * max(detadxmax, 5d-3))))
    end subroutine borecharacter
 
-!   subroutine xbeach_map_wind_field(wx, wy, mwind, wmagcc, windspreadfac)
+!   subroutine surfbeat_map_wind_field(wx, wy, mwind, wmagcc, windspreadfac)
 !   use m_flowgeom, only: ln, wcl, lnx, ndx, thetabin, ntheta, dtheta
 !
 !   implicit none
@@ -3697,11 +3697,11 @@ contains
 !   deallocate(wxcc,wycc,wdir, stat=ierr)
 !   return
 !
-!  end subroutine xbeach_map_wind_field
+!  end subroutine surfbeat_map_wind_field
 !
-!  subroutine xbeach_windsource(ee1, E, tt1, sigmwav , cgwavt, cgwav, hh, dtmaxwav, wsorE, wsorT,egradcg,SwE ,SwT )
+!  subroutine surfbeat_windsource(ee1, E, tt1, sigmwav , cgwavt, cgwav, hh, dtmaxwav, wsorE, wsorT,egradcg,SwE ,SwT )
 !   use m_flowgeom, only: ndx, ndxi, lnx, wcl, ln, thetabin,ntheta, dtheta, bai
-!   use m_xbeach_data, only: mwind, Eini, Trepini, snx, csx, wmagcc, windspreadfac, Eful, Tful,CE1, CT1, CE2, CT2, jagradcg
+!   use m_surfbeat_data, only: mwind, Eini, Trepini, snx, csx, wmagcc, windspreadfac, Eful, Tful,CE1, CT1, CE2, CT2, jagradcg
 !   use m_physcoef, only: rhomean, ag
 !   use m_sferic, only: twopi, pi
 !!   use m_growth_curves
@@ -3799,7 +3799,7 @@ contains
 !    deallocate(gradcg, stat = ierr )
 !
 !   return
-!end subroutine xbeach_windsource
+!end subroutine surfbeat_windsource
 
 !subroutine advec_horz_cg(dtmaxwav, snx, csx, veloc, gradcg)
 !   use m_sferic
@@ -3878,9 +3878,9 @@ contains
 !
 !end subroutine advec_horz_cg
 
-!subroutine xbeach_wave_period_breaker_dissipation( Df, E, sigmwav, cgwav, kwav, DtotT)
+!subroutine surfbeat_wave_period_breaker_dissipation( Df, E, sigmwav, cgwav, kwav, DtotT)
 !   use m_flowgeom, only: ndx
-!   use m_xbeach_data, only: ndissip, coefdispT, coefdispk
+!   use m_surfbeat_data, only: ndissip, coefdispT, coefdispk
 !   use m_physcoef, only: rhomean, ag
 !   use m_sferic, only: twopi
 !   implicit none
@@ -3897,11 +3897,11 @@ contains
 !1234 continue
 !   return
 !
-!end subroutine xbeach_wave_period_breaker_dissipation
+!end subroutine surfbeat_wave_period_breaker_dissipation
 !
-!subroutine xbeach_wave_compute_period_depth_limitation(E, Tmaxdep )
+!subroutine surfbeat_wave_compute_period_depth_limitation(E, Tmaxdep )
 !   use m_flowgeom, only: ndx
-!   use m_xbeach_data, only: wmagcc, aa1, aa2, bb1, bb2
+!   use m_surfbeat_data, only: wmagcc, aa1, aa2, bb1, bb2
 !   use m_physcoef, only: rhomean, ag
 !
 !   implicit none
@@ -3924,7 +3924,7 @@ contains
 !1234 continue
 !   deallocate(Edls, Tdls, stat=ierr)
 !   return
-! end subroutine xbeach_wave_compute_period_depth_limitation
+! end subroutine surfbeat_wave_compute_period_depth_limitation
 !
 !
 ! subroutine advec_horz_windmodel(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
@@ -4041,13 +4041,13 @@ contains
 !end subroutine advec_horz_windmodel
 !
 !
-!subroutine xbeach_dispersion_windmodel()
-!   use m_xbeach_filefunctions
+!subroutine surfbeat_dispersion_windmodel()
+!   use m_surfbeat_filefunctions
 !   use m_flowgeom
 !   use m_flow, only: s1, hu
 !   use m_flowparameters, only: epshu, epshu
 !   use m_sferic, only: pi
-!   use m_xbeach_data, only: hdisp, deltaH, H, waveps, sigt, sigmwav, L0t, L1t, Ltempt, cwavt, nwavt, cgwavt, kwavt, cwav, nwav, cgwav, kwav, ee1
+!   use m_surfbeat_data, only: hdisp, deltaH, H, waveps, sigt, sigmwav, L0t, L1t, Ltempt, cwavt, nwavt, cgwavt, kwavt, cwav, nwav, cgwav, kwav, ee1
 !   use m_physcoef, only: ag
 !   use m_flowtimes, only: time0
 !   use fm_external_forcings_data
@@ -4133,13 +4133,13 @@ contains
 !   nwav  = max(sum(ee1*nwavt,1),1d-6) /max(sum(ee1,1),1d-6)
 !   kwav  = max(sum(ee1*kwavt,1),1d-6) /max(sum(ee1,1),1d-6)
 !
-!   end subroutine xbeach_dispersion_windmodel
+!   end subroutine surfbeat_dispersion_windmodel
 
 ! ======================
 ! Stationary solver
 ! ======================
 
-   subroutine xbeach_solve_wave_stationary(callType, ierr)
+   subroutine surfbeat_solve_wave_stationary(callType, ierr)
       ! Based on wave energy balance for directionally spread waves, single representative frequency
       ! 4-sweep implicit method
       ! At the main level arrays are two-dimensional in
@@ -4148,8 +4148,8 @@ contains
       ! (c) 2020 Dano Roelvink, Johan Reyns IHE Delft
       !
       use precision, only: dp
-      use m_xbeach_paramsconst, only: TURB_NONE
-      use m_xbeach_data, m_xbeach_data_hminlw => hminlw
+      use m_surfbeat_paramsconst, only: TURB_NONE
+      use m_surfbeat_data, m_surfbeat_data_hminlw => hminlw
       use m_flowgeom
       use m_flowtimes, only: dnt
       use m_flow, only: epshu, flowwithoutwaves
@@ -4241,7 +4241,7 @@ contains
       !
       ! Transfer cell center values to corners
       call flownod2corner(hh, ndx, hhstat, numk, ierr) ! mode dependent water depth to corners
-      hhstat = max(hhstat, m_xbeach_data_hminlw)
+      hhstat = max(hhstat, m_surfbeat_data_hminlw)
       !
       call flownod2corner(cwavlocal, ndx, cstat, numk, ierr)
       cstat = max(cstat, sqrt(ag * epshu)) ! this should not be necessary
@@ -4286,12 +4286,12 @@ contains
       ! Solve the directional wave energy balance on an unstructured grid
       call solve_energy_balance2Dstat(xk, yk, numk, w, ds, inner, prev, seapts, noseapts, nmmask, &
                                       eebc, thetabinlocal, nthetalocal, wavdir, &
-                                      hhstat, kwavstat, cgstat, cthetastat, fwstat, Hmaxstat, Trep, dtmaximp, rhomean, ag, alpha, gamma, m_xbeach_data_hminlw, maxiter, &
+                                      hhstat, kwavstat, cgstat, cthetastat, fwstat, Hmaxstat, Trep, dtmaximp, rhomean, ag, alpha, gamma, m_surfbeat_data_hminlw, maxiter, &
                                       Hstat, Dwstat, Dfstat, thetam, uorbstat, eestat)
       call timer(t2)
       !
       ! Correct Dw for gammax before roller computation
-      where (Hstat > gammaxxb * hhstat .and. hhstat > m_xbeach_data_hminlw)
+      where (Hstat > gammaxxb * hhstat .and. hhstat > m_surfbeat_data_hminlw)
          gammax_correct = .true.
       elsewhere
          gammax_correct = .false.
@@ -4323,7 +4323,7 @@ contains
          ! Add influence of gammax on roller energy
          if (rollergammax == 1) then
             RH = sqrt(8d0 * Erstat / rhomean / ag)
-            where (RH > gammaxxb * hhstat .and. hhstat > m_xbeach_data_hminlw)
+            where (RH > gammaxxb * hhstat .and. hhstat > m_surfbeat_data_hminlw)
                gammax_correct = .true.
             elsewhere
                gammax_correct = .false.
@@ -4402,7 +4402,7 @@ contains
       ierr = 0
 1234  continue
       return
-   end subroutine xbeach_solve_wave_stationary
+   end subroutine surfbeat_solve_wave_stationary
 !
    subroutine find_upwind_neighbours(x, y, mn, theta, ntheta, kp, np, w, prev, ds, ierr)
       use precision, only: dp
@@ -5231,7 +5231,7 @@ contains
 
    subroutine fill_connected_nodes(ierr)
       use network_data
-      use m_xbeach_data
+      use m_surfbeat_data
 
       implicit none
 
@@ -5271,7 +5271,7 @@ contains
       use fm_external_forcings_data
       use m_flowgeom
       use network_data
-      use m_xbeach_data, only: kbndu2kbndw, kbndz2kbndw, noseapts, seapts, wmask, nmmask, inner
+      use m_surfbeat_data, only: kbndu2kbndw, kbndz2kbndw, noseapts, seapts, wmask, nmmask, inner
       use gridoperations, only: othernode
 
       implicit none
@@ -5411,7 +5411,7 @@ contains
 
    subroutine allocstatsolverarrays(callType, ierr)
       use m_alloc
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_flowgeom, only: ntheta, ntheta_s
       use network_data, only: numk
 
@@ -5494,7 +5494,7 @@ contains
       if (ierr > 0) goto 1234
       ierr = 0
 1234  continue
-      if (ierr > 0) write (*, *) 'xbeachwaves::allocstatsolverarrays :: Error.'
+      if (ierr > 0) write (*, *) 'surfbeatwaves::allocstatsolverarrays :: Error.'
       return
    end subroutine allocstatsolverarrays
 
@@ -5502,7 +5502,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: banf, ba, mxban, nban
       use fm_external_forcings_data
-      use m_xbeach_data, only: kbndz2kbndw, kbndu2kbndw
+      use m_surfbeat_data, only: kbndz2kbndw, kbndu2kbndw
 
       implicit none
 
@@ -5631,7 +5631,7 @@ contains
 ! Compute flow fields with relaxation for singledir and wci
    subroutine update_means_wave_flow()
       use precision, only: dp
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_flowgeom
       use m_flowtimes
       use m_flow
@@ -5667,9 +5667,9 @@ contains
 
    end subroutine update_means_wave_flow
 
-   subroutine xbeach_compute_wave_velocities(callType, dhdx, dhdy, dudx, dudy, dvdx, dvdy, sinh2kh)
+   subroutine surfbeat_compute_wave_velocities(callType, dhdx, dhdy, dudx, dudy, dvdx, dvdy, sinh2kh)
       use precision, only: dp
-      use m_xbeach_data, only: cwav, cgwav, ctheta, cwav_s, cgwav_s, ctheta_s, sigmwav, costh, sinth, sinth_s, costh_s, Trep, &
+      use m_surfbeat_data, only: cwav, cgwav, ctheta, cwav_s, cgwav_s, ctheta_s, sigmwav, costh, sinth, sinth_s, costh_s, Trep, &
                                wci, ucxws, ucyws, umwci, vmwci
       use m_flow, only: ucx, ucy, hs
       use m_flowgeom, only: ndx, ntheta, ntheta_s
@@ -5766,11 +5766,11 @@ contains
          end do
          ctheta_s = sign(1.d0, ctheta_s) * min(abs(ctheta_s), .5 * pi / Trep)
       end select
-   end subroutine ! xbeach_compute_wave_velocities
+   end subroutine ! surfbeat_compute_wave_velocities
 
-   subroutine xbeach_wave_stationary(callType)
+   subroutine surfbeat_wave_stationary(callType)
       use precision, only: dp
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_flowgeom, only: dtheta, ntheta, dtheta_s, ntheta_s, ndx
       use m_flow, only: ucx, ucy, epshu
 
@@ -5865,17 +5865,17 @@ contains
       end do
 
       ! Compute wave velocities
-      call xbeach_compute_wave_velocities(callType_wave_velocities, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
+      call surfbeat_compute_wave_velocities(callType_wave_velocities, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
 
-      call xbeach_solve_wave_stationary(callType, ierr)
+      call surfbeat_solve_wave_stationary(callType, ierr)
 
-   end subroutine xbeach_wave_stationary
+   end subroutine surfbeat_wave_stationary
 
 ! Determine surface forces and body forces for 3D applications
-   subroutine xbeach_wave_compute_flowforcing3D()
+   subroutine surfbeat_wave_compute_flowforcing3D()
       use precision, only: dp
       use m_setwavfu, only: setwavfu
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_waves
       use m_flowgeom, only: ndx
       use mathconsts, only: degrad
@@ -5928,11 +5928,11 @@ contains
 
 1234  continue
       return
-   end subroutine xbeach_wave_compute_flowforcing3D
+   end subroutine surfbeat_wave_compute_flowforcing3D
 
-   subroutine xbeach_compute_stokesdrift()
+   subroutine surfbeat_compute_stokesdrift()
       use precision, only: dp
-      use m_xbeach_data, m_xbeach_data_hminlw => hminlw
+      use m_surfbeat_data, m_surfbeat_data_hminlw => hminlw
       use m_flowgeom
       use m_waves
       use m_flow, only: hu
@@ -5972,7 +5972,7 @@ contains
       end if
 
       do k = 1, ndx
-         if (hh(k) > m_xbeach_data_hminlw) then
+         if (hh(k) > m_surfbeat_data_hminlw) then
             ustw(k) = E(k) / max(cwav(k), 0.01d0) / rhomean / hstokes(k) ! waves
             uwf(k) = ustw(k) * cos(thetamean(k))
             vwf(k) = ustw(k) * sin(thetamean(k))
@@ -5985,7 +5985,7 @@ contains
       end do
 
       do L = 1, lnx ! facenormal decomposition
-         if (hu(L) > m_xbeach_data_hminlw) then
+         if (hu(L) > m_surfbeat_data_hminlw) then
             k1 = ln(1, L); k2 = ln(2, L)
             ustokes(L) = acL(L) * (csu(L) * (uwf(k1) + urf(k1)) + snu(L) * (vwf(k1) + vrf(k1))) + &
                          (1d0 - acL(L)) * (csu(L) * (uwf(k2) + urf(k2)) + snu(L) * (vwf(k2) + vrf(k2)))
@@ -6003,4 +6003,4 @@ contains
       return
    end subroutine
 
-end module m_xbeachwaves
+end module m_surfbeatwaves

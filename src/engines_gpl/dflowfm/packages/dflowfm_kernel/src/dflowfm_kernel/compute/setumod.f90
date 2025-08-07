@@ -55,7 +55,7 @@ contains
       use m_flowgeom
       use m_flowtimes, only: handle_umod, ja_timestep_auto_visc, dti
       use m_sferic
-      use m_xbeach_data, only: DR, roller, swave, nuhfac
+      use m_surfbeat_data, only: DR, roller, swave, nuhfac
       use unstruc_model, only: md_restartfile
       use m_setucxcuy_leastsquare, only: reconst2nd
       use MessageHandling

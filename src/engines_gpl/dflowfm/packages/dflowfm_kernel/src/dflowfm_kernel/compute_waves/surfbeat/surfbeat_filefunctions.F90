@@ -29,10 +29,10 @@
 
 !
 !
-module m_xbeach_filefunctions
+module m_surfbeat_filefunctions
 !! Contains logging functions and file administration functions
 !! Merge of logging_module and filefunctions_module
-   use m_xbeach_typesandkinds
+   use m_surfbeat_typesandkinds
 
    implicit none
 
@@ -110,7 +110,7 @@ module m_xbeach_filefunctions
 contains
 
    subroutine start_logfiles(error)
-      use m_xbeach_errorhandling
+      use m_surfbeat_errorhandling
       use m_partitioninfo
       implicit none
 
@@ -133,7 +133,7 @@ contains
 
       if (error == 1) then
          write (*, *) 'Error: not able to open log file. Stopping simulation'
-         call xbeach_errorhandler()
+         call surfbeat_errorhandler()
       end if
 
    end subroutine start_logfiles
@@ -173,7 +173,7 @@ contains
    end subroutine progress_indicator
 
    subroutine report_file_read_error(filename)
-      use m_xbeach_errorhandling
+      use m_surfbeat_errorhandling
 
       implicit none
 
@@ -181,7 +181,7 @@ contains
 
       call writelog('lswe', '', 'Error reading file ''', trim(filename), '''')
       call writelog('lswe', '', 'Check file for incorrect decimal format, line breaks and tab characters')
-      call xbeach_errorhandler()
+      call surfbeat_errorhandler()
 
    end subroutine report_file_read_error
 
@@ -1145,7 +1145,7 @@ contains
    end subroutine writelog_afaiaaa
 
    subroutine check_file_exist(filename, exist, forceclose)
-      use m_xbeach_errorhandling
+      use m_surfbeat_errorhandling
       implicit none
 
       character(*) :: filename
@@ -1167,7 +1167,7 @@ contains
 
          call writelog('sle', '', 'File ''', trim(filename), ''' not found. Terminating simulation')
 
-         call xbeach_errorhandler()
+         call surfbeat_errorhandler()
       end if
 
       if (present(exist)) then
@@ -1181,7 +1181,7 @@ contains
 
    subroutine checkbcfilelength(tstop, instat, filename, nspectrumloc, filetype, nonh)
 
-      use m_xbeach_errorhandling
+      use m_surfbeat_errorhandling
       use precision_basics, only: dp
 
       implicit none
@@ -1227,7 +1227,7 @@ contains
       if (trim(testc) == 'LOCLIST') then
          if (nspectrumloc < 2) then
             call writelog('sle', ' ', 'Error: LOCLIST found in file, but nspectrumloc<2. Change value in surfbeat input file, or change bc specification.')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
          nlocs = nlines - 1
          allocate (bcfiles(nlocs))
@@ -1318,7 +1318,7 @@ contains
             call writelog('sle', '(a,f0.2,a,f0.2)', ' Total wave condition time series is ', total, &
                           ' but simulation length is ', tstop)
             call writelog('sle', ' ', 'Stopping calculation')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
       end do ! nlocs
    end subroutine checkbcfilelength
@@ -1373,4 +1373,4 @@ contains
 
    end subroutine check_file_exist_generic
 
-end module m_xbeach_filefunctions
+end module m_surfbeat_filefunctions

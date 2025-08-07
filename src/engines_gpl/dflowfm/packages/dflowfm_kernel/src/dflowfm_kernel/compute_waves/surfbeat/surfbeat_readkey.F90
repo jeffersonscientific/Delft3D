@@ -58,8 +58,8 @@
 
 !! Adapted for use in DFLOW FM
 
-module m_xbeach_readkey
-   use m_xbeach_typesandkinds
+module m_surfbeat_readkey
+   use m_surfbeat_typesandkinds
    use string_module
 
    implicit none
@@ -75,8 +75,8 @@ module m_xbeach_readkey
 contains
 
    real(dp) function readkey_dbl(fname, key, defval, mnval, mxval, bcast, required, silent, strict)
-      use m_xbeach_errorhandling
-      use m_xbeach_filefunctions
+      use m_surfbeat_errorhandling
+      use m_surfbeat_filefunctions
       use precision_basics, only: dp
       implicit none
       character(len=*) :: fname, key
@@ -132,7 +132,7 @@ contains
             call writelog('sle', '(a,a,a,f0.4)', 'Value of ', trim(printkey), ' is ', value_dbl)
             call writelog('sle', '(a,a,f0.4,a,f0.4)', trim(printkey), ' must be set between ', mnval, ' and ', mxval)
             call writelog('sle', '', 'Terminating simulation')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else if (value_dbl > mxval) then
             call writelog('lw', '(a12,a,f0.4,a,f0.4)', (printkey), ' = ', value_dbl, ' Warning: value > recommended value of ', mxval)
             call writelog('s', '(a12,a,a,f0.4)', 'Warning: ', trim(printkey), ' > recommended value of ', mxval)
@@ -145,7 +145,7 @@ contains
       else
          if (lrequired) then
             call writelog('lse', '', 'Error: missing required value for parameter ', printkey)
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else
             value_dbl = defval
             if (.not. lsilent) call writelog('l', '(a12,a,f0.4,a)', (printkey), ' = ', value_dbl, ' (no record found, default value used)')
@@ -156,8 +156,8 @@ contains
    end function readkey_dbl
 
    function readkey_int(fname, key, defval, mnval, mxval, bcast, required, silent, strict) result(value_int)
-      use m_xbeach_errorhandling
-      use m_xbeach_filefunctions
+      use m_surfbeat_errorhandling
+      use m_surfbeat_filefunctions
       implicit none
       character(len=*) :: fname, key
       character(slen) :: printkey
@@ -210,7 +210,7 @@ contains
             call writelog('sle', '(a,a,a,f0.4)', 'Value of ', trim(printkey), ' is ', value_int)
             call writelog('sle', '(a,a,f0.4,a,f0.4)', trim(printkey), ' must be set between ', mnval, ' and ', mxval)
             call writelog('sle', '', 'Terminating simulation')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          elseif (value_int > mxval) then
             call writelog('lw', fmt, 'Warning: variable ', (printkey), ' ', value_int, ' > recommended value of ', mxval)
             call writelog('s', '(a12,a,a,i0)', 'Warning: ', trim(printkey), ' > recommended value of ', mxval)
@@ -223,7 +223,7 @@ contains
       else
          if (lrequired) then
             call writelog('lse', '', 'Error: missing required value for parameter ', printkey)
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else
             value_int = defval
             if (.not. lsilent) call writelog('l', '(a12,a,i0,a)', (printkey), ' = ', value_int, ' (no record found, default value used)')
@@ -232,8 +232,8 @@ contains
    end function readkey_int
 
    function readkey_intvec(fname, key, vlength, tlength, defval, mnval, mxval, bcast, required, silent) result(value_vec)
-      use m_xbeach_errorhandling
-      use m_xbeach_filefunctions
+      use m_surfbeat_errorhandling
+      use m_surfbeat_filefunctions
 
       implicit none
       character(len=*) :: fname, key
@@ -274,7 +274,7 @@ contains
          if (ioerr < 0) then
             call writelog('lse', '', 'Error reading value for parameter ', printkey)
             call writelog('lse', '', 'Check whether parameter is given sufficient number of input values')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
          do i = 1, vlength
             if (value_vec(i) > mxval) then
@@ -292,7 +292,7 @@ contains
       else
          if (lrequired) then
             call writelog('lse', '', 'Error: missing required value for parameter ', printkey)
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else
             value_vec(1:vlength) = defval
             do i = 1, vlength
@@ -305,8 +305,8 @@ contains
    end function readkey_intvec
 
    function readkey_str(fname, key, defval, nv, nov, allowed, old, bcast, required, silent) result(value_str)
-      use m_xbeach_filefunctions
-      use m_xbeach_errorhandling
+      use m_surfbeat_filefunctions
+      use m_surfbeat_errorhandling
       implicit none
       character(len=*) :: fname, key, defval
       character(slen) :: value_str
@@ -347,7 +347,7 @@ contains
       if (value == ' ') then
          if (lrequired) then
             call writelog('lse', '', 'Error: missing required value for parameter ', printkey)
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else
             value_str = defval
             if (.not. lsilent) call writelog('l', '(a12,a,a,a)', (printkey), ' = ', trim(value_str), ' (no record found, default value used)')
@@ -377,14 +377,14 @@ contains
             do j = 1, nov
                call writelog('sle', '(a12)', trim(old(j)))
             end do
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
       end if
    end function readkey_str
 
    function readkey_name(fname, key, bcast, required, silent) result(value_str)
-      use m_xbeach_filefunctions
-      use m_xbeach_errorhandling
+      use m_surfbeat_filefunctions
+      use m_surfbeat_errorhandling
       implicit none
       character(len=*) :: fname, key
       character(slen) :: value_str
@@ -417,7 +417,7 @@ contains
       if (value == ' ') then
          if (lrequired) then
             call writelog('lse', '', 'Error: missing required value for parameter ', printkey)
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else
             value_str = ' '
             if (.not. lsilent) call writelog('l', ' (a12,a)', printkey, ' = None specified')
@@ -433,8 +433,8 @@ contains
    end function readkey_name
 
    function readkey_dblvec(fname, key, vlength, tlength, defval, mnval, mxval, bcast, required) result(value_vec)
-      use m_xbeach_filefunctions
-      use m_xbeach_errorhandling
+      use m_surfbeat_filefunctions
+      use m_surfbeat_errorhandling
       use precision_basics, only: dp
       implicit none
       character(len=*) :: fname, key
@@ -468,7 +468,7 @@ contains
          if (ioerr < 0) then
             call writelog('lse', '', 'Error reading value for parameter ', printkey)
             call writelog('lse', '', 'Check whether parameter is given sufficient number of input values')
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          end if
          do i = 1, vlength
             if (value_vec(i) > mxval) then
@@ -486,7 +486,7 @@ contains
       else
          if (lrequired) then
             call writelog('lse', '', 'Error: missing required value for parameter ', printkey)
-            call xbeach_errorhandler()
+            call surfbeat_errorhandler()
          else
             value_vec(1:vlength) = defval
             do i = 1, vlength
@@ -536,7 +536,7 @@ contains
       ! Subroutine also used to keep track of which lines have been succesfully read
       ! If called by readkey('params.txt','checkparams'), will output unsuccesful key = value
       ! combinations in params.txt
-      use m_xbeach_filefunctions
+      use m_surfbeat_filefunctions
       integer :: lun, i, ier, nlines, ic, ikey, itab
       character(len=1) :: ch
       character(len=*), intent(in) :: fname, key
@@ -824,7 +824,7 @@ contains
    end subroutine setoldnames
 
    subroutine parmapply(vname, idefname, parm, parm_str, bcast, required)
-      use m_xbeach_typesandkinds
+      use m_surfbeat_typesandkinds
       use unstruc_model
 
       implicit none
@@ -860,4 +860,4 @@ contains
 
    end subroutine parmapply
 
-end module m_xbeach_readkey
+end module m_surfbeat_readkey

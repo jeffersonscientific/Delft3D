@@ -61,7 +61,7 @@ contains
       use m_ship
       use m_partitioninfo
       use m_timer
-      use m_xbeach_data
+      use m_surfbeat_data
       use MessageHandling
       use m_sobekdfm
       use unstruc_display
@@ -70,7 +70,7 @@ contains
       use m_fm_bott3d, only: fm_bott3d
       use m_fm_erosed, only: ti_sedtrans
       use m_curvature, only: get_curvature
-      use m_xbeach_netcdf, only: xbeach_mombalance
+      use m_surfbeat_netcdf, only: surfbeat_mombalance
       use mass_balance_areas_routines, only: comp_bedload_fluxmba
       use m_set_kbot_ktop
       use m_volsur

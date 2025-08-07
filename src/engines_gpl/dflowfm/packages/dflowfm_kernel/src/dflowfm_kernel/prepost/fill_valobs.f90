@@ -68,7 +68,7 @@ contains
       use m_get_ucx_ucy_eul_mag, only: getucxucyeulmag
       use m_get_link1, only: getlink1
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
-      use m_xbeach_data, only: R
+      use m_surfbeat_data, only: R
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness

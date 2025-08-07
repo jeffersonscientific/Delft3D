@@ -46,7 +46,7 @@ contains
       use m_flowparameters, only: jawaveforces, wave_forces_off, jawave, wave_swan_online, wave_nc_offline, wave_surfbeat, epshu
       use m_flowgeom, only: lnx, lnx1d, ln, acl, csu, snu
       use m_waves, only: m_waves_hminlw => hminlw, gammax, facmax, sxwav, sywav, sbxwav, sbywav, twav, hwav
-      use m_xbeach_data, only: xb_hminlw => hminlw, gammaxxb
+      use m_surfbeat_data, only: xb_hminlw => hminlw, gammaxxb
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx
       use m_physcoef, only: sag

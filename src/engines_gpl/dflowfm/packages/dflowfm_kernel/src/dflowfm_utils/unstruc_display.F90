@@ -1486,7 +1486,7 @@ contains
       use m_flow
       use m_transport, only: numconst, constituents
       use m_flowgeom, only: ndxi
-      use m_xbeach_data, only: csx, snx, itheta_view
+      use m_surfbeat_data, only: csx, snx, itheta_view
       use m_flowparameters, only: jawave
       use m_statistics, only: npdf, xpdf, ypdf
       use messagehandling, only: msgbuf, msg_flush

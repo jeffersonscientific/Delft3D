@@ -74,7 +74,7 @@ contains
       use m_sobekdfm
       use m_waves, only: default_waves
       use m_save_ugrid_state
-      use m_xbeach_avgoutput, only: default_xbeach_avgoutput
+      use m_surfbeat_avgoutput, only: default_surfbeat_avgoutput
       use m_nearfield, only: default_nearfieldData
       use m_ship
       use unstruc_caching
@@ -156,7 +156,7 @@ contains
 
       call default_interpolationsettings()
 
-      call default_xbeach_avgoutput()
+      call default_surfbeat_avgoutput()
 
       call default_save_ugrid_state()
 

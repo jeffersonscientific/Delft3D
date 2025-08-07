@@ -31,7 +31,7 @@
 !
 
 module m_fm_erosed_sub
-   use m_xbeachwaves, only: rollerturbulence
+   use m_surfbeatwaves, only: rollerturbulence
    use m_setucxucy_mor, only: setucxucy_mor
    use m_setucxqucyq_mor, only: setucxqucyq_mor
    use m_init_1dinfo, only: init_1dinfo
@@ -106,9 +106,9 @@ contains
       use m_fm_erosed, only: nd => nd_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
       use m_bedform
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_waves
-      use m_xbeach_paramsconst
+      use m_surfbeat_paramsconst
       use m_tables, only: interpolate
       use m_partitioninfo
       use compbsskin_module, only: compbsskin, get_alpha_fluff

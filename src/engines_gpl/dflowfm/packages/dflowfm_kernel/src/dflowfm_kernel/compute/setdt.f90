@@ -33,7 +33,7 @@
 module m_setdt
    use m_setdtorg, only: setdtorg
    use m_timestepanalysis, only: timestepanalysis
-   use m_xbeachwaves, only: xbeach_wave_maxtimestep
+   use m_surfbeatwaves, only: surfbeat_wave_maxtimestep
    use m_fm_mor_maxtimestep, only: fm_mor_maxtimestep
    use m_setdtmaxavalan, only: setdtmaxavalan
    use m_waveconst
@@ -51,7 +51,7 @@ contains
       use m_tekcflmx
       use m_partitioninfo
       use m_flowparameters, only: jawave, flow_solver, FLOW_SOLVER_SRE
-      use m_xbeach_data, only: swave, instat
+      use m_surfbeat_data, only: swave, instat
       use m_flowtimes
       use m_flow, only: kkcflmx
       use m_timer
@@ -77,7 +77,7 @@ contains
 
       if (jawave == WAVE_SURFBEAT .and. swave == 1) then
          if (.not. (trim(instat) == 'stat' .or. trim(instat) == 'stat_table')) then
-            call xbeach_wave_maxtimestep()
+            call surfbeat_wave_maxtimestep()
          end if
       end if
 

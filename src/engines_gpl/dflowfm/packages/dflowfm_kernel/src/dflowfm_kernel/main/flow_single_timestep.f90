@@ -50,7 +50,7 @@ contains
       use m_flowgeom
       use m_flowtimes
       use unstruc_netcdf
-      use m_xbeach_netcdf
+      use m_surfbeat_netcdf
       use m_timer
       use dfm_error
       use m_sedtrails_netcdf, only: sedtrails_write_stats
@@ -93,7 +93,7 @@ contains
 
       ! JRE avoid annoying dt_user interference
       ! This may induce slight inaccuracies when dts is relatively large
-      call xbeach_write_stats(time1)
+      call surfbeat_write_stats(time1)
       call sedmor_write_stats(time1)
       if (jasedtrails > 0) then
          call sedtrails_write_stats(time1)

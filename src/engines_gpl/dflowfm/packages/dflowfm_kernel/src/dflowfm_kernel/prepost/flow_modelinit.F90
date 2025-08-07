@@ -61,7 +61,7 @@ contains
       use m_flow_bl_ave_init, only: flow_bl_ave_init
       use m_flow_bedforminit, only: flow_bedforminit
       use m_flow_allocflow, only: flow_allocflow
-      use m_xbeachwaves, only: xbeach_wave_init, xbeach_wave_input
+      use m_surfbeatwaves, only: surfbeat_wave_init, surfbeat_wave_input
       use m_flow_waveinit, only: flow_waveinit
       use m_alloc9basicwavearrays, only: alloc9basicwavearrays
       use m_ini_transport, only: ini_transport
@@ -91,7 +91,7 @@ contains
       use m_vegetation
       use m_hydrology, only: jadhyd, init_hydrology
       use m_integralstats, is_is_numndvals => is_numndvals
-      use m_xbeach_data, only: bccreated
+      use m_surfbeat_data, only: bccreated
       use m_oned_functions
       use m_nearfield, only: reset_nearfieldData
       use m_alloc
@@ -191,7 +191,7 @@ contains
       if (jawave == WAVE_SURFBEAT) then
          call timstrt('Surfbeat input init', handle_extra(2)) ! Wave input
          bccreated = .false. ! for reinit
-         call xbeach_wave_input() ! will set swave and lwave
+         call surfbeat_wave_input() ! will set swave and lwave
          call timstop(handle_extra(2)) ! End wave input
       end if
 
@@ -463,7 +463,7 @@ contains
                call mess(LEVEL_ERROR, 'unstruc::flow_modelinit - No wave boundary defined for surfbeat model. Do you use the correct ext file?')
             end if
          end if
-         call xbeach_wave_init()
+         call surfbeat_wave_init()
          call timstop(handle_extra(27))
       end if
 

@@ -296,7 +296,7 @@ contains
          if (itpbn == 4) then ! dischargebnd
             zbndun = zbndq(n)
          else if (itpbn == 5) then ! absgenbc
-            zbndun = u1(LL) ! set in xbeach_absgen_bc
+            zbndun = u1(LL) ! set in surfbeat_absgen_bc
          else ! other types that use alfsmo
             zbndun = zbndu((n - 1) * kmxd + 1)
          end if

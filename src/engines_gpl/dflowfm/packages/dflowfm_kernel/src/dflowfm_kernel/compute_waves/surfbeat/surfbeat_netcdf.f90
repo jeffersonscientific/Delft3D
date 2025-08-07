@@ -29,8 +29,8 @@
 
 !
 !
-module m_xbeach_netcdf
-!! xbeach time-averaged spatial output
+module m_surfbeat_netcdf
+!! surfbeat time-averaged spatial output
 !! to do for the future: add flexibility to add variables using mnemonics
    use io_ugrid
    use netcdf
@@ -135,7 +135,7 @@ module m_xbeach_netcdf
 
 contains
 
-   subroutine xbeach_write_stats(tim)
+   subroutine surfbeat_write_stats(tim)
       use precision, only: dp
       use m_flowparameters, only: jawave, jaavgwavquant, eps10, jamombal
       use m_flowtimes, only: ti_wav, ti_wavs, ti_wave, tstop_user, time_wav
@@ -150,10 +150,10 @@ contains
       if ((jawave == WAVE_SURFBEAT) .and. (ti_wav > 0) .and. (jaavgwavquant == 1)) then
          if (comparereal(tim, time_wav, eps10) >= 0) then
             if (jamombal > 0) then
-               call xbeach_mombalance()
+               call surfbeat_mombalance()
             end if
             call unc_write_wav(tim)
-            call xbeach_clearaverages()
+            call surfbeat_clearaverages()
             if (ti_wav > 0) then
                time_wav = max(ti_wavs + (floor((tim - ti_wavs) / ti_wav) + 1) * ti_wav, ti_wavs)
             else
@@ -220,7 +220,7 @@ contains
       use precision, only: dp
       use io_ugrid
       use unstruc_netcdf
-      use m_xbeach_avgoutput
+      use m_surfbeat_avgoutput
       use m_flowgeom
       use m_flowtimes, only: ti_wav, ti_wavs, ti_wave
       use m_sferic, only: pi
@@ -521,7 +521,7 @@ contains
       use m_sferic
       use network_data
       use unstruc_netcdf
-      use m_xbeach_avgoutput
+      use m_surfbeat_avgoutput
 
       implicit none
 
@@ -948,13 +948,13 @@ contains
 
 !! Construct averages for netcdf output
 !! (Re)allocation in flow_waveinit
-   subroutine xbeach_makeaverages(dt)
+   subroutine surfbeat_makeaverages(dt)
       use precision, only: dp
       use m_flow
       use m_flowgeom
       use m_flowtimes
-      use m_xbeach_data
-      use m_xbeach_avgoutput
+      use m_surfbeat_data
+      use m_surfbeat_avgoutput
       use m_alloc
       use m_sferic
       use m_get_ucx_ucy_eul_mag
@@ -1269,10 +1269,10 @@ contains
       deallocate (ux, uy, tvar_sin, tvar_cos, oldmean, stat=ierr)
       return
 
-   end subroutine xbeach_makeaverages
+   end subroutine surfbeat_makeaverages
 
-   subroutine xbeach_clearaverages()
-      use m_xbeach_avgoutput
+   subroutine surfbeat_clearaverages()
+      use m_surfbeat_avgoutput
       implicit none
 
       integer :: ierr
@@ -1304,11 +1304,11 @@ contains
 1234  continue
       return
 
-   end subroutine xbeach_clearaverages
+   end subroutine surfbeat_clearaverages
 
-   subroutine xbeach_allocateaverages()
+   subroutine surfbeat_allocateaverages()
       use m_flowgeom
-      use m_xbeach_avgoutput
+      use m_surfbeat_avgoutput
       use m_alloc
       use m_flowparameters, only: jamombal
 
@@ -1591,13 +1591,13 @@ contains
 
    end subroutine
 
-   subroutine xbeach_mombalance
+   subroutine surfbeat_mombalance
       use precision, only: dp
       ! calculates some terms to construct momentum balances
       ! still not sure about this one, discuss with Dano and use with caution for now
-      use m_xbeach_avgoutput
+      use m_surfbeat_avgoutput
       use m_flowgeom, only: ndx
-      use m_xbeachwaves_getcellcentergradients, only: getcellcentergradients
+      use m_surfbeatwaves_getcellcentergradients, only: getcellcentergradients
 
       implicit none
 
@@ -1625,6 +1625,6 @@ contains
 
 1234  continue
       return
-   end subroutine xbeach_mombalance
+   end subroutine surfbeat_mombalance
 
-end module m_xbeach_netcdf
+end module m_surfbeat_netcdf

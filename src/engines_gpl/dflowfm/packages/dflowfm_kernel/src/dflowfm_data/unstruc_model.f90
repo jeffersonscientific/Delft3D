@@ -705,7 +705,7 @@ contains
       use string_module
       use m_heatfluxes
       use m_fm_wq_processes
-      use m_xbeach_avgoutput
+      use m_surfbeat_avgoutput
       use unstruc_netcdf, only: UNC_CONV_CFOLD, UNC_CONV_UGRID, unc_set_ncformat, unc_set_nccompress, unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
       use dfm_error
       use unstruc_messages, only: unstruc_errorhandler, loglevel_StdOut
@@ -2615,7 +2615,7 @@ contains
       use m_structures, only: jahiscgen, jahiscdam, jahispump, jahisgate, jahisweir, jahisorif, jahisbridge, jahisculv, jahisdambreak, jahisuniweir, jahiscmpstru, jahislongculv
       use m_1d2d_fixedweirs, only: lat_fix_weir_umin, lat_fix_weir_umin_method, lat_fix_weir_minimal_1d2d_embankment, lat_fix_weir_relax, lat_fix_weir_dx
       use m_subsidence, only: sdu_update_s1
-      use m_xbeach_data, only: swave
+      use m_surfbeat_data, only: swave
       use unstruc_channel_flow
       use m_sedtrails_data
       use m_output_config, only: set_properties

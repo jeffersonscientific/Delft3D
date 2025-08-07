@@ -30,9 +30,9 @@
 !
 !
 
-module m_xbeach_data
+module m_surfbeat_data
    use precision, only: dp
-   use m_xbeach_typesandkinds
+   use m_surfbeat_typesandkinds
    !==================================================================================================================================
    ! XBeach related variables
    !==================================================================================================================================
@@ -172,7 +172,7 @@ module m_xbeach_data
 
    !! Model parameters
    !! 1. DFLOW specific
-   real(kind=dp) :: dtmaxwav !< subtimestepping for xbeach wave driver
+   real(kind=dp) :: dtmaxwav !< subtimestepping for surfbeat wave driver
    real(kind=dp) :: dtmaximp !< pseudotimestepping for implicit wave driver
 
    integer :: xb_started = 0
@@ -317,4 +317,4 @@ module m_xbeach_data
    !real(kind=dp), allocatable              :: wsorT(:,:)        !  [s/s] wind source term for tt1
    !real(kind=dp), allocatable              :: egradcg(:,:)      !  [m/s/m] spatial gradient of cg
    !real(kind=dp), allocatable              :: ddT(:)            !  [s/s] dissipation of wave period
-end module m_xbeach_data
+end module m_surfbeat_data

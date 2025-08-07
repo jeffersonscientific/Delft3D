@@ -862,7 +862,7 @@ module m_initialize_flow1d_implicit
       use m_sediment, only: stmpar, jased, stm_included, kcsmor
       use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, link1, ln_mor, hs_mor, ucxq_mor, ucyq_mor, uau
       use m_turbulence, only: rhowat
-      use m_xbeach_data, only: ktb
+      use m_surfbeat_data, only: ktb
       use m_bedform, only: bfmpar
 
       implicit none

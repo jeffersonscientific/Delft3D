@@ -31,7 +31,7 @@
 !
 
 module m_flow_waveinit
-   use m_xbeachwaves, only: allocstatsolverarrays
+   use m_surfbeatwaves, only: allocstatsolverarrays
 
    implicit none
 
@@ -45,13 +45,13 @@ contains
       use m_flow
       use m_flowgeom
       use m_waves
-      use m_xbeach_data
-      use m_xbeach_avgoutput
-      use m_xbeach_readkey
-      use m_xbeach_filefunctions
-      use m_xbeach_errorhandling
-      use m_xbeach_paramsconst
-      use m_xbeach_netcdf
+      use m_surfbeat_data
+      use m_surfbeat_avgoutput
+      use m_surfbeat_readkey
+      use m_surfbeat_filefunctions
+      use m_surfbeat_errorhandling
+      use m_surfbeat_paramsconst
+      use m_surfbeat_netcdf
       use M_SAMPLES
       use m_missing
       use m_alloc
@@ -349,7 +349,7 @@ contains
             ! if node value still equal to dmiss (values are not defined on flow nodes) - throw error
             do nm = 1, ndx ! loop over flow nodes
                if (fw(nm) == dmiss) then
-                  call xbeach_errorhandler()
+                  call surfbeat_errorhandler()
                end if
             end do
             call delsam(-1)
@@ -360,7 +360,7 @@ contains
          end if
 
          if (jaavgwavquant == 1) then ! arrays for statistical output wave quantities
-            call xbeach_allocateaverages()
+            call surfbeat_allocateaverages()
          end if
       end if
    end subroutine flow_waveinit

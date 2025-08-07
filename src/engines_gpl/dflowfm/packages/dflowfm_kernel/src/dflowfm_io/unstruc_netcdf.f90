@@ -2967,7 +2967,7 @@ contains
       use m_reconstruct_ucz, only : reconstructucz
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units, ifrac2const
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot
-      use m_xbeach_data, only: E, thetamean, sigmwav
+      use m_surfbeat_data, only: E, thetamean, sigmwav
       use unstruc_channel_flow, only: network
       use m_save_ugrid_state, only: mesh1dname
       use m_crosssections, only: t_cstype
@@ -5247,7 +5247,7 @@ contains
       use m_flowparameters, only: jatrt, ibedlevtyp
       use m_mass_balance_areas
       use m_fm_wq_processes
-      use m_xbeach_data, hminlw_xb => hminlw
+      use m_surfbeat_data, hminlw_xb => hminlw
       use m_transportdata
       use m_alloc
       use m_waves, hminlw_waves => hminlw
@@ -8135,7 +8135,7 @@ contains
       use m_flowparameters, only: jatrt, jacali
       use m_mass_balance_areas
       use m_fm_wq_processes
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_transportdata
       use bedcomposition_module, only: bedcomp_getpointer_integer
       use m_alloc

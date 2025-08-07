@@ -29,7 +29,20 @@
 
 !
 !
-module m_xbeach_typesandkinds
-   integer, parameter :: slen = 1024
-   integer, parameter :: dimnamelen = 20
-end module m_xbeach_typesandkinds
+module m_surfbeat_errorhandling
+
+   implicit none
+
+contains
+   subroutine surfbeat_errorhandler()
+      use unstruc_files
+      use unstruc_netcdf, only: unc_closeall
+      implicit none
+
+      call unc_closeall()
+      call close_all_files()
+      close (mdia)
+      stop
+   end subroutine surfbeat_errorhandler
+
+end module m_surfbeat_errorhandling

@@ -45,7 +45,7 @@ contains
       use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
       use m_sferic, only: twopi, dg2rd, pi
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_xbeach_data, only: R, cwav, gammaxxb, roller
+      use m_surfbeat_data, only: R, cwav, gammaxxb, roller
       use mathconsts, only: ee
 
       integer, intent(in) :: LL

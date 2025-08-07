@@ -75,7 +75,7 @@ contains
       use m_allocate_linktocenterweights, only: allocatelinktocenterweights
       use m_add_boundarynetcells, only: add_boundarynetcells
       use m_addexternalboundarypoints, only: addexternalboundarypoints
-      use m_xbeachwaves, only: xbeach_makethetagrid
+      use m_surfbeatwaves, only: surfbeat_makethetagrid
       use m_setisnbnodisnblin, only: setisnbnodisnblin
       use m_load1d2dlinkfile
       use m_allocateandset2dnodexyarrays
@@ -93,7 +93,7 @@ contains
       use m_alloc
       use unstruc_files, only: basename
       use m_orthosettings
-      use m_xbeach_data, only: itheta_view
+      use m_surfbeat_data, only: itheta_view
       use m_heatfluxes
       use fm_external_forcings
       use m_partitioninfo
@@ -1501,7 +1501,7 @@ contains
 
 !JRE
       if (jawave == WAVE_SURFBEAT) then
-         call xbeach_makethetagrid()
+         call surfbeat_makethetagrid()
          call makethindamadmin()
          ! now that ntheta is determined:
          itheta_view = max(ntheta / 2, 1)

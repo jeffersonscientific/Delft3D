@@ -45,7 +45,7 @@ contains
       use m_flowtimes ! for volerr
       use m_sediment
       use m_fm_erosed, only: ucxq_mor, ucyq_mor
-      use m_xbeach_data
+      use m_surfbeat_data
       use m_transportdata
       use m_observations_data
       use m_flowparameters, only: ispirparopt
