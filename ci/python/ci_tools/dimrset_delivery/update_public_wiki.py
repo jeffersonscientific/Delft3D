@@ -1,13 +1,316 @@
 #!/usr/bin/env python3
 """Update the Public Wiki with the new DIMR release information."""
 
+import os
+from datetime import datetime, timezone
+from typing import Tuple
+
 from ci_tools.dimrset_delivery.dimr_context import (
     DimrAutomationContext,
     create_context_from_args,
     parse_common_arguments,
 )
-from ci_tools.dimrset_delivery.helpers.public_wiki_helper import PublicWikiHelper
+from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
+from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.settings.atlassian_settings import (
+    DIMR_MAJOR_PAGE_PREFIX,
+    DIMR_MINOR_PAGE_PREFIX,
+    DIMR_PATCH_PAGE_PREFIX,
+    DIMR_ROOT_PAGE_ID,
+    DIMR_SPACE_ID,
+    DIMR_SUBPAGE_PREFIX,
+    DIMR_SUBPAGE_SUFFIX,
+    RELATIVE_PATH_TO_WIKI_TEMPLATE,
+)
 from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
+
+# from settings.teamcity_settings import *
+from ci_tools.dimrset_delivery.settings.teamcity_settings import (
+    PATH_TO_LINUX_VERSION_ARTIFACT,
+    PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT,
+    PATH_TO_WINDOWS_VERSION_ARTIFACT,
+    TeamcityIds,
+)
+
+
+class PublicWikiHelper(object):
+    """Class responsible for updating the Deltares Public Wiki for a specific DIMR version."""
+
+    def __init__(self, atlassian: Atlassian, teamcity: TeamCity, dimr_version: str) -> None:
+        """
+        Create a new instance of PublicWikiHelper.
+
+        Parameters
+        ----------
+        atlassian : Atlassian
+            A reference to a Atlassian Confluence REST API wrapper.
+        teamcity : TeamCity
+            A reference to a TeamCity REST API wrapper.
+        dimr_version : str
+            The version of DIMR to update the Public Wiki for.
+        """
+        self.__atlassian = atlassian
+        self.__teamcity = teamcity
+        self.__dimr_version = dimr_version
+
+        major, minor, patch = dimr_version.split(".")
+        self.__major_version = major
+        self.__minor_version = minor
+        self.__patch_version = patch
+
+    def update_public_wiki(self, build_id_chain: str) -> None:
+        """
+        Create and/or update the Public Wiki for a specific DIMR version.
+
+        Returns
+        -------
+        None
+        """
+        print("Updating main wiki page...")
+        main_page_id = self.__update_main_page(build_id_chain)
+
+        print("Updating sub wiki page...")
+        self.__update_sub_page(parent_page_id=main_page_id)
+
+    def __update_main_page(self, build_id_chain: str) -> str:
+        """
+        Update the content of the main page for the given DIMR version.
+
+        Returns
+        -------
+        str
+            The id of the updated page.
+        """
+        content = self.__prepare_content_for_main_page(build_id_chain)
+        page_to_update_page_id = self.__get_main_page_id_for_page_to_update()
+        page_title = f"{DIMR_PATCH_PAGE_PREFIX} {self.__major_version}.{self.__minor_version}.{self.__patch_version}"
+        self.__update_content_of_page(page_to_update_page_id, page_title, content)
+
+        return page_to_update_page_id
+
+    def __prepare_content_for_main_page(self, build_id_chain: str) -> str:
+        """
+        Prepare the content that should be uploaded to the main page.
+
+        Returns
+        -------
+        str
+            The content.
+        """
+        windows_version_artifact, linux_version_artifact = self.__get_version_artifacts(build_id_chain)
+        if windows_version_artifact is None:
+            raise AssertionError("Could not retrieve the Windows version.txt artifact.")
+        if linux_version_artifact is None:
+            raise AssertionError("Could not retrieve the Linux version.txt artifact.")
+
+        content = self.__create_content_from_template(
+            windows_version_artifact=windows_version_artifact,
+            linux_version_artifact=linux_version_artifact,
+        )
+
+        return content
+
+    def __get_version_artifacts(self, build_id_chain: str) -> Tuple[str, str]:
+        """
+        Get the latest Windows and Linux Version.txt artifacts from Dimr Collector Release.
+
+        Returns
+        -------
+        Tuple[str, str]
+            A tuple containing the Windows and Linux artifacts respectively.
+        """
+        windows_collect_id = self.__teamcity.get_dependent_build_id(
+            build_id_chain, TeamcityIds.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
+        )
+
+        windows_version_artifact = self.__teamcity.get_build_artifact(
+            build_id=str(windows_collect_id) if windows_collect_id is not None else "",
+            path_to_artifact=PATH_TO_WINDOWS_VERSION_ARTIFACT,
+        )
+        linux_collect_id = self.__teamcity.get_dependent_build_id(
+            build_id_chain, TeamcityIds.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
+        )
+        linux_version_artifact = self.__teamcity.get_build_artifact(
+            build_id=str(linux_collect_id) if linux_collect_id is not None else "",
+            path_to_artifact=PATH_TO_LINUX_VERSION_ARTIFACT,
+        )
+
+        if windows_version_artifact is None or linux_version_artifact is None:
+            raise ValueError("Could not retrieve version artifacts")
+
+        return windows_version_artifact.decode(), linux_version_artifact.decode()
+
+    def __create_content_from_template(self, windows_version_artifact: str, linux_version_artifact: str) -> str:
+        """
+        Create the content for the main DIMR page from a template file.
+
+        Parameters
+        ----------
+        windows_version_artifact : str
+            The Windows Version.txt artifact.
+        linux_version_artifact : str
+            The Linux Version.txt artifact.
+
+        Returns
+        -------
+        str
+            The content.
+        """
+        current_dir = os.path.dirname(__file__)
+        path_to_wiki_template = os.path.join(current_dir, RELATIVE_PATH_TO_WIKI_TEMPLATE)
+
+        with open(path_to_wiki_template, "r") as file:
+            data = file.read()
+
+        data = data.replace("@@@DATE@@@", datetime.now(tz=timezone.utc).date().strftime("%d-%m-%Y"))
+        data = data.replace("@@@WINDOWS_VERSION_ARTIFACT@@@", f"<pre>{windows_version_artifact}</pre>")
+        data = data.replace("@@@LINUX_VERSION_ARTIFACT@@@", f"<pre>{linux_version_artifact}</pre>")
+        data = data.replace(
+            "@@@DIMR_RELEASE_VERSION@@@", f"{self.__major_version}.{self.__minor_version}.{self.__patch_version}"
+        )
+        return data
+
+    def __get_main_page_id_for_page_to_update(self) -> str:
+        """
+        Get the page id for the Public Wiki page we want to update.
+
+        This method first checks if there is a page for the current major version of DIMR on the root DIMR page.
+        If there is no such page, it will be created. (e.g. DIMRset 2)
+
+        It will then check if there is a page for the current major.minor version of DIMR under the major version page.
+        If there is no such page, it will be created. (e.g. DIMRset 2 -> DIMRset 2.13)
+
+        It will then check if there is a page for the current major.minor.patch version of DIMR under the major.minor
+        version page.
+        If there is no such page, it will be created. (e.g. DIMRset 2 -> DIMRset 2.13 -> DIMRset 2.13.03)
+
+        It will then return the page id for the major.minor.patch page. This is the page that should be updated
+        (so: the id of the DIMRset 2.13.03 page).
+
+        Returns
+        -------
+        str
+            The page id of the page to be updated.
+        """
+        dimr_major_version_page_id = self.__get_public_wiki_page_id(
+            parent_page_id=DIMR_ROOT_PAGE_ID, dimr_version=self.__major_version, prefix=DIMR_MAJOR_PAGE_PREFIX
+        )
+
+        dimr_minor_version_page_id = self.__get_public_wiki_page_id(
+            parent_page_id=dimr_major_version_page_id,
+            dimr_version=f"{self.__major_version}.{self.__minor_version}",
+            prefix=DIMR_MINOR_PAGE_PREFIX,
+        )
+
+        dimr_patch_version_page_id = self.__get_public_wiki_page_id(
+            parent_page_id=dimr_minor_version_page_id,
+            dimr_version=f"{self.__major_version}.{self.__minor_version}.{self.__patch_version}",
+            prefix=DIMR_PATCH_PAGE_PREFIX,
+        )
+
+        return dimr_patch_version_page_id
+
+    def __get_public_wiki_page_id(self, parent_page_id: str, dimr_version: str, prefix: str, suffix: str = "") -> str:
+        """
+        Check if there is already a page for the specified DIMR version under the specified parent page.
+
+        If there is no such page, it will be created.
+
+        Returns
+        -------
+        str
+            The id for the page of the specified DIMR version.
+        """
+        parent_page = self.__atlassian.get_page_info_for_parent_page(parent_page_id=parent_page_id)
+        page_exists = False
+        page_id = ""
+
+        if parent_page is None:
+            raise ValueError(f"Could not retrieve parent page info for page ID: {parent_page_id}")
+
+        for result in parent_page["results"]:
+            if "title" in result and result["title"] == f"{prefix} {dimr_version}{suffix}":
+                page_exists = True
+                page_id = result["id"]
+                break
+
+        if not page_exists:
+            page_title = f"{prefix} {dimr_version}{suffix}"
+            created_page_id = self.__atlassian.create_public_wiki_page(
+                page_title=page_title, space_id=DIMR_SPACE_ID, ancestor_id=parent_page_id
+            )
+            if created_page_id is None:
+                raise ValueError(f"Failed to create page: {page_title}")
+            page_id = created_page_id
+
+        if page_id == "" or page_id is None:
+            raise AssertionError(f"Could not find or create the page for {prefix} {dimr_version}{suffix}.")
+
+        return page_id
+
+    def __update_content_of_page(self, page_id: str, page_title: str, content: str) -> None:
+        """
+        Update the page with the given page id on the Public Wiki with the given title and content.
+
+        Parameters
+        ----------
+        page_id : str
+            The id for the page to update.
+        page_title : str
+            The title for the page to update.
+        content : str
+            The content for the page to update.
+
+        Returns
+        -------
+        None
+        """
+        page_updated_successfully = self.__atlassian.update_page(
+            page_id=page_id, page_title=page_title, content=content
+        )
+        if not page_updated_successfully:
+            raise AssertionError("Failed to update the public wiki page.")
+
+    def __update_sub_page(self, parent_page_id: str) -> None:
+        """
+        Update the sub page for the given DIMR version.
+
+        Parameters
+        ----------
+        parent_page_id : str
+            The id for the main page of the specified DIMR version.
+
+        Returns
+        -------
+        None
+        """
+        content = self.__prepare_content_for_sub_page()
+
+        subpage_to_update_page_id = self.__get_public_wiki_page_id(
+            parent_page_id=parent_page_id,
+            dimr_version=self.__dimr_version,
+            prefix=DIMR_SUBPAGE_PREFIX,
+            suffix=DIMR_SUBPAGE_SUFFIX,
+        )
+        page_title = f"{DIMR_SUBPAGE_PREFIX} {self.__dimr_version}{DIMR_SUBPAGE_SUFFIX}"
+        self.__update_content_of_page(page_id=subpage_to_update_page_id, page_title=page_title, content=content)
+
+    def __prepare_content_for_sub_page(self) -> str:
+        """
+        Prepare the content that should be uploaded to the sub page.
+
+        Returns
+        -------
+        str
+            The content.
+        """
+        with open(PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT, "rb") as f:
+            artifact = f.read()
+
+        # Add the <pre> ... </pre> tags to make sure the wiki page properly keeps the formatting
+        content = f"<pre>{artifact.decode('utf-8')}</pre>"
+
+        return content
 
 
 def update_public_wiki(context: DimrAutomationContext) -> None:
