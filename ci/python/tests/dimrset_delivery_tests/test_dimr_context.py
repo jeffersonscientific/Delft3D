@@ -1,12 +1,15 @@
 """Tests for dimr_context.py."""
 
 import argparse
+from typing import Optional
 from unittest.mock import Mock, patch
 
 import pytest
 
 from ci_tools.dimrset_delivery.dimr_context import (
     DimrAutomationContext,
+    DimrCredentials,
+    ServiceRequirements,
     create_context_from_args,
     parse_common_arguments,
 )
@@ -14,6 +17,54 @@ from ci_tools.dimrset_delivery.dimr_context import (
 
 class TestDimrAutomationContext:
     """Test cases for DimrAutomationContext class."""
+
+    def _create_context(
+        self,
+        build_id: str = "12345",
+        dry_run: bool = False,
+        atlassian_username: Optional[str] = None,
+        atlassian_password: Optional[str] = None,
+        teamcity_username: Optional[str] = None,
+        teamcity_password: Optional[str] = None,
+        ssh_username: Optional[str] = None,
+        ssh_password: Optional[str] = None,
+        git_username: Optional[str] = None,
+        git_pat: Optional[str] = None,
+        require_atlassian: bool = True,
+        require_teamcity: bool = True,
+        require_ssh: bool = True,
+        require_git: bool = True,
+        credentials: Optional[DimrCredentials] = None,
+        requirements: Optional[ServiceRequirements] = None,
+    ):
+        """Create a DimrAutomationContext with specified parameters."""
+        # If credentials and requirements are provided directly, use them
+        if credentials is not None and requirements is not None:
+            return DimrAutomationContext(
+                build_id=build_id, dry_run=dry_run, credentials=credentials, requirements=requirements
+            )
+
+        # Otherwise, create them from the individual parameters
+        if credentials is None:
+            credentials = DimrCredentials(
+                atlassian_username=atlassian_username,
+                atlassian_password=atlassian_password,
+                teamcity_username=teamcity_username,
+                teamcity_password=teamcity_password,
+                ssh_username=ssh_username,
+                ssh_password=ssh_password,
+                git_username=git_username,
+                git_pat=git_pat,
+            )
+
+        if requirements is None:
+            requirements = ServiceRequirements(
+                atlassian=require_atlassian, teamcity=require_teamcity, ssh=require_ssh, git=require_git
+            )
+
+        return DimrAutomationContext(
+            build_id=build_id, dry_run=dry_run, credentials=credentials, requirements=requirements
+        )
 
     def test_init_with_all_credentials_provided(self) -> None:
         """Test initialization when all credentials are provided."""
@@ -24,7 +75,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="atlas_user",
@@ -53,7 +104,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=True,
                 atlassian_username="atlas_user",
@@ -79,7 +130,7 @@ class TestDimrAutomationContext:
             input=Mock(side_effect=["atlas_user", "tc_user", "ssh_user", "git_user"]),
             getpass=Mock(side_effect=["atlas_pass", "tc_pass", "ssh_pass", "git_token"]),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
             )
@@ -101,7 +152,7 @@ class TestDimrAutomationContext:
             input=Mock(side_effect=["tc_user", "ssh_user"]),
             getpass=Mock(side_effect=["tc_pass", "ssh_pass"]),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="atlas_user",
@@ -118,7 +169,7 @@ class TestDimrAutomationContext:
 
     def test_init_with_require_flags_disabled(self) -> None:
         """Test initialization with some services disabled."""
-        context = DimrAutomationContext(
+        context = self._create_context(
             build_id="12345",
             dry_run=False,
             require_atlassian=False,
@@ -144,7 +195,7 @@ class TestDimrAutomationContext:
             ),
             pytest.raises(ValueError, match="Atlassian credentials are required but not provided"),
         ):
-            DimrAutomationContext(
+            self._create_context(
                 build_id="12345",
                 dry_run=False,
                 require_atlassian=True,
@@ -163,7 +214,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=True,
                 atlassian_username="user",
@@ -189,7 +240,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -217,7 +268,7 @@ class TestDimrAutomationContext:
             ),
             patch("builtins.print"),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=True,
                 atlassian_username="user",
@@ -259,7 +310,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -298,7 +349,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -321,7 +372,7 @@ class TestDimrAutomationContext:
 
     def test_get_kernel_versions_no_teamcity_client(self) -> None:
         """Test get_kernel_versions raises error when TeamCity client is not initialized."""
-        context = DimrAutomationContext(
+        context = self._create_context(
             build_id="12345",
             dry_run=False,
             require_atlassian=False,
@@ -345,7 +396,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -381,7 +432,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -399,7 +450,7 @@ class TestDimrAutomationContext:
 
     def test_get_dimr_version_no_kernel_versions(self) -> None:
         """Test get_dimr_version raises error when kernel versions are not available."""
-        context = DimrAutomationContext(
+        context = self._create_context(
             build_id="12345",
             dry_run=False,
             require_atlassian=False,
@@ -416,7 +467,7 @@ class TestDimrAutomationContext:
 
     def test_get_dimr_version_assertion_error(self) -> None:
         """Test get_dimr_version raises AssertionError when kernel versions extraction fails."""
-        context = DimrAutomationContext(
+        context = self._create_context(
             build_id="12345",
             dry_run=False,
             require_atlassian=False,
@@ -442,7 +493,7 @@ class TestDimrAutomationContext:
             ),
             patch("builtins.print"),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=True,
                 atlassian_username="user",
@@ -478,7 +529,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -496,7 +547,7 @@ class TestDimrAutomationContext:
 
     def test_get_branch_name_no_teamcity_client(self) -> None:
         """Test get_branch_name raises error when TeamCity client is not initialized."""
-        context = DimrAutomationContext(
+        context = self._create_context(
             build_id="12345",
             dry_run=False,
             require_atlassian=False,
@@ -520,7 +571,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -555,7 +606,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -590,7 +641,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",
@@ -620,7 +671,7 @@ class TestDimrAutomationContext:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
+            context = self._create_context(
                 build_id="12345",
                 dry_run=False,
                 atlassian_username="user",

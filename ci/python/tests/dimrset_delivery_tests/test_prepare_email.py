@@ -4,7 +4,6 @@ from unittest.mock import Mock, patch
 
 from ci_tools.dimrset_delivery.common_utils import (
     ResultTestBankParser,
-    get_testbank_result_parser,
     parse_version,
 )
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
