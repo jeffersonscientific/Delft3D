@@ -69,7 +69,7 @@ if __name__ == "__main__":
                     teamcity_client.remove_tag_from_build(build_configuration, tag)
                 except HTTPStatusError as e:
                     logger.log("Apicall triggered a exception")
-                    logger.log(e)
+                    logger.log(f"HTTP Exception for {e.request.url} - {e}")
 
                 logger.log(f"Deleted tag. {tag}.")
         else:
