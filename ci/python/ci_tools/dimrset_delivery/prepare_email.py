@@ -157,7 +157,10 @@ def parse_version(tag: str) -> Optional[tuple]:
         Tuple of version numbers (major, minor, patch) or None if parsing fails.
     """
     if tag and tag.startswith("DIMRset_"):
-        return tuple(map(int, tag[len("DIMRset_") :].split(".")))
+        try:
+            return tuple(map(int, tag[len("DIMRset_") :].split(".")))
+        except ValueError:
+            return None
     return None
 
 
