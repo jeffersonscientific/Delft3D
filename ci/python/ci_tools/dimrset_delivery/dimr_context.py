@@ -158,11 +158,6 @@ class DimrAutomationContext:
                 raise ValueError("Git credentials are required but not provided")
             self.git_client = GitClient(DELFT3D_GIT_REPO, credentials.git_username, credentials.git_pat)
 
-        # Cache for commonly needed data
-        self._kernel_versions: Optional[Dict[str, str]] = None
-        self._dimr_version: Optional[str] = None
-        self._branch_name: Optional[str] = None
-
     def print_status(self, message: str) -> None:
         """Print status message with dry-run prefix if applicable.
 
