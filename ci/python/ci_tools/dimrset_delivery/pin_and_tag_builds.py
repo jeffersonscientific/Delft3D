@@ -10,24 +10,14 @@ from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
 
 
-class PinHelper(object):
-    """Class responsible for pinning and tagging builds in TeamCity."""
-
-    def __init__(self, teamcity: TeamCity, dimr_version: str) -> None:
-        """Create a new instance of PinHelper."""
-        self.__teamcity = teamcity
-        self.__dimr_version = dimr_version
-
-    def pin_and_tag_builds(self, build_id_chain: str) -> None:
-        """Tag all builds and pin the appropriate builds."""
-        tag = f"DIMRset_{self.__dimr_version}"
-
-        self.__teamcity.add_tag_to_build_with_dependencies(build_id_chain, tag=tag)
-
-        # Only pin specific builds
-        build_ids_to_pin = self.__teamcity.get_filtered_dependent_build_ids(build_id_chain)
-        for build_id in build_ids_to_pin:
-            self.__teamcity.pin_build(build_id=build_id)
+def pin_and_tag_builds_teamcity(teamcity: TeamCity, dimr_version: str, build_id_chain: str) -> None:
+    """Tag all builds and pin the appropriate builds in TeamCity."""
+    tag = f"DIMRset_{dimr_version}"
+    teamcity.add_tag_to_build_with_dependencies(build_id_chain, tag=tag)
+    # Only pin specific builds
+    build_ids_to_pin = teamcity.get_filtered_dependent_build_ids(build_id_chain)
+    for build_id in build_ids_to_pin:
+        teamcity.pin_build(build_id=build_id)
 
 
 def pin_and_tag_builds(context: DimrAutomationContext) -> None:
@@ -58,8 +48,11 @@ def pin_and_tag_builds(context: DimrAutomationContext) -> None:
     if context.git_client is None:
         raise ValueError("Git client is required but not initialized")
 
-    helper = PinHelper(teamcity=context.teamcity, dimr_version=dimr_version)
-    helper.pin_and_tag_builds(context.build_id)
+    pin_and_tag_builds_teamcity(
+        teamcity=context.teamcity,
+        dimr_version=dimr_version,
+        build_id_chain=context.build_id,
+    )
 
     # Also tag the git commit
     context.git_client.tag_commit(kernel_versions["build.vcs.number"], f"DIMRset_{dimr_version}")

@@ -23,12 +23,10 @@ class TestPinAndTagBuilds:
         self.mock_context.get_kernel_versions.return_value = {"build.vcs.number": "abc123def"}
         self.mock_context.get_dimr_version.return_value = "1.2.3"
 
-    @patch("ci_tools.dimrset_delivery.pin_and_tag_builds.PinHelper")
-    def test_pin_and_tag_builds_success(self, mock_pin_helper_class: Mock) -> None:
+    def test_pin_and_tag_builds_success(self) -> None:
         """Test successful pinning and tagging of builds."""
         # Arrange
-        mock_pin_helper = Mock()
-        mock_pin_helper_class.return_value = mock_pin_helper
+        self.mock_context.teamcity.get_filtered_dependent_build_ids.return_value = ["id1", "id2"]
 
         # Act
         pin_and_tag_builds(self.mock_context)
@@ -37,10 +35,12 @@ class TestPinAndTagBuilds:
         self.mock_context.print_status.assert_called_once_with("Pinning and tagging builds...")
         self.mock_context.get_kernel_versions.assert_called_once()
         self.mock_context.get_dimr_version.assert_called_once()
-
-        mock_pin_helper_class.assert_called_once_with(teamcity=self.mock_context.teamcity, dimr_version="1.2.3")
-        mock_pin_helper.pin_and_tag_builds.assert_called_once_with("12345")
-
+        self.mock_context.teamcity.add_tag_to_build_with_dependencies.assert_called_once_with(
+            "12345", tag="DIMRset_1.2.3"
+        )
+        self.mock_context.teamcity.get_filtered_dependent_build_ids.assert_called_once_with("12345")
+        self.mock_context.teamcity.pin_build.assert_any_call(build_id="id1")
+        self.mock_context.teamcity.pin_build.assert_any_call(build_id="id2")
         self.mock_context.git_client.tag_commit.assert_called_once_with("abc123def", "DIMRset_1.2.3")
 
     def test_pin_and_tag_builds_dry_run(self) -> None:
@@ -98,30 +98,29 @@ class TestPinAndTagBuilds:
         with pytest.raises(ValueError, match="Git client is required but not initialized"):
             pin_and_tag_builds(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.pin_and_tag_builds.PinHelper")
-    def test_pin_and_tag_builds_with_different_versions(self, mock_pin_helper_class: Mock) -> None:
+    def test_pin_and_tag_builds_with_different_versions(self) -> None:
         """Test with different kernel and DIMR versions."""
         # Arrange
         self.mock_context.get_kernel_versions.return_value = {"build.vcs.number": "xyz789abc"}
         self.mock_context.get_dimr_version.return_value = "2.0.0"
-        mock_pin_helper = Mock()
-        mock_pin_helper_class.return_value = mock_pin_helper
+        self.mock_context.teamcity.get_filtered_dependent_build_ids.return_value = ["id3"]
 
         # Act
         pin_and_tag_builds(self.mock_context)
 
         # Assert
-        mock_pin_helper_class.assert_called_once_with(teamcity=self.mock_context.teamcity, dimr_version="2.0.0")
-
+        self.mock_context.teamcity.add_tag_to_build_with_dependencies.assert_called_once_with(
+            "12345", tag="DIMRset_2.0.0"
+        )
+        self.mock_context.teamcity.get_filtered_dependent_build_ids.assert_called_once_with("12345")
+        self.mock_context.teamcity.pin_build.assert_called_once_with(build_id="id3")
         self.mock_context.git_client.tag_commit.assert_called_once_with("xyz789abc", "DIMRset_2.0.0")
 
-    @patch("ci_tools.dimrset_delivery.pin_and_tag_builds.PinHelper")
     @patch("builtins.print")
-    def test_pin_and_tag_builds_success_message(self, mock_print: Mock, mock_pin_helper_class: Mock) -> None:
+    def test_pin_and_tag_builds_success_message(self, mock_print: Mock) -> None:
         """Test that success message is printed after completion."""
         # Arrange
-        mock_pin_helper = Mock()
-        mock_pin_helper_class.return_value = mock_pin_helper
+        self.mock_context.teamcity.get_filtered_dependent_build_ids.return_value = []
 
         # Act
         pin_and_tag_builds(self.mock_context)
@@ -129,32 +128,24 @@ class TestPinAndTagBuilds:
         # Assert
         mock_print.assert_called_with("Build pinning and tagging completed successfully!")
 
-    @patch("ci_tools.dimrset_delivery.pin_and_tag_builds.PinHelper")
-    def test_pin_and_tag_builds_pin_helper_exception(self, mock_pin_helper_class: Mock) -> None:
-        """Test when PinHelper raises an exception."""
+    def test_pin_and_tag_builds_teamcity_exception(self) -> None:
+        """Test when TeamCity client raises an exception."""
         # Arrange
-        mock_pin_helper = Mock()
-        mock_pin_helper.pin_and_tag_builds.side_effect = Exception("TeamCity error")
-        mock_pin_helper_class.return_value = mock_pin_helper
+        self.mock_context.teamcity.add_tag_to_build_with_dependencies.side_effect = Exception("TeamCity error")
 
         # Act & Assert
         with pytest.raises(Exception, match="TeamCity error"):
             pin_and_tag_builds(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.pin_and_tag_builds.PinHelper")
-    def test_pin_and_tag_builds_git_client_exception(self, mock_pin_helper_class: Mock) -> None:
+    def test_pin_and_tag_builds_git_client_exception(self) -> None:
         """Test when Git client raises an exception."""
         # Arrange
-        mock_pin_helper = Mock()
-        mock_pin_helper_class.return_value = mock_pin_helper
+        self.mock_context.teamcity.get_filtered_dependent_build_ids.return_value = []
         self.mock_context.git_client.tag_commit.side_effect = Exception("Git error")
 
         # Act & Assert
         with pytest.raises(Exception, match="Git error"):
             pin_and_tag_builds(self.mock_context)
-
-        # Verify that PinHelper was still called before the Git error
-        mock_pin_helper.pin_and_tag_builds.assert_called_once_with("12345")
 
     def test_pin_and_tag_builds_dry_run_no_clients_required(self) -> None:
         """Test that dry run works even with None clients."""
@@ -171,12 +162,10 @@ class TestPinAndTagBuilds:
         self.mock_context.get_kernel_versions.assert_called_once()
         self.mock_context.get_dimr_version.assert_called_once()
 
-    @patch("ci_tools.dimrset_delivery.pin_and_tag_builds.PinHelper")
-    def test_pin_and_tag_builds_context_method_calls(self, mock_pin_helper_class: Mock) -> None:
+    def test_pin_and_tag_builds_context_method_calls(self) -> None:
         """Test that all expected context methods are called in the correct order."""
         # Arrange
-        mock_pin_helper = Mock()
-        mock_pin_helper_class.return_value = mock_pin_helper
+        self.mock_context.teamcity.get_filtered_dependent_build_ids.return_value = []
 
         # Act
         pin_and_tag_builds(self.mock_context)
@@ -185,9 +174,6 @@ class TestPinAndTagBuilds:
         assert self.mock_context.print_status.call_count == 1
         assert self.mock_context.get_kernel_versions.call_count == 1
         assert self.mock_context.get_dimr_version.call_count == 1
-
-        # Verify all expected methods were called
         self.mock_context.print_status.assert_called_once_with("Pinning and tagging builds...")
         self.mock_context.get_kernel_versions.assert_called_once()
         self.mock_context.get_dimr_version.assert_called_once()
-        mock_pin_helper.pin_and_tag_builds.assert_called_once_with("12345")
