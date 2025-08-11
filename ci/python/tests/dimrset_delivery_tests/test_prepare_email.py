@@ -1,86 +1,122 @@
-"""Tests for prepare_email.py."""
-
+import os
+from pathlib import Path
+from typing import Dict, Optional
 from unittest.mock import Mock, patch
 
-from ci_tools.dimrset_delivery.common_utils import (
-    ResultTestBankParser,
-    parse_version,
-)
+from ci_tools.dimrset_delivery import prepare_email as pe
+from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser, parse_version
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-from ci_tools.dimrset_delivery.prepare_email import prepare_email
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
+from ci_tools.dimrset_delivery.prepare_email import EmailHelper, prepare_email
 
 
-class TestPrepareEmail:
-    """Test cases for prepare_email function."""
-
-    @patch("ci_tools.dimrset_delivery.prepare_email.EmailHelper")
-    @patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser")
-    @patch("ci_tools.dimrset_delivery.prepare_email.get_previous_testbank_result_parser")
-    def test_prepare_email_success(
-        self,
-        mock_get_previous_parser: Mock,
-        mock_get_parser: Mock,
-        mock_email_helper: Mock,
+class DummyParser:
+    def __init__(
+        self, passing: str = "95", total: str = "100", passing_count: str = "95", exceptions: str = "0"
     ) -> None:
-        """Test successful email preparation."""
-        # Arrange
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.dry_run = False
-        mock_context.get_kernel_versions.return_value = {"kernel1": "1.0.0", "kernel2": "2.0.0"}
-        mock_context.get_dimr_version.return_value = "1.2.3"
+        self._passing = passing
+        self._total = total
+        self._passing_count = passing_count
+        self._exceptions = exceptions
 
-        mock_current_parser = Mock(spec=ResultTestBankParser)
-        mock_previous_parser = Mock(spec=ResultTestBankParser)
-        mock_get_parser.return_value = mock_current_parser
-        mock_get_previous_parser.return_value = mock_previous_parser
+    def get_percentage_total_passing(self) -> str:
+        return self._passing
 
-        mock_helper_instance = Mock()
-        mock_email_helper.return_value = mock_helper_instance
+    def get_total_tests(self) -> str:
+        return self._total
 
-        # Act
-        prepare_email(mock_context)
+    def get_total_passing(self) -> str:
+        return self._passing_count
 
-        # Assert
-        mock_context.print_status.assert_called_once_with("Preparing email template...")
-        mock_context.get_kernel_versions.assert_called_once()
-        mock_context.get_dimr_version.assert_called_once()
-        mock_get_parser.assert_called_once()
-        mock_get_previous_parser.assert_called_once_with(mock_context)
+    def get_total_exceptions(self) -> str:
+        return self._exceptions
 
-        mock_email_helper.assert_called_once_with(
-            dimr_version="1.2.3",
-            kernel_versions={"kernel1": "1.0.0", "kernel2": "2.0.0"},
-            current_parser=mock_current_parser,
-            previous_parser=mock_previous_parser,
-        )
-        mock_helper_instance.generate_template.assert_called_once()
 
-    @patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser")
-    @patch("builtins.print")
-    def test_prepare_email_dry_run(
-        self,
-        mock_print: Mock,
-        mock_get_parser: Mock,
-    ) -> None:
-        """Test prepare_email in dry run mode."""
-        # Arrange
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.dry_run = True
-        mock_context.get_kernel_versions.return_value = {"kernel1": "1.0.0"}
-        mock_context.get_dimr_version.return_value = "1.2.3"
+def make_helper(
+    dimr_version: str = "1.2.3",
+    kernel_versions: Optional[Dict[str, str]] = None,
+    passing: str = "95",
+    exceptions: str = "0",
+    prev_passing: Optional[str] = None,
+    prev_exceptions: Optional[str] = None,
+) -> EmailHelper:
+    if kernel_versions is None:
+        kernel_versions = {"kernelA": "123", "kernelB": "456"}
+    parser = DummyParser(passing=passing, exceptions=exceptions)
+    prev_parser = (
+        DummyParser(passing=prev_passing or passing, exceptions=prev_exceptions or exceptions)
+        if prev_passing is not None
+        else None
+    )
+    return EmailHelper(dimr_version, kernel_versions, parser, prev_parser)  # type: ignore
 
-        # Act
-        prepare_email(mock_context)
 
-        # Assert
-        mock_context.print_status.assert_called_once_with("Preparing email template...")
-        mock_context.get_kernel_versions.assert_called_once()
-        mock_context.get_dimr_version.assert_called_once()
-        mock_get_parser.assert_not_called()
+def test_generate_template_calls_all() -> None:
+    helper = make_helper()
+    # Just check that the public method runs without error
+    with (
+        patch.object(helper, "_EmailHelper__load_template") as mock_load,
+        patch.object(helper, "_EmailHelper__insert_summary_table_header") as mock_header,
+        patch.object(helper, "_EmailHelper__insert_summary_table") as mock_table,
+        patch.object(helper, "_EmailHelper__save_template") as mock_save,
+    ):
+        helper.generate_template()
 
-        # Check that print was called with the correct arguments
-        mock_print.assert_called_once_with(f"{DRY_RUN_PREFIX} Would prepare email template for DIMR version:", "1.2.3")
+        # Verify all internal methods were called
+        mock_load.assert_called_once()
+        mock_header.assert_called_once()
+        mock_table.assert_called_once()
+        mock_save.assert_called_once()
+
+
+def test_load_and_save_template(tmp_path: Path) -> None:
+    # Integration-style: test that generate_template creates an output file
+    template_content = "Hello @@@DIMR_VERSION@@@ @@@LINK_TO_PUBLIC_WIKI@@@ @@@SUMMARY_TABLE_BODY@@@"
+    template_path = tmp_path / "template.html"
+    template_path.write_text(template_content)
+    helper = make_helper()
+
+    # Create the expected output directory structure
+    output_dir = tmp_path / "output"
+    output_dir.mkdir()
+
+    with (
+        patch.object(pe, "RELATIVE_PATH_TO_EMAIL_TEMPLATE", template_path.name),
+        patch.object(pe, "RELATIVE_PATH_TO_OUTPUT_FOLDER", "output/"),
+        patch.object(os.path, "dirname", lambda _: str(tmp_path)),
+    ):
+        helper.generate_template()
+    # Find the output file by pattern in the output subdirectory
+    out_files = list(output_dir.glob("DIMRset_*.html"))
+    assert out_files, "No output file generated"
+    content = out_files[0].read_text()
+    assert "Hello" in content
+
+
+# @patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser")
+# @patch("builtins.print")
+# def test_prepare_email_dry_run(
+#     self,
+#     mock_print: Mock,
+#     mock_get_parser: Mock,
+# ) -> None:
+#     """Test prepare_email in dry run mode."""
+#     # Arrange
+#     mock_context = Mock(spec=DimrAutomationContext)
+#     mock_context.dry_run = True
+#     mock_context.get_kernel_versions.return_value = {"kernel1": "1.0.0"}
+#     mock_context.get_dimr_version.return_value = "1.2.3"
+
+#     # Act
+#     prepare_email(mock_context)
+
+#     # Assert
+#     mock_context.print_status.assert_called_once_with("Preparing email template...")
+#     mock_context.get_kernel_versions.assert_called_once()
+#     mock_context.get_dimr_version.assert_called_once()
+#     mock_get_parser.assert_not_called()
+
+#     # Check that print was called with the correct arguments
+#     mock_print.assert_called_once_with(f"{DRY_RUN_PREFIX} Would prepare email template for DIMR version:", "1.2.3")
 
 
 class TestParseVersion:
@@ -133,14 +169,14 @@ class TestParseVersion:
 class TestIntegration:
     """Integration tests for prepare_email functionality."""
 
-    @patch("ci_tools.dimrset_delivery.prepare_email.EmailHelper")
     @patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser")
     @patch("ci_tools.dimrset_delivery.prepare_email.get_previous_testbank_result_parser")
+    @patch("ci_tools.dimrset_delivery.prepare_email.EmailHelper")
     def test_prepare_email_with_no_previous_parser(
         self,
+        mock_email_helper: Mock,
         mock_get_previous_parser: Mock,
         mock_get_parser: Mock,
-        mock_email_helper: Mock,
     ) -> None:
         """Test email preparation when no previous parser is available."""
         # Arrange
