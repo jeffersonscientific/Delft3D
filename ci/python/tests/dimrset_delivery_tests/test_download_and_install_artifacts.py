@@ -42,8 +42,8 @@ class TestDownloadAndInstallArtifacts:
             dimr_version="1.23.45",
             branch_name="main",
         )
-        mock_helper.publish_artifacts_to_network_drive.assert_called_once_with("12345")
-        mock_helper.publish_weekly_dimr_via_h7.assert_called_once()
+        mock_helper.download_and_deploy_artifacts.assert_called_once_with("12345")
+        mock_helper.install_dimr_on_remote_system.assert_called_once()
 
     @patch("builtins.print")
     def test_download_and_install_artifacts_dry_run(self, mock_print: MagicMock) -> None:
@@ -173,14 +173,14 @@ class TestDownloadAndInstallArtifacts:
 
         # Assert
         # Verify the methods were called
-        mock_helper.publish_artifacts_to_network_drive.assert_called_once_with("11111")
-        mock_helper.publish_weekly_dimr_via_h7.assert_called_once()
+        mock_helper.download_and_deploy_artifacts.assert_called_once_with("11111")
+        mock_helper.install_dimr_on_remote_system.assert_called_once()
 
         # Verify they were called in the correct order
         handle = mock_helper.method_calls
         expected_calls = [
-            call.publish_artifacts_to_network_drive("11111"),
-            call.publish_weekly_dimr_via_h7(),
+            call.download_and_deploy_artifacts("11111"),
+            call.install_dimr_on_remote_system(),
         ]
         assert handle == expected_calls
 
@@ -268,12 +268,12 @@ class TestArtifactInstallHelper:
         )
 
         # Assert - Verify instance was created (methods exist)
-        assert hasattr(helper, "publish_artifacts_to_network_drive")
-        assert hasattr(helper, "publish_weekly_dimr_via_h7")
+        assert hasattr(helper, "download_and_deploy_artifacts")
+        assert hasattr(helper, "install_dimr_on_remote_system")
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.TeamcityIds")
-    def test_publish_artifacts_to_network_drive_calls_teamcity(self, mock_teamcity_ids: Mock) -> None:
-        """Test that publish_artifacts_to_network_drive calls TeamCity for dependent builds."""
+    def test_download_and_deploy_artifacts_calls_teamcity(self, mock_teamcity_ids: Mock) -> None:
+        """Test that download_and_deploy_artifacts calls TeamCity for dependent builds."""
         # Arrange
         from ci_tools.dimrset_delivery.download_and_install_artifacts import ArtifactInstallHelper
 
@@ -289,7 +289,7 @@ class TestArtifactInstallHelper:
         )
 
         # Act
-        helper.publish_artifacts_to_network_drive("chain_build_789")
+        helper.download_and_deploy_artifacts("chain_build_789")
 
         # Assert
         assert mock_teamcity.get_dependent_build_id.call_count == 2
@@ -302,8 +302,8 @@ class TestArtifactInstallHelper:
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.LINUX_ADDRESS", "test-linux-host")
     @patch("builtins.print")
-    def test_publish_weekly_dimr_via_h7_executes_ssh_command(self, mock_print: Mock) -> None:
-        """Test that publish_weekly_dimr_via_h7 executes SSH commands."""
+    def test_install_dimr_on_remote_system_executes_ssh_command(self, mock_print: Mock) -> None:
+        """Test that install_dimr_on_remote_system executes SSH commands."""
         # Arrange
         from ci_tools.dimrset_delivery.download_and_install_artifacts import ArtifactInstallHelper
 
@@ -313,7 +313,7 @@ class TestArtifactInstallHelper:
         )
 
         # Act
-        helper.publish_weekly_dimr_via_h7()
+        helper.install_dimr_on_remote_system()
 
         # Assert
         mock_ssh_client.execute.assert_called_once()
@@ -324,8 +324,8 @@ class TestArtifactInstallHelper:
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.LINUX_ADDRESS", "test-linux-host")
     @patch("builtins.print")
-    def test_publish_weekly_dimr_via_h7_main_branch_creates_symlinks(self, mock_print: Mock) -> None:
-        """Test that publish_weekly_dimr_via_h7 creates symlinks on main branch."""
+    def test_install_dimr_on_remote_system_main_branch_creates_symlinks(self, mock_print: Mock) -> None:
+        """Test that install_dimr_on_remote_system creates symlinks on main branch."""
         # Arrange
         from ci_tools.dimrset_delivery.download_and_install_artifacts import ArtifactInstallHelper
 
@@ -335,7 +335,7 @@ class TestArtifactInstallHelper:
         )
 
         # Act
-        helper.publish_weekly_dimr_via_h7()
+        helper.install_dimr_on_remote_system()
 
         # Assert
         args, kwargs = mock_ssh_client.execute.call_args
@@ -345,8 +345,8 @@ class TestArtifactInstallHelper:
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.LINUX_ADDRESS", "test-linux-host")
     @patch("builtins.print")
-    def test_publish_weekly_dimr_via_h7_non_main_branch_no_symlinks(self, mock_print: Mock) -> None:
-        """Test that publish_weekly_dimr_via_h7 doesn't create symlinks on non-main branches."""
+    def test_install_dimr_on_remote_system_non_main_branch_no_symlinks(self, mock_print: Mock) -> None:
+        """Test that install_dimr_on_remote_system doesn't create symlinks on non-main branches."""
         # Arrange
         from ci_tools.dimrset_delivery.download_and_install_artifacts import ArtifactInstallHelper
 
@@ -356,7 +356,7 @@ class TestArtifactInstallHelper:
         )
 
         # Act
-        helper.publish_weekly_dimr_via_h7()
+        helper.install_dimr_on_remote_system()
 
         # Assert
         args, kwargs = mock_ssh_client.execute.call_args
@@ -365,8 +365,8 @@ class TestArtifactInstallHelper:
         assert "unlink latest" not in command
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.TeamcityIds")
-    def test_publish_artifacts_handles_none_build_ids(self, mock_teamcity_ids: Mock) -> None:
-        """Test that publish_artifacts_to_network_drive handles None build IDs gracefully."""
+    def test_download_and_deploy_artifacts_handles_none_build_ids(self, mock_teamcity_ids: Mock) -> None:
+        """Test that download_and_deploy_artifacts handles None build IDs gracefully."""
         # Arrange
         from ci_tools.dimrset_delivery.download_and_install_artifacts import ArtifactInstallHelper
 
@@ -382,7 +382,7 @@ class TestArtifactInstallHelper:
         )
 
         # Act & Assert - Should not raise exception
-        helper.publish_artifacts_to_network_drive("chain_build_789")
+        helper.download_and_deploy_artifacts("chain_build_789")
 
         # Verify artifact names were still requested (with empty string build IDs)
         assert mock_teamcity.get_build_artifact_names.call_count == 2
@@ -425,7 +425,7 @@ class TestArtifactInstallHelper:
 
         with patch.object(helper, "_ArtifactInstallHelper__extract_archive") as mock_extract:
             # Act
-            helper.publish_artifacts_to_network_drive("build_123")
+            helper.download_and_deploy_artifacts("build_123")
 
             # Assert - Verify the flow executed without errors
             assert mock_teamcity.get_build_artifact_names.call_count >= 1
@@ -483,8 +483,8 @@ class TestIntegration:
             dimr_version="99.99.99",
             branch_name="integration-test",
         )
-        mock_helper.publish_artifacts_to_network_drive.assert_called_once_with("test-build-123")
-        mock_helper.publish_weekly_dimr_via_h7.assert_called_once()
+        mock_helper.download_and_deploy_artifacts.assert_called_once_with("test-build-123")
+        mock_helper.install_dimr_on_remote_system.assert_called_once()
 
     def test_integration_dry_run_with_real_context(self) -> None:
         """Test dry run mode with a realistic context object."""

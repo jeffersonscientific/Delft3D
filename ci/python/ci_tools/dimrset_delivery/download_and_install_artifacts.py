@@ -52,8 +52,8 @@ def download_and_install_artifacts(context: DimrAutomationContext) -> None:
         dimr_version=dimr_version,
         branch_name=branch_name,
     )
-    helper.publish_artifacts_to_network_drive(context.build_id)
-    helper.publish_weekly_dimr_via_h7()
+    helper.download_and_deploy_artifacts(context.build_id)
+    helper.install_dimr_on_remote_system()
 
     print("Artifacts download and installation completed successfully!")
 
@@ -67,22 +67,29 @@ class ArtifactInstallHelper(object):
         ssh_client: SshClient,
         dimr_version: str,
         branch_name: str,
+        remote_base_path: str = "/p/d-hydro/dimrset",
+        installation_path: str = "weekly",
     ) -> None:
         """
         Create a new instance of ArtifactInstallHelper.
 
         Arguments:
             teamcity (TeamCity): A reference to a TeamCity REST API wrapper.
-            ssh_client (Ssh_Client): A wrapper for a SSH client.
-            full_dimr_version (str): The full DIMR version to download and install.
+            ssh_client (SshClient): A wrapper for a SSH client.
+            dimr_version (str): The full DIMR version to download and install.
+            branch_name (str): The branch name for version control decisions.
+            remote_base_path (str): Base path for DIMR installation on remote system.
+            installation_path (str): Installation subdirectory (e.g., 'weekly', 'release').
         """
         self.__teamcity = teamcity
         self.__ssh_client = ssh_client
         self.__dimr_version = dimr_version
         self.__branch_name = branch_name
+        self.__remote_base_path = remote_base_path
+        self.__installation_path = installation_path
 
-    def publish_artifacts_to_network_drive(self, build_id_chain: str) -> None:
-        """Download the DIMR artifacts to the network drive."""
+    def download_and_deploy_artifacts(self, build_id_chain: str) -> None:
+        """Download the DIMR artifacts from TeamCity and deploy them to the remote system."""
         windows_collect_id = self.__teamcity.get_dependent_build_id(
             build_id_chain, TeamcityIds.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
         )
@@ -90,38 +97,44 @@ class ArtifactInstallHelper(object):
             build_id_chain, TeamcityIds.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
         )
 
-        self.__publish_artifact_to_file_share(
+        self.__download_and_deploy_artifact_by_name(
             str(windows_collect_id) if windows_collect_id is not None else "",
             NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT,
         )
-        self.__publish_artifact_to_file_share(
+        self.__download_and_deploy_artifact_by_name(
             str(linux_collect_id) if linux_collect_id is not None else "", NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT
         )
 
-    def publish_weekly_dimr_via_h7(self) -> None:
-        """Installs DIMR on the Linux machine via SSH."""
+    def install_dimr_on_remote_system(self) -> None:
+        """Install DIMR on the Linux machine via SSH."""
         print(f"Installing DIMR on {LINUX_ADDRESS} via SSH...")
 
-        # setup the command
-        command = f"cd /p/d-hydro/dimrset/weekly/{self.__dimr_version}/lnx64/bin;"
-        command += "./libtool_install.sh;"
-        command += "cd /p/d-hydro/dimrset/weekly;"
-        command += f"chgrp -R dl_acl_dsc {self.__dimr_version}/;"
-        command += f"chmod -R a+x,a-s {self.__dimr_version}/;"
-
-        # only update the latest symlink if we are on the main branch we don't do this for the release branche
-        if self.__branch_name == "main":
-            command += "unlink latest;"
-            command += f"ln -s {self.__dimr_version} latest;"
-            command += "cd /p/d-hydro/dimrset;"
-            command += "unlink latest;"
-            command += f"ln -s weekly/{self.__dimr_version} latest;"
-
-        # execute command
+        command = self.__build_ssh_installation_command()
         self.__ssh_client.execute(address=LINUX_ADDRESS, command=command)
         print(f"Successfully installed DIMR on {LINUX_ADDRESS}.")
 
-    def __publish_artifact_to_file_share(self, build_id: str, artifact_name_key: str) -> None:
+    def __build_ssh_installation_command(self) -> str:
+        """Build the SSH command for DIMR installation."""
+        installation_full_path = f"{self.__remote_base_path}/{self.__installation_path}"
+        version_path = f"{installation_full_path}/{self.__dimr_version}"
+
+        command = f"cd {version_path}/lnx64/bin;"
+        command += "./libtool_install.sh;"
+        command += f"cd {installation_full_path};"
+        command += f"chgrp -R dl_acl_dsc {self.__dimr_version}/;"
+        command += f"chmod -R a+x,a-s {self.__dimr_version}/;"
+
+        # Only update the latest symlink if we are on the main branch
+        if self.__branch_name == "main":
+            command += "unlink latest;"
+            command += f"ln -s {self.__dimr_version} latest;"
+            command += f"cd {self.__remote_base_path};"
+            command += "unlink latest;"
+            command += f"ln -s {self.__installation_path}/{self.__dimr_version} latest;"
+
+        return command
+
+    def __download_and_deploy_artifact_by_name(self, build_id: str, artifact_name_key: str) -> None:
         """
         Download and unpack artifacts from a TeamCity build that match the specified artifact name key.
 
@@ -147,35 +160,48 @@ class ArtifactInstallHelper(object):
         Download the provided artifact names from the provided TeamCity build id.
 
         Args:
-            artifacts_to_download List[str]: A list of artifact names to download.
+            artifacts_to_download (List[str]): A list of artifact names to download.
             build_id (str): The build id for the build to download the artifacts from.
         """
+        self.__ensure_version_directory_exists()
+
+        for artifact_name in artifacts_to_download:
+            self.__download_extract_and_deploy_artifact(artifact_name, build_id)
+
+    def __ensure_version_directory_exists(self) -> None:
+        """Ensure the version directory exists for artifact storage."""
         file_path = f"{self.__dimr_version}"
-        if not os.path.exists(f"{file_path}"):
-            os.makedirs(f"{file_path}")
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
 
-        for artifact_to_download in artifacts_to_download:
-            print(f"Downloading {artifact_to_download}...")
-            artifact = self.__teamcity.get_build_artifact(build_id=build_id, path_to_artifact=artifact_to_download)
+    def __download_extract_and_deploy_artifact(self, artifact_name: str, build_id: str) -> None:
+        """Download, extract, and deploy a single artifact."""
+        print(f"Downloading {artifact_name}...")
+        artifact = self.__teamcity.get_build_artifact(build_id=build_id, path_to_artifact=artifact_name)
 
-            if artifact is None:
-                raise ValueError(f"Could not download artifact {artifact_to_download}")
+        if artifact is None:
+            raise ValueError(f"Could not download artifact {artifact_name}")
 
-            with open(artifact_to_download, "wb") as f:
-                f.write(artifact)
-            print(f"Unpacking {artifact_to_download}...")
+        # Write artifact to local file
+        with open(artifact_name, "wb") as f:
+            f.write(artifact)
 
-            self.__extract_archive(artifact_to_download, file_path)
-            print(f"Deleting {artifact_to_download}...")
-            os.remove(artifact_to_download)
+        # Extract and deploy
+        print(f"Unpacking {artifact_name}...")
+        file_path = f"{self.__dimr_version}"
+        self.__extract_archive(artifact_name, file_path)
 
-            remote_path = "/p/d-hydro/dimrset/weekly"
-            self.__ssh_client.secure_copy(
-                address=LINUX_ADDRESS,
-                local_path=file_path,
-                remote_path=remote_path,
-            )
-            print(f"Successfully deployed {artifact_to_download} to {remote_path}.")
+        print(f"Deleting {artifact_name}...")
+        os.remove(artifact_name)
+
+        # Deploy to remote location
+        remote_path = f"{self.__remote_base_path}/{self.__installation_path}"
+        self.__ssh_client.secure_copy(
+            address=LINUX_ADDRESS,
+            local_path=file_path,
+            remote_path=remote_path,
+        )
+        print(f"Successfully deployed {artifact_name} to {remote_path}.")
 
     def __extract_archive(self, archive_path: str, target_path: str) -> None:
         """
@@ -193,18 +219,35 @@ class ArtifactInstallHelper(object):
         - The function removes the Unix permission bits when on Windows, as the permission bits are not
         supported on Windows.
         """
-        if archive_path.endswith(".tar.gz") or archive_path.endswith(".tgz"):
-            with tarfile.open(archive_path, "r:gz") as tar:
-                for member in tar.getmembers():
-                    # Strip the Unix permission bits when on Windows
-                    if os.name == "nt":
-                        member.mode = 0o644  # Default file permissions for Windows
-                    tar.extract(member, path=target_path)
-        elif archive_path.endswith(".zip"):
-            with zipfile.ZipFile(archive_path, "r") as zip_ref:
-                zip_ref.extractall(target_path)
-        else:
-            raise ValueError("Unsupported archive format. Only .tar.gz, .tgz, and .zip are supported.")
+        # Map of file extensions to extraction methods
+        extraction_methods = {
+            (".tar.gz", ".tgz"): self.__extract_tar_archive,
+            (".zip",): self.__extract_zip_archive,
+        }
+
+        # Find the appropriate extraction method
+        for extensions, method in extraction_methods.items():
+            if any(archive_path.endswith(ext) for ext in extensions):
+                method(archive_path, target_path)
+                return
+
+        # If no suitable method found, raise error
+        supported_formats = [ext for exts in extraction_methods.keys() for ext in exts]
+        raise ValueError(f"Unsupported archive format. Supported formats: {', '.join(supported_formats)}")
+
+    def __extract_tar_archive(self, archive_path: str, target_path: str) -> None:
+        """Extract a tar.gz or tgz archive."""
+        with tarfile.open(archive_path, "r:gz") as tar:
+            for member in tar.getmembers():
+                # Strip the Unix permission bits when on Windows
+                if os.name == "nt":
+                    member.mode = 0o644  # Default file permissions for Windows
+                tar.extract(member, path=target_path)
+
+    def __extract_zip_archive(self, archive_path: str, target_path: str) -> None:
+        """Extract a zip archive."""
+        with zipfile.ZipFile(archive_path, "r") as zip_ref:
+            zip_ref.extractall(target_path)
 
 
 if __name__ == "__main__":
