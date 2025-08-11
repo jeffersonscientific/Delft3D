@@ -168,7 +168,7 @@ def signing_is_valid(filepath: str, developer_prompt: str, expected_issued_to: s
         print(f"Error occurred while verifying signing for file: {filepath}")
         return False
     if expected_issued_to and issued_to != expected_issued_to:
-        print(f"file not correctly signed: {filepath}, signed to '{issued_to}' but expexted '{expected_issued_to}'")
+        print(f"file not correctly signed: {filepath}, signed to '{issued_to}' but expected '{expected_issued_to}'")
     elif not expected_issued_to and status == "Verified":
         print(f"file should not be signed: {filepath}")
     else:
