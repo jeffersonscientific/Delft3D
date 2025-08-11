@@ -86,7 +86,8 @@ def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple[str,
         else:
             return "Not Verified", ""
     except Exception as e:
-        return "Error", f"{e}"
+        print(f"Error verifying signing authority: {e}")
+        return "Error", ""
 
 
 def validate_signing_status(
@@ -118,12 +119,12 @@ def validate_signing_status(
     """
     filepath = os.path.join(directory, file)
     status, issued_to = verify_signing_authority(filepath, developer_prompt)
-    if file in [item["file"] for item in files_that_should_be_signed_with_issued_to]:
+    if status == "Error":
+        return f"Error occurred while verifying signing for file: {file}", False
+    signed_files = {item["file"]: item for item in files_that_should_be_signed_with_issued_to}
+    if file in signed_files:
+        expected_issued_to = signed_files[file]["issuedTo"]
         if status == "Verified":
-            for item in files_that_should_be_signed_with_issued_to:
-                if item["file"] == file:
-                    break
-            expected_issued_to = item["issuedTo"]
             if expected_issued_to == issued_to:
                 return f"File is correctly signed: {file} by {issued_to}", True
             else:
@@ -163,6 +164,9 @@ def signing_is_valid(filepath: str, developer_prompt: str, expected_issued_to: s
         True if the signing status matches expectations, False otherwise.
     """
     status, issued_to = verify_signing_authority(filepath, developer_prompt)
+    if status == "Error":
+        print(f"Error occurred while verifying signing for file: {filepath}")
+        return False
     if expected_issued_to and issued_to != expected_issued_to:
         print(f"file not correctly signed: {filepath}, signed to '{issued_to}' but expexted '{expected_issued_to}'")
     elif not expected_issued_to and status == "Verified":
@@ -290,8 +294,8 @@ if __name__ == "__main__":
         help="Json file with expected file structure.",
         type=str,
     )
-    parser.add_argument("developer_prompt", help="Path to the vs studio developer promt", type=str)
-    parser.add_argument("directory", help="Directiry to validate.", type=str)
+    parser.add_argument("developer_prompt", help="Path to the vs studio developer prompt", type=str)
+    parser.add_argument("directory", help="Directory to validate.", type=str)
     if len(sys.argv) != 4:
         print("Usage: python script.py <expected_structure_json> <developer_prompt> <directory>")
         sys.exit(1)
