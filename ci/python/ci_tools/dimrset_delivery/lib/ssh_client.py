@@ -31,8 +31,8 @@ class SshClient(object):
         self.__password = password
         self.__connect_timeout = connect_timeout
 
-        self.__client = paramiko.SSHClient()
-        self.__client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._client = paramiko.SSHClient()
+        self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     def test_connection(self, address: str, dry_run: bool) -> None:
         """
@@ -54,14 +54,14 @@ class SshClient(object):
             if dry_run:
                 print(f"{DRY_RUN_PREFIX} SSH connection to {address} with {self.__username}")
             else:
-                self.__client.connect(
+                self._client.connect(
                     address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
                 )
             print(f"Successfully created and closed a ssh connection to {address} with {self.__username}.")
         except Exception as e:
             raise AssertionError(f"Could not establish ssh connection to {address}:\n{e}") from e
         finally:
-            self.__client.close()
+            self._client.close()
 
     def execute(self, address: str, command: str) -> None:
         """
@@ -80,14 +80,14 @@ class SshClient(object):
             If the command fails to execute on the specified address.
         """
         try:
-            self.__client.connect(
+            self._client.connect(
                 address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
             )
-            self.__client.exec_command(command)
+            self._client.exec_command(command)
         except Exception as e:
             raise AssertionError(f"Could not execute command '{command}' on '{address}':\n{e}") from e
         finally:
-            self.__client.close()
+            self._client.close()
 
     def secure_copy(self, address: str, local_path: str, remote_path: str, direction: Direction = Direction.TO) -> None:
         """
@@ -110,16 +110,20 @@ class SshClient(object):
             If the SCP operation fails.
         """
         try:
-            self.__client.connect(
+            self._client.connect(
                 address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
             )
-            transport = self.__client.get_transport()
+            transport = self._client.get_transport()
             if transport is not None:
                 transport.set_keepalive(60)
                 if transport.sock is not None:
                     transport.sock.settimeout(120)
-            with SCPClient(self.__client.get_transport()) as scp_client:
-                scp_client.channel.settimeout(120)
+            transport = self._client.get_transport()
+            if transport is None:
+                raise AssertionError(f"Could not get SSH transport for SCP operation '{direction}' on '{address}'")
+            with SCPClient(transport) as scp_client:
+                if hasattr(scp_client, "channel") and scp_client.channel is not None:
+                    scp_client.channel.settimeout(120)
                 if direction == Direction.TO:
                     scp_client.put(local_path, remote_path=remote_path, recursive=True)
                 elif direction == Direction.FROM:
@@ -129,4 +133,4 @@ class SshClient(object):
         except Exception as e:
             raise AssertionError(f"Could not perform SCP operation '{direction}' on '{address}':\n{e}") from e
         finally:
-            self.__client.close()
+            self._client.close()
