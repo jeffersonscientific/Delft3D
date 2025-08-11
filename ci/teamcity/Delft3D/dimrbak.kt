@@ -61,7 +61,7 @@ object DIMRbak : BuildType({
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", "credentialsJSON:43ca5761-31e9-4289-97f3-c060a4007293")
         password("dimrbakker_personal_access_token", "credentialsJSON:8af5f616-4c9b-4f2c-9cd2-b5cc8cc4592d")
-        param("dry_run", if (DslContext.getParameter("enable_dimrbak").lowercase() == "true") "false" else "true")
+        param("dry_run", if (DslContext.getParameter("enable_dimrbak").lowercase() == "true") "" else "--dry-run")
     }
 
     steps {
@@ -79,7 +79,7 @@ object DIMRbak : BuildType({
                     --ssh-password "%dimrbakker_password%"
                     --git-username "%dimrbakker_username%"
                     --git-PAT "%dimrbakker_personal_access_token%"
-                    --dry-run
+                    %dry_run%
                 """.trimIndent()
             }
             workingDir = "ci/python"
@@ -96,7 +96,7 @@ object DIMRbak : BuildType({
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
-                    --dry-run
+                    %dry_run%
                 """.trimIndent()
             }
             workingDir = "ci/python"
@@ -116,7 +116,7 @@ object DIMRbak : BuildType({
                     --teamcity-password "%dimrbakker_password%"
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
-                    --dry-run
+                    %dry_run%
                 """.trimIndent()
             }
             workingDir = "ci/python"
@@ -136,7 +136,7 @@ object DIMRbak : BuildType({
                     --teamcity-password "%dimrbakker_password%"
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
-                    --dry-run
+                    %dry_run%
                 """.trimIndent()
             }
             workingDir = "ci/python"
@@ -154,7 +154,7 @@ object DIMRbak : BuildType({
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
-                    --dry-run
+                    %dry_run%
                 """.trimIndent()
             }
             workingDir = "ci/python"
@@ -174,7 +174,7 @@ object DIMRbak : BuildType({
                     --atlassian-password "%dimrbakker_password%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
-                    --dry-run
+                    %dry_run%
                 """.trimIndent()
             }
             workingDir = "ci/python"
@@ -194,7 +194,7 @@ object DIMRbak : BuildType({
                     --teamcity-password "%dimrbakker_password%"
                     --git-username "deltares-service-account"
                     --git-PAT "%github_deltares-service-account_access_token%"
-                    --dry-run
+                    %dry_run%
                 """.trimIndent()
             }
             workingDir = "ci/python"
