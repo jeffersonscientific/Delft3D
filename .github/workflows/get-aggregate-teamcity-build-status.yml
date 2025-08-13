@@ -31,11 +31,20 @@ jobs:
       #     secrets: |-
       #       keeper://Z8l66p1kXatULIUc7AxbIw/field/password > password
 
+      - name: Get PR short ref
+        id: get_short_ref
+        run: |
+          # Remove 'refs/' prefix and last segment
+          REF=${GITHUB_REF#refs/}
+          REF=${REF%/*}
+          echo "ref: $REF"
+          echo "ref=$REF" >> $GITHUB_OUTPUT
+
       - name: Get Teamcity build aggregate status
         run: |
           chmod +x ci/github/get_aggregate_teamcity_build_status.sh
           ci/github/get_aggregate_teamcity_build_status.sh \
             --teamcity-token "${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}" \
-            --branch-name "${{ github.ref_name }}" \
+            --branch-name "${{ steps.get_short_ref.outputs.ref }}" \
             --poll-interval 30 \
             --timeout 1d
