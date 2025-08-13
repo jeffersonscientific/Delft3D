@@ -7002,8 +7002,6 @@ contains
       case ('solarradiation', 'netsolarradiation')
          itemPtr1 => item_solar_radiation
          dataPtr1 => solar_radiation
-         itemPtr1 => item_solar_radiation
-         dataPtr1 => solar_radiation
       case ('longwaveradiation')
          itemPtr1 => item_long_wave_radiation
          dataPtr1 => long_wave_radiation
