@@ -90,10 +90,10 @@ contains
 
       !-----------------------------------------------------------------------------------------------
       ! TODO: AvD: consider moving everything below to flow_finalize single_timestep?
-      call setkbotktop(jazws0=0, water_level=s1) ! bottom and top layer indices and new sigma distribution
+      call set_kbot_ktop(jazws0=0) ! bottom and top layer indices and new sigma distribution
 
       if (flow_solver == FLOW_SOLVER_FM) then
-         call u1q1() ! the vertical flux qw depends on new sigma => after setkbotktop
+         call u1q1() ! the vertical flux qw depends on new sigma => after set_kbot_ktop
          call compute_q_total_1d2d()
       end if
 
@@ -156,7 +156,7 @@ contains
          end if
          call volsur() ! update volumes 2d
          if (kmx > 0) then
-            call setkbotktop(jazws0=0, water_level=s1) ! and 3D for cell volumes
+            call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
          end if
       end if
 

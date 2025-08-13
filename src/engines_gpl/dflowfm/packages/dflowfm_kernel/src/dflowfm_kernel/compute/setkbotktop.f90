@@ -30,14 +30,17 @@
 !
 module m_set_kbot_ktop
    implicit none
+   private
+   public :: set_kbot_ktop
+   public :: reset_kbot_ktop_boundary
 contains
 
-   !> initialise vertical coordinates
-   subroutine setkbotktop(jazws0, water_level)
+   !> Initialise vertical coordinates, calculate layer volumes, set layer interfaces
+   subroutine set_kbot_ktop(jazws0)
       use precision, only: dp
       use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
       use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, kmxn, &
-                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, sdkx, tsigma, epshu, laydefnr, laytyp, &
+                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, s1, sdkx, tsigma, epshu, laydefnr, laytyp, &
                         wflaynod, indlaynod, keepzlay1bedvol, vol0, jasal, jatem, qwwaq, ln0, LAYTP_SIGMA, LAYTP_Z
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -46,12 +49,11 @@ contains
       use m_transport, only: Constituents, ISALT, ITEMP
 
       integer, intent(in) :: jazws0 !< Whether to store zws in zws0 at initialisation
-      real(kind=dp), dimension(:), intent(in) :: water_level !< Array of water levels for each flow node. Either s0 or water_level (water_level is standard).
 
-      integer :: k2, kb, k, n, kk, nL, nR, nlayb, nrlay, ktx
+      integer :: k2, kb, k, n, kk, nlayb, nrlay, ktx
       integer :: kt0, kt1, kt2, kt3, LL, L, Lb, Lt, n1, n2, kb1, kb2, kt, kkk, kwaq, Ldn
       real(kind=dp) :: zkk, h0, toplaymint, volkt, savolkt, tevolkt, dtopsi
-      real(kind=dp) :: w1, w2, w3, h1, h2, h3, zw1, zw2, zw3, bL1, bL2, bL3, ht1, ht2, ht3
+      real(kind=dp) :: w1, w2, w3, h1, h2, h3, zw1, zw2, zw3, bL1, bL2, bL3
       integer :: k1, k3, kb3, kk1, kk2, kk3
 
       integer :: numbd, numtp, j
@@ -65,15 +67,14 @@ contains
       ktop0 = ktop
       vol1 = 0.0_dp
 
-      nL = 1
-      nR = 2
-
       if (Layertype == LAYTP_SIGMA) then ! sigma only
          do n = 1, ndx
             kb = kbot(n)
 
-            if (jased > 0) zws(kb - 1) = bl(n)
-            h0 = water_level(n) - zws(kb - 1)
+            if (jased > 0) then
+               zws(kb - 1) = bl(n)
+            end if
+            h0 = s1(n) - zws(kb - 1)
             do k = 1, kmxn(n)
                kk = kb + k - 1
                zws(kk) = zws(kb - 1) + h0 * zslay(k, 1)
@@ -83,7 +84,7 @@ contains
             ktop(n) = kb - 1 + kmxn(n)
 
          end do
-         return ! sigma only: quick exit
+         return
 
       else if (Layertype == LAYTP_Z) then ! z or z-sigma
          do n = 1, ndx
@@ -95,10 +96,10 @@ contains
             do k = kb, ktx
                kk = k - kb + nlayb
                zkk = zslay(kk, 1)
-               if (zkk < water_level(n) - toplayminthick .and. k < ktx) then
+               if (zkk < s1(n) - toplayminthick .and. k < ktx) then
                   zws(k) = zkk
                else
-                  zws(k) = water_level(n)
+                  zws(k) = s1(n)
                   ktop(n) = k
                   if (ktx > k) then
                      zws(k + 1:ktx) = zws(k)
@@ -110,13 +111,13 @@ contains
             if (numtopsig > 0) then
                kt1 = max(kb, ktx - numtopsig + 1)
                if (ktop(n) >= kt1) then
-                  h0 = water_level(n) - zws(kt1 - 1)
+                  h0 = s1(n) - zws(kt1 - 1)
                   dtopsi = 1.0_dp / dble(ktx - kt1 + 1)
                   do k = kt1, ktx
                      kk = k - kt1 + 1
                      zws(k) = zws(kt1 - 1) + h0 * dble(kk) * dtopsi
                   end do
-                  zws(ktx) = water_level(n)
+                  zws(ktx) = s1(n)
                   ktop(n) = ktx
                end if
             end if
@@ -132,14 +133,15 @@ contains
                   end if
                end if
             end if
-
          end do
 
       else if (Layertype == 4) then ! density controlled sigma
          dkx = 0.5_dp
          do n = 1, ndx
             drhok = 0.01_dp
-            kb = kbot(n); kt = kb - 1 + kmxn(n); ktop(n) = kt
+            kb = kbot(n)
+            kt = kb - 1 + kmxn(n)
+            ktop(n) = kt
             do k = kb + 1, kt
                if (abs(rho(k) - rho(k - 1)) > drhok) then
                   drhok = abs(rho(k) - rho(k - 1))
@@ -153,7 +155,8 @@ contains
          do j = 1, 10
             sdkx = 0.0_dp
             do L = 1, Lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                sdkx(k1) = sdkx(k1) + dkx(k2)
                sdkx(k2) = sdkx(k2) + dkx(k1)
             end do
@@ -164,7 +167,10 @@ contains
             end do
          end do
 
-         numbd = 0.5_dp * kmx; numtp = kmx - numbd; aaa = 1.05_dp; aa = min(1.0_dp, exp(-dts / Tsigma))
+         numbd = 0.5_dp * kmx
+         numtp = kmx - numbd
+         aaa = 1.05_dp
+         aa = min(1.0_dp, exp(-dts / Tsigma))
 
          dkx = 0.5_dp
 
@@ -172,7 +178,9 @@ contains
 
             call getkbotktop(n, kb, kt)
 
-            h0 = water_level(n) - zws(kb - 1); h00 = max(epshu, zws0(kt) - zws0(kb - 1)); sig = 0.0_dp
+            h0 = s1(n) - zws(kb - 1)
+            h00 = max(epshu, zws0(kt) - zws0(kb - 1))
+            sig = 0.0_dp
             dsig0 = 0.1_dp / dble(numtp)
 
             do k = 1, kmxn(n)
@@ -191,7 +199,7 @@ contains
 
                kk = kb + k - 1
                if (k == kmxn(n)) then
-                  zws(kk) = water_level(n)
+                  zws(kk) = s1(n)
                else
                   if (jazws0 == 1) then
                      zsl = zslay(k, 1)
@@ -214,12 +222,12 @@ contains
             Ldn = laydefnr(n)
             if (Ldn > 0) then
                if (Laytyp(Ldn) == 1) then ! sigma
-                  h0 = water_level(n) - zws(kb - 1)
+                  h0 = s1(n) - zws(kb - 1)
                   do k = 1, kmxn(n) - 1
                      zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
                   end do
                   ktop(n) = kb + kmxn(n) - 1
-                  zws(ktop(n)) = water_level(n)
+                  zws(ktop(n)) = s1(n)
                else if (Laytyp(Ldn) == 2) then ! z
 
                   ktx = kb + kmxn(n) - 1
@@ -227,10 +235,10 @@ contains
                   do k = kb, ktx
                      kk = k - kb + nlayb
                      zkk = zslay(kk, Ldn)
-                     if (zkk < water_level(n) - toplayminthick .and. k < ktx) then
+                     if (zkk < s1(n) - toplayminthick .and. k < ktx) then
                         zws(k) = zkk
                      else
-                        zws(k) = water_level(n)
+                        zws(k) = s1(n)
                         ktop(n) = k
                         if (ktx > k) then
                            zws(k + 1:ktx) = zws(k)
@@ -249,15 +257,25 @@ contains
          ktx = kb - 1 + kmxn(n)
 
          if (laydefnr(n) == 0) then ! overlap zone
-            w1 = wflaynod(1, n); w2 = wflaynod(2, n); w3 = wflaynod(3, n)
-            k1 = indlaynod(1, n); k2 = indlaynod(2, n); k3 = indlaynod(3, n)
-            kb1 = kbot(k1); kb2 = kbot(k2); kb3 = kbot(k3)
-            bL1 = zws(kb1 - 1); bL2 = zws(kb2 - 1); bL3 = zws(kb3 - 1)
-            h1 = water_level(k1) - bL1; h2 = water_level(k2) - bL2; h3 = water_level(k3) - bL3; h0 = water_level(n) - zws(kb - 1)
-            kt1 = ktop(k1); kt2 = ktop(k2); kt3 = ktop(k3)
-            ht1 = zws(kt1) - zws(kt1 - 1)
-            ht2 = zws(kt2) - zws(kt2 - 1)
-            ht3 = zws(kt3) - zws(kt3 - 1)
+            w1 = wflaynod(1, n)
+            w2 = wflaynod(2, n)
+            w3 = wflaynod(3, n)
+            k1 = indlaynod(1, n)
+            k2 = indlaynod(2, n)
+            k3 = indlaynod(3, n)
+            kb1 = kbot(k1)
+            kb2 = kbot(k2)
+            kb3 = kbot(k3)
+            bL1 = zws(kb1 - 1)
+            bL2 = zws(kb2 - 1)
+            bL3 = zws(kb3 - 1)
+            h1 = s1(k1) - bL1
+            h2 = s1(k2) - bL2
+            h3 = s1(k3) - bL3
+            h0 = s1(n) - zws(kb - 1)
+            kt1 = ktop(k1)
+            kt2 = ktop(k2)
+            kt3 = ktop(k3)
 
             toplaymint = 0.1_dp
 
@@ -265,6 +283,9 @@ contains
                kk = kb + k - 1
 
                kk1 = kb1 + k - 1
+               zw1 = 1.0_dp
+               zw2 = 1.0_dp
+               zw3 = 1.0_dp
                if (kk1 > kt1) then
                   zw1 = zw1 + min(zw2, zw3)
                else
@@ -287,10 +308,10 @@ contains
 
                zkk = zws(kb - 1) + (w1 * zw1 + w2 * zw2 + w3 * zw3) * h0
 
-               if (zkk < water_level(n) - toplaymint .and. k < kmxn(n)) then
+               if (zkk < s1(n) - toplaymint .and. k < kmxn(n)) then
                   zws(kk) = zkk
                else
-                  zws(kk) = water_level(n)
+                  zws(kk) = s1(n)
                   ktop(n) = kk
                   if (ktx > kk) then
                      zws(kk + 1:ktx) = zws(kk)
@@ -319,14 +340,22 @@ contains
          if (kt0 > kt) then
             volkt = vol0(kt)
 
-            if (jasal > 0) savolkt = volkt * constituents(isalt, kt)
-            if (jatem > 0) tevolkt = volkt * constituents(itemp, kt)
+            if (jasal > 0) then
+               savolkt = volkt * constituents(isalt, kt)
+            end if
+            if (jatem > 0) then
+               tevolkt = volkt * constituents(itemp, kt)
+            end if
 
             do kkk = kt0, kt + 1, -1 ! old volumes above present ktop are lumped in ktop
                volkt = volkt + vol0(kkk)
                vol0(kt) = volkt
-               if (jasal > 0) savolkt = savolkt + vol0(kkk) * constituents(isalt, kkk)
-               if (jatem > 0) tevolkt = tevolkt + vol0(kkk) * constituents(itemp, kkk)
+               if (jasal > 0) then
+                  savolkt = savolkt + vol0(kkk) * constituents(isalt, kkk)
+               end if
+               if (jatem > 0) then
+                  tevolkt = tevolkt + vol0(kkk) * constituents(itemp, kkk)
+               end if
                if (ti_waq > 0) then
                   do kwaq = kkk, kt + 1, -1
                      qwwaq(kwaq - 1) = qwwaq(kwaq - 1) - vol0(kkk)
@@ -357,8 +386,10 @@ contains
 
       if (layertype > 1) then ! ln does not change in sigma only
          do LL = 1, Lnx
-            n1 = ln(1, LL); n2 = ln(2, LL)
-            kt1 = ktop(n1); kt2 = ktop(n2)
+            n1 = ln(1, LL)
+            n2 = ln(2, LL)
+            kt1 = ktop(n1)
+            kt2 = ktop(n2)
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
                ln(1, L) = min(ln0(1, L), kt1)
@@ -366,5 +397,389 @@ contains
             end do
          end do
       end if
-   end subroutine setkbotktop
+   end subroutine set_kbot_ktop
+
+   !> Update vertical coordinates for boundary nodes only after an update of s0, avoiding global side effects
+   !! but including link connectivity updates when dry-to-wet transitions occur.
+   !! Is a special version of the set_kbot_ktop subroutine for after s0 updates on the boundary nodes.
+   subroutine reset_kbot_ktop_boundary()
+      use precision, only: dp
+      use m_flowgeom, only: ndx, ba, bl, ln, lnx
+      use m_flow, only: kmx, zws, zws0, ktop, ktop0, vol1, layertype, kbot, jased, kmxn, &
+                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, s0, tsigma, epshu, laydefnr, laytyp, &
+                        wflaynod, indlaynod, keepzlay1bedvol, vol0, jasal, jatem, qwwaq, ln0, LAYTP_SIGMA, LAYTP_Z, &
+                        nbndz, kbndz
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
+      use m_get_zlayer_indices, only: getzlayerindices
+      use m_flowtimes, only: dts, ti_waq
+      use m_transport, only: Constituents, ISALT, ITEMP
+
+      integer :: k2, kb, k, n, kk, nlayb, nrlay, ktx
+      integer :: kt0, kt1, kt2, kt3, LL, L, Lb, Lt, n1, n2, kb1, kb2, kt, kkk, kwaq, Ldn
+      real(kind=dp) :: zkk, h0, toplaymint, volkt, savolkt, tevolkt, dtopsi
+      real(kind=dp) :: w1, w2, w3, h1, h2, h3, zw1, zw2, zw3, bL1, bL2, bL3
+      integer :: k1, k3, kb3, kk1, kk2, kk3
+      integer :: i_bnd
+
+      integer :: numbd, numtp
+      real(kind=dp) :: aa, h00, zsl, aaa, sig, dsig
+
+      logical :: need_link_update
+
+      need_link_update = .false.
+
+      if (kmx == 0 .or. nbndz == 0) then
+         return
+      end if
+
+      if (Layertype == LAYTP_SIGMA) then ! sigma only
+         do i_bnd = 1, nbndz
+            n = kbndz(1, i_bnd)
+            if (n <= 0 .or. n > ndx) then
+               cycle
+            end if
+
+            vol1(n) = 0.0_dp
+
+            kb = kbot(n)
+
+            if (jased > 0) then
+               zws(kb - 1) = bl(n)
+            end if
+            h0 = s0(n) - zws(kb - 1)
+            do k = 1, kmxn(n)
+               kk = kb + k - 1
+               zws(kk) = zws(kb - 1) + h0 * zslay(k, 1)
+               vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1))
+               vol1(n) = vol1(n) + vol1(kk)
+            end do
+            ktop(n) = kb - 1 + kmxn(n)
+         end do
+         return ! Early exit - no link updates needed for density sigma layers, volumes already calculated
+
+      else if (Layertype == LAYTP_Z) then ! z or z-sigma
+         do i_bnd = 1, nbndz
+            n = kbndz(1, i_bnd)
+            if (n <= 0 .or. n > ndx) then
+               cycle
+            end if
+
+            kb = kbot(n)
+            kt0 = ktop(n) ! Store original ktop for comparison
+
+            ktx = kb + kmxn(n) - 1
+            call getzlayerindices(n, nlayb, nrlay)
+
+            do k = kb, ktx
+               kk = k - kb + nlayb
+               zkk = zslay(kk, 1)
+               if (zkk < s0(n) - toplayminthick .and. k < ktx) then
+                  zws(k) = zkk
+               else
+                  zws(k) = s0(n)
+                  ktop(n) = k
+                  if (ktx > k) then
+                     zws(k + 1:ktx) = zws(k)
+                  end if
+                  exit
+               end if
+            end do
+
+            if (numtopsig > 0) then
+               kt1 = max(kb, ktx - numtopsig + 1)
+               if (ktop(n) >= kt1) then
+                  h0 = s0(n) - zws(kt1 - 1)
+                  dtopsi = 1.0_dp / dble(ktx - kt1 + 1)
+                  do k = kt1, ktx
+                     kk = k - kt1 + 1
+                     zws(k) = zws(kt1 - 1) + h0 * dble(kk) * dtopsi
+                  end do
+                  zws(ktx) = s0(n)
+                  ktop(n) = ktx
+               end if
+            end if
+
+            if (keepzlayeringatbed >= 2) then
+               if (ktop(n) > kb) then
+                  if (keepzlayeringatbed <= 3) then
+                     zws(kb) = 0.5_dp * (zws(kb + 1) + zws(kb - 1))
+                  else if (keepzlayeringatbed <= 4) then
+                     zws(kb) = max(zws(kb), 0.5_dp * (zws(kb + 1) + zws(kb - 1)))
+                  else
+                     zws(kb) = max(zws(kb), 0.1_dp * zws(kb + 1) + 0.9_dp * zws(kb - 1))
+                  end if
+               end if
+            end if
+
+            ! Check if this node experienced significant layer changes
+            if (ktop(n) /= kt0) then
+               need_link_update = .true.
+            end if
+         end do
+
+      else if (Layertype == 4) then ! density controlled sigma
+         ! Simplified version for boundary nodes only - skip the global smoothing,
+         ! because looping over all nodes would be too expensive for updating boundary nodes only.
+         numbd = 0.5_dp * kmx
+         numtp = kmx - numbd
+         aaa = 1.05_dp
+         aa = min(1.0_dp, exp(-dts / Tsigma))
+
+         do i_bnd = 1, nbndz
+            n = kbndz(1, i_bnd)
+            if (n <= 0 .or. n > ndx) then
+               cycle
+            end if
+
+            call getkbotktop(n, kb, kt)
+
+            h0 = s0(n) - zws(kb - 1)
+            h00 = max(epshu, zws0(kt) - zws0(kb - 1))
+            sig = 0.0_dp
+            vol1(n) = 0.0_dp
+
+            do k = 1, kmxn(n)
+               if (k == 1) then
+                  dsig = 0.5_dp * (1.0_dp - aaa) / (1.0_dp - aaa**numbd) ! Use default dkx = 0.5
+                  dsig = dsig * aaa**(numbd - 1)
+               else if (k <= numbd) then
+                  dsig = dsig / aaa
+               else if (k == numbd + 1) then
+                  dsig = (1.0_dp - sig) * (1.0_dp - aaa) / (1.0_dp - aaa**numtp)
+               else
+                  dsig = dsig * aaa
+               end if
+
+               sig = sig + dsig
+               kk = kb + k - 1
+
+               if (k == kmxn(n)) then
+                  zws(kk) = s0(n)
+               else
+                  zsl = (1.0_dp - aa) * sig + aa * (zws0(kk) - zws0(kb - 1)) / h00
+                  zws(kk) = zws(kb - 1) + h0 * zsl
+               end if
+
+               vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1))
+               vol1(n) = vol1(n) + vol1(kk)
+            end do
+         end do
+         return ! Early exit - no link updates needed for density sigma layers, volumes already calculated
+
+      else if (Layertype == 3) then ! mixed layers
+         do i_bnd = 1, nbndz
+            n = kbndz(1, i_bnd)
+            if (n <= 0 .or. n > ndx) then
+               cycle
+            end if
+
+            kb = kbot(n)
+            kt0 = ktop(n) ! Store original ktop for comparison
+
+            Ldn = laydefnr(n)
+            if (Ldn > 0) then
+               if (Laytyp(Ldn) == 1) then ! sigma
+                  h0 = s0(n) - zws(kb - 1)
+                  do k = 1, kmxn(n) - 1
+                     zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
+                  end do
+                  ktop(n) = kb + kmxn(n) - 1
+                  zws(ktop(n)) = s0(n)
+               else if (Laytyp(Ldn) == 2) then ! z
+                  ktx = kb + kmxn(n) - 1
+                  call getzlayerindices(n, nlayb, nrlay)
+                  do k = kb, ktx
+                     kk = k - kb + nlayb
+                     zkk = zslay(kk, Ldn)
+                     if (zkk < s0(n) - toplayminthick .and. k < ktx) then
+                        zws(k) = zkk
+                     else
+                        zws(k) = s0(n)
+                        ktop(n) = k
+                        if (ktx > k) then
+                           zws(k + 1:ktx) = zws(k)
+                        end if
+                        exit
+                     end if
+                  end do
+               end if
+            end if
+
+            ! Check if this node experienced significant layer changes
+            if (ktop(n) /= kt0) then
+               need_link_update = .true.
+            end if
+         end do
+      end if
+
+      ! Handle overlap zones for all boundary nodes
+      do i_bnd = 1, nbndz
+         n = kbndz(1, i_bnd)
+         if (n <= 0 .or. n > ndx) then
+            cycle
+         end if
+
+         kb = kbot(n)
+         ktx = kb - 1 + kmxn(n)
+
+         if (laydefnr(n) == 0) then ! overlap zone
+            kt0 = ktop(n) ! Store original ktop for comparison
+
+            w1 = wflaynod(1, n)
+            w2 = wflaynod(2, n)
+            w3 = wflaynod(3, n)
+            k1 = indlaynod(1, n)
+            k2 = indlaynod(2, n)
+            k3 = indlaynod(3, n)
+            kb1 = kbot(k1)
+            kb2 = kbot(k2)
+            kb3 = kbot(k3)
+            bL1 = zws(kb1 - 1)
+            bL2 = zws(kb2 - 1)
+            bL3 = zws(kb3 - 1)
+            h1 = s0(k1) - bL1
+            h2 = s0(k2) - bL2
+            h3 = s0(k3) - bL3
+            h0 = s0(n) - zws(kb - 1)
+            kt1 = ktop(k1)
+            kt2 = ktop(k2)
+            kt3 = ktop(k3)
+
+            toplaymint = 0.1_dp
+
+            do k = 1, kmxn(n)
+               kk = kb + k - 1
+
+               kk1 = kb1 + k - 1
+               zw1 = 1.0_dp
+               zw2 = 1.0_dp
+               zw3 = 1.0_dp
+               if (kk1 > kt1) then
+                  zw1 = zw1 + min(zw2, zw3)
+               else
+                  zw1 = (zws(kk1) - bL1) / h1
+               end if
+
+               kk2 = kb2 + k - 1
+               if (kk2 > kt2) then
+                  zw2 = zw2 + min(zw1, zw3)
+               else
+                  zw2 = (zws(kk2) - bL2) / h2
+               end if
+
+               kk3 = kb3 + k - 1
+               if (kk3 > kt3) then
+                  zw3 = zw3 + min(zw1, zw2)
+               else
+                  zw3 = (zws(kk3) - bL3) / h3
+               end if
+
+               zkk = zws(kb - 1) + (w1 * zw1 + w2 * zw2 + w3 * zw3) * h0
+
+               if (zkk < s0(n) - toplaymint .and. k < kmxn(n)) then
+                  zws(kk) = zkk
+               else
+                  zws(kk) = s0(n)
+                  ktop(n) = kk
+                  if (ktx > kk) then
+                     zws(kk + 1:ktx) = zws(kk)
+                  end if
+                  exit
+               end if
+            end do
+
+            ! Check if this node experienced significant layer changes
+            if (ktop(n) /= kt0) then
+               need_link_update = .true.
+            end if
+         end if
+      end do
+
+      ! Finalize volumes for all boundary nodes
+      do i_bnd = 1, nbndz
+         n = kbndz(1, i_bnd)
+         if (n <= 0 .or. n > ndx) then
+            cycle
+         end if
+
+         vol1(n) = 0.0_dp ! Reset before accumulation
+
+         kb = kbot(n)
+         kt = ktop(n)
+
+         if (keepzlay1bedvol == 1) then
+            vol1(kb) = ba(n) * (zws(kb) - bl(n))
+            vol1(n) = vol1(n) + vol1(kb)
+            kb1 = kb + 1
+         else
+            kb1 = kb
+         end if
+
+         do kk = kb1, kt
+            vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1))
+            vol1(n) = vol1(n) + vol1(kk)
+         end do
+
+         ! Handle constituent conservation when layers are removed
+         kt0 = ktop0(n)
+         if (kt0 > kt) then
+            volkt = vol0(kt)
+
+            if (jasal > 0) then
+               savolkt = volkt * constituents(isalt, kt)
+            end if
+            if (jatem > 0) then
+               tevolkt = volkt * constituents(itemp, kt)
+            end if
+
+            do kkk = kt0, kt + 1, -1
+               volkt = volkt + vol0(kkk)
+               vol0(kt) = volkt
+               if (jasal > 0) then
+                  savolkt = savolkt + vol0(kkk) * constituents(isalt, kkk)
+               end if
+               if (jatem > 0) then
+                  tevolkt = tevolkt + vol0(kkk) * constituents(itemp, kkk)
+               end if
+               if (ti_waq > 0) then
+                  do kwaq = kkk, kt + 1, -1
+                     qwwaq(kwaq - 1) = qwwaq(kwaq - 1) - vol0(kkk)
+                  end do
+               end if
+               vol0(kkk) = 0.0_dp
+            end do
+
+            if (volkt > 0) then
+               if (jasal > 0) then
+                  constituents(isalt, kt) = savolkt / volkt
+                  if (ktx > kt) then
+                     constituents(isalt, kt + 1:ktx) = constituents(isalt, kt)
+                  end if
+               end if
+               if (jatem > 0) then
+                  constituents(itemp, kt) = tevolkt / volkt
+                  if (ktx > kt) then
+                     constituents(itemp, kt + 1:ktx) = constituents(itemp, kt)
+                  end if
+               end if
+            end if
+         end if
+      end do
+
+      ! Update link connectivity only if boundary nodes experienced wetting or significant layer changes
+      if (need_link_update .and. layertype > 1) then
+         do LL = 1, Lnx
+            n1 = ln(1, LL)
+            n2 = ln(2, LL)
+            kt1 = ktop(n1)
+            kt2 = ktop(n2)
+            call getLbotLtop(LL, Lb, Lt)
+            do L = Lb, Lt
+               ln(1, L) = min(ln0(1, L), kt1)
+               ln(2, L) = min(ln0(2, L), kt2)
+            end do
+         end do
+      end if
+   end subroutine reset_kbot_ktop_boundary
 end module m_set_kbot_ktop
