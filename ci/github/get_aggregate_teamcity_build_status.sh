@@ -205,6 +205,7 @@ function get_aggregate_teamcity_build_status() {
 main() {
   parse_args "$@"
   ENCODED_BRANCH_NAME=$(encode_branch_name "${BRANCH_NAME}")
+  sleep 60 # delay to allow the trigger job to queue
   local trigger_id
   trigger_finished trigger_id
   get_aggregate_teamcity_build_status "${trigger_id}"
