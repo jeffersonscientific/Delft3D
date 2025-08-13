@@ -82,24 +82,6 @@ function encode_branch_name() {
   echo "${encoded_branch_name}"
 }
 
-function build_finished() {
-  local state="$1"
-  local status="$2"
-
-  local waiting=false
-  if [ "${state}" != "finished" ]; then
-    if [ "${waiting}" = false ]; then
-      echo "⏳ Job not finished yet. Polling every ${POLL_INTERVAL} seconds..."
-      waiting=true
-    fi
-    sleep "${POLL_INTERVAL}"
-    return 0
-  elif [ "${status}" != "SUCCESS" ]; then
-    echo "❌ Job failed."
-    return 1
-  fi
-}
-
 function trigger_finished() {
   declare -n id="$1"
   local build_type="Delft3D_Trigger"
@@ -114,9 +96,6 @@ function trigger_finished() {
         --header "Authorization: Bearer ${TEAMCITY_TOKEN}" \
         --header "Accept: application/json"
     )
-
-    # echo ">> TRIGGER"
-    # echo "${trigger}" | jq .
 
     local state
     state=$(echo "${trigger}" | jq -r '.build[0].state')
@@ -147,7 +126,6 @@ function trigger_finished() {
 function get_aggregate_teamcity_build_status() {
   local trigger_id="$1"
 
-  #local tracked_build_ids=()
   local tracked_build_ids=""
 
   while true; do
@@ -164,21 +142,9 @@ function get_aggregate_teamcity_build_status() {
         --header "Accept: application/json"
     )
 
-    #echo ">> ANY since Trigger id ${trigger_id}"
-    #echo "${jobs}" | jq .
-
-    #tracked_build_ids=$(jq -r '.build[]?.id' <<< "${jobs}" | tr -d '\r' | sort -nu | xargs)
-
-    #mapfile -t tracked_build_ids < <(jq -r '.build[]?.id' <<< "${jobs}" | tr -d '\r' | sort -nu)
-
-    # local current_ids=""
-    # current_ids=$(jq -r '.build[]?.id' <<< "${jobs}" | tr -d '\r'| xargs)
-    # # Merge into tracked set (keeps finished ones until all done)
-    # tracked_build_ids="$(echo "${tracked_build_ids} ${current_ids}" | sort -u)"
-
     tracked_build_ids=$(jq -r '.build[]?.id' <<<"${jobs}" | tr -d '\r' | sort -nu | xargs)
 
-    if [ -z "$tracked_build_ids" ]; then
+    if [ -z "${tracked_build_ids}" ]; then
       echo "✅ No builds detected for branch ${BRANCH_NAME}."
       return 0
     fi
@@ -187,7 +153,6 @@ function get_aggregate_teamcity_build_status() {
     local states=()
     local statuses=()
 
-    # for build_id in "${tracked_build_ids[@]}"; do
     for build_id in ${tracked_build_ids}; do
       local build_info
       build_info=$(
@@ -240,7 +205,7 @@ function get_aggregate_teamcity_build_status() {
 main() {
   parse_args "$@"
   ENCODED_BRANCH_NAME=$(encode_branch_name "${BRANCH_NAME}")
-  #local trigger_id
+  local trigger_id
   trigger_finished trigger_id
   get_aggregate_teamcity_build_status "${trigger_id}"
 }
