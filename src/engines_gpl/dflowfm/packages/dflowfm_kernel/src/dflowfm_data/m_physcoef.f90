@@ -40,6 +40,7 @@ module m_physcoef
 
    interface realloc
       module procedure realloc_dicoww_array
+      module procedure realloc_dicoww_scalar
    end interface
 
    ! Abstract base type for dicoww
@@ -177,6 +178,21 @@ contains
       real :: val
       val = this%values(k)
    end function get_dicoww_array
+
+subroutine realloc_dicoww_scalar(dicoww, value)
+    class(dicoww_t), allocatable, intent(inout) :: dicoww
+    real(kind=dp), intent(in) :: value
+
+    if (allocated(dicoww)) then
+        deallocate(dicoww)
+    end if
+
+    allocate(dicoww_scalar_t :: dicoww)
+    select type(scalar => dicoww)
+        type is (dicoww_scalar_t)
+            scalar%value = value
+    end select
+end subroutine realloc_dicoww_scalar
 
    subroutine realloc_dicoww_array(dicoww, n, fill_value, values_ptr)
       class(dicoww_t), allocatable, target, intent(inout) :: dicoww

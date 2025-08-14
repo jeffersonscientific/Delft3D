@@ -2389,6 +2389,7 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
+      use m_physcoef, only: dicoww, realloc
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2802,6 +2803,11 @@ contains
       ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
+
+      ! Set t_dicoww to scalar value if not read from inifields file
+      if (.not. allocated(t_dicoww)) then
+         call realloc(t_dicoww, dicoww)
+      end if
 
    end subroutine finalize
 
