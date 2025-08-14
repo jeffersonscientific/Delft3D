@@ -331,7 +331,7 @@ contains
          ktx = kb - 1 + kmxn(n)
 
          if (laydefnr(n) == 0) then ! overlap zone
-            call process_overlap_zone(n, kb, ktx, s1(n), kt0, ktop_changed)
+            call process_overlap_zone(n, kb, ktx, s1, kt0, ktop_changed)
          end if
 
          kt = ktop(n)
@@ -570,7 +570,7 @@ contains
 
          if (laydefnr(n) == 0) then ! overlap zone
             kt0 = ktop(n) ! Store original ktop for comparison before calling process_overlap_zone
-            call process_overlap_zone(n, kb, ktx, s0(n), kt0, ktop_changed)
+            call process_overlap_zone(n, kb, ktx, s0, kt0, ktop_changed)
 
             ! Check if this node experienced significant layer changes
             if (ktop_changed) then
@@ -627,12 +627,12 @@ contains
    end subroutine calculate_node_volumes
 
    !> Process overlap zone interpolation for a node
-   subroutine process_overlap_zone(n, kb, ktx, water_level, kt0_out, ktop_changed)
+   subroutine process_overlap_zone(n, kb, ktx, water_levels, kt0_out, ktop_changed)
       use precision, only: dp
       use m_flow, only: wflaynod, indlaynod, kbot, ktop, zws, kmxn
 
       integer, intent(in) :: n, kb, ktx
-      real(kind=dp), intent(in) :: water_level
+      real(kind=dp), dimension(:), intent(in) :: water_levels
       integer, intent(out) :: kt0_out
       logical, intent(out) :: ktop_changed
 
@@ -656,10 +656,10 @@ contains
       bL1 = zws(kb1 - 1)
       bL2 = zws(kb2 - 1)
       bL3 = zws(kb3 - 1)
-      h1 = water_level - bL1 ! For k1, but use water_level at current node
-      h2 = water_level - bL2 ! For k2, but use water_level at current node
-      h3 = water_level - bL3 ! For k3, but use water_level at current node
-      h0 = water_level - zws(kb - 1)
+      h1 = water_levels(k1) - bL1 ! For k1, but use water_level at current node
+      h2 = water_levels(k2) - bL2 ! For k2, but use water_level at current node
+      h3 = water_levels(k3) - bL3 ! For k3, but use water_level at current node
+      h0 = water_levels(n) - zws(kb - 1)
       kt1 = ktop(k1)
       kt2 = ktop(k2)
       kt3 = ktop(k3)
@@ -695,10 +695,10 @@ contains
 
          zkk = zws(kb - 1) + (w1 * zw1 + w2 * zw2 + w3 * zw3) * h0
 
-         if (zkk < water_level - toplaymint .and. k < kmxn(n)) then
+         if (zkk < water_levels(n) - toplaymint .and. k < kmxn(n)) then
             zws(kk) = zkk
          else
-            zws(kk) = water_level
+            zws(kk) = water_levels(n)
             ktop(n) = kk
             if (ktx > kk) then
                zws(kk + 1:ktx) = zws(kk)
