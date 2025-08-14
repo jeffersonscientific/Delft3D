@@ -168,11 +168,11 @@ contains
             do j = 1, NUMCONST
                ! diffusion
                if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
-                  fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + get_difsedw(k, j)) * dtbazi
+                  fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + get_difsedw(kk, j)) * dtbazi
                else
-                  fluxfac = (sigdifi(j) * vicwws(k) + get_difsedw(k, j) + ozmid) * dtbazi
+                  fluxfac = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid) * dtbazi
                   if (j == ISALT) then
-                     difwws(k) = (sigdifi(j) * vicwws(k) + get_difsedw(k, j) + ozmid)
+                     difwws(k) = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid)
                   end if
                end if
 
@@ -243,15 +243,15 @@ contains
    end subroutine solve_vertical
 
    pure function get_difsedw(k, j)
-      use m_physcoef, only: dicoww, dicoww_t, dicoww_scalar_t, dicoww_array_t
+      use m_physcoef, only: t_dicoww, dicoww_t, dicoww_scalar_t, dicoww_array_t
       use m_transport, only: difsedw
       use precision, only: dp
-      integer, intent(in) :: k ! node index
-      integer, intent(in) :: j ! constituent index
+      integer, intent(in) :: k ! base node index (1:Ndxi)
+      integer, intent(in) :: j ! constituent index (1:NUMCONST)
       real(kind=dp) :: get_difsedw ! return value
 
       !total diffusivity is user specified diffusivity plus molecular diffusivity depending on constituent
-      get_difsedw = dicoww%get(k) + difsedw(j)
+      get_difsedw = t_dicoww%get(k) + difsedw(j)
    end function get_difsedw
 
 end module m_solve_vertical

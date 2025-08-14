@@ -38,6 +38,10 @@ module m_physcoef
 
    implicit none
 
+   interface realloc
+      module procedure realloc_dicoww_array
+   end interface
+
    ! Abstract base type for dicoww
    type, abstract :: dicoww_t
    contains
@@ -56,14 +60,14 @@ module m_physcoef
 
    ! Concrete type for scalar dicoww
    type, extends(dicoww_t) :: dicoww_scalar_t
-      real :: value
+      real(kind=dp) :: value
    contains
       procedure :: get => get_dicoww_scalar
    end type dicoww_scalar_t
 
    ! Concrete type for array dicoww
    type, extends(dicoww_t) :: dicoww_array_t
-      real, allocatable :: values(:)
+      real(kind=dp), dimension(:), allocatable, public :: values
    contains
       procedure :: get => get_dicoww_array
    end type dicoww_array_t
@@ -99,7 +103,8 @@ module m_physcoef
    real(kind=dp) :: viuchk !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
    real(kind=dp) :: vicoww !< user specified constant vertical   eddy viscosity  (m2/s)
-   class(dicoww_t), allocatable :: dicoww !< user specified constant vertical   eddy diffusivity(m2/s)
+   real(kind=dp) :: dicoww !< real scalar of dicoww, copied to t_dicoww if scalar input
+   class(dicoww_t), allocatable, target :: t_dicoww !< user specified constant vertical   eddy diffusivity(m2/s)
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -173,6 +178,37 @@ contains
       val = this%values(k)
    end function get_dicoww_array
 
+   subroutine realloc_dicoww_array(dicoww, n, fill_value, values_ptr)
+      class(dicoww_t), allocatable, target, intent(inout) :: dicoww
+      integer, intent(in) :: n
+      real(kind=dp), optional, intent(in) :: fill_value
+      real(kind=dp), pointer, optional, intent(out) :: values_ptr(:)
+
+      if (allocated(dicoww)) then
+         deallocate (dicoww)
+      end if
+
+      allocate (dicoww_array_t :: dicoww)
+
+      select type (arr => dicoww)
+      type is (dicoww_array_t)
+         if (allocated(arr%values)) then
+            if (size(arr%values /= n)) then
+               deallocate (arr%values)
+            end if
+         end if
+         if (.not. allocated(arr%values)) then
+            allocate (arr%values(n))
+         end if
+         if (present(fill_value)) then
+            arr%values = fill_value
+         end if
+         if (present(values_ptr)) then
+            values_ptr => arr%values
+         end if
+      end select
+   end subroutine realloc_dicoww_array
+
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
       ag = 9.81_dp
@@ -193,7 +229,7 @@ contains
       Smagorinsky = 0.2_dp
       viuchk = 0.24_dp
       vicoww = 1e-6_dp
-      !dicoww = 1e-6_dp
+      dicoww = 1e-6_dp
       rhomean = 1000.0_dp
       c9of1 = 9.0_dp
       backgroundwatertemperature = 20.0_dp

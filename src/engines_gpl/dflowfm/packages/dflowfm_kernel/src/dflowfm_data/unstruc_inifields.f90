@@ -1574,6 +1574,7 @@ contains
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
                                  sfunname, sfuninp, num_spatial_time_fuctions
+      use m_physcoef, only: dicoww, t_dicoww, realloc
 
       implicit none
 
@@ -1615,12 +1616,10 @@ contains
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
-
       case ('groundlayerthickness')
          target_location_type = UNC_LOC_U
          target_array => grounlay
          jagrounlay = 1
-
       case ('bedrocksurfaceelevation')
          call initialize_subsupl()
          time_dependent_array = .true.
@@ -1633,9 +1632,7 @@ contains
             target_location_type = UNC_LOC_CN
          end select
          ! Note: target_array not needed, handled via quantity in ec_addtimespacerelation()
-
       case ('frictiontrtfactor')
-
          if (jatrt /= 1) then
             call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting QUANTITY '//trim(qid)// &
                       ', but [trachytopes] is not switched on in MDU file. Ignoring this block.')
@@ -1650,9 +1647,7 @@ contains
             target_array => cftrtfac
             jacftrtfac = 1
          end if
-
       case ('horizontaleddyviscositycoefficient')
-
          if (javiusp == 0) then
             if (allocated(viusp)) then
                deallocate (viusp)
@@ -1664,9 +1659,7 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => viusp
-
       case ('horizontaleddydiffusivitycoefficient')
-
          if (jadiusp == 0) then
             if (allocated(diusp)) then
                deallocate (diusp)
@@ -1678,13 +1671,10 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => diusp
-
       case ('ibedlevtype')
          target_location_type = UNC_LOC_U
          target_array_integer => ibot
-
       case ('internaltidesfrictioncoefficient')
-
          if (jaFrcInternalTides2D /= 1) then ! not added yet
             if (allocated(frcInternalTides2D)) then
                deallocate (frcInternalTides2D)
@@ -1704,13 +1694,11 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => frcInternalTides2D
-
       case ('linearfrictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
-
          ! if ice properties not yet read before, initialize ...
          if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
             call fm_ice_activate_by_ext_forces(ndx)
@@ -1722,14 +1710,14 @@ contains
          else
             ja_ice_thickness_read = 1
          end if
-
       case ('secchidepth')
          call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat = ierr)
          target_location_type = UNC_LOC_S
          target_array => secchisp
-
+      case ('backgroundverticaleddydiffusivitycoefficient')
+         target_location_type = UNC_LOC_S
+         call realloc(t_dicoww, ndx, dicoww, target_array)
       case ('stemdiameter')
-
          if (.not. allocated(stemdiam)) then
             allocate (stemdiam(ndx), stat=ierr)
             call aerr('stemdiam(ndx)', ierr, ndx)
