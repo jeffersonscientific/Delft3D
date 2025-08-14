@@ -118,18 +118,17 @@ contains
       use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
       use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, kmxn, &
                         zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, s1, sdkx, tsigma, epshu, laydefnr, laytyp, &
-                        wflaynod, indlaynod, LAYTP_SIGMA, LAYTP_Z
+                        LAYTP_SIGMA, LAYTP_Z
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
       use m_flowtimes, only: dts
 
       integer, intent(in) :: jazws0 !< Whether to store zws in zws0 at initialisation
 
-      integer :: k2, kb, k, n, kk, nlayb, nrlay, ktx
-      integer :: kt1, kt2, kt3, kb1, kb2, kt, Ldn
-      real(kind=dp) :: zkk, h0, toplaymint, dtopsi
-      real(kind=dp) :: w1, w2, w3, h1, h2, h3, zw1, zw2, zw3, bL1, bL2, bL3
-      integer :: k1, k3, kb3, kk1, kk2, kk3
+      integer :: kb, k, n, kk, nlayb, nrlay, ktx
+      integer :: kt0, kt, Ldn, kt1, k1, k2
+      real(kind=dp) :: zkk, h0, dtopsi
+      logical :: ktop_changed
 
       integer :: numbd, numtp, j, L
       real(kind=dp) :: drhok, a, aa, h00, zsl, aaa, sig, dsig, dsig0
@@ -332,68 +331,7 @@ contains
          ktx = kb - 1 + kmxn(n)
 
          if (laydefnr(n) == 0) then ! overlap zone
-            w1 = wflaynod(1, n)
-            w2 = wflaynod(2, n)
-            w3 = wflaynod(3, n)
-            k1 = indlaynod(1, n)
-            k2 = indlaynod(2, n)
-            k3 = indlaynod(3, n)
-            kb1 = kbot(k1)
-            kb2 = kbot(k2)
-            kb3 = kbot(k3)
-            bL1 = zws(kb1 - 1)
-            bL2 = zws(kb2 - 1)
-            bL3 = zws(kb3 - 1)
-            h1 = s1(k1) - bL1
-            h2 = s1(k2) - bL2
-            h3 = s1(k3) - bL3
-            h0 = s1(n) - zws(kb - 1)
-            kt1 = ktop(k1)
-            kt2 = ktop(k2)
-            kt3 = ktop(k3)
-
-            toplaymint = 0.1_dp
-
-            do k = 1, kmxn(n)
-               kk = kb + k - 1
-
-               kk1 = kb1 + k - 1
-               zw1 = 1.0_dp
-               zw2 = 1.0_dp
-               zw3 = 1.0_dp
-               if (kk1 > kt1) then
-                  zw1 = zw1 + min(zw2, zw3)
-               else
-                  zw1 = (zws(kk1) - bL1) / h1
-               end if
-
-               kk2 = kb2 + k - 1
-               if (kk2 > kt2) then
-                  zw2 = zw2 + min(zw1, zw3)
-               else
-                  zw2 = (zws(kk2) - bL2) / h2
-               end if
-
-               kk3 = kb3 + k - 1
-               if (kk3 > kt3) then
-                  zw3 = zw3 + min(zw1, zw2)
-               else
-                  zw3 = (zws(kk3) - bL3) / h3
-               end if
-
-               zkk = zws(kb - 1) + (w1 * zw1 + w2 * zw2 + w3 * zw3) * h0
-
-               if (zkk < s1(n) - toplaymint .and. k < kmxn(n)) then
-                  zws(kk) = zkk
-               else
-                  zws(kk) = s1(n)
-                  ktop(n) = kk
-                  if (ktx > kk) then
-                     zws(kk + 1:ktx) = zws(kk)
-                  end if
-                  exit
-               end if
-            end do
+            call process_overlap_zone(n, kb, ktx, s1(n), kt0, ktop_changed)
          end if
 
          kt = ktop(n)
@@ -417,18 +355,17 @@ contains
       use m_flowgeom, only: ndx, ba, bl
       use m_flow, only: kmx, zws, zws0, ktop, vol1, layertype, kbot, jased, kmxn, &
                         zslay, toplayminthick, numtopsig, keepzlayeringatbed, s0, tsigma, epshu, laydefnr, laytyp, &
-                        wflaynod, indlaynod, LAYTP_SIGMA, LAYTP_Z, &
+                        LAYTP_SIGMA, LAYTP_Z, &
                         nbndz, kbndz
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
       use m_flowtimes, only: dts
 
-      integer :: k2, kb, k, n, kk, nlayb, nrlay, ktx
-      integer :: kt0, kt1, kt2, kt3, kb1, kb2, kt, Ldn
-      real(kind=dp) :: zkk, h0, toplaymint, dtopsi
-      real(kind=dp) :: w1, w2, w3, h1, h2, h3, zw1, zw2, zw3, bL1, bL2, bL3
-      integer :: k1, k3, kb3, kk1, kk2, kk3
+      integer :: kb, k, n, kk, nlayb, nrlay, ktx
+      integer :: kt0, kt1, kt, Ldn
+      real(kind=dp) :: zkk, h0, dtopsi
       integer :: i_bnd
+      logical :: ktop_changed
 
       integer :: numbd, numtp
       real(kind=dp) :: aa, h00, zsl, aaa, sig, dsig
@@ -464,7 +401,7 @@ contains
             end do
             ktop(n) = kb - 1 + kmxn(n)
          end do
-         return ! Early exit - no link updates needed for density sigma layers, volumes already calculated
+         return ! Early exit - no link updates needed for sigma layers, volumes already calculated
 
       else if (Layertype == LAYTP_Z) then ! z or z-sigma
          do i_bnd = 1, nbndz
@@ -632,73 +569,11 @@ contains
          ktx = kb - 1 + kmxn(n)
 
          if (laydefnr(n) == 0) then ! overlap zone
-            kt0 = ktop(n) ! Store original ktop for comparison
-
-            w1 = wflaynod(1, n)
-            w2 = wflaynod(2, n)
-            w3 = wflaynod(3, n)
-            k1 = indlaynod(1, n)
-            k2 = indlaynod(2, n)
-            k3 = indlaynod(3, n)
-            kb1 = kbot(k1)
-            kb2 = kbot(k2)
-            kb3 = kbot(k3)
-            bL1 = zws(kb1 - 1)
-            bL2 = zws(kb2 - 1)
-            bL3 = zws(kb3 - 1)
-            h1 = s0(k1) - bL1
-            h2 = s0(k2) - bL2
-            h3 = s0(k3) - bL3
-            h0 = s0(n) - zws(kb - 1)
-            kt1 = ktop(k1)
-            kt2 = ktop(k2)
-            kt3 = ktop(k3)
-
-            toplaymint = 0.1_dp
-
-            do k = 1, kmxn(n)
-               kk = kb + k - 1
-
-               kk1 = kb1 + k - 1
-               zw1 = 1.0_dp
-               zw2 = 1.0_dp
-               zw3 = 1.0_dp
-               if (kk1 > kt1) then
-                  zw1 = zw1 + min(zw2, zw3)
-               else
-                  zw1 = (zws(kk1) - bL1) / h1
-               end if
-
-               kk2 = kb2 + k - 1
-               if (kk2 > kt2) then
-                  zw2 = zw2 + min(zw1, zw3)
-               else
-                  zw2 = (zws(kk2) - bL2) / h2
-               end if
-
-               kk3 = kb3 + k - 1
-               if (kk3 > kt3) then
-                  zw3 = zw3 + min(zw1, zw2)
-               else
-                  zw3 = (zws(kk3) - bL3) / h3
-               end if
-
-               zkk = zws(kb - 1) + (w1 * zw1 + w2 * zw2 + w3 * zw3) * h0
-
-               if (zkk < s0(n) - toplaymint .and. k < kmxn(n)) then
-                  zws(kk) = zkk
-               else
-                  zws(kk) = s0(n)
-                  ktop(n) = kk
-                  if (ktx > kk) then
-                     zws(kk + 1:ktx) = zws(kk)
-                  end if
-                  exit
-               end if
-            end do
+            kt0 = ktop(n) ! Store original ktop for comparison before calling process_overlap_zone
+            call process_overlap_zone(n, kb, ktx, s0(n), kt0, ktop_changed)
 
             ! Check if this node experienced significant layer changes
-            if (ktop(n) /= kt0) then
+            if (ktop_changed) then
                need_link_update = .true.
             end if
          end if
@@ -750,4 +625,91 @@ contains
 
       call handle_constituent_conservation(n, kt, ktx)
    end subroutine calculate_node_volumes
+
+   !> Process overlap zone interpolation for a node
+   subroutine process_overlap_zone(n, kb, ktx, water_level, kt0_out, ktop_changed)
+      use precision, only: dp
+      use m_flow, only: wflaynod, indlaynod, kbot, ktop, zws, kmxn
+
+      integer, intent(in) :: n, kb, ktx
+      real(kind=dp), intent(in) :: water_level
+      integer, intent(out) :: kt0_out
+      logical, intent(out) :: ktop_changed
+
+      real(kind=dp) :: w1, w2, w3, h1, h2, h3, zw1, zw2, zw3, bL1, bL2, bL3
+      integer :: k1, k2, k3, kb1, kb2, kb3, kk1, kk2, kk3
+      integer :: kt1, kt2, kt3, k, kk
+      real(kind=dp) :: h0, zkk, toplaymint
+
+      kt0_out = ktop(n) ! Store original ktop for comparison
+      ktop_changed = .false.
+
+      w1 = wflaynod(1, n)
+      w2 = wflaynod(2, n)
+      w3 = wflaynod(3, n)
+      k1 = indlaynod(1, n)
+      k2 = indlaynod(2, n)
+      k3 = indlaynod(3, n)
+      kb1 = kbot(k1)
+      kb2 = kbot(k2)
+      kb3 = kbot(k3)
+      bL1 = zws(kb1 - 1)
+      bL2 = zws(kb2 - 1)
+      bL3 = zws(kb3 - 1)
+      h1 = water_level - bL1 ! For k1, but use water_level at current node
+      h2 = water_level - bL2 ! For k2, but use water_level at current node
+      h3 = water_level - bL3 ! For k3, but use water_level at current node
+      h0 = water_level - zws(kb - 1)
+      kt1 = ktop(k1)
+      kt2 = ktop(k2)
+      kt3 = ktop(k3)
+
+      toplaymint = 0.1_dp
+
+      do k = 1, kmxn(n)
+         kk = kb + k - 1
+
+         kk1 = kb1 + k - 1
+         zw1 = 1.0_dp
+         zw2 = 1.0_dp
+         zw3 = 1.0_dp
+         if (kk1 > kt1) then
+            zw1 = zw1 + min(zw2, zw3)
+         else
+            zw1 = (zws(kk1) - bL1) / h1
+         end if
+
+         kk2 = kb2 + k - 1
+         if (kk2 > kt2) then
+            zw2 = zw2 + min(zw1, zw3)
+         else
+            zw2 = (zws(kk2) - bL2) / h2
+         end if
+
+         kk3 = kb3 + k - 1
+         if (kk3 > kt3) then
+            zw3 = zw3 + min(zw1, zw2)
+         else
+            zw3 = (zws(kk3) - bL3) / h3
+         end if
+
+         zkk = zws(kb - 1) + (w1 * zw1 + w2 * zw2 + w3 * zw3) * h0
+
+         if (zkk < water_level - toplaymint .and. k < kmxn(n)) then
+            zws(kk) = zkk
+         else
+            zws(kk) = water_level
+            ktop(n) = kk
+            if (ktx > kk) then
+               zws(kk + 1:ktx) = zws(kk)
+            end if
+            exit
+         end if
+      end do
+
+      ! Check if this node experienced significant layer changes
+      if (ktop(n) /= kt0_out) then
+         ktop_changed = .true.
+      end if
+   end subroutine process_overlap_zone
 end module m_set_kbot_ktop
