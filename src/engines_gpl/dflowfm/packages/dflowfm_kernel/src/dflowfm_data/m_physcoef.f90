@@ -189,9 +189,9 @@ contains
       end if
 
       allocate (dicoww_scalar_t :: dicoww)
-      select type (scalar => dicoww)
+      select type (dicoww_scalar => dicoww)
       type is (dicoww_scalar_t)
-         scalar%value = value
+         dicoww_scalar%value = value
       end select
    end subroutine realloc_dicoww_scalar
 
@@ -208,21 +208,21 @@ contains
 
       allocate (dicoww_array_t :: dicoww)
 
-      select type (arr => dicoww)
+      select type (dicoww_array => dicoww)
       type is (dicoww_array_t)
-         if (allocated(arr%values)) then
-            if (size(arr%values /= n)) then
-               deallocate (arr%values)
+         if (allocated(dicoww_array%values)) then
+            if (size(dicoww_array%values /= n)) then
+               deallocate (dicoww_array%values)
             end if
          end if
-         if (.not. allocated(arr%values)) then
-            allocate (arr%values(n))
+         if (.not. allocated(dicoww_array%values)) then
+            allocate (dicoww_array%values(n))
          end if
          if (present(fill_value)) then
-            arr%values = fill_value
+            dicoww_array%values = fill_value
          end if
          if (present(values_ptr)) then
-            values_ptr => arr%values
+            values_ptr => dicoww_array%values
          end if
       end select
    end subroutine realloc_dicoww_array
