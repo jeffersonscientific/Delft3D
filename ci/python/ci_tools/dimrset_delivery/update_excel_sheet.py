@@ -14,6 +14,7 @@ from ci_tools.dimrset_delivery.dimr_context import (
     parse_common_arguments,
 )
 from ci_tools.dimrset_delivery.lib.ssh_client import Direction
+from ci_tools.dimrset_delivery.services import Services
 
 
 class ExcelHelper:
@@ -34,10 +35,9 @@ class ExcelHelper:
             kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
             parser (ResultTestBankParser): A parser for the latest test bench results.
         """
-        self.__teamcity = context.teamcity
         self.__filepath = context.settings.versions_excel_filename
-        self.__dimr_version = context.get_dimr_version()
-        self.__kernel_versions = context.get_kernel_versions()
+        self.__dimr_version = context.dimr_version
+        self.__kernel_versions = context.kernel_versions
         self.__parser = parser
         self.__sheet_name = context.settings.sheet_name
         self.__name_column = context.settings.name_column
@@ -103,7 +103,7 @@ class ExcelHelper:
         return name_already_exists
 
 
-def update_excel_sheet(context: DimrAutomationContext) -> None:
+def update_excel_sheet(context: DimrAutomationContext, services: Services) -> None:
     """Update the Excel sheet with this week's release information.
 
     Parameters
@@ -114,24 +114,21 @@ def update_excel_sheet(context: DimrAutomationContext) -> None:
     context.log("Updating Excel sheet...")
 
     if context.dry_run:
-        print(
-            f"{context.settings.dry_run_prefix} Would update Excel sheet with DIMR version:",
-            context.get_dimr_version(),
-        )
-        print(f"{context.settings.dry_run_prefix} Would download Excel from network drive")
-        print(f"{context.settings.dry_run_prefix} Would append new row with release information")
-        print(f"{context.settings.dry_run_prefix} Would upload updated Excel back to network drive")
+        context.log(f"Would update Excel sheet with DIMR version: {context.dimr_version}")
+        context.log("Would download Excel from network drive")
+        context.log("Would append new row with release information")
+        context.log("Would upload updated Excel back to network drive")
         return
 
     parser = get_testbank_result_parser(context.settings.path_to_release_test_results_artifact)
     path_to_excel_file = f"/p/d-hydro/dimrset/{context.settings.versions_excel_filename}"
 
-    if context.ssh_client is None:
+    if services.ssh is None:
         raise ValueError("SSH client is required but not initialized")
-    if context.teamcity is None:
+    if services.teamcity is None:
         raise ValueError("TeamCity client is required but not initialized")
 
-    context.ssh_client.secure_copy(
+    services.ssh.secure_copy(
         context.settings.versions_excel_filename,
         path_to_excel_file,
         Direction.FROM,
@@ -141,19 +138,20 @@ def update_excel_sheet(context: DimrAutomationContext) -> None:
         parser=parser,
     )
     helper.append_row()
-    context.ssh_client.secure_copy(
+    services.ssh.secure_copy(
         context.settings.versions_excel_filename,
         path_to_excel_file,
         Direction.TO,
     )
 
-    print("Excel sheet update completed successfully!")
+    context.log("Excel sheet update completed successfully!")
 
 
 if __name__ == "__main__":
     args = parse_common_arguments()
     context = create_context_from_args(args, require_atlassian=False, require_git=False)
+    services = Services(context)
 
-    print("Starting Excel sheet update...")
-    update_excel_sheet(context)
-    print("Finished")
+    context.log("Starting Excel sheet update...")
+    update_excel_sheet(context, services)
+    context.log("Finished")

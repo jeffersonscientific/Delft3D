@@ -2,16 +2,21 @@ import argparse
 import os
 from dataclasses import dataclass
 from getpass import getpass
-from typing import Any, Dict, Optional, TextIO
+from typing import Dict, Optional
 
-from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
-from ci_tools.dimrset_delivery.lib.git_client import GitClient
-from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
-from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.settings.teamcity_settings import (
-    KERNELS,
     Settings,
 )
+
+
+@dataclass
+class ServiceRequirements:
+    """Dataclass for specifying which services are required."""
+
+    atlassian: bool = True
+    teamcity: bool = True
+    ssh: bool = True
+    git: bool = True
 
 
 @dataclass
@@ -26,16 +31,6 @@ class DimrCredentials:
     ssh_password: Optional[str] = None
     git_username: Optional[str] = None
     git_pat: Optional[str] = None
-
-
-@dataclass
-class ServiceRequirements:
-    """Dataclass for specifying which services are required."""
-
-    atlassian: bool = True
-    teamcity: bool = True
-    ssh: bool = True
-    git: bool = True
 
 
 class DimrAutomationContext:
@@ -64,26 +59,26 @@ class DimrAutomationContext:
         self.build_id = build_id
         self.dry_run = dry_run
 
+        # Initialize requirements if not provided
+        if requirements is None:
+            requirements = ServiceRequirements()
+        self.requirements = requirements
+
         # Initialize credentials if not provided
         if credentials is None:
             credentials = DimrCredentials()
 
-        # Initialize requirements if not provided
-        if requirements is None:
-            requirements = ServiceRequirements()
-
         # Prompt for any missing required credentials
         self._prompt_for_credentials(credentials, requirements)
+        self.credentials = credentials
 
         settings_path = os.path.join(os.path.dirname(__file__), "settings", "teamcity_settings.json")
         self.settings = Settings(settings_path)
 
-        self._initialize_services(credentials, requirements, self.settings)
-
         # Cache for commonly needed data
-        self._kernel_versions: Optional[Dict[str, str]] = None
-        self._dimr_version: Optional[str] = None
-        self._branch_name: Optional[str] = None
+        self.kernel_versions: Dict[str, str] = {}
+        self.dimr_version: str = ""
+        self.branch_name: str = ""
 
     def log(self, *args: object, sep: str = " ") -> None:
         """Print status message with dry-run prefix if applicable."""
@@ -93,196 +88,44 @@ class DimrAutomationContext:
         else:
             print(*args, sep=sep)
 
-    def get_kernel_versions(self) -> Dict[str, str]:
-        """Get kernel versions (cached).
-
-        Returns
-        -------
-        Dict[str, str]
-            Dictionary mapping kernel names to their versions.
-        """
-        if self._kernel_versions is None:
-            if self.dry_run:
-                self.log(f"Get build info of build_id {self.build_id}, then extract kernel versions from properties.")
-                self._kernel_versions = {
-                    KERNELS[0].name_for_extracting_revision: "1.23.45",
-                    KERNELS[1].name_for_extracting_revision: "abcdefghijklmnopqrstuvwxyz01234567890123",
-                }
-            else:
-                if self.teamcity is None:
-                    raise ValueError("TeamCity client is required but not initialized")
-                publish_build_info = self.teamcity.get_build_info_for_build_id(self.build_id)
-                if publish_build_info is None:
-                    raise ValueError("Could not retrieve build info from TeamCity")
-                self._kernel_versions = self._extract_kernel_versions(publish_build_info)
-        return self._kernel_versions
-
-    def get_dimr_version(self) -> str:
-        """Get DIMR version (cached).
-
-        Returns
-        -------
-        str
-            The DIMR version string.
-
-        Raises
-        ------
-        AssertionError
-            If kernel versions have not been extracted.
-        """
-        if self._dimr_version is None:
-            kernel_versions = self.get_kernel_versions()
-            if kernel_versions is None:
-                raise AssertionError(
-                    "Could not extract the DIMR version: the kernel versions have not yet been extracted"
-                )
-            self._dimr_version = kernel_versions["DIMRset_ver"]
-
-        if self._dimr_version is None:
-            raise AssertionError("DIMR version is unexpectedly None after extraction")
-
-        return self._dimr_version
-
-    def get_branch_name(self) -> str:
-        """Get branch name (cached).
-
-        Returns
-        -------
-        str
-            The branch name.
-
-        Raises
-        ------
-        ValueError
-            If branch name could not be retrieved.
-        """
-        if self._branch_name is None:
-            if self.dry_run:
-                self.log(f"Get build info of build_id {self.build_id}, then get branch name from properties.")
-                self._branch_name = "main"
-                self.log(f"simulating '{self._branch_name}' branch")
-            else:
-                if self.teamcity is None:
-                    raise ValueError("TeamCity client is required but not initialized")
-                latest_publish_build_info = self.teamcity.get_build_info_for_build_id(self.build_id)
-                if latest_publish_build_info is None:
-                    raise ValueError("Could not retrieve build info from TeamCity")
-                branch_name_property = next(
-                    (
-                        prop
-                        for prop in latest_publish_build_info["resultingProperties"]["property"]
-                        if prop["name"] == "teamcity.build.branch"
-                    ),
-                    None,
-                )
-                if branch_name_property is None:
-                    raise ValueError("Could not find branch name in build properties")
-                self._branch_name = branch_name_property["value"]
-
-        if self._branch_name is None:
-            raise ValueError("Branch name is unexpectedly None after retrieval")
-
-        return self._branch_name
-
     def _prompt_for_credentials(self, credentials: DimrCredentials, requirements: ServiceRequirements) -> None:
-        """Prompt for any missing required credentials.
-
-        Parameters
-        ----------
-        credentials : DimrCredentials
-            The credentials object to update
-        requirements : ServiceRequirements
-            The service requirements
-        """
+        """Prompt for any missing required credentials and validate presence after prompting."""
         if requirements.atlassian and (not credentials.atlassian_username or not credentials.atlassian_password):
             print("Atlassian/Confluence credentials:")
             credentials.atlassian_username = credentials.atlassian_username or input("Enter your Atlassian username:")
             credentials.atlassian_password = credentials.atlassian_password or getpass(
                 prompt="Enter your Atlassian password:", stream=None
             )
-
         if requirements.teamcity and (not credentials.teamcity_username or not credentials.teamcity_password):
             print("TeamCity credentials:")
             credentials.teamcity_username = credentials.teamcity_username or input("Enter your TeamCity username:")
             credentials.teamcity_password = credentials.teamcity_password or getpass(
                 prompt="Enter your TeamCity password:", stream=None
             )
-
         if requirements.ssh and (not credentials.ssh_username or not credentials.ssh_password):
             print("SSH (H7) credentials:")
             credentials.ssh_username = credentials.ssh_username or input("Enter your SSH username:")
             credentials.ssh_password = credentials.ssh_password or getpass(
                 prompt="Enter your SSH password:", stream=None
             )
-
         if requirements.git and (not credentials.git_username or not credentials.git_pat):
             print("Git credentials:")
             credentials.git_username = credentials.git_username or input("Enter your Git username:")
             credentials.git_pat = credentials.git_pat or getpass(prompt="Enter your Git PAT:", stream=None)
 
-    def _initialize_services(
-        self, credentials: DimrCredentials, requirements: ServiceRequirements, settings: Settings
-    ) -> None:
-        """Initialize services based on requirements.
-
-        Parameters
-        ----------
-        credentials : DimrCredentials
-            The credentials to use for initialization
-        requirements : ServiceRequirements
-            The service requirements
-        """
-        self.atlassian = None
+        # Validation: raise ValueError if any required credentials are still missing or empty
         if requirements.atlassian:
             if not credentials.atlassian_username or not credentials.atlassian_password:
                 raise ValueError("Atlassian credentials are required but not provided")
-            self.atlassian = Atlassian(
-                username=credentials.atlassian_username,
-                password=credentials.atlassian_password,
-                settings=settings,
-            )
-
-        self.teamcity = None
         if requirements.teamcity:
             if not credentials.teamcity_username or not credentials.teamcity_password:
                 raise ValueError("TeamCity credentials are required but not provided")
-            self.teamcity = TeamCity(
-                username=credentials.teamcity_username,
-                password=credentials.teamcity_password,
-                settings=settings,
-            )
-
-        self.ssh_client = None
         if requirements.ssh:
             if not credentials.ssh_username or not credentials.ssh_password:
                 raise ValueError("SSH credentials are required but not provided")
-            self.ssh_client = SshClient(
-                username=credentials.ssh_username,
-                password=credentials.ssh_password,
-                settings=settings,
-            )
-
-        self.git_client = None
         if requirements.git:
             if not credentials.git_username or not credentials.git_pat:
                 raise ValueError("Git credentials are required but not provided")
-            self.git_client = GitClient(
-                username=credentials.git_username,
-                password=credentials.git_pat,
-                settings=settings,
-            )
-
-    def _extract_kernel_versions(self, build_info: Dict[str, Any]) -> Dict[str, str]:
-        """Extract kernel versions from build info."""
-        kernel_versions: Dict[str, str] = {}
-        for kernel in KERNELS:
-            kernel_versions[kernel.name_for_extracting_revision] = ""
-
-        for kernel_prop in build_info["resultingProperties"]["property"]:
-            if any(k.name_for_extracting_revision == kernel_prop["name"] for k in KERNELS):
-                kernel_versions[kernel_prop["name"]] = kernel_prop["value"]
-
-        return kernel_versions
 
 
 def parse_common_arguments() -> argparse.Namespace:
@@ -331,7 +174,8 @@ def create_context_from_args(
     requirements = ServiceRequirements(
         atlassian=require_atlassian, teamcity=require_teamcity, ssh=require_ssh, git=require_git
     )
-
-    return DimrAutomationContext(
+    context = DimrAutomationContext(
         build_id=args.build_id, dry_run=args.dry_run, credentials=credentials, requirements=requirements
     )
+
+    return context

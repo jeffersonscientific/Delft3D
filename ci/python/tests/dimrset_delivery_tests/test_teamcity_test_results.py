@@ -1,18 +1,13 @@
 """Tests for teamcity_test_results.py."""
 
 from io import StringIO
-from unittest.mock import Mock
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 from ci_tools.dimrset_delivery.teamcity_test_results import (
     ConfigurationTestResult,
     ExecutiveSummary,
     ResultExecutiveSummary,
     ResultInfo,
     ResultSummary,
-    get_build_test_results_from_teamcity,
     log_executive_summary,
     log_result_list,
     log_to_file,
@@ -306,110 +301,3 @@ class TestTeamcityTestResults:
         assert "    Total     :      0" in output
         assert "    Passed    :      0" in output
         assert "    Percentage:   0.00" in output
-
-    def test_get_build_test_results_from_teamcity_dry_run_mode(self) -> None:
-        """Test get_build_test_results_from_teamcity in dry run mode."""
-        # Arrange
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.dry_run = True
-        mock_context.settings = Mock(spec=Settings)
-        mock_context.settings.dry_run_prefix = "[TEST]"
-
-        # Act
-        result = get_build_test_results_from_teamcity(mock_context, 12345)
-
-        # Assert
-        assert result is not None
-        assert result.name == f"{mock_context.settings.dry_run_prefix} Test Configuration / Build 12345"
-        assert result.build_nr == "12345"
-        assert result.test_result.passed == 85
-        assert result.test_result.failed == 0
-        assert result.test_result.ignored == 0
-        assert result.test_result.muted == 0
-        assert result.status_text == f"{mock_context.settings.dry_run_prefix} SUCCESS"
-
-    def test_get_build_test_results_from_teamcity_no_build_info(self) -> None:
-        """Test get_build_test_results_from_teamcity when no build info is returned."""
-        # Arrange
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.dry_run = False
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.teamcity.get_full_build_info_for_build_id.return_value = None
-
-        # Act
-        result = get_build_test_results_from_teamcity(mock_context, 12345)
-
-        # Assert
-        assert result is None
-        mock_context.teamcity.get_full_build_info_for_build_id.assert_called_once_with(12345)
-
-    def test_get_build_test_results_from_teamcity_no_test_occurrences(self) -> None:
-        """Test get_build_test_results_from_teamcity when no test occurrences exist."""
-        # Arrange
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.dry_run = False
-        mock_context.teamcity = Mock(spec=TeamCity)
-
-        build_info = {
-            "number": "2023.01.123",
-            "status": "SUCCESS",
-            "buildType": {"name": "Windows Integration Tests", "projectName": "Delft3D"},
-        }
-        mock_context.teamcity.get_full_build_info_for_build_id.return_value = build_info
-
-        # Act
-        result = get_build_test_results_from_teamcity(mock_context, 12345)
-
-        # Assert
-        assert result is None
-
-    def test_get_build_test_results_from_teamcity_zero_test_count(self) -> None:
-        """Test get_build_test_results_from_teamcity when test count is zero."""
-        # Arrange
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.dry_run = False
-        mock_context.teamcity = Mock(spec=TeamCity)
-
-        build_info = {
-            "number": "2023.01.123",
-            "status": "SUCCESS",
-            "buildType": {"name": "Windows Integration Tests", "projectName": "Delft3D"},
-            "testOccurrences": {"count": "0"},
-        }
-        mock_context.teamcity.get_full_build_info_for_build_id.return_value = build_info
-
-        # Act
-        result = get_build_test_results_from_teamcity(mock_context, 12345)
-
-        # Assert
-        assert result is None
-
-    def test_get_build_test_results_from_teamcity_valid_test_results(self) -> None:
-        """Test get_build_test_results_from_teamcity with valid test results."""
-        # Arrange
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.dry_run = False
-        mock_context.teamcity = Mock(spec=TeamCity)
-
-        build_info = {
-            "number": "1.23.34",
-            "status": "SUCCESS",
-            "buildType": {"name": "Windows Integration Tests", "projectName": "Delft3D"},
-            "testOccurrences": {"count": "100", "passed": "85", "failed": "10", "ignored": "3", "muted": "2"},
-        }
-        mock_context.teamcity.get_full_build_info_for_build_id.return_value = build_info
-
-        # Act
-        result = get_build_test_results_from_teamcity(mock_context, 12345)
-
-        # Assert
-        assert result is not None
-        assert result.name == "Delft3D / Windows Integration Tests"
-        assert result.build_nr == "1.23.34"
-        assert result.status_text == "SUCCESS"
-        assert result.test_result.passed == 85
-        assert result.test_result.failed == 10
-        assert result.test_result.ignored == 3
-        assert result.test_result.muted == 2
-        assert result.test_result.exception == 0
-        assert result.test_result.muted_exception == 0

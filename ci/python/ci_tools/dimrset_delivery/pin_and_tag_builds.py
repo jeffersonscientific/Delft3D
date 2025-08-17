@@ -6,6 +6,7 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
+from ci_tools.dimrset_delivery.services import Services
 
 
 class PinAndTagHelper:
@@ -25,16 +26,17 @@ class PinAndTagHelper:
         Pin and tag the appropriate builds.
     """
 
-    def __init__(self, context: DimrAutomationContext) -> None:
+    def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         self.__context = context
         self.__dry_run = context.dry_run
         self.__dry_run_prefix = context.settings.dry_run_prefix
-        self.__git_client = context.git_client
-        self.__teamcity = context.teamcity
-        self.__kernel_versions = context.get_kernel_versions()
-        self.__dimr_version = context.get_dimr_version()
+        self.__kernel_versions = context.kernel_versions
+        self.__dimr_version = context.dimr_version
         self.__build_id = context.build_id
         self.__teamcity_ids = context.settings.teamcity_ids
+
+        self.__git_client = services.git
+        self.__teamcity = services.teamcity
 
     def pin_and_tag_builds(self) -> None:
         """Pin and tag the appropriate builds.
@@ -61,10 +63,13 @@ class PinAndTagHelper:
             self.__pin_and_tag_builds_teamcity()
             self.__git_client.tag_commit(self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}")
 
-        print("Build pinning and tagging completed successfully!")
+        self.__context.log("Build pinning and tagging completed successfully!")
 
     def __pin_and_tag_builds_teamcity(self) -> None:
         """Tag all builds and pin the appropriate builds in TeamCity."""
+        if self.__teamcity is None:
+            raise ValueError("TeamCity client is required but not initialized")
+
         tag = f"DIMRset_{self.__dimr_version}"
         self.__teamcity.add_tag_to_build_with_dependencies(self.__build_id, tag=tag)
         # Only pin specific builds
@@ -78,8 +83,9 @@ class PinAndTagHelper:
 if __name__ == "__main__":
     args = parse_common_arguments()
     context = create_context_from_args(args, require_atlassian=False, require_ssh=False)
+    services = Services(context)
 
-    print("Starting build pinning and tagging...")
-    helper = PinAndTagHelper(context=context)
+    context.log("Starting build pinning and tagging...")
+    helper = PinAndTagHelper(context=context, services=services)
     helper.pin_and_tag_builds()
-    print("Finished")
+    context.log("Finished")

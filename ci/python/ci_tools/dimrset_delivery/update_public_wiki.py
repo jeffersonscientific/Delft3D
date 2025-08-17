@@ -10,12 +10,13 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
+from ci_tools.dimrset_delivery.services import Services
 
 
 class PublicWikiHelper:
     """Class responsible for updating the Deltares Public Wiki for a specific DIMR version."""
 
-    def __init__(self, context: DimrAutomationContext) -> None:
+    def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         """
         Create a new instance of PublicWikiHelper.
 
@@ -28,10 +29,10 @@ class PublicWikiHelper:
         dimr_version : str
             The version of DIMR to update the Public Wiki for.
         """
-        self.__atlassian = context.atlassian
-        self.__teamcity = context.teamcity
-
-        self.__dimr_version = context.get_dimr_version()
+        self.__atlassian = services.atlassian
+        self.__teamcity = services.teamcity
+        self.__context = context
+        self.__dimr_version = context.dimr_version
         self.__major_version, self.__minor_version, self.__patch_version = self.__dimr_version.split(".")
 
         self.__delft3d_windows_collect_build_type_id = (
@@ -59,11 +60,13 @@ class PublicWikiHelper:
         -------
         None
         """
-        print("Updating main wiki page...")
-        main_page_id = self.__update_main_page()
+        self.__context.log("Updating main wiki page...")
+        if not self.__context.dry_run:
+            main_page_id = self.__update_main_page()
 
-        print("Updating sub wiki page...")
-        self.__update_sub_page(parent_page_id=main_page_id)
+        self.__context.log("Updating sub wiki page...")
+        if not self.__context.dry_run:
+            self.__update_sub_page(parent_page_id=main_page_id)
 
     def __update_main_page(self) -> str:
         """
@@ -114,6 +117,9 @@ class PublicWikiHelper:
         Tuple[str, str]
             A tuple containing the Windows and Linux artifacts respectively.
         """
+        if self.__teamcity is None:
+            raise ValueError("TeamCity client is required but not initialized")
+
         windows_collect_id = self.__teamcity.get_dependent_build_id(
             self.__build_id, self.__delft3d_windows_collect_build_type_id
         )
@@ -218,6 +224,9 @@ class PublicWikiHelper:
         str
             The id for the page of the specified DIMR version.
         """
+        if self.__atlassian is None:
+            raise ValueError("Atlassian client is required but not initialized")
+
         parent_page = self.__atlassian.get_page_info_for_parent_page(parent_page_id=parent_page_id)
         page_exists = False
         page_id = ""
@@ -262,6 +271,9 @@ class PublicWikiHelper:
         -------
         None
         """
+        if self.__atlassian is None:
+            raise ValueError("Atlassian client is required but not initialized")
+
         page_updated_successfully = self.__atlassian.update_page(
             page_id=page_id, page_title=page_title, content=content
         )
@@ -310,7 +322,7 @@ class PublicWikiHelper:
         return content
 
 
-def update_public_wiki(context: DimrAutomationContext) -> None:
+def update_public_wiki(context: DimrAutomationContext, services: Services) -> None:
     """Update the Public Wiki.
 
     Parameters
@@ -320,31 +332,25 @@ def update_public_wiki(context: DimrAutomationContext) -> None:
     """
     context.log("Updating public wiki...")
 
-    # Get required information
-    dimr_version = context.get_dimr_version()
-
     if context.dry_run:
-        print(
-            f"{context.settings.dry_run_prefix} Would update public wiki for DIMR version:",
-            dimr_version,
-        )
-        return
+        context.log(f"Would update public wiki for DIMR version: {context.dimr_version}")
 
-    if context.atlassian is None:
+    if services.atlassian is None:
         raise ValueError("Atlassian client is required but not initialized")
-    if context.teamcity is None:
+    if services.teamcity is None:
         raise ValueError("TeamCity client is required but not initialized")
 
-    public_wiki = PublicWikiHelper(context=context)
+    public_wiki = PublicWikiHelper(context=context, services=services)
     public_wiki.update_public_wiki()
 
-    print("Public wiki update completed successfully!")
+    context.log("Public wiki update completed successfully!")
 
 
 if __name__ == "__main__":
     args = parse_common_arguments()
     context = create_context_from_args(args, require_git=False, require_ssh=False)
+    services = Services(context)
 
-    print("Starting public wiki update...")
-    update_public_wiki(context)
-    print("Finished")
+    context.log("Starting public wiki update...")
+    update_public_wiki(context, services)
+    context.log("Finished")

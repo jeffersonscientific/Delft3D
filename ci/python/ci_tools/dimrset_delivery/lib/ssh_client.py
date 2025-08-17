@@ -1,9 +1,9 @@
 from enum import Enum
 
 import paramiko
-from scp import SCPClient
+from scp import SCPClient  # type: ignore
 
-from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings  # type: ignore[import-untyped]
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 
 
 class Direction(Enum):
@@ -16,7 +16,7 @@ class Direction(Enum):
 class SshClient:
     """Class to wrap a paramiko ssh client."""
 
-    def __init__(self, username: str, password: str, settings: Settings, connect_timeout: int = 30) -> None:
+    def __init__(self, username: str, password: str, context: DimrAutomationContext, connect_timeout: int = 30) -> None:
         """
         Create a new instance of SshClient.
 
@@ -33,8 +33,8 @@ class SshClient:
 
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.__settings = settings
-        self.__address = settings.linux_address
+        self.__context = context
+        self.__address = context.settings.linux_address
 
     def test_connection(self, dry_run: bool) -> None:
         """
@@ -52,12 +52,14 @@ class SshClient:
         """
         try:
             if dry_run:
-                print(f"{self.__settings.dry_run_prefix} SSH connection to {self.__address} with {self.__username}")
+                self.__context.log(f"SSH connection to {self.__address} with {self.__username}")
             else:
                 self._client.connect(
                     self.__address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
                 )
-            print(f"Successfully created and closed a ssh connection to {self.__address} with {self.__username}.")
+            self.__context.log(
+                f"Successfully created and closed a ssh connection to {self.__address} with {self.__username}."
+            )
         except Exception as e:
             raise AssertionError(f"Could not establish ssh connection to {self.__address}:\n{e}") from e
         finally:
@@ -86,7 +88,7 @@ class SshClient:
             raise AssertionError(f"Could not execute command '{command}' on '{self.__address}':\n{e}") from e
         finally:
             self._client.close()
-            print(f"Successfully executed command '{command}' on '{self.__address}'.")
+            self.__context.log(f"Successfully executed command '{command}' on '{self.__address}'.")
 
     def secure_copy(self, local_path: str, remote_path: str, direction: Direction = Direction.TO) -> None:
         """

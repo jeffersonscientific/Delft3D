@@ -14,6 +14,7 @@ from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings, TeamcityIds
 
 
@@ -27,27 +28,32 @@ class TestDownloadAndInstallArtifacts:
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = False
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.ssh_client = Mock(spec=SshClient)
-        mock_context.get_branch_name.return_value = "main"
-        mock_context.get_dimr_version.return_value = "1.23.45"
+        mock_context.dimr_version = "1.23.45"
+        mock_context.branch_name = "main"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.linux_address = "test_host"
+
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.ssh = Mock(spec=SshClient)
+        mock_services.teamcity.get_branch_name_from_context.return_value = "main"
 
         mock_helper = Mock()
         mock_helper_class.return_value = mock_helper
 
         # Act
-        download_and_install_artifacts(mock_context)
+        download_and_install_artifacts(mock_context, mock_services)
 
         # Assert
-        mock_context.log.assert_called_once_with("Downloading and installing artifacts...")
-        mock_context.get_branch_name.assert_called_once()
-        mock_context.get_dimr_version.assert_called_once()
+        expected_calls = [
+            call("Downloading and installing artifacts..."),
+            call("Artifacts download and installation completed successfully!"),
+        ]
+        mock_context.log.assert_has_calls(expected_calls)
 
         mock_helper_class.assert_called_once_with(
-            teamcity=mock_context.teamcity,
-            ssh_client=mock_context.ssh_client,
+            teamcity=mock_services.teamcity,
+            ssh_client=mock_services.ssh,
             dimr_version="1.23.45",
             branch_name="main",
         )
@@ -61,57 +67,56 @@ class TestDownloadAndInstallArtifacts:
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = True
         mock_context.build_id = "12345"
-        mock_context.get_branch_name.return_value = "main"
-        mock_context.get_dimr_version.return_value = "1.23.45"
+        mock_context.dimr_version = "1.23.45"
+        mock_context.branch_name = "main"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.dry_run_prefix = "[TEST]"
 
+        mock_services = Mock(spec=Services)
+
         # Act
-        download_and_install_artifacts(mock_context)
+        download_and_install_artifacts(mock_context, mock_services)
 
         # Assert
-        mock_context.log.assert_called_once_with("Downloading and installing artifacts...")
-        mock_context.get_branch_name.assert_called_once()
-        mock_context.get_dimr_version.assert_called_once()
-
-        # Check that dry run messages were printed
         expected_calls = [
-            call(
-                f"{mock_context.settings.dry_run_prefix} Would download artifacts for build from TeamCity:",
-                "12345",
-            ),
-            call(f"{mock_context.settings.dry_run_prefix} Would publish artifacts to network drive"),
-            call(f"{mock_context.settings.dry_run_prefix} Would publish weekly DIMR via H7"),
+            call("Downloading and installing artifacts..."),
+            call(f"Would download artifacts for build from TeamCity: {mock_context.build_id}"),
+            call("Would publish artifacts to network drive"),
+            call("Would publish weekly DIMR via H7"),
         ]
-        mock_print.assert_has_calls(expected_calls)
+        mock_context.log.assert_has_calls(expected_calls)
 
     def test_download_and_install_artifacts_missing_teamcity(self) -> None:
         """Test download_and_install_artifacts raises error when TeamCity client is missing."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = False
-        mock_context.teamcity = None
-        mock_context.ssh_client = Mock(spec=SshClient)
-        mock_context.get_branch_name.return_value = "main"
-        mock_context.get_dimr_version.return_value = "1.23.45"
+        mock_context.branch_name = "main"
+        mock_context.dimr_version = "1.23.45"
+
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = None
+        mock_services.ssh = Mock(spec=SshClient)
 
         # Act & Assert
         with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            download_and_install_artifacts(mock_context)
+            download_and_install_artifacts(mock_context, mock_services)
 
     def test_download_and_install_artifacts_missing_ssh_client(self) -> None:
         """Test download_and_install_artifacts raises error when SSH client is missing."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = False
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.ssh_client = None
-        mock_context.get_branch_name.return_value = "main"
-        mock_context.get_dimr_version.return_value = "1.23.45"
+        mock_context.branch_name = "main"
+        mock_context.dimr_version = "1.23.45"
+
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.ssh = None
 
         # Act & Assert
         with pytest.raises(ValueError, match="SSH client is required but not initialized"):
-            download_and_install_artifacts(mock_context)
+            download_and_install_artifacts(mock_context, mock_services)
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.ArtifactInstallHelper")
     @patch("builtins.print")
@@ -123,21 +128,23 @@ class TestDownloadAndInstallArtifacts:
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = False
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.ssh_client = Mock(spec=SshClient)
-        mock_context.get_branch_name.return_value = "feature/test"
-        mock_context.get_dimr_version.return_value = "2.0.0"
+        mock_context.branch_name = "feature/test"
+        mock_context.dimr_version = "2.0.0"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.linux_address = "test_host"
+
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.ssh = Mock(spec=SshClient)
 
         mock_helper = Mock()
         mock_helper_class.return_value = mock_helper
 
         # Act
-        download_and_install_artifacts(mock_context)
+        download_and_install_artifacts(mock_context, mock_services)
 
         # Assert
-        mock_print.assert_called_with("Artifacts download and installation completed successfully!")
+        mock_context.log.assert_called_with("Artifacts download and installation completed successfully!")
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.ArtifactInstallHelper")
     def test_download_and_install_artifacts_helper_initialization_parameters(
@@ -148,27 +155,27 @@ class TestDownloadAndInstallArtifacts:
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = False
         mock_context.build_id = "67890"
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_ssh_client = Mock(spec=SshClient)
-        mock_context.teamcity = mock_teamcity
-        mock_context.ssh_client = mock_ssh_client
-        mock_context.get_branch_name.return_value = "develop"
-        mock_context.get_dimr_version.return_value = "3.1.4"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.linux_address = "test_host"
+        mock_context.branch_name = "develop"
+        mock_context.dimr_version = "3.1.4"
+
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.ssh = Mock(spec=SshClient)
 
         mock_helper = Mock()
         mock_helper_class.return_value = mock_helper
 
         # Act
-        download_and_install_artifacts(mock_context)
+        download_and_install_artifacts(mock_context, mock_services)
 
         # Assert
         mock_helper_class.assert_called_once_with(
-            teamcity=mock_teamcity,
-            ssh_client=mock_ssh_client,
-            dimr_version="3.1.4",
-            branch_name="develop",
+            teamcity=mock_services.teamcity,
+            ssh_client=mock_services.ssh,
+            dimr_version=mock_context.dimr_version,
+            branch_name=mock_context.branch_name,
         )
 
     @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.ArtifactInstallHelper")
@@ -178,29 +185,31 @@ class TestDownloadAndInstallArtifacts:
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = False
         mock_context.build_id = "11111"
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.ssh_client = Mock(spec=SshClient)
-        mock_context.get_branch_name.return_value = "main"
-        mock_context.get_dimr_version.return_value = "1.0.0"
+        mock_context.branch_name = "main"
+        mock_context.dimr_version = "1.0.0"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.linux_address = "test_host"
+
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.ssh = Mock(spec=SshClient)
 
         mock_helper = Mock()
         mock_helper_class.return_value = mock_helper
 
         # Act
-        download_and_install_artifacts(mock_context)
+        download_and_install_artifacts(mock_context, mock_services)
 
         # Assert
         # Verify the methods were called
         mock_helper.download_and_deploy_artifacts.assert_called_once_with(mock_context)
-        mock_helper.install_dimr_on_remote_system.assert_called_once_with("test_host")
+        mock_helper.install_dimr_on_remote_system.assert_called_once_with(mock_context.settings.linux_address)
 
         # Verify they were called in the correct order
         handle = mock_helper.method_calls
         expected_calls = [
             call.download_and_deploy_artifacts(mock_context),
-            call.install_dimr_on_remote_system("test_host"),
+            call.install_dimr_on_remote_system(mock_context.settings.linux_address),
         ]
         assert handle == expected_calls
 
@@ -297,17 +306,18 @@ class TestArtifactInstallHelper:
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.name_of_dimr_release_signed_windows_artifact = "windows_artifact"
         mock_context.settings.name_of_dimr_release_signed_linux_artifact = "linux_artifact"
-        mock_context.teamcity = Mock(spec=TeamCity)
         mock_context.settings.teamcity_ids = Mock(spec=TeamcityIds)
         mock_context.settings.teamcity_ids.delft3d_windows_collect_build_type_id = "windows_build_type"
         mock_context.settings.teamcity_ids.delft3d_linux_collect_build_type_id = "linux_build_type"
 
-        # mock_teamcity.get_dependent_build_id.side_effect = ["windows_build_123", "linux_build_456"]
-        mock_context.teamcity.get_build_artifact_names.return_value = {"file": []}
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.ssh = Mock(spec=SshClient)
+        mock_services.teamcity.get_build_artifact_names.return_value = {"file": []}
 
         helper = ArtifactInstallHelper(
-            teamcity=mock_context.teamcity,
-            ssh_client=Mock(spec=SshClient),
+            teamcity=mock_services.teamcity,
+            ssh_client=mock_services.ssh,
             dimr_version="1.0.0",
             branch_name="main",
         )
@@ -316,12 +326,12 @@ class TestArtifactInstallHelper:
         helper.download_and_deploy_artifacts(mock_context)
 
         # Assert
-        assert mock_context.teamcity.get_dependent_build_id.call_count == 2
-        mock_context.teamcity.get_dependent_build_id.assert_any_call(
-            "chain_build_789", mock_context.settings.teamcity_ids.delft3d_windows_collect_build_type_id
+        assert mock_services.teamcity.get_dependent_build_id.call_count == 2
+        mock_services.teamcity.get_dependent_build_id.assert_any_call(
+            mock_context.build_id, mock_context.settings.teamcity_ids.delft3d_windows_collect_build_type_id
         )
-        mock_context.teamcity.get_dependent_build_id.assert_any_call(
-            "chain_build_789", mock_context.settings.teamcity_ids.delft3d_linux_collect_build_type_id
+        mock_services.teamcity.get_dependent_build_id.assert_any_call(
+            mock_context.build_id, mock_context.settings.teamcity_ids.delft3d_linux_collect_build_type_id
         )
 
     @patch("builtins.print")
@@ -418,14 +428,15 @@ class TestArtifactInstallHelper:
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.name_of_dimr_release_signed_windows_artifact = "dimrset_x64.zip"
         mock_context.settings.name_of_dimr_release_signed_linux_artifact = "dimrset_lnx64.tar.gz"
-        mock_context.teamcity = Mock(spec=TeamCity)
         mock_context.settings.teamcity_ids = Mock(spec=TeamcityIds)
         mock_context.settings.teamcity_ids.delft3d_windows_collect_build_type_id = "windows_build_type"
         mock_context.settings.teamcity_ids.delft3d_linux_collect_build_type_id = "linux_build_type"
-        mock_context.ssh_client = Mock(spec=SshClient)
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.ssh = Mock(spec=SshClient)
 
         # Mock artifact names with matching artifacts
-        mock_context.teamcity.get_dependent_build_id.side_effect = ["windows_build_123", "linux_build_456"]
+        mock_services.teamcity.get_dependent_build_id.side_effect = ["windows_build_123", "linux_build_456"]
 
         def get_artifact_names_side_effect(build_id: str) -> dict:
             if build_id == "windows_build_123":
@@ -435,12 +446,12 @@ class TestArtifactInstallHelper:
             else:
                 return {"file": []}
 
-        mock_context.teamcity.get_build_artifact_names.side_effect = get_artifact_names_side_effect
-        mock_context.teamcity.get_build_artifact.return_value = b"fake_content"
+        mock_services.teamcity.get_build_artifact_names.side_effect = get_artifact_names_side_effect
+        mock_services.teamcity.get_build_artifact.return_value = b"fake_content"
 
         helper = ArtifactInstallHelper(
-            teamcity=mock_context.teamcity,
-            ssh_client=mock_context.ssh_client,
+            teamcity=mock_services.teamcity,
+            ssh_client=mock_services.ssh,
             dimr_version="1.0.0",
             branch_name="main",
         )
@@ -450,10 +461,10 @@ class TestArtifactInstallHelper:
             helper.download_and_deploy_artifacts(mock_context)
 
             # Assert - Verify the flow executed without errors
-            assert mock_context.teamcity.get_build_artifact_names.call_count == 2
-            assert mock_context.teamcity.get_build_artifact.call_count == 2
+            assert mock_services.teamcity.get_build_artifact_names.call_count == 2
+            assert mock_services.teamcity.get_build_artifact.call_count == 2
             assert mock_extract.call_count == 2
-            assert mock_context.ssh_client.secure_copy.call_count == 2
+            assert mock_services.ssh.secure_copy.call_count == 2
 
 
 class TestIntegration:
@@ -464,7 +475,7 @@ class TestIntegration:
         """Test integration with a more realistic context object."""
         # Arrange
         with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
+            "ci_tools.dimrset_delivery.services",
             Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
@@ -487,21 +498,21 @@ class TestIntegration:
             context = DimrAutomationContext(
                 build_id="test-build-123", dry_run=False, credentials=credentials, requirements=requirements
             )
+            services = Services(context)
 
-        # Mock the context methods to return predictable values
-        context.get_branch_name = Mock(return_value="integration-test")
-        context.get_dimr_version = Mock(return_value="99.99.99")
+        context.branch_name = "integration-test"
+        context.dimr_version = "99.99.99"
 
         mock_helper = Mock()
         mock_helper_class.return_value = mock_helper
 
         # Act
-        download_and_install_artifacts(context)
+        download_and_install_artifacts(context, services)
 
         # Assert
         mock_helper_class.assert_called_once_with(
-            teamcity=context.teamcity,
-            ssh_client=context.ssh_client,
+            teamcity=services.teamcity,
+            ssh_client=services.ssh,
             dimr_version="99.99.99",
             branch_name="integration-test",
         )
@@ -512,30 +523,29 @@ class TestIntegration:
         """Test dry run mode with a realistic context object."""
         # Arrange
         with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
+            "ci_tools.dimrset_delivery.services",
             Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
         ):
-            # Create requirements object for a dry run with no services
             requirements = ServiceRequirements(atlassian=False, teamcity=False, ssh=False, git=False)
 
             context = DimrAutomationContext(build_id="dry-run-build-456", dry_run=True, requirements=requirements)
+            services = Services(context)
 
-        # Mock the context methods
-        context.get_branch_name = Mock(return_value="dry-run-branch")
-        context.get_dimr_version = Mock(return_value="0.0.1")
+        context.branch_name = "dry-run-branch"
+        context.dimr_version = "0.0.1"
+        context.log = Mock()
 
-        with patch("builtins.print") as mock_print:
-            # Act
-            download_and_install_artifacts(context)
+        # Act
+        download_and_install_artifacts(context, services)
 
-            # Assert
-            # Verify dry run messages were printed
-            mock_print.assert_any_call(
-                f"{context.settings.dry_run_prefix} Would download artifacts for build from TeamCity:",
-                "dry-run-build-456",
-            )
-            mock_print.assert_any_call(f"{context.settings.dry_run_prefix} Would publish artifacts to network drive")
-            mock_print.assert_any_call(f"{context.settings.dry_run_prefix} Would publish weekly DIMR via H7")
+        # Assert
+        expected_calls = [
+            call("Downloading and installing artifacts..."),
+            call("Would download artifacts for build from TeamCity: dry-run-build-456"),
+            call("Would publish artifacts to network drive"),
+            call("Would publish weekly DIMR via H7"),
+        ]
+        context.log.assert_has_calls(expected_calls)

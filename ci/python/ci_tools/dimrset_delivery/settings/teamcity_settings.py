@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 
 def pascal_case_to_snake_case(name: str) -> str:
@@ -88,7 +88,7 @@ class Settings:
     def __load_settings(self, json_settings_path: str) -> Dict[str, Any]:
         try:
             with open(json_settings_path, "r") as f:
-                return json.load(f)
+                return cast(Dict[str, Any], json.load(f))
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Settings file not found: {json_settings_path}") from e
         except json.JSONDecodeError as e:

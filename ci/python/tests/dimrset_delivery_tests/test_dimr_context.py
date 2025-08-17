@@ -17,6 +17,7 @@ from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.services import Services
 
 
 class TestDimrAutomationContext:
@@ -73,7 +74,7 @@ class TestDimrAutomationContext:
     def test_init_with_all_credentials_provided(self) -> None:
         """Test initialization when all credentials are provided."""
         with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
+            "ci_tools.dimrset_delivery.services",
             Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
@@ -91,18 +92,19 @@ class TestDimrAutomationContext:
                 git_username="git_user",
                 git_pat="git_token",
             )
+            services = Services(context)
 
             assert context.build_id == "12345"
             assert context.dry_run is False
-            assert context.atlassian is not None
-            assert context.teamcity is not None
-            assert context.ssh_client is not None
-            assert context.git_client is not None
+            assert services.atlassian is not None
+            assert services.teamcity is not None
+            assert services.ssh is not None
+            assert services.git is not None
 
     def test_init_dry_run_mode(self) -> None:
         """Test initialization in dry run mode."""
         with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
+            "ci_tools.dimrset_delivery.services",
             Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
@@ -125,36 +127,58 @@ class TestDimrAutomationContext:
 
     def test_init_with_missing_credentials_prompts_input(self) -> None:
         """Test initialization prompts for missing credentials."""
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(spec=TeamCity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-            input=Mock(side_effect=["atlas_user", "tc_user", "ssh_user", "git_user"]),
-            getpass=Mock(side_effect=["atlas_pass", "tc_pass", "ssh_pass", "git_token"]),
+        with (
+            patch("ci_tools.dimrset_delivery.services.TeamCity") as teamcity_patch,
+            patch.multiple(
+                "ci_tools.dimrset_delivery.services",
+                Atlassian=Mock(spec=Atlassian),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
+            ),
+            patch.multiple(
+                "ci_tools.dimrset_delivery.dimr_context",
+                input=Mock(side_effect=["atlas_user", "tc_user", "ssh_user", "git_user"]),
+                getpass=Mock(side_effect=["atlas_pass", "tc_pass", "ssh_pass", "git_token"]),
+            ),
         ):
+            teamcity_mock = Mock(spec=TeamCity)
+            teamcity_mock.get_build_info_for_build_id.return_value = {
+                "resultingProperties": {
+                    "property": [
+                        {"name": "DIMRset_ver", "value": "5.10.00.12345"},
+                        {"name": "build.vcs.number", "value": "abc123def456"},
+                    ]
+                }
+            }
+            teamcity_patch.return_value = teamcity_mock
+
             context = self._create_context(
                 build_id="12345",
                 dry_run=False,
             )
+            services = Services(context)
 
             assert context.build_id == "12345"
-            assert context.atlassian is not None
-            assert context.teamcity is not None
-            assert context.ssh_client is not None
-            assert context.git_client is not None
+            assert services.atlassian is not None
+            assert services.teamcity is not None
+            assert services.ssh is not None
+            assert services.git is not None
 
     def test_init_with_partial_credentials_prompts_missing(self) -> None:
         """Test initialization prompts only for missing credentials."""
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(spec=TeamCity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-            input=Mock(side_effect=["tc_user", "ssh_user"]),
-            getpass=Mock(side_effect=["tc_pass", "ssh_pass"]),
+        with (
+            patch.multiple(
+                "ci_tools.dimrset_delivery.services",
+                Atlassian=Mock(spec=Atlassian),
+                TeamCity=Mock(spec=TeamCity),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
+            ),
+            patch.multiple(
+                "ci_tools.dimrset_delivery.dimr_context",
+                input=Mock(side_effect=["tc_user", "ssh_user"]),
+                getpass=Mock(side_effect=["tc_pass", "ssh_pass"]),
+            ),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -164,12 +188,13 @@ class TestDimrAutomationContext:
                 git_username="git_user",
                 git_pat="git_token",
             )
+            services = Services(context)
 
             assert context.build_id == "12345"
-            assert context.atlassian is not None
-            assert context.teamcity is not None
-            assert context.ssh_client is not None
-            assert context.git_client is not None
+            assert services.atlassian is not None
+            assert services.teamcity is not None
+            assert services.ssh is not None
+            assert services.git is not None
 
     def test_init_with_require_flags_disabled(self) -> None:
         """Test initialization with some services disabled."""
@@ -181,12 +206,12 @@ class TestDimrAutomationContext:
             require_ssh=False,
             require_git=False,
         )
-
+        services = Services(context)
         assert context.build_id == "12345"
-        assert context.atlassian is None
-        assert context.teamcity is None
-        assert context.ssh_client is None
-        assert context.git_client is None
+        assert services.atlassian is None
+        assert services.teamcity is None
+        assert services.ssh is None
+        assert services.git is None
 
     def test_init_raises_error_for_missing_required_credentials(self) -> None:
         """Test initialization raises error when required credentials are missing."""
@@ -212,7 +237,7 @@ class TestDimrAutomationContext:
     def test_log_dry_run_mode(self, mock_print: Mock) -> None:
         """Test log method in dry run mode."""
         with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
+            "ci_tools.dimrset_delivery.services",
             Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
@@ -238,7 +263,7 @@ class TestDimrAutomationContext:
     def test_log_normal_mode(self, mock_print: Mock) -> None:
         """Test log method in normal mode."""
         with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
+            "ci_tools.dimrset_delivery.services",
             Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
@@ -264,13 +289,14 @@ class TestDimrAutomationContext:
         """Test get_kernel_versions method in dry run mode."""
         with (
             patch.multiple(
-                "ci_tools.dimrset_delivery.dimr_context",
+                "ci_tools.dimrset_delivery.services",
                 Atlassian=Mock(spec=Atlassian),
                 TeamCity=Mock(spec=TeamCity),
                 SshClient=Mock(spec=SshClient),
                 GitClient=Mock(spec=GitClient),
             ),
             patch("builtins.print"),
+            patch("ci_tools.dimrset_delivery.services.TeamCity") as teamcity_patch,
         ):
             context = self._create_context(
                 build_id="12345",
@@ -284,14 +310,21 @@ class TestDimrAutomationContext:
                 git_username="user",
                 git_pat="token",
             )
-
-            versions = context.get_kernel_versions()
+            teamcity_mock = teamcity_patch.return_value
+            teamcity_mock.get_dimr_version_from_context.return_value = "1.23.45"
+            teamcity_mock.get_kernel_versions_from_context.return_value = {
+                "DIMRset_ver": "1.23.45",
+                "build.vcs.number": "abcdefghijklmnopqrstuvwxyz01234567890123",
+            }
+            teamcity_mock.get_branch_name_from_context.return_value = "mock_branch"
+            Services(context)
 
             # Should return mock data in dry run mode
-            assert "DIMRset_ver" in versions
-            assert "build.vcs.number" in versions
-            assert versions["DIMRset_ver"] == "1.23.45"
-            assert versions["build.vcs.number"] == "abcdefghijklmnopqrstuvwxyz01234567890123"
+            assert "DIMRset_ver" in context.kernel_versions
+            assert "build.vcs.number" in context.kernel_versions
+            assert context.kernel_versions["DIMRset_ver"] == "1.23.45"
+            assert context.kernel_versions["build.vcs.number"] == "abcdefghijklmnopqrstuvwxyz01234567890123"
+            assert context.branch_name == "mock_branch"
 
     def test_get_kernel_versions_normal_mode(self) -> None:
         """Test get_kernel_versions method in normal mode."""
@@ -307,232 +340,22 @@ class TestDimrAutomationContext:
         }
         mock_teamcity.get_build_info_for_build_id.return_value = mock_build_info
 
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            versions = context.get_kernel_versions()
-
-            assert versions["DIMRset_ver"] == "5.10.00.12345"
-            assert versions["build.vcs.number"] == "abc123def456"
-            mock_teamcity.get_build_info_for_build_id.assert_called_once_with("12345")
-
-    def test_get_kernel_versions_caching(self) -> None:
-        """Test that get_kernel_versions caches results."""
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_build_info = {
-            "resultingProperties": {
-                "property": [
-                    {"name": "DIMRset_ver", "value": "5.10.00.12345"},
-                    {"name": "build.vcs.number", "value": "abc123def456"},
-                ]
-            }
-        }
-        mock_teamcity.get_build_info_for_build_id.return_value = mock_build_info
-
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            # Call twice
-            versions1 = context.get_kernel_versions()
-            versions2 = context.get_kernel_versions()
-
-            # Should be called only once due to caching
-            mock_teamcity.get_build_info_for_build_id.assert_called_once_with("12345")
-            assert versions1 == versions2
-
-    def test_get_kernel_versions_no_teamcity_client(self) -> None:
-        """Test get_kernel_versions raises error when TeamCity client is not initialized."""
-        context = self._create_context(
-            build_id="12345",
-            dry_run=False,
-            require_atlassian=False,
-            require_teamcity=False,
-            require_ssh=False,
-            require_git=False,
-        )
-
-        with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            context.get_kernel_versions()
-
-    def test_get_kernel_versions_no_build_info(self) -> None:
-        """Test get_kernel_versions raises error when build info cannot be retrieved."""
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_teamcity.get_build_info_for_build_id.return_value = None
-
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            with pytest.raises(ValueError, match="Could not retrieve build info from TeamCity"):
-                context.get_kernel_versions()
-
-    def test_get_dimr_version(self) -> None:
-        """Test get_dimr_version method."""
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_build_info = {
-            "resultingProperties": {
-                "property": [
-                    {"name": "DIMRset_ver", "value": "5.10.00.12345"},
-                    {"name": "build.vcs.number", "value": "abc123def456"},
-                ]
-            }
-        }
-        mock_teamcity.get_build_info_for_build_id.return_value = mock_build_info
-
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            dimr_version = context.get_dimr_version()
-            assert dimr_version == "5.10.00.12345"
-
-    def test_get_dimr_version_no_kernel_versions(self) -> None:
-        """Test get_dimr_version raises error when kernel versions are not available."""
-        context = self._create_context(
-            build_id="12345",
-            dry_run=False,
-            require_atlassian=False,
-            require_teamcity=False,
-            require_ssh=False,
-            require_git=False,
-        )
-
-        # Directly test the assertion by setting _kernel_versions to None
-        context._kernel_versions = None
-
-        with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            context.get_dimr_version()
-
-    def test_get_dimr_version_assertion_error(self) -> None:
-        """Test get_dimr_version raises AssertionError when kernel versions extraction fails."""
-        context = self._create_context(
-            build_id="12345",
-            dry_run=False,
-            require_atlassian=False,
-            require_teamcity=False,
-            require_ssh=False,
-            require_git=False,
-        )
-
-        # Mock get_kernel_versions to return None to trigger the AssertionError
-        with patch.object(context, "get_kernel_versions", return_value=None):
-            with pytest.raises(AssertionError, match="Could not extract the DIMR version"):
-                context.get_dimr_version()
-
-    def test_get_branch_name_dry_run_mode(self) -> None:
-        """Test get_branch_name method in dry run mode."""
         with (
             patch.multiple(
-                "ci_tools.dimrset_delivery.dimr_context",
+                "ci_tools.dimrset_delivery.services",
                 Atlassian=Mock(spec=Atlassian),
-                TeamCity=Mock(spec=TeamCity),
+                TeamCity=Mock(return_value=mock_teamcity),
                 SshClient=Mock(spec=SshClient),
                 GitClient=Mock(spec=GitClient),
             ),
-            patch("builtins.print"),
+            patch("ci_tools.dimrset_delivery.services.TeamCity") as teamcity_patch,
         ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=True,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            branch_name = context.get_branch_name()
-            assert branch_name == "main"
-
-    def test_get_branch_name_normal_mode(self) -> None:
-        """Test get_branch_name method in normal mode."""
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_build_info = {
-            "resultingProperties": {
-                "property": [
-                    {"name": "teamcity.build.branch", "value": "feature/test-branch"},
-                    {"name": "other_property", "value": "other_value"},
-                ]
+            teamcity_mock = teamcity_patch.return_value
+            teamcity_mock.get_dimr_version_from_context.return_value = "1.23.45"
+            teamcity_mock.get_kernel_versions_from_context.return_value = {
+                "DIMRset_ver": "1.23.45",
+                "build.vcs.number": "abcdefghijklmnopqrstuvwxyz01234567890123",
             }
-        }
-        mock_teamcity.get_build_info_for_build_id.return_value = mock_build_info
-
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
             context = self._create_context(
                 build_id="12345",
                 dry_run=False,
@@ -545,163 +368,10 @@ class TestDimrAutomationContext:
                 git_username="user",
                 git_pat="token",
             )
+            Services(context)
 
-            branch_name = context.get_branch_name()
-            assert branch_name == "feature/test-branch"
-
-    def test_get_branch_name_no_teamcity_client(self) -> None:
-        """Test get_branch_name raises error when TeamCity client is not initialized."""
-        context = self._create_context(
-            build_id="12345",
-            dry_run=False,
-            require_atlassian=False,
-            require_teamcity=False,
-            require_ssh=False,
-            require_git=False,
-        )
-
-        with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            context.get_branch_name()
-
-    def test_get_branch_name_no_build_info(self) -> None:
-        """Test get_branch_name raises error when build info cannot be retrieved."""
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_teamcity.get_build_info_for_build_id.return_value = None
-
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            with pytest.raises(ValueError, match="Could not retrieve build info from TeamCity"):
-                context.get_branch_name()
-
-    def test_get_branch_name_no_branch_property(self) -> None:
-        """Test get_branch_name raises error when branch property is not found."""
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_build_info = {
-            "resultingProperties": {
-                "property": [
-                    {"name": "other_property", "value": "other_value"},
-                ]
-            }
-        }
-        mock_teamcity.get_build_info_for_build_id.return_value = mock_build_info
-
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            with pytest.raises(ValueError, match="Could not find branch name in build properties"):
-                context.get_branch_name()
-
-    def test_get_branch_name_caching(self) -> None:
-        """Test that get_branch_name caches results."""
-        mock_teamcity = Mock(spec=TeamCity)
-        mock_build_info = {
-            "resultingProperties": {
-                "property": [
-                    {"name": "teamcity.build.branch", "value": "feature/test-branch"},
-                ]
-            }
-        }
-        mock_teamcity.get_build_info_for_build_id.return_value = mock_build_info
-
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            # Call twice
-            branch1 = context.get_branch_name()
-            branch2 = context.get_branch_name()
-
-            # Should be called only once due to caching
-            mock_teamcity.get_build_info_for_build_id.assert_called_once_with("12345")
-            assert branch1 == branch2 == "feature/test-branch"
-
-    def test_extract_kernel_versions(self) -> None:
-        """Test _extract_kernel_versions method."""
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(spec=Atlassian),
-            TeamCity=Mock(spec=TeamCity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ):
-            context = self._create_context(
-                build_id="12345",
-                dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
-                teamcity_username="user",
-                teamcity_password="pass",
-                ssh_username="user",
-                ssh_password="pass",
-                git_username="user",
-                git_pat="token",
-            )
-
-            build_info = {
-                "resultingProperties": {
-                    "property": [
-                        {"name": "DIMRset_ver", "value": "5.10.00.12345"},
-                        {"name": "build.vcs.number", "value": "abc123def456"},
-                        {"name": "other_property", "value": "other_value"},
-                    ]
-                }
-            }
-
-            versions = context._extract_kernel_versions(build_info)
-
-            assert versions["DIMRset_ver"] == "5.10.00.12345"
-            assert versions["build.vcs.number"] == "abc123def456"
+            assert context.kernel_versions["DIMRset_ver"] == "1.23.45"
+            assert context.kernel_versions["build.vcs.number"] == "abcdefghijklmnopqrstuvwxyz01234567890123"
 
 
 class TestParseCommonArguments:
@@ -777,6 +447,7 @@ class TestCreateContextFromArgs:
 
     def test_create_context_from_args_all_services_required(self) -> None:
         """Test creating context with all services required."""
+        # Arrange
         args = argparse.Namespace(
             build_id="12345",
             dry_run=False,
@@ -790,21 +461,24 @@ class TestCreateContextFromArgs:
         )
         args.git_PAT = "git_token"
 
+        # Act
         with patch.multiple(
-            "ci_tools.dimrset_delivery.dimr_context",
+            "ci_tools.dimrset_delivery.services",
             Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
         ):
             context = create_context_from_args(args)
+            services = Services(context)
 
+            # Assert
             assert context.build_id == "12345"
             assert context.dry_run is False
-            assert context.atlassian is not None
-            assert context.teamcity is not None
-            assert context.ssh_client is not None
-            assert context.git_client is not None
+            assert services.atlassian is not None
+            assert services.teamcity is not None
+            assert services.ssh is not None
+            assert services.git is not None
 
     def test_create_context_from_args_some_services_disabled(self) -> None:
         """Test creating context with some services disabled."""
@@ -828,13 +502,14 @@ class TestCreateContextFromArgs:
             require_teamcity=False,
             require_ssh=False,
         )
+        services = Services(context)
 
         assert context.build_id == "12345"
         assert context.dry_run is True
-        assert context.atlassian is None
-        assert context.teamcity is None
-        assert context.ssh_client is None
-        assert context.git_client is None
+        assert services.atlassian is None
+        assert services.teamcity is None
+        assert services.ssh is None
+        assert services.git is None
 
     def test_create_context_from_args_missing_git_pat_attribute(self) -> None:
         """Test creating context when git_PAT attribute is missing from args."""

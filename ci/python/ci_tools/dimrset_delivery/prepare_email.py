@@ -2,7 +2,7 @@
 """Prepare a mail template for the release notification."""
 
 import os
-from typing import Dict, Optional
+from typing import Optional
 
 from ci_tools.dimrset_delivery.common_utils import (
     ResultTestBankParser,
@@ -14,6 +14,7 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
+from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
 
 # Mock data for dry-run mode
@@ -42,7 +43,7 @@ Total tests   :   1900
 """
 
 
-def prepare_email(context: DimrAutomationContext) -> None:
+def prepare_email(context: DimrAutomationContext, services: Services) -> None:
     """Prepare a mail template for the release notification.
 
     Parameters
@@ -51,32 +52,23 @@ def prepare_email(context: DimrAutomationContext) -> None:
         The automation context containing necessary clients and configuration.
     """
     context.log("Preparing email template...")
-
-    # Get required information
-    kernel_versions = context.get_kernel_versions()
-    dimr_version = context.get_dimr_version()
-
     if context.dry_run:
-        print(
-            f"{context.settings.dry_run_prefix} Preparing email template for DIMR version:",
-            dimr_version,
-        )
+        context.log(f"Preparing email template for DIMR version: {context.dimr_version}")
         # Create mock parsers with sensible default values for dry-run
         parser = ResultTestBankParser(MOCK_CURRENT_TEST_RESULTS.strip())
-        previous_parser = ResultTestBankParser(MOCK_PREVIOUS_TEST_RESULTS.strip())
+        previous_parser = ResultTestBankParser(MOCK_PREVIOUS_TEST_RESULTS.strip())  # type: ResultTestBankParser | None
     else:
         parser = get_testbank_result_parser(context.settings.path_to_release_test_results_artifact)
-        previous_parser = get_previous_testbank_result_parser(context)
+        previous_parser = get_previous_testbank_result_parser(context, services)
 
     helper = EmailHelper(
         context=context,
-        kernel_versions=kernel_versions,
         current_parser=parser,
         previous_parser=previous_parser,
     )
     helper.generate_template()
 
-    print("Email template preparation completed successfully!")
+    context.log("Email template preparation completed successfully!")
 
 
 class EmailHelper:
@@ -89,7 +81,6 @@ class EmailHelper:
     def __init__(
         self,
         context: DimrAutomationContext,
-        kernel_versions: Dict[str, str],
         current_parser: ResultTestBankParser,
         previous_parser: Optional[ResultTestBankParser],
     ) -> None:
@@ -102,12 +93,13 @@ class EmailHelper:
             current_parser (ResultTestBankParser): A parser for the latest test bench results.
             previous_parser (Optional[ResultTestBankParser]): A parser for the previous test bench results.
         """
-        self.__dimr_version = context.get_dimr_version()
-        self.__kernel_versions = kernel_versions
+        self.__context = context
+        self.__settings = context.settings
+        self.__dimr_version = context.dimr_version
+        self.__kernel_versions = context.kernel_versions
         self.__current_parser = current_parser
         self.__previous_parser = previous_parser
         self.__template = ""
-        self.__settings = context.settings
 
     def generate_template(self) -> None:
         """Generate a template email for the latest DIMR release that can be copy/pasted into Outlook."""
@@ -267,7 +259,7 @@ class EmailHelper:
         path_to_output_folder = os.path.join(current_dir, self.__settings.relative_path_to_output_folder)
         path_to_email_template = os.path.join(path_to_output_folder, f"DIMRset_{self.__dimr_version}.html")
 
-        print(f"Saved email html to {path_to_email_template}")
+        self.__context.log(f"Saved email html to {path_to_email_template}")
         if not os.path.exists(path_to_output_folder):
             os.makedirs(path_to_output_folder)
 
@@ -278,7 +270,8 @@ class EmailHelper:
 if __name__ == "__main__":
     args = parse_common_arguments()
     context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
+    services = Services(context)
 
-    print("Starting email template preparation...")
-    prepare_email(context)
-    print("Finished")
+    context.log("Starting email template preparation...")
+    prepare_email(context, services)
+    context.log("Finished")

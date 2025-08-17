@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 
 import requests
 
-from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 
 
 class Atlassian:
@@ -20,7 +20,7 @@ class Atlassian:
     https://developer.atlassian.com/cloud/confluence/rest/intro/
     """
 
-    def __init__(self, username: str, password: str, settings: Settings) -> None:
+    def __init__(self, username: str, password: str, context: DimrAutomationContext) -> None:
         """
         Instantiate a new Atlassian object.
 
@@ -35,7 +35,7 @@ class Atlassian:
         self.__base_uri = "https://publicwiki.deltares.nl/"
         self.__rest_uri = f"{self.__base_uri}rest/api/"
         self.__default_headers = {"content-type": "application/json", "accept": "application/json"}
-        self.__settings = settings
+        self.__context = context
 
     def test_api_connection(self, dry_run: bool) -> bool:
         """
@@ -49,11 +49,11 @@ class Atlassian:
         bool
             Returns True if a successful request can be made.
         """
-        print(f"Checking connection to the Atlassian Confluence API with credentials: {self.__auth[0]}")
+        self.__context.log(f"Checking connection to the Atlassian Confluence API with credentials: {self.__auth[0]}")
         endpoint = f"{self.__rest_uri}content"
 
         if dry_run:
-            print(f"{self.__settings.dry_run_prefix} GET request: {endpoint}")
+            self.__context.log(f"GET request: {endpoint}")
             result: Union[SimpleNamespace, requests.Response] = SimpleNamespace(
                 status_code=200, content=b"dry-run mock"
             )
@@ -61,10 +61,10 @@ class Atlassian:
             result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
 
         if result.status_code == 200:
-            print("Successfully connected to the Atlassian Confluence API.")
+            self.__context.log("Successfully connected to the Atlassian Confluence API.")
             return True
-        print("Could not connect to the Atlassian Confluence API:")
-        print(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
+        self.__context.log("Could not connect to the Atlassian Confluence API:")
+        self.__context.log(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
         return False
 
     def get_page_info_for_parent_page(self, parent_page_id: str) -> Optional[Dict[str, Any]]:
@@ -95,8 +95,8 @@ class Atlassian:
         if result.status_code == 200:
             json_response: Dict[str, Any] = result.json()
             return json_response
-        print(f"Could not get page info for page {parent_page_id}:")
-        print(f"{result.status_code} - {result.content.decode('utf-8')}")
+        self.__context.log(f"Could not get page info for page {parent_page_id}:")
+        self.__context.log(f"{result.status_code} - {result.content.decode('utf-8')}")
         return None
 
     def create_public_wiki_page(
@@ -142,12 +142,12 @@ class Atlassian:
             url=endpoint, headers=self.__default_headers, auth=self.__auth, data=payload, verify=False
         )
         if result.status_code == 200:
-            print("Successfully created page.")
+            self.__context.log("Successfully created page.")
             json_response: Dict[str, Any] = result.json()
             page_id: str = json_response["id"]
             return page_id
-        print("Could not create page:")
-        print(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
+        self.__context.log("Could not create page:")
+        self.__context.log(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
         return None
 
     def update_page(self, page_id: str, page_title: str, content: str, next_version: Optional[int] = None) -> bool:
@@ -176,8 +176,8 @@ class Atlassian:
         if next_version is None:
             current_version = self.__get_page_version(page_id)
             if current_version is None:
-                print("Could not update page:")
-                print("Could not retrieve the current version of the page.")
+                self.__context.log("Could not update page:")
+                self.__context.log("Could not retrieve the current version of the page.")
                 return False
             next_version = current_version + 1
 
@@ -196,10 +196,10 @@ class Atlassian:
             url=endpoint, headers=self.__default_headers, auth=self.__auth, data=payload, verify=False
         )
         if result.status_code != 200:
-            print("Could not update page:")
-            print(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
+            self.__context.log("Could not update page:")
+            self.__context.log(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
             return False
-        print("Successfully updated page.")
+        self.__context.log("Successfully updated page.")
         return True
 
     def __get_page_version(self, page_id: str) -> Optional[int]:
@@ -225,6 +225,6 @@ class Atlassian:
             json_response: Dict[str, Any] = result.json()
             version_number: int = json_response["version"]["number"]
             return version_number
-        print(f"Could not get the version of page {page_id}:")
-        print(f"{result.status_code} - {result.content.decode('utf-8')}")
+        self.__context.log(f"Could not get the version of page {page_id}:")
+        self.__context.log(f"{result.status_code} - {result.content.decode('utf-8')}")
         return None

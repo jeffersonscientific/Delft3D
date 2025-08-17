@@ -13,9 +13,10 @@ from ci_tools.dimrset_delivery.dimr_context import (
 )
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.services import Services
 
 
-def download_and_install_artifacts(context: DimrAutomationContext) -> None:
+def download_and_install_artifacts(context: DimrAutomationContext, services: Services) -> None:
     """Download the artifacts and install them on Linux machine.
 
     Parameters
@@ -25,34 +26,27 @@ def download_and_install_artifacts(context: DimrAutomationContext) -> None:
     """
     context.log("Downloading and installing artifacts...")
 
-    # Get required information
-    branch_name = context.get_branch_name()
-    dimr_version = context.get_dimr_version()
-
     if context.dry_run:
-        print(
-            f"{context.settings.dry_run_prefix} Would download artifacts for build from TeamCity:",
-            context.build_id,
-        )
-        print(f"{context.settings.dry_run_prefix} Would publish artifacts to network drive")
-        print(f"{context.settings.dry_run_prefix} Would publish weekly DIMR via H7")
+        context.log(f"Would download artifacts for build from TeamCity: {context.build_id}")
+        context.log("Would publish artifacts to network drive")
+        context.log("Would publish weekly DIMR via H7")
         return
 
-    if context.teamcity is None:
+    if services.teamcity is None:
         raise ValueError("TeamCity client is required but not initialized")
-    if context.ssh_client is None:
+    if services.ssh is None:
         raise ValueError("SSH client is required but not initialized")
 
     helper = ArtifactInstallHelper(
-        teamcity=context.teamcity,
-        ssh_client=context.ssh_client,
-        dimr_version=dimr_version,
-        branch_name=branch_name,
+        teamcity=services.teamcity,
+        ssh_client=services.ssh,
+        dimr_version=context.dimr_version,
+        branch_name=context.branch_name,
     )
     helper.download_and_deploy_artifacts(context)
     helper.install_dimr_on_remote_system(context.settings.linux_address)
 
-    print("Artifacts download and installation completed successfully!")
+    context.log("Artifacts download and installation completed successfully!")
 
 
 class ArtifactInstallHelper:
@@ -248,7 +242,8 @@ class ArtifactInstallHelper:
 if __name__ == "__main__":
     args = parse_common_arguments()
     context = create_context_from_args(args, require_atlassian=False, require_git=False)
+    services = Services(context)
 
-    print("Starting artifact download and installation...")
-    download_and_install_artifacts(context)
-    print("Finished")
+    context.log("Starting artifact download and installation...")
+    download_and_install_artifacts(context, services)
+    context.log("Finished")

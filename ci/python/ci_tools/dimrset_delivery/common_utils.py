@@ -8,6 +8,7 @@ import re
 from typing import Optional
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.services import Services
 
 
 class ResultTestBankParser:
@@ -74,7 +75,9 @@ def get_testbank_result_parser(path_to_release_test_results_artifact: str) -> Re
     return ResultTestBankParser(artifact.decode())
 
 
-def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optional[ResultTestBankParser]:
+def get_previous_testbank_result_parser(
+    context: DimrAutomationContext, services: Services
+) -> Optional[ResultTestBankParser]:
     """Get a new ResultTestBankParser for the previous versioned tagged test bench results.
 
     Parameters
@@ -87,10 +90,10 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
     Optional[ResultTestBankParser]
         Parser for previous test results, or None if not found.
     """
-    if not context.teamcity:
+    if not services.teamcity:
         raise ValueError("TeamCity client is required but not initialized")
 
-    current_build_info = context.teamcity.get_full_build_info_for_build_id(context.build_id)
+    current_build_info = services.teamcity.get_full_build_info_for_build_id(context.build_id)
     if not current_build_info:
         return None
 
@@ -101,7 +104,7 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
     current_tag_name = get_tag_from_build_info(current_build_info)
 
     # Get all builds for the publish build configuration
-    latest_builds = context.teamcity.get_builds_for_build_configuration_id(
+    latest_builds = services.teamcity.get_builds_for_build_configuration_id(
         build_configuration_id=build_type_id,
         limit=50,
         include_failed_builds=False,
@@ -120,7 +123,7 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
         if build_id == int(context.build_id):
             continue
 
-        loop_build_info = context.teamcity.get_full_build_info_for_build_id(str(build_id))
+        loop_build_info = services.teamcity.get_full_build_info_for_build_id(str(build_id))
         if not loop_build_info:
             continue
 
@@ -136,7 +139,7 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
         return None
 
     # Download artifact for previous build
-    artifact = context.teamcity.get_build_artifact(
+    artifact = services.teamcity.get_build_artifact(
         build_id=f"{previous_build_id}",
         path_to_artifact=context.settings.path_to_release_test_results_artifact,
     )

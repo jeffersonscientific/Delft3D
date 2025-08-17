@@ -2,15 +2,16 @@ import os
 import sys
 from datetime import datetime, timezone
 from io import TextIOWrapper
-from typing import List, Optional
+from typing import List
 
 from pyparsing import Enum
 
 from ci_tools.dimrset_delivery.dimr_context import (
-    DimrAutomationContext,
     create_context_from_args,
     parse_common_arguments,
 )
+from ci_tools.dimrset_delivery.services import Services
+from ci_tools.dimrset_delivery.teamcity_types import ConfigurationTestResult, ResultInfo
 
 """
 This script retrieves test results from TeamCity for DIMR release builds.
@@ -94,114 +95,6 @@ class ExecutiveSummary:
         self.summary = summary
 
 
-class ResultInfo:
-    """A class to store configuration test results info.
-
-    Parameters
-    ----------
-    passed : int
-        Number of passed tests.
-    failed : int
-        Number of failed tests.
-    ignored : int
-        Number of ignored tests.
-    muted : int
-        Number of muted tests.
-    exception : int
-        Number of tests with exceptions.
-    muted_exception : int
-        Number of muted exceptions.
-    """
-
-    def __init__(
-        self, passed: int, failed: int, ignored: int, muted: int, exception: int, muted_exception: int
-    ) -> None:
-        self.passed = passed
-        self.failed = failed
-        self.ignored = ignored
-        self.muted = muted
-        self.exception = exception
-        self.muted_exception = muted_exception
-
-    def get_total(self) -> int:
-        """Get total number of testcases.
-
-        Returns
-        -------
-        int
-            Total testcases.
-        """
-        return self.passed + self.failed + self.exception + self.ignored + self.muted - self.muted_exception
-
-    def get_not_passed_total(self) -> int:
-        """Get total number of testcases that did not pass.
-
-        Returns
-        -------
-        int
-            Total testcases that did not pass.
-        """
-        return self.failed + self.exception + self.ignored + self.muted
-
-
-class ConfigurationTestResult:
-    """A class to store configuration test results info.
-
-    Parameters
-    ----------
-    name : str
-        Name of the configuration.
-    build_nr : str
-        Build number.
-    passed : int
-        Number of passed tests.
-    failed : int
-        Number of failed tests.
-    ignored : int
-        Number of ignored tests.
-    muted : int
-        Number of muted tests.
-    status_text : str
-        Status text description.
-    """
-
-    def __init__(
-        self,
-        name: str,
-        build_nr: str,
-        passed: int,
-        failed: int,
-        ignored: int,
-        muted: int,
-        status_text: str,
-    ) -> None:
-        self.name = name
-        self.build_nr = build_nr
-        self.status_text = status_text
-        self.exceptions: List[str] = []
-        self.test_result = ResultInfo(passed, failed, ignored, muted, 0, 0)
-
-    def get_total(self) -> int:
-        """Get total number of testcases.
-
-        Returns
-        -------
-        int
-            Total testcases.
-        """
-        return self.test_result.get_total()
-
-    def get_not_passed_total(self) -> int:
-        """Get total number of testcases that did not pass.
-
-        Returns
-        -------
-        int
-            Total testcases that did not pass.
-        """
-        return self.test_result.get_not_passed_total()
-
-
 def log_to_file(log_file: TextIOWrapper, *args: str) -> None:
     """Write to a log file.
 
@@ -271,117 +164,6 @@ def log_result_list(log_file: TextIOWrapper, name: str, engines: List[Configurat
     log_to_file(log_file, f"    Total     : {configuration_summary.total:6d}")
     log_to_file(log_file, f"    Passed    : {configuration_summary.passed:6d}")
     log_to_file(log_file, f"    Percentage: {configuration_summary.percentage:6.2f}")
-
-
-def get_build_dependency_chain(
-    context: DimrAutomationContext, filtered_list: Optional[list[FilteredList]] = None
-) -> list[str]:
-    """
-    Get dependency chain of all dependent builds for a given build ID from TeamCity.
-
-    Parameters
-    ----------
-    context : DimrAutomationContext
-        The automation context containing TeamCity client and build configuration.
-    filtered_list : Optional[list[FilteredList]], optional
-        Optional filter to include only builds whose buildTypeId matches one of the values.
-
-    Returns
-    -------
-    list[str]
-        List of dependent build IDs (snapshot dependencies).
-    """
-    if context.dry_run:
-        print(f"{context.settings.dry_run_prefix} Would get dependency chain for build {context.build_id}")
-        if filtered_list:
-            filter_values = [item.value for item in filtered_list]
-            print(f"{context.settings.dry_run_prefix} Would filter by build types: {filter_values}")
-        # Return mock dependency chain for dry run
-        return ["123456", "123457", "123458"]
-
-    if not context.teamcity:
-        raise ValueError("TeamCity client is required but not initialized")
-
-    # Use the existing TeamCity method to get filtered dependent builds
-    if filtered_list:
-        # Convert FilteredList enum values to strings for the TeamCity API
-        filter_values = [item.value for item in filtered_list]
-        return context.teamcity.get_dependent_build_ids_with_filter(context.build_id, filter_values)
-    else:
-        return context.teamcity.get_dependent_build_ids_with_filter(context.build_id, [])
-
-
-def get_build_test_results_from_teamcity(
-    context: DimrAutomationContext, build_id: str
-) -> Optional[ConfigurationTestResult]:
-    """
-    Fetch test results for a given build ID using the TeamCity client.
-
-    Parameters
-    ----------
-    context : DimrAutomationContext
-        The automation context containing TeamCity client and build configuration.
-    build_id : str
-        The build ID to retrieve results for.
-
-    Returns
-    -------
-    Optional[ConfigurationTestResult]
-        An object containing the parsed test results for the build, or None if no test results.
-    """
-    if context.dry_run:
-        print(f"{context.settings.dry_run_prefix} Would get test results for build {build_id}")
-        # Return mock test result for dry run
-        return ConfigurationTestResult(
-            name=f"{context.settings.dry_run_prefix} Test Configuration / Build {build_id}",
-            build_nr=str(build_id),
-            passed=85,
-            failed=0,
-            ignored=0,
-            muted=0,
-            status_text=f"{context.settings.dry_run_prefix} SUCCESS",
-        )
-
-    if not context.teamcity:
-        raise ValueError("TeamCity client is required but not initialized")
-
-    build_info = context.teamcity.get_full_build_info_for_build_id(build_id)
-    if not build_info:
-        return None
-
-    # Check if there are test results
-    test_occurrences = build_info.get("testOccurrences", {})
-    if not test_occurrences or int(test_occurrences.get("count", "0")) == 0:
-        return None
-
-    # Extract build information
-    build_nr = build_info.get("number", "Unknown build number")
-    status_text = build_info.get("status", "No status available")
-
-    # Build up config_name including parent project(s)
-    config_name = "Unknown config"
-    parent = "Unknown parent"
-    build_type = build_info.get("buildType", {})
-    if build_type:
-        config_name = build_type.get("name", "Unknown config")
-        parent = build_type.get("projectName", "Unknown parent")
-    config_name = f"{parent} / {config_name}"
-
-    # Extract test counts
-    passed = int(test_occurrences.get("passed", "0"))
-    failed = int(test_occurrences.get("failed", "0"))
-    ignored = int(test_occurrences.get("ignored", "0"))
-    muted = int(test_occurrences.get("muted", "0"))
-
-    return ConfigurationTestResult(
-        name=config_name,
-        build_nr=build_nr,
-        passed=passed,
-        failed=failed,
-        ignored=ignored,
-        muted=muted,
-        status_text=status_text,
-    )
 
 
 def _get_sum_test_result(test_overview: List[ConfigurationTestResult]) -> ResultInfo:
@@ -465,10 +247,11 @@ if __name__ == "__main__":
 
     args = parse_common_arguments()
     context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
+    services = Services(context)
 
     # Extract TeamCity client from context
-    if not context.teamcity:
-        print("Error: TeamCity credentials are required for this script")
+    if not services.teamcity:
+        context.log("Error: TeamCity credentials are required for this script")
         sys.exit(1)
 
     build_id = args.build_id
@@ -477,25 +260,21 @@ if __name__ == "__main__":
         os.remove(output_file)
     log_file = open(output_file, "a")
 
-    print(f"Start: {start_time}\n")
+    context.log(f"Start: {start_time}\n")
     log_to_file(log_file, f"Start: {start_time}\n")
 
-    print(f"Listing is written to: {output_file}")
+    context.log(f"Listing is written to: {output_file}")
 
     # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
-    dependency_chain = get_build_dependency_chain(
-        context,
-        [
-            FilteredList.DELFT3D_WINDOWS_TEST,
-            FilteredList.DELFT3D_LINUX_TEST,
-        ],
+    dependency_chain = services.teamcity.get_dependent_build_ids_with_filter(
+        context.build_id, filtered_ids=[FilteredList.DELFT3D_WINDOWS_TEST.value, FilteredList.DELFT3D_LINUX_TEST.value]
     )
-    print(f"Dependency chain for build {build_id}: {dependency_chain}")
+    context.log(f"Dependency chain for build {build_id}: {dependency_chain}")
 
     # 2. Loop over the builds and retrieve the test results and write to file
     result_list = []
     for dep_build_id in dependency_chain:
-        test_result = get_build_test_results_from_teamcity(context, dep_build_id)
+        test_result = services.teamcity.get_build_test_results_from_teamcity(dep_build_id)
         if test_result:
             result_list.append(test_result)
 
@@ -516,13 +295,13 @@ if __name__ == "__main__":
     log_executive_summary(log_file, executive_summary)
 
     tests_failed = sum(result.get_not_passed_total() for result in result_list)
-    print(f"Total test failed: {tests_failed}")
+    context.log(f"Total test failed: {tests_failed}")
 
     log_to_file(log_file, f"\nStart: {start_time}")
     log_to_file(log_file, f"End  : {datetime.now(timezone.utc)}")
     log_to_file(log_file, "Ready")
-    print(f"\nStart: {start_time}")
-    print(f"End  : {datetime.now(timezone.utc)}")
-    print("Ready")
+    context.log(f"\nStart: {start_time}")
+    context.log(f"End  : {datetime.now(timezone.utc)}")
+    context.log("Ready")
 
     sys.exit(tests_failed)

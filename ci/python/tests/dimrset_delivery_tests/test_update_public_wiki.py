@@ -1,10 +1,11 @@
 """Tests for update_public_wiki.py."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings, TeamcityIds
 from ci_tools.dimrset_delivery.update_public_wiki import PublicWikiHelper, update_public_wiki
 
@@ -16,10 +17,8 @@ class TestPublicWikiHelper:
         """Set up mocks for each test."""
         self.mock_context = Mock(spec=DimrAutomationContext)
         self.mock_context.dry_run = False
-        self.mock_context.get_dimr_version.return_value = "2.13.03"
+        self.mock_context.dimr_version = "2.13.03"
         self.mock_context.build_id = "123456"
-        self.mock_context.atlassian = Mock(spec=Atlassian)
-        self.mock_context.teamcity = Mock(spec=TeamCity)
         self.mock_context.settings = Mock(spec=Settings)
         self.mock_context.settings.dry_run_prefix = "[TEST]"
         self.mock_context.settings.path_to_release_test_results_artifact = "path/to/release_test_results.txt"
@@ -36,12 +35,17 @@ class TestPublicWikiHelper:
         self.mock_context.settings.dimr_major_page_prefix = "major"
         self.mock_context.settings.dimr_minor_page_prefix = "minor"
         self.mock_context.settings.dimr_patch_page_prefix = "patch"
-        self.public_wiki_helper = PublicWikiHelper(self.mock_context)
+
+        self.mock_services = Mock(spec=Services)
+        self.mock_services.atlassian = Mock(spec=Atlassian)
+        self.mock_services.teamcity = Mock(spec=TeamCity)
+
+        self.public_wiki_helper = PublicWikiHelper(self.mock_context, self.mock_services)
 
     def test_init_creates_instance_successfully(self) -> None:
         """Test that PublicWikiHelper can be instantiated successfully."""
         # Arrange & Act
-        helper = PublicWikiHelper(self.mock_context)
+        helper = PublicWikiHelper(self.mock_context, self.mock_services)
 
         # Assert
         assert helper is not None
@@ -73,10 +77,10 @@ class TestPublicWikiHelper:
         mock_helper_class.return_value = mock_helper_instance
 
         # Act
-        update_public_wiki(self.mock_context)
+        update_public_wiki(self.mock_context, self.mock_services)
 
         # Assert
-        mock_helper_class.assert_called_once_with(context=self.mock_context)
+        mock_helper_class.assert_called_once_with(context=self.mock_context, services=self.mock_services)
         mock_helper_instance.update_public_wiki.assert_called_once()
 
     @patch("builtins.print")
@@ -87,7 +91,15 @@ class TestPublicWikiHelper:
         self.mock_context.log = Mock()
 
         # Act
-        update_public_wiki(self.mock_context)
+        update_public_wiki(self.mock_context, self.mock_services)
 
         # Assert
-        mock_print.assert_called_once_with("[TEST] Would update public wiki for DIMR version:", "2.13.03")
+        self.mock_context.log.assert_has_calls(
+            [
+                call("Updating public wiki..."),
+                call("Would update public wiki for DIMR version: 2.13.03"),
+                call("Updating main wiki page..."),
+                call("Updating sub wiki page..."),
+                call("Public wiki update completed successfully!"),
+            ]
+        )

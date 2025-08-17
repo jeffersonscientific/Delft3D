@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser, parse_version
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.prepare_email import EmailHelper, prepare_email
+from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
@@ -46,21 +47,21 @@ class TestEmailHelper:
         lower_bound: str = "100",
     ) -> EmailHelper:
         mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.get_dimr_version.return_value = dimr_version
+        mock_context.dimr_version = dimr_version
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.relative_path_to_email_template = template_path.name
         mock_context.settings.relative_path_to_output_folder = "output/"
         mock_context.settings.lower_bound_percentage_successful_tests = lower_bound
-
         if kernel_versions is None:
             kernel_versions = {"kernelA": "123", "kernelB": "456"}
+        mock_context.kernel_versions = kernel_versions
         parser = DummyParser(passing=passing, exceptions=exceptions)
         prev_parser = (
             DummyParser(passing=prev_passing or passing, exceptions=prev_exceptions or exceptions)
             if prev_passing is not None
             else None
         )
-        return EmailHelper(mock_context, kernel_versions, parser, prev_parser)  # type: ignore
+        return EmailHelper(mock_context, parser, prev_parser)  # type: ignore
 
     def test_generate_template_calls_all(self) -> None:
         helper = self.make_helper()
@@ -269,38 +270,39 @@ class TestParseVersion:
 class TestIntegration:
     """Integration tests for prepare_email functionality."""
 
-    @patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser")
-    @patch("ci_tools.dimrset_delivery.prepare_email.get_previous_testbank_result_parser")
     @patch("ci_tools.dimrset_delivery.prepare_email.EmailHelper")
+    @patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser")
     def test_prepare_email_with_no_previous_parser(
         self,
-        mock_email_helper: Mock,
-        mock_get_previous_parser: Mock,
         mock_get_parser: Mock,
+        mock_email_helper: Mock,
     ) -> None:
         """Test email preparation when no previous parser is available."""
         # Arrange
+        mock_current_parser = Mock(spec=ResultTestBankParser)
+        mock_get_parser.return_value = mock_current_parser
+
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.dry_run = False
-        mock_context.get_kernel_versions.return_value = {"kernel1": "1.0.0"}
-        mock_context.get_dimr_version.return_value = "1.2.3"
+        mock_context.kernel_versions = {"kernel1": "1.0.0"}
+        mock_context.dimr_version = "1.2.3"
+        mock_context.build_id = "12345"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.path_to_release_test_results_artifact = "\random-location"
 
-        mock_current_parser = Mock(spec=ResultTestBankParser)
-        mock_get_parser.return_value = mock_current_parser
-        mock_get_previous_parser.return_value = None  # No previous parser available
+        mock_services = Mock(spec=Services)
+        mock_build_info = {"tags": {"tag": []}}  # or provide a list of tags if needed
+        mock_services.teamcity.get_full_build_info_for_build_id.return_value = mock_build_info
 
         mock_helper_instance = Mock()
         mock_email_helper.return_value = mock_helper_instance
 
         # Act
-        prepare_email(mock_context)
+        prepare_email(mock_context, mock_services)
 
         # Assert
         mock_email_helper.assert_called_once_with(
             context=mock_context,
-            kernel_versions={"kernel1": "1.0.0"},
             current_parser=mock_current_parser,
             previous_parser=None,
         )

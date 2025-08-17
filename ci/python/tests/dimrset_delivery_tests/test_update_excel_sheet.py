@@ -10,6 +10,7 @@ from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.ssh_client import Direction, SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 from ci_tools.dimrset_delivery.update_excel_sheet import ExcelHelper, update_excel_sheet
 
@@ -25,10 +26,9 @@ class TestExcelHelper:
         self.mock_context.settings.versions_excel_filename = "test_versions.xlsx"
         self.mock_context.settings.sheet_name = "sheet1"
         self.mock_context.settings.name_column = "column1"
-        self.mock_context.teamcity = Mock(spec=TeamCity)
         self.filepath = "test_versions.xlsx"
-        self.mock_context.get_dimr_version.return_value = "v1.2.3"
-        self.mock_context.get_kernel_versions.return_value = {"build.vcs.number": "12345", "other_kernel": "v2.0.0"}
+        self.mock_context.dimr_version = "v1.2.3"
+        self.mock_context.kernel_versions = {"build.vcs.number": "12345", "other_kernel": "v2.0.0"}
         self.mock_parser = Mock(spec=ResultTestBankParser)
 
         # Configure mock parser return values
@@ -109,7 +109,7 @@ class TestExcelHelper:
 
         # Mock worksheet already contains the row
         mock_cell = Mock()
-        mock_cell.value = f"DIMRset {self.mock_context.get_dimr_version()}"
+        mock_cell.value = f"DIMRset {self.mock_context.dimr_version}"
         mock_worksheet.__getitem__.return_value = [mock_cell]
 
         # Act
@@ -194,7 +194,7 @@ class TestExcelHelper:
         mock_cell1 = Mock()
         mock_cell1.value = "DIMRset v1.0.0"
         mock_cell2 = Mock()
-        mock_cell2.value = f"DIMRset {self.mock_context.get_dimr_version()}"  # This should match
+        mock_cell2.value = f"DIMRset {self.mock_context.dimr_version}"  # This should match
         mock_cell3 = Mock()
         mock_cell3.value = "DIMRset v2.0.0"
 
@@ -260,16 +260,13 @@ class TestUpdateExcelSheet:
         self.mock_context.settings.dry_run_prefix = "[TEST]"
 
         # Configure context methods
-        self.kernel_versions = {"build.vcs.number": "12345"}
-        self.dimr_version = "v1.2.3"
-        self.mock_context.get_kernel_versions.return_value = self.kernel_versions
-        self.mock_context.get_dimr_version.return_value = self.dimr_version
+        self.mock_context.kernel_versions = {"build.vcs.number": "12345"}
+        self.mock_context.dimr_version = "v1.2.3"
 
     @patch("ci_tools.dimrset_delivery.update_excel_sheet.get_testbank_result_parser")
     @patch("ci_tools.dimrset_delivery.update_excel_sheet.ExcelHelper")
-    @patch("builtins.print")
     def test_update_excel_sheet_successful_execution(
-        self, mock_print: Mock, mock_excel_helper_class: Mock, mock_get_parser: Mock
+        self, mock_excel_helper_class: Mock, mock_get_parser: Mock
     ) -> None:
         """Test successful execution of update_excel_sheet function."""
         # Arrange
@@ -278,14 +275,17 @@ class TestUpdateExcelSheet:
 
         mock_excel_helper = Mock(spec=ExcelHelper)
         mock_excel_helper_class.return_value = mock_excel_helper
+        mock_services = Mock(spec=Services)
 
         # Act
-        update_excel_sheet(self.mock_context)
+        update_excel_sheet(self.mock_context, mock_services)
 
         # Assert
-        self.mock_context.log.assert_called_once_with("Updating Excel sheet...")
-        assert self.mock_context.ssh_client.secure_copy.call_count == 2
-        self.mock_context.ssh_client.secure_copy.assert_has_calls(
+        self.mock_context.log.assert_has_calls(
+            [call("Updating Excel sheet..."), call("Excel sheet update completed successfully!")]
+        )
+        assert mock_services.ssh.secure_copy.call_count == 2
+        mock_services.ssh.secure_copy.assert_has_calls(
             [
                 call("path/to/versions.xlsx", "/p/d-hydro/dimrset/path/to/versions.xlsx", Direction.FROM),
                 call("path/to/versions.xlsx", "/p/d-hydro/dimrset/path/to/versions.xlsx", Direction.TO),
@@ -299,32 +299,27 @@ class TestUpdateExcelSheet:
         )
         mock_excel_helper.append_row.assert_called_once()
 
-        mock_print.assert_called_with("Excel sheet update completed successfully!")
-
     @patch("builtins.print")
     def test_update_excel_sheet_dry_run_mode(self, mock_print: Mock) -> None:
         """Test update_excel_sheet function in dry run mode."""
         # Arrange
         self.mock_context.dry_run = True
+        mock_services = Mock(spec=Services)
 
         # Act
-        update_excel_sheet(self.mock_context)
+        update_excel_sheet(self.mock_context, mock_services)
 
         # Assert
-        self.mock_context.log.assert_called_once_with("Updating Excel sheet...")
-        self.mock_context.get_dimr_version.assert_called_once()
-
-        # Verify dry run messages
         expected_calls = [
+            call("Updating Excel sheet..."),
             call(
-                f"{self.mock_context.settings.dry_run_prefix} Would update Excel sheet with DIMR version:",
-                self.dimr_version,
+                f"Would update Excel sheet with DIMR version: {self.mock_context.dimr_version}",
             ),
-            call(f"{self.mock_context.settings.dry_run_prefix} Would download Excel from network drive"),
-            call(f"{self.mock_context.settings.dry_run_prefix} Would append new row with release information"),
-            call(f"{self.mock_context.settings.dry_run_prefix} Would upload updated Excel back to network drive"),
+            call("Would download Excel from network drive"),
+            call("Would append new row with release information"),
+            call("Would upload updated Excel back to network drive"),
         ]
-        mock_print.assert_has_calls(expected_calls)
+        self.mock_context.log.assert_has_calls(expected_calls)
 
         # Verify no actual operations were performed
         assert (
@@ -338,11 +333,12 @@ class TestUpdateExcelSheet:
         # Arrange
         mock_parser = Mock(spec=ResultTestBankParser)
         mock_get_parser.return_value = mock_parser
-        self.mock_context.ssh_client = None
+        mock_services = Mock(spec=Services)
+        mock_services.ssh = None
 
         # Act & Assert
         with pytest.raises(ValueError, match="SSH client is required but not initialized"):
-            update_excel_sheet(self.mock_context)
+            update_excel_sheet(self.mock_context, mock_services)
 
     @patch("ci_tools.dimrset_delivery.update_excel_sheet.get_testbank_result_parser")
     def test_update_excel_sheet_raises_error_when_teamcity_missing(self, mock_get_parser: Mock) -> None:
@@ -350,11 +346,12 @@ class TestUpdateExcelSheet:
         # Arrange
         mock_parser = Mock(spec=ResultTestBankParser)
         mock_get_parser.return_value = mock_parser
-        self.mock_context.teamcity = None
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = None
 
         # Act & Assert
         with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            update_excel_sheet(self.mock_context)
+            update_excel_sheet(self.mock_context, mock_services)
 
     @patch("ci_tools.dimrset_delivery.update_excel_sheet.get_testbank_result_parser")
     def test_update_excel_sheet_calls_get_testbank_result_parser(self, mock_get_parser: Mock) -> None:
@@ -362,10 +359,11 @@ class TestUpdateExcelSheet:
         # Arrange
         mock_parser = Mock(spec=ResultTestBankParser)
         mock_get_parser.return_value = mock_parser
+        mock_services = Mock(spec=Services)
 
         # Act
         with patch("ci_tools.dimrset_delivery.update_excel_sheet.ExcelHelper"):
-            update_excel_sheet(self.mock_context)
+            update_excel_sheet(self.mock_context, mock_services)
 
         # Assert
         mock_get_parser.assert_called_once()
@@ -375,9 +373,10 @@ class TestUpdateExcelSheet:
         """Test that update_excel_sheet doesn't call get_testbank_result_parser in dry run mode."""
         # Arrange
         self.mock_context.dry_run = True
+        mock_services = Mock(spec=Services)
 
         # Act
-        update_excel_sheet(self.mock_context)
+        update_excel_sheet(self.mock_context, mock_services)
 
         # Assert
         mock_get_parser.assert_not_called()

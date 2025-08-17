@@ -2,6 +2,7 @@ import sys
 from unittest.mock import Mock, patch
 from unittest.mock import Mock as MockType
 
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
@@ -9,9 +10,10 @@ from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 @patch("subprocess.run")
 def test_tag_commit_success(mock_run: MockType) -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_context)
     mock_run.return_value.returncode = 0
     # Act
     client.tag_commit("abc123", "v1.0.0")
@@ -26,9 +28,10 @@ def test_tag_commit_success(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_tag_commit_fail_tag(mock_run: MockType) -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_context)
     mock_run.side_effect = [Mock(returncode=1), Mock(returncode=0)]
     with patch.object(sys, "exit") as mock_exit:
         # Act
@@ -40,9 +43,10 @@ def test_tag_commit_fail_tag(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_tag_commit_fail_push(mock_run: MockType) -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_context)
     mock_run.side_effect = [Mock(returncode=0), Mock(returncode=1)]
     with patch.object(sys, "exit") as mock_exit:
         # Act
@@ -54,9 +58,10 @@ def test_tag_commit_fail_push(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_tag_commit_exception(mock_run: MockType) -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_context)
 
     def raise_exc(*a: object, **kw: object) -> None:
         raise Exception("fail")
@@ -72,9 +77,10 @@ def test_tag_commit_exception(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_test_connection_success(mock_run: MockType) -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_context)
     mock_run.return_value = Mock(returncode=0)
     # Act
     client.test_connection(dry_run=False)
@@ -85,9 +91,10 @@ def test_test_connection_success(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_test_connection_fail(mock_run: MockType) -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_context)
     mock_run.return_value = Mock(returncode=1)
     with patch.object(sys, "exit") as mock_exit:
         # Act
@@ -99,9 +106,10 @@ def test_test_connection_fail(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_test_connection_exception(mock_run: MockType) -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_context)
 
     def raise_exc(*a: object, **kw: object) -> None:
         raise Exception("fail")
@@ -116,10 +124,11 @@ def test_test_connection_exception(mock_run: MockType) -> None:
 
 def test_test_connection_dry_run() -> None:
     # Arrange
-    mock_settings = Mock(spec=Settings)
-    mock_settings.delft3d_git_repo = "https://repo.url"
-    mock_settings.dry_run_prefix = "[TEST]"
-    client = GitClient("user", "pass", mock_settings)
+    mock_context = Mock(spec=DimrAutomationContext)
+    mock_context.settings = Mock(spec=Settings)
+    mock_context.settings.delft3d_git_repo = "https://repo.url"
+    mock_context.settings.dry_run_prefix = "[TEST]"
+    client = GitClient("user", "pass", mock_context)
     # Act
     client.test_connection(dry_run=True)
     # Assert

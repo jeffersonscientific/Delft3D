@@ -12,6 +12,7 @@ from ci_tools.dimrset_delivery.common_utils import (
 )
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
@@ -89,37 +90,40 @@ class TestGetPreviousTestbankResultParser:
         """Test that missing TeamCity client raises ValueError."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
-        mock_context.teamcity = None
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = None
 
         # Act & Assert
         with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            get_previous_testbank_result_parser(mock_context)
+            get_previous_testbank_result_parser(mock_context, mock_services)
 
     def test_no_current_build_info_returns_none(self) -> None:
         """Test that missing current build info returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.teamcity.get_full_build_info_for_build_id.return_value = None
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.teamcity.get_full_build_info_for_build_id.return_value = None
 
         # Act
-        result = get_previous_testbank_result_parser(mock_context)
+        result = get_previous_testbank_result_parser(mock_context, mock_services)
 
         # Assert
         assert result is None
-        mock_context.teamcity.get_full_build_info_for_build_id.assert_called_once_with("12345")
+        mock_services.teamcity.get_full_build_info_for_build_id.assert_called_once_with("12345")
 
     def test_no_build_type_id_returns_none(self) -> None:
         """Test that missing buildTypeId returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.teamcity.get_full_build_info_for_build_id.return_value = {}
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.teamcity.get_full_build_info_for_build_id.return_value = {}
 
         # Act
-        result = get_previous_testbank_result_parser(mock_context)
+        result = get_previous_testbank_result_parser(mock_context, mock_services)
 
         # Assert
         assert result is None
@@ -129,15 +133,16 @@ class TestGetPreviousTestbankResultParser:
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
-        mock_context.teamcity.get_full_build_info_for_build_id.return_value = {
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
+        mock_services.teamcity.get_full_build_info_for_build_id.return_value = {
             "buildTypeId": "bt123",
             "tags": {"tag": [{"name": "DIMRset_1.2.3"}]},
         }
-        mock_context.teamcity.get_builds_for_build_configuration_id.return_value = None
+        mock_services.teamcity.get_builds_for_build_configuration_id.return_value = None
 
         # Act
-        result = get_previous_testbank_result_parser(mock_context)
+        result = get_previous_testbank_result_parser(mock_context, mock_services)
 
         # Assert
         assert result is None
@@ -148,9 +153,10 @@ class TestGetPreviousTestbankResultParser:
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.path_to_release_test_results_artifact = "test_results.txt"
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
 
         current_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.3"}]}}
 
@@ -165,31 +171,32 @@ class TestGetPreviousTestbankResultParser:
 
         mock_artifact_content = b"artifact content"
 
-        mock_context.teamcity.get_full_build_info_for_build_id.side_effect = [
+        mock_services.teamcity.get_full_build_info_for_build_id.side_effect = [
             current_build_info,  # For current build
             None,  # For first loop build (12346)
             previous_build_info,  # For second loop build (12344)
         ]
-        mock_context.teamcity.get_builds_for_build_configuration_id.return_value = builds_response
-        mock_context.teamcity.get_build_artifact.return_value = mock_artifact_content
+        mock_services.teamcity.get_builds_for_build_configuration_id.return_value = builds_response
+        mock_services.teamcity.get_build_artifact.return_value = mock_artifact_content
 
         mock_parser_instance = Mock(spec=ResultTestBankParser)
         mock_parser_class.return_value = mock_parser_instance
 
         # Act
-        result = get_previous_testbank_result_parser(mock_context)
+        result = get_previous_testbank_result_parser(mock_context, mock_services)
 
         # Assert
         assert result == mock_parser_instance
         mock_parser_class.assert_called_once_with("artifact content")
-        mock_context.teamcity.get_build_artifact.assert_called_once()
+        mock_services.teamcity.get_build_artifact.assert_called_once()
 
     def test_no_previous_version_found_returns_none(self) -> None:
         """Test that no previous version found returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
 
         current_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.3"}]}}
 
@@ -204,14 +211,14 @@ class TestGetPreviousTestbankResultParser:
             "tags": {"tag": [{"name": "DIMRset_1.2.4"}]},  # Higher version
         }
 
-        mock_context.teamcity.get_full_build_info_for_build_id.side_effect = [
+        mock_services.teamcity.get_full_build_info_for_build_id.side_effect = [
             current_build_info,  # For current build
             other_build_info,  # For other build
         ]
-        mock_context.teamcity.get_builds_for_build_configuration_id.return_value = builds_response
+        mock_services.teamcity.get_builds_for_build_configuration_id.return_value = builds_response
 
         # Act
-        result = get_previous_testbank_result_parser(mock_context)
+        result = get_previous_testbank_result_parser(mock_context, mock_services)
 
         # Assert
         assert result is None
@@ -221,9 +228,10 @@ class TestGetPreviousTestbankResultParser:
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
         mock_context.build_id = "12345"
-        mock_context.teamcity = Mock(spec=TeamCity)
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.path_to_release_test_results_artifact = "test_results.txt"
+        mock_services = Mock(spec=Services)
+        mock_services.teamcity = Mock(spec=TeamCity)
 
         current_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.3"}]}}
 
@@ -235,15 +243,15 @@ class TestGetPreviousTestbankResultParser:
 
         previous_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.2"}]}}
 
-        mock_context.teamcity.get_full_build_info_for_build_id.side_effect = [
+        mock_services.teamcity.get_full_build_info_for_build_id.side_effect = [
             current_build_info,  # For current build
             previous_build_info,  # For previous build
         ]
-        mock_context.teamcity.get_builds_for_build_configuration_id.return_value = builds_response
-        mock_context.teamcity.get_build_artifact.return_value = None
+        mock_services.teamcity.get_builds_for_build_configuration_id.return_value = builds_response
+        mock_services.teamcity.get_build_artifact.return_value = None
 
         # Act
-        result = get_previous_testbank_result_parser(mock_context)
+        result = get_previous_testbank_result_parser(mock_context, mock_services)
 
         # Assert
         assert result is None

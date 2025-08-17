@@ -9,9 +9,10 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
+from ci_tools.dimrset_delivery.services import Services
 
 
-def _check_api_connections(context: DimrAutomationContext) -> None:
+def _check_api_connections(context: DimrAutomationContext, services: Services) -> None:
     """Check API connections for TeamCity and Atlassian.
 
     Parameters
@@ -26,23 +27,23 @@ def _check_api_connections(context: DimrAutomationContext) -> None:
     AssertionError
         If any API connection fails.
     """
-    print("Checking API connections...")
-    if context.teamcity is None:
+    context.log("Checking API connections...")
+    if services.teamcity is None:
         raise ValueError("TeamCity client is required but not initialized")
 
-    print("Testing TeamCity API connection...")
-    if not context.teamcity.test_api_connection(context.dry_run):
+    context.log("Testing TeamCity API connection...")
+    if not services.teamcity.test_api_connection(context.dry_run):
         raise AssertionError("Failed to connect to the TeamCity REST API.")
 
-    print("TeamCity API connection successful")
-    if context.atlassian is None:
+    context.log("TeamCity API connection successful")
+    if services.atlassian is None:
         raise ValueError("Atlassian client is required but not initialized")
 
-    print("Testing Atlassian API connection...")
-    if not context.atlassian.test_api_connection(context.dry_run):
+    context.log("Testing Atlassian API connection...")
+    if not services.atlassian.test_api_connection(context.dry_run):
         raise AssertionError("Failed to connect to the Atlassian Confluence REST API.")
 
-    print("Atlassian API connection successful")
+    context.log("Atlassian API connection successful")
 
 
 def _check_network_access(context: DimrAutomationContext) -> None:
@@ -58,10 +59,10 @@ def _check_network_access(context: DimrAutomationContext) -> None:
     AssertionError
         If network access check fails.
     """
-    print("Checking read/write access to the network drive...")
+    context.log("Checking read/write access to the network drive...")
     if context.dry_run:
-        print((f"{context.settings.dry_run_prefix} Checking read/write access to {context.settings.network_base_path}"))
-        print(f"Successfully checked for read and write access to {context.settings.network_base_path}.")
+        context.log(f"Checking read/write access to {context.settings.network_base_path}")
+        context.log(f"Successfully checked for read and write access to {context.settings.network_base_path}.")
     else:
         try:
             if not os.path.exists(context.settings.network_base_path):
@@ -73,12 +74,12 @@ def _check_network_access(context: DimrAutomationContext) -> None:
             ):
                 raise AssertionError(f"Insufficient permissions for {context.settings.network_base_path}")
 
-            print(f"Successfully checked for read and write access to {context.settings.network_base_path}.")
+            context.log(f"Successfully checked for read and write access to {context.settings.network_base_path}.")
         except OSError as e:
             raise AssertionError(f"Could not access {context.settings.network_base_path}: {e}") from e
 
 
-def _check_ssh_connection(context: DimrAutomationContext) -> None:
+def _check_ssh_connection(context: DimrAutomationContext, services: Services) -> None:
     """Check SSH connection to Linux server.
 
     Parameters
@@ -91,17 +92,17 @@ def _check_ssh_connection(context: DimrAutomationContext) -> None:
     AssertionError
         If SSH connection fails.
     """
-    print("Checking if ssh connection to Linux can be made...")
-    if context.ssh_client is None:
+    context.log("Checking if ssh connection to Linux can be made...")
+    if services.ssh is None:
         raise ValueError("SSH client is required but not initialized")
 
     try:
-        context.ssh_client.test_connection(context.dry_run)
+        services.ssh.test_connection(context.dry_run)
     except Exception as e:
         raise AssertionError(f"Could not establish ssh connection to {context.settings.linux_address}: {e}") from e
 
 
-def _check_git_connection(context: DimrAutomationContext) -> None:
+def _check_git_connection(context: DimrAutomationContext, services: Services) -> None:
     """Check Git connection.
 
     Parameters
@@ -114,17 +115,17 @@ def _check_git_connection(context: DimrAutomationContext) -> None:
     AssertionError
         If Git connection fails.
     """
-    print("Checking if git connection can be made...")
-    if context.git_client is None:
+    context.log("Checking if git connection can be made...")
+    if services.git is None:
         raise ValueError("Git client is required but not initialized")
 
     try:
-        context.git_client.test_connection(context.dry_run)
+        services.git.test_connection(context.dry_run)
     except Exception as e:
         raise AssertionError(f"Could not establish git connection: {e}") from e
 
 
-def assert_preconditions(context: DimrAutomationContext) -> None:
+def assert_preconditions(context: DimrAutomationContext, services: Services) -> None:
     """Assert that all preconditions are met before the script is fully run.
 
     This function performs comprehensive checks to ensure all required services,
@@ -150,16 +151,16 @@ def assert_preconditions(context: DimrAutomationContext) -> None:
     """
     context.log("Asserting preconditions...")
     try:
-        _check_api_connections(context)
+        _check_api_connections(context, services)
         _check_network_access(context)
-        _check_ssh_connection(context)
-        _check_git_connection(context)
+        _check_ssh_connection(context, services)
+        _check_git_connection(context, services)
 
-        print("Successfully asserted all preconditions.")
-        print("Preconditions check completed successfully!")
+        context.log("Successfully asserted all preconditions.")
+        context.log("Preconditions check completed successfully!")
 
     except (ValueError, AssertionError) as e:
-        print(f"Preconditions check failed: {str(e)}")
+        context.log(f"Preconditions check failed: {str(e)}")
         raise
     except Exception as e:
         raise AssertionError(f"Unexpected error during preconditions check: {e}") from e
@@ -169,10 +170,11 @@ if __name__ == "__main__":
     try:
         args = parse_common_arguments()
         context = create_context_from_args(args)
+        services = Services(context)
 
-        print("Starting preconditions check...")
-        assert_preconditions(context)
-        print("Finished successfully!")
+        context.log("Starting preconditions check...")
+        assert_preconditions(context, services)
+        context.log("Finished successfully!")
         sys.exit(0)
 
     except KeyboardInterrupt:
