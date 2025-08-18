@@ -47,7 +47,7 @@ contains
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: dicouv, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar, vertical_diffusivity_enabled
+      use m_physcoef, only: dicouv, constant_dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
@@ -121,7 +121,7 @@ contains
          if (dicouv >= 0.0_dp) then
             difsedu(ISALT) = difmolsal
          end if
-         if (vertical_diffusivity_enabled) then
+         if (constant_dicoww > 0) then
             molecular_diffusion_coeff(ISALT) = difmolsal
             sigdifi(ISALT) = 1.0_dp / Schmidt_number_salinity
          end if
@@ -131,7 +131,7 @@ contains
          if (dicouv >= 0.0_dp) then
             difsedu(ITEMP) = difmoltem
          end if
-         if (vertical_diffusivity_enabled) then
+         if (constant_dicoww > 0) then
             molecular_diffusion_coeff(ITEMP) = difmoltem
             sigdifi(ITEMP) = 1.0_dp / Prandtl_number_temperature
          end if
@@ -147,7 +147,7 @@ contains
          do jsed = 1, mxgr
             iconst = ISED1 + jsed - 1
             if (dicouv >= 0.0_dp) difsedu(iconst) = 0.0_dp
-            if (vertical_diffusivity_enabled) then
+            if (constant_dicoww > 0) then
                molecular_diffusion_coeff(iconst) = 0.0_dp
                sigdifi(iconst) = 1.0_dp / sigsed(jsed)
             end if
@@ -158,7 +158,7 @@ contains
       if (ITRA1 > 0) then
          do jtra = ITRA1, ITRAN
             difsedu(jtra) = difmoltracer
-            if (vertical_diffusivity_enabled) then
+            if (constant_dicoww > 0) then
                molecular_diffusion_coeff(jtra) = difmoltracer
                sigdifi(jtra) = 1.0_dp / Schmidt_number_tracer
             end if

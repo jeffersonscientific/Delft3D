@@ -71,7 +71,6 @@ module m_physcoef
    real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity  (m2/s)
    real(kind=dp) :: constant_dicoww !< constant user specified vertica eddy diffusivity(m2/s)
    class(t_array_or_scalar), allocatable, target :: dicoww_instance !< abstract class instance for dicoww, either scalar or array depending on user input
-   logical :: vertical_diffusivity_enabled !< true if vertical diffusivity is enabled, false if not
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -148,7 +147,6 @@ contains
       viuchk = 0.24_dp
       vicoww = 1e-6_dp
       constant_dicoww = 1e-6_dp
-      vertical_diffusivity_enabled = .true.
       rhomean = 1000.0_dp
       c9of1 = 9.0_dp
       backgroundwatertemperature = 20.0_dp
