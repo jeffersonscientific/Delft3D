@@ -241,17 +241,18 @@ contains
       !$OMP END PARALLEL DO
       if (timon) call timstop(ithndl)
    end subroutine solve_vertical
-
-   pure function get_difsedw(k, j)
-      use m_physcoef, only: class_dicoww, t_array_or_scalar, t_scalar, t_array
+   
+   !> Get vertical diffusivity at a given node and add constituent specific molecular diffusivity.
+   pure function get_difsedw(node_index, constituent_index) result(val)
+      use m_physcoef, only: class_dicoww
       use m_transport, only: molecular_diffusion_coeff
       use precision, only: dp
-      integer, intent(in) :: k ! base node index (1:Ndxi)
-      integer, intent(in) :: j ! constituent index (1:NUMCONST)
-      real(kind=dp) :: get_difsedw ! return value
+      integer, intent(in) :: node_index !< base node index (1:Ndxi)
+      integer, intent(in) :: constituent_index !< constituent index (1:NUMCONST)
+      real(kind=dp) :: val ! return value
 
-      !total diffusivity is user specified diffusivity plus molecular diffusivity depending on constituent
-      get_difsedw = class_dicoww%get(k) + molecular_diffusion_coeff(j)
+      !total diffusivity is user specified background diffusivity plus molecular diffusivity depending on constituent
+      val = class_dicoww%get(node_index) + molecular_diffusion_coeff(constituent_index)
    end function get_difsedw
 
 end module m_solve_vertical
