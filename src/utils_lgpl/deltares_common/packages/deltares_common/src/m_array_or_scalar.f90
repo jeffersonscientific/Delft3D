@@ -38,13 +38,13 @@ module m_array_or_scalar
 
    public :: realloc, assign_pointer_to_t_array
 
-   ! Abstract base type for dicoww
+   !> Abstract base type for array or scalar type
    type, public, abstract :: t_array_or_scalar
    contains
       procedure(get_array_or_scalar), deferred :: get
    end type t_array_or_scalar
 
-   ! Interface for deferred binding
+   !> Interface for deferred binding
    abstract interface
       pure function get_array_or_scalar(this, k) result(val)
          import :: t_array_or_scalar, dp
@@ -54,14 +54,14 @@ module m_array_or_scalar
       end function get_array_or_scalar
    end interface
 
-   ! Concrete type for scalar dicoww
+   !> Concrete type for scalar
    type, extends(t_array_or_scalar) :: t_scalar
       real(kind=dp) :: value
    contains
       procedure :: get => get_t_scalar
    end type t_scalar
 
-   ! Concrete type for array dicoww
+   !> Concrete type for array
    type, extends(t_array_or_scalar) :: t_array
       real(kind=dp), dimension(:), allocatable, public :: values
    contains
@@ -70,7 +70,7 @@ module m_array_or_scalar
 
 contains
 
-   !> Scalar implementation of get_dicoww
+   !> Scalar implementation of get
    pure function get_t_scalar(this, k) result(val)
       class(t_scalar), intent(in) :: this !< t_scalar object to obtain value from regardless of index k
       integer, intent(in) :: k !< dummy index to make call consistent
@@ -80,7 +80,7 @@ contains
       val = this%value
    end function get_t_scalar
 
-   !> Array implementation of get_dicoww
+   !> Array implementation of get
    pure function get_t_array(this, k) result(val)
       class(t_array), intent(in) :: this !< t_array object to obtain value from at index k
       integer, intent(in) :: k !< index in the array to obtain value from
@@ -88,7 +88,7 @@ contains
       val = this%values(k)
    end function get_t_array
 
-!> (re)allocate dicoww as scalar regardless of previous status
+!> (re)allocate array_or_scalar object as scalar regardless of previous status
    subroutine realloc_t_scalar(array_or_scalar, value)
       class(t_array_or_scalar), allocatable, intent(inout) :: array_or_scalar !< array_or_scalar object to be reallocated
       real(kind=dp), intent(in) :: value !< value to be set in the scalar array_or_scalar
@@ -98,7 +98,7 @@ contains
       end if
 
       allocate (t_scalar :: array_or_scalar)
-      select type(array_or_scalar)
+      select type (array_or_scalar)
       type is (t_scalar)
          array_or_scalar%value = value
       end select
@@ -132,6 +132,7 @@ contains
       end select
    end subroutine realloc_t_array
 
+!> Assign a pointer to the values array of an array_or_scalar object if possible, otherwise sets an error code.
    subroutine assign_pointer_to_t_array(array_or_scalar, values_ptr, ierr)
       class(t_array_or_scalar), allocatable, target, intent(in) :: array_or_scalar !< array_or_scalar object to assign pointer to
       real(kind=dp), dimension(:), pointer, intent(out) :: values_ptr !< pointer to the values array to assign
@@ -149,6 +150,5 @@ contains
          ierr = 1 !< set error code if array_or_scalar is a scalar
       end select
    end subroutine assign_pointer_to_t_array
-
 
 end module m_array_or_scalar
