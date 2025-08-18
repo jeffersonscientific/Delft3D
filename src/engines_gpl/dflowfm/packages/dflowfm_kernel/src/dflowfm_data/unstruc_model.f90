@@ -732,6 +732,7 @@ contains
       use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
+      use m_physcoef, only: vertical_diffusivity_enabled
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -1327,6 +1328,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
       call prop_get(md_ptr, 'physics', 'Vicoww', vicoww)
       call prop_get(md_ptr, 'physics', 'Dicoww', dicoww)
+      call prop_get(md_ptr, 'physics', 'EnableVerticalDiffusivity', vertical_diffusivity_enabled)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
 
@@ -2625,6 +2627,7 @@ contains
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+      use m_physcoef, only: vertical_diffusivity_enabled
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3317,6 +3320,8 @@ contains
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww, 'Uniform vertical eddy viscosity (m2/s)')
          call prop_set(prop_ptr, 'physics', 'Dicoww', dicoww, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'EnableVerticalDiffusivity', vertical_diffusivity_enabled, 'Enable vertical background and molecular diffusivity')
+
          if (writeall .or. (vicwminb > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
