@@ -43,7 +43,7 @@ contains
 
    subroutine fill_constituents(jas) ! if jas == 1 do sources
       use m_apply_sediment_bc, only: apply_sediment_bc
-      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, difsedw
+      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, molecular_diffusion_coeff
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
@@ -113,7 +113,7 @@ contains
          end if
       end if
 
-      difsedu = 0.0_dp; difsedw = 0.0_dp; sigdifi = 0.0_dp
+      difsedu = 0.0_dp; molecular_diffusion_coeff = 0.0_dp; sigdifi = 0.0_dp
 
 !  diffusion coefficients
 
@@ -122,7 +122,7 @@ contains
             difsedu(ISALT) = difmolsal
          end if
          if (vertical_diffusivity_enabled) then
-            difsedw(ISALT) = difmolsal
+            molecular_diffusion_coeff(ISALT) = difmolsal
             sigdifi(ISALT) = 1.0_dp / Schmidt_number_salinity
          end if
       end if
@@ -132,14 +132,14 @@ contains
             difsedu(ITEMP) = difmoltem
          end if
          if (vertical_diffusivity_enabled) then
-            difsedw(ITEMP) = difmoltem
+            molecular_diffusion_coeff(ITEMP) = difmoltem
             sigdifi(ITEMP) = 1.0_dp / Prandtl_number_temperature
          end if
       end if
 
       if (jasecflow > 0 .and. jaequili == 0 .and. kmx == 0) then
          difsedu(ISPIR) = 0.0_dp
-         difsedw(ISPIR) = 0.0_dp
+         molecular_diffusion_coeff(ISPIR) = 0.0_dp
          sigdifi(ISPIR) = 0.0_dp !/sigspi
       end if
 
@@ -148,7 +148,7 @@ contains
             iconst = ISED1 + jsed - 1
             if (dicouv >= 0.0_dp) difsedu(iconst) = 0.0_dp
             if (vertical_diffusivity_enabled) then
-               difsedw(iconst) = 0.0_dp
+               molecular_diffusion_coeff(iconst) = 0.0_dp
                sigdifi(iconst) = 1.0_dp / sigsed(jsed)
             end if
             if (jased < 4) wsf(iconst) = ws(jsed)
@@ -159,7 +159,7 @@ contains
          do jtra = ITRA1, ITRAN
             difsedu(jtra) = difmoltracer
             if (vertical_diffusivity_enabled) then
-               difsedw(jtra) = difmoltracer
+               molecular_diffusion_coeff(jtra) = difmoltracer
                sigdifi(jtra) = 1.0_dp / Schmidt_number_tracer
             end if
             wsf(jtra) = wstracers(jtra - ITRA1 + 1)
