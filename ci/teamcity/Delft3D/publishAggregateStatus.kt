@@ -24,7 +24,7 @@ object PublishAggregateStatus : BuildType({
                 chmod +x ./ci/github/get_aggregate_teamcity_build_status.sh
                 ./ci/github/get_aggregate_teamcity_build_status.sh  \
                   --teamcity-token "%svc_teamcity_github_delft3d_access_token%" \
-                  --project-id "${DslContext.projectId}"
+                  --project-id "${DslContext.projectId}" \
                   --branch-name "%teamcity.build.branch%" \
                   --commit-sha "%build.vcs.number%" \
                   --poll-interval 10
