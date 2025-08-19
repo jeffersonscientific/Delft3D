@@ -10,7 +10,7 @@ object PublishAggregateStatus : BuildType({
     name = "Publish Aggregate Status"
 
     params {
-        password("svc_teamcity_github_delft3d_access_token", "******")
+        password("svc_teamcity_github_delft3d_access_token", "credentialsJSON:3655888b-678a-425a-8c21-8b533c33bc2d")
     }
 
     vcs {
