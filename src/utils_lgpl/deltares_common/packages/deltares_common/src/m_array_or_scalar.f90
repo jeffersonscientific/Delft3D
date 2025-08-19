@@ -136,18 +136,20 @@ contains
    subroutine assign_pointer_to_t_array(array_or_scalar, values_ptr, ierr)
       class(t_array_or_scalar), allocatable, target, intent(in) :: array_or_scalar !< array_or_scalar object to assign pointer to
       real(kind=dp), dimension(:), pointer, intent(out) :: values_ptr !< pointer to the values array to assign
-      integer, intent(out) :: ierr !< error code, 0 if successful, 1 if array_or_scalar is not allocated
+      integer, intent(out) :: ierr !< error code, 0 if successful, 1 if array_or_scalar is not allocated or underlying values array is not allocated
 
-      ierr = 0
+      ierr = 1
+      nullify (values_ptr)
       if (.not. allocated(array_or_scalar)) then
-         ierr = 1 !< set error code if array_or_scalar is not allocated
-         return !< silent exit, no error if array_or_scalar is not allocated
+         return
       end if
       select type (array_or_scalar)
       type is (t_array)
+         if (.not. allocated(array_or_scalar%values)) then
+            return
+         end if
          values_ptr => array_or_scalar%values
-      type is (t_scalar)
-         ierr = 1 !< set error code if array_or_scalar is a scalar
+         ierr = 0
       end select
    end subroutine assign_pointer_to_t_array
 
