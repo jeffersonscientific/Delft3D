@@ -10,7 +10,10 @@ object PublishAggregateStatus : BuildType({
     name = "Publish Aggregate Status"
 
     params {
-        password("svc_teamcity_github_delft3d_access_token", "credentialsJSON:3655888b-678a-425a-8c21-8b533c33bc2d")
+        // token with permissions restricted to the Delft3D project
+        // password("svc_teamcity_github_delft3d_access_token", "credentialsJSON:3655888b-678a-425a-8c21-8b533c33bc2d")
+        // token with more permissions that can be used in sandbox projects (DEV-ONLY, remove before merging and use token above)
+        password("svc_teamcity_github_delft3d_access_token", "credentialsJSON:4493718c-625a-46a7-9c1d-ec75e0bf7c34")
     }
 
     vcs {
