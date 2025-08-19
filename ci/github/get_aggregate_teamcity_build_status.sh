@@ -341,7 +341,9 @@ function main() {
   print_header
   ENCODED_BRANCH_NAME=$(encode_branch_name "${BRANCH_NAME}")
   local trigger_id
+  set -x
   trigger trigger_id
+  set +x
   get_aggregate_teamcity_build_status "${trigger_id}"
 }
 
