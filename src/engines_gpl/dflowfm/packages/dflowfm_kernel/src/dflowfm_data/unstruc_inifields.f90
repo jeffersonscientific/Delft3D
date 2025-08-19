@@ -312,7 +312,7 @@ contains
                                             target_array_integer)
             end if
 
-            if (.not. associated(target_array) .and. .not. associated(target_array_3d)) then
+            if (.not. associated(target_array) .and. .not. associated(target_array_3d) .and. .not. associated(target_array_integer)) then
                cycle
             end if
 
@@ -1849,6 +1849,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use string_module, only: str_tolower
       use m_find_name, only: find_name
+      use m_set_bobs, only: setbobs
 
       use fm_external_forcings_utils, only: split_qid
       implicit none
@@ -1862,6 +1863,8 @@ contains
       call split_qid(qid, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
+      case ('ibedlevtype')
+          call setbobs()
       case ('waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
       case ('infiltrationcapacity')
