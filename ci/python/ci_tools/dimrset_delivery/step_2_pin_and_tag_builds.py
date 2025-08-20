@@ -16,7 +16,8 @@ class PinAndTagger(StepExecutorInterface):
     """
     Executes pinning and tagging of builds in TeamCity and Git.
 
-    This class retrieves artifacts from TeamCity, deploys them via SSH, and performs installation tasks as part of the DIMR automation workflow.
+    This class retrieves artifacts from TeamCity, deploys them via SSH, and performs installation tasks
+    as part of the DIMR automation workflow.
 
     Parameters
     ----------
@@ -53,7 +54,8 @@ class PinAndTagger(StepExecutorInterface):
         """
         Execute the step to pin and tag builds in TeamCity and Git.
 
-        This method logs the process, checks for required clients, and performs the pinning and tagging operations. In dry-run mode, it logs intended actions without making changes.
+        This method logs the process, checks for required clients, and performs the pinning and tagging
+        operations. In dry-run mode, it logs intended actions without making changes.
 
         Returns
         -------
