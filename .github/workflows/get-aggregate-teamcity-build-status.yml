@@ -4,14 +4,14 @@ on:
   push:
     branches:
       - main
-      - 'all/release/[0-9][0-9][0-9][0-9].[0-9]*'
+      - "all/release/[0-9][0-9][0-9][0-9].[0-9]*"
   pull_request:
     types:
       - opened # triggers build when opened
       - synchronize # triggers build when commits are pushed to HEAD
     branches:
       - main
-      - 'all/release/[0-9][0-9][0-9][0-9].[0-9]*'
+      - "all/release/[0-9][0-9][0-9][0-9].[0-9]*"
 
 jobs:
   wait-for-teamcity-builds:
@@ -25,13 +25,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      # - name: Retrieve TeamCity access token from Keeper
+      # 1. Generate an access token following the steps demonstrated in
+      #    https://docs.keeper.io/en/keeperpam/secrets-manager/integrations/github-actions
+      #    with the exception that a login record should be created instead of a database.
+      # 2. Summary of commands needed for the generation of the secret from the access token (bash log is attached):
+      #    Install keeper-secrets-manager-cli in a virtual env (requires python3):
+      #       user@host:~$ mkdir -p ~/.python
+      #       user@host:~$ python3 -m venv ~/.python/venv-keeper
+      #       user@host:~$ ~/.python/venv-keeper/bin/pip install keeper-secrets-manager-cli
+      #    Generate the secret from the access token generated in the previous step
+      #       user@host:~$ ~/.python/venv-keeper/bin/ksm init default <token>
+      # 3. Add the secret to the GitHub repository. Call it KEEPER_TEAMCITY_ACCESS_TOKEN_DELFT3D for example.
+      # 4. uncomment the step below.
+      #
+      # - name: Retrieve TeamCity access token from Keeper record
       #   id: keeper_secrets
       #   uses: Keeper-Security/ksm-action@v1
       #   with:
-      #     keeper-secret-config: ${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}
+      #     keeper-secret-config: ${{ secrets.KEEPER_TEAMCITY_ACCESS_TOKEN_DELFT3D }}
       #     secrets: |-
       #       keeper://Z8l66p1kXatULIUc7AxbIw/field/password > password
+      #
+      # 5. In a subsequent step, the retrieved password becomes available through ${{ steps.keeper_secrets.outputs.password }}
 
       - name: Get PR short ref
         id: get_short_ref
