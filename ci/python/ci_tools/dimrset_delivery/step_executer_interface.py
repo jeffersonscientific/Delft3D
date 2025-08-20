@@ -8,7 +8,8 @@ class StepExecutorInterface(ABC):
     """
     Abstract base class for executing steps in the DIMR automation workflow.
 
-    Provides the contract for step executors, requiring initialization with context and services, and an execution method.
+    Provides the contract for step executors, requiring initialization with context and services,
+    and an execution method.
     """
 
     @abstractmethod
