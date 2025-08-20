@@ -114,7 +114,7 @@ class TestWikiPublisher:
                 call("Updating public wiki..."),
                 call("Would update public wiki for DIMR version: 2.13.03"),
                 call("Updating main wiki page..."),
-                call("Updating sub wiki page..."),
+                call("Would update sub wiki page..."),
                 call("Public wiki update completed successfully!"),
             ]
         )

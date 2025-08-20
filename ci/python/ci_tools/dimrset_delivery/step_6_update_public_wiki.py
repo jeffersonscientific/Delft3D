@@ -88,12 +88,12 @@ class WikiPublisher(StepExecutorInterface):
         main_page_id = None
         if self.__context.dry_run:
             main_page_id = "DUMMY_PAGE_ID"
+            self.__context.log("Would update sub wiki page...")
         else:
             main_page_id = self.__update_main_page()
-
-        self.__context.log("Updating sub wiki page...")
-        if main_page_id is not None:
-            self.__update_sub_page(parent_page_id=main_page_id)
+            if main_page_id is not None:
+                self.__context.log("Updating sub wiki page...")
+                self.__update_sub_page(parent_page_id=main_page_id)
 
     def __update_main_page(self) -> str:
         """
