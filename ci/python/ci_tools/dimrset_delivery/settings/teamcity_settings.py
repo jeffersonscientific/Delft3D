@@ -44,6 +44,9 @@ def assign_attributes_from_settings(instance: object, settings: Dict[str, Any], 
             setattr(instance, attr_name, "")
 
 
+INIT_VALUE = ""
+
+
 class TeamcityIds:
     """
     Holds TeamCity build configuration identifiers.
@@ -60,17 +63,15 @@ class TeamcityIds:
         settings : Dict[str, str]
             Dictionary containing TeamCity build configuration IDs.
         """
-        self.dimr_publish = "Unassigned"
-        self.delft3d_linux_collect_build_type_id = "Unassigned"
-        self.delft3d_windows_collect_build_type_id = "Unassigned"
-        self.dimr_to_nghs_build_type_id = "Unassigned"
-        self.dimr_testbench_release_tests_linux = "Unassigned"
-        self.dimr_testbench_release_tests_windows = "Unassigned"
-        self.status_of_daily = "Unassigned"
+        self.dimr_publish = INIT_VALUE
+        self.delft3d_linux_collect_build_type_id = INIT_VALUE
+        self.delft3d_windows_collect_build_type_id = INIT_VALUE
+        self.dimr_to_nghs_build_type_id = INIT_VALUE
+        self.dimr_testbench_release_tests_linux = INIT_VALUE
+        self.dimr_testbench_release_tests_windows = INIT_VALUE
+        self.status_of_daily = INIT_VALUE
 
-        attribute_names = [
-            attr for attr in dir(self) if not attr.startswith("_") and getattr(self, attr) == "Unassigned"
-        ]
+        attribute_names = [attr for attr in dir(self) if not attr.startswith("_") and getattr(self, attr) == INIT_VALUE]
 
         assign_attributes_from_settings(self, settings, attribute_names)
 
@@ -94,33 +95,31 @@ class Settings:
         settings = self.__load_settings(json_settings_path)
         self.teamcity_ids = TeamcityIds(settings.get(pascal_case_to_snake_case(TeamcityIds.__name__), {}))
 
-        self.path_to_windows_version_artifact = "Unassigned"
-        self.path_to_linux_version_artifact = "Unassigned"
-        self.path_to_release_test_results_artifact = "Unassigned"
-        self.name_of_dimr_release_signed_linux_artifact = "Unassigned"
-        self.name_of_dimr_release_signed_windows_artifact = "Unassigned"
-        self.dimr_space_id = "Unassigned"
-        self.dimr_root_page_id = "Unassigned"
-        self.dimr_major_page_prefix = "Unassigned"
-        self.dimr_minor_page_prefix = "Unassigned"
-        self.dimr_patch_page_prefix = "Unassigned"
-        self.dimr_subpage_prefix = "Unassigned"
-        self.dimr_subpage_suffix = "Unassigned"
-        self.network_base_path = "Unassigned"
-        self.linux_address = "Unassigned"
-        self.relative_path_to_wiki_template = "Unassigned"
-        self.delft3d_git_repo = "Unassigned"
-        self.relative_path_to_email_template = "Unassigned"
-        self.lower_bound_percentage_successful_tests = "Unassigned"
-        self.versions_excel_filename = "Unassigned"
-        self.sheet_name = "Unassigned"
-        self.name_column = "Unassigned"
-        self.relative_path_to_output_folder = "Unassigned"
-        self.dry_run_prefix = "Unassigned"
+        self.path_to_windows_version_artifact = INIT_VALUE
+        self.path_to_linux_version_artifact = INIT_VALUE
+        self.path_to_release_test_results_artifact = INIT_VALUE
+        self.name_of_dimr_release_signed_linux_artifact = INIT_VALUE
+        self.name_of_dimr_release_signed_windows_artifact = INIT_VALUE
+        self.dimr_space_id = INIT_VALUE
+        self.dimr_root_page_id = INIT_VALUE
+        self.dimr_major_page_prefix = INIT_VALUE
+        self.dimr_minor_page_prefix = INIT_VALUE
+        self.dimr_patch_page_prefix = INIT_VALUE
+        self.dimr_subpage_prefix = INIT_VALUE
+        self.dimr_subpage_suffix = INIT_VALUE
+        self.network_base_path = INIT_VALUE
+        self.linux_address = INIT_VALUE
+        self.relative_path_to_wiki_template = INIT_VALUE
+        self.delft3d_git_repo = INIT_VALUE
+        self.relative_path_to_email_template = INIT_VALUE
+        self.lower_bound_percentage_successful_tests = INIT_VALUE
+        self.versions_excel_filename = INIT_VALUE
+        self.sheet_name = INIT_VALUE
+        self.name_column = INIT_VALUE
+        self.relative_path_to_output_folder = INIT_VALUE
+        self.dry_run_prefix = INIT_VALUE
 
-        attribute_names = [
-            attr for attr in dir(self) if not attr.startswith("_") and getattr(self, attr) == "Unassigned"
-        ]
+        attribute_names = [attr for attr in dir(self) if not attr.startswith("_") and getattr(self, attr) == INIT_VALUE]
 
         assign_attributes_from_settings(self, settings, attribute_names)
 
