@@ -2857,13 +2857,13 @@ contains
       return
    end subroutine progress
 
-   function is_float_kind(var_kind) result(res)
+   elemental function is_float_kind(var_kind) result(res)
       integer, intent(in) :: var_kind
       logical :: res
       res = var_kind == nf90_double .or. var_kind == nf90_float
    end function is_float_kind
 
-   function is_integer_kind(var_kind) result(res)
+   elemental function is_integer_kind(var_kind) result(res)
       integer, intent(in) :: var_kind
       logical :: res
       res = var_kind == nf90_int .or. var_kind == nf90_short
