@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -euo pipefail
+
+set -o errexit
+set -o errtrace
 
 # Globals to be set by parse_args
 TEAMCITY_URL="https://dpcbuild.deltares.nl"
@@ -26,12 +28,34 @@ UNICODE_UNKNOWN="\U2753"
 # misc
 UNICODE_WAIT='\U23F3'
 
+function catch() {
+  local exit_code=$1
+  if [ "${exit_code}" != "0" ]; then
+    printf "\n** An error occurred **\n"
+    printf "  Exit code: %s\n" "${exit_code}"
+    printf "  Command: %s\n" "${BASH_COMMAND}"
+    printf "  Traceback (most recent call first):\n"
+    # Loop through the stack
+    local i
+    for ((i = 1; i < ${#FUNCNAME[@]}; i++)); do
+
+      local lineno="${BASH_LINENO[$((i - 1))]}"
+      local func="${FUNCNAME[$i]}"
+      local src="${BASH_SOURCE[$i]}"
+      printf "    at %s() in %s:%s\n" "$func" "$src" "$lineno"
+    done
+  fi
+}
+
+trap 'catch $?' ERR
+
 function usage() {
   cat <<EOF
 Usage: $0 [OPTIONS]
 
 Options:
   --teamcity-token TOKEN    TeamCity access token or password
+  --project-id              TeamCity project ID
   --branch-name NAME        Branch name to monitor (will be URL-encoded automatically)
   --commit-sha SHA          Commit SHA
   --poll-interval SECONDS   Polling interval in seconds (default: 30)
@@ -40,7 +64,7 @@ Options:
 EOF
 }
 
-parse_args() {
+function parse_args() {
   local long_options="help,teamcity-token:,project-id:,branch-name:,commit-sha:,poll-interval:,interactive"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
@@ -326,11 +350,11 @@ function get_aggregate_teamcity_build_status() {
       for status in "${statuses[@]}"; do
         if [[ "${status}" != "SUCCESS" ]]; then
           printf "\n%b One or more tracked builds were not successful.\n" "${UNICODE_FAILURE}"
-          return 1
+          exit 1
         fi
       done
       printf "\n%b All tracked builds finished successfully!\n" "${UNICODE_SUCCESS}"
-      return 0
+      exit 0
     fi
 
     count_sheep
