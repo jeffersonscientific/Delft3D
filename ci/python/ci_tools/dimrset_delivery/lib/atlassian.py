@@ -92,8 +92,12 @@ class Atlassian(ConnectionServiceInterface):
         if result.status_code == 200:
             json_response: Dict[str, Any] = result.json()
             return json_response
-        self.__context.log(f"Could not get page info for page {parent_page_id}:")
-        self.__context.log(f"{result.status_code} - {result.content.decode('utf-8')}")
+        self.__context.log(
+            (
+                f"Could not get page info for page {parent_page_id}: "
+                f"{result.status_code} - {result.content.decode('utf-8')}"
+            )
+        )
         return None
 
     def create_public_wiki_page(
