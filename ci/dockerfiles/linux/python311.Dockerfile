@@ -5,13 +5,13 @@ ENV PIP_NO_CACHE_DIR=1
 
 # Install system dependencies and clean up packages afterwards
 RUN dnf update --assumeyes && \
-    dnf install --assumeyes python39 && \
+    dnf install --assumeyes python311 && \
     dnf clean all && \
     rm --recursive --force /var/cache/dnf
 
 # Install pip
 RUN set -eo pipefail && \
-    curl https://bootstrap.pypa.io/get-pip.py | python3.9 - && \
-    python3.9 -m pip install --upgrade pip
+    curl https://bootstrap.pypa.io/get-pip.py | python3.11 - && \
+    python3.11 -m pip install --upgrade pip
 
-CMD [ "python3.9" ]
+CMD [ "python3.11" ]
