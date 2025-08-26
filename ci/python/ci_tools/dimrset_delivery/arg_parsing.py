@@ -70,32 +70,32 @@ def create_context_from_args(
     """
     credentials = ServiceAuthenticateStore()
     credentials.add(
+        ServiceName.ATLASSIAN,
         CredentialEntry(
-            name=ServiceName.ATLASSIAN,
             required=require_atlassian,
             credential=Credentials(username=args.atlassian_username, password=args.atlassian_password),
-        )
+        ),
     )
     credentials.add(
+        ServiceName.TEAMCITY,
         CredentialEntry(
-            name=ServiceName.TEAMCITY,
             required=require_teamcity,
             credential=Credentials(username=args.teamcity_username, password=args.teamcity_password),
-        )
+        ),
     )
     credentials.add(
+        ServiceName.GIT,
         CredentialEntry(
-            name=ServiceName.GIT,
             required=require_git,
             credential=Credentials(username=args.git_username, password=args.git_PAT),
-        )
+        ),
     )
     credentials.add(
+        ServiceName.SSH,
         CredentialEntry(
-            name=ServiceName.SSH,
             required=require_ssh,
             credential=Credentials(username=args.ssh_username, password=args.ssh_password),
-        )
+        ),
     )
 
     context = DimrAutomationContext(

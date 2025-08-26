@@ -51,32 +51,32 @@ class TestDimrAutomationContext:
         if credentials is None:
             credentials = ServiceAuthenticateStore()
             credentials.add(
+                ServiceName.ATLASSIAN,
                 CredentialEntry(
-                    name=ServiceName.ATLASSIAN,
                     required=require_atlassian,
                     credential=Credentials(username=atlassian_username, password=atlassian_password),
-                )
+                ),
             )
             credentials.add(
+                ServiceName.TEAMCITY,
                 CredentialEntry(
-                    name=ServiceName.TEAMCITY,
                     required=require_teamcity,
                     credential=Credentials(username=teamcity_username, password=teamcity_password),
-                )
+                ),
             )
             credentials.add(
+                ServiceName.SSH,
                 CredentialEntry(
-                    name=ServiceName.SSH,
                     required=require_ssh,
                     credential=Credentials(username=ssh_username, password=ssh_password),
-                )
+                ),
             )
             credentials.add(
+                ServiceName.GIT,
                 CredentialEntry(
-                    name=ServiceName.GIT,
                     required=require_git,
                     credential=Credentials(username=git_username, password=git_password),
-                )
+                ),
             )
 
         return DimrAutomationContext(build_id=build_id, dry_run=dry_run, credentials=credentials)

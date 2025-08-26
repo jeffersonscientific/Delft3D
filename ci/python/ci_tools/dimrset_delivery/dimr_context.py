@@ -35,7 +35,6 @@ class Credentials:
     password: str
 
 
-@dataclass
 class CredentialEntry:
     """
     Represents a credential entry for a specific service.
@@ -52,11 +51,9 @@ class CredentialEntry:
 
     def __init__(
         self,
-        name: ServiceName,
         required: bool,
         credential: Credentials,
     ) -> None:
-        self.name = name
         self.required = required
         self.credential = credential
 
@@ -69,9 +66,9 @@ class ServiceAuthenticateStore:
     """
 
     def __init__(self) -> None:
-        self.__credentials: list[CredentialEntry] = []
+        self.__credentials: Dict[ServiceName, CredentialEntry] = {}
 
-    def add(self, entry: CredentialEntry) -> None:
+    def add(self, service: ServiceName, entry: CredentialEntry) -> None:
         """
         Add or update credentials for a specified service.
 
@@ -79,14 +76,12 @@ class ServiceAuthenticateStore:
 
         Parameters
         ----------
+        service : ServiceName
+            The service for which credentials are being added.
         entry : CredentialEntry
             The credential entry to add or update.
         """
-        for i, existing_entry in enumerate(self.__credentials):
-            if existing_entry.name == entry.name:
-                self.__credentials[i] = entry
-                return
-        self.__credentials.append(entry)
+        self.__credentials[service] = entry
 
     def get(self, service: ServiceName) -> Optional[CredentialEntry]:
         """
@@ -94,7 +89,7 @@ class ServiceAuthenticateStore:
 
         Parameters
         ----------
-        service : str
+        service : str or ServiceName
             The name of the service for which credentials are requested.
 
         Returns
@@ -102,14 +97,11 @@ class ServiceAuthenticateStore:
         Optional[Credentials]
             The credentials for the specified service, or None if not found.
         """
-        for entry in self.__credentials:
-            if entry.name == service:
-                return entry
-        return None
+        return self.__credentials.get(service, None)
 
-    def __iter__(self) -> Iterator[CredentialEntry]:
-        """Allow iteration over all credential entries."""
-        return iter(self.__credentials)
+    def __iter__(self) -> Iterator[tuple[ServiceName, CredentialEntry]]:
+        """Allow iteration over all (service, credential entry) pairs."""
+        return iter(self.__credentials.items())
 
 
 class DimrAutomationContext:
@@ -188,10 +180,10 @@ class DimrAutomationContext:
         ValueError
             If any required credentials are missing after prompting.
         """
-        for credential in credentials:
-            new_credential = self.__prompt_credentials_if_not_yet_provided(credential, credential.name)
+        for service, credential in credentials:
+            new_credential = self.__prompt_credentials_if_not_yet_provided(credential, service)
             if new_credential:
-                credentials.add(new_credential)
+                credentials.add(service, new_credential)
 
     def __prompt_credentials_if_not_yet_provided(
         self,
@@ -206,5 +198,5 @@ class DimrAutomationContext:
             password = getpass(prompt=f"Enter your {service} password:", stream=None)
             if username == "" or password == "":
                 raise ValueError(f"{service.value} credentials are required but not provided")
-            return CredentialEntry(name=service, required=True, credential=Credentials(username, password))
+            return CredentialEntry(required=True, credential=Credentials(username, password))
         return None

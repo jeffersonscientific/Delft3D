@@ -35,38 +35,40 @@ class Services:
         ValueError
             If required credentials for a service are missing.
         """
-        for iterator in context.credentials:
-            if iterator.required:
-                self.__setup_service(iterator, context)
+        for service, credential in context.credentials:
+            if credential.required:
+                self.__setup_service(service, credential, context)
 
         if self.teamcity:
             context.kernel_versions = self.teamcity.get_kernel_versions()
             context.dimr_version = self.teamcity.get_dimr_version()
             context.branch_name = self.teamcity.get_branch_name()
 
-    def __setup_service(self, entry: CredentialEntry, context: DimrAutomationContext) -> None:
+    def __setup_service(
+        self, service_name: ServiceName, entry: CredentialEntry, context: DimrAutomationContext
+    ) -> None:
         if not entry.required:
             return
 
-        if entry.name == ServiceName.ATLASSIAN:
+        if service_name == ServiceName.ATLASSIAN:
             self.atlassian = Atlassian(
                 credentials=entry.credential,
                 context=context,
             )
-        elif entry.name == ServiceName.TEAMCITY:
+        elif service_name == ServiceName.TEAMCITY:
             self.teamcity = TeamCity(
                 credentials=entry.credential,
                 context=context,
             )
-        elif entry.name == ServiceName.SSH:
+        elif service_name == ServiceName.SSH:
             self.ssh = SshClient(
                 credentials=entry.credential,
                 context=context,
             )
-        elif entry.name == ServiceName.GIT:
+        elif service_name == ServiceName.GIT:
             self.git = GitClient(
                 credentials=entry.credential,
                 context=context,
             )
         else:
-            raise ValueError(f"Unsupported service type: {entry.name.value}")
+            raise ValueError(f"Unsupported service type: {service_name.value}")
