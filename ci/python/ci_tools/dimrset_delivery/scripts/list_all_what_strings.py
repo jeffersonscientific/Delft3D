@@ -70,7 +70,7 @@ def extract_printable_strings(filename: str, min_length: int = 4) -> Generator[s
             if len(result) >= min_length:
                 yield result
     except Exception:
-        # Could not read file, skip it
+        print(f"Could not read file: {filename}. Skipping.")
         yield from ()
 
 
