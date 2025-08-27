@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,15 +32,16 @@
 module m_movabs_nop
    implicit none
 contains
-      subroutine MOVABSnop(X, Y)
-         use unstruc_opengl, only: InOpenGLRendering, MoveTo
+   subroutine MOVABSnop(X, Y)
+      use precision, only: dp
+      use unstruc_opengl, only: InOpenGLRendering, MoveTo
 
-         double precision :: x, y
+      real(kind=dp) :: x, y
 
-         if (InOpenGLRendering) then
-            call MoveTo(X, Y)
-         else
-            call IGRMOVETO(real(X), real(Y))
-         end if
-      end subroutine MOVABSnop
+      if (InOpenGLRendering) then
+         call MoveTo(X, Y)
+      else
+         call IGRMOVETO(real(X), real(Y))
+      end if
+   end subroutine MOVABSnop
 end module m_movabs_nop

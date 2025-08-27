@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,7 +31,8 @@
 !
 
 module m_roofs
-   double precision :: roofheightuni = 2.7d0 ! if not dmiss, rooflevel = av gr
-   double precision :: roofedgeheight = 0.1d0
-   double precision :: dxminroofgutterpipe = 10.0d0
+   use precision, only: dp
+   real(kind=dp) :: roofheightuni = 2.7d0 ! if not dmiss, rooflevel = av gr
+   real(kind=dp) :: roofedgeheight = 0.1d0
+   real(kind=dp) :: dxminroofgutterpipe = 10.0d0
 end module m_roofs

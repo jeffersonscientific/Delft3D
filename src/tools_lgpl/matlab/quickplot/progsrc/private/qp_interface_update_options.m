@@ -3,7 +3,7 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,7 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 %   $Id$
 
 [DomainNr,Props,subf,selected,stats,vslice,hslice] = get_basics(UD.MainWin);
-if isnumeric(Props.NVal) && Props.NVal < 0
+if isstruct(Props) && isnumeric(Props.NVal) && Props.NVal < 0
     try
         Handle_SelectFile=findobj(mfig,'tag','selectfile');
         File=get(Handle_SelectFile,'userdata');
@@ -180,13 +180,16 @@ elseif isfield(Props,'Geom') && ~isempty(Props.Geom)
 else
     if DimFlag(M_) && DimFlag(N_)
         geometry='sQUAD';
-        coordinates='xy';
+        coordinates='mn';
     elseif DimFlag(M_) || DimFlag(N_)
         geometry='sSEG';
-        coordinates='x';
+        coordinates='m';
     else
         geometry='PNT';
         coordinates='';
+    end
+    if isfield(Props,'Coords') && ~isempty(Props.Coords)
+        coordinates = Props.Coords;
     end
     if isfield(Props,'Tri') && isequal(Props.Tri,1)
         geometry='TRI';
@@ -235,7 +238,7 @@ lineproperties=0;
 tracks=0;
 
 unstructured = 0;
-triangles = 1;
+triangles = 0;
 thindams = nval>0 & nval<1;
 MultipleColors = (nval>=1 & nval<4) | nval==6;
 %--------------------------------------------------------------------------
@@ -245,6 +248,7 @@ MultipleColors = (nval>=1 & nval<4) | nval==6;
 axestype={'noplot'};
 switch geometry
     case 'SELFPLOT'
+        lineproperties = 1;
         if isfield(Props,'AxesType')
             if iscell(Props.AxesType)
                 axestype = Props.AxesType;
@@ -608,6 +612,10 @@ if (multiple(M_) && ~multiple(N_) && DimFlag(N_)) || (~multiple(M_) && DimFlag(M
     end
 end
 
+if nval == 0 || thindams
+    lineproperties = 1;
+end
+
 if strcmp(axestype,'X-Y-Val')
     % skip
 elseif strfind(axestype,'Val')
@@ -623,9 +631,6 @@ elseif strcmp(axestype,'Text') || (strcmp(axestype,'Time-Val') && ~multiple(T_))
     if ~strcmp(nvalstr,'strings')
         ask_for_numformat=1;
     end
-end
-if nval==-1 || (nval>=0 && nval<1)
-    lineproperties=1;
 end
 if ~multiple(T_)
     % if only one time step is selected, there is no animation period.
@@ -657,17 +662,30 @@ else
 end
 
 if DimFlag(T_)
-    if ~strcmpi(qp_settings('timezone'),'Ignored')
-        atz = findobj(OH,'tag','axestimezone=?');
-        set(findobj(OH,'tag','axestimezone'),'enable','on');
-        set(atz,'enable','on','backgroundcolor',Active)
-        TZsel = get(atz,'value');
-        TZstr = get(atz,'string');
-        TZshift = get(atz,'userdata');
+    tz_forcing = qp_settings('timezone');
+    atz = findobj(OH,'tag','axestimezone=?');
+    TZstr = get(atz,'string');
+    TZshift = get(atz,'userdata');
+    % if Time Zone is ignored or unknown ...
+    tz_dataset = get(UD.MainWin.TZdata,'userdata');
+    if strcmp(tz_forcing,'Ignored') || isempty(tz_dataset) || isnan(tz_dataset)
+        Ops.axestimezone_shift = NaN;
+    else
+        % if Time Zone is known ...
+        if strcmp(tz_forcing,'As in dataset') % free to choose for plotting
+            status_switch = 'on';
+            status_color = Active; 
+            TZsel = get(atz,'value');
+        else % specific time zone enforced, don't ask ...
+            status_switch = 'off';
+            status_color = Inactive;
+            TZsel = find(strcmp(TZstr,tz_forcing));
+            set(atz,'value',TZsel)
+        end
+        set(findobj(OH,'tag','axestimezone'),'enable',status_switch);
+        set(atz,'enable',status_switch,'backgroundcolor',status_color)
         Ops.axestimezone_str   = strtok(TZstr{TZsel});
         Ops.axestimezone_shift = TZshift(TZsel);
-    else
-        Ops.axestimezone_shift = NaN;
     end
 end
 
@@ -705,16 +723,16 @@ if strfind(axestype,'Y')
     %    axestype = strrep(axestype,'Y',Props.NName);
     %end
 else
-    if ~ismember('y',coordinates) && ~ismember('x',coordinates)
-        coords={'coordinate'};
-    elseif ~ismember('y',coordinates)
-        coords={'path distance','reverse path distance','x coordinate'};
-    elseif isfield(Props,'MName') && ~isempty(Props.MName) && multiple(M_)
+    if isfield(Props,'MName') && ~isempty(Props.MName) && multiple(M_)
         %    axestype = strrep(axestype,'X',Props.MName);
         coords={'x coordinate'};
     elseif isfield(Props,'NName') && ~isempty(Props.NName)
         %    axestype = strrep(axestype,'X',Props.NName);
         coords={'y coordinate'};
+    elseif ~ismember('x',coordinates) && ~ismember('y',coordinates)
+        coords={'index'};
+    elseif ~ismember('y',coordinates)
+        coords={'path distance','reverse path distance','x coordinate'};
     end
 end
 
@@ -858,6 +876,7 @@ if nval==2 || nval==3
             Ops.presentationtype=Ops.vectorcomponent;
             vectors=0;
             nval=0.9;
+            lineproperties = 1;
         otherwise
             ui_message('error','Unexpected plot type encountered: %s\nin main module.',Ops.vectorcomponent)
             Ops = [];
@@ -885,16 +904,23 @@ if strcmp(axestype,'Text')
     Ops.presentationtype = 'labels';
 elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
         ((nval==1 || nval==6) && TimeSpatial==1 && vslice) || ...
+        nval==0.9 || ...
         nval==1.9 || ...
         strcmp(nvalstr,'strings') || ...
         strcmp(nvalstr,'boolean') || ...
         (strcmp(geometry,'POLYG') && nval~=2 && ~TimeDim)
     switch nvalstr
-        case 1.9 % EDGE
+        case 0.9 % EDGE scalar
             if strcmp(geometry,'SGRID-EDGE')
-                PrsTps={'vector';'edges';'edges M';'edges N'};
+                PrsTps={'edges';'edges M';'edges N';'markers';'markers M';'markers N';'values';'values M';'values N'};
             else
-                PrsTps={'vector';'edges';'values'};
+                PrsTps={'edges';'markers';'values'};
+            end
+        case 1.9 % EDGE flux
+            if strcmp(geometry,'SGRID-EDGE')
+                PrsTps={'vector';'edges';'edges M';'edges N';'markers';'markers M';'markers N';'values';'values M';'values N'};
+            else
+                PrsTps={'vector';'edges';'markers';'values'};
             end
         case 'strings'
             switch geometry
@@ -975,7 +1001,7 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                             if SpatialV
                                 PrsTps={'continuous shades';'markers';'values';'contour lines';'coloured contour lines';'contour patches';'contour patches with lines'};
                             else
-                                PrsTps={'markers';'values';'edges';'vector edges'};
+                                PrsTps={'markers';'values';'edges';'vector edges';'normal vector edges'};
                             end
                         case {'UGRID1D_NETWORK-NODE','UGRID1D-NODE'}
                             if SpatialV
@@ -1012,13 +1038,13 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
             else
                 % try to find an exact match when switching presentation type strings
                 p=get(pt,'value');
-                if iscellstr(pPrsTps),
+                if iscellstr(pPrsTps)
                     p=pPrsTps{p};
                 else
                     p=pPrsTps(p,:);
                 end
                 p=strmatch(p,PrsTps,'exact');
-                if isempty(p),
+                if isempty(p)
                     p=1;
                 end
                 set(pt,'enable','on','value',1,'string',PrsTps,'value',p,'backgroundcolor',Active)
@@ -1035,7 +1061,7 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                     otherwise
                         extend2edge = 1;
                 end
-            case 'values'
+            case {'values','values m','values n'}
                 MultipleColors=0;
                 SingleColor=1;
                 %
@@ -1060,7 +1086,7 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                         lineproperties=1;
                 end
                 extend2edge = 1;
-            case 'markers'
+            case {'markers','markers m','markers n'}
                 usesmarker=1;
                 forcemarker=1;
                 lineproperties=0;
@@ -1106,7 +1132,7 @@ elseif ((nval==1 || nval==6) && TimeSpatial==2) || ...
                 lineproperties=1;
             case 'grid with numbers'
                 ask_for_textprops=1;
-            case 'vector edges'
+            case {'vector edges','normal vector edges'}
                 lineproperties=1;
                 thindams=1;
                 nval=0.9;
@@ -1360,7 +1386,7 @@ if ask_for_angleconvention
     set(pd,'enable','on','backgroundcolor',Active)
 end
 
-if thindams
+if thindams && (~isfield(Ops,'presentationtype') || ~strncmp(Ops.presentationtype,'values',6))
     if nval==0.9
         cl=1;
     else
@@ -1378,7 +1404,7 @@ end
 
 % plot value as is, or absolute value?
 % in case of vector edges we need the sign for the vector direction
-if nval>0 && nval<2 && (~isfield(Ops,'presentationtype') || ~strcmp(Ops.presentationtype,'vector edges'))
+if nval>0 && nval<2 && (~isfield(Ops,'presentationtype') || ~ismember(Ops.presentationtype,{'vector edges','normal vector edges'}))
     oper=findobj(OH,'tag','operator');
     set(oper,'enable','on')
     oper=findobj(OH,'tag','operator=?');
@@ -1392,7 +1418,7 @@ end
 
 if MultipleColors ...
         && isfield(Ops,'presentationtype') ...
-        && ismember(Ops.presentationtype,{'patches','edges','vector edges'})
+        && ismember(Ops.presentationtype,{'patches','edges','edges m','edges n','vector edges','normal vector edges'})
     cun = findobj(OH,'tag','unicolour');
     set(cun,'enable','on')
     Ops.unicolour = get(cun,'value');
@@ -1496,7 +1522,7 @@ if ask_for_thinningmode
     set(thinfld,'enable','on','backgroundcolor',Active)
     thinmodes = {'none','uniform','distance'}'; %,'regrid'
     switch Ops.presentationtype
-        case {'values','labels'}
+        case {'values','values m','values n','labels'}
             thinmodes = cat(1,thinmodes,{'dynamic'});
     end
     prevthinmodes = get(thinfld,'string');
@@ -1580,7 +1606,7 @@ if ismember(geometry,{'PNT'}) && ~multiple(T_) && nval>=0
         forcemarker = 1;
     end
     lineproperties = 0;
-elseif isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'vector edges')
+elseif isfield(Ops,'presentationtype') && ismember(Ops.presentationtype,{'vector edges','normal vector edges'})
     usesmarker = 0;
 elseif lineproperties || nval==0
     usesmarker = 1;
@@ -1676,37 +1702,6 @@ if usesmarker
     end
 end
 
-if isfield(Ops,'presentationtype')
-    switch Ops.presentationtype
-        case {'vector','patches','patches with lines','markers'}
-            if MultipleColors && Props.NVal~=6
-                cclass=findobj(OH,'tag','colclassify');
-                set(cclass,'enable','on')
-                if get(cclass,'value')
-                    ask_for_thresholds = 1;
-                end
-            end
-    end
-end
-
-if ask_for_thresholds
-    set(findobj(OH,'tag','thresholds'),'enable','on')
-    set(findobj(OH,'tag','thresholds=?'),'enable','on','backgroundcolor',Active)
-    Ops.thresholds=get(findobj(OH,'tag','thresholds=?'),'userdata');
-    %
-    % if the thresholds have not explicitly been specified
-    % (only the number of thresholds is given, or even that is left to default)
-    % then ask for distribution of thresholds
-    %
-    if isempty(Ops.thresholds) || ...
-            (isequal(size(Ops.thresholds),[1 1]) && isnumeric(Ops.thresholds) && isequal(Ops.thresholds,round(Ops.thresholds)) && Ops.thresholds>0)
-        thrd=findobj(OH,'tag','threshdistr=?');
-        set(thrd,'enable','on','backgroundcolor',Active)
-        thrdStr=get(thrd,'string'); % linear, logarithmic, anti-logarithmic
-        Ops.thresholddistribution=thrdStr{get(thrd,'value')};
-    end
-end
-
 if MultipleColors
     if Props.NVal~=6
         set(findobj(OH,'tag','climmode'),'enable','on')
@@ -1747,6 +1742,9 @@ if MultipleColors
                 else
                     Ops.colourlimits=[Min Max];
                 end
+                climclip = findobj(OH,'tag','climclip');
+                set(climclip,'enable','on')
+                Ops.climclipping = get(climclip, 'value');
         end
     end
     set(findobj(OH,'tag','colourmap'),'enable','on')
@@ -1770,6 +1768,40 @@ if MultipleColors
     end
 end
 
+if isfield(Ops,'presentationtype')
+    switch Ops.presentationtype
+        case {'vector','patches','patches with lines','markers'}
+            if MultipleColors && Props.NVal~=6
+                cclass=findobj(OH,'tag','colclassify');
+                set(cclass,'enable','on')
+                if get(cclass,'value')
+                    ask_for_thresholds = 1;
+                end
+            end
+    end
+end
+if ask_for_thresholds
+    set(findobj(OH,'tag','thresholds'),'enable','on')
+    set(findobj(OH,'tag','thresholds=?'),'enable','on','backgroundcolor',Active)
+    Ops.thresholds=get(findobj(OH,'tag','thresholds=?'),'userdata');
+    %
+    % if the thresholds have not explicitly been specified
+    % (only the number of thresholds is given, or even that is left to default)
+    % then ask for distribution of thresholds
+    %
+    if isempty(Ops.thresholds) || ...
+            (isequal(size(Ops.thresholds),[1 1]) && isnumeric(Ops.thresholds) && isequal(Ops.thresholds,round(Ops.thresholds)) && Ops.thresholds>0)
+        thrd=findobj(OH,'tag','threshdistr=?');
+        set(thrd,'enable','on','backgroundcolor',Active)
+        thrdStr=get(thrd,'string'); % linear, logarithmic, anti-logarithmic
+        Ops.thresholddistribution=thrdStr{get(thrd,'value')};
+    end
+    if false % to be activated under UNST-8375
+        set(findobj(OH,'tag','plotclass'),'enable','on')
+        set(findobj(OH,'tag','plotclassbutton'),'enable','on')
+    end
+end
+
 %
 %---- axes type
 %
@@ -1790,13 +1822,13 @@ Ops.axestype=axestype;
 %---- clipping values
 %
 
-if (nval==1 || isfield(Ops,'vectorcolour') || isfield(Ops,'colourdams') || (isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'values'))) && (lineproperties || TimeSpatial==2) && ~strcmp(nvalstr,'strings')
+if (nval==1 || isfield(Ops,'vectorcolour') || isfield(Ops,'colourdams') || (isfield(Ops,'presentationtype') && strncmp(Ops.presentationtype,'values',6))) && (lineproperties || TimeSpatial==2) && ~strcmp(nvalstr,'strings')
     set(findobj(OH,'tag','clippingvals'),'enable','on')
     set(findobj(OH,'tag','clippingvals=?'),'enable','on','backgroundcolor',Active)
     Ops.clippingvalues=get(findobj(OH,'tag','clippingvals=?'),'userdata');
 end
 
-if isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'values')
+if isfield(Ops,'presentationtype') && strncmp(Ops.presentationtype,'values',6)
     set(findobj(OH,'tag','clipnans'),'enable','on')
     Ops.clipnans=get(findobj(OH,'tag','clipnans'),'value');
 end
@@ -1842,14 +1874,11 @@ if nval>=0
         end
         if nval==1
             ExpTypes{end+1}='-QuickIn file';
-        end
-        if nval==1
             ExpTypes{end+1}='Delft3D-MOR field file';
             ExpTypes{end+1}='-Delft3D-MOR field file';
-        end
-        if nval==1
             ExpTypes{end+1}='SIMONA box file';
             ExpTypes{end+1}='-SIMONA box file';
+            ExpTypes{end+1}='Waqview xyz file';
         end
     end
     if (multiple(M_) && (multiple(N_) || unstructured || strcmp(geometry,'sSEG'))) && ~multiple(K_) && ~multiple(T_)
@@ -1879,7 +1908,9 @@ if nval>=0
     end
     %
     maxTimeSteps = qp_settings('export_max_ntimes');
-    if ((length(selected{T_})<=maxTimeSteps && ~isequal(selected{T_},0)) || (maxt<=maxTimeSteps && isequal(selected{T_},0))) && nval>0 && (multiple(M_) || multiple(N_) || (multiple(K_) && ~hslice))
+    if ((length(selected{T_})<=maxTimeSteps && ~isequal(selected{T_},0)) || (maxt<=maxTimeSteps && isequal(selected{T_},0))) && ...
+            nval>0 && nval == round(nval) && ...
+            (multiple(M_) || multiple(N_) || (multiple(K_) && ~hslice))
         ExpTypes{end+1}='csv file';
         ExpTypes{end+1}='Tekal file';
         ExpTypes{end+1}='Tecplot file';

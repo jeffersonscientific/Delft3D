@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,17 +32,18 @@
 module m_lnabs
    implicit none
 contains
-      subroutine LNABS(X, Y)
-         use unstruc_opengl, only: InOpenGLRendering, LineTo
-         use m_dproject
+   subroutine LNABS(X, Y)
+      use precision, only: dp
+      use unstruc_opengl, only: InOpenGLRendering, LineTo
+      use m_dproject, only: dproject
 
-         double precision :: x, y, xx, yy
+      real(kind=dp) :: x, y, xx, yy
 
-         call DPROJECT(X, Y, XX, YY, 1)
-         if (InOpenGLRendering) then
-            call LineTo(XX, YY)
-         else
-            call IGRLINETO(real(XX), real(yy))
-         end if
-      end
+      call DPROJECT(X, Y, XX, YY, 1)
+      if (InOpenGLRendering) then
+         call LineTo(XX, YY)
+      else
+         call IGRLINETO(real(XX), real(yy))
+      end if
+   end
 end module m_lnabs

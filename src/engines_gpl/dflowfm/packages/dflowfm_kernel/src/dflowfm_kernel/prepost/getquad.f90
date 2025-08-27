@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,10 +30,20 @@
 !
 !
 
+module m_getquad
+
+   implicit none
+
+   private
+
+   public :: getquad
+
+contains
+
    subroutine GETQUAD(LN, K1, K2, K3N, K4N)
       use m_netw
       use gridoperations
-      implicit none
+
       integer :: LN, K1, K2, K3N, K4N
 
       integer :: k
@@ -68,3 +78,5 @@
       end do
 
    end subroutine GETQUAD
+
+end module m_getquad

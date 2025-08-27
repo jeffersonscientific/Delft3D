@@ -18,7 +18,7 @@ function varargout=netcdffil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -210,11 +210,11 @@ fidx=find(DimFlag);
 if isempty(subf)
     % initialize and read indices ...
     idx(fidx(1:length(varargin))) = varargin;
-    marg = find(fidx==M_);
+    index_m_dimension = find(fidx==M_);
 else
     % initialize and read indices ...
     idx(fidx(1:(length(varargin)-1))) = varargin(2:end);
-    marg = 1 + find(fidx==M_);
+    index_m_dimension = 1 + find(fidx==M_);
 end
 
 if isfield(FI.Attribute,'Name')
@@ -230,19 +230,23 @@ else
 end
 if FI.NumDomains>1
     args = varargin;
-    spatial = false;
-    if ~isempty(marg) && ~isempty(Props.Coords)
-        spatial = ~isempty(strfind(Props.Coords,'xy'));
+    if domain == FI.NumDomains+2 && ~isempty(index_m_dimension) && ~isempty(Props.Coords) && ~isempty(strfind(Props.Coords,'xy'))
+        m = identify_mesh(Props.DimName{M_}, FI.MergedPartitions);
+        merge_needed = ~isempty(m);
+    else
+        merge_needed = false;
     end
-    if domain == FI.NumDomains+2
+    if merge_needed
+        MergedMesh = FI.MergedPartitions(m);
+
         % merged partitions
         if DimFlag(K_)
             cmd = strrep(cmd, 'grid', 'z');
         else
             cmd = strrep(cmd, 'grid', '');
         end
-        if marg <= numel(args)
-            args{marg} = 0;
+        if index_m_dimension <= numel(args)
+            args{index_m_dimension} = 0;
         end
         %
         if iscell(Props.varid)
@@ -253,7 +257,7 @@ if FI.NumDomains>1
                     PFI = FI.Partitions{i};
                     PProps.Geom = 'UGRID2D-EDGE';
                     PProps.varid = Props.varid{2};
-                    PProps.DimName{M_} = PFI.Dataset(PFI.Dataset(PProps.varid+1).Mesh{2}).Mesh{6};
+                    PProps.DimName{M_} = PFI.Dataset(PFI.Dataset(PProps.varid+1).Mesh{3}).Mesh{6};
                     Props.Partitions{i} = PProps;
                 end
                 Props.Geom = 'UGRID2D-EDGE';
@@ -264,7 +268,7 @@ if FI.NumDomains>1
     end
     if isempty(cmd)
         Data = [];
-    elseif ~spatial
+    elseif ~merge_needed
         % read non-spatial data from the first file ... should be consistent across all files and no way to merge anyway
         Data = netcdffil(FI,1,Props,cmd,args{:});
     else
@@ -282,35 +286,41 @@ if FI.NumDomains>1
             iOut = iOut + 1;
         end
     end
-    if spatial && domain == FI.NumDomains+2
+    if merge_needed
         % merged partitions
         partData = Data;
         Data = [];
         
         % XY values i.e. mesh
         if XYRead
-            m = 1;
-            Data.X = FI.MergedPartitions(m).X;
-            Data.XUnits = FI.MergedPartitions(m).XYUnits;
-            Data.Y = FI.MergedPartitions(m).Y;
-            Data.YUnits = FI.MergedPartitions(m).XYUnits;
-            Data.EdgeNodeConnect = FI.MergedPartitions(m).EdgeNodeConnect;
-            Data.FaceNodeConnect = FI.MergedPartitions(m).FaceNodeConnect;
-            if isfield(FI.MergedPartitions,'EdgeFaceConnect')
-                Data.EdgeFaceConnect = FI.MergedPartitions(m).EdgeFaceConnect;
+            Data.X = MergedMesh.X;
+            Data.XUnits = MergedMesh.XYUnits;
+            Data.Y = MergedMesh.Y;
+            Data.YUnits = MergedMesh.XYUnits;
+            Data.EdgeNodeConnect = MergedMesh.EdgeNodeConnect;
+            if MergedMesh.Dimensionality == 2
+                Data.FaceNodeConnect = MergedMesh.FaceNodeConnect;
+            end
+            if isfield(MergedMesh,'EdgeFaceConnect')
+                Data.EdgeFaceConnect = MergedMesh.EdgeFaceConnect;
             end
         end
         
-        valLoc = Props.Geom(end-3:end);
-        hasTimeDim = false;
-        tDim = {};
-        if isfield(partData,'Time') && length(partData(1).Time)>1
-            hasTimeDim = true;
-            tDim = {':'};
+        if strncmp(Props.Geom, 'UGRID', 5)
+            valLoc = Props.Geom(end-3:end);
+        else
+            valLoc = [];
         end
-        hasStationDim = Props.DimFlag(ST_) > 0;
-        if hasStationDim
-            tDim = cat(2,tDim,{':'});
+        if isfield(partData,'Time') && length(partData(1).Time)>1
+            nPrefixDim = 1;
+            prefixDim = {':'};
+        else
+            nPrefixDim = 0;
+            prefixDim = {};
+        end
+        if Props.DimFlag(ST_) > 0
+            nPrefixDim = nPrefixDim + 1;
+            prefixDim{end+1} = ':';
         end
 
         % z values
@@ -320,12 +330,16 @@ if FI.NumDomains>1
             else
                 zLoc = valLoc;
             end
-            Data = mergePartData(Data, partData, FI, zLoc,{'Z'}, hasTimeDim, hasStationDim, tDim);
-            Data.ZLocation = zLoc;
+            Data = mergePartData(Data, partData, MergedMesh, zLoc,{'Z'}, nPrefixDim, prefixDim);
+            if ~isempty(zLoc)
+                Data.ZLocation = zLoc;
+            end
         end
         
-        % data values 
-        Data.ValLocation = valLoc;
+        % data values
+        if ~isempty(valLoc)
+            Data.ValLocation = valLoc;
+        end
         if isfield(partData,'Time')
             Data.Time = partData(1).Time;
         end
@@ -334,17 +348,17 @@ if FI.NumDomains>1
             Data.ClassVal = partData(1).ClassVal;
         end
         valFields = {'Val','XComp','YComp','NormalComp','TangentialComp'};
-        Data = mergePartData(Data, partData, FI, valLoc, valFields, hasTimeDim, hasStationDim, tDim);
+        Data = mergePartData(Data, partData, MergedMesh, valLoc, valFields, nPrefixDim, prefixDim);
         %
         if iscell(field.varid)
             if strcmp(field.varid{1},'stream_function') % note field is the original copy of Props
                 if DataRead
-                    Data.Val = compute_stream_function(Data.Val, Data.EdgeNodeConnect, FI.MergedPartitions(m).nNodes);
+                    Data.Val = compute_stream_function(Data.Val, Data.EdgeNodeConnect, MergedMesh.nNodes);
                 end
                 Data.ValLocation = 'NODE';
             elseif strcmp(Props.varid{1},'net_discharge_into_cell')
                 if DataRead
-                    Data.Val = compute_net_discharge_into_cell(Data.Val, Data.EdgeFaceConnect, FI.MergedPartitions(m).nFaces);
+                    Data.Val = compute_net_discharge_into_cell(Data.Val, Data.EdgeFaceConnect, MergedMesh.nFaces);
                 end
                 Data.ValLocation = 'FACE';
             end
@@ -381,13 +395,13 @@ if FI.NumDomains>1
             for v = {'Val','XComp','YComp','NormalComp','TangentialComp'}
                 fld = v{1};
                 if isfield(partData,fld)
-                    Data.(fld) = Data.(fld)(tDim{:},idx{M_},:);
+                    Data.(fld) = Data.(fld)(prefixDim{:},idx{M_},:);
                 end
             end
             %
             if isfield(Data,'ZLocation')
                 if isequal(Data.ZLocation,Data.ValLocation)
-                    Data.Z = Data.Z(tDim{:},idx{M_},:);
+                    Data.Z = Data.Z(prefixDim{:},idx{M_},:);
                 end
             end
         end
@@ -1567,7 +1581,7 @@ if XYRead || XYneeded || ZRead
         end
     end
     %
-    if ~Props.hasCoords
+    if ~Props.hasCoords && Props.DimFlag(M_) && Props.DimFlag(N_)
         %
         % Define a simple regular grid
         %
@@ -1918,6 +1932,7 @@ else
             Insert.Coords = 'xy';
             Insert.hasCoords=1;
         elseif ~isempty(Info.X) && ~isempty(Info.Y)
+            Insert.Coords = 'xy';
             Insert.hasCoords=1;
             mesh = [Info.X Info.Y];
             found = false;
@@ -1933,7 +1948,6 @@ else
             if ~isempty(Info.XBounds) && ~isempty(Info.YBounds)
                 Insert.Geom = 'POLYG';
                 Insert.ClosedPoly = 1;
-                Insert.Coords = 'xy';
                 Insert.DataInCell = 1;
             elseif ~Insert.DimFlag(N_) % 1D data set or unstructured data set
                 if Insert.DimFlag(K_)
@@ -1941,7 +1955,6 @@ else
                     Insert.Coords = 'xy+z';
                 else
                     Insert.Geom = 'PNT';
-                    Insert.Coords = 'xy';
                 end
             end
         elseif ~isempty(Info.Z)
@@ -2502,17 +2515,27 @@ if isfield(FI,'MergedPartitions') && ...
         if isempty(loc)
             loc = M{4};
         end
+        m = identify_mesh(Props.DimName{M_}, FI.MergedPartitions);
+        MergedMesh = FI.MergedPartitions(m);
         switch loc
             case {0,-1} % nodes
-                sz(M_) = FI.MergedPartitions.nNodes;
+                sz(M_) = MergedMesh.nNodes;
             case 1 % edges
-                sz(M_) = FI.MergedPartitions.nEdges;
+                sz(M_) = MergedMesh.nEdges;
             case 2 % faces
-                sz(M_) = FI.MergedPartitions.nFaces;
+                sz(M_) = MergedMesh.nFaces;
         end
     end
 end
 %======================== SPECIFIC CODE =======================================
+
+function m = identify_mesh(dimName, mergedMeshes)
+for m = 1:length(mergedMeshes)
+    if ismember(dimName, mergedMeshes(m).Dimensions)
+        return
+    end
+end
+m = [];
 
 % -----------------------------------------------------------------------------
 function Domains=domains(FI)
@@ -3343,30 +3366,35 @@ if ~isempty(connect)
 end
 
 
-function Data = mergePartData(Data,partData,FI,valLoc,valFields,hasTimeDim,hasStationDim,tDim)
-switch valLoc
-    case 'NODE'
-        nloc = FI.MergedPartitions.nNodes;
-        domainMask = FI.MergedPartitions.nodeDMask;
-        globalIndex = FI.MergedPartitions.nodeGIndex;
-    case 'EDGE'
-        nloc = FI.MergedPartitions.nEdges;
-        domainMask = FI.MergedPartitions.edgeDMask;
-        globalIndex = FI.MergedPartitions.edgeGIndex;
-    case 'FACE'
-        nloc = FI.MergedPartitions.nFaces;
-        domainMask = FI.MergedPartitions.faceDMask;
-        globalIndex = FI.MergedPartitions.faceGIndex;
-end
+function Data = mergePartData(Data,partData,MergedMesh,valLoc,valFields,nPrefixDim,prefixDim)
 for v = valFields
     fld = v{1};
     if isfield(partData,fld)
+        switch valLoc
+            case 'NODE'
+                nloc = MergedMesh.nNodes;
+                domainMask = MergedMesh.nodeDMask;
+                globalIndex = MergedMesh.nodeGIndex;
+            case 'EDGE'
+                nloc = MergedMesh.nEdges;
+                domainMask = MergedMesh.edgeDMask;
+                globalIndex = MergedMesh.edgeGIndex;
+            case 'FACE'
+                nloc = MergedMesh.nFaces;
+                domainMask = MergedMesh.faceDMask;
+                globalIndex = MergedMesh.faceGIndex;
+        end
+        %
         sz = size(partData(1).(fld));
-        sz(hasTimeDim+hasStationDim+1) = nloc;
-        Data.(fld) = NaN(sz);
+        sz(nPrefixDim+1) = nloc;
+        if iscell(partData(1).(fld))
+            Data.(fld) = cell(sz);
+        else
+            Data.(fld) = NaN(sz);
+        end
         for p = 1:length(partData)
             masked = domainMask{p};
-            Data.(fld)(tDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(tDim{:},masked,:);
+            Data.(fld)(prefixDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(prefixDim{:},masked,:);
         end
     end
 end

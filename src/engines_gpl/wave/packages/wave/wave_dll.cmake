@@ -7,9 +7,6 @@ set(library_name wave)
 add_library(${library_name} SHARED  ${library_files}
                                     ${rc_version_file})
 
-# Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
-
 # Set dependencies on windows
 if (WIN32)
     set(library_dependencies    wave_data
@@ -25,7 +22,6 @@ if (WIN32)
                                 wave_kernel
                                 wave_manager
                                 nefis
-                                netcdf4
                                 netcdff
                                 triangle_c
                                 swan
@@ -104,4 +100,6 @@ set_target_properties (${library_name} PROPERTIES OUTPUT_NAME wave)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib)
+install(TARGETS ${library_name} RUNTIME DESTINATION lib
+                                LIBRARY DESTINATION lib
+)

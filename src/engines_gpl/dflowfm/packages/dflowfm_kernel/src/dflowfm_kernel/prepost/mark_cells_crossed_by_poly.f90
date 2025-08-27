@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,10 +31,18 @@
 !
 
 !> mark the cells that are crossed by the polygon
+module m_mark_cells_crossed_by_poly
+
+   implicit none
+
+   private
+
+   public :: mark_cells_crossed_by_poly
+
+contains
+
    subroutine mark_cells_crossed_by_poly(ksize, kmask)
       use m_netw
-
-      implicit none
 
       integer, intent(in) :: ksize !< size of kmask array
 
@@ -45,7 +53,9 @@
       integer :: k, kk, k1, k2, L, N, lnn_orig
 
       !  allocate node mask arrays
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (Lmask(numL), cellmask(nump))
 
       !  make the linkmask
@@ -103,3 +113,5 @@
       return
 
    end subroutine mark_cells_crossed_by_poly
+
+end module m_mark_cells_crossed_by_poly

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,12 +31,14 @@
 !
 
 module m_changephysicalparameters
+   use m_setuniformwind, only: setuniformwind
 
-implicit none
+   implicit none
 
 contains
 
    subroutine CHANGEPHYSICALPARAMETERS()
+      use precision, only: dp
       use m_flow
       use m_flowgeom, only: ndx
       use unstruc_colors
@@ -47,6 +49,7 @@ contains
       use m_restore_keys
       use m_help
       use m_highlight_form_line
+      use m_wind, only: jarain, jaqin, rain, rainuni, windsp, winddir
 
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=15, NUMFLD=2 * NUMPAR)
@@ -56,7 +59,7 @@ contains
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key, ierr
       integer :: nbut, imp, inp
-      double precision :: frcuniorg
+      real(kind=dp) :: frcuniorg
 
       NLEVEL = 4
       OPTION(1) = 'frcuni                                  '; it(2 * 1) = 6

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,19 +35,20 @@ contains
 !> Updates the boundary conditions. The FM variables are updated in <flow_initimestep>
 ! and here we put them into the table that uses SRE.
    subroutine fm1dimp_update_bc(iresult, time1)
+      use precision, only: dp
 
       use m_flow, only: au
       use m_f1dimp, only: f1dimppar
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: zbndz, l1qbnd, kbndu, zbndq
 !pointer
       integer, pointer :: table_length
-      integer, pointer :: maxtab
+      integer, pointer :: number_BC_tables
 
 !input
-      double precision, intent(in) :: time1 !t^{n+1}
+      real(kind=dp), intent(in) :: time1 !t^{n+1}
 
 !output
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
 !local
       integer :: k, ktab, nq, n, L
@@ -55,7 +56,7 @@ contains
 
 !point
       table_length => f1dimppar%table_length
-      maxtab => f1dimppar%maxtab
+      number_BC_tables => f1dimppar%number_BC_tables
 
 !!
 !! CALC
@@ -70,7 +71,7 @@ contains
          f1dimppar%table(ktab) = time1
          f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
          !y (var)
-         ktab = maxtab * table_length + table_number * table_length - 1
+         ktab = number_BC_tables * table_length + table_number * table_length - 1
          f1dimppar%table(ktab) = zbndz(k)
          f1dimppar%table(ktab + 1) = zbndz(k)
       end do
@@ -83,7 +84,7 @@ contains
          f1dimppar%table(ktab) = time1
          f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
          !y (var)
-         ktab = maxtab * table_length + table_number * table_length - 1
+         ktab = number_BC_tables * table_length + table_number * table_length - 1
 
          !FM1DIMP2DO: properly understand what happens!
          !In <setau>, the discharge read in BC is converted into a

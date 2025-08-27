@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,12 +33,13 @@ module m_htext
    implicit none
 contains
    subroutine HTEXT(VAL, X, Y)
-      use m_colnow
-      use m_draw_text
+      use precision, only: dp
+      use m_colnow, only: ncolnow
+      use m_draw_text, only: drawtext
 
-      double precision :: val
-      double precision :: x
-      double precision :: y
+      real(kind=dp) :: val
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 !     getal value op grafisch scherm in current color
       character TEXT * 6, TEXT2 * 10
 

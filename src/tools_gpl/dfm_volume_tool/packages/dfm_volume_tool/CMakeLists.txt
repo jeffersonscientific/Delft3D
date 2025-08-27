@@ -29,11 +29,10 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff
                          dfm_api_access)
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          ${oss_dependencies})
 endif(UNIX)
 
@@ -46,17 +45,13 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdf4
                          netcdff
                          dfm_api_access)
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
 
 if(UNIX)
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     message(STATUS "Setting target_compile_definitions in Unix")
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 
@@ -68,17 +63,11 @@ if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
 endif(WIN32)
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/dfm_volume_tool_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
-
-target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     include_directories(${tecplot_path}
@@ -95,7 +84,7 @@ if (WIN32)
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                           "comctl32.lib"
                           "wsock32.lib"
                           "netapi32.lib"
@@ -110,7 +99,7 @@ if (WIN32)
                           "tecio.lib")
 
     message(STATUS "Setting target_compile_definitions in windows")
-    target_compile_definitions(${executable_name} PRIVATE "WIN32;HAVE_DISPLAY=0;HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
+    target_compile_definitions(${executable_name} PRIVATE "WIN32")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
@@ -122,7 +111,7 @@ endif(WIN32)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${sources} ${fortran_version_file})
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/dfm_volume_tool)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/runscripts/run_dfm_volume_tool.${platform_extension}   DESTINATION bin)
 
 # Set post-build step
 set(install_dir ${CMAKE_BINARY_DIR})

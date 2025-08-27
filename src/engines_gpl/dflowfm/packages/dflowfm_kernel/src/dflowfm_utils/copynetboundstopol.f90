@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,8 @@
 !
 !
 module m_copynetboundstopol
+   use m_findel, only: findel
+
    implicit none
 contains
 !> copy the network boundaries to polygon
@@ -41,14 +43,15 @@ contains
 !! NOTE: when using the makecounterclockwise=1 option, the two net node numbers in ZPL may
 !! have been flipped to the last two indices for the polygons that were re-oriented.
    subroutine copynetboundstopol(inpol, needfindcells, makecounterclockwise, setnetstat)
+      use precision, only: dp
 
-      use m_alloc
-      use m_polygon
-      use m_missing
-      use network_data
+      use m_alloc, only: realloc
+      use m_polygon, only: savepol, npl, xpl, ypl, zpl, restorepol, xph, nph, yph, zph, increasepol
+      use m_missing, only: dmiss, jins
+      use network_data, only: numl, kn, lnn, xk, yk, nmk, nod, xzw, lne, yzw, netstat, netstat_cells_dirty
+      use gridoperations, only: findcells
       use m_sferic, only: jsferic
       use geometry_module, only: dbpinpol, pinpok, cross, get_startend
-      use gridoperations
 
       integer, intent(in) :: inpol !< net boundaries in polygon only (1) or not (0)
       integer, intent(in) :: needfindcells !< call findcells (1) or not (0)
@@ -63,8 +66,8 @@ contains
                  jinside
       integer, allocatable :: jalinkvisited(:)
       integer, allocatable :: isegstart(:)
-      double precision :: xkb, ykb, zkb, SL, SL0, sl1, sl2, SM, XCR, YCR, CRP, xcg, ycg
-      double precision, allocatable :: xpn(:), ypn(:), zpn(:)
+      real(kind=dp) :: xkb, ykb, zkb, SL, SL0, sl1, sl2, SM, XCR, YCR, CRP, xcg, ycg
+      real(kind=dp), allocatable :: xpn(:), ypn(:), zpn(:)
 
       if (numL < 1) return ! nothing to do
 

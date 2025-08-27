@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,27 +32,28 @@
 module m_put_ij
    implicit none
 contains
-      subroutine PUTIJ(X, XH, MMAX, NMAX, MNMAX, I1, I2, J1, J2)
-         integer :: i
-         integer :: i1
-         integer :: i2
-         integer :: j
-         integer :: j1
-         integer :: j2
-         integer :: k
-         integer :: mmax
-         integer :: mnmax
-         integer :: nmax
+   subroutine PUTIJ(X, XH, MMAX, NMAX, MNMAX, I1, I2, J1, J2)
+      use precision, only: dp
+      integer :: i
+      integer, intent(in) :: i1
+      integer, intent(in) :: i2
+      integer :: j
+      integer, intent(in) :: j1
+      integer, intent(in) :: j2
+      integer :: k
+      integer, intent(in) :: mmax
+      integer, intent(in) :: mnmax
+      integer, intent(in) :: nmax
 !     EN ZET HEM WEER TERUG
 
-         double precision :: X(MMAX, NMAX), XH(MNMAX)
-         K = 0
-         do J = J1, J2
-            do I = I1, I2
-               K = K + 1
-               X(I, J) = XH(K)
-            end do
+      real(kind=dp) :: X(MMAX, NMAX), XH(MNMAX)
+      K = 0
+      do J = J1, J2
+         do I = I1, I2
+            K = K + 1
+            X(I, J) = XH(K)
          end do
-         return
-      end subroutine PUTIJ
+      end do
+      return
+   end subroutine PUTIJ
 end module m_put_ij

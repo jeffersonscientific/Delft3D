@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,12 +34,13 @@ module m_spline
 contains
 
    subroutine SPLINE(Y, N, Y2)
+      use precision, only: dp
       integer :: i
       integer :: k
       integer :: n
-      double precision :: Y(N), Y2(N)
-      double precision, allocatable :: U(:)
-      double precision :: P
+      real(kind=dp) :: Y(N), Y2(N)
+      real(kind=dp), allocatable :: U(:)
+      real(kind=dp) :: P
 
       allocate (U(N))
 

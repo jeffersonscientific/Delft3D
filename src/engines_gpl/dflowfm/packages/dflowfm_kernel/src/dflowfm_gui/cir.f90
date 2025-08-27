@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,27 +32,27 @@
 
 module m_cir
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine CIR(R)
-         use unstruc_opengl
-         use m_colnow
-         use m_krec5
-         implicit none
-         double precision :: r, Hr
+   subroutine CIR(R)
+      use precision, only: dp
+      use unstruc_opengl, only: inopenglrendering, xlast, ylast
+      use m_krec5, only: krec5
+      implicit none
+      real(kind=dp) :: r, Hr
 
-         if (r == 0d0) return
-         if (InOpenGLRendering) then
-            HR = 0.5d0 * R
-            call KREC5(dble(Xlast), dble(Ylast), HR, HR)
-            !CALL SetPointSize(real(5))
-            !CALL DrawPoint(xlast,ylast)
-            !CALL SetPointSize(real(1))
-         else
-            call IGrCircleRel(real(R))
-         end if
-      end
+      if (r == 0d0) return
+      if (InOpenGLRendering) then
+         HR = 0.5d0 * R
+         call KREC5(dble(Xlast), dble(Ylast), HR, HR)
+         !CALL SetPointSize(real(5))
+         !CALL DrawPoint(xlast,ylast)
+         !CALL SetPointSize(real(1))
+      else
+         call IGrCircleRel(real(R))
+      end if
+   end
 
 end module m_cir

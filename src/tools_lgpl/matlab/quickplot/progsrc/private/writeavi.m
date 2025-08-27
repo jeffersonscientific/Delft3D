@@ -1,4 +1,4 @@
-function varargout=writeavi(varargin)
+function varargout = writeavi(varargin)
 %WRITEAVI MEX interface to Windows AVI functions.
 %
 %   AVIHandle = WRITEAVI('initialize')
@@ -15,7 +15,7 @@ function varargout=writeavi(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -43,7 +43,13 @@ function varargout=writeavi(varargin)
 %   $HeadURL$
 %   $Id$
 
-%   Compile using Visual Studio 6.0:
-%   > mex writeavi.cpp vfw32.lib user32.lib
 %#mex
-error('Missing MEX-file WRITEAVI');
+try
+    if nargout > 0
+        [varargout{1:nargout}] = writeavi_precompiled(varargin{:});
+    else
+        writeavi_precompiled(varargin{:});
+    end
+catch
+    error('Missing MEX-file "writeavi"');
+end

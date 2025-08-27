@@ -4,7 +4,7 @@ function [FI,FileName,Tp,Otherargs]=qp_fmem(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,11 @@ FileName='';
 Tp='';
 FileFromCall=0;
 Otherargs={};
+MergePartitions = 1;
+if ~isempty(varargin) && strcmp(varargin{1},'no_merge')
+    varargin = varargin(2:end);
+    MergePartitions = 0;
+end
 switch cmd
     case {'open','openldb','opennew','openurl'}
         if strcmp(cmd,'opennew') %|| strcmp(cmd,'openldb')
@@ -226,6 +231,8 @@ switch cmd
                     try_next='NOOS time series';
                 case {'.wml'}
                     try_next='WaterML2';
+                case {'.idf'}
+                    try_next = 'iMOD';
                 otherwise
                     if strncmp('hot',fn_,3)
                         try_next='SWAN spectral';
@@ -389,6 +396,9 @@ switch cmd
                         asciicheck(isASCII,REASON)
                         FI=waterml2('open',FileName);
                         Tp=FI.FileType;
+                    case 'iMOD'
+                        FI = imod('open',FileName);
+                        Tp = FI.filetype;
                     case 'ecomsed-binary'
                         FI=ecomsed('open',FileName);
                         if ~isempty(FI)
@@ -429,11 +439,15 @@ switch cmd
                             end
                         end
                     case 'NetCDF'
-                        Opt = get_matching_names(FileName,'_',-2);
-                        if ~isempty(Opt)
-                            if Opt{4}~=0 || Opt{3}~=4
-                                Opt = {};
+                        if MergePartitions
+                            Opt = get_matching_names(FileName,'_',-2);
+                            if ~isempty(Opt)
+                                if Opt{4}~=0 || Opt{3}~=4
+                                    Opt = {};
+                                end
                             end
+                        else
+                            Opt = {};
                         end
                         init_netcdf_settings
                         FI = nc_interpret(FileName,Opt{:});

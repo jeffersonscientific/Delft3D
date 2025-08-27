@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,6 +29,16 @@
 
 !
 !
+
+module m_init_1dinfo
+
+   implicit none
+
+   private
+
+   public :: init_1dinfo
+
+contains
 
    subroutine init_1dinfo()
       use m_flowgeom, only: lnx1D, ln, ndx, lnx1Db
@@ -64,3 +74,5 @@
 
       link1_initialized = .true.
    end subroutine init_1dinfo
+
+end module m_init_1dinfo

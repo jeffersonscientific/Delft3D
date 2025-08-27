@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -99,8 +99,8 @@ contains
 !==============================================================================
 !> tests error handling for input arrays of unequal length
    subroutine test_check_arraysizes
-      use unstruc_messages, only: threshold_abort, LEVEL_FATAL, LEVEL_ERROR
-      use MessageHandling, only: getMaxErrorLevel
+      use unstruc_messages, only: threshold_abort
+      use MessageHandling, only: getMaxErrorLevel, LEVEL_FATAL, LEVEL_ERROR
 
       real(kind=hp) :: p(2) !< total atmospheric pressure [Pa]
       real(kind=hp) :: T(3) !< temperature [Celcius]

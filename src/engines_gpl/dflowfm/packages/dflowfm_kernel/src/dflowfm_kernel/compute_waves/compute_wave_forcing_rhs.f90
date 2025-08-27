@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,22 @@
 !
 !
 
+module m_compute_wave_forcing_rhs
+   use m_xbeachwaves, only: xbeach_waves, xbeach_flow_bc, xbeach_wave_compute_flowforcing2D, xbeach_apply_wave_bc, xbeach_wave_bc, xbeach_wave_compute_flowforcing3D
+   use m_wave_makeplotvars, only: wave_makeplotvars
+   use m_tauwave, only: tauwave
+   use m_setwavmubnd, only: setwavmubnd
+   use m_setwavfu, only: setwavfu
+   use m_waveconst
+
+   implicit none
+
+   private
+
+   public :: compute_wave_forcing_rhs
+
+contains
+
    subroutine compute_wave_forcing_RHS()
       use m_xbeach_data
       use m_waves
@@ -47,14 +63,14 @@
 
       ! Fetch models
       !
-      if (jawave < 3 .and. .not. flowWithoutWaves) then
+      if (jawave < WAVE_SWAN_ONLINE .and. .not. flowWithoutWaves) then
          if (kmx == 0) then
             call tauwave() ! 3D, done in update_verticalprofiles
          end if
       end if
 
       ! SWAN
-      if ((jawave == 3 .or. jawave >= 6) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
          if (kmx == 0) then
             call tauwave() ! 3D, done in update_verticalprofiles
          end if
@@ -63,7 +79,7 @@
       end if
       !
       ! Surfbeat model
-      if (jawave == 4 .and. jajre == 1 .and. nwbnd > 0 .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. nwbnd > 0 .and. .not. flowWithoutWaves) then
          if (swave == 1) then
             call xbeach_wave_bc()
             call xbeach_apply_wave_bc()
@@ -89,14 +105,14 @@
       end if
       !
       ! Uniform wave field
-      if (jawave == 5 .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flowWithoutWaves) then
          if (kmx == 0) then
             call tauwave()
          end if
       end if
       !
       ! this part is for online interacter visualisation
-      if (jaGUI == 1 .and. jawave > 2 .and. .not. flowWithoutWaves) then
+      if (jaGUI == 1 .and. jawave > WAVE_FETCH_YOUNG .and. .not. flowWithoutWaves) then
          if (ntek > 0) then
             if (mod(int(dnt), ntek) == 0) then
                call wave_makeplotvars()
@@ -107,3 +123,5 @@
 1234  continue
       return
    end subroutine compute_wave_forcing_RHS
+
+end module m_compute_wave_forcing_rhs

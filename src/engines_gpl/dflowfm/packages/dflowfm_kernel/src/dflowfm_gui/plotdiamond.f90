@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,25 +32,26 @@
 
 module m_plotdiamond
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine plotDiamond(x, y)
-         use m_wearelt
-         use m_movabs
-         use m_lnabs
+   subroutine plotDiamond(x, y)
+      use precision, only: dp
+      use m_wearelt, only: rcir
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
-         double precision :: x
-         double precision :: y
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 
-         call MOVABS(X + .5 * RCIR, Y)
-         call LNABS(X, Y + .5 * RCIR)
-         call LNABS(X - .5 * RCIR, Y)
-         call LNABS(X, Y - .5 * RCIR)
-         call LNABS(X + .5 * RCIR, Y)
+      call MOVABS(X + .5 * RCIR, Y)
+      call LNABS(X, Y + .5 * RCIR)
+      call LNABS(X - .5 * RCIR, Y)
+      call LNABS(X, Y - .5 * RCIR)
+      call LNABS(X + .5 * RCIR, Y)
 
-         return
-      end
+      return
+   end
 
 end module m_plotdiamond

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,17 +30,19 @@
 !
 !
 module m_dproject
+   use m_inworld, only: inworld
+
    implicit none
 contains
    subroutine dPROJECT(X8, Y8, XX4, YY4, MODE)
-      use m_sferic
-      use m_wearelt
-      use m_sferzoom
+      use precision, only: dp
+      use m_sferic, only: jsfertek, dg2rd, rd2dg
+      use m_sferzoom, only: y0, x0, fac
 
-      double precision :: x8, y8, xx4, yy4
+      real(kind=dp) :: x8, y8, xx4, yy4
       integer :: mode
-      double precision :: X, Y, XX, YY, SX, CX, SY, CY, SY0, CY0, RR, C, SC, CC, RN
-      double precision, save :: EPS = 1.d-20
+      real(kind=dp) :: X, Y, XX, YY, SX, CX, SY, CY, SY0, CY0, RR, C, SC, CC, RN
+      real(kind=dp), save :: EPS = 1.d-20
       X = X8
       Y = Y8
       if (JSFERTEK == 0) then ! Just Transfer

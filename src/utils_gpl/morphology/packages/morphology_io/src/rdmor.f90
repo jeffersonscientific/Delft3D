@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -637,7 +637,7 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
             return
         end if
     endselect
-    !
+    
 	   
 end subroutine read_morphology_properties
 
@@ -694,6 +694,8 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
     use table_handles
     use handles
     use message_module
+    use dfparall, only: parll
+    
     implicit none
 !    
     type(tree_data)               , pointer, intent(inout)  :: mor_ptr
@@ -709,6 +711,7 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
 !    
     character(256)                                          :: errmsg
     character(80)                                           :: bndname
+    character(256)                                          :: txtput1
     logical                                                 :: found
     integer                                                 :: i, j
     type(tree_data)                            , pointer    :: morbound_ptr
@@ -746,10 +749,16 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
             end if
         enddo
         if (.not.found) then
-            errmsg = 'Unknown boundary "'//trim(bndname)//'" in '//trim(filmor)
-            call write_error(errmsg, unit=lundia)
-            error = .true.
-            return
+            if (parll) then
+               txtput1 = 'Boundary "'//trim(bndname)//'" in '//trim(filmor)// ' not found. As this is a parallel run, it must be in another partition.'
+               write (lundia, '(a)') txtput1
+               cycle
+            else    
+               errmsg = 'Unknown boundary "'//trim(bndname)//'" in '//trim(filmor)
+               call write_error(errmsg, unit=lundia)
+               error = .true.
+               return
+            endif
         end if
         !
         ! Read bed boundary condition for open boundary
@@ -840,6 +849,17 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
         error = .true.
         return
     end if
+    select case (moroutput%transptype)
+    case (0)
+        moroutput%unit_sediment_amount = 'kg'
+        moroutput%unit_transport_rate = 'kg s-1 m-1'
+        moroutput%unit_transport_per_crs  = 'kg s-1'
+    case (1, 2)
+        moroutput%unit_sediment_amount = 'm3'
+        moroutput%unit_transport_rate = 'm3 s-1 m-1'
+        moroutput%unit_transport_per_crs  = 'm3 s-1'
+    end select
+    !
     call prop_get(mor_ptr, 'Output', 'BedTranspAtFlux'             , moroutput%sbuuvv)
     call prop_get(mor_ptr, 'Output', 'SuspTranspAtFlux'            , moroutput%ssuuvv)
     call prop_get(mor_ptr, 'Output', 'BedTranspDueToCurrentsAtZeta', moroutput%sbcuv)
@@ -849,8 +869,10 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     call prop_get(mor_ptr, 'Output', 'SuspTranspDueToWavesAtZeta'  , moroutput%sswuv)
     call prop_get(mor_ptr, 'Output', 'SuspTranspDueToCurrentsAtZeta'  , moroutput%sscuv)
     call prop_get(mor_ptr, 'Output', 'SuspTranspDueToWavesAtFlux'  , moroutput%sswuuvv)
+    call prop_get(mor_ptr, 'Output', 'TotalTransport'              , moroutput%sxytot)
     call prop_get(mor_ptr, 'Output', 'NearBedRefConcentration'     , moroutput%rca)
     call prop_get(mor_ptr, 'Output', 'EquilibriumConcentration'    , moroutput%rsedeq)
+    call prop_get(mor_ptr, 'Output', 'Concentration'               , moroutput%sedconc)
     call prop_get(mor_ptr, 'Output', 'NearBedTranspCorrAtFlux'     , moroutput%suvcor)
     call prop_get(mor_ptr, 'Output', 'SourceSinkTerms'             , moroutput%sourcesink)
     call prop_get(mor_ptr, 'Output', 'ReferenceHeight'             , moroutput%aks)
@@ -875,11 +897,18 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     !
     call prop_get(mor_ptr, 'Output', 'CumNetSedimentationFlux'     , moroutput%dmsedcum)
     call prop_get(mor_ptr, 'Output', 'BedLayerSedimentMass'        , moroutput%msed)
+    moroutput%bodsed = moroutput%msed
     call prop_get(mor_ptr, 'Output', 'BedLayerVolumeFractions'     , moroutput%lyrfrac)
+    call prop_get(mor_ptr, 'Output', 'BedLayerThickness'           , moroutput%dpsed)
+    moroutput%thlyr = moroutput%dpsed
     call prop_get(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
     call prop_get(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
+    call prop_get(mor_ptr, 'Output', 'BedLayerPreload'             , moroutput%preload)
     !
+    call prop_get(mor_ptr, 'Output', 'TimeAveragedTransport'    , moroutput%sxyavg)
     call prop_get(mor_ptr, 'Output', 'AverageAtEachOutputTime'     , moroutput%cumavg)
+    !
+    call prop_get(mor_ptr, 'Output', 'Morfac'                      , moroutput%morfac)
     !
     call prop_get(mor_ptr, 'Output', 'MainChannelAveragedBedLevel' , moroutput%blave)
     !
@@ -887,7 +916,10 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     !
     call prop_get(mor_ptr, 'Output', 'MainChannelWidthAtFlux'      , moroutput%wumor)
     !
+    call prop_get(mor_ptr, 'Output', 'ALDiff'                      , moroutput%aldiff)
+    !    
     call prop_get(mor_ptr,         'Output', 'MorStatsOutputInterval'      , moroutput%avgintv, 3, exist)
+
     if (exist) then
         moroutput%morstats = .true.    ! only used in FM, separate _sed.nc file
     end if
@@ -1377,13 +1409,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: avaltime
     real(fp)                               , pointer :: hswitch
     real(fp)                               , pointer :: dzmaxdune
-    logical                                , pointer :: bermslopetransport
-    logical                                , pointer :: bermslopebed
-    logical                                , pointer :: bermslopesus
-    real(fp)                               , pointer :: bermslope
-    real(fp)                               , pointer :: bermslopefac
-    real(fp)                               , pointer :: bermslopegamma
-    real(fp)                               , pointer :: bermslopedepth
     real(fp)                               , pointer :: suscorfac
     real(fp)              , dimension(:)   , pointer :: xx
     logical                                , pointer :: bedupd
@@ -1529,13 +1554,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     suscorfac           => morpar%suscorfac
     upwindbedload       => mornum%upwindbedload
     pure1d_mor          => mornum%pure1d
-    bermslopetransport  => morpar%bermslopetransport
-    bermslopebed        => morpar%bermslopebed
-    bermslopesus        => morpar%bermslopesus
-    bermslope           => morpar%bermslope
-    bermslopefac        => morpar%bermslopefac
-    bermslopegamma      => morpar%bermslopegamma
-    bermslopedepth      => morpar%bermslopedepth
     !
     ! output values to file
     !

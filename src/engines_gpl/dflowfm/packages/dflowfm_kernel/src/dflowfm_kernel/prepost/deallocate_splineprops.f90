@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,26 +33,26 @@ module m_deallocate_spline_props
    implicit none
 contains
 !> deallocate splineprops array
-subroutine deallocate_splineprops()
-   use m_spline2curvi
+   subroutine deallocate_splineprops()
+      use m_spline2curvi, only: splineprops
 
-   integer :: ispline
+      integer :: ispline
 
-   if (.not. allocated(splineprops)) return
+      if (.not. allocated(splineprops)) return
 
-   do ispline = 1, ubound(splineprops, 1)
-      if (allocated(splineprops(ispline)%ics)) deallocate (splineprops(ispline)%ics)
-      if (allocated(splineprops(ispline)%Lorient)) deallocate (splineprops(ispline)%Lorient)
-      if (allocated(splineprops(ispline)%t)) deallocate (splineprops(ispline)%t)
-      if (allocated(splineprops(ispline)%cosphi)) deallocate (splineprops(ispline)%cosphi)
-      if (allocated(splineprops(ispline)%hL)) deallocate (splineprops(ispline)%hL)
-      if (allocated(splineprops(ispline)%hR)) deallocate (splineprops(ispline)%hR)
-      if (allocated(splineprops(ispline)%NsubL)) deallocate (splineprops(ispline)%NsubL)
-      if (allocated(splineprops(ispline)%NsubR)) deallocate (splineprops(ispline)%NsubR)
-   end do
+      do ispline = 1, ubound(splineprops, 1)
+         if (allocated(splineprops(ispline)%ics)) deallocate (splineprops(ispline)%ics)
+         if (allocated(splineprops(ispline)%Lorient)) deallocate (splineprops(ispline)%Lorient)
+         if (allocated(splineprops(ispline)%t)) deallocate (splineprops(ispline)%t)
+         if (allocated(splineprops(ispline)%cosphi)) deallocate (splineprops(ispline)%cosphi)
+         if (allocated(splineprops(ispline)%hL)) deallocate (splineprops(ispline)%hL)
+         if (allocated(splineprops(ispline)%hR)) deallocate (splineprops(ispline)%hR)
+         if (allocated(splineprops(ispline)%NsubL)) deallocate (splineprops(ispline)%NsubL)
+         if (allocated(splineprops(ispline)%NsubR)) deallocate (splineprops(ispline)%NsubR)
+      end do
 
-   deallocate (splineprops)
+      deallocate (splineprops)
 
-   return
-end subroutine deallocate_splineprops
+      return
+   end subroutine deallocate_splineprops
 end module m_deallocate_spline_props

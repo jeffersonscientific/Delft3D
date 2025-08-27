@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,19 +33,19 @@ module m_plot_dots
    implicit none
 contains
 !>    plot dots
-      subroutine plotdots()
-         use m_plotdots
-         use unstruc_display, only: ndrawdots
-         use m_cirr
+   subroutine plotdots()
+      use m_plotdots
+      use unstruc_display, only: ndrawdots
+      use m_cirr
 
-         integer :: i
+      integer :: i
 
-         if (Ndrawdots /= 2) return
+      if (Ndrawdots /= 2) return
 
-         do i = 1, numdots
-            call cirr(xdots(i), ydots(i), colnumber(i))
-         end do
+      do i = 1, numdots
+         call cirr(xdots(i), ydots(i), colnumber(i))
+      end do
 
-         return
-      end subroutine
+      return
+   end subroutine
 end module m_plot_dots

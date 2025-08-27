@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,19 +32,19 @@
 
 module m_linewidth
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine LINEWIDTH(iW)
-         use unstruc_opengl, only: InOpenGLRendering, SetLineWidth
+   subroutine LINEWIDTH(iW)
+      use unstruc_opengl, only: InOpenGLRendering, SetLineWidth
 
-         integer :: iw
-         if (InOpenGLRendering) then
-            call SetLineWidth(iw)
-         else
-            call IGRLINEWIDTH(iw, iw)
-         end if
-      end subroutine
+      integer :: iw
+      if (InOpenGLRendering) then
+         call SetLineWidth(iw)
+      else
+         call IGRLINEWIDTH(iw, iw)
+      end if
+   end subroutine
 
 end module m_linewidth

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,22 +32,23 @@
 
 module m_dhtext
 
-implicit none
+   implicit none
 
 contains
 
-    subroutine DHTEXT(VAL, XD, YD, ZD)
-       use m_htext
-       use m_three_two
+   subroutine DHTEXT(VAL, XD, YD, ZD)
+      use precision, only: dp
+      use m_htext, only: htext
+      use m_three_two, only: drietwee
 
-       double precision :: val
-       double precision :: x
-       double precision :: y
-       double precision :: z
-       double precision XD, YD, ZD
-       call DRIETWEE(XD, YD, ZD, X, Y, Z)
-       call HTEXT(VAL, X, Y)
-       return
-    end
+      real(kind=dp) :: val
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: z
+      real(kind=dp) XD, YD, ZD
+      call DRIETWEE(XD, YD, ZD, X, Y, Z)
+      call HTEXT(VAL, X, Y)
+      return
+   end
 
 end module m_dhtext

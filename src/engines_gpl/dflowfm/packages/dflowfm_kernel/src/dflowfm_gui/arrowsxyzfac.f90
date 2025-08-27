@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,23 +32,24 @@
 
 module m_arrowsxyzfac
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, zfac)
-         use m_movabs
-         use m_lnabs
-         implicit none
-         double precision :: X0, Y0, UX, UY, VFAC, zfac
+   subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, zfac)
+      use precision, only: dp
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      implicit none
+      real(kind=dp) :: X0, Y0, UX, UY, VFAC, zfac
 
-         if (UX == 0 .and. UY == 0) return
+      if (UX == 0 .and. UY == 0) return
 
-         uy = uy
+      uy = uy
 
-         call MOVABS(X0, Y0)
-         call LNABS(x0 + ux * vfac, y0 + uy * vfac * zfac)
-         return
-      end
+      call MOVABS(X0, Y0)
+      call LNABS(x0 + ux * vfac, y0 + uy * vfac * zfac)
+      return
+   end
 
 end module m_arrowsxyzfac

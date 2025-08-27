@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,18 +30,29 @@
 !
 !
 
- subroutine flow_setstarttime() ! set flow starttime
-    use m_flowtimes
-    implicit none
+module m_flow_setstarttime
 
-    time_user = tstart_user
-    time0 = tstart_user
-    time1 = tstart_user
-    dts = dt_init
-    dti = 1d0 / dts
-    dtprev = dts
-    dnt = 0
-    dnt_user = 1
-    time_split0 = tstart_user
-    time_split = tstart_user
- end subroutine
+   implicit none
+
+   private
+
+   public :: flow_setstarttime
+
+contains
+
+   subroutine flow_setstarttime() ! set flow starttime
+      use m_flowtimes, only: time_user, tstart_user, time0, time1, dts, dt_init, dti, dtprev, dnt, dnt_user, time_split0, time_split
+
+      time_user = tstart_user
+      time0 = tstart_user
+      time1 = tstart_user
+      dts = dt_init
+      dti = 1d0 / dts
+      dtprev = dts
+      dnt = 0
+      dnt_user = 1
+      time_split0 = tstart_user
+      time_split = tstart_user
+   end subroutine
+
+end module m_flow_setstarttime

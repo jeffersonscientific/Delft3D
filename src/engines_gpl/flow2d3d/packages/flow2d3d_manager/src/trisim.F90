@@ -36,7 +36,7 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
                  & initonly, gdpC)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -150,8 +150,8 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
        return
     endif
     !
-    call gdp_dealloc(gdp)
-    deallocate(gdp, stat=ierr)
+    !call gdp_dealloc(gdp)
+    !deallocate(gdp, stat=ierr)
     !
     ! Finish using a semaphore
     ! Related psemnefis is in tricom.f90
@@ -228,8 +228,8 @@ integer function trisim_finalize(gdp)
        return
     endif
     !
-    call gdp_dealloc(gdp)
-    deallocate(gdp, stat=ierr)
+    !call gdp_dealloc(gdp)
+    !deallocate(gdp, stat=ierr)
     !
     ! Finish using a semaphore
     ! Related psemnefis is in tricom.f90

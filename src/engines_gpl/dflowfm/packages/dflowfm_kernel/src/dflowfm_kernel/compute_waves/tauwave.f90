@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,34 +30,46 @@
 !
 !
 
+module m_tauwave
+
+   implicit none
+
+   private
+
+   public :: tauwave
+
+contains
+
    subroutine tauwave()
+      use precision, only: dp
+      use m_getymxpar, only: getymxpar
       use m_sferic
       use m_flowparameters
       use m_flow, only: rhomean, ag, hu, jaconveyance2D, u1, v, frcu, ifrcutp, z0urou, cfuhi, ifrctypuni, frcuni, taubxu, taubu
       use m_flowgeom
-      use m_physcoef, only: rhomean, ee, sag, vonkar
+      use m_physcoef, only: rhomean, sag, vonkar
       use m_waves
       use m_bedform, only: bfmpar
       use m_vegetation
       use m_trachy, only: trachy_resistance
-      use unstruc_messages
       use unstruc_display
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
+      use mathconsts, only: ee
 
       implicit none
 
       logical :: javegczu
       integer :: k1, k2, L
-      double precision :: phivr
-      double precision :: fw, astar, astarc, tauwav, taucur, cdrag, tpu, z0, uorbu, fsqrtt
-      double precision :: cz, uuu, vvv, umod, umodsq, abscos, uorbhs, waveps
-      double precision :: ymxpar, yparL
-      double precision :: ust, ac1, ac2, rhoL, csw, snw
-      double precision :: rz, cf, cwall, huL
-      double precision :: hrmsu, rlabdau, rr, umax, t1, u11, a11, raih, rmax, uon, uoff, uwbih
-      double precision :: rksru, rksmru, gamma, ksc, uratio, ka, ca
-      double precision :: cosk1, cosk2, sink1, sink2
-      double precision :: tauwci, cphi, sphi
+      real(kind=dp) :: phivr
+      real(kind=dp) :: fw, astar, astarc, tauwav, taucur, cdrag, tpu, z0, uorbu, fsqrtt
+      real(kind=dp) :: cz, uuu, vvv, umod, umodsq, abscos, uorbhs, waveps
+      real(kind=dp) :: ymxpar, yparL
+      real(kind=dp) :: ust, ac1, ac2, rhoL, csw, snw
+      real(kind=dp) :: rz, cf, cwall, huL
+      real(kind=dp) :: hrmsu, rlabdau, rr, umax, t1, u11, a11, raih, rmax, uon, uoff, uwbih
+      real(kind=dp) :: rksru, rksmru, gamma, ksc, uratio, ka, ca
+      real(kind=dp) :: cosk1, cosk2, sink1, sink2
+      real(kind=dp) :: tauwci, cphi, sphi
 
       waveps = 1d-4 ! see taubot
       astarc = 30.*pi**2 ! critical value for astar
@@ -112,9 +124,9 @@
          ! get current related roughness height
          !
          if (frcu(L) > 0d0) then
-            call getcz(huL, dble(frcu(L)), ifrcutp(L), cz, L)
+            cz = get_chezy(huL, dble(frcu(L)), u1(L), v(L), ifrcutp(L))
          else
-            call getcz(huL, frcuni, ifrctypuni, cz, L)
+            cz = get_chezy(huL, frcuni, u1(L), v(L), ifrctypuni)
          end if
          z0 = huL / (ee * (exp(vonkar * cz / sag) - 1d0))
 
@@ -160,7 +172,7 @@
             tauwci = yparL * (taucur + tauwav) ! mean shear stress
             taubu(L) = tauwci / umod * (u1(L) + ustokes(L)) ! in D3D, stresses for glm and stokes drift are added. This gives correct magnitude, but wrong stress direction; fixed at writing
             !
-            if (jawave > 0) then
+            if (jawave > NO_WAVES) then
                if (modind < 9) then
                   cfwavhi(L) = tauwci / umod / umod / rhoL / huL ! combined w+c friction factor for furu 2d
                elseif (modind == 9) then
@@ -173,7 +185,7 @@
                   u11 = umax / sqrt(ag * huL)
                   a11 = -0.0049d0 * t1**2 - 0.069d0 * t1 + 0.2911d0
                   raih = max(0.5d0, -5.25d0 - 6.1d0 * tanh(a11 * u11 - 1.76d0))
-                  rmax = max(0.62d0, min(0.75, -2.5d0 * huL / max(rlabdau, 1.0d-20) + 0.85d0))
+                  rmax = max(0.62d0, min(0.75d0, -2.5d0 * huL / max(rlabdau, 1.0d-20) + 0.85d0))
                   uon = umax * (0.5d0 + (rmax - 0.5d0) * tanh((raih - 0.5d0) / (rmax - 0.5d0)))
                   uoff = umax - uon
                   uon = max(1.0d-5, uon)
@@ -230,3 +242,5 @@
       end do
       !
    end subroutine tauwave
+
+end module m_tauwave

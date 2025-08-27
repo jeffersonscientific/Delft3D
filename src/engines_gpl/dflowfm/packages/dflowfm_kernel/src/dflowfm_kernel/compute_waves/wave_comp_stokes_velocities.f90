@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,24 +30,35 @@
 !
 !
 
+module m_wave_comp_stokes_velocities
+
+   implicit none
+
+   private
+
+   public :: wave_comp_stokes_velocities
+
+contains
+
    subroutine wave_comp_stokes_velocities()
-      use m_flowparameters
-      use m_flowgeom
+      use precision, only: dp
+      use m_flowparameters, only: jawavestokes, no_stokes_drift, epshu
+      use m_flowgeom, only: ndx, lnxi, ln, acl, csu, snu, lnx
+      use m_waves, only: ustokes, vstokes, gammax, mxwav, mywav, hwav
+      use m_partitioninfo, only: jampi, update_ghosts, itype_sall, itype_u
       use m_flow, only: hu, hs
       use m_physcoef, only: sag
-      use m_waves
-      use m_sferic
-      use m_partitioninfo
+
       implicit none
 
-      double precision :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
-      double precision :: gammal, hwavL, hstokes, huL, deltahmin
-      double precision, allocatable :: mx(:), my(:)
+      real(kind=dp) :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
+      real(kind=dp) :: gammal, hwavL, hstokes, huL, deltahmin
+      real(kind=dp), allocatable :: mx(:), my(:)
 
       integer :: k1, k2, L, k
       integer :: ierror ! error (1) or not (0)
 
-      double precision :: ac1, ac2
+      real(kind=dp) :: ac1, ac2
 
       ierror = 1
 
@@ -56,7 +67,7 @@
       vstokes = 0d0
 
       ! switch off stokes drifts
-      if (jawavestokes == 0) then
+      if (jawavestokes == NO_STOKES_DRIFT) then
          return
       end if
 
@@ -86,7 +97,7 @@
             ac1 = acl(L); ac2 = 1d0 - ac1
             !
             ! civilized behaviour in shallow surf zone
-            huL = max(hs(k1), hs(k2))
+            huL = max(hs(k1), hs(k2), epshu)
             hwavL = 0.5d0 * (hwav(k1) + hwav(k2))
             gammal = hwavL / huL
             if (gammal > 1.d0) then
@@ -150,3 +161,5 @@
 1234  continue
       return
    end subroutine wave_comp_stokes_velocities
+
+end module m_wave_comp_stokes_velocities

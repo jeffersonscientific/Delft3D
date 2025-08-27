@@ -51,7 +51,7 @@ function [data,Slice] = vslice(data,v_slice,isel)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -146,6 +146,9 @@ switch v_slice
                     case 'NODE'
                         data.X = data.X(isel,:);
                         data.Y = data.Y(isel,:);
+                        if isfield(data,'Z')
+                            data.Z = data.Z(isel,:);
+                        end
                         data = rmfield(data,'EdgeNodeConnect');
                     case 'EDGE'
                         iedge = isel;

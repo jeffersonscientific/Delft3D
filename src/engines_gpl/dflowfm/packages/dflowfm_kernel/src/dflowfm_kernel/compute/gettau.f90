@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,8 @@
 !
 !
 module m_get_tau
+   use m_swart, only: swart
+
    implicit none
 
    private
@@ -42,10 +44,11 @@ module m_get_tau
 
 contains
    subroutine gettau(n, taucurc, czc, jawaveswartdelwaq_par)
+      use precision, only: dp
       !
       ! Parameters
       integer :: n
-      double precision :: taucurc, czc, ustw2
+      real(kind=dp) :: taucurc, czc, ustw2
       integer :: jawaveswartdelwaq_par
       !
       ! Body
@@ -53,21 +56,22 @@ contains
    end subroutine gettau
 
    subroutine gettau2(n, taucurc, czc, ustw2, jawaveswartdelwaq_par)
-      use m_flowgeom
-      use m_flow
-      use m_waves
-      use m_get_cz
+      use precision, only: dp
+      use m_flowgeom, only: nd, dx, wave_waq_shear_stress_hyd, wave_waq_shear_stress_linear_sum, wave_waq_shear_stress_max_shear_stress
+      use m_flow, only: frcu, hu, u1, v, ifrcutp, ag, au, ustb, taubxu, z0ucur, epsz0, kmx, ucx, ucy, rhomean
+      use m_waves, only: twav, uorb, ftauw
+      use m_get_chezy, only: get_chezy
       !
       ! Parameters
       integer, intent(in) :: n !< Flow node number
-      double precision, intent(out) :: taucurc !< Bed shear stress from current or current plus wave
-      double precision, intent(out) :: czc !< Chezy at flow node (taucurrent)
-      double precision, intent(out) :: ustw2 !< Ustarwave Swart (if Jawaveswartdelwaq == 1)
+      real(kind=dp), intent(out) :: taucurc !< Bed shear stress from current or current plus wave
+      real(kind=dp), intent(out) :: czc !< Chezy at flow node (taucurrent)
+      real(kind=dp), intent(out) :: ustw2 !< Ustarwave Swart (if Jawaveswartdelwaq == 1)
       integer :: jawaveswartdelwaq_par !< Overwrite the global jawaveswartdelwaq
       !
       ! Local variables
       integer :: LL, nn !< Local link counters
-      double precision :: cf, cfn, cz, frcn, ar, wa, ust, ust2, fw, z00 !< Local intermediate variables
+      real(kind=dp) :: cf, cfn, cz, frcn, ar, wa, ust, ust2, fw, z00 !< Local intermediate variables
       !
       ! Body
       ustw2 = 0d0
@@ -81,7 +85,7 @@ contains
          LL = abs(nd(n)%ln(nn))
          frcn = frcu(LL)
          if (frcn > 0d0 .and. hu(LL) > 0d0) then
-            call getcz(hu(LL), frcn, ifrcutp(LL), cz, LL)
+            cz = get_chezy(hu(LL), frcn, u1(LL), v(LL), ifrcutp(LL))
             cf = ag / (cz * cz)
             ar = au(LL) * dx(LL)
             wa = wa + ar ! area  weigthed
@@ -113,15 +117,15 @@ contains
          ust2 = ust * ust
       end if
       !
-      if (jawaveswartdelwaq_par == 0) then
+      if (jawaveswartdelwaq_par == WAVE_WAQ_SHEAR_STRESS_HYD) then
          taucurc = rhomean * ust2
-      else if (jawaveSwartDelwaq_par == 1) then
+      else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
          if (twav(n) > 1d-2) then
             call Swart(twav(n), uorb(n), z00, fw, ustw2)
             ust2 = ust2 + ftauw * ustw2
          end if
          taucurc = rhomean * ust2
-      else if (jawaveSwartDelwaq_par == 2) then
+      else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_MAX_SHEAR_STRESS) then
          taucurc = ust ! area averaged taubxu
       end if
    end subroutine gettau2

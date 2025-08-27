@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,19 @@
 !
 !
 module m_zeronet
-     implicit none
+   implicit none
 contains
-  subroutine ZERONET()
-     use m_netw
+   subroutine ZERONET()
+      use m_netw
 
-     integer :: nl
-     integer :: numtotr
-     XK = 0; YK = 0; ZK = 0
-     KN = 0; NL = 0; NMK = 0 ! S1=0
-     KC = 0; LC = 0
-     NUMK = 0
-     NUML = 0
-     NUMTOTR = 0
-     return
-  end subroutine ZERONET
+      integer :: nl
+      integer :: numtotr
+      XK = 0; YK = 0; ZK = 0
+      KN = 0; NL = 0; NMK = 0 ! S1=0
+      KC = 0; LC = 0
+      NUMK = 0
+      NUML = 0
+      NUMTOTR = 0
+      return
+   end subroutine ZERONET
 end module m_zeronet

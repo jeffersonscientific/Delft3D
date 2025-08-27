@@ -1,6 +1,6 @@
 /*----- LGPL --------------------------------------------------------------------
  *
- *   Copyright (C) 2011-2024 Stichting Deltares.
+ *   Copyright (C) 2011-2025 Stichting Deltares.
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   int i,NElm,NInc, *J,ii;
   int ndims, ndims1, d;
-  const int *dimarray, *dimarray1;
+  const mwSize *dimarray, *dimarray1;
   int mrows,ncols;
   double *pthresh,thresh,*I,*x,*y,*z,dist,dx,dy,dz;
   bool include_i;

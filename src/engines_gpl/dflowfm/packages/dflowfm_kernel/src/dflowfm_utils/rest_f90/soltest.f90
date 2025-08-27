@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,18 +30,31 @@
 !
 !
 
+module m_soltest
+
+   implicit none
+
+   private
+
+   public :: soltest
+
+contains
+
    !> test iterative solver (as "mpitest")
    subroutine soltest(iCFL, icgsolver_loc, maxsubmatvecs, iepsdiff, iepscg)
-      use m_partitioninfo
-      use m_timer
-      use unstruc_messages
-      use m_flowgeom
+      use m_make_matrix, only: make_matrix
+      use m_solve_guus, only: solve_matrix
+      use precision, only: dp
+      use m_update_matrix, only: update_matrix
+      use m_partitioninfo, only: jampi, jaoverlap, update_ghosts, itype_sall, idomain, my_rank, nghostlist_sall, ndomains, ighostlist_sall
+      use m_timer, only: jatimer, starttimer, itotal, stoptimer, gettimer, itotalsol, impicomm
+      use m_flowgeom, only: jarenumber, ndx, ndxi, nd
+      use m_flowparameters, only: icgsolver, epshu
+      use m_reduce, only: epsdiff, epscg, maxmatvecs, ccrsav, ccr
+      use m_flow, only: hu, realloc, s1, itsol
       use network_data, only: xzw
-      use m_flowparameters
-      use m_reduce
-      use m_flow
-      use m_alloc
-      implicit none
+      use m_flow_modelinit, only: flow_modelinit
+      use m_solve_guus, only: pack_matrix
 
       integer, intent(in) :: iCFL !< wave-based Courant number
       integer, intent(in) :: icgsolver_loc ! icgsolver (if > 0)
@@ -49,17 +62,15 @@
       integer, intent(in) :: iepsdiff ! -10log(tolerance in Schwarz iterations) (if > 0)
       integer, intent(in) :: iepscg ! -10log(tolerance in inner iterations) (if > 0)
 
-      double precision, dimension(:), allocatable :: sex ! exact solution at cell centers
-      double precision, dimension(:), allocatable :: dmask ! used for masking ghost cells that are not being updated
+      real(kind=dp), dimension(:), allocatable :: sex ! exact solution at cell centers
+      real(kind=dp), dimension(:), allocatable :: dmask ! used for masking ghost cells that are not being updated
 
-      double precision :: CFL
-      double precision :: diffmax
+      real(kind=dp) :: CFL
+      real(kind=dp) :: diffmax
 
       integer :: NRUNS
       integer :: i, ii, irun
       integer :: ierror
-
-      integer, external :: flow_modelinit
 
       jarenumber = 0
       CFL = 10d0
@@ -215,17 +226,17 @@
          write (6, '(a,E9.2,a,E9.2)') ' WC-time solver   [s]: ', gettimer(1, ITOTALSOL), ' CPU-time solver   [s]: ', gettimer(0, ITOTALSOL)
          write (6, '(a,E9.2,a,E9.2)') ' WC-time MPI comm [s]: ', gettimer(1, IMPICOMM), ' CPU-time MPI comm [s]: ', gettimer(0, IMPICOMM)
       end if
-!         call mpi_barrier(DFM_COMM_DFMWORLD,ierr)
-
-!      call writemesg('Wallclock times')
-!      call printall(numt, t(3,:), tnams)
-!      call writemesg('CPU times')
-!      call printall(numt, tcpu(3,:), tnams)
 
 1234  continue
 
-      if (allocated(sex)) deallocate (sex)
-      if (allocated(dmask)) deallocate (dmask)
+      if (allocated(sex)) then
+         deallocate (sex)
+      end if
+      if (allocated(dmask)) then
+         deallocate (dmask)
+      end if
 
       return
    end subroutine soltest
+
+end module m_soltest

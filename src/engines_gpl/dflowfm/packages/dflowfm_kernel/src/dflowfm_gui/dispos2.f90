@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,28 +32,29 @@
 
 module m_dispos2
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DISPOS2(X, Y)
-         use m_devices, only: iws
-         use m_disfor
-         use m_ktext
-         use m_disdis
+   subroutine DISPOS2(X, Y)
+      use precision, only: dp
+      use m_devices, only: iws
+      use m_disfor, only: xyform
+      use m_ktext, only: ktext
+      use m_disdis, only: disdis
 
-         double precision :: x
-         double precision :: y
-         character POSITI * 25
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      character POSITI * 25
 
-         POSITI = 'X,Y:         ,         '
-         write (POSITI(5:14), xyform) X
-         write (POSITI(16:25), xyform) Y
+      POSITI = 'X,Y:         ,         '
+      write (POSITI(5:14), xyform) X
+      write (POSITI(16:25), xyform) Y
 
-         call KTEXT(POSITI, IWS - 24, 2, 15)
-         call DISDIS()
+      call KTEXT(POSITI, IWS - 24, 2, 15)
+      call DISDIS()
 
-         return
-      end
+      return
+   end
 
 end module m_dispos2

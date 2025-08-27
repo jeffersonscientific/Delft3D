@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,16 @@
 !
 !
 
+module m_fm_red_soursin
+
+   implicit none
+
+   private
+
+   public :: fm_red_soursin
+
+contains
+
    subroutine fm_red_soursin()
       !
    !!--description-----------------------------------------------------------------
@@ -49,8 +59,6 @@
       use m_flowgeom
       use m_fm_erosed
       use m_get_kbot_ktop
-      !
-      implicit none
       !
       ! Local parameters
       !
@@ -170,3 +178,5 @@
       end if
       !
    end subroutine fm_red_soursin
+
+end module m_fm_red_soursin

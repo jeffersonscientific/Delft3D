@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,8 +31,47 @@
 module fm_external_forcings_utils
    use precision_basics, only: hp
    implicit none
+   private
+   public :: split_qid
+   public :: get_tracername
+   public :: get_sedfracname
+   public :: get_constituent_name
 
 contains
+
+   !> Split quantity id (qid) into base qid and specific qid.
+   !! The base qid is the part of the qid that is common for all tracers of the same type.
+   !! The specific qid is the part of the qid that is specific for a certain tracer.
+   subroutine split_qid(qid, qid_base, qid_specific)
+      use m_fm_wq_processes_sub, only: get_waqinputname
+      use mass_balance_areas_routines, only: get_mbainputname
+
+      character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
+      character(len=*), intent(out) :: qid_base !< The base quantity name, e.g., 'tracerbnd'.
+      character(len=*), intent(out) :: qid_specific !< The specific quantity name, e.g., 'fluor'.
+
+      call get_tracername(qid, qid_specific, qid_base)
+      ! As soon as the qid is different from the base qid, the qid is split and this routine is finished.
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_sedfracname(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_waqinputname(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_mbainputname(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+      call get_constituent_name(qid, qid_specific, qid_base)
+      if (qid_base /= qid) then
+         return
+      end if
+   end subroutine split_qid
 
    !> Convert quantity id (from .ext file) to tracer name (split in generic qidname and specific tracer name).
    !! If the input qid is not tracer, then the same qid is returned (and no tracer name)
@@ -40,8 +79,8 @@ contains
       use m_transportdata, only: DEFTRACER
       implicit none
 
-      character(len=*), intent(in) :: qid      !< Original quantityid, e.g., 'tracerbndfluor'.
-      character(len=*), intent(out) :: trname  !< The trimmed tracer name, e.g., 'fluor'.
+      character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
+      character(len=*), intent(out) :: trname !< The trimmed tracer name, e.g., 'fluor'.
       character(len=*), intent(out) :: qidname !< The base quantity name for further use in external forcing, e.g., 'tracerbnd'.
 
       trname = ''
@@ -71,8 +110,8 @@ contains
    subroutine get_sedfracname(qid, sfname, qidname)
       implicit none
 
-      character(len=*), intent(in) :: qid        !< Original quantityid, e.g., 'sedfracbndsediment1'.
-      character(len=*), intent(out) :: sfname    !< The trimmed tracer name, e.g., 'sediment1'.
+      character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'sedfracbndsediment1'.
+      character(len=*), intent(out) :: sfname !< The trimmed tracer name, e.g., 'sediment1'.
       character(len=*), intent(inout) :: qidname !< The base quantity name for further use in external forcing, e.g., 'sedfracbnd'.
 
       sfname = ''
@@ -107,5 +146,45 @@ contains
          end if
       end if
    end subroutine get_sedfracname
+
+   !> Convert quantity (from .ext file) to constituent name (split in generic base_quantity and specific constituent_name).
+   !! If the original_quantity does not involve consituents, then the passed base_quantity is unchanged (and empty constituent name).
+   !! For example: 'sourcesink_salinityDelta' -> 'sourcesink_constituentDelta', 'salinity'.
+   !!
+   !! This subroutine currently only covers source sinks, because they are the only external forcings that generalize on
+   !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
+   subroutine get_constituent_name(original_quantity, constituent_name, base_quantity)
+      use string_module, only: strcmpi
+      implicit none
+
+      character(len=*), intent(in) :: original_quantity !< Original quantity id, e.g., 'sourcesink_salinityDelta'.
+      character(len=*), intent(out) :: constituent_name !< The trimmed constituent name, e.g., 'salinity', or 'sand', or 'fluor'. Empty '' if not a constituent.
+      character(len=*), intent(out) :: base_quantity !< The base quantity name for further use in external forcing, e.g., 'sourcesink_constituentDelta'. Unchanged original_quantity if not a constituent.
+
+      integer :: quantity_length
+      integer :: index_prefix_end, index_suffix_start
+
+      constituent_name = ''
+
+      quantity_length = len_trim(original_quantity)
+      index_prefix_end = min(len_trim('sourcesink_'), quantity_length)
+      index_suffix_start = max(1, quantity_length - len_trim('Delta') + 1)
+
+      if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_') &
+          .and. strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
+         ! First, remove the 'sourcesink_' and 'Delta' parts from the original quantity.
+         base_quantity = 'sourcesink_constituentDelta'
+         constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
+
+         ! Then, optionally remove the special constituent group name 'tracer' or 'sedFrac' part from the constituent name.
+         if (strcmpi(constituent_name(1:6), 'tracer')) then
+            constituent_name = constituent_name(7:)
+         else if (strcmpi(constituent_name(1:7), 'sedFrac')) then
+            constituent_name = constituent_name(8:)
+         end if
+      end if
+
+      return
+   end subroutine get_constituent_name
 
 end module fm_external_forcings_utils

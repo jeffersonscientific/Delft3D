@@ -8,9 +8,6 @@ get_fortran_source_files(${src_path} source_files)
 set(library_name cosumo_bmi)
 add_library(${library_name} SHARED  ${source_files})
 
-# Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
-
 # Set dependencies on windows
 if (WIN32)
     set(library_dependencies    ec_module
@@ -21,7 +18,6 @@ if (WIN32)
                                 kdtree2
                                 io_netcdf
                                 io_netcdf_data
-                                netcdf4
                                 netcdff
                                 )
 
@@ -56,4 +52,6 @@ endif(UNIX)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_files})
 set_target_properties (${library_name} PROPERTIES FOLDER tools_gpl/cosumo_bmi)
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib)
+install(TARGETS ${library_name} RUNTIME DESTINATION lib
+                                LIBRARY DESTINATION lib
+)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,29 +30,39 @@
 !
 !
 
+module m_setucxucy_mor
+
+   implicit none
+
+   private
+
+   public :: setucxucy_mor
+
+contains
+
    ! =================================================================================================
    ! =================================================================================================
    subroutine setucxucy_mor(u1_loc)
-      use m_flowgeom
-      use m_flow
+      use precision, only: dp
+      use m_flowgeom, only: lnx1d, kcu, ln, wcx1, wcy1, wcx2, wcy2, lnx, ndxi, csu, snu
+      use m_flow, only: ucx_mor, ucy_mor, kmx, hu, jabarrieradvection, struclink, lbot, kmxl, ln0, jazlayercenterbedvel, kbot, hs, perot_type, perot_volume_based, ktop, zws, nbndz, kbndz, epshs, jacstbnd, jased, jazerozbndinflowadvection, ltop, nbndu, kbndu, kmxn, nbndt, kbndt, kmxd, u0, zbndt, zbnduxyval, dmiss, zbnduxy, nbnduxy, kbnduxy, nbndn, kbndn, zbndn, lnkx
+      use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
+      use m_sediment, only: stm_included
+      use m_sferic, only: jasfer3d
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_fm_erosed, only: ucxq_mor, ucyq_mor
-      use m_sobekdfm
-      use m_sediment, only: jased, stm_included
-      use m_missing
-      use m_flowparameters, only: jabarrieradvection, flow_solver
-      use m_sferic
-      use m_get_Lbot_Ltop
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
       implicit none
-      double precision, dimension(lnkx), intent(in) :: u1_loc
+      real(kind=dp), dimension(lnkx), intent(in) :: u1_loc
 
       integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k
       integer :: itpbn
-      double precision :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin
-      double precision :: dischcorrection
-      double precision :: uinx, uiny
-
-      double precision, external :: nod2linx, nod2liny
-      double precision, external :: lin2nodx, lin2nody
+      real(kind=dp) :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin
+      real(kind=dp) :: dischcorrection
+      real(kind=dp) :: uinx, uiny
 
       ucxq_mor = 0d0; ucyq_mor = 0d0 ! zero arrays
       ucx_mor = 0d0; ucy_mor = 0d0
@@ -136,7 +146,7 @@
             if (hs(k) > 0d0) then
                ucxq_mor(k) = ucxq_mor(k) / hs(k)
                ucyq_mor(k) = ucyq_mor(k) / hs(k)
-               if (iperot == 2) then
+               if (Perot_type == PEROT_VOLUME_BASED) then
                   ucx_mor(k) = ucxq_mor(k)
                   ucy_mor(k) = ucyq_mor(k)
                end if
@@ -156,7 +166,7 @@
                      ucxq_mor(k) = ucxq_mor(k) / dzz
                      ucyq_mor(k) = ucyq_mor(k) / dzz
                   end if
-                  if (iperot == 2) then
+                  if (Perot_type == PEROT_VOLUME_BASED) then
                      ucx_mor(k) = ucxq_mor(k)
                      ucy_mor(k) = ucyq_mor(k)
                   end if
@@ -467,3 +477,5 @@
       end do
 
    end subroutine setucxucy_mor
+
+end module m_setucxucy_mor

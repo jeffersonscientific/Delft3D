@@ -1,7 +1,7 @@
 module m_read_roughness
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -99,7 +99,7 @@ contains
             call prop_get(md_ptr, 'GlobalValues', 'roughnessType', def_type, success)
          endif
          if (.not. success) then
-            def_type = R_Chezy
+            def_type = R_CHEZY
             default = 45
          endif
       endif

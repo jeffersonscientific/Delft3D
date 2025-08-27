@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -132,8 +132,8 @@ module m_fm_morstatistics
    !
    integer :: nmorstatqnt
    integer :: morstatflg(10, 4)
-   double precision :: morstatt0
-   double precision, dimension(:, :), allocatable :: morstatqnt
+   real(kind=dp) :: morstatt0
+   real(kind=dp), dimension(:, :), allocatable :: morstatqnt
 
 contains
 
@@ -234,7 +234,9 @@ contains
       end do
       !
       nmorstatqnt = i
-      if (allocated(morstatqnt)) deallocate (morstatqnt)
+      if (allocated(morstatqnt)) then
+         deallocate (morstatqnt)
+      end if
       allocate (morstatqnt(ndx, nmorstatqnt))
       morstatqnt = 0d0
       !
@@ -507,6 +509,7 @@ contains
 
    ! Write sedmor statistics to NetCDF
    subroutine unc_write_sed(tim)
+      use precision, only: dp
       use m_flow
       use m_flowtimes
       use unstruc_netcdf
@@ -515,7 +518,7 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       type(t_unc_sedids), save :: sedids
       integer :: ierr
@@ -547,6 +550,7 @@ contains
    end subroutine unc_write_sed
 
    subroutine unc_write_sedstat_filepointer_ugrid(sedids, tim)
+      use precision, only: dp
       use m_alloc
       use io_ugrid
       use unstruc_netcdf
@@ -560,7 +564,7 @@ contains
       implicit none
 
       type(t_unc_sedids), intent(inout) :: sedids
-      double precision, intent(in) :: tim
+      real(kind=dp), intent(in) :: tim
 
       integer :: j, k, ll
       integer :: ndim
@@ -572,13 +576,12 @@ contains
       integer :: idx
       integer :: dim
       integer, dimension(:), allocatable :: dimids_
-      double precision :: meanmag2
-      double precision :: morfc
-      double precision, save :: morft0, hydrt0
-      double precision, dimension(:, :), allocatable :: work
-      double precision, dimension(:), allocatable :: work2
-      double precision, dimension(:), allocatable :: wghtfac
-      character(len=10) :: transpunit
+      real(kind=dp) :: meanmag2
+      real(kind=dp) :: morfc
+      real(kind=dp), save :: morft0, hydrt0
+      real(kind=dp), dimension(:, :), allocatable :: work
+      real(kind=dp), dimension(:), allocatable :: work2
+      real(kind=dp), dimension(:), allocatable :: wghtfac
       character(len=75) :: var1, var2
       character(len=150) :: descr1, descr2
 
@@ -612,7 +615,7 @@ contains
          call check_error(ierr, 'def time dim')
          ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_time, nf90_double, (/sedids%id_tsp%id_timedim/), 'time', 'time', '', trim(Tudunitstr))
          ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_interval, nf90_double, (/sedids%id_tsp%id_timedim/), 'averaging interval', 'averaging interval', '', 's')
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological accelaration factor', '', '-')
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological acceleration factor', '', '-')
 
          ierr = nf90_def_dim(sedids%ncid, 'nSedTot', stmpar%lsedtot, sedids%id_tsp%id_sedtotdim)
 
@@ -620,16 +623,8 @@ contains
             ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=(/-2, sedids%id_tsp%id_sedtotdim, -1/))
          end if
          !
-         select case (stmpar%morpar%moroutput%transptype)
-         case (0)
-            transpunit = 'kg/(s m)'
-         case (1)
-            transpunit = 'm3/(s m)'
-         case (2)
-            transpunit = 'm3/(s m)'
-         end select
-         stmpar%morpar%moroutput%statunt(3) = trim(transpunit) ! bed load
-         stmpar%morpar%moroutput%statunt(4) = trim(transpunit) ! suspended load
+         stmpar%morpar%moroutput%statunt(3) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! bed load
+         stmpar%morpar%moroutput%statunt(4) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! suspended load
          !
          ! Conditional defs based on requested output. This can be improved, I guess... Runtime variable definition would be nice to have :)
          !

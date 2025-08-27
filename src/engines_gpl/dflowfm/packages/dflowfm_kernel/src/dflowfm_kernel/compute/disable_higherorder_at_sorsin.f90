@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,25 @@
 !
 !
 
+module m_disable_higherorder_at_sorsin
+
+   implicit none
+
+   private
+
+   public :: disable_higherorder_at_sorsin
+
+contains
+
    subroutine disable_higherorder_at_sorsin()
+      use precision, only: dp
       use m_flowgeom
       use fm_external_forcings_data, only: numsrc, ksrc
       use m_partitioninfo
       use m_alloc
       implicit none
 
-      double precision, dimension(:, :), allocatable :: dum
+      real(kind=dp), dimension(:, :), allocatable :: dum
 
       integer, dimension(:), allocatable :: imask
 
@@ -88,7 +99,9 @@
          end do
 
 !        deallocate
-         if (allocated(imask)) deallocate (imask)
+         if (allocated(imask)) then
+            deallocate (imask)
+         end if
       end if
 
       if (jampi == 1) then
@@ -127,3 +140,5 @@
 
       return
    end subroutine disable_higherorder_at_sorsin
+
+end module m_disable_higherorder_at_sorsin

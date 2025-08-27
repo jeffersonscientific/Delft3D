@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,23 @@
 !
 !
 module m_wrisam
+   use m_wriarcsam, only: wriarcsam
+   use m_wriarc, only: wriarc
+
    implicit none
 contains
    subroutine WRISAM(MSAM)
-      use M_SAMPLES
-      use M_ARCINFO
+      use precision, only: dp
+      use M_SAMPLES, only: ns, zs, xs, ys
+      use M_ARCINFO, only: mca, nca, x0, y0, dxa, dya, maxsamarc, d
+      use m_readyy, only: readyy
+      use m_qnerror, only: qnerror
       use M_MISSING, only: DMISS
-      use m_pharosflow
-      use m_readyy
-      use m_qnerror
+      use m_filez, only: doclose
 
       integer :: msam, KMOD
 
-      double precision :: af
+      real(kind=dp) :: af
       integer :: i
 
       call READYY('Writing Samples File', 0d0)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,17 +30,21 @@
 !
 !
 
+submodule(m_remove_masked_netcells) m_remove_masked_netcells_
+
+   implicit none
+
+contains
+
    !> remove "dry"masked netcells (cellmask==1) from netcell administration
    !> typically used in combination with a drypoints file (samples or polygons)
-   !> \see samples_to_cellmask and \see polygon_to_cellmask
+   !> \see polygon_to_cellmask
    !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
-   subroutine remove_masked_netcells()
+   module subroutine remove_masked_netcells()
       use network_data
       use m_flowgeom, only: xz, yz, ba
       use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
-      implicit none
-
       integer, dimension(:), allocatable :: numnew ! permutation array
 
       integer :: i, ic, icL, icR, icnew, isL, isR, L, num, N, numpnew
@@ -185,8 +189,6 @@
 
 1234  continue
 
-!     deallocate
-      if (allocated(numnew)) deallocate (numnew)
-
-      return
    end subroutine remove_masked_netcells
+
+end submodule m_remove_masked_netcells_

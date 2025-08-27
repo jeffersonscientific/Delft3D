@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,6 +29,16 @@
 
 !
 !
+
+module m_apply_sediment_bc
+
+   implicit none
+
+   private
+
+   public :: apply_sediment_bc
+
+contains
 
    !> apply sediment boundary conditions
    subroutine apply_sediment_bc()
@@ -131,3 +141,5 @@
       end do
       !
    end subroutine apply_sediment_bc
+
+end module m_apply_sediment_bc

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,28 +32,29 @@
 module m_hi_text
    implicit none
 contains
-      subroutine HITEXT(IVAL, X, Y)
-         use m_colnow
-         use m_draw_text
+   subroutine HITEXT(IVAL, X, Y)
+      use precision, only: dp
+      use m_colnow, only: ncolnow
+      use m_draw_text, only: drawtext
 
-         integer :: ival
-         integer :: l
-         double precision :: x
-         double precision :: y
+      integer :: ival
+      integer :: l
+      real(kind=dp) :: x
+      real(kind=dp) :: y
 !     INTEGER grafisch scherm in current color
-         character TEX * 8
+      character TEX * 8
 
-         if (NCOLNOW >= 0) then
-            if (abs(IVAL) < 100) then
-               write (TEX, '(I3)') IVAL
-            else if (abs(IVAL) < 10000) then
-               write (TEX, '(I5)') IVAL
-            else
-               write (TEX, '(I8)') IVAL
-            end if
-            L = len_trim(TEX)
-            call DRAWTEXT(real(X), real(Y), TEX(1:L))
+      if (NCOLNOW >= 0) then
+         if (abs(IVAL) < 100) then
+            write (TEX, '(I3)') IVAL
+         else if (abs(IVAL) < 10000) then
+            write (TEX, '(I5)') IVAL
+         else
+            write (TEX, '(I8)') IVAL
          end if
-         return
-      end
+         L = len_trim(TEX)
+         call DRAWTEXT(real(X), real(Y), TEX(1:L))
+      end if
+      return
+   end
 end module m_hi_text

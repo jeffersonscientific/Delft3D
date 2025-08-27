@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,12 +30,17 @@
 !
 !
 module m_zoomin
-use m_orglocator
-use m_inqasp
+   use m_histor, only: histor
+   use m_wearel
+   use m_setxor
+   use m_setwynew
+   use m_orglocator
+   use m_inqasp
 
    implicit none
 contains
    subroutine ZOOMIN(KEY, NPUT)
+      use precision, only: dp
       use unstruc_colors
       use m_wearelt
       use m_sferic
@@ -48,7 +53,7 @@ contains
       use m_set_col
       use m_help
 
-      double precision :: aspect, dx, dy, xln, yln, xl, yl, X1B, Y1B, X2B, Y2B, xl2, yl2
+      real(kind=dp) :: aspect, dx, dy, xln, yln, xl, yl, X1B, Y1B, X2B, Y2B, xl2, yl2
       integer :: k, nlevel, jadraw, nput, nnn, ja, key
 
       character(len=40) :: WRDKEY

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,23 @@
 !
 !
 
+module m_fm_erosed_sub
+   use m_xbeachwaves, only: rollerturbulence
+   use m_setucxucy_mor, only: setucxucy_mor
+   use m_setucxqucyq_mor, only: setucxqucyq_mor
+   use m_init_1dinfo, only: init_1dinfo
+   use m_fm_upwbed, only: fm_upwbed
+   use m_fm_red_soursin, only: fm_red_soursin
+   use m_waveconst
+
+   implicit none
+
+   private
+
+   public :: fm_erosed
+
+contains
+
    subroutine fm_erosed()
    !!--description-----------------------------------------------------------------
    !!
@@ -53,14 +70,14 @@
       ! NONE
    !!--declarations----------------------------------------------------------------
       use precision
-      use mathconsts, only: pi
+      use mathconsts, only: pi, ee
       use bedcomposition_module
       use morphology_data_module
       use sediment_basics_module
-      use m_physcoef, only: ag, vonkar, sag, ee, backgroundsalinity, backgroundwatertemperature, vismol
+      use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
-      use m_flow, only: s0, s1, u1, kmx, zws, hs, &
+      use m_flow, only: s0, s1, u1, v, kmx, zws, hs, &
                         iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
@@ -71,7 +88,6 @@
       use dfparall
       use m_alloc
       use m_missing
-      use m_physcoef, only: frcuni, ifrctypuni
       use m_turbulence, only: vicwws, turkinepsws, rhowat
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
@@ -99,7 +115,7 @@
       use m_debug
       use m_sand_mud
       use m_get_kbot_ktop
-      use m_get_cz
+      use m_get_chezy, only: get_chezy
       !
       implicit none
       !
@@ -210,13 +226,13 @@
       real(fp), dimension(max(kmx, 1)) :: concin3d
       real(fp), dimension(kmax2d) :: concin2d
       character(256) :: errmsg
-      double precision :: zcc, maxdepfrac
-      double precision :: ubot
+      real(kind=dp) :: zcc, maxdepfrac
+      real(kind=dp) :: ubot
       integer :: ierr, kk, Lf, kmxvel, kb, kt
-      double precision, allocatable :: dzdx(:), dzdy(:), u1_tmp(:), ucxq_tmp(:), ucyq_tmp(:)
-      double precision, allocatable :: z0rouk(:), z0curk(:), deltas(:), ua(:), va(:)
-      double precision :: dzdn, dzds
-      double precision :: z0u, czu
+      real(kind=dp), allocatable :: dzdx(:), dzdy(:), u1_tmp(:), ucxq_tmp(:), ucyq_tmp(:)
+      real(kind=dp), allocatable :: z0rouk(:), z0curk(:), deltas(:), ua(:), va(:)
+      real(kind=dp) :: dzdn, dzds
+      real(kind=dp) :: z0u, czu
       !
       real(fp), dimension(:), allocatable :: localpar !< local array for sediment transport parameters
    !! executable statements -------------------------------------------------------
@@ -243,7 +259,7 @@
          call mess(LEVEL_FATAL, errmsg)
       end if
       !
-      wave = (jawave > 0) .and. .not. flowWithoutWaves
+      wave = (jawave > NO_WAVES) .and. .not. flowWithoutWaves
       !
       ! Mass conservation; s1 is updated before entering fm_erosed
       !
@@ -259,7 +275,7 @@
       !
       u1_tmp = u1 * u_to_umain
 
-      if (jatranspvel > 0 .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jatranspvel > 0 .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          u1_tmp = u1 - ustokes
          call setucxucy_mor(u1_tmp)
       else
@@ -279,8 +295,8 @@
       !I think that it should be removed from <setucxucy_mor>
       call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp)
 
-      if (jawave > 2) then
-         if ((.not. (jawave == 4 .or. jawave == 3 .or. jawave == 6)) .or. flowWithoutWaves) then
+      if (jawave > WAVE_FETCH_YOUNG) then
+         if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flowWithoutWaves) then
             ktb = 0d0 ! no roller turbulence
          else
             do k = 1, ndx
@@ -400,13 +416,13 @@
                   czu = 1d0 / (cfuhi(L) * max(hu(L), epshu))
                   czu = sqrt(czu * ag)
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if
             else
                if (frcu_mor(L) > 0) then
-                  call getcz(hu(L), frcu_mor(L), ifrcutp(L), czu, L)
+                  czu = get_chezy(hu(L), frcu_mor(L), u1(L), v(L), ifrcutp(L))
                else
-                  call getcz(hu(L), frcuni, ifrctypuni, czu, L)
+                  czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if
             end if
             !
@@ -432,7 +448,7 @@
       if (kmx > 0) then ! 3D
          deltas = 0.05d0
          maxdepfrac = 0.05
-         if (jawave > 0 .and. v2dwbl > 0) then
+         if (jawave > NO_WAVES .and. v2dwbl > 0) then
             deltas = 0d0
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
@@ -696,7 +712,7 @@
             zvelb = h1 / ee
          end if
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             ubot = uorb(nm) ! array uitgespaard
          else
             ubot = 0d0
@@ -704,7 +720,7 @@
          !
          ! Calculate total (possibly wave enhanced) roughness
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             z0rou = max(epsz0, z0rouk(nm))
          else ! currents only
             z0rou = z0curk(nm) ! currents+potentially trachy
@@ -777,7 +793,7 @@
          end if
          taks0 = max(aksfac * rc, 0.01d0 * h1)
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             if (twav(nm) > 0d0) then
                delr = 0.025d0
                taks0 = max(0.5d0 * delr, taks0)
@@ -813,7 +829,7 @@
             dll_reals(RP_TETA) = real(phiwav(nm), hp)
             dll_reals(RP_RLAMB) = real(rlabda(nm), hp)
             dll_reals(RP_UORB) = real(uorb(nm), hp)
-            if (jawave > 2) then
+            if (jawave > WAVE_FETCH_YOUNG) then
                dll_reals(RP_KWTUR) = real(ktb(nm), hp)
             else
                dll_reals(RP_KWTUR) = real(0.0_hp, hp) ! array not allocated for fetch length models (choice of HK)
@@ -1278,14 +1294,14 @@
          call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
       end if
       !
-      if (bedw > 0.0_fp .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          !
          ! Upwind wave-related bed load load transports
          !
          call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
       end if
       !
-      if (susw > 0.0_fp .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          !
          ! Upwind wave-related suspended load transports
          !
@@ -1353,3 +1369,5 @@
       end if
 
    end subroutine fm_erosed
+
+end module m_fm_erosed_sub

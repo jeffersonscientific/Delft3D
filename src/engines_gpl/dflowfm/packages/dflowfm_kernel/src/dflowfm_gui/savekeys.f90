@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,15 +32,15 @@
 module m_save_keys
    implicit none
 contains
-      subroutine SAVEKEYS()
-         use m_keycodes
-         
-         integer :: i
-         integer :: infoinput
+   subroutine SAVEKEYS()
+      use m_keycodes, only: maxkey, keycod
 
-         do I = 1, MAXKEY
-            KEYCOD(I) = INFOINPUT(I)
-         end do
-         return
-      end
+      integer :: i
+      integer :: infoinput
+
+      do I = 1, MAXKEY
+         KEYCOD(I) = INFOINPUT(I)
+      end do
+      return
+   end
 end module m_save_keys

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,8 +31,18 @@
 !
 
 !> default solver settings
+module m_solversettings
+
+   implicit none
+
+   private
+
+   public :: solversettings
+
+contains
+
    subroutine SolverSettings(solver, numrows, numnonzeros)
-      use m_solver
+      use m_solver, only: tsolver
       implicit none
 
       type(tsolver), intent(inout) :: solver !< solver
@@ -60,3 +70,5 @@
 
       solver%jabcgstab = 1
    end subroutine SolverSettings
+
+end module m_solversettings

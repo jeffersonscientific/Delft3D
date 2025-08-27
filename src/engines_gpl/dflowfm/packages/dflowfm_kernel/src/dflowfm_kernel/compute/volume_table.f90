@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !> Module for using volume tables at 1d nodes for the computation of the total volume of water in a node.
 module m_VolumeTables
-
+   use precision, only: dp
    use messageHandling
    use m_GlobalParameters
 
@@ -62,21 +62,21 @@ module m_VolumeTables
       !< non-increasing part. In case of Nested Newton and 1 or more
       !< surrounding closed cross sections, volDecreasing is allocated and
       !< filled.
-      double precision :: bedLevel !< The bed level at the location of the volume table.
-      double precision :: topHeight !< Highest level (w.r.t. the bed level) of the surrounding cross sections
-      double precision, allocatable, dimension(:) :: vol !< Volume at each level of the table.
-      double precision, allocatable, dimension(:) :: sur !< Surface area at each level of the table.
-      double precision, allocatable, dimension(:) :: volDecreasing !< Volume table for decreasing widths (Nested Newton)
-      double precision, allocatable, dimension(:) :: surDecreasing !< Surface area table for decreasing widths (Nested Newton)
+      real(kind=dp) :: bedLevel !< The bed level at the location of the volume table.
+      real(kind=dp) :: topHeight !< Highest level (w.r.t. the bed level) of the surrounding cross sections
+      real(kind=dp), allocatable, dimension(:) :: vol !< Volume at each level of the table.
+      real(kind=dp), allocatable, dimension(:) :: sur !< Surface area at each level of the table.
+      real(kind=dp), allocatable, dimension(:) :: volDecreasing !< Volume table for decreasing widths (Nested Newton)
+      real(kind=dp), allocatable, dimension(:) :: surDecreasing !< Surface area table for decreasing widths (Nested Newton)
 
       integer :: numberOfSummerDikes !< number of summerdikes connected to the volume table.
       logical, allocatable, dimension(:) :: inundationPhase !< During the inundation phase the storage area is different from the
       !< period, when the water levels are declining.
       integer, allocatable, dimension(:) :: linkNumber !< Flow link number of the location of the summer dike.
-      double precision, allocatable, dimension(:) :: summerDikeCrestLevel !< crest level of the summerdike.
-      double precision, allocatable, dimension(:) :: summerDikeBaseLevel !< base level (bottom level) of the summerdike.
-      double precision, allocatable, dimension(:, :) :: sdinVolume !< correction for the volume due to the hysteresis during the inundation phase of the summerdike.
-      double precision, allocatable, dimension(:, :) :: sdinArea !< correction for the area due to the hysteresis during the inundation phase of the summerdike.
+      real(kind=dp), allocatable, dimension(:) :: summerDikeCrestLevel !< crest level of the summerdike.
+      real(kind=dp), allocatable, dimension(:) :: summerDikeBaseLevel !< base level (bottom level) of the summerdike.
+      real(kind=dp), allocatable, dimension(:, :) :: sdinVolume !< correction for the volume due to the hysteresis during the inundation phase of the summerdike.
+      real(kind=dp), allocatable, dimension(:, :) :: sdinArea !< correction for the area due to the hysteresis during the inundation phase of the summerdike.
    contains
       procedure, pass :: alloc => allocVoltable !< Allocates the allocatable arrays in this structure
       procedure, pass :: dealloc => deallocVoltable !< Deallocates the allocatable arrays in this structure
@@ -95,7 +95,6 @@ contains
 
    !> Allocate the volume table arrays and initialize to 0
    subroutine allocVoltable(this)
-      use m_flowparameters
 
       class(t_voltable) :: this
 
@@ -151,14 +150,16 @@ contains
    end subroutine deallocVoltable
 
    !> Retrieve the volume for given volume table and water level
-   double precision function getVolumeVoltable(this, level)
-      use unstruc_channel_flow
+   real(kind=dp) function getVolumeVoltable(this, level)
+      use precision, only: dp
+      use unstruc_channel_flow, only: tableincrement
+      use m_globalparameters, only: summerDikeTransitionHeight
       class(t_voltable) :: this
-      double precision, intent(in) :: level !< water level
+      real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
       integer :: i
-      double precision :: heightIncrement
+      real(kind=dp) :: heightIncrement
       index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       heightIncrement = max(0d0, ((level - this%bedLevel) - dble(index - 1) * tableIncrement))
@@ -183,11 +184,13 @@ contains
    end function getVolumeVoltable
 
    !> Retrieve the surface area for given volume table and water level
-   double precision function getSurfaceVoltable(this, level)
-      use unstruc_channel_flow
+   real(kind=dp) function getSurfaceVoltable(this, level)
+      use precision, only: dp
+      use unstruc_channel_flow, only: tableincrement
+      use m_globalparameters, only: summerDikeTransitionHeight
 
       class(t_voltable) :: this
-      double precision, intent(in) :: level !< water level
+      real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
       integer :: i
@@ -215,14 +218,15 @@ contains
    end function getSurfaceVoltable
 
    !> Returns the volume which is the result of a decreasing width for a given water level
-   double precision function getVolumeDecreasingVoltable(this, level)
-      use unstruc_channel_flow
+   real(kind=dp) function getVolumeDecreasingVoltable(this, level)
+      use precision, only: dp
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
-      double precision, intent(in) :: level !< water level
+      real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
-      double precision :: heightIncrement
+      real(kind=dp) :: heightIncrement
       index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       heightIncrement = ((level - this%bedLevel) - dble(index - 1) * tableIncrement)
@@ -232,11 +236,12 @@ contains
    end function getVolumeDecreasingVoltable
 
    !> Retrieve the surface area for given volume table and water level
-   double precision function getSurfaceDecreasingVoltable(this, level)
-      use unstruc_channel_flow
+   real(kind=dp) function getSurfaceDecreasingVoltable(this, level)
+      use precision, only: dp
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
-      double precision, intent(in) :: level !< water level
+      real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
       index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
@@ -247,7 +252,7 @@ contains
 
    !> Compute the surfaces in the volume table out of the volumes.
    subroutine computeSurfaceVoltable(this)
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
 
@@ -266,14 +271,10 @@ contains
 
    !> Generate the volume tables, by using GetCSParsTotal.
    subroutine makeVolumeTables(filename, branchOutput)
-
-      use unstruc_channel_flow
-      use m_flowparameters
-      use m_flowgeom
-      use m_GlobalParameters
-      use m_Storage
-      use m_flow
-      use m_missing
+      use m_crosssections, only: t_CrossSection
+      use m_storage, only: t_storage
+      use unstruc_channel_flow, only: usevolumetablefile, volumetablefile, network
+      use m_flowgeom, only: ndx, ndx2d, lnx1d, kcs, nd, lnxi, lbnd1d, kcu
 
       character(len=*), intent(in) :: filename !< Name of the volumetablefile
       logical, optional, intent(in) :: branchOutput !< Flag indicates whether the volumes on flow links are required.
@@ -403,9 +404,11 @@ contains
    !> ** number of summerdikes
    !> * allocate the arrays in the volume tables.
    subroutine initializeVltb(vltb)
+      use precision, only: dp
       use m_flowparameters
       use m_flowgeom
       use unstruc_channel_flow
+      use m_globalparameters, only: summerDikeTransitionHeight
 
       type(t_voltable), dimension(:), intent(inout) :: vltb !< Volume tables.
 
@@ -413,8 +416,8 @@ contains
       integer :: LL, L
       integer :: index
       integer :: numberOfSummerDikes
-      double precision :: bobAboveBedLevel
-      double precision :: topheight
+      real(kind=dp) :: bobAboveBedLevel
+      real(kind=dp) :: topheight
       type(t_chainage2cross), dimension(:, :), pointer :: line2cross
       type(t_CrossSection), pointer :: cross1, cross2
       type(t_storage), dimension(:), pointer :: stors
@@ -517,6 +520,7 @@ contains
 
    !> Add the storage of storage nodes to the volume tables.
    subroutine addStorageToVltb(vltb)
+      use precision, only: dp
       use m_Storage
       use m_flowgeom
       use m_flowparameters
@@ -527,7 +531,7 @@ contains
       type(t_storage), dimension(:), pointer :: stors
 
       integer :: i, n, nod, nstor, j
-      double precision :: level
+      real(kind=dp) :: level
 
       stors => network%stors%stor
       nstor = network%stors%count
@@ -596,6 +600,7 @@ contains
 
    !> Add the volumes for flow link Lorg to the volume tables.
    subroutine addVolumeAtLinkToVltb(Lorg, n, summerDikeIndex, dir, vltb, vltbOnLinks)
+      use precision, only: dp
       use m_flowgeom
       use unstruc_channel_flow
       use m_flowparameters
@@ -616,11 +621,11 @@ contains
 
       logical :: inundationPhase(2)
 
-      double precision :: height
-      double precision :: area, areadecr, sdarea
-      double precision :: width, widthdecr, sdwidth
-      double precision :: bobAboveBedLevel
-      double precision :: dxL
+      real(kind=dp) :: height
+      real(kind=dp) :: area, areadecr, sdarea
+      real(kind=dp) :: width, widthdecr, sdwidth
+      real(kind=dp) :: bobAboveBedLevel
+      real(kind=dp) :: dxL
 
       type(t_chainage2cross), dimension(:, :), pointer :: line2cross
       type(t_CrossSection), pointer, dimension(:) :: cross
@@ -822,7 +827,7 @@ contains
    end subroutine writeVolumeTables
 
    !> Read the volume tables from a previously saved binary file.
-   !> The function returns .true. when succesfull, otherwise .false. is returned
+   !> The function returns .true. when successful, otherwise .false. is returned
    logical function readVolumeTables()
 
       use m_flowgeom

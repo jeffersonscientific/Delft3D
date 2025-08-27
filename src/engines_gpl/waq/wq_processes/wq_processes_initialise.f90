@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -115,7 +115,6 @@ contains
         real(kind = real_wp) :: verspe = 1.0    ! version bloom.spe file
         integer(kind = int_wp), parameter :: novarm = 15000   ! max number of variables overall
         integer(kind = int_wp), parameter :: nbprm = 1750    ! max number of processes
-        integer(kind = int_wp), parameter :: nopred = 6       ! number of pre-defined variables
         integer(kind = int_wp) :: open_shared_library
 
         integer(kind = int_wp) :: noqtt            ! total number of exhanges
@@ -185,7 +184,7 @@ contains
         character(len=80)   swinam
         character(len=80)   blmnam
         character(len=80)   line
-        character(len=80)   identification_text
+        character(len=200)  identification_text
         character(len=20)   rundat
         character(:), allocatable :: config
         logical :: parsing_error, laswi, swi_nopro
@@ -256,6 +255,7 @@ contains
         allitems%maxsize = 0
         procesdef%current_size = 0
         procesdef%maxsize = 0
+        nullify(procesdef%procesprops)
         old_items%current_size = 0
         old_items%maxsize = 0
 
@@ -263,7 +263,7 @@ contains
 
         ! Header for lsp
         call getidentification(identification_text)
-        write(lunlsp, '(XA/)') identification_text
+        write(lunlsp, '(XA/)') trim(identification_text)
         call write_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 
@@ -739,9 +739,6 @@ contains
 
         call setdvp (num_dispersion_arrays, idpnt, num_dispersion_arrays_new, idpnw, num_substances_transported, num_dispersion_arrays_extra, dsto)
         call setdvp (num_velocity_arrays, ivpnt, num_velocity_arrays_new, ivpnw, num_substances_transported, num_velocity_arrays_extra, vsto)
-
-        ! set grid for processes
-        procesdef%procesprops%grid = 1
 
         ! write proces work file
         num_processes_activated = 0

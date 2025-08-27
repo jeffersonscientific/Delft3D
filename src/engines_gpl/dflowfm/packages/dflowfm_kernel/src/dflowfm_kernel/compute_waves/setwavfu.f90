@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,41 +30,51 @@
 !
 !
 
+module m_setwavfu
+
+   implicit none
+
+   private
+
+   public :: setwavfu
+
+contains
+
    !> subroutine to compute wave forces
    subroutine setwavfu()
-      use unstruc_messages
-      use MessageHandling
-      use m_flowparameters
-      use m_flowgeom
+      use precision, only: dp
+      use m_flowparameters, only: jawaveforces, wave_forces_off, jawave, wave_swan_online, wave_nc_offline, wave_surfbeat, epshu
+      use m_flowgeom, only: lnx, lnx1d, ln, acl, csu, snu
+      use m_waves, only: m_waves_hminlw => hminlw, gammax, facmax, sxwav, sywav, sbxwav, sbywav, twav, hwav
+      use m_xbeach_data, only: xb_hminlw => hminlw, gammaxxb
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx
-      use m_waves, m_waves_hminlw => hminlw
-      use m_xbeach_data, xb_hminlw => hminlw
       use m_physcoef, only: sag
-      use m_get_Lbot_Ltop
+
       implicit none
 
       integer :: L, LL, Lb, Lt
-      double precision :: wavfx, wavfy, wavfbx, wavfby
-      double precision :: wavfu_loc, wavfbu_loc, twavL, hwavL
-      double precision :: wavfv_loc, wavfbv_loc, wavfmag, wavfbmag, wavfang, wavfbang
-      double precision :: fmax, ac1, ac2, hminlwi, rhoL, hminlw, gammaloc
+      real(kind=dp) :: wavfx, wavfy, wavfbx, wavfby
+      real(kind=dp) :: wavfu_loc, wavfbu_loc, twavL, hwavL
+      real(kind=dp) :: wavfv_loc, wavfbv_loc, wavfmag, wavfbmag, wavfang, wavfbang
+      real(kind=dp) :: fmax, ac1, ac2, hminlwi, rhoL, hminlw, gammaloc
 
       integer :: k1, k2
 
-      if (jawaveforces == 0) then
+      if (jawaveforces == WAVE_FORCES_OFF) then
          wavfu = 0d0
          wavfv = 0d0
          return
       end if
 
       ! Set correct limiting depth
-   if (jawave==3 .or. jawave==7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
          hminlw = m_waves_hminlw
          hminlwi = 1d0 / m_waves_hminlw
          gammaloc = gammax
       end if
 
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          hminlw = xb_hminlw
          hminlwi = 1d0 / xb_hminlw
          gammaloc = gammaxxb
@@ -113,8 +123,10 @@
                wavfu(L) = wavfu_loc + wavfbu_loc
                wavfv(L) = wavfv_loc + wavfbv_loc
             end if
+            !
             wavfu(L) = wavfu(L) * min(huvli(L), hminlwi) / rhomean ! Dimensions [m/s^2]
-            wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean ! Dimensions [m/s^2]
+            wavfv(L) = wavfv(L) * min(huvli(L), hminlwi) / rhomean
+            !
          end do
       else ! kmx>0
          do LL = 1, lnx
@@ -181,3 +193,5 @@
 1234  continue
       return
    end subroutine setwavfu
+
+end module m_setwavfu

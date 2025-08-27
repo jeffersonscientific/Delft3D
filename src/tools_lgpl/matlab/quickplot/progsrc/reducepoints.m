@@ -8,7 +8,7 @@ function varargout = reducepoints(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -36,16 +36,21 @@ function varargout = reducepoints(varargin)
 %   $HeadURL$
 %   $Id$
 
+%#mex
 %#function reducepoints_r13_6p5
 %#function reducepoints_r2007a_7p4
 
-v = matlabversionnumber;
-if v>=7.04
-    fcn='reducepoints_r2007a_7p4';
-elseif v>=6.05
-    fcn='reducepoints_r13_6p5';
-else
-    error('This MATLAB version is too old.');
+try
+    v = matlabversionnumber;
+    if v>=7.04
+        fcn='reducepoints_r2007a_7p4';
+    elseif v>=6.05
+        fcn='reducepoints_r13_6p5';
+    else
+        error('This MATLAB version is too old.');
+    end
+    [varargout{1:max(1,nargout)}]=calldll(fcn,varargin{:});
+catch
+    error('Missing MEX-file "reducepoints"');
 end
-[varargout{1:max(1,nargout)}]=calldll(fcn,varargin{:});
 

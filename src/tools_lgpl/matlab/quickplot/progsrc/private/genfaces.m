@@ -3,7 +3,7 @@ function hNew=genfaces(hOld,Ops,Parent,Val,X,Y,Z)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -190,8 +190,10 @@ else
     %
     if isfield(Ops,'Thresholds') && ~strcmp(Ops.Thresholds,'none')
         Thresholds = Ops.Thresholds;
+        PlotClass = Ops.PlotClass;
     else
         Thresholds = [];
+        PlotClass = [];
     end
     %
     if any(~ishandle(hOld)) || ~isempty(Thresholds)
@@ -215,12 +217,11 @@ else
                 'edgecolor','none', ...
                 'facecolor','flat');
         else
-            nThresholds = length(Thresholds);
-            Thresholds(end+1) = inf;
+            nThresholds = length(Thresholds)-1;
             hNew=zeros(1,nThresholds);
             for i = 1:nThresholds
                 iclass = cv>=Thresholds(i) & cv<Thresholds(i+1);
-                if any(iclass)
+                if PlotClass(i) && any(iclass)
                     facecolor = 'flat';
                 else
                     facecolor = 'none';

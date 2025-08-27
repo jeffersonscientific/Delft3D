@@ -9,7 +9,7 @@ function make_all(release)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,22 @@ function make_all(release)
 %   $HeadURL$
 %   $Id$
 
+curdir = pwd;
+sourcedir = [curdir,filesep,'progsrc'];
+
+[qpversion,hash,repo_url] = get_qpversion;
+T = now;
+
+if contains(qpversion,'(changed)')
+    % when running on TeamCity never build (changed) code versions ...
+    try
+        if batchStartupOptionUsed
+            fprintf('##teamcity[buildProblem description=''Version string "%s" contains the text "(changed)".'' identity=''MAKE_ALL_1'']\n', qpversion);
+            return
+        end
+    end
+end
+
 if ~license('checkout','compiler')
     try
         if batchStartupOptionUsed
@@ -46,11 +62,6 @@ if ~license('checkout','compiler')
     end
     error('Compiler license currently not available.')
 end
-curdir = pwd;
-sourcedir = [curdir,filesep,'progsrc'];
-
-[qpversion,hash,repo_url] = get_qpversion(sourcedir,'d3d_qp.m');
-T = now;
 
 if nargin == 0
     Tvec = datevec(T);
@@ -59,11 +70,11 @@ if nargin == 0
     release = sprintf('Build %d.%2.2d',yr,mn);
 end
 
-c = computer;
-if strcmp(c(end-1:end),'64')
+if strcmp(computer,'PCWIN64')
    make_d3dmatlab(curdir,'version',qpversion,'url',repo_url,'hash',hash,'time',T,'release',release)
 end
 make_quickplot(curdir,qpversion,repo_url,hash,T)
 make_ecoplot(curdir,qpversion,repo_url,hash,T)
 make_delwaq2raster(curdir,qpversion,repo_url,hash,T)
 make_sim2ugrid(curdir,qpversion,repo_url,hash,T)
+make_tests(curdir,qpversion,repo_url,hash,T)

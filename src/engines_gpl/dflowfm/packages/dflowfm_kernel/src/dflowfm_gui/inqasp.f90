@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,26 +33,27 @@
 !
 module m_inqasp
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine INQASP(ASP)
-         use m_devices
-         use m_screenarea
+   subroutine INQASP(ASP)
+      use precision, only: dp
+      use m_devices, only: npy, npx
+      use m_screenarea, only: ybot, xleft
 
-         double precision :: asp
-         double precision :: dx
-         double precision :: dy
-         double precision :: xright
-         double precision :: ytop
+      real(kind=dp) :: asp
+      real(kind=dp) :: dx
+      real(kind=dp) :: dy
+      real(kind=dp) :: xright
+      real(kind=dp) :: ytop
 
-         YTOP = max(0.95d0, 1 - YBOT)
-         XRIGHT = max(0.90d0, 1 - XLEFT)
-         DX = XRIGHT - XLEFT
-         DY = YTOP - YBOT
-         ASP = (DY * dble(NPY)) / (DX * dble(NPX))
-         return
-      end
+      YTOP = max(0.95d0, 1 - YBOT)
+      XRIGHT = max(0.90d0, 1 - XLEFT)
+      DX = XRIGHT - XLEFT
+      DY = YTOP - YBOT
+      ASP = (DY * dble(NPY)) / (DX * dble(NPX))
+      return
+   end
 
 end module m_inqasp

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,22 +33,22 @@ module m_getdis
    implicit none
 contains
    subroutine GETDIS(X, Y, X2, Y2, N, TS, SS, H)
-
+      use precision, only: dp
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
-      use m_splintxy
-      use m_comp_curv
+      use m_splintxy, only: splintxy
+      use m_comp_curv, only: comp_curv
 
 !     Bereken de afstand SS van punt TS in X,Y, tov punt met TS = 0, ofwel N=1
       integer :: n
-      double precision :: X(N), Y(N), X2(N), Y2(N)
-      double precision :: ts, ss
-      double precision :: dt, t0, xt0, yt0, t1, xt1, yt1, dnx, dny, dsx, dsy
+      real(kind=dp) :: X(N), Y(N), X2(N), Y2(N)
+      real(kind=dp) :: ts, ss
+      real(kind=dp) :: dt, t0, xt0, yt0, t1, xt1, yt1, dnx, dny, dsx, dsy
 
-      double precision, intent(in) :: H !< for curvature dependent meshing (>0) or disable (<=0)
+      real(kind=dp), intent(in) :: H !< for curvature dependent meshing (>0) or disable (<=0)
 
-      double precision :: curv
+      real(kind=dp) :: curv
       logical :: Lcurv
 
       Lcurv = (H > 1d-8)

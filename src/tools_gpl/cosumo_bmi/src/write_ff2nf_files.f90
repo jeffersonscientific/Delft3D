@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -95,7 +95,7 @@ subroutine wri_FF2NF(idis)
     use precision
     use properties
     use m_densprof
-    use m_density
+    use m_density_formulas, only: calculate_density_unesco
     !
     implicit none
     !
@@ -248,7 +248,7 @@ subroutine wri_FF2NF(idis)
                        & n_intake(idis)         , k_intake(idis)         , add     )
             temp = temp + add
         endif
-        rho0 = density(DENS_UNESCO, temp, sal)
+        rho0 = calculate_density_unesco(sal, temp)
         !
         ! Make character strings from all requested input
         !

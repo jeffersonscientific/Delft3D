@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,21 +32,22 @@
 
 module m_changenumericalparameters4
 
-implicit none
+   implicit none
 
 contains
 
    subroutine CHANGENUMERICALPARAMETERS4()
-      use m_flow
-      use m_flowgeom
-      use unstruc_colors
-      use unstruc_display_data
+      use precision, only: dp
+      use m_flow, only: jafilter, filterorder, iproftypuni, iproftypuni5, iproftypuni7, japiaczek33, expchistem, uchistem, expchileaf, uchileaf, cdleaf, arealeaf, japure1d, bedslopedir, bedwidth, bedwaveamplitude, bedwavelength
+      use m_flowgeom, only: wu1duni, hh1duni, wu1duni5, hh1duni5, wu1duni7, hh1duni7, lnx1d, prof1d, kcu, wu
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
-      use m_helpnow
-      use m_save_keys
-      use m_restore_keys
-      use m_help
-      use m_highlight_form_line
       implicit none
 
       integer :: numpar, numfld, numparactual, numfldactual
@@ -57,7 +58,7 @@ contains
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
       integer :: nbut, imp, inp
-      double precision :: h1, h5, h7, w1, w5, w7
+      real(kind=dp) :: h1, h5, h7, w1, w5, w7
 
       NLEVEL = 4
 !   OPTION( 1) = 'vicouv_filter                    (m2/s)' ; it(2* 1) = 6

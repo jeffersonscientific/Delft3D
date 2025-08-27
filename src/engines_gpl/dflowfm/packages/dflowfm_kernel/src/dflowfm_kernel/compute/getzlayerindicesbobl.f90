@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,23 +32,24 @@
 module m_get_zlayer_indices_bobL
    implicit none
 contains
- subroutine getzlayerindicesbobL(n, nlayb, nrlay, bobL)
-    use m_flow
+   subroutine getzlayerindicesbobL(n, nlayb, nrlay, bobL)
+      use precision, only: dp
+      use m_flow, only: laydefnr, laymx, zslay
 
-    integer :: n, nlayb, nrlay
-    integer :: k, Ltn, mx ! layerdistribution indexes
-    double precision :: bobL
+      integer :: n, nlayb, nrlay
+      integer :: k, Ltn, mx ! layerdistribution indexes
+      real(kind=dp) :: bobL
 
-    Ltn = laydefnr(n)
-    mx = laymx(Ltn)
-    nlayb = mx; nrlay = 1 ! default
-    do k = 1, mx
-       if (zslay(k, Ltn) > bobL) then
-          nlayb = k
-          nrlay = mx - k + 1
-          exit
-       end if
-    end do
+      Ltn = laydefnr(n)
+      mx = laymx(Ltn)
+      nlayb = mx; nrlay = 1 ! default
+      do k = 1, mx
+         if (zslay(k, Ltn) > bobL) then
+            nlayb = k
+            nrlay = mx - k + 1
+            exit
+         end if
+      end do
 
- end subroutine getzlayerindicesbobL
+   end subroutine getzlayerindicesbobL
 end module m_get_zlayer_indices_bobL

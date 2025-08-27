@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,28 @@
 !
 !
 
+module m_createsamplesinpolygon2
+   use m_darean, only: darean
+
+   implicit none
+
+   private
+
+   public :: createsamplesinpolygon2
+
+contains
+
    subroutine CREATESAMPLESINPOLYGON2()
-      use m_ec_triangle
+      use precision, only: dp
+      use m_ec_triangle, only: numtri, indx, edgeindx, triedge, numedge
+      use M_SAMPLES, only: ns, increasesam, zs, xs, ys
+      use M_MISSING, only: dmiss, jins
+      use m_sferic, only: jsferic
+      use m_alloc, only: aerr, realloc
+      use m_polygon, only: npl, xpl, ypl
+      use m_qnerror, only: qnerror
       use network_data, only: TRIANGLESIZEFAC
-      !use m_netw
-      use M_SAMPLES
-      use M_MISSING
-      use m_sferic
-      use m_alloc
       use geometry_module, only: dbpinpol, get_startend
-      use m_polygon
-      use m_qnerror
-
-      implicit none
-
-      !integer          :: NPL
-      !double precision :: XPL(NPL), YPL(NPL)
 
       integer :: ierr
       integer :: in
@@ -54,8 +60,8 @@
       integer :: ns1, NPL1
       integer :: ntx, I
 
-      double precision :: TRIAREA, SAFESIZE
-      double precision :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
+      real(kind=dp) :: TRIAREA, SAFESIZE
+      real(kind=dp) :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
 
       if (NPL <= 2) return
 
@@ -137,3 +143,5 @@
 
       return
    end subroutine CREATESAMPLESINPOLYGON2
+
+end module m_createsamplesinpolygon2

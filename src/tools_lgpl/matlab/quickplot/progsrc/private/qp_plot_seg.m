@@ -1,9 +1,9 @@
-function [hNew,Thresholds,Param]=qp_plot_seg(hNew,Parent,Param,data,Ops,Props)
+function [hNew,Param]=qp_plot_seg(hNew,Parent,Param,data,Ops,Props)
 %QP_PLOT_SEG Plot function of QuickPlot for 1D line segment data sets.
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -45,9 +45,6 @@ TStr=Param.TStr;
 Selected=Param.Selected;
 multiple=Param.multiple;
 NVal=Param.NVal;
-
-DimFlag=Props.DimFlag;
-Thresholds=[];
 
 if strcmp(Ops.presentationtype,'values')
     NVal = 4;

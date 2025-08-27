@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,12 +63,23 @@
 !> initialize matrix for first-order upwind discretization of advection
 !>   Cartesian cell-centered vector components are numbered as
 !>      ( ucx_1, ucy_1, ucx_2, ucy_2, ..., ...)
+module m_inisolver_advec
+   use m_solversettings, only: solversettings
+
+   implicit none
+
+   private
+
+   public :: inisolver_advec
+
+contains
+
    subroutine inisolver_advec(ierror)
-      use m_flowgeom
-      use m_alloc
-      use m_solver
-      use m_advec
-      use m_writematrix
+      use m_flowgeom, only: lnx, ln, acl, csu, snu, ndxi, nd, ndx, wcx1, wcy1, wcx2, wcy2
+      use m_alloc, only: realloc
+      use m_advec_data, only: ii, ji, ai, ir, jr, ar, ic, jc, ac, dfluxfac, iwork, iw, jw, aw, solver_advec, jaoutput
+      use m_writematrix, only: writematrix
+      use m_saadf, only: amub
       implicit none
 
       integer, intent(inout) :: ierror
@@ -311,3 +322,5 @@
 
       return
    end subroutine inisolver_advec
+
+end module m_inisolver_advec

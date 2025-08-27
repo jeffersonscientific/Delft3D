@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,6 +45,7 @@ contains
 !! This is necessary for obtaining the right `hu` for
 !! analytical cases.
    subroutine extrapolate_bedlevel_at_boundaries()
+      use precision, only: dp
 
       use m_flowgeom, only: bl, dxi, csu, snu
 
@@ -53,7 +54,7 @@ contains
       implicit none
 
       integer :: L, k1, k2, kb
-      double precision, allocatable :: dzdx(:), dzdy(:)
+      real(kind=dp), allocatable :: dzdx(:), dzdy(:)
 
       call bed_slope_at_z(dzdx, dzdy)
 
@@ -106,13 +107,18 @@ contains
       end do
 
 !deallocate
-      if (allocated(dzdx)) deallocate (dzdx)
-      if (allocated(dzdy)) deallocate (dzdy)
+      if (allocated(dzdx)) then
+         deallocate (dzdx)
+      end if
+      if (allocated(dzdy)) then
+         deallocate (dzdy)
+      end if
 
    end subroutine extrapolate_bedlevel_at_boundaries
 
 !> Compute the bed slope at cell centres.
    subroutine bed_slope_at_z(dzdx, dzdy)
+      use precision, only: dp
 
       use m_flowgeom, only: ln, bl, dxi, ndx, lnxi, csu, snu
 
@@ -121,7 +127,7 @@ contains
       integer :: istat
       integer :: L, k1, k2
 
-      double precision, allocatable, intent(out) :: dzdx(:), dzdy(:)
+      real(kind=dp), allocatable, intent(out) :: dzdx(:), dzdy(:)
 
       allocate (dzdx(1:ndx), dzdy(1:ndx), stat=istat)
 

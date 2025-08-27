@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,20 +30,29 @@
 !
 !
 
+module m_bndmorlyr
+
+   implicit none
+
+   private
+
+   public :: bndmorlyr
+
+contains
+
    subroutine bndmorlyr(lsedtot, timhr, nto, bc_mor_array, stmpar)
    !!--description-----------------------------------------------------------------
       !
       !    Function: - Apply bed composition boundary conditions
       !
    !!--declarations----------------------------------------------------------------
-      use precision
+      use precision, only: fp
+      use table_handles, only: gettabledata
       use bedcomposition_module, only: copybedcomp, setmfrac, setvfrac
       use m_flowtimes, only: julrefdat
-      use table_handles, only: handletype, gettabledata
-      use m_fm_erosed, only: bedbndtype, cmpbndtype
       use m_sediment, only: stmtype
-      !
-      implicit none
+      use handles, only: handletype
+      use morphology_data_module, only: bedbndtype, cmpbndtype
       !
       ! The following list of pointer parameters is used to point inside the gdp structure
       !
@@ -141,3 +150,5 @@
          end do
       end do
    end subroutine bndmorlyr
+
+end module m_bndmorlyr

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,91 +30,96 @@
 !
 !
 
- !> Sets s1 or s0 water levels at zbndz-type boundaries.
- subroutine sets01zbnd(n01, jasetBlDepth)
-    use m_flowgeom
-    use m_flow
-    use m_flowtimes
-    use m_missing
-    use m_sobekdfm
+module m_sets01zbnd
 
-    use m_fm_icecover, only: ice_apply_pressure, ice_p
+   implicit none
 
-    implicit none
+   private
 
-    integer, intent(in) :: n01 !< Selects whether s0 or s1 has to be set.
-    integer, intent(in) :: jasetBlDepth !< Whether or not (1/0) to set the boundary node bed levels, based on depth below s1. Typically only upon model init (based on initial water levels).
+   public :: sets01zbnd
 
-    integer :: n, kb, k2, itpbn, L, ibnd
-    double precision :: zb, hh
+contains
 
-    do n = 1, nbndz ! overrides for waterlevel boundaries
-       kb = kbndz(1, n)
-       k2 = kbndz(2, n)
-       L = kbndz(3, n)
-       itpbn = kbndz(4, n)
-       if (itpbn == 1) then ! waterlevelbnd
-          zb = zbndz(n)
-          if (alfsmo < 1d0) then
-             zb = alfsmo * zb + (1d0 - alfsmo) * zbndz0(n)
-          end if
-       else if (itpbn == 2) then ! neumannbnd, positive specified slope leads to inflow
-          !zb   = s0(k2) + zbndz(n)*dx(L)
-          zb = s1(kb)
-       else if (itpbn == 5) then ! Riemannbnd
-          hh = max(epshs, 0.5d0 * (hs(kb) + hs(k2)))
-          zb = 2d0 * zbndz(n) - zbndz0(n) - sqrt(hh / ag) * u1(L)
-       else if (itpbn == 6) then ! outflowbnd
-          if (u0(L) > 0) then ! on inflow, copy inside
-             zb = s0(k2)
-             if (n01 == 0) then
-                s0(kb) = max(zb, bl(kb)) ! TODO: AvD: if single time step is being restarted, then this line will have overwritten some of the old s0 values.
-             else
-                s1(kb) = max(zb, bl(kb))
-             end if
-          end if
-       else if (itpbn == 7) then ! qhbnd
-          zb = zbndz(n)
-          if (alfsmo < 1d0) then
-             zb = alfsmo * zb + (1d0 - alfsmo) * zbndz0(n)
-          end if
-       end if
+   !> Sets s1 or s0 water levels at zbndz-type boundaries.
+   subroutine sets01zbnd(n01, jasetBlDepth)
+      use precision, only: dp
+      use m_flowgeom, only: bl, bob, bob0
+      use m_flow, only: nbndz, kbndz, zbndz, zbndz0, s1, epshs, hs, ag, u1, u0, s0, bndbldepth, dmiss
+      use m_flowtimes, only: alfsmo
+      use m_sobekdfm, only: set_1d2d_01
+      use m_water_level_boundary, only: correct_water_level_boundary
 
-       if (japatm > 0 .and. PavBnd > 0) then
-          zb = zb - (patm(kb) - PavBnd) / (ag * rhomean)
-       end if
+      implicit none
 
-       if (ice_apply_pressure) then
-          zb = zb - ice_p(kb) / (ag * rhomean)
-       end if
+      integer, intent(in) :: n01 !< Selects whether s0 or s1 has to be set.
+      integer, intent(in) :: jasetBlDepth !< Whether or not (1/0) to set the boundary node bed levels, based on depth below s1. Typically only upon model init (based on initial water levels).
 
-!    zb = max( zb, bl(kb) + 1d-3 )
+      integer :: n, kb, k2, itpbn, L, ibnd
+      real(kind=dp) :: water_level_boundary, hh
 
-       ! When requested, set bl of bnd nodes to a certain depth below (initial) water level.
-       if (jasetBlDepth == 1 .and. allocated(bndBlDepth)) then
-          ibnd = kbndz(5, n)
-          if (bndBlDepth(ibnd) /= dmiss) then
-             bl(kb) = min(bl(kb), zb - bndBlDepth(ibnd))
-             bob(1, L) = bl(kb)
-             bob(2, L) = bl(kb)
-             bob0(1, L) = bl(kb)
-             bob0(2, L) = bl(kb)
-             bl(k2) = bl(kb)
-          end if
-       end if
+      do n = 1, nbndz ! overrides for waterlevel boundaries
+         kb = kbndz(1, n)
+         k2 = kbndz(2, n)
+         L = kbndz(3, n)
+         itpbn = kbndz(4, n)
+         if (itpbn == 1) then ! waterlevelbnd
+            water_level_boundary = zbndz(n)
+            if (alfsmo < 1d0) then
+               water_level_boundary = alfsmo * water_level_boundary + (1d0 - alfsmo) * zbndz0(n)
+            end if
+         else if (itpbn == 2) then ! neumannbnd, positive specified slope leads to inflow
+            !water_level_boundary   = s0(k2) + zbndz(n)*dx(L)
+            water_level_boundary = s1(kb)
+         else if (itpbn == 5) then ! Riemannbnd
+            hh = max(epshs, 0.5d0 * (hs(kb) + hs(k2)))
+            water_level_boundary = 2d0 * zbndz(n) - zbndz0(n) - sqrt(hh / ag) * u1(L)
+         else if (itpbn == 6) then ! outflowbnd
+            if (u0(L) > 0) then ! on inflow, copy inside
+               water_level_boundary = s0(k2)
+               if (n01 == 0) then
+                  s0(kb) = max(water_level_boundary, bl(kb)) ! TODO: AvD: if single time step is being restarted, then this line will have overwritten some of the old s0 values.
+               else
+                  s1(kb) = max(water_level_boundary, bl(kb))
+               end if
+            end if
+         else if (itpbn == 7) then ! qhbnd
+            water_level_boundary = zbndz(n)
+            if (alfsmo < 1d0) then
+               water_level_boundary = alfsmo * water_level_boundary + (1d0 - alfsmo) * zbndz0(n)
+            end if
+         end if
 
-       if (itpbn < 6 .or. itpbn == 7) then
-          if (n01 == 0) then
-             s0(kb) = max(zb, bl(kb)) ! TODO: AvD: if single time step is being restarted, then this line will have overwritten some of the old s0 values.
-             hs(kb) = s0(kb) - bl(kb)
-          else
-             s1(kb) = max(zb, bl(kb))
-             hs(kb) = s1(kb) - bl(kb)
-          end if
-       end if
+         call correct_water_level_boundary(water_level_boundary, kb)
 
-    end do
+!    water_level_boundary = max( water_level_boundary, bl(kb) + 1d-3 )
 
-    call set_1d2d_01()
+         ! When requested, set bl of bnd nodes to a certain depth below (initial) water level.
+         if (jasetBlDepth == 1 .and. allocated(bndBlDepth)) then
+            ibnd = kbndz(5, n)
+            if (bndBlDepth(ibnd) /= dmiss) then
+               bl(kb) = min(bl(kb), water_level_boundary - bndBlDepth(ibnd))
+               bob(1, L) = bl(kb)
+               bob(2, L) = bl(kb)
+               bob0(1, L) = bl(kb)
+               bob0(2, L) = bl(kb)
+               bl(k2) = bl(kb)
+            end if
+         end if
 
- end subroutine sets01zbnd
+         if (itpbn < 6 .or. itpbn == 7) then
+            if (n01 == 0) then
+               s0(kb) = max(water_level_boundary, bl(kb)) ! TODO: AvD: if single time step is being restarted, then this line will have overwritten some of the old s0 values.
+               hs(kb) = s0(kb) - bl(kb)
+            else
+               s1(kb) = max(water_level_boundary, bl(kb))
+               hs(kb) = s1(kb) - bl(kb)
+            end if
+         end if
+
+      end do
+
+      call set_1d2d_01()
+
+   end subroutine sets01zbnd
+
+end module m_sets01zbnd

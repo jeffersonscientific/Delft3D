@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,24 +33,25 @@
 !
 module m_box
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine BOX(XB1, YB1, XB2, YB2)
-         use m_movabs
-         use m_lnabs
-         implicit none
-         double precision :: xb1
-         double precision :: xb2
-         double precision :: yb1
-         double precision :: yb2
-         call MOVABS(XB1, YB1)
-         call LNABS(XB2, YB1)
-         call LNABS(XB2, YB2)
-         call LNABS(XB1, YB2)
-         call LNABS(XB1, YB1)
-         return
-      end
+   subroutine BOX(XB1, YB1, XB2, YB2)
+      use precision, only: dp
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      implicit none
+      real(kind=dp) :: xb1
+      real(kind=dp) :: xb2
+      real(kind=dp) :: yb1
+      real(kind=dp) :: yb2
+      call MOVABS(XB1, YB1)
+      call LNABS(XB2, YB1)
+      call LNABS(XB2, YB2)
+      call LNABS(XB1, YB2)
+      call LNABS(XB1, YB1)
+      return
+   end
 
 end module m_box

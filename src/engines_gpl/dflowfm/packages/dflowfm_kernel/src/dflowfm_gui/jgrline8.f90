@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,23 +30,24 @@
 !
 !
 module m_jgrline8
-use m_polyline
+   use m_polyline
 
-      implicit none
+   implicit none
 contains
    subroutine JGRLINE8(X, Y, N) ! TEKEN LIJN, INCL XYMISSEN, GEBRUIK VAN INVIEW EN PROJECTIE
+      use precision, only: dp
 
-      use m_missing
-      use m_inview2
+      use m_missing, only: dxymis
+      use m_inview2, only: inview2
 
       integer :: n
-      double precision :: X(N), Y(N)
+      real(kind=dp) :: X(N), Y(N)
 
       integer :: i
       integer :: in
       integer :: k
       integer :: l
-      double precision :: XA, YA
+      real(kind=dp) :: XA, YA
       integer, parameter :: KMAX = 4096 ! BEPERKING VAN INTERACTER
       real :: XX(KMAX), YY(KMAX)
 

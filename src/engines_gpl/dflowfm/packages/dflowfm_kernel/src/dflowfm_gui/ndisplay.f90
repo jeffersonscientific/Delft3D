@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,8 +31,15 @@
 !
 
 module m_ndisplay
+   use m_zoom3, only: zoom3
+   use m_setcoltabfile, only: setcoltabfile
+   use m_checknetwork, only: checknetwork
+   use m_add_tracer, only: add_tracer
+   use m_textparameters
+   use m_setwy
+   use m_waveconst
 
-implicit none
+   implicit none
 
 contains
 
@@ -57,6 +64,8 @@ contains
       use m_paramtext
       use m_tek_num_netcells
       use m_set_branch_lc
+      use m_filez, only: oldfil, doclose, message
+      use m_wind, only: jawind
 
       integer :: ium
       integer :: maxopt
@@ -70,13 +79,11 @@ contains
       integer :: ierror
       integer :: numopt
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
+      character(len=40) :: OPTION(MAXOP)
 
 1234  continue
 
       if (NWHAT == 1) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'DISPLAY PRESETS                         '
          OPTION(1) = 'Network topology (nrs)                  '
          OPTION(2) = 'Network orthogonality                   '
          OPTION(3) = 'Flow display                            '
@@ -153,8 +160,6 @@ contains
             call save_displaysettings('unstruc.cfg')
          end if
       elseif (NWHAT == 2) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE NETWORK              '
          OPTION(1) = 'NO NETWORK                              '
          OPTION(2) = 'NETWORK SOLID LINES                     '
          OPTION(3) = 'NETWORK SOLID LINES + OUTLINE           '
@@ -177,8 +182,6 @@ contains
             end if
          end if
       else if (NWHAT == 3) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE PREVIOUS NETWOK      '
          OPTION(1) = 'NO NETWORK                              '
          OPTION(2) = 'NETWORK SOLID LINES                     '
          OPTION(3) = 'OTHER                                   '
@@ -193,8 +196,6 @@ contains
             NDRAW(16) = NWHAT2 - 1
          end if
       else if (NWHAT == 4) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE SPLINES              '
          OPTION(1) = 'No Splines                              '
          OPTION(2) = 'Splines with Dots                       '
          OPTION(3) = 'Splines                                 '
@@ -206,8 +207,6 @@ contains
             NDRAW(15) = NWHAT2 - 1
          end if
       else if (NWHAT == 5) then
-         exp(1) = 'MENU 10                                 '
-         exp(2) = 'HOW TO DISPLAY THE land boundary        '
          OPTION(1) = 'NO land boundary                        '
          OPTION(2) = 'LINES                                   '
          OPTION(3) = 'LINES + DOTS                            '
@@ -226,8 +225,6 @@ contains
             NDRAW(3) = NWHAT2 - 1
          end if
       else if (NWHAT == 6) then
-         exp(1) = 'MENU 8                                  '
-         exp(2) = 'HOW TO DISPLAY NODE VALUES              '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'NUMBERS                                 '
          OPTION(3) = 'ISOFIL SMOOTH                           '
@@ -244,8 +241,6 @@ contains
          if (NWHAT2 /= NDRAW(19)) KEY = 3
          NDRAW(19) = NWHAT2
       else if (NWHAT == 7) then
-         exp(1) = 'MENU 8                                  '
-         exp(2) = 'HOW TO DISPLAY LINK VALUES              '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'NUMBERS                                 '
          OPTION(3) = 'ISOfil SMOOTH                           '
@@ -262,8 +257,6 @@ contains
          if (NWHAT2 /= NDRAW(11)) KEY = 3
          NDRAW(11) = NWHAT2
       else if (NWHAT == 8) then
-         exp(1) = 'MENU 11                                 '
-         exp(2) = 'SHOW NODE ADMINISTRATION                '
          OPTION(1) = 'NO NODE VALUES                          '
          OPTION(2) = 'NODE NUMBERS                            '
          OPTION(3) = 'NUMBER OF LINKS ATTACHED TO NODE        '
@@ -290,8 +283,6 @@ contains
             call PARAMTEXT(OPTION(NWHAT2), 1)
          end if
       else if (NWHAT == 9) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY THE ELEMENT ADMIN        '
          OPTION(1) = 'NO LINK VALUES                    ( )   '
          OPTION(2) = 'LINK NUMBERS                      ( )   '
          OPTION(3) = 'NODE NUMBERS BASED ON LINKS       ( )   '
@@ -345,8 +336,6 @@ contains
          end if
          if (NWHAT2 == 6 .or. NWHAT2 == 7) call SETBRANCH_LC(ium)
       else if (NWHAT == 10) then ! flow nodes
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow nodes                         '
          option = ' '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'Waterlevel                          (m )' ! options for nodes , znod, ndraw(28)
@@ -440,7 +429,7 @@ contains
          numoptwav = -999
          numoptsf = -999
          numoptsed = -999
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             numopt = numopt + 1
             numoptwav = numopt
             OPTION(numoptwav) = 'Wave parameters                         '
@@ -504,7 +493,7 @@ contains
             end if
 
          else if (ndraw(28) == numoptwav) then
-            if (jawave > 0) then
+            if (jawave > NO_WAVES) then
                ndraw(28) = 1
                nwhat = 42 ! WAVE submenu
                goto 1234
@@ -530,8 +519,6 @@ contains
          end if
 
       else if (NWHAT == 11) then ! flow links
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow links                         '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'abs(u1)                            (m/s)' ! options for links, zlin, ndraw(29)
          OPTION(3) = 'q1-specific                       (m2/s)'
@@ -593,7 +580,7 @@ contains
          else
             OPTION(47) = 'Coriolis parameter fcorio        (1/s  )'
          end if
-         if (jawave > 2 .and. jawave < 5) then
+         if (jawave > WAVE_FETCH_YOUNG .and. jawave < WAVE_UNIFORM) then
             OPTION(48) = 'Wave forcing term at u            (m/s2)'
          else
             OPTION(48) = '                                        '
@@ -632,8 +619,6 @@ contains
             end if
          end if
       else if (NWHAT == 12) then ! show values at net cell
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW net cells                          '
          OPTION(1) = 'Do not show values at net cells         '
          OPTION(2) = 'Cell numbers                            '
          OPTION(3) = 'Show aspect ratio, <=1 by definition    '
@@ -674,8 +659,6 @@ contains
             ndraw(19) = 5
          end if
       else if (NWHAT == 13) then ! show values at cell corners
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow links                         '
          OPTION(1) = 'Do NOt show values at flow cell corners '
          OPTION(2) = 'Show x velocity comp                    '
          OPTION(3) = 'Show y velocity comp                    '
@@ -687,8 +670,6 @@ contains
          if (NWHAT2 /= NDRAW(31)) KEY = 3
          NDRAW(31) = NWHAT2
       else if (NWHAT == 14) then ! show all flow white line
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW flow links                         '
          OPTION(1) = 'Do NOt show flow links                  '
          OPTION(2) = 'Show All flow links                     '
          OPTION(3) = 'Show All flow link directions           '
@@ -700,8 +681,6 @@ contains
          if (NWHAT2 /= NDRAW(30)) KEY = 3
          NDRAW(30) = NWHAT2
       else if (NWHAT == 15) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW vectors YES/NO                     '
          OPTION(1) = 'NO                                      '
          OPTION(2) = 'Velocity                                '
          OPTION(3) = 'Discharge                               '
@@ -719,8 +698,6 @@ contains
          end if
          key = 3
       else if (NWHAT == 16) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW observation stations               '
          OPTION(1) = 'NO observation stations                 '
          OPTION(2) = 'Cross                                   '
          OPTION(3) = 'Cross + name                            '
@@ -741,8 +718,6 @@ contains
             NDRAWobs = NWHAT2
          end if
       else if (NWHAT == 17) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW CROSS SECTIONS                     '
          OPTION(1) = 'NO cross sections                       '
          OPTION(2) = 'Line only                               '
          OPTION(3) = 'Line dir                                '
@@ -765,8 +740,6 @@ contains
             NDRAWcrosssections = NWHAT2
          end if
       else if (NWHAT == 18) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW THIN DAMS YES/NO                   '
          OPTION(1) = 'NO thin dams                            '
          OPTION(2) = 'Thin dam polylines                      '
          OPTION(3) = 'Thin dam net links                      '
@@ -776,8 +749,6 @@ contains
          ndrawThinDams = NWHAT2 - 1
          KEY = 3
       else if (NWHAT == 19) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW FIXED WEIRS YES/NO                 '
          OPTION(1) = 'NO fixed weirs                           '
          OPTION(2) = 'Fixed weir flow links                    '
          OPTION(3) = 'Fixed weir flow links + heights          '
@@ -792,8 +763,6 @@ contains
       else if (NWHAT == 20) then
 !     Lege regel
       else if (NWHAT == 21) then
-         exp(1) = 'MENU 12                                 '
-         exp(2) = 'ISOSCALE YES OR NO                      '
          OPTION(1) = 'ISOSCALE  NODES ON                      '
          OPTION(2) = 'ISOSCALE  LINKS ON                      '
          OPTION(3) = 'ISOSCALES NODES AND LINKS ON            '
@@ -840,8 +809,6 @@ contains
          NDRAW(10) = 1
          KEY = 3
       else if (NWHAT == 30) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'NO rai                                  '
          OPTION(2) = 'small rai                               '
          OPTION(3) = 'somewhat larger rai                     '
@@ -856,8 +823,6 @@ contains
          NDRAW(9) = 2
          KEY = 3
       else if (NWHAT == 32) then
-         exp(1) = 'MENU 9                                  '
-         exp(2) = 'HOW TO DISPLAY SAMPLE POINTS            '
          OPTION(1) = 'NO SAMPLE POINTS                        '
          OPTION(2) = 'COLOURED DOTS                           '
          OPTION(3) = 'COLOURED DOTS AND CIRCLES               '
@@ -875,8 +840,6 @@ contains
             NDRAW(32) = NWHAT2 - 1
          end if
       else if (NWHAT == 33) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'YO BITMAP                               '
          OPTION(2) = 'NO BITMAP                               '
          MAXOPT = 2
@@ -885,8 +848,6 @@ contains
          NDRAW(26) = NWHAT2
          KEY = 3
       else if (NWHAT == 34) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'No Banf                                 '
          OPTION(2) = 'Equilibrium concentration               '
          OPTION(3) = 'Banf flux (ceq - c)                     '
@@ -900,8 +861,6 @@ contains
          NDRAW(34) = NWHAT2
          KEY = 3
       else if (NWHAT == 35) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'No Polygon                              '
          OPTION(2) = 'Polygon red + white dots                '
          OPTION(3) = 'Polygon no dots                         '
@@ -921,8 +880,6 @@ contains
          NDRAWPOL = NWHAT2
          KEY = 3
       else if (NWHAT == 36) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW ORTHO YES/NO                       '
          OPTION(1) = 'No curvilinear grid                     '
          OPTION(2) = 'Lines                                   '
          OPTION(3) = '                                        '
@@ -938,8 +895,6 @@ contains
          KEY = 3
 
       else if (NWHAT == 37) then ! constituents
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW CONSTITUENTS YES/NO                '
          OPTION(1) = 'NEW TRACER                              '
 
          do i = 1, NUMCONST
@@ -963,8 +918,6 @@ contains
          end if
 
       else if (NWHAT == 38) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW sorsin                             '
          OPTION(1) = 'No Sources & Sinks                      '
          OPTION(2) = 'black (sin) + white (sor) dots          '
          OPTION(3) = 'idem + Names                            '
@@ -977,8 +930,6 @@ contains
          KEY = 3
 
       else if (NWHAT == 39) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW DOTS YES/NO                        '
          OPTION(1) = 'DO NOT SHOW DOTS                        '
          OPTION(2) = 'SHOW DOTS                               '
          OPTION(3) = 'CLEAR DOTS                              '
@@ -992,8 +943,6 @@ contains
          end if
          KEY = 3
       else if (NWHAT == 40) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW STRUCTURES YES/NO                '
          OPTION(1) = 'DO NOT SHOW STRUCTURES                '
          OPTION(2) = 'SHOW STRUCTURES SYMBOLS ONLY          '
          OPTION(3) = 'SHOW STRUCTURES SYMBOLS AND IDS       '
@@ -1004,8 +953,6 @@ contains
          KEY = 3
 
       else if (NWHAT == 41) then
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW PARTICLES YES/NO                   '
          OPTION(1) = 'DO NOT SHOW PARTICLES                   '
          OPTION(2) = 'SHOW PARTICLES                          '
          MAXOPT = 2
@@ -1014,10 +961,8 @@ contains
          NDRAWPART = NWHAT2
          KEY = 3
       else if (NWHAT == 42) then ! wave stuff
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW WAVEPARS YES/NO                    '
 
-         if (jawave == 1 .or. jawave == 2) then
+         if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
             OPTION(1) = 'RMS wave height  (~ 0.7*Hsig)        (m)'
             OPTION(2) = 'Wave length                          (m)'
             OPTION(3) = 'Peak wave period                     (s)'
@@ -1078,8 +1023,6 @@ contains
          NDRAW(28) = numoptwav
 
       else if (NWHAT == 43) then ! Spiral flow parameters
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Spiral Flow Parameters YES/NO      '
          OPTION(1) = 'Streamlines curvature              (1/m)'
          OPTION(2) = 'Spiral flow intensity              (m/s)'
          OPTION(3) = 'Dispersion stress by spiral flow  (m/s2)'
@@ -1097,8 +1040,6 @@ contains
          end if
 
       else if (NWHAT == 44) then ! Sed trsp on flow links
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Mophology Parameters YES/NO        '
          OPTION(1) = 'Curr. rel. bedload transport    (kg/s/m)'
          OPTION(2) = 'Curr. rel. suspended transport  (kg/s/m)'
          OPTION(3) = 'Wave  rel. bedload transport    (kg/s/m)'
@@ -1120,8 +1061,6 @@ contains
          end if
 
       else if (NWHAT == 45) then ! Sed trsp on flow nodes
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Mophology Parameters YES/NO        '
          OPTION(1) = 'Bottom level change in last timestep (m)'
          OPTION(2) = 'Sediment source adv. eq.       (kg/m3/s)'
          OPTION(3) = 'Sediment sink   adv. eq.           (1/s)'
@@ -1140,8 +1079,6 @@ contains
          end if
 
       else if (NWHAT == 46) then ! Groundwater & Hydrology submenu
-         exp(1) = 'MENU                                    '
-         exp(2) = 'SHOW Groundwater & Hydrology Parameters '
          OPTION(1) = 'Groundwater pressure                 (m)'
          OPTION(2) = ' ' ! Reserved
          OPTION(3) = ' ' ! Reserved

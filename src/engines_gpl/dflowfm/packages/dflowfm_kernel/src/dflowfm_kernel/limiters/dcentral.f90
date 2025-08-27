@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,9 +32,10 @@
 module m_dcentral
    implicit none
 contains
-   double precision function dcentral(d1, d2) ! twee maal vergroot vanwege acl
-      use m_dcminmod
-      double precision d1, d2
+   real(kind=dp) function dcentral(d1, d2) ! twee maal vergroot vanwege acl
+      use precision, only: dp
+      use m_dcminmod, only: dcminmod
+      real(kind=dp) d1, d2
 
       if (d1 * d2 > 0d0) then
          dcentral = dcminmod((d1 + d2) * 0.5d0, dcminmod(2d0 * d1, 2d0 * d2))

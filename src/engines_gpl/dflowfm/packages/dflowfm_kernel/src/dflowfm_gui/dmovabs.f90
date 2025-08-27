@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,22 +32,23 @@
 
 module m_dmovabs
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine DMOVABS(XD, YD, ZD)
-         use m_oldz, only: oz
-         use m_three_two
-         use m_movabs
+   subroutine DMOVABS(XD, YD, ZD)
+      use precision, only: dp
+      use m_oldz, only: oz
+      use m_three_two, only: drietwee
+      use m_movabs, only: movabs
 
-         double precision :: x
-         double precision :: y
-         double precision :: z
-         double precision XD, YD, ZD
-         call DRIETWEE(XD, YD, ZD, X, Y, Z)
-         call MOVABS(X, Y)
-         OZ = Z
-      end
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: z
+      real(kind=dp) XD, YD, ZD
+      call DRIETWEE(XD, YD, ZD, X, Y, Z)
+      call MOVABS(X, Y)
+      OZ = Z
+   end
 
 end module m_dmovabs

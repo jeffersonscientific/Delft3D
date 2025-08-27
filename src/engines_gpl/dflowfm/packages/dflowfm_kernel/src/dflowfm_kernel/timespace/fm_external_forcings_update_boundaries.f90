@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,6 +35,11 @@ contains
 
 !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
+      use m_setzminmax, only: setzminmax
+      use precision, only: dp
+      use m_dambreak_breach, only: update_dambreak_breach
+      use m_setsigmabnds, only: setsigmabnds
+      use m_fm_thahbc
       use timers
       use m_flowtimes
       use m_flowgeom
@@ -42,7 +47,7 @@ contains
       use m_sferic
       use timespace
       use m_ship
-      use m_observations, only: updateobservationxy
+      use m_observations, only: numobs, nummovobs, updateobservationxy
       use m_timer
       use m_partitioninfo
       use m_meteo
@@ -52,14 +57,15 @@ contains
       use unstruc_channel_flow
       use m_oned_functions
       use m_obs_on_flowgeom, only: obs_on_flowgeom
+      use unstruc_messages, only: callback_msg
 
       implicit none
 
-      double precision, intent(in) :: time !< Current simulation time (s)
+      real(kind=dp), intent(in) :: time !< Current simulation time (s)
       integer, intent(out) :: iresult !< Integer error status
 
       integer :: i, n, k2, kb, L, itrac, isf
-      double precision :: dQ
+      real(kind=dp) :: dQ
 
       iresult = DFM_EXTFORCERROR
       call timstrt('External forcings boundaries', handle_extbnd)
@@ -253,14 +259,9 @@ contains
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_gateloweredgelevel, irefdate, tzone, tunit, time, zgate)
       end if
 
-      !dambreak
-      if (ndambreaksignals > 0) then
-         ! Variable ndambreaksignals is >0 for all partitions if there is a dambreak, even if it is outside of a partition.
-         ! In a parallel simulation, we need to call this subroutine even in a special situation that there is no dambreak
-         ! on the current subdomain (i.e. ndambreaklinks == 0), because this subroutine calls function
-         ! getAverageQuantityFromLinks, which involves mpi communication among all subdomains. However, in this special situation,
-         ! all the necessary variables will be set to 0 and will not participate the dambreak related computation in this subroutine.
-         call update_dambreak_breach(time, dts)
+      if (update_dambreak_breach(time, dts) /= 0) then
+         success = .false.
+         goto 888
       end if
 
       if (network%rgs%timeseries_defined) then
@@ -272,7 +273,7 @@ contains
          if (time >= times_update_roughness(2)) then
             ! Shift the time dependent roughness values and collect the values for the new time instance
             times_update_roughness(1) = times_update_roughness(2)
-            times_update_roughness(2) = times_update_roughness(2) + dt_UpdateRoughness ! (e.g., 86400 s)
+            times_update_roughness(2) = times_update_roughness(2) + dt_update_roughness ! (e.g., 86400 s)
             call shiftTimeDependentRoughnessValues(network%rgs)
             ! The next gettimespace call will automatically read and fill new values in prgh%timeDepValues(:,2).
             success = success .and. ec_gettimespacevalue(ecInstancePtr, item_frcutim, irefdate, tzone, tunit, times_update_roughness(2))

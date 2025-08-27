@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2025.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  ! Last changed
@@ -113,6 +113,7 @@ module RRRunoff
   use ParallelData, only: NrEvapStations
   use netcdfdata, only : MeteoNetCdfInput
   use Snyder_hydrograph
+  use GreenAmptInfiltration
   use Dio_plt_rw, prop_file_unused => prop_file
 
 
@@ -184,7 +185,7 @@ module RRRunoff
 ! SCS input parameters
   REAL, Pointer, SAVE ::         SCS_Slope(:), SCS_Length(:)
   Integer, Pointer, SAVE ::      SCS_UHChosen(:), SCS_AMC(:)
-  Real   , Pointer, SAVE ::      SCS_CurveNumber(:)
+  Real   , Pointer, SAVE ::      SCS_CurveNumber(:), SCS_HMSLinResR(:), SCS_HMSC1(:), SCS_HMSC2(:)
   Real, Pointer, SAVE ::         SCS_CN1(:), SCS_CN2(:), SCS_CN3(:)
 
   REAL, Pointer, SAVE ::         SCS_MaxRetention(:), SCS_Tlag(:), SCS_Tc(:),  &
@@ -192,7 +193,9 @@ module RRRunoff
                                  SCS_Paccum0(:), SCS_PExcess0(:), &
                                  SCS_Storage(:), SCS_Storage0(:), SCS_Rainfall(:), &
                                  SCS_UnitHydComp(:,:), SCS_AvailableRunoff(:,:)
-  
+
+Real   , Pointer, SAVE ::        SCS_HMSLinResInflow(:), SCS_HMSLinResInflowTot(:), SCS_HMSLinResOutflow0(:), SCS_HMSLinResOutflow(:), SCS_HMSLinResContent(:), SCS_HMSLinResContent0(:)
+
 REAL   , Pointer, SAVE :: SCS_Snyder_Cp(:)                      ! Snyder Peaking Factor
 REAL   , Pointer, SAVE :: SCS_Snyder_UH_decay_rate(:)           ! Decay rate (1/hour) of exponential part of Snyder UH
 REAL   , Pointer, SAVE :: SCS_Snyder_UH_decay_frac(:)           ! fraction of peak flow at which exponential decay starts (0-0.5)
@@ -208,6 +211,16 @@ Integer, Pointer, SAVE :: SCS_Snyder_BF_interpolation_method(:) ! Base Flow inte
   REAL, Pointer, SAVE ::         SCS_SubSurfMax (:), SCS_SubSurfInit(:), SCS_SubSurfAct(:) , SCS_SubSurfAct0(:)
   REAL, Pointer, SAVE ::         SCS_PercSS(:)
   REAL, Pointer, SAVE ::         SCS_GWAct(:), SCS_GWAct0(:), SCS_GWOutflow(:)
+! GreenAmpt infiltration
+  Logical, Pointer, Save ::      SCS_UseGreenAmpt_Infiltration(:)
+! input
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_Ksat(:), SCS_GreenAmpt_Psi(:), SCS_GreenAmpt_theta_dmax(:)      ! Ksat in mm/hour, psi in mm, theta_dmax is dimensionless (between 0 and 1)
+! computation/output                                                                   ``
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_Lu(:), SCS_GreenAmpt_Kr(:), SCS_GreenAmpt_Tr(:)                 ! Lu in mm, Kr in 1/hour, Tr in hour
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_theta_d(:), SCS_GreenAmpt_theta_du(:)  ! theta_d and theta_du dimensionless, PondingDepth in mm
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_CumRain(:), SCS_GreenAmpt_CumInfiltration(:), SCS_GreenAmpt_InfRate(:), SCS_GreenAmpt_T(:) ! CumRain, CumInfiltration in mm, InfRate in mm/hour, T = recovery time remaining before next event (hour)
+  double precision, Pointer, SAVE ::         SCS_GreenAmpt_InfCurrentStep(:)  ! infiltration current timestep in mm
+
 
 ! NAM input parameters
 ! Parameters
@@ -545,6 +558,14 @@ contains
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UHChosen, 0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_AMC, 2)    ! default AMC 2 = average
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_MaxRetention, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResR, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSC1, 1E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSC2, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResContent, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResContent0, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResInflowTot, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResOutflow0, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_HMSLinResOutflow, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_TLag, -999.9E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Tc, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_PAccum, 0E0)
@@ -554,13 +575,30 @@ contains
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Storage, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Storage0, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Rainfall, 0E0)
-        
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_Cp, 0E0)                      
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_rate, 0E0)           
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_frac, 0E0)           
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_decay_rate, 0E0)           
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_interpolation_method, 0)   
-        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_STRTQ, 0E0)                
+
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_Cp, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_rate, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_frac, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_decay_rate, 0E0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_interpolation_method, 0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_BF_STRTQ, 0E0)
+! GreenAmpt
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseGreenAmpt_Infiltration, .false.)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Ksat, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Psi,  0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_Dmax, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Lu, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Kr, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Tr, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_D, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_Theta_Du, 0.D0)
+!       Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseGreenAmpt_PondingDepth, 0.D0)    use SCS_Storage instead
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_CumRain, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_CumInfiltration, 0.00001D0)   ! not at zero, ivm divide by zero
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_InfRate, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_InfCurrentStep, 0.D0)
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_GreenAmpt_T, 0.D0)
+! BaseFlow
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_UseBaseFlow, .false.)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_MaxGWCap,   0E0 )
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_InitGwCap,   0E0 )
@@ -1003,9 +1041,9 @@ contains
     Integer(4)      infile1
     Integer         teller, i, inode, j, IRRRunoff, IRRRunoff2, IRRRunoffSub, IRRRunoffRef, index, inod, nhlp, iout1, iecode, idebug, len_groupname, NrSeconds, NrValues
     Character(CharIdLength)   name, id, NodeId
-    Character(9999) string, TempString, string1
+    Character(len=9999) string, TempString, string1, String0
     Integer         lenString, lenString1
-    Character(1)    KChar
+    Character(len=1)    KChar
     Logical         allow, found, endfil, occurs, occurs2, Err969, Err969all, TabYesNo
     Integer         TableNr, NrColumns
     Integer         LengthTable, ipos, ipos1, ipos2
@@ -1028,6 +1066,11 @@ contains
                                                    NAM_GroundwaterForcingDefinition(:)
     Character(Len=CharIdLength), pointer, save ::  LGSTDef(:), LGSTDef2(:)
     Logical  Success
+
+    Character(Len=CharIdLength)  FileName
+    Character(Len=1000000)       KeepBufString
+    Integer                      IoUnit, iCount
+
     Integer  NrHbvNodes, NrExtNodes, NrScsNodes, NrNAMNodes, NrLGSINodes, NrWageningenNodes, NrWalrusNodes
     ! HBV
     Real     MeltConstDum, SnowFallTempDum, SnowMeltTempDum, TempAltConstDum, &
@@ -1077,7 +1120,18 @@ contains
     Err969 = .false.
     LevelError = .false.
 
-! Read RRRunoffNode.3B file
+! *********************************************************************
+! ***  If CleanRRFiles, also write cleaned input
+! *********************************************************************
+   if (CleanRRFiles) then
+        FileName = ConfFil_get_namFil(44)
+        FileName(1:) = Filename(1:Len_trim(FileName)) // '_cleaned'
+        Call Openfl (iounit, FileName,1,3)  ! Sacrmnto.3b   ! maybe already existing (updating Sacr. input, append mode)
+        Call ErrMsgStandard (999, 1, ' Cleaning Sacrmnto.3b for RRrunoff input to file', FileName)
+   endif
+! *********************************************************************
+! Read RRRunoffNode.3B file   (=Sacrmnto.3b file!)
+! *********************************************************************
     call SetMessage(LEVEL_INFO, 'Read RRRunoffNode.3b file')
     endfil = .false.
     teller = 0
@@ -1115,6 +1169,9 @@ contains
             call SetMessage(LEVEL_ERROR, 'Data for RRRunoffNode node '//id(1:Len_Trim(id))//' double in datafile RRRunoffNode.3B')
             LevelError = .true.
           else
+           ! cleaning RR files
+           If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
+
            teller = teller + 1
            AlreadyRead(IRRRunoff) = .true.
            if (String(1:4) .eq. 'EXTR') then
@@ -1150,6 +1207,8 @@ contains
               lenString = len_trim (String)
               if (String(lenString-3:lenstring) .ne. 'walr') then
                   READ(Infile1,'(A1000)',END=21,ERR=150,IOSTAT=IECODE)  String1
+                  ! cleaning RR files
+                  If (CleanRRFiles) write(Iounit,'(A)') String1 (1:len_trim(String1))
                   lenString1 = len_trim (String1)
                   String = String(1:lenString) // " " // String1 (1:lenString1)
                   goto 101
@@ -1342,14 +1401,14 @@ contains
                String = NodeId(1:Len_Trim(NodeId))
                call ErrMsgStandard (977, 0, ' Curve Number should be > 0 and <=100 for External Runoff node ',String(1:Len_Trim(String)) )
             endif
-            
+
             ! optional unit hydrograph selection  uh 0 or uh 1 or uh 2)
             allow = .true.
             found = .false.
             Retval = RetVal + GetVAR2(STRING,' uh ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
             if (found) SCS_UHChosen(IRRRunoffSub) = IDUM(1)
-            if ((found .and. SCS_UHChosen(IRRRunoffSub) < 2) .or. .not. found) then ! 
+            if ((found .and. SCS_UHChosen(IRRRunoffSub) < 2) .or. .not. found) then !
                ! RRRunoffNode SCS parameters, if SCS selected they should be present
                allow = .true.
                found = .false.
@@ -1365,37 +1424,37 @@ contains
                Retval = RetVal + GetVAR2(STRING,' cp ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                SCS_Snyder_Cp(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' uhdr ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_UH_decay_rate(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' uhdf ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_UH_decay_frac(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' bfdr ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_BF_decay_rate(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' bfsq ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_BF_STRTQ(IRRRunoffSub) = RDUM(1)
-               
+
                allow = .true.
                found = .false.
                Retval = RetVal + GetVAR2(STRING,' bfim ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
                if (found) SCS_Snyder_BF_interpolation_method(IRRRunoffSub) = IDUM(1)
-               
+
                SHG_set%size = SHG_set%size + 1
             endif
             ! optional TimeLag specification (in hours)
@@ -1408,12 +1467,40 @@ contains
                NodeId = Id_Nod(inod)
                call ErrMsgStandard (977, 0, ' Basin Time Lag is required for Snyder UH SCS Runoff node ',trim(NodeId))
             endif
+            ! optional reservoir coefficient for HEC-HMS formulation
+            allow = .true.
+            found = .false.
+            Retval = RetVal + GetVAR2(STRING,' r ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                         CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+            if (found) SCS_HMSLinResR(IRRRunoffSub) = RDUM(1)
             ! optional antecedent moisture conditions: amc 1,2,3
             allow = .true.
             found = .false.
             Retval = RetVal + GetVAR2(STRING,' amc ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
             if (found) SCS_AMC(IRRRunoffSub) = IDUM(1)
+            ! Optional Green-Ampt infiltration Sept2024
+            allow = .true.
+            found = .false.
+            Retval = RetVal + GetVAR2(STRING,' ga ',3,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                         CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+            if (found)  SCS_UseGreenAmpt_Infiltration(IRRRunoffSub) = ( IDUM(1) .eq. 1 )
+            if (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+               allow = .false.
+               Retval = RetVal + GetVAR2(STRING,' ksat ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_Ksat(IRRRunoffSub) = max(0.0, RDum(1))
+               Retval = RetVal + GetVAR2(STRING,' psi ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_Psi(IRRRunoffSub) = max(0.0, RDum(1))
+               Retval = RetVal + GetVAR2(STRING,' theta_dmax ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file',IOUT1, &
+                                CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, Iflrtn)
+               SCS_GreenAmpt_theta_dmax(IRRRunoffSub) = max (0.0, RDum(1))
+               SCS_GreenAmpt_theta_dmax(IRRRunoffSub) = min (1.0, SCS_GreenAmpt_theta_dmax(IRRRunoffSub))
+               SCS_GreenAmpt_theta_d   (IRRRunoffSub) = SCS_GreenAmpt_theta_dmax(IRRRunoffSub)
+               SCS_GreenAmpt_theta_du  (IRRRunoffSub) = SCS_GreenAmpt_theta_dmax(IRRRunoffSub)
+            endif
+
             ! optional base flow parameters
             allow = .true.
             found = .false.
@@ -2012,6 +2099,10 @@ contains
     if (Err969) call ErrMsgStandard (972, 0, ' Some invalid data specified for RR-Runoff nodes', ' See log file and check input data')
     Err969 = .false.
 
+! *******************************************************
+! hierna andere record types voor HBV, LGSI, WALRUS, NAM,
+! *******************************************************
+
 ! HBV Nodes, additional record types
     if (NrHbvNodes .gt. 0) then
          Rewind(infile1)
@@ -2039,6 +2130,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Snow Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk Snow definition
@@ -2123,6 +2218,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Soil Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk Soil definition
@@ -2185,7 +2284,7 @@ contains
          Do while (.not. endfil)
            READ (Infile1,'(A1000)',END=4111,ERR=150,IOSTAT=IECODE) STRING
            IF (STRING(1:4) .EQ. 'FLOW') Then
-           ! Read Soil definition  id
+           ! Read Flow definition  id
            Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' HBV Flow definition data',IOUT1, &
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
            name = CDUM(1)
@@ -2199,6 +2298,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'Flow Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            ! Verwerk Flow definition
@@ -2301,7 +2404,7 @@ contains
                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
            name = CDUM(1)
            teller = teller + 1
-           ! Eerst testen of flow definition wel gebruikt wordt, dan pas verwerken
+           ! Eerst testen of Hini definition wel gebruikt wordt, dan pas verwerken
            IRRRunoff = FindString (NcRRRunoffHBV, HIniDef, Name, NcRRRunoffHBV, CaseSensitive)
            Occurs = (IRRRunoff .gt. 0)
            if (IRRRunoff .gt. 0) then
@@ -2310,6 +2413,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'HINI Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            ! Verwerk HIni definition
@@ -2394,6 +2501,13 @@ contains
          CALL SKPCOM (Infile1, ENDFIL, 'ODS')
          Do while (.not. endfil)
            Success = GetRecord(Infile1, 'NAMS', Endfil, idebug, Iout1)     ! get record van keyword NAMS tot nams, zet in buffer
+           IF (.not. success) GOTO 2112
+           IF (ENDFIL) GOTO 2112
+           Success = GetStringFromBuffer (KeepBufString)
+           IF (.not. Success .and. CleanRRFiles)   then
+               Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule NAMS record D-NAM too small', ' Input skipped')
+               GOTO 2112
+           Endif
            Success = Success .and. GetStringFromBuffer (String)
            IF (.not. success) then
               call SetMessage(LEVEL_ERROR, 'Read NAMS record result: '//String(1:len_trim(String)))
@@ -2415,6 +2529,47 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                 call SetMessage(LEVEL_ERROR, 'D-NAM Soil Parameter Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                 LevelError = .true.
+                Occurs = .false.    ! voorkomt verdere verwerking
+              else
+! clean RR files
+                If (CleanRRFiles) then
+                  iCount = 0
+                  ! use KeepBufString to write to file
+                  ! first till TBLE
+                  ! then till < characters
+                  ! then till second table
+                  ! then till < characters
+                  ! then till the end of the buffer string
+ 1030             continue
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0) then
+                     iCount = iCount +1
+                     write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                     KeepBufString(1:) = KeepBufString(ipos+5:)
+                  else
+                     ! warning/error: no TBLE found
+                       call SetMessage(LEVEL_ERROR, 'NAMS optional table definitions capt TBLE and/or pert TBLE not found')
+                       goto 1032
+                  endif
+ 1031             continue
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                  ipos1 = FndFrst ('tble ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0 .and. ipos1 .gt. ipos) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                     KeepBufString(1:) = KeepBufString(ipos+3:)
+                     goto 1031
+                  elseif (icount .eq. 1) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos1+4)
+                     KeepBufString(1:) = KeepBufString(ipos1+5:)
+                     goto 1030
+                  else
+                     ! write remaining part
+ 1032                continue
+                     write(Iounit,'(A)') KeepBufString (1:lenstring)
+                  endif
+                Endif
               endif
            endif
        ! Verwerk NAM Soil Parameter definition
@@ -2648,6 +2803,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM Level and Depth Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk NAM Level and Depth definition
@@ -2791,6 +2950,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM Surface Runoff Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk NAM Parameter definition
@@ -2921,6 +3084,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM BaseFlow Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk NAM Base Flow definition
@@ -3027,9 +3194,12 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'D-NAM Parameter gw Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
               endif
            endif
        ! Verwerk NAM Parameter definition
+           ipos = 0
            if (occurs) then
        ! Read parameters
              Retval = RetVal + GetVAR2 (STRING,' po ',3,' RRRunoff_readAscii',' D-NAM Parameter data',IOUT1, &
@@ -3040,6 +3210,13 @@ contains
                                           CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
                 puDum = RDUM(1)
                 ptDum = ''
+                if (CleanRRFiles) then
+                  lenstring = len_trim(String)
+                  ipos  = FndFrst (' pt ',String(1:lenstring),.false.)
+                  Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' D-NAM Parameter data',IOUT1, &
+                                          CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
+                  if (ipos .gt. 0) ptDum = CDUM(1)
+                endif
              else
                ! zet time table name gelijk aan het id
                puDum = 0.
@@ -3053,8 +3230,19 @@ contains
                 call ErrMsgStandard (969, 0, ' Pumping option should be 0 or 1 in D-NAM parameter definition ',NAM_GroundwaterForcingDefinition(iRRRunoffSub))
                 Err969 = .true.
              endif
-             if (poDum .ge. 1) then
+
+             if (CleanRRFiles) then
+                lenstring = len_trim(String)
+                ipos  = FndFrst (' pt ',String(1:lenstring),.false.)
+             endif
+
+             if (poDum .ge. 1 .or. ipos .gt. 0) then    ! when cleaning RR files, also handle case that podum=0 but table is defined in input
                  NrPumpTimeTablesNeeded = NrPumpTimeTablesNeeded+1
+             elseif (CleanRRFiles) then
+                 ! cleaning RR files for NAMG record without pump with closing string namg on same line (1 line only)
+                 ipos  = FndFrst (' namg',String(5:lenstring),.false.)
+                 if (ipos .gt. 0) write(Iounit,'(A)') String (1:len_trim(String))
+!                NAMG records with pump require special treat below
              endif
 
        ! Assign definition to individual nodes
@@ -3092,8 +3280,6 @@ contains
           Enddo
           If (Err969) call ErrMsgStandard (972, 0, ' Not enough D-NAM Parameters data found', ' Some NAMG Definitions not present in RRRunoff file')
 
-
-
  ! Reading of pumping time table, if somewhere it is defined
          If (NrPumpTimeTablesNeeded .gt. 0) then
 !           Read NAMG records again for pump time tables
@@ -3106,6 +3292,11 @@ contains
                Success = GetRecord(Infile1, 'NAMG', Endfil, idebug, Iout1)     ! get record van keyword NAMG tot namg, zet in buffer
                IF (.not. success) GOTO 3113
                IF (ENDFIL) GOTO 3113
+               Success = GetStringFromBuffer (KeepBufString)
+               IF (.not. Success .and. CleanRRFiles)   then
+                   Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule NAMG record D-NAM too small', ' Input skipped')
+                   GOTO 3113
+               Endif
                Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
                IF (.not. success) GOTO 3113
                If (TabYesNo .and. TableName .ne. '') Then
@@ -3118,6 +3309,7 @@ contains
                      if (NAMRefToGWPump_TTable(iNAM) .gt. 0) then
                        call SetMessage(LEVEL_ERROR, 'D-NAM Pump Table Definition '//Tablename(1:Len_trim(TableName))//' double in datafile Sacrmnto.3b')
                        LevelError = .true.
+                       NrColumns = 0  ! voorkomt verdere verwerking
                      endif
                   endif
 !                 Verwerken NAM pump table definition
@@ -3125,6 +3317,33 @@ contains
 !         Get table with name TableName, Nrcolumns data fields, result in global arrays; tabel nummer is TableNr
                     Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
                     IF (.not. success) GOTO 3113
+                    ! clean RR files
+                    If (CleanRRFiles) then
+                      ! use KeepBufString to write to file
+                      ! first till TBLE
+                      ! then till < characters
+                      ! then till the end of the buffer string
+                      lenstring = len_trim(KeepBufString)
+                      ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                      if (ipos .gt. 0) then
+                         write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                         KeepBufString(1:) = KeepBufString(ipos+5:)
+                      else
+                         ! error: no TBLE found
+                           call SetMessage(LEVEL_ERROR, 'NAMG Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                      endif
+ 1041                 continue
+                      lenstring = len_trim(KeepBufString)
+                      ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                      if (ipos .gt. 0) then
+                         write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                         KeepBufString(1:) = KeepBufString(ipos+3:)
+                         goto 1041
+                      else
+                         ! write remaining part
+                         write(Iounit,'(A)') KeepBufString (1:lenstring)
+                      endif
+                    Endif
 !         Set references
                     Do iNAM = 1, ncRRRunoffNAM
                       if (StringComp (NAMPumpTable(INAM), TableName, CaseSensitive) ) NAMRefToGWPump_TTable(iNam) = TableNr
@@ -3211,6 +3430,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGST Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            if (IRRRunoff2 .gt. 0) then
@@ -3219,6 +3442,10 @@ contains
               if (ReferenceToDefinition2(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGST Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk LGSI Type definition
@@ -3392,6 +3619,10 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGSI Initial Condition Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
            if (IRRRunoff2 .gt. 0) then
@@ -3400,6 +3631,10 @@ contains
               if (ReferenceToDefinition2(iRRRunoff2) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGSI Initial Condition Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              else
+                 ! cleaning RR files
+                 If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
               endif
            endif
        ! Verwerk LGSC definition
@@ -3484,6 +3719,25 @@ contains
               if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                  call SetMessage(LEVEL_ERROR, 'LGSI Delay Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                  LevelError = .true.
+                 Occurs = .false.    ! voorkomt verdere verwerking
+              elseIf (CleanRRFiles) then
+                 ! cleaning RR files
+                 ! bit more intelligent for long VEQD records
+                 String0 = String
+ 1051            continue
+                 lenstring = len_trim(String)
+                 if (LenString .le. 999) then
+                     write(Iounit,'(A)') String (1:len_trim(String))
+                 else
+                     ipos  = FndFrst (' ',String(979:999),.false.)
+                     if (ipos .gt. 0) then
+                        ipos = 979+ipos-1
+                        write(Iounit,'(A)') String (1:ipos)
+                        String = String(ipos+1:)
+                        goto 1051
+                     endif
+                 endif
+                 String = String0
               endif
            endif
        ! Verwerk LGSD definition
@@ -3585,6 +3839,10 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'WETN Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            else
+               ! cleaning RR files
+               If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
             endif
          endif
         ! Verwerk WETN Type definition
@@ -3714,6 +3972,10 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'BETA Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            else
+               ! cleaning RR files
+               If (CleanRRFiles) write(Iounit,'(A)') String (1:len_trim(String))
             endif
          endif
         ! Verwerk BETA Type definition
@@ -3819,6 +4081,7 @@ contains
          ! check for VEQD record on one line
  104     continue
          lenString = len_trim (String)
+         String0 = String
          if (String(lenString-3:lenstring) .ne. 'veqd') then
              READ(Infile1,'(A1000)',END=21,ERR=150,IOSTAT=IECODE)  String1
              lenString1 = len_trim (String1)
@@ -3826,7 +4089,7 @@ contains
              goto 104
          endif
          ! Read VEQD definition  id
-         Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' BETA evaporation reduction data',IOUT1, &
+         Retval = RetVal + GetVAR2 (STRING,' id ',1,' RRRunoff_readAscii',' VEQD interpolation table data',IOUT1, &
                                     CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
          name = CDUM(1)
          teller = teller + 1
@@ -3843,12 +4106,31 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'VEQD Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            elseIf (CleanRRFiles) then
+               ! cleaning RR files
+               ! bit more intelligent for long VEQD records
+               String0 = String
+ 1061          continue
+               lenstring = len_trim(String)
+               if (LenString .le. 999) then
+                   write(Iounit,'(A)') String (1:len_trim(String))
+               else
+                   ipos  = FndFrst (' ',String(979:999),.false.)
+                   if (ipos .gt. 0) then
+                      ipos = 979+ipos-1
+                      write(Iounit,'(A)') String (1:ipos)
+                      String = String(ipos+1:)
+                      goto 1061
+                   endif
+               endif
+               String = String0
             endif
          endif
         ! Verwerk VEQD Type definition
          if (occurs) then
            ! Read type definition parameters
-           Retval = RetVal + GetVAR2 (STRING,' nv ',3,' RRRunoff_readAscii',' BETA evaporation reduction data',IOUT1, &
+           Retval = RetVal + GetVAR2 (STRING,' nv ',3,' RRRunoff_readAscii',' VEQD interpolation table data',IOUT1, &
                        CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
            nrValues = IDUM(1)
            if (NrValues .gt. NHLP) then
@@ -3971,6 +4253,25 @@ contains
             if (ReferenceToDefinition(iRRRunoffSub) .gt. 0) then
                call SetMessage(LEVEL_ERROR, 'WQH Definition '//name(1:Len_Trim(Name))//' double in datafile Runoff nodes')
                LevelError = .true.
+               Occurs = .false.    ! voorkomt verdere verwerking
+            elseIf (CleanRRFiles) then
+               ! cleaning RR files
+               ! bit more intelligent for long WQH records
+               String0 = String
+ 1071          continue
+               lenstring = len_trim(String)
+               if (LenString .le. 999) then
+                   write(Iounit,'(A)') String (1:len_trim(String))
+               else
+                   ipos  = FndFrst (' ',String(979:999),.false.)
+                   if (ipos .gt. 0) then
+                      ipos = 979+ipos-1
+                      write(Iounit,'(A)') String (1:ipos)
+                      String = String(ipos+1:)
+                      goto 1071
+                   endif
+               endif
+               String = String0
             endif
          endif
         ! Verwerk WQH Type definition
@@ -4074,6 +4375,11 @@ contains
           IF (ENDFIL) GOTO 6115
           Success = GetTableName (TabYesNo, TableName, ' id ', Iout1)     ! get table name via keyword ' id ', TabYesNo=TBLE found
           IF (.not. success) GOTO 6115
+           Success = GetStringFromBuffer (KeepBufString)
+           IF (.not. Success .and. CleanRRFiles)   then
+               Call ErrMsgStandard (999, 3, ' Local buffer RRRunoffmodule HSTT record WALRUS too small', ' Input skipped')
+               GOTO 6115
+           Endif
           If (TabYesNo .and. TableName .ne. '') Then
 !            Er is een tabel gedefinieerd, met een niet-lege naam
 !            Eerst testen of tabel definition wel gebruikt wordt, dan pas verwerken
@@ -4083,6 +4389,7 @@ contains
              if (IRRRunoffSub .gt. 0) then
                 if (Walrus_HSMINRefTable(iRRRunoffSub) .gt. 0) then
                   call SetMessage(LEVEL_ERROR, 'Walrus HsMin table Definition '//Tablename(1:Len_trim(TableName))// ' double in datafile Sacrmnto.3b')
+                  NrColumns = 0  ! voorkomt verdere verwerking
                 endif
              endif
 !            Verwerken definitie
@@ -4090,6 +4397,33 @@ contains
 ! Get table with name TableName, NrColumns data fields, result in global arrays; tabel nummer is TableNr
                 Success = GetTable (TableHandle, TableName, NrColumns, TableNr, idebug, Iout1)
                 IF (.not. success) GOTO 6115
+! clean RR files
+                If (CleanRRFiles) then
+                  ! use KeepBufString to write to file
+                  ! first till TBLE
+                  ! then till < characters
+                  ! then till the end of the buffer string
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst ('TBLE ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos+4)
+                     KeepBufString(1:) = KeepBufString(ipos+5:)
+                  else
+                     ! error: no TBLE found
+                       call SetMessage(LEVEL_ERROR, 'Structure Table Definition '//Tablename(1:Len_trim(TableName))//' TBLE not found')
+                  endif
+ 1081             continue
+                  lenstring = len_trim(KeepBufString)
+                  ipos  = FndFrst (' < ',KeepBufString(1:lenstring),.false.)
+                  if (ipos .gt. 0) then
+                     write(Iounit,'(A)') KeepBufString (1:ipos+2)
+                     KeepBufString(1:) = KeepBufString(ipos+3:)
+                     goto 1081
+                  else
+                     ! write remaining part
+                     write(Iounit,'(A)') KeepBufString (1:lenstring)
+                  endif
+                Endif
 ! Set references
                 Do iRRRunoffSub = 1, ncRRRunoff
                    if (StringComp (Walrus_HSMINTable(IRRRunoffSub), TableName, CaseSensitive) ) Walrus_HSMinRefTable(iRRRunoffSub) = TableNr
@@ -4127,6 +4461,8 @@ contains
 
      if (LevelError)  Call ErrMsgStandard (981, 0, ' Error: See earlier error messages from subroutine ', ' RRRunoffNode_ReadAscii' )
 
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
      return
 
@@ -4134,6 +4470,8 @@ contains
      DeAllocate ( AlreadyRead)
      DeAllocate ( ReferenceToDefinition)
      call SetMessage(LEVEL_FATAL, 'Read error in RRRunoffNode ReadASCII')
+! cleaning RR files
+     If (CleanRRFiles) Call closeGP (Iounit)
 
      Return
   End subroutine RRRunoffNode_readASCII
@@ -4342,6 +4680,8 @@ contains
    GFrac = 1.D0
    LevelError = .false.
    eps  = 1.D-7
+
+   Idebug = Conffil_get_Idebug()
 
    if (NcRRRunoffHBV .gt. 0) then
      HBV_DrySnowContent     =  HBV_InitialDrySnowContent
@@ -5234,15 +5574,25 @@ contains
      Enddo
    endif
 
-do i=1,NCRRRunoff
-   IRRRunoffSub = RRRunoff_SubIndex(i)
-   if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
-      if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
-         call compute_snyder_hydrograph(SHG_set%SHG(iRRRunoffSub),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
+   do i=1,NCRRRunoff
+      IRRRunoffSub = RRRunoff_SubIndex(i)
+      if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
+         if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
+            call compute_snyder_hydrograph(SHG_set%SHG(iRRRunoffSub),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
+         endif
       endif
-   endif
-enddo
-   
+   enddo
+
+   do i=1,NCRRRunoff
+      IRRRunoffSub = RRRunoff_SubIndex(i)
+      if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
+         if (SCS_UseGreenAmpt_Infiltration(iRRRunoffSub)) then ! use GreenAmpt Infiltration
+            call SetGreenAmptConstants (SCS_GreenAmpt_Ksat(iRRRunoffSub), SCS_GreenAmpt_Psi(iRRRunoffSub), SCS_GreenAmpt_Theta_Dmax(iRRRunoffSub), &
+                 SCS_GreenAmpt_Lu(iRRRunoffSub), SCS_GreenAmpt_Kr(iRRRunoffSub), SCS_GreenAmpt_Tr(iRRRunoffSub), idebug)
+         endif
+      endif
+   enddo
+
    if (NcRRRunoffSCS .gt. 0) then
      Do i=1,NCRRRunoff
         IRRRunoffSub = RRRunoff_SubIndex(i)
@@ -5279,11 +5629,16 @@ enddo
            Endif
         Endif
      Enddo
-     
+
      SCS_Tc      = SCS_TLag / 0.6
      ! convert Tc to computation timesteps
      ! SCS_Tlag = ceiling ( SCS_Tlag * 3600. / timeSettings%TimestepSize)
      SCS_Tc = ( SCS_Tc * 3600. / timeSettings%TimestepSize)
+     SCS_HMSLinResR = ( SCS_HMSLinResR * 3600. / timeSettings%TimestepSize)  ! R linear reservoir coefficient from hours to nr. timesteps
+     Do IRRRunoffSub=1,NcRRRunoffSCS
+        If (SCS_HMSLinResR(IRRRunoffSub) .gt. 0) SCS_HMSC1(IRRRunoffSub) = ( 1.0E0 / (SCS_HMSLinResR(IRRRunoffSub) + 0.5 ) )
+     Enddo
+     SCS_HMSC2   = 1.0E0 - SCS_HMSC1
      SCS_PAccum  = 0.0
      SCS_PExcess = 0.0
      SCS_Storage = 0.0
@@ -5298,8 +5653,10 @@ enddo
            If (SCS_UHChosen(iRRRunoffSub) .eq. 0) then
                ! HEC-HMS
                MaxTc = max (MaxTc, Ceiling(SCS_Tc(iRRRunoffSub)) + 1 )
+                ! with linear reservoir: take into account further attenuation/extension of SCS_TC with factor 5
+               if (SCS_HMSLinResR(iRRRunoffSub) .gt. 0) MaxTc = max (MaxTc, 5*Ceiling(SCS_Tc(iRRRunoffSub)) + 1 )
            else If (SCS_UHChosen(iRRRunoffSub) .eq. 1) then
-               ! SCS dimensionless; first convert Timelag to nr of computation timesteps!
+               ! SCS dimensionless; first convert Timelag to nr of computation timesteps! The factor 5 is related to time-lage (< Tc) as specified in SCS method
                MaxTc = max (MaxTc, 1 + Ceiling (5* (SCS_Tlag(iRRRunoffSub) * 3600./timeSettings%TimestepSize + 0.5)))
            else if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
                SCS_Tc(iRRRunoffSub) = (SHG_set%SHG(iRRRunoffSub)%time_array(7) * 3600./timeSettings%TimestepSize)
@@ -5325,6 +5682,7 @@ enddo
 
    if (Ievent .eq. 1 .and. FirstCall .and. NcRRRunoffSCS .gt. 0) then
        Success = Dh_AllocInit (MaxTc, NcRRRunoff, SCS_UnitHydComp, 0E0)
+       Success = Dh_AllocInit (MaxTc, SCS_HMSLinResInflow, 0E0)
        Success = Success .and. Dh_AllocInit (NcRRRunoff, MaxTc, SCS_AvailableRunoff, 0E0)
        If (.not. success) call ErrMsgStandard (981, 0, ' Error allocating arrays in subroutine ', ' RRRunoffNode_Init1' )
        Call ComputeSCSUnitHydrographComponents
@@ -5418,7 +5776,7 @@ enddo
 
   Integer    IRRRunoff, j, NrUHComponents, NTpQp, i, idebug, idum, iRRRunoffsub
   Real       SumTp, SumQp, Tp, TpArray(34), QpArray(34), InputTpValue, OutputQpValue, ScaledSumQp
-  
+
   TpArray = 0
   QpArray = 0
   nTpQp   = 34  ! 30
@@ -5568,6 +5926,7 @@ enddo
      if (RRRunoff_CompOption(IRRRunoff) .eq. 2) then
         if (SCS_UHChosen(IRRRunoffSub) .eq. 0) then
            ! HEC-HMS unit hydrograph, as used in Jakarta Floods 2007
+           ! time-area diagram g
            Do j=1,ceiling(SCS_Tc(IRRRunoffSub))
               if (j .le. 0.5*SCS_TC(IRRRunoffSub))  then
                  SCS_UnitHydComp(j,IRRRunoffSub) = 1.414 * ( (j / SCS_Tc(IRRRunoffSub)) ** 1.5)
@@ -5626,12 +5985,18 @@ enddo
 
    if (NcRRRunoffSCS .gt. 0) then
       SCS_Storage0           =  SCS_Storage
+      SCS_HMSLinResContent0  =  SCS_HMSLinResContent
       SCS_PAccum0            =  SCS_PAccum
       SCS_PExcess0           =  SCS_PExcess
       ! SCSbaseflow extensions
       SCS_GwAct0            =  SCS_GwAct
-      SCS_SubSurfAct0       =  SCS_SubSurfAct0
-      SCS_SurfAct0          =  SCS_SurfAct0
+      SCS_SubSurfAct0       =  SCS_SubSurfAct
+      SCS_SurfAct0          =  SCS_SurfAct
+      ! HMS lin.res
+      SCS_HMSLinResOutflow0 =  SCS_HMSLinResOutflow
+      SCS_HMSLinResOutflow  =  0.0
+      SCS_HMSLinResInflow   =  0.0
+      SCS_HMSLinResInflowTot=  0.0
    endif
 
    if (NcRRRunoffLGSI .gt. 0) then
@@ -6210,7 +6575,7 @@ enddo
          SnowFall, Rainfall, PotSnowMelt, PotRefreezing, Refreezing, Snowmelt, &
          MaxFreeWater, InSoil, DirectRunoff, NetInSoil, Seepage, InUpperZone, &
          Percolation, BaseFlow, InterFlow, QuickFlow, HBVRunoff
-    Real SCS_Runoff, PAcc, SMax
+    Real SCS_Runoff, PAcc, SMax, SCS_RunoffHMS
 
 ! additional local variables for NAM
     double precision NamAlfa, Lalfa, Infcap, DLMax, GPotMax, GMax, AdInf, OFDt1, OFDt2
@@ -6256,6 +6621,8 @@ enddo
 ! Walrus
   Integer, external :: WalrusGet, WalrusDoStep, WalrusSet
   Integer           :: retValWalrusCall, WalrusFirst
+! GreenAmpt infiltration
+  Double precision     DepthPonding, Fprev
 
       WalrusFirst = 1
       Fract     = TimeSettings%Timestepsize / 86400.     ! fraction of day
@@ -6443,11 +6810,31 @@ enddo
             Endif
           ! Initialisations
 
+            If (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+               Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
+               DepthPonding  = SCS_Storage0(IRRRunoffSub)
+               FPrev = SCS_GreenAmpt_CumInfiltration(IRRRunoffSub)
+               Call GreenAmpt (Precipitation/FractHour*1.D0, DepthPonding, SCS_GreenAmpt_Theta_D(IRRRunoffSub), SCS_GreenAmpt_Theta_DU(IRRRunoffSub), &
+                               SCS_GreenAmpt_CumInfiltration(IRRRunoffSub), SCS_GreenAmpt_T(IRRRunoffSub), &
+                               SCS_GreenAmpt_KSat(IRRRunoffSub), SCS_GreenAmpt_Psi(IRRRunoffSub), SCS_GreenAmpt_Theta_Dmax(IRRRunoffSub), &
+                               SCS_GreenAmpt_LU(IRRRunoffSub), SCS_GreenAmpt_Kr(IRRRunoffSub), SCS_GreenAmpt_Tr(IRRRunoffSub), &
+                               SCS_GreenAmpt_InfRate(IRRRunoffSub), Idebug, TimeSettings%Timestepsize )
+               SCS_GreenAmpt_CumRain(IRRRunoffSub) = SCS_GreenAmpt_CumRain(IRRRUnoffSub) + Precipitation
+               SCS_GreenAmpt_InfCurrentStep (IRRRunoffSub) = max (0.0D0, SCS_GreenAmpt_CumInfiltration(IRRRunoffSub)-FPrev)
+               if (idebug .gt. 0) then
+                  Write(Idebug,*) ' itmstp  RainRate RainStep CumRain InfRate Inf_currentstep CumInf Theta_DU  T'
+                  Write(Idebug,'(I5,10F10.4)') itmstp,Precipitation/FractHour, SCS_GreenAmpt_CumRain(IRRRunoffSub), &
+                                        SCS_GreenAmpt_InfRate(IRRRunoffSub), SCS_GreenAmpt_InfCurrentStep (IRRRunoffSub), &
+                                        SCS_GreenAmpt_CumInfiltration(IRRRunoffSub), SCS_GreenAmpt_Theta_DU(IRRRunoffSub), SCS_GreenAmpt_T(IRRRunoffSub)
+               endif
+            Endif
+
             If (.not. SCS_UseBaseFlow(IRRRunoffSub)) then
                ! original SCS calculations, without baseflow extensions
                Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
                SCS_Rainfall(IRRRunoffSub)= Precipitation
-               SCS_PAccum (IRRRunoffSub) = SCS_PAccum0(IRRRunoffSub) + Precipitation
+               ! subtract Infiltration already from PAccum (and PExcess)
+               SCS_PAccum (IRRRunoffSub) = SCS_PAccum0(IRRRunoffSub) + Precipitation - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
                PAcc = SCS_PAccum(IRRRunoffSub)
                SMax = SCS_MaxRetention(IRRRunoffSub)
                if (PAcc + 0.8 * SMax .gt. 0) then
@@ -6457,7 +6844,8 @@ enddo
                endif
 
              ! available runoff current timestep
-               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+             ! also subtract infiltration current timestep   (discussion point is whether to subtract it from available runoff or already from PExcess .....
+               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub) ! - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)  ! subtracted infiltration current timestep
                SCS_AvailableRunoff(IRRRunoffSub,1) = max (0.0, SCS_AvailableRunoff(IRRRunoffSub,1))
 
                If (SCS_UHChosen(IRRRunoffSub) .eq. 0 .or. SCS_UHChosen(IRRRunoffSub) .eq. 2) then
@@ -6466,6 +6854,35 @@ enddo
                   Do j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1
                      SCS_Runoff = SCS_Runoff + SCS_UnitHydComp(j,IRRRunoffSub) * SCS_AvailableRunoff(IRRRunoffSub,j)
                   Enddo
+                  SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
+                  QF2 = SCS_Runoff * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+
+                  ! adjustment in case of use HMS UH with linear reservoir (so far only the time-area diagram is taken into account)
+                  if (SCS_UHChosen(IRRRunoffSub) .eq. 0  .and. SCS_HMSLinResR(iRRRunoffSub) .gt. 0) then
+                      if (idebug .ne. 0) then
+                         Write(Idebug,*) ' HMS LinResR', SCS_HMSLinResR(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_AvailableRunoff', (SCS_AvailableRunoff(IRRRunoffSub,j),j=1,MaxTc)
+                         Write(Idebug,*) ' SCS_UnitHydComp', (SCS_UnitHydComp(j,IRRRunoffSub),j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1)
+                         Write(Idebug,*) ' SCSRunoff     ', SCS_Runoff
+                         Write(Idebug,*) ' SCS_HMSC1     ', SCS_HMSC1(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSC2     ', SCS_HMSC2(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResContent0 ', SCS_HMSLinResContent0(IRRRunoffSub)
+                      Endif
+                      Do j=1,Ceiling (SCS_Tc(IRRRunoffSub)) + 1
+                         SCS_HMSLinResInflow(j) = SCS_UnitHydComp(j,IRRRunoffSub) * SCS_AvailableRunoff(IRRRunoffSub,j)
+                         SCS_HMSLinResInflowTot(IRRRunoffSub) = SCS_HMSLinResInflowTot(IRRRunoffSub) + SCS_HMSLinResInflow(j)
+                         SCS_HMSLinResOutflow(IRRRunoffSub)= SCS_HMSLinResOutflow(IRRRunoffSub) + SCS_HMSC1(IRRRunoffSub) * SCS_HMSLinResInflow(j)
+                      Enddo
+                      SCS_HMSLinResOutflow(IRRRunoffSub)= SCS_HMSLinResOutflow(IRRRunoffSub) + SCS_HMSC2(IRRRunoffSub) * SCS_HMSLinResOutflow0(IRRRunoffSub)
+                      SCS_HMSLinResContent(IRRRunoffSub)= SCS_HMSLinResContent(IRRRunoffSub) + SCS_HMSLinResInflowTot(IRRRunoffSub) - SCS_HMSLinResOutflow(IRRRunoffSub)
+                      if (idebug .ne. 0) then
+                         Write(Idebug,*) ' SCS_HMSLinResInflowTot    ', SCS_HMSLinResInflowTot(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResOutflow      ', SCS_HMSLinResOutflow(IRRRunoffSub)
+                         Write(Idebug,*) ' SCS_HMSLinResContentFinal ', SCS_HMSLinResContent(IRRRunoffSub)
+                      Endif
+                      SCS_RunoffHMS = SCS_HMSLinResOutflow(IRRRunoffSub)
+                      QF2 = SCS_RunoffHMS * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+                  endif
                else If (SCS_UHChosen(IRRRunoffSub) .eq. 1) then
                  ! routing using SCS dimensionless unit hydrograph
                   Tp = SCS_Tlag(iRRRunoffSub) + (TimeSettings%TimestepSize /2. / 3600.)
@@ -6482,15 +6899,19 @@ enddo
                      endif
                   Enddo
                   SCS_Runoff = QF2 / Area_RRRunoffNode(IRRRunoff) / mm2m * TimeSettings%TimeStepSize
+                  SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
                endif
 
              ! storage balance and outflow
-               SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
-               QF2 = SCS_Runoff * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
+! already above
+!              SCS_Storage(IRRRunoffSub) = SCS_Storage0(IRRRunoffSub) + Precipitation - SCS_Runoff
+               if (SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)) then
+                  SCS_Storage(IRRRUnoffSub) = SCS_Storage(IRRRUnoffSub) - SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
+               endif
                RRRunoffNode_Outflow(iRRRunoff) = QF2
 
             else
-             ! with baseflow extensions
+             ! with baseflow extensions;  do not use since not complete / not tested
                Precipitation = AAFNodeRainfall(inode) * Rain(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
                SCS_Rainfall(IRRRunoffSub)= Precipitation
                SCS_EvapRD(IRRRunoffSub)= Evap(imeteo) * TimeSettings%Timestepsize / mm2m   ! in mm
@@ -6504,7 +6925,8 @@ enddo
                endif
 
              ! available runoff current timestep
-               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+!              SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub)
+               SCS_AvailableRunoff(IRRRunoffSub,1) = SCS_PExcess(IRRRunoffSub) - SCS_PExcess0(IRRRunoffSub) !- SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)  ! subtracted infiltration current timestep
                SCS_AvailableRunoff(IRRRunoffSub,1) = max (0.0, SCS_AvailableRunoff(IRRRunoffSub,1))
 
             endif
@@ -6521,6 +6943,8 @@ enddo
                Write(Idebug,*) ' Storage init  ', SCS_Storage0(IRRRunoffSub)
                Write(Idebug,*) ' Storage       ', SCS_Storage (IRRRunoffSub)
                Write(Idebug,*) ' QF2           ', QF2
+               Write(Idebug,*) ' UseGreenAmpt  ', SCS_UseGreenAmpt_Infiltration(IRRRunoffSub)
+               Write(Idebug,*) ' InfCurrentStep', SCS_GreenAmpt_InfCurrentStep(IRRRunoffSub)
             Endif
 
       elseif (RRRunoff_CompOption(IRRRunoff) .eq. 3) then
@@ -8819,7 +9243,8 @@ enddo
           Wagmod_PEF(IRRRunoffSub) = -Wagmod_CAP(IRRRunoffSub)
           Wagmod_SM(IRRRunoffSub) = Wagmod_SM(IRRRunoffSub) + Wagmod_CAP(IRRRunoffSub)
       Else
-          write(*,*) ' Negative Soil Moisture in WagMod'
+!         write(*,*) ' Negative Soil Moisture in WagMod'
+          Call ErrMsgStandard (999, 2, ' Negative Soil Moisture in WagMod', ' Soil Moisture is reset to zero')
           Wagmod_PEF(IRRRunoffSub) = Wagmod_SM(IRRRunoffSub)
           Wagmod_SM(IRRRunoffSub) = 0.0
       Endif

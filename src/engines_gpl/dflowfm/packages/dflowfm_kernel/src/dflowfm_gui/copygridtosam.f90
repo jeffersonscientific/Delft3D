@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,40 +33,40 @@
 !> Copy curvilinear grid to samples
 module m_copygridtosam
 
-implicit none
+   implicit none
 
 contains
 
- subroutine copygridtosam()
-    use m_samples
-    use m_grid, only: mc, nc, xc, yc, zc
-    use m_missing, only: dmiss
+   subroutine copygridtosam()
+      use m_samples, only: increasesam, mxsam, mysam, xs, ys, zs, ipstat, ipstat_notok, ns
+      use m_grid, only: mc, nc, xc, yc, zc
+      use m_missing, only: dmiss
 
-    integer :: in, k, m, n
-    in = -1
-    k = MC * NC
+      integer :: in, k, m, n
+      in = -1
+      k = MC * NC
 
-    call INCREASESAM(k)
+      call INCREASESAM(k)
 
-    K = 0
-    MXSAM = MC
-    MYSAM = NC
-    xs = DMISS
-    ys = DMISS
-    zs = DMISS
-    IPSTAT = IPSTAT_NOTOK
-    do n = 1, NC
-       do m = 1, MC
-          k = k + 1
-          if (xc(m, n) /= DMISS .and. yc(m, n) /= DMISS) then
-             xs(k) = xc(m, n)
-             ys(k) = yc(m, n)
-             zs(k) = zc(m, n)
-          end if
-       end do
-    end do
-    ns = k
+      K = 0
+      MXSAM = MC
+      MYSAM = NC
+      xs = DMISS
+      ys = DMISS
+      zs = DMISS
+      IPSTAT = IPSTAT_NOTOK
+      do n = 1, NC
+         do m = 1, MC
+            k = k + 1
+            if (xc(m, n) /= DMISS .and. yc(m, n) /= DMISS) then
+               xs(k) = xc(m, n)
+               ys(k) = yc(m, n)
+               zs(k) = zc(m, n)
+            end if
+         end do
+      end do
+      ns = k
 
- end subroutine copygridtosam
+   end subroutine copygridtosam
 
 end module m_copygridtosam

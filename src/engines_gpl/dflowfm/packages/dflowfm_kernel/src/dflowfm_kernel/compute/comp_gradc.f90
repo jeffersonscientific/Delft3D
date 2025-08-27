@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,15 +32,26 @@
 
 !> computer cell-centered gradient from cell-centered data
 !>   note: since we use wcx1 etc., it is assumed that normal components at the closed boundary are zero
+module m_comp_gradc
+
+   implicit none
+
+   private
+
+   public :: comp_gradC
+
+contains
+
    subroutine comp_gradC(val, gradx, grady)
-      use m_flowgeom, only: ln, Lnx, Ndx, Dxi, wcx1, wcy1, wcx2, wcy2
+      use precision, only: dp
+      use m_flowgeom, only: Lnx, ln, Dxi, wcx1, wcy1, wcx2, wcy2, ndx
       implicit none
 
-      double precision, dimension(Ndx), intent(in) :: val !< cell-centered data
-      double precision, dimension(Ndx), intent(out) :: gradx !< x-component of cell-centered gradient vector
-      double precision, dimension(Ndx), intent(out) :: grady !< y-component of cell-centered gradient vector
+      real(kind=dp), dimension(ndx), intent(in) :: val !< cell-centered data
+      real(kind=dp), dimension(ndx), intent(out) :: gradx !< x-component of cell-centered gradient vector
+      real(kind=dp), dimension(ndx), intent(out) :: grady !< y-component of cell-centered gradient vector
 
-      double precision :: DvalDn
+      real(kind=dp) :: DvalDn
 
       integer :: k1, k2, L
 
@@ -60,3 +71,5 @@
 
       return
    end subroutine comp_gradC
+
+end module m_comp_gradc

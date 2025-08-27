@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,32 +30,46 @@
 !
 !
 
-subroutine doforester()
-   use m_flow, only: vol1, ndkx, kbot, ktop, kmxn, ndkx, maxitverticalforestersal, maxitverticalforestertem
-   use m_flowgeom, only: ndxi
-   use m_turbulence, only: kmxx
-   use m_transportdata ! ,  only : constituents, numconst, itemp
-   use timers
+module m_doforester
 
    implicit none
 
-   integer :: kk, km, kb
-   double precision :: a(kmxx), d(kmxx)
+   private
 
-   integer(4) ::ithndl = 0
-   
-   if (timon) call timstrt("doforester", ithndl)
+   public :: doforester
 
-   do kk = 1, ndxi
-      kb = kbot(kk)
-      km = ktop(kk) - kb + 1
-      if (maxitverticalforestersal > 0) then
-         call foresterpoint2(constituents, numconst, ndkx, isalt, vol1(kb:), a, d, km, kmxn(kk), kb, maxitverticalforestersal, 1)
-      end if
-      if (maxitverticalforestertem > 0) then
-         call foresterpoint2(constituents, numconst, ndkx, itemp, vol1(kb:), a, d, km, kmxn(kk), kb, maxitverticalforestertem, -1)
-      end if
-   end do
+contains
 
-   if (timon) call timstop(ithndl)
-end subroutine doforester
+   subroutine doforester()
+      use precision, only: dp
+      use m_foresterpoint2, only: foresterpoint2
+      use m_flow, only: kbot, ktop, maxitverticalforestersal, ndkx, vol1, kmxn, maxitverticalforestertem
+      use m_transportdata, only: constituents, numconst, isalt, itemp
+      use timers, only: timon, timstrt, timstop
+      use m_flowgeom, only: ndxi
+      use m_turbulence, only: kmxx
+
+      implicit none
+
+      integer :: kk, km, kb
+      real(kind=dp) :: a(kmxx), d(kmxx)
+
+      integer(4) :: ithndl = 0
+
+      if (timon) call timstrt("doforester", ithndl)
+
+      do kk = 1, ndxi
+         kb = kbot(kk)
+         km = ktop(kk) - kb + 1
+         if (maxitverticalforestersal > 0) then
+            call foresterpoint2(constituents, numconst, ndkx, isalt, vol1(kb:), a, d, km, kmxn(kk), kb, maxitverticalforestersal, 1)
+         end if
+         if (maxitverticalforestertem > 0) then
+            call foresterpoint2(constituents, numconst, ndkx, itemp, vol1(kb:), a, d, km, kmxn(kk), kb, maxitverticalforestertem, -1)
+         end if
+      end do
+
+      if (timon) call timstop(ithndl)
+   end subroutine doforester
+
+end module m_doforester

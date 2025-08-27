@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@ module m_readlocator
    implicit none
 contains
    subroutine READLOCATOR(X, Y, KEY)
+      use precision, only: dp
       use m_wearelt
       use m_devices
       use m_partitioninfo, only: jampi
@@ -44,12 +45,12 @@ contains
       use m_dispos
       use m_givekey
 
-      double precision :: dpx
-      double precision, save :: f = 1d0
+      real(kind=dp) :: dpx
+      real(kind=dp), save :: f = 1d0
       integer :: ini, key, ixp, iyp
       integer, save :: keyold = 0
       real :: xloc, yloc
-      double precision :: x, y
+      real(kind=dp) :: x, y
 
       real, external :: INFOGRAPHICS
 

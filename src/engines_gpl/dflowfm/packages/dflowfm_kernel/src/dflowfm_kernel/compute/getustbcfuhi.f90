@@ -1,6 +1,14 @@
+module m_getustbcfuhi
+   use m_getvanrijnwci
+   use m_waveconst
+
+   implicit none
+
+contains
+
    !----- AGPL --------------------------------------------------------------------
    !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
    !
    !  This file is part of Delft3D (D-Flow Flexible Mesh component).
    !
@@ -31,38 +39,42 @@
    !
 
    subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
-      use m_flow
+      use precision, only: dp
+      use m_getsoulsbywci, only: getsoulsbywci
+      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, vonkar, z0ucur, v, jawave, flowwithoutwaves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, viskin, vicwwu, vicoww, jafrculin, frculin
+      use m_get_ustwav, only: getustwav
+      use m_get_czz0, only: getczz0
       use m_flowgeom, only: ln, dxi, csu, snu
       use m_flowtimes, only: dti
       use m_waves, only: ustokes, vstokes, wblt
+      use m_waveconst, only: NO_WAVES, NO_STOKES_DRIFT, WAVE_STREAMING_OFF
       use m_sediment, only: stm_included
-      use m_turbulence, only: tkepro
       use m_flowtimes, only: dts
-      use m_get_ustwav
-      use m_get_czz0
+      use m_filez, only: error
+      use mathconsts, only: ee
 
       implicit none
       integer, intent(in) :: LL, Lb
-      double precision, intent(out) :: ustbLL, cfuhiLL, hdzb, z00
-      double precision, intent(out) :: cfuhi3D ! 3D bedfriction coeffient, advi(Lb) = advi(Lb) + cfuhi3D
+      real(kind=dp), intent(out) :: ustbLL, cfuhiLL, hdzb, z00
+      real(kind=dp), intent(out) :: cfuhi3D ! 3D bedfriction coeffient, advi(Lb) = advi(Lb) + cfuhi3D
 
-      integer :: ifrctyp, L
-      double precision :: frcn, sqcf, cz, umod, u1Lb, gsx, ustw2, ustc2, fw, cdrag, abscos, dfuc, costu
-      double precision :: taubpuLL ! taubpu = umod*ag/C2 or ypar*(taucur+tauwav)/rho/umod or ustar*ustar/u
-      double precision :: taubxuLL ! taubxu = ymxpar*(taucur+tauwav)
+      integer :: friction_type, L
+      real(kind=dp) :: frcn, sqcf, cz, umod, u1Lb, gsx, ustw2, ustc2, fw, cdrag, abscos, dfuc, costu
+      real(kind=dp) :: taubpuLL ! taubpu = umod*ag/C2 or ypar*(taucur+tauwav)/rho/umod or ustar*ustar/u
+      real(kind=dp) :: taubxuLL ! taubxu = ymxpar*(taucur+tauwav)
 
-      double precision :: csw, snw ! wave direction cosines
-      double precision :: Dfu, Dfu0, Dfu1, htop, dzu ! wave dissipation by bed friction, / (rhomean*c*deltau)
-      double precision :: deltau ! wave dissipation layer thickness
-      double precision :: u2dh
-      double precision :: z0urouL, rhoL, uorbu
-      double precision :: umodeps
+      real(kind=dp) :: csw, snw ! wave direction cosines
+      real(kind=dp) :: Dfu, Dfu0, Dfu1, htop, dzu ! wave dissipation by bed friction, / (rhomean*c*deltau)
+      real(kind=dp) :: deltau ! wave dissipation layer thickness
+      real(kind=dp) :: u2dh
+      real(kind=dp) :: z0urouL, rhoL, uorbu
+      real(kind=dp) :: umodeps
 
       integer :: nit, nitm = 100
-      double precision :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2
-      double precision :: s, sd, er, ers, dzb, uu, vv, alin
-      double precision :: cphi, sphi
-      double precision :: fsqrtt = sqrt(2d0)
+      real(kind=dp) :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2
+      real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
+      real(kind=dp) :: cphi, sphi
+      real(kind=dp) :: fsqrtt = sqrt(2d0)
 
       cfuhi3D = 0d0
       ustbLL = 0d0; cfuhiLL = 0d0; hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0
@@ -71,7 +83,7 @@
 
       frcn = frcu(LL)
       if (frcn == 0d0) return
-      ifrctyp = ifrcutp(LL)
+      friction_type = ifrcutp(LL)
 
       if (hu(LL) < trsh_u1Lb) then
          gsx = ag * (s1(ln(2, LL)) - s1(ln(1, LL))) * dxi(LL)
@@ -81,9 +93,9 @@
 
 10    continue
 
-      if (ifrctyp < 10) then
+      if (friction_type < 10) then
          if (frcn > 0d0) then
-            call getczz0(hu(LL), frcn, ifrctyp, cz, z00)
+            call getczz0(hu(LL), frcn, friction_type, cz, z00)
 
             hdzb = 0.5d0 * hu(Lb) + c9of1 * z00 ! half bottom layer plus 9z0
 
@@ -120,10 +132,10 @@
 
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
          ! updated ustokes needed before conversion to eulerian velocities
-         if (jawave > 0 .and. .not. flowwithoutwaves) then
+         if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
             ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
-            if (jawaveStokes > 0) then
+            if (jawaveStokes > NO_STOKES_DRIFT) then
                umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb)))
             end if
          end if
@@ -136,7 +148,7 @@
 
          ustbLL = sqcf * umod ! ustar based upon bottom layer/layer integral velocity
 
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             rhoL = rhomean ! for now
             if (ustw2 > 1d-8) then
                !
@@ -219,7 +231,7 @@
                if (stm_included) wblt(LL) = deltau
                !
                ! Streaming below deltau with linear distribution
-               if (jawavestreaming > 0 .and. deltau > 1d-7) then ! Streaming below deltau with linear distribution
+               if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1d-7) then ! Streaming below deltau with linear distribution
                   Dfu0 = Dfuc ! (m/s2)
                   do L = Lb, Ltop(LL)
                      if (hu(L) <= deltau) then
@@ -255,18 +267,18 @@
          cfuhiLL = sqcf * sqcf / hu(Lb) ! cfuhiLL   = g / (H.C.C) = (g.K.K) / (A.A)
          cfuhi3D = cfuhiLL * umod ! cfuhi3D = frc. contr. to diagonal
 
-         if (jawave == 0 .or. flowWithoutWaves) then
+         if (jawave == NO_WAVES .or. flowWithoutWaves) then
             z0urou(LL) = z0ucur(LL) ! morfo, bedforms, trachytopes
          end if
 
-      else if (ifrctyp == 10) then ! Hydraulically smooth, glass etc
+      else if (friction_type == 10) then ! Hydraulically smooth, glass etc
          nit = 0
          u1Lb = u1(Lb)
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
-         if (jawave > 0 .and. .not. flowwithoutwaves) then
+         if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             ! strictly, not necessary as ust==0 for jawavestokes==0
-            if (jawavestokes > 0) then
+            if (jawavestokes > NO_STOKES_DRIFT) then
                umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb))) ! was ustokes(LL)
             end if
          end if
@@ -313,7 +325,7 @@
          !     advi(Lb) = advi(Lb) +  cfuhiLL*umod                        ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfuhi
          cfuhi3D = cfuhiLL * umod
 
-      else if (ifrctyp == 11) then ! Noslip
+      else if (friction_type == 11) then ! Noslip
 
          !    advi(Lb) = advi(Lb) +  2d0*(vicwwu(Lb)+vicouv)/hu(Lb)**2
          cfuhi3D = 2d0 * (vicwwu(Lb) + vicoww) / hu(Lb)**2
@@ -332,3 +344,5 @@
       end if
 
    end subroutine getustbcfuhi
+
+end module m_getustbcfuhi

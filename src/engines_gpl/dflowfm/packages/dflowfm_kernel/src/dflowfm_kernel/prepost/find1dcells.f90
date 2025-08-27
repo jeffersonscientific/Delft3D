@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,9 +56,11 @@ contains
       integer :: i, ierr, k, kcell
       integer, dimension(:), allocatable :: left_2D_cells, right_2D_cells
       logical :: Lisnew
-      integer :: temp_threads
       integer :: ierror
-      integer :: nump1d
+      integer :: nump1d, nump1d_i
+#ifdef _OPENMP
+      integer :: temp_threads
+#endif
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
@@ -68,7 +70,7 @@ contains
 #endif
       !$OMP PARALLEL DO
       do L = 1, NUML1D
-         if (KN(1, L) /= 0 .and. kn(3, L) /= IFLTP_1D .and. kn(3, L) /= 6) then
+         if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
             call INCELLS(Xk(KN(1, L)), Yk(KN(1, L)), left_2D_cells(L))
             call INCELLS(Xk(KN(2, L)), Yk(KN(2, L)), right_2D_cells(L))
          end if
@@ -92,7 +94,7 @@ contains
       nump1d = size(meshgeom1d%nodebranchidx) !< Old number of nodes contained in meshgeom1d
       if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
          allocate (meshgeom1d%nodeidx(nump1d))
-         meshgeom1d%nodeidx = [1:nump1d]
+         meshgeom1d%nodeidx = [(nump1d_i, nump1d_i=1, nump1d)]
       end if
       allocate (meshgeom1d%nodeidx_inverse(size(kc)))
       do i = 1, nump1d
@@ -170,7 +172,7 @@ contains
       is_new_1D_cell = .false.
 
       if (KC(k) == 1) then !Node not yet touched
-         if (NMK(k) > 1 .or. (kn(3, l) == IFLTP_1D .or. kn(3, l) == 6)) then
+         if (NMK(k) > 1 .or. (kn(3, l) == LINK_1D .or. kn(3, l) == LINK_1D_MAINBRANCH)) then
             is_new_1D_cell = .true.
          end if
       end if
@@ -196,7 +198,7 @@ contains
             ! if the branch order is to be preserved, check if the next found node matches the next node in the branchorder.
             next_found_node = meshgeom1d%nodeidx_inverse(k)
             next_branch_node = nump1d2d - nump + 1
-            if (next_found_node /= 0 .and. next_branch_node <= size(meshgeom1d%nodebranchidx)) then
+            if (next_found_node > 0 .and. max(next_branch_node, next_found_node) <= size(meshgeom1d%nodebranchidx)) then
                if (meshgeom1d%nodebranchidx(next_found_node) == meshgeom1d%nodebranchidx(next_branch_node) .and. &
                    comparereal(meshgeom1d%nodeoffsets(next_found_node), meshgeom1d%nodeoffsets(next_branch_node), 1d-6) == 0) then
                   branches_first = .true.
@@ -228,7 +230,7 @@ contains
       integer, intent(in) :: K !< node (attached to link)
 
       get_2D_cell = 0
-      if (kn(3, L) /= IFLTP_1D .and. kn(3, L) /= 6) then !These link types are allowed to have no 2D cells
+      if (kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then !These link types are allowed to have no 2D cells
          if (NMK(K) == 1) then
             get_2D_cell = cell_array(L)
          end if

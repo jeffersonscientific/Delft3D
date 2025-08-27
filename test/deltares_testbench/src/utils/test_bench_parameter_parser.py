@@ -1,6 +1,6 @@
 """Parser for handling supplied arguments.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import getpass
@@ -33,7 +33,7 @@ class TestBenchParameterParser:
 
         settings = TestBenchSettings()
 
-        # Store path of Testbench.py into os environment
+        # Store path of TestBench.py into os environment
         script_path, script_name = os.path.split(os.path.abspath(__file__))
 
         settings.test_bench_root = script_path

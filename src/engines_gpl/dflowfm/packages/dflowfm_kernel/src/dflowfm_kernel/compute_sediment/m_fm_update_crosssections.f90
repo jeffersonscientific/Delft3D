@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,15 +39,17 @@ contains
    !! Updates cross-section based on main average bed level change.
    !! Returns bed level change for lowest point in cross-section.
    subroutine fm_update_crosssections(blchg)
-      use precision
+      use precision, only: fp, dp, comparereal
+      use unstruc_channel_flow, only: network, nt_LinkNode
+      use m_CrossSections, only: CS_TABULATED
+      use MessageHandling, only: msgbuf, err_flush
       use m_flowgeom, only: bl, ndx, ndx2d
       use m_oned_functions, only: gridpoint2cross
-      use unstruc_channel_flow, only: network, t_node, nt_LinkNode
-      use m_CrossSections, only: t_CSType, CS_TABULATED
-      use MessageHandling
       use m_fm_erosed, only: ndxi_mor, ndx_mor, e_sbn, nd_mor, lsedtot
       use m_f1dimp, only: f1dimppar
       use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
+      use m_CrossSections, only: t_CSType
+      use m_node, only: t_node
 
       real(fp), dimension(:), intent(inout) :: blchg !< Bed level change (> 0 = sedimentation, < 0 = erosion)
 
@@ -61,15 +63,15 @@ contains
       integer :: ncs
       integer :: kd, kl
       integer :: idx_l1, idx_l2, idx_ns
-      double precision :: aref
-      double precision :: blmin
-      double precision :: da
-      double precision :: ds
-      double precision :: dvol
-      double precision :: fac
-      double precision :: href
-      double precision :: w_active
-      double precision :: e_sbn_tot_1, e_sbn_tot_2
+      real(kind=dp) :: aref
+      real(kind=dp) :: blmin
+      real(kind=dp) :: da
+      real(kind=dp) :: ds
+      real(kind=dp) :: dvol
+      real(kind=dp) :: fac
+      real(kind=dp) :: href
+      real(kind=dp) :: w_active
+      real(kind=dp) :: e_sbn_tot_1, e_sbn_tot_2
       type(t_CSType), pointer :: cdef
       type(t_node), pointer :: pnod
       !
@@ -243,7 +245,7 @@ contains
 
       integer, intent(in) :: nm !< flow node index
       integer, intent(in) :: j !< local link (branch) index at flow node nm (only used on points with multiple branches)
-      double precision :: ds !< Resulting grid cell length.
+      real(kind=dp) :: ds !< Resulting grid cell length.
 
       integer i
       integer LL
@@ -276,6 +278,7 @@ contains
    end function fm_get_ds
 
    subroutine fm_update_mor_width_area()
+      use precision, only: dp
       use m_flowgeom, only: lnx, lnx1d, lnxi, lnx1Db, wu, wu_mor, LBND1D, bai, ba_mor, bai_mor, ndx, dx, ln, acl, ndx2D, ndx1Db
       use m_cell_geometry, only: ba
       use unstruc_channel_flow, only: network
@@ -284,7 +287,7 @@ contains
       type(t_CSType), pointer :: cdef1, cdef2
       integer :: icrs1, icrs2
       integer :: L, LL, k, k1, k2
-      double precision :: factor
+      real(kind=dp) :: factor
 
       ! Set all morphologically active widths to general flow width.
       do L = 1, lnx
@@ -363,10 +366,10 @@ contains
       integer :: iref
       integer :: j
       integer :: nm
-      double precision :: blref
-      double precision :: ba_mor_tot
-      double precision :: href_tot
-      double precision :: ds
+      real(kind=dp) :: blref
+      real(kind=dp) :: ba_mor_tot
+      real(kind=dp) :: href_tot
+      real(kind=dp) :: ds
       !
       ! Generate level change averaged over the main channel
       !

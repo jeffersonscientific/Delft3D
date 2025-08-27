@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,28 +31,29 @@
 !
 
 module m_anchorcls
+   use m_setxor
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine ANCHORCLS()
-         use unstruc_colors
-         use m_locatora
-         use m_disdis
-         use m_set_col
+   subroutine ANCHORCLS()
+      use unstruc_colors, only: klank
+      use m_locatora, only: xa, ya
+      use m_disdis, only: disdis
+      use m_set_col, only: setcol
 
-         implicit none
+      implicit none
 !     ZET ANCHOR NA CLEARSCREEN
 
-         call SETXOR(1)
-         call SETCOL(KLANK)
-         call IGrMARKER(real(XA), real(YA), 2)
-         call SETXOR(0)
+      call SETXOR(1)
+      call SETCOL(KLANK)
+      call IGrMARKER(real(XA), real(YA), 2)
+      call SETXOR(0)
 
-         call DISDIS()
+      call DISDIS()
 
-         return
-      end
+      return
+   end
 
 end module m_anchorcls

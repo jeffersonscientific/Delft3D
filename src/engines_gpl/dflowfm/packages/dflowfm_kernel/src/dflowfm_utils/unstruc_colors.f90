@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,9 +33,10 @@
 ! m_WEARELT movet to gridgeom
 
 module m_textlines
-   double precision :: txsize
-   double precision :: txxpos
-   double precision :: txypos
+   use precision, only: dp
+   real(kind=dp) :: txsize
+   real(kind=dp) :: txxpos
+   real(kind=dp) :: txypos
    character(len=60) :: txlin(3)
 end module m_textlines
 

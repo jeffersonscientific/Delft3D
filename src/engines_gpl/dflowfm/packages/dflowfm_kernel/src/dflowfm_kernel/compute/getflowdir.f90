@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,30 @@
 !
 !
 
- subroutine getflowdir(L, iu)
-    use m_flow
-    use m_flowgeom
-    implicit none
-    integer :: L, iu, k1, k2
+module m_getflowdir
 
-    if (u1(L) > 0d0) then
-       iu = 1
-    else if (u1(L) < 0d0) then
-       iu = -1
-    else
-       k1 = ln(1, L); k2 = ln(2, L)
-       if (s1(k1) > s1(k2)) then
-          iu = 1
-       else
-          iu = -1
-       end if
-    end if
- end subroutine getflowdir
+   implicit none
+
+contains
+
+   subroutine getflowdir(L, iu)
+      use m_flow, only: u1, s1
+      use m_flowgeom, only: ln
+      implicit none
+      integer :: L, iu, k1, k2
+
+      if (u1(L) > 0d0) then
+         iu = 1
+      else if (u1(L) < 0d0) then
+         iu = -1
+      else
+         k1 = ln(1, L); k2 = ln(2, L)
+         if (s1(k1) > s1(k2)) then
+            iu = 1
+         else
+            iu = -1
+         end if
+      end if
+   end subroutine getflowdir
+
+end module m_getflowdir

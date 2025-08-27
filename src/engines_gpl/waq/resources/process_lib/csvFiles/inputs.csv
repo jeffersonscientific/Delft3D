@@ -205,11 +205,16 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Coverage  ","PotEM05   ",  12,"Y","x",1
 "Coverage  ","IBotSeg   ",  13,"N","x",1
 "Coverage  ","RadMacrop ",  14,"N","x",1
-"DAYRAD    ","RadSurf   ",   1,"Y","x",1
-"DAYRAD    ","ITIME     ",   2,"N"," ",1
-"DAYRAD    ","Latitude  ",   3,"Y","x",1
-"DAYRAD    ","RefDay    ",   4,"Y","x",1
-"DAYRAD    ","AuxSys    ",   5,"Y"," ",1
+"AveRadSurf","RadSurf   ",   1,"N","x",1
+"AveRadSurf","AveRadPeri",   2,"Y","x",1
+"AveRadSurf","DELT      ",   3,"N"," ",1
+"AveRadSurf","SumAveRad ",   4,"Y"," ",1
+"AveRadSurf","SumAveRadT",   5,"Y"," ",1
+"DisRadSurf","RadSurfAve",   1,"N","x",1
+"DisRadSurf","ITIME     ",   2,"N"," ",1
+"DisRadSurf","Latitude  ",   3,"Y","x",1
+"DisRadSurf","RefDay    ",   4,"Y","x",1
+"DisRadSurf","AuxSys    ",   5,"Y"," ",1
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
 "TempMode  ","SwitchTemp",   3,"Y","x",1
@@ -228,21 +233,15 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","SwEmersion",  11,"Y","x",1
 "Temperatur","LocSedDept",  12,"Y","x",1
 "Temperatur","ThSedDT   ",  13,"Y","x",1
-"Temperatur","DayRadSurf",  14,"Y","x",1
+"Temperatur","RadSurf   ",  14,"N","x",1
 "Temperatur","RadMax    ",  15,"Y","x",1
 "Temperatur","RTradmax  ",  16,"Y","x",1
 "Temperatur","DelTradmax",  17,"Y","x",1
 "Temperatur","DelTev    ",  18,"Y","x",1
 "Temperatur","DelTrad   ",  19,"N"," ",1
-"VarSal    ","FrCon     ",   1,"N","x",1
-"VarSal    ","FrFlow    ",   2,"N","x",1
-"VarSal    ","SalBnd    ",   3,"N","x",1
-"Salinchlor","Salinity  ",   1,"N","x",1
-"Salinchlor","Cl        ",   2,"N","x",1
-"Salinchlor","GtCl      ",   3,"Y","x",1
-"Salinchlor","Temp      ",   4,"Y","x",1
-"Salinchlor","Sal0      ",   5,"Y","x",1
-"Salinchlor","SWSalCl   ",   6,"Y","x",1
+"Salinchlor","Cl        ",   1,"Y","x",1
+"Salinchlor","Temp      ",   2,"Y","x",1
+"Salinchlor","SWSalCl   ",   3,"Y","x",1
 "Veloc     ","WSNoseg1  ",   1,"N"," ",1
 "Veloc     ","WSNoseg2  ",   2,"N"," ",1
 "Veloc     ","WSNoseg3  ",   3,"N"," ",1
@@ -586,20 +585,20 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Extinc_VLG","POC4      ",  35,"Y","x",1
 "CalcRad   ","ExtVl     ",   1,"N","x",1
 "CalcRad   ","Depth     ",   2,"N","x",1
-"CalcRad   ","RadSurf   ",   3,"Y","x",1
+"CalcRad   ","RadSurf   ",   3,"N","x",1
 "CalcRad   ","a_enh     ",   4,"Y","x",1
 "CalcRad   ","Surf      ",   5,"N","x",1
 "CalcRad   ","SwEmersion",   6,"Y","x",1
 "CalcRad   ","Rad       ",   7,"N"," ",1
 "CalcRad   ","fRefl     ",   8,"Y","x",1
-"CalcRadDay","ExtVl     ",   1,"N","x",1
-"CalcRadDay","Depth     ",   2,"N","x",1
-"CalcRadDay","DayRadSurf",   3,"N","x",1
-"CalcRadDay","a_enh     ",   4,"Y","x",1
-"CalcRadDay","Surf      ",   5,"N","x",1
-"CalcRadDay","SwEmersion",   6,"Y","x",1
-"CalcRadDay","RadDay    ",   7,"N"," ",1
-"CalcRadDay","fRefl     ",   8,"Y","x",1
+"CalcRadAve","ExtVl     ",   1,"N","x",1
+"CalcRadAve","Depth     ",   2,"N","x",1
+"CalcRadAve","RadSurfAve",   3,"N","x",1
+"CalcRadAve","a_enh     ",   4,"Y","x",1
+"CalcRadAve","Surf      ",   5,"N","x",1
+"CalcRadAve","SwEmersion",   6,"Y","x",1
+"CalcRadAve","RadAve    ",   7,"N"," ",1
+"CalcRadAve","fRefl     ",   8,"Y","x",1
 "Daylength ","ITIME     ",   1,"N","x",1
 "Daylength ","Latitude  ",   2,"Y","x",1
 "Daylength ","RefDay    ",   3,"Y","x",1
@@ -710,7 +709,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BLOOM_P   ","ExtVl     ",   3,"N","x",1
 "BLOOM_P   ","ExtVlPhBl ",   4,"N","x",1
 "BLOOM_P   ","Temp      ",   5,"Y","x",1
-"BLOOM_P   ","Rad       ",   6,"N","x",1
+"BLOOM_P   ","RadAve    ",   6,"N","x",1
 "BLOOM_P   ","Depth     ",   7,"N","x",1
 "BLOOM_P   ","BloomDepth",   8,"Y","x",1
 "BLOOM_P   ","DayL      ",   9,"Y","x",1
@@ -727,7 +726,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BLOOM_P   ","DELT      ",  20,"N","x",1
 "BLOOM_P   ","SWBlOutput",  21,"Y","x",1
 "BLOOM_P   ","SWOxyProd ",  22,"Y","x",1
-"BLOOM_P   ","Cl        ",  23,"Y","x",1
+"BLOOM_P   ","Salinity  ",  23,"Y","x",1
 "BLOOM_P   ","Volume    ",  24,"N","x",1
 "BLOOM_P   ","SwVTRANS  ",  25,"Y","x",1
 "BLOOM_P   ","TIC       ",  26,"Y","x",1
@@ -776,7 +775,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BLOOM     ","ExtVl     ",   2,"N","x",1
 "BLOOM     ","ExtVlPhBl ",   3,"N","x",1
 "BLOOM     ","Temp      ",   4,"Y","x",1
-"BLOOM     ","Rad       ",   5,"N","x",1
+"BLOOM     ","RadAve    ",   5,"N","x",1
 "BLOOM     ","Depth     ",   6,"N","x",1
 "BLOOM     ","BloomDepth",   7,"Y","x",1
 "BLOOM     ","DayL      ",   8,"Y","x",1
@@ -793,7 +792,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BLOOM     ","DELT      ",  19,"N","x",1
 "BLOOM     ","SWBlOutput",  20,"Y","x",1
 "BLOOM     ","SWOxyProd ",  21,"Y","x",1
-"BLOOM     ","Cl        ",  22,"Y","x",1
+"BLOOM     ","Salinity  ",  22,"Y","x",1
 "BLOOM     ","Volume    ",  23,"N","x",1
 "BLOOM     ","SwVTRANS  ",  24,"Y","x",1
 "BLOOM     ","TIC       ",  25,"Y","x",1
@@ -2138,8 +2137,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "EColiMrt  ","TcMrtEColi",   3,"Y","x",1
 "EColiMrt  ","Temp      ",   4,"Y","x",1
 "EColiMrt  ","CTMrtEColi",   5,"Y","x",1
-"EColiMrt  ","Cl        ",   6,"N","x",1
-"EColiMrt  ","RadDay    ",   7,"N","x",1
+"EColiMrt  ","Salinity  ",   6,"N","x",1
+"EColiMrt  ","Rad       ",   7,"N","x",1
 "EColiMrt  ","CFRAD     ",   8,"Y","x",1
 "EColiMrt  ","ExtVl     ",   9,"N","x",1
 "EColiMrt  ","Depth     ",  10,"N","x",1
@@ -2149,8 +2148,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "FColiMrt  ","TcMrtFColi",   3,"Y","x",1
 "FColiMrt  ","Temp      ",   4,"Y","x",1
 "FColiMrt  ","CTMrtFColi",   5,"Y","x",1
-"FColiMrt  ","Cl        ",   6,"N","x",1
-"FColiMrt  ","RadDay    ",   7,"N","x",1
+"FColiMrt  ","Salinity  ",   6,"N","x",1
+"FColiMrt  ","Rad       ",   7,"N","x",1
 "FColiMrt  ","CFRAD     ",   8,"Y","x",1
 "FColiMrt  ","ExtVl     ",   9,"N","x",1
 "FColiMrt  ","Depth     ",  10,"N","x",1
@@ -2160,8 +2159,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "TColiMrt  ","TcMrtTColi",   3,"Y","x",1
 "TColiMrt  ","Temp      ",   4,"Y","x",1
 "TColiMrt  ","CTMrtTColi",   5,"Y","x",1
-"TColiMrt  ","Cl        ",   6,"N","x",1
-"TColiMrt  ","RadDay    ",   7,"N","x",1
+"TColiMrt  ","Salinity  ",   6,"N","x",1
+"TColiMrt  ","Rad       ",   7,"N","x",1
 "TColiMrt  ","CFRAD     ",   8,"Y","x",1
 "TColiMrt  ","ExtVl     ",   9,"N","x",1
 "TColiMrt  ","Depth     ",  10,"N","x",1
@@ -2171,17 +2170,16 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "EnCocMrt  ","TcMrtEnCoc",   3,"Y","x",1
 "EnCocMrt  ","Temp      ",   4,"Y","x",1
 "EnCocMrt  ","CTMrtEnCoc",   5,"Y","x",1
-"EnCocMrt  ","Cl        ",   6,"N","x",1
-"EnCocMrt  ","RadDay    ",   7,"N","x",1
+"EnCocMrt  ","Salinity  ",   6,"N","x",1
+"EnCocMrt  ","Rad       ",   7,"N","x",1
 "EnCocMrt  ","CFRAD     ",   8,"Y","x",1
 "EnCocMrt  ","ExtVl     ",   9,"N","x",1
 "EnCocMrt  ","Depth     ",  10,"N","x",1
 "EnCocMrt  ","SpMrtEnCoc",  11,"Y","x",1
-"SaturCO2  ","Cl        ",   1,"Y","x",1
-"SaturCO2  ","Temp      ",   2,"Y","x",1
-"SaturCO2  ","SWSatCO2  ",   3,"Y","x",1
-"SaturCO2  ","Salinity  ",   4,"Y","x",1
-"SaturCO2  ","PCO2      ",   5,"Y","x",1
+"SaturCO2  ","Temp      ",   1,"Y","x",1
+"SaturCO2  ","SWSatCO2  ",   2,"Y","x",1
+"SaturCO2  ","Salinity  ",   3,"Y","x",1
+"SaturCO2  ","PCO2      ",   4,"Y","x",1
 "RearCO2   ","DisCO2    ",   1,"N","x",1
 "RearCO2   ","Depth     ",   2,"N","x",1
 "RearCO2   ","Temp      ",   3,"Y","x",1
@@ -2274,10 +2272,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Nitrif_NH4","CFLNIT    ",  16,"Y","x",1
 "Nitrif_NH4","CurvNit   ",  17,"Y","x",1
 "Nitrif_NH4","DELT      ",  18,"N","x",1
-"SaturOXY  ","Cl        ",   1,"Y","x",1
-"SaturOXY  ","Temp      ",   2,"Y","x",1
-"SaturOXY  ","SWSatOXY  ",   3,"Y","x",1
-"SaturOXY  ","Salinity  ",   4,"Y","x",1
+"SaturOXY  ","Temp      ",   1,"Y","x",1
+"SaturOXY  ","SWSatOXY  ",   2,"Y","x",1
+"SaturOXY  ","Salinity  ",   3,"Y","x",1
 "RearOXY   ","OXY       ",   1,"Y","x",1
 "RearOXY   ","Depth     ",   2,"N","x",1
 "RearOXY   ","Temp      ",   3,"Y","x",1
@@ -3015,7 +3012,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "OXIDCH4   ","Poros     ",  17,"Y","x",1
 "OXIDCH4   ","DELT      ",  18,"N","x",1
 "OXIDCH4   ","RadMetInh ",  19,"Y","x",1
-"OXIDCH4   ","Rad       ",  20,"N","x",1
+"OXIDCH4   ","RadAve    ",  20,"N","x",1
 "OXIDCH4   ","KSRadFr   ",  21,"O","x",1
 "OXIDCH4   ","KSRadSh   ",  22,"Y","x",1
 "SPECIRON  ","FeIIId    ",   1,"Y","x",1
@@ -4788,7 +4785,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DSPTra    ","DifCoef   ",   5,"N","x",1
 "RFPART_Cd ","pH        ",   1,"Y","x",1
 "RFPART_Cd ","ALK       ",   2,"Y","x",1
-"RFPART_Cd ","Cl        ",   3,"N","x",1
+"RFPART_Cd ","Salinity  ",   3,"N","x",1
 "RFPART_Cd ","DOC       ",   4,"Y","x",1
 "RFPART_Cd ","CECIM1    ",   5,"N","x",1
 "RFPART_Cd ","CECIM2    ",   6,"Y","x",1
@@ -4803,9 +4800,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_Cd ","CnRFKpCD  ",  15,"Y","x",1
 "RFPART_Cd ","CoRFKpCD  ",  16,"Y","x",1
 "RFPART_Cd ","SWRepro   ",  17,"Y","x",1
+"RFPART_Cd ","Temp      ",  18,"Y","x",1
 "RFPART_Cu ","pH        ",   1,"Y","x",1
 "RFPART_Cu ","ALK       ",   2,"Y","x",1
-"RFPART_Cu ","Cl        ",   3,"N","x",1
+"RFPART_Cu ","Salinity  ",   3,"N","x",1
 "RFPART_Cu ","DOC       ",   4,"Y","x",1
 "RFPART_Cu ","CECIM1    ",   5,"N","x",1
 "RFPART_Cu ","CECIM2    ",   6,"Y","x",1
@@ -4820,9 +4818,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_Cu ","CnRFKpCu  ",  15,"Y","x",1
 "RFPART_Cu ","CoRFKpCu  ",  16,"Y","x",1
 "RFPART_Cu ","SWRepro   ",  17,"Y","x",1
+"RFPART_Cu ","Temp      ",  18,"Y","x",1
 "RFPART_Pb ","pH        ",   1,"Y","x",1
 "RFPART_Pb ","ALK       ",   2,"Y","x",1
-"RFPART_Pb ","Cl        ",   3,"N","x",1
+"RFPART_Pb ","Salinity  ",   3,"N","x",1
 "RFPART_Pb ","DOC       ",   4,"Y","x",1
 "RFPART_Pb ","CECIM1    ",   5,"N","x",1
 "RFPART_Pb ","CECIM2    ",   6,"Y","x",1
@@ -4837,9 +4836,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_Pb ","CnRFKpPb  ",  15,"Y","x",1
 "RFPART_Pb ","CoRFKpPb  ",  16,"Y","x",1
 "RFPART_Pb ","SWRepro   ",  17,"Y","x",1
+"RFPART_Pb ","Temp      ",  18,"Y","x",1
 "RFPART_Zn ","pH        ",   1,"Y","x",1
 "RFPART_Zn ","ALK       ",   2,"Y","x",1
-"RFPART_Zn ","Cl        ",   3,"N","x",1
+"RFPART_Zn ","Salinity  ",   3,"N","x",1
 "RFPART_Zn ","DOC       ",   4,"Y","x",1
 "RFPART_Zn ","CECIM1    ",   5,"N","x",1
 "RFPART_Zn ","CECIM2    ",   6,"Y","x",1
@@ -4854,9 +4854,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_Zn ","CnRFKpZn  ",  15,"Y","x",1
 "RFPART_Zn ","CoRFKpZn  ",  16,"Y","x",1
 "RFPART_Zn ","SWRepro   ",  17,"Y","x",1
+"RFPART_Zn ","Temp      ",  18,"Y","x",1
 "RFPART_Hg ","pH        ",   1,"Y","x",1
 "RFPART_Hg ","ALK       ",   2,"Y","x",1
-"RFPART_Hg ","Cl        ",   3,"N","x",1
+"RFPART_Hg ","Salinity  ",   3,"N","x",1
 "RFPART_Hg ","DOC       ",   4,"Y","x",1
 "RFPART_Hg ","CECIM1    ",   5,"N","x",1
 "RFPART_Hg ","CECIM2    ",   6,"Y","x",1
@@ -4871,9 +4872,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_Hg ","CnRFKpHg  ",  15,"Y","x",1
 "RFPART_Hg ","CoRFKpHg  ",  16,"Y","x",1
 "RFPART_Hg ","SWRepro   ",  17,"Y","x",1
+"RFPART_Hg ","Temp      ",  18,"Y","x",1
 "RFPART_Ni ","pH        ",   1,"Y","x",1
 "RFPART_Ni ","ALK       ",   2,"Y","x",1
-"RFPART_Ni ","Cl        ",   3,"N","x",1
+"RFPART_Ni ","Salinity  ",   3,"N","x",1
 "RFPART_Ni ","DOC       ",   4,"Y","x",1
 "RFPART_Ni ","CECIM1    ",   5,"N","x",1
 "RFPART_Ni ","CECIM2    ",   6,"Y","x",1
@@ -4888,9 +4890,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_Ni ","CnRFKpNi  ",  15,"Y","x",1
 "RFPART_Ni ","CoRFKpNi  ",  16,"Y","x",1
 "RFPART_Ni ","SWRepro   ",  17,"Y","x",1
+"RFPART_Ni ","Temp      ",  18,"Y","x",1
 "RFPART_Cr ","pH        ",   1,"Y","x",1
 "RFPART_Cr ","ALK       ",   2,"Y","x",1
-"RFPART_Cr ","Cl        ",   3,"N","x",1
+"RFPART_Cr ","Salinity  ",   3,"N","x",1
 "RFPART_Cr ","DOC       ",   4,"Y","x",1
 "RFPART_Cr ","CECIM1    ",   5,"N","x",1
 "RFPART_Cr ","CECIM2    ",   6,"Y","x",1
@@ -4905,9 +4908,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_Cr ","CnRFKpCr  ",  15,"Y","x",1
 "RFPART_Cr ","CoRFKpCr  ",  16,"Y","x",1
 "RFPART_Cr ","SWRepro   ",  17,"Y","x",1
+"RFPART_Cr ","Temp      ",  18,"Y","x",1
 "RFPART_As ","pH        ",   1,"Y","x",1
 "RFPART_As ","ALK       ",   2,"Y","x",1
-"RFPART_As ","Cl        ",   3,"N","x",1
+"RFPART_As ","Salinity  ",   3,"N","x",1
 "RFPART_As ","DOC       ",   4,"Y","x",1
 "RFPART_As ","CECIM1    ",   5,"N","x",1
 "RFPART_As ","CECIM2    ",   6,"Y","x",1
@@ -4922,6 +4926,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RFPART_As ","CnRFKpAs  ",  15,"Y","x",1
 "RFPART_As ","CoRFKpAs  ",  16,"Y","x",1
 "RFPART_As ","SWRepro   ",  17,"Y","x",1
+"RFPART_As ","Temp      ",  18,"Y","x",1
 "PartWK_Cd ","Cd        ",   1,"M","x",1
 "PartWK_Cd ","Cd-Dis    ",   2,"M"," ",1
 "PartWK_Cd ","Cd-Par    ",   3,"M"," ",1
@@ -12511,7 +12516,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "VB09_Upt3D","fPVB09up  ",  24,"N","x",1
 "VB09_Upt3D","fSVB09up  ",  25,"N","x",1
 "Rad_SM01  ","ITopSeg01 ",   1,"N","x",1
-"Rad_SM01  ","Rad       ",   2,"N","x",1
+"Rad_SM01  ","RadAve    ",   2,"N","x",1
 "Rad_SM01  ","HactSM01  ",   3,"N","x",1
 "Rad_SM01  ","TotalDepth",   4,"N","x",1
 "Rad_SM01  ","LocalDepth",   5,"N","x",1
@@ -12519,7 +12524,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM01  ","ExtVl     ",   7,"N","x",1
 "Rad_SM01  ","RadSatSM01",   8,"Y","x",1
 "Rad_SM02  ","ITopSeg02 ",   1,"N","x",1
-"Rad_SM02  ","Rad       ",   2,"N","x",1
+"Rad_SM02  ","RadAve    ",   2,"N","x",1
 "Rad_SM02  ","HactSM02  ",   3,"N","x",1
 "Rad_SM02  ","TotalDepth",   4,"N","x",1
 "Rad_SM02  ","LocalDepth",   5,"N","x",1
@@ -12527,7 +12532,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM02  ","ExtVl     ",   7,"N","x",1
 "Rad_SM02  ","RadSatSM02",   8,"Y","x",1
 "Rad_SM03  ","ITopSeg03 ",   1,"N","x",1
-"Rad_SM03  ","Rad       ",   2,"N","x",1
+"Rad_SM03  ","RadAve    ",   2,"N","x",1
 "Rad_SM03  ","HactSM03  ",   3,"N","x",1
 "Rad_SM03  ","TotalDepth",   4,"N","x",1
 "Rad_SM03  ","LocalDepth",   5,"N","x",1
@@ -12535,7 +12540,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM03  ","ExtVl     ",   7,"N","x",1
 "Rad_SM03  ","RadSatSM03",   8,"Y","x",1
 "Rad_SM04  ","ITopSeg04 ",   1,"N","x",1
-"Rad_SM04  ","Rad       ",   2,"N","x",1
+"Rad_SM04  ","RadAve    ",   2,"N","x",1
 "Rad_SM04  ","HactSM04  ",   3,"N","x",1
 "Rad_SM04  ","TotalDepth",   4,"N","x",1
 "Rad_SM04  ","LocalDepth",   5,"N","x",1
@@ -12543,7 +12548,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM04  ","ExtVl     ",   7,"N","x",1
 "Rad_SM04  ","RadSatSM04",   8,"Y","x",1
 "Rad_SM05  ","ITopSeg05 ",   1,"N","x",1
-"Rad_SM05  ","Rad       ",   2,"N","x",1
+"Rad_SM05  ","RadAve    ",   2,"N","x",1
 "Rad_SM05  ","HactSM05  ",   3,"N","x",1
 "Rad_SM05  ","TotalDepth",   4,"N","x",1
 "Rad_SM05  ","LocalDepth",   5,"N","x",1
@@ -13283,7 +13288,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_M  ","Mussel_R  ",  13,"Y","x",1
 "DEBGRZ_M  ","Mussel_N  ",  14,"Y","x",1
 "DEBGRZ_M  ","M_Lref    ",  15,"Y","x",1
-"DEBGRZ_M  ","M_Dummy   ",  16,"Y","x",1
+"DEBGRZ_M  ","M_ddmfk   ",  16,"Y","x",1
 "DEBGRZ_M  ","M_Vp      ",  17,"Y","x",1
 "DEBGRZ_M  ","M_shape   ",  18,"Y","x",1
 "DEBGRZ_M  ","M_Em      ",  19,"Y","x",1
@@ -13641,7 +13646,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_Z  ","Zoopl_R   ",  13,"Y","x",1
 "DEBGRZ_Z  ","Zoopl_N   ",  14,"Y","x",1
 "DEBGRZ_Z  ","Z_Lref    ",  15,"Y","x",1
-"DEBGRZ_Z  ","Z_Dummy   ",  16,"Y","x",1
+"DEBGRZ_Z  ","Z_ddmfk   ",  16,"Y","x",1
 "DEBGRZ_Z  ","Z_Vp      ",  17,"Y","x",1
 "DEBGRZ_Z  ","Z_shape   ",  18,"Y","x",1
 "DEBGRZ_Z  ","Z_Em      ",  19,"Y","x",1
@@ -13999,7 +14004,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G3 ","Grazer3_R ",  13,"Y","x",1
 "DEBGRZ_G3 ","Grazer3_N ",  14,"Y","x",1
 "DEBGRZ_G3 ","G3_Lref   ",  15,"Y","x",1
-"DEBGRZ_G3 ","G3_Dummy  ",  16,"Y","x",1
+"DEBGRZ_G3 ","G3_ddmfk  ",  16,"Y","x",1
 "DEBGRZ_G3 ","G3_Vp     ",  17,"Y","x",1
 "DEBGRZ_G3 ","G3_shape  ",  18,"Y","x",1
 "DEBGRZ_G3 ","G3_Em     ",  19,"Y","x",1
@@ -14357,7 +14362,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G4 ","Grazer4_R ",  13,"Y","x",1
 "DEBGRZ_G4 ","Grazer4_N ",  14,"Y","x",1
 "DEBGRZ_G4 ","G4_Lref   ",  15,"Y","x",1
-"DEBGRZ_G4 ","G4_Dummy  ",  16,"Y","x",1
+"DEBGRZ_G4 ","G4_ddmfk  ",  16,"Y","x",1
 "DEBGRZ_G4 ","G4_Vp     ",  17,"Y","x",1
 "DEBGRZ_G4 ","G4_shape  ",  18,"Y","x",1
 "DEBGRZ_G4 ","G4_Em     ",  19,"Y","x",1
@@ -14715,7 +14720,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G5 ","Grazer5_R ",  13,"Y","x",1
 "DEBGRZ_G5 ","Grazer5_N ",  14,"Y","x",1
 "DEBGRZ_G5 ","G5_Lref   ",  15,"Y","x",1
-"DEBGRZ_G5 ","G5_Dummy  ",  16,"Y","x",1
+"DEBGRZ_G5 ","G5_ddmfk  ",  16,"Y","x",1
 "DEBGRZ_G5 ","G5_Vp     ",  17,"Y","x",1
 "DEBGRZ_G5 ","G5_shape  ",  18,"Y","x",1
 "DEBGRZ_G5 ","G5_Em     ",  19,"Y","x",1
@@ -15252,8 +15257,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Virus1Mrt ","TcMrtVir1 ",   3,"Y","x",1
 "Virus1Mrt ","Temp      ",   4,"Y","x",1
 "Virus1Mrt ","CTMrtVir1 ",   5,"Y","x",1
-"Virus1Mrt ","Cl        ",   6,"Y","x",1
-"Virus1Mrt ","RadDay    ",   7,"N","x",1
+"Virus1Mrt ","Salinity  ",   6,"Y","x",1
+"Virus1Mrt ","Rad       ",   7,"N","x",1
 "Virus1Mrt ","CFRADVir1 ",   8,"Y","x",1
 "Virus1Mrt ","ExtVl     ",   9,"N","x",1
 "Virus1Mrt ","Depth     ",  10,"N","x",1
@@ -15263,8 +15268,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Virus2Mrt ","TcMrtVir2 ",   3,"Y","x",1
 "Virus2Mrt ","Temp      ",   4,"Y","x",1
 "Virus2Mrt ","CTMrtVir2 ",   5,"Y","x",1
-"Virus2Mrt ","Cl        ",   6,"Y","x",1
-"Virus2Mrt ","RadDay    ",   7,"N","x",1
+"Virus2Mrt ","Salinity  ",   6,"Y","x",1
+"Virus2Mrt ","Rad       ",   7,"N","x",1
 "Virus2Mrt ","CFRADVir2 ",   8,"Y","x",1
 "Virus2Mrt ","ExtVl     ",   9,"N","x",1
 "Virus2Mrt ","Depth     ",  10,"N","x",1
@@ -15274,8 +15279,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Virus3Mrt ","TcMrtVir3 ",   3,"Y","x",1
 "Virus3Mrt ","Temp      ",   4,"Y","x",1
 "Virus3Mrt ","CTMrtVir3 ",   5,"Y","x",1
-"Virus3Mrt ","Cl        ",   6,"Y","x",1
-"Virus3Mrt ","RadDay    ",   7,"N","x",1
+"Virus3Mrt ","Salinity  ",   6,"Y","x",1
+"Virus3Mrt ","Rad       ",   7,"N","x",1
 "Virus3Mrt ","CFRADVir3 ",   8,"Y","x",1
 "Virus3Mrt ","ExtVl     ",   9,"N","x",1
 "Virus3Mrt ","Depth     ",  10,"N","x",1
@@ -15285,8 +15290,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Vir1S1Mrt ","TcMrtVir1 ",   3,"Y","x",1
 "Vir1S1Mrt ","Temp      ",   4,"Y","x",1
 "Vir1S1Mrt ","CTMrtVir1 ",   5,"Y","x",1
-"Vir1S1Mrt ","Cl        ",   6,"Y","x",1
-"Vir1S1Mrt ","RadDay    ",   7,"N","x",1
+"Vir1S1Mrt ","Salinity  ",   6,"Y","x",1
+"Vir1S1Mrt ","Rad       ",   7,"N","x",1
 "Vir1S1Mrt ","CFRADVir1 ",   8,"Y","x",1
 "Vir1S1Mrt ","ExtVl     ",   9,"N","x",1
 "Vir1S1Mrt ","Depth     ",  10,"N","x",1
@@ -15296,8 +15301,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Vir2S1Mrt ","TcMrtVir2 ",   3,"Y","x",1
 "Vir2S1Mrt ","Temp      ",   4,"Y","x",1
 "Vir2S1Mrt ","CTMrtVir2 ",   5,"Y","x",1
-"Vir2S1Mrt ","Cl        ",   6,"Y","x",1
-"Vir2S1Mrt ","RadDay    ",   7,"N","x",1
+"Vir2S1Mrt ","Salinity  ",   6,"Y","x",1
+"Vir2S1Mrt ","Rad       ",   7,"N","x",1
 "Vir2S1Mrt ","CFRADVir2 ",   8,"Y","x",1
 "Vir2S1Mrt ","ExtVl     ",   9,"N","x",1
 "Vir2S1Mrt ","Depth     ",  10,"N","x",1
@@ -15307,8 +15312,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Vir3S1Mrt ","TcMrtVir3 ",   3,"Y","x",1
 "Vir3S1Mrt ","Temp      ",   4,"Y","x",1
 "Vir3S1Mrt ","CTMrtVir3 ",   5,"Y","x",1
-"Vir3S1Mrt ","Cl        ",   6,"Y","x",1
-"Vir3S1Mrt ","RadDay    ",   7,"N","x",1
+"Vir3S1Mrt ","Salinity  ",   6,"Y","x",1
+"Vir3S1Mrt ","Rad       ",   7,"N","x",1
 "Vir3S1Mrt ","CFRADVir3 ",   8,"Y","x",1
 "Vir3S1Mrt ","ExtVl     ",   9,"N","x",1
 "Vir3S1Mrt ","Depth     ",  10,"N","x",1
@@ -15851,8 +15856,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB2Temp  ","AuxSys    ",   6,"Y"," ",1
 "MPB2Temp  ","MPB2ftmp  ",   7,"N"," ",1
 "MPB2Temp  ","WSMPB2ftmp",   8,"N"," ",1
-"MPB1LLim  ","DayRadSurf",   1,"N","x",1
-"MPB1LLim  ","RadDay    ",   2,"N","x",1
+"MPB1LLim  ","RadSurf   ",   1,"N","x",1
+"MPB1LLim  ","Rad       ",   2,"N","x",1
 "MPB1LLim  ","ExtVl     ",   3,"N","x",1
 "MPB1LLim  ","a_enh     ",   4,"Y","x",1
 "MPB1LLim  ","fPAR      ",   5,"Y","x",1
@@ -15868,15 +15873,15 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB1LLim  ","ITSTRT    ",  15,"N"," ",1
 "MPB1LLim  ","AuxSys    ",  16,"Y"," ",1
 "MPB1LLim  ","SwMPBGEM  ",  17,"Y","x",1
-"MPB1LLim  ","RadBotDay ",  18,"N","x",1
+"MPB1LLim  ","RadBot    ",  18,"N","x",1
 "MPB1LLim  ","ExtVlSed  ",  19,"Y","x",1
 "MPB1LLim  ","ZSED      ",  20,"Y","x",1
 "MPB1LLim  ","MPB1WS01  ",  21,"N"," ",1
 "MPB1LLim  ","MPB1WS02  ",  22,"N"," ",1
 "MPB1LLim  ","MPB1WS03  ",  23,"N"," ",1
 "MPB1LLim  ","MPB1WS04  ",  24,"N"," ",1
-"MPB2LLim  ","DayRadSurf",   1,"N","x",1
-"MPB2LLim  ","RadDay    ",   2,"N","x",1
+"MPB2LLim  ","RadSurf   ",   1,"N","x",1
+"MPB2LLim  ","Rad       ",   2,"N","x",1
 "MPB2LLim  ","ExtVl     ",   3,"N","x",1
 "MPB2LLim  ","a_enh     ",   4,"Y","x",1
 "MPB2LLim  ","fPAR      ",   5,"Y","x",1
@@ -15892,7 +15897,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB2LLim  ","ITSTRT    ",  15,"N"," ",1
 "MPB2LLim  ","AuxSys    ",  16,"Y"," ",1
 "MPB2LLim  ","SwMPBGEM  ",  17,"Y","x",1
-"MPB2LLim  ","RadBotDay ",  18,"N","x",1
+"MPB2LLim  ","RadBot    ",  18,"N","x",1
 "MPB2LLim  ","ExtVlSed  ",  19,"Y","x",1
 "MPB2LLim  ","ZSED      ",  20,"Y","x",1
 "MPB2LLim  ","MPB2WS01  ",  21,"N"," ",1
@@ -17994,7 +17999,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","Mussel_R  ",  13,"Y","x",1
 "DEBGRP_M  ","Mussel_N  ",  14,"Y","x",1
 "DEBGRP_M  ","M_Lref    ",  15,"Y","x",1
-"DEBGRP_M  ","M_Dummy   ",  16,"Y","x",1
+"DEBGRP_M  ","M_ddmfk   ",  16,"Y","x",1
 "DEBGRP_M  ","M_Vp      ",  17,"Y","x",1
 "DEBGRP_M  ","M_shape   ",  18,"Y","x",1
 "DEBGRP_M  ","M_Em      ",  19,"Y","x",1
@@ -18077,7 +18082,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","greenChl_1",  96,"Y","x",1
 "DEBGRP_M  ","greenN_1  ",  97,"Y","x",1
 "DEBGRP_M  ","greenP_1  ",  98,"Y","x",1
-"DEBGRP_M  ","greenSi_1 ",  99,"N","x",1
+"DEBGRP_M  ","greenSi_1 ",  99,"Y"," ",1
 "DEBGRP_M  ","M_PrGreen1", 100,"Y","x",1
 "DEBGRP_M  ","Ben_Green1", 101,"Y","x",1
 "DEBGRP_M  ","M_FFGreen1", 102,"Y"," ",1
@@ -18085,7 +18090,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","greenChl_2", 104,"Y","x",1
 "DEBGRP_M  ","greenN_2  ", 105,"Y","x",1
 "DEBGRP_M  ","greenP_2  ", 106,"Y","x",1
-"DEBGRP_M  ","greenSi_2 ", 107,"N","x",1
+"DEBGRP_M  ","greenSi_2 ", 107,"Y"," ",1
 "DEBGRP_M  ","M_PrGreen2", 108,"Y","x",1
 "DEBGRP_M  ","Ben_Green2", 109,"Y","x",1
 "DEBGRP_M  ","M_FFGreen2", 110,"Y"," ",1
@@ -18093,7 +18098,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","cmChl_1   ", 112,"Y","x",1
 "DEBGRP_M  ","cmN_1     ", 113,"Y","x",1
 "DEBGRP_M  ","cmP_1     ", 114,"Y","x",1
-"DEBGRP_M  ","cmSi_1    ", 115,"N","x",1
+"DEBGRP_M  ","cmSi_1    ", 115,"Y"," ",1
 "DEBGRP_M  ","M_Prcm1   ", 116,"Y","x",1
 "DEBGRP_M  ","Ben_cm1   ", 117,"Y","x",1
 "DEBGRP_M  ","M_FFcm1   ", 118,"Y"," ",1
@@ -18101,7 +18106,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","cmChl_2   ", 120,"Y","x",1
 "DEBGRP_M  ","cmN_2     ", 121,"Y","x",1
 "DEBGRP_M  ","cmP_2     ", 122,"Y","x",1
-"DEBGRP_M  ","cmSi_2    ", 123,"N","x",1
+"DEBGRP_M  ","cmSi_2    ", 123,"Y"," ",1
 "DEBGRP_M  ","M_Prcm2   ", 124,"Y","x",1
 "DEBGRP_M  ","Ben_cm2   ", 125,"Y","x",1
 "DEBGRP_M  ","M_FFcm2   ", 126,"Y"," ",1
@@ -18109,7 +18114,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","ncmChl_1  ", 128,"Y","x",1
 "DEBGRP_M  ","ncmN_1    ", 129,"Y","x",1
 "DEBGRP_M  ","ncmP_1    ", 130,"Y","x",1
-"DEBGRP_M  ","ncmSi_1   ", 131,"N","x",1
+"DEBGRP_M  ","ncmSi_1   ", 131,"Y","x",1
 "DEBGRP_M  ","M_Prncm1  ", 132,"Y","x",1
 "DEBGRP_M  ","Ben_ncm1  ", 133,"Y","x",1
 "DEBGRP_M  ","M_FFncm1  ", 134,"Y"," ",1
@@ -18117,7 +18122,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","ncmChl_2  ", 136,"Y","x",1
 "DEBGRP_M  ","ncmN_2    ", 137,"Y","x",1
 "DEBGRP_M  ","ncmP_2    ", 138,"Y","x",1
-"DEBGRP_M  ","ncmSi_2   ", 139,"N","x",1
+"DEBGRP_M  ","ncmSi_2   ", 139,"Y","x",1
 "DEBGRP_M  ","M_Prncm2  ", 140,"Y","x",1
 "DEBGRP_M  ","Ben_ncm2  ", 141,"Y","x",1
 "DEBGRP_M  ","M_FFncm2  ", 142,"Y"," ",1
@@ -18152,7 +18157,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","Zoopl_R   ",  13,"Y","x",1
 "DEBGRP_Z  ","Zoopl_N   ",  14,"Y","x",1
 "DEBGRP_Z  ","Z_Lref    ",  15,"Y","x",1
-"DEBGRP_Z  ","Z_Dummy   ",  16,"Y","x",1
+"DEBGRP_Z  ","Z_ddmfk   ",  16,"Y","x",1
 "DEBGRP_Z  ","Z_Vp      ",  17,"Y","x",1
 "DEBGRP_Z  ","Z_shape   ",  18,"Y","x",1
 "DEBGRP_Z  ","Z_Em      ",  19,"Y","x",1
@@ -18235,7 +18240,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","greenChl_1",  96,"Y","x",1
 "DEBGRP_Z  ","greenN_1  ",  97,"Y","x",1
 "DEBGRP_Z  ","greenP_1  ",  98,"Y","x",1
-"DEBGRP_Z  ","greenSi_1 ",  99,"N","x",1
+"DEBGRP_Z  ","greenSi_1 ",  99,"Y"," ",1
 "DEBGRP_Z  ","Z_PrGreen1", 100,"Y","x",1
 "DEBGRP_Z  ","Ben_Green1", 101,"Y","x",1
 "DEBGRP_Z  ","Z_FFGreen1", 102,"Y"," ",1
@@ -18243,7 +18248,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","greenChl_2", 104,"Y","x",1
 "DEBGRP_Z  ","greenN_2  ", 105,"Y","x",1
 "DEBGRP_Z  ","greenP_2  ", 106,"Y","x",1
-"DEBGRP_Z  ","greenSi_2 ", 107,"N","x",1
+"DEBGRP_Z  ","greenSi_2 ", 107,"Y"," ",1
 "DEBGRP_Z  ","Z_PrGreen2", 108,"Y","x",1
 "DEBGRP_Z  ","Ben_Green2", 109,"Y","x",1
 "DEBGRP_Z  ","Z_FFGreen2", 110,"Y"," ",1
@@ -18251,7 +18256,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","cmChl_1   ", 112,"Y","x",1
 "DEBGRP_Z  ","cmN_1     ", 113,"Y","x",1
 "DEBGRP_Z  ","cmP_1     ", 114,"Y","x",1
-"DEBGRP_Z  ","cmSi_1    ", 115,"N","x",1
+"DEBGRP_Z  ","cmSi_1    ", 115,"Y"," ",1
 "DEBGRP_Z  ","Z_Prcm1   ", 116,"Y","x",1
 "DEBGRP_Z  ","Ben_cm1   ", 117,"Y","x",1
 "DEBGRP_Z  ","Z_FFcm1   ", 118,"Y"," ",1
@@ -18259,7 +18264,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","cmChl_2   ", 120,"Y","x",1
 "DEBGRP_Z  ","cmN_2     ", 121,"Y","x",1
 "DEBGRP_Z  ","cmP_2     ", 122,"Y","x",1
-"DEBGRP_Z  ","cmSi_2    ", 123,"N","x",1
+"DEBGRP_Z  ","cmSi_2    ", 123,"Y"," ",1
 "DEBGRP_Z  ","Z_Prcm2   ", 124,"Y","x",1
 "DEBGRP_Z  ","Ben_cm2   ", 125,"Y","x",1
 "DEBGRP_Z  ","Z_FFcm2   ", 126,"Y"," ",1
@@ -18267,7 +18272,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","ncmChl_1  ", 128,"Y","x",1
 "DEBGRP_Z  ","ncmN_1    ", 129,"Y","x",1
 "DEBGRP_Z  ","ncmP_1    ", 130,"Y","x",1
-"DEBGRP_Z  ","ncmSi_1   ", 131,"N","x",1
+"DEBGRP_Z  ","ncmSi_1   ", 131,"Y","x",1
 "DEBGRP_Z  ","Z_Prncm1  ", 132,"Y","x",1
 "DEBGRP_Z  ","Ben_ncm1  ", 133,"Y","x",1
 "DEBGRP_Z  ","Z_FFncm1  ", 134,"Y"," ",1
@@ -18275,7 +18280,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","ncmChl_2  ", 136,"Y","x",1
 "DEBGRP_Z  ","ncmN_2    ", 137,"Y","x",1
 "DEBGRP_Z  ","ncmP_2    ", 138,"Y","x",1
-"DEBGRP_Z  ","ncmSi_2   ", 139,"N","x",1
+"DEBGRP_Z  ","ncmSi_2   ", 139,"Y","x",1
 "DEBGRP_Z  ","Z_Prncm2  ", 140,"Y","x",1
 "DEBGRP_Z  ","Ben_ncm2  ", 141,"Y","x",1
 "DEBGRP_Z  ","Z_FFncm2  ", 142,"Y"," ",1
@@ -18310,7 +18315,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","Grazer3_R ",  13,"Y","x",1
 "DEBGRP_G3 ","Grazer3_N ",  14,"Y","x",1
 "DEBGRP_G3 ","G3_Lref   ",  15,"Y","x",1
-"DEBGRP_G3 ","G3_Dummy  ",  16,"Y","x",1
+"DEBGRP_G3 ","G3_ddmfk  ",  16,"Y","x",1
 "DEBGRP_G3 ","G3_Vp     ",  17,"Y","x",1
 "DEBGRP_G3 ","G3_shape  ",  18,"Y","x",1
 "DEBGRP_G3 ","G3_Em     ",  19,"Y","x",1
@@ -18393,7 +18398,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","greenChl_1",  96,"Y","x",1
 "DEBGRP_G3 ","greenN_1  ",  97,"Y","x",1
 "DEBGRP_G3 ","greenP_1  ",  98,"Y","x",1
-"DEBGRP_G3 ","greenSi_1 ",  99,"N","x",1
+"DEBGRP_G3 ","greenSi_1 ",  99,"Y"," ",1
 "DEBGRP_G3 ","G3_PrGreen", 100,"Y","x",1
 "DEBGRP_G3 ","Ben_Green1", 101,"Y","x",1
 "DEBGRP_G3 ","G3_FFGreen", 102,"Y"," ",1
@@ -18401,7 +18406,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","greenChl_2", 104,"Y","x",1
 "DEBGRP_G3 ","greenN_2  ", 105,"Y","x",1
 "DEBGRP_G3 ","greenP_2  ", 106,"Y","x",1
-"DEBGRP_G3 ","greenSi_2 ", 107,"N","x",1
+"DEBGRP_G3 ","greenSi_2 ", 107,"Y"," ",1
 "DEBGRP_G3 ","G3_PrGreen", 108,"Y","x",1
 "DEBGRP_G3 ","Ben_Green2", 109,"Y","x",1
 "DEBGRP_G3 ","G3_FFGreen", 110,"Y"," ",1
@@ -18409,7 +18414,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","cmChl_1   ", 112,"Y","x",1
 "DEBGRP_G3 ","cmN_1     ", 113,"Y","x",1
 "DEBGRP_G3 ","cmP_1     ", 114,"Y","x",1
-"DEBGRP_G3 ","cmSi_1    ", 115,"N","x",1
+"DEBGRP_G3 ","cmSi_1    ", 115,"Y"," ",1
 "DEBGRP_G3 ","G3_Prcm1  ", 116,"Y","x",1
 "DEBGRP_G3 ","Ben_cm1   ", 117,"Y","x",1
 "DEBGRP_G3 ","G3_FFcm1  ", 118,"Y"," ",1
@@ -18417,7 +18422,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","cmChl_2   ", 120,"Y","x",1
 "DEBGRP_G3 ","cmN_2     ", 121,"Y","x",1
 "DEBGRP_G3 ","cmP_2     ", 122,"Y","x",1
-"DEBGRP_G3 ","cmSi_2    ", 123,"N","x",1
+"DEBGRP_G3 ","cmSi_2    ", 123,"Y"," ",1
 "DEBGRP_G3 ","G3_Prcm2  ", 124,"Y","x",1
 "DEBGRP_G3 ","Ben_cm2   ", 125,"Y","x",1
 "DEBGRP_G3 ","G3_FFcm2  ", 126,"Y"," ",1
@@ -18425,7 +18430,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","ncmChl_1  ", 128,"Y","x",1
 "DEBGRP_G3 ","ncmN_1    ", 129,"Y","x",1
 "DEBGRP_G3 ","ncmP_1    ", 130,"Y","x",1
-"DEBGRP_G3 ","ncmSi_1   ", 131,"N","x",1
+"DEBGRP_G3 ","ncmSi_1   ", 131,"Y","x",1
 "DEBGRP_G3 ","G3_Prncm1 ", 132,"Y","x",1
 "DEBGRP_G3 ","Ben_ncm1  ", 133,"Y","x",1
 "DEBGRP_G3 ","G3_FFncm1 ", 134,"Y"," ",1
@@ -18433,7 +18438,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","ncmChl_2  ", 136,"Y","x",1
 "DEBGRP_G3 ","ncmN_2    ", 137,"Y","x",1
 "DEBGRP_G3 ","ncmP_2    ", 138,"Y","x",1
-"DEBGRP_G3 ","ncmSi_2   ", 139,"N","x",1
+"DEBGRP_G3 ","ncmSi_2   ", 139,"Y","x",1
 "DEBGRP_G3 ","G3_Prncm2 ", 140,"Y","x",1
 "DEBGRP_G3 ","Ben_ncm2  ", 141,"Y","x",1
 "DEBGRP_G3 ","G3_FFncm2 ", 142,"Y"," ",1
@@ -18468,7 +18473,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","Grazer4_R ",  13,"Y","x",1
 "DEBGRP_G4 ","Grazer4_N ",  14,"Y","x",1
 "DEBGRP_G4 ","G4_Lref   ",  15,"Y","x",1
-"DEBGRP_G4 ","G4_Dummy  ",  16,"Y","x",1
+"DEBGRP_G4 ","G4_ddmfk  ",  16,"Y","x",1
 "DEBGRP_G4 ","G4_Vp     ",  17,"Y","x",1
 "DEBGRP_G4 ","G4_shape  ",  18,"Y","x",1
 "DEBGRP_G4 ","G4_Em     ",  19,"Y","x",1
@@ -18551,7 +18556,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","greenChl_1",  96,"Y","x",1
 "DEBGRP_G4 ","greenN_1  ",  97,"Y","x",1
 "DEBGRP_G4 ","greenP_1  ",  98,"Y","x",1
-"DEBGRP_G4 ","greenSi_1 ",  99,"N","x",1
+"DEBGRP_G4 ","greenSi_1 ",  99,"Y"," ",1
 "DEBGRP_G4 ","G4_PrGreen", 100,"Y","x",1
 "DEBGRP_G4 ","Ben_Green1", 101,"Y","x",1
 "DEBGRP_G4 ","G4_FFGreen", 102,"Y"," ",1
@@ -18559,7 +18564,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","greenChl_2", 104,"Y","x",1
 "DEBGRP_G4 ","greenN_2  ", 105,"Y","x",1
 "DEBGRP_G4 ","greenP_2  ", 106,"Y","x",1
-"DEBGRP_G4 ","greenSi_2 ", 107,"N","x",1
+"DEBGRP_G4 ","greenSi_2 ", 107,"Y"," ",1
 "DEBGRP_G4 ","G4_PrGreen", 108,"Y","x",1
 "DEBGRP_G4 ","Ben_Green2", 109,"Y","x",1
 "DEBGRP_G4 ","G4_FFGreen", 110,"Y"," ",1
@@ -18567,7 +18572,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","cmChl_1   ", 112,"Y","x",1
 "DEBGRP_G4 ","cmN_1     ", 113,"Y","x",1
 "DEBGRP_G4 ","cmP_1     ", 114,"Y","x",1
-"DEBGRP_G4 ","cmSi_1    ", 115,"N","x",1
+"DEBGRP_G4 ","cmSi_1    ", 115,"Y"," ",1
 "DEBGRP_G4 ","G4_Prcm1  ", 116,"Y","x",1
 "DEBGRP_G4 ","Ben_cm1   ", 117,"Y","x",1
 "DEBGRP_G4 ","G4_FFcm1  ", 118,"Y"," ",1
@@ -18575,7 +18580,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","cmChl_2   ", 120,"Y","x",1
 "DEBGRP_G4 ","cmN_2     ", 121,"Y","x",1
 "DEBGRP_G4 ","cmP_2     ", 122,"Y","x",1
-"DEBGRP_G4 ","cmSi_2    ", 123,"N","x",1
+"DEBGRP_G4 ","cmSi_2    ", 123,"Y"," ",1
 "DEBGRP_G4 ","G4_Prcm2  ", 124,"Y","x",1
 "DEBGRP_G4 ","Ben_cm2   ", 125,"Y","x",1
 "DEBGRP_G4 ","G4_FFcm2  ", 126,"Y"," ",1
@@ -18583,7 +18588,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","ncmChl_1  ", 128,"Y","x",1
 "DEBGRP_G4 ","ncmN_1    ", 129,"Y","x",1
 "DEBGRP_G4 ","ncmP_1    ", 130,"Y","x",1
-"DEBGRP_G4 ","ncmSi_1   ", 131,"N","x",1
+"DEBGRP_G4 ","ncmSi_1   ", 131,"Y","x",1
 "DEBGRP_G4 ","G4_Prncm1 ", 132,"Y","x",1
 "DEBGRP_G4 ","Ben_ncm1  ", 133,"Y","x",1
 "DEBGRP_G4 ","G4_FFncm1 ", 134,"Y"," ",1
@@ -18591,7 +18596,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","ncmChl_2  ", 136,"Y","x",1
 "DEBGRP_G4 ","ncmN_2    ", 137,"Y","x",1
 "DEBGRP_G4 ","ncmP_2    ", 138,"Y","x",1
-"DEBGRP_G4 ","ncmSi_2   ", 139,"N","x",1
+"DEBGRP_G4 ","ncmSi_2   ", 139,"Y","x",1
 "DEBGRP_G4 ","G4_Prncm2 ", 140,"Y","x",1
 "DEBGRP_G4 ","Ben_ncm2  ", 141,"Y","x",1
 "DEBGRP_G4 ","G4_FFncm2 ", 142,"Y"," ",1
@@ -18626,7 +18631,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","Grazer5_R ",  13,"Y","x",1
 "DEBGRP_G5 ","Grazer5_N ",  14,"Y","x",1
 "DEBGRP_G5 ","G5_Lref   ",  15,"Y","x",1
-"DEBGRP_G5 ","G5_Dummy  ",  16,"Y","x",1
+"DEBGRP_G5 ","G5_ddmfk  ",  16,"Y","x",1
 "DEBGRP_G5 ","G5_Vp     ",  17,"Y","x",1
 "DEBGRP_G5 ","G5_shape  ",  18,"Y","x",1
 "DEBGRP_G5 ","G5_Em     ",  19,"Y","x",1
@@ -18709,7 +18714,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","greenChl_1",  96,"Y","x",1
 "DEBGRP_G5 ","greenN_1  ",  97,"Y","x",1
 "DEBGRP_G5 ","greenP_1  ",  98,"Y","x",1
-"DEBGRP_G5 ","greenSi_1 ",  99,"N","x",1
+"DEBGRP_G5 ","greenSi_1 ",  99,"Y"," ",1
 "DEBGRP_G5 ","G5_PrGreen", 100,"Y","x",1
 "DEBGRP_G5 ","Ben_Green1", 101,"Y","x",1
 "DEBGRP_G5 ","G5_FFGreen", 102,"Y"," ",1
@@ -18717,7 +18722,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","greenChl_2", 104,"Y","x",1
 "DEBGRP_G5 ","greenN_2  ", 105,"Y","x",1
 "DEBGRP_G5 ","greenP_2  ", 106,"Y","x",1
-"DEBGRP_G5 ","greenSi_2 ", 107,"N","x",1
+"DEBGRP_G5 ","greenSi_2 ", 107,"Y"," ",1
 "DEBGRP_G5 ","G5_PrGreen", 108,"Y","x",1
 "DEBGRP_G5 ","Ben_Green2", 109,"Y","x",1
 "DEBGRP_G5 ","G5_FFGreen", 110,"Y"," ",1
@@ -18725,7 +18730,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","cmChl_1   ", 112,"Y","x",1
 "DEBGRP_G5 ","cmN_1     ", 113,"Y","x",1
 "DEBGRP_G5 ","cmP_1     ", 114,"Y","x",1
-"DEBGRP_G5 ","cmSi_1    ", 115,"N","x",1
+"DEBGRP_G5 ","cmSi_1    ", 115,"Y"," ",1
 "DEBGRP_G5 ","G5_Prcm1  ", 116,"Y","x",1
 "DEBGRP_G5 ","Ben_cm1   ", 117,"Y","x",1
 "DEBGRP_G5 ","G5_FFcm1  ", 118,"Y"," ",1
@@ -18733,7 +18738,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","cmChl_2   ", 120,"Y","x",1
 "DEBGRP_G5 ","cmN_2     ", 121,"Y","x",1
 "DEBGRP_G5 ","cmP_2     ", 122,"Y","x",1
-"DEBGRP_G5 ","cmSi_2    ", 123,"N","x",1
+"DEBGRP_G5 ","cmSi_2    ", 123,"Y"," ",1
 "DEBGRP_G5 ","G5_Prcm2  ", 124,"Y","x",1
 "DEBGRP_G5 ","Ben_cm2   ", 125,"Y","x",1
 "DEBGRP_G5 ","G5_FFcm2  ", 126,"Y"," ",1
@@ -18741,7 +18746,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","ncmChl_1  ", 128,"Y","x",1
 "DEBGRP_G5 ","ncmN_1    ", 129,"Y","x",1
 "DEBGRP_G5 ","ncmP_1    ", 130,"Y","x",1
-"DEBGRP_G5 ","ncmSi_1   ", 131,"N","x",1
+"DEBGRP_G5 ","ncmSi_1   ", 131,"Y","x",1
 "DEBGRP_G5 ","G5_Prncm1 ", 132,"Y","x",1
 "DEBGRP_G5 ","Ben_ncm1  ", 133,"Y","x",1
 "DEBGRP_G5 ","G5_FFncm1 ", 134,"Y"," ",1
@@ -18749,7 +18754,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","ncmChl_2  ", 136,"Y","x",1
 "DEBGRP_G5 ","ncmN_2    ", 137,"Y","x",1
 "DEBGRP_G5 ","ncmP_2    ", 138,"Y","x",1
-"DEBGRP_G5 ","ncmSi_2   ", 139,"N","x",1
+"DEBGRP_G5 ","ncmSi_2   ", 139,"Y","x",1
 "DEBGRP_G5 ","G5_Prncm2 ", 140,"Y","x",1
 "DEBGRP_G5 ","Ben_ncm2  ", 141,"Y","x",1
 "DEBGRP_G5 ","G5_FFncm2 ", 142,"Y"," ",1

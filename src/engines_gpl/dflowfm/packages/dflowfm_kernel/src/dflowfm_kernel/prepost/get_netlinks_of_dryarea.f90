@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,14 +32,25 @@
 
 ! =================================================================================================
 ! =================================================================================================
+module m_get_netlinks_of_dryarea
+
+   implicit none
+
+   private
+
+   public :: get_netlinks_of_dryarea
+
+contains
+
    subroutine get_netlinks_of_dryarea()
       use network_data, only: numl, lne
       use fm_external_forcings_data, only: kdryarea, nDryLinks
 
-      implicit none
       integer :: L, k1, k2
 
-      if (allocated(kdryarea)) deallocate (kdryarea)
+      if (allocated(kdryarea)) then
+         deallocate (kdryarea)
+      end if
       allocate (kdryarea(numl)); kdryarea = 0
 
       nDryLinks = 0
@@ -52,3 +63,5 @@
       end do
 
    end subroutine get_netlinks_of_dryarea
+
+end module m_get_netlinks_of_dryarea

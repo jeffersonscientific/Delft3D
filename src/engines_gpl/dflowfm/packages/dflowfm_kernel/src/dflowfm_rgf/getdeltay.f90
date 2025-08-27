@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,9 +30,21 @@
 !
 !
 
+module m_getdeltay
+
+   implicit none
+
+   private
+
+   public :: getdeltay
+
+contains
+
    subroutine getdeltay(y, dx0, dy0) ! find dy=dx*cos(y0+0.5*dy) newton iteration
-      use m_sferic
-      double precision :: y, dx0, dy0, f, df, yd, c, s, phi
+      use precision, only: dp
+      use m_sferic, only: dg2rd
+
+      real(kind=dp) :: y, dx0, dy0, f, df, yd, c, s, phi
       integer :: k
       dy0 = dx0 * cos(dg2rd * y)
       do k = 1, 5
@@ -44,3 +56,5 @@
          if (yd < 1d-14) return
       end do
    end
+
+end module m_getdeltay

@@ -8,7 +8,7 @@ function nc = nc_interpret(nc,NumPartitions,PartNr_StrOffset,nDigits,Part1)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -114,9 +114,7 @@ if nargin>1
             merged_mesh = [];
         end
         delete(hPB)
-        if numel(merged_mesh)>1
-            ui_message('warning','Multiple unstructured meshes in file. Not yet supported for merging.')
-        elseif ~isempty(merged_mesh)
+        if ~isempty(merged_mesh)
             nc.MergedPartitions = merged_mesh;
         end
     end
@@ -703,6 +701,7 @@ for ivar = 1:nvars
             sicvar = Factor*icvar;
             %
             vDims  = Info.Dimension;
+            cInfo  = nc.Dataset(icvar);
             cvDims = nc.Dataset(icvar).Dimension;
             cvSize = nc.Dataset(icvar).Size;
             if nc.Dataset(icvar).Nctype==2
@@ -755,26 +754,40 @@ for ivar = 1:nvars
                 case 'aux-time'
                     Info.AuxTime = [Info.AuxTime sicvar];
                 case 'label'
-                    if isempty(Info.Attribute)
+                    % We have to be careful with label dimensions. We don't
+                    % want to use just any label dimension as station since
+                    % in that case we may end up using, for instance,
+                    % sediment names as station names
+                    if isempty(cInfo.Attribute)
                         cf_role = '';
                     else
-                        Attribs = {Info.Attribute.Name};
+                        Attribs = {cInfo.Attribute.Name};
                         cf_role_attrib = strcmpi('cf_role',Attribs);
                         if any(cf_role_attrib)
-                            cf_role = Info.Attribute(cf_role_attrib).Value;
+                            cf_role = cInfo.Attribute(cf_role_attrib).Value;
                         else
                             cf_role = '';
                         end
                     end
-                    cfLocationIds = {'timeseries_id','profile_id','trajectory_id'};
                     AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name','area_id'};
-                    if sicvar>0 % don't use auto detect label dimensions as station ... this will trigger sediment names to be used as station name for map-files
+                    if strcmp(cInfo.Name, Info.Name)
+                        % don't use a label dimension for the variable
+                        % itself ... it's better to link it to coordinates
+                        % or index
+                    elseif sicvar>0
+                        % if the label dimension is explicitly listed as
+                        % "coordinate", it can/should be used
                         Info.Station = [Info.Station sicvar];
                     elseif ismember(cf_role,cfLocationIds)
-                        Info.Station = [Info.Station -sicvar];
+                        % if the label dimension has the appropriate
+                        % cf_role set, we may use it ...
+                        Info.Station = [Info.Station sicvar];
                     elseif ismember(nc.Dataset(-sicvar).Name,AcceptedStationNames)
+                        % if the name matches one of the accepted station
+                        % names, we may use it ...
                         Info.Station = [Info.Station sicvar];
                     else
+                        % all other label dimensions map to subfields
                         if CHARDIM==1
                             sfdim = nc.Dataset(icvar).Dimid(2);
                         else
@@ -842,19 +855,26 @@ for ivar = 1:nvars
             % autodetected variable without complaint
             iStation = abs(Info.Station(1));
         elseif length(iStation)>1
-            % if multiple explicit coordinates match, then report error
-            Names = {nc.Dataset(iStation).Name};
-            for is = 1:length(Names)
-                isInfo = nc.Dataset(iStation(is));
-                dims = sprintf('%s, ',isInfo.Dimension{:});
-                Names{is} = [isInfo.Datatype ' :: ' Names{is} ' (' dims(1:end-2) ')'];
+            % does the coordinate have an appropriate cf_role
+            checkStation = isStation(nc,iStation);
+            % if there is one match, select that one
+            if sum(checkStation)==1
+                iStation = iStation(checkStation);
+            else
+                % if multiple explicit coordinates match, then report error
+                Names = {nc.Dataset(iStation).Name};
+                for is = 1:length(Names)
+                    isInfo = nc.Dataset(iStation(is));
+                    dims = sprintf('%s, ',isInfo.Dimension{:});
+                    Names{is} = [isInfo.Datatype ' :: ' Names{is} ' (' dims(1:end-2) ')'];
+                end
+                ui_message('error', ...
+                    [{sprintf('Problem detecting station coordinate for "%s".',Info.Name) ...
+                    'Any one of the following variables seems to be valid'} ...
+                    Names ...
+                    {'Using the first one.'}])
+                iStation = iStation(1);
             end
-            ui_message('error', ...
-                [{sprintf('Problem detecting station coordinate for "%s".',Info.Name) ...
-                'Any one of the following variables seems to be valid'} ...
-                Names ...
-                {'Using the first one.'}])
-            iStation = iStation(1);
         end
         Info.Station = iStation;
         statdim = intersect(Info.Dimid,nc.Dataset(Info.Station).Dimid(3-CHARDIM));
@@ -1304,6 +1324,22 @@ for ivar = 1:nvars
     Info.SubFieldDim = [CharSubFieldDims nonCharSubFieldDims];
     %
     nc.Dataset(ivar) = Info;
+end
+
+function s = cfLocationIds
+s = {'timeseries_id','profile_id','trajectory_id'};
+
+function l = isStation(nc,ivar)
+l = false(size(ivar));
+for i = 1:length(ivar)
+    Info = nc.Dataset(ivar(i));
+    for j = 1:length(Info.Attribute)
+        if strcmp(Info.Attribute(j).Name,'cf_role')
+            if ismember(Info.Attribute(j).Value,cfLocationIds)
+                l(i) = true;
+            end
+        end
+    end
 end
 
 function nc = setType(nc,ivar,idim,value)
@@ -1859,7 +1895,7 @@ nPart = length(Partitions);
 ugrids = zeros(nData,1);
 for i = 1:nData
     M = P1.Dataset(i).Mesh;
-    if iscell(M) && numel(M)>=4 && isequal(M{1},'ugrid') && isequal(M{4},-1)
+    if iscell(M) && numel(M)>=4 && ismember(M{1},{'ugrid','ugrid1d_network'}) && isequal(M{4},-1)
         ugrids(i) = i;
     end
 end
@@ -1908,24 +1944,33 @@ for mesh = NumMeshes:-1:1
     nFaces = zeros(nPart,1);
     xNodes = cell(nPart,1);
     yNodes = cell(nPart,1);
+    iNodes = cell(nPart,1);
     iFaces = cell(nPart,1);
     faceMask = cell(nPart,1);
+    nodeDomain = cell(nPart,1);
     faceDomain = cell(nPart,1);
     for p = 1:nPart
         nNodes(p) = Partitions{p}.Dimension(iNodeDim).Length;
         nEdges(p) = Partitions{p}.Dimension(iEdgeDim).Length;
-        nFaces(p) = Partitions{p}.Dimension(iFaceDim).Length;
+        if any(iFaceDim)
+            nFaces(p) = Partitions{p}.Dimension(iFaceDim).Length;
+        end
         %
         file = Partitions{p}.Filename;
         xNodes{p} = nc_varget(file,xNodeVar);
         yNodes{p} = nc_varget(file,yNodeVar);
-        for partinfo = 1:3
+        for partinfo = 1:4
             try
                 switch partinfo
                     case 1
                         % for map files ...
-                        iFaces{p} = nc_varget(file,'mesh2d_flowelem_globalnr');
-                        faceDomain{p} = nc_varget(file,'mesh2d_flowelem_domain');
+                        if isempty(faceDim) % 1D mesh
+                            iNodes{p} = nc_varget(file,[M.Name,'_flowelem_globalnr']);
+                            nodeDomain{p} = nc_varget(file,[M.Name,'_flowelem_domain']);
+                        else
+                            iFaces{p} = nc_varget(file,[M.Name,'_flowelem_globalnr']);
+                            faceDomain{p} = nc_varget(file,[M.Name,'_flowelem_domain']);
+                        end
                     case 2
                         % for net files ...
                         iFaces{p} = nc_varget(file,'iglobal_s');
@@ -1934,17 +1979,35 @@ for mesh = NumMeshes:-1:1
                         % for com files ...
                         iFaces{p} = nc_varget(file,'FlowElemGlobalNr');
                         faceDomain{p} = nc_varget(file,'FlowElemDomain');
+                    case 4
+                        % fallback, use all values of domain 1
+                        if isempty(faceDim)
+                            iNodes{p} = (1:nNodes(p))';
+                            nodeDomain{p} = zeros([nNodes(p),1]);
+                        else
+                            iFaces{p} = (1:nFaces(p));
+                            faceDomain{p} = zeros([nFaces(p),1]);
+                        end
                 end
                 break
             catch
             end
         end
-        faceMask{p} = faceDomain{p} == p-1;
+        if isempty(faceDim) % 1D mesh
+            nodeMask{p} = nodeDomain{p} == p-1;
+        else
+            faceMask{p} = faceDomain{p} == p-1;
+        end
         %
         progressbar((NumMeshes-mesh)/NumMeshes + (p/(2*nPart))/NumMeshes, hPB);
     end
-    nGlbFaces = max(cellfun(@max,iFaces));
-    glbFNC = NaN(nGlbFaces,6);
+    if isempty(faceDim) % 1D mesh
+        nGlbFaces = 0;
+        glbFNC = [];
+    else
+        nGlbFaces = max(cellfun(@max,iFaces));
+        glbFNC = NaN(nGlbFaces,6);
+    end
     %
     xyNodes = [cat(1,xNodes{:}) cat(1,yNodes{:})];
     [xyUNodes,~,RI] = unique(xyNodes,'rows');
@@ -2002,18 +2065,20 @@ for mesh = NumMeshes:-1:1
     % nodes are assigned to the same domain as the connected face with the
     % lowest domain number
     %
-    nodeDomain  = NaN(nGlbNodes,1);
-    for p = nPart:-1:1
-        masked = faceMask{p};
-        %
-        inodes = fnc{p}(masked,:);
-        inodes(isnan(inodes))=[];
-        %
-        nodeDomain(inodes) = p-1;
-    end
-    nodeMask = cell(nPart,1);
-    for p = 1:nPart
-        nodeMask{p} = nodeDomain(iNodes{p}) == p-1;
+    if ~isempty(faceDim) % not 1D mesh
+        nodeDomain  = NaN(nGlbNodes,1);
+        for p = nPart:-1:1
+            masked = faceMask{p};
+            %
+            inodes = fnc{p}(masked,:);
+            inodes(isnan(inodes))=[];
+            %
+            nodeDomain(inodes) = p-1;
+        end
+        nodeMask = cell(nPart,1);
+        for p = 1:nPart
+            nodeMask{p} = nodeDomain(iNodes{p}) == p-1;
+        end
     end
     %
     % edges are assigned to the same domain as the connected face with the
@@ -2032,11 +2097,24 @@ for mesh = NumMeshes:-1:1
         % may not correspond to the order of the nodes in the source
         % domain. We need to copy the original order to avoid messing up
         % the normal and tangential directions.
-        glbENC(iEdges{p},:) = enc{p};
+        %
+        % Only follow the orientation of the domain to which this edge
+        % belongs. The edge may have a different orientation in the
+        % neighbouring domain if it's located on the outermost edge (far
+        % away from the internal part of the partition).
+        edge_of_p = edgeMask{p};
+        glbENC(iEdges{p}(edge_of_p),:) = enc{p}(edge_of_p,:);
     end
     %
     merged_mesh(mesh).Name = M.Name;
     merged_mesh(mesh).Index = i;
+    if isempty(faceDim) % 1D mesh
+        merged_mesh(mesh).Dimensionality = 1;
+        merged_mesh(mesh).Dimensions = {nodeDim, edgeDim, faceDim};
+    else
+        merged_mesh(mesh).Dimensionality = 2;
+        merged_mesh(mesh).Dimensions = {nodeDim, edgeDim, faceDim};
+    end
     %
     merged_mesh(mesh).nNodes = nGlbNodes;
     merged_mesh(mesh).X = xyUNodes(:,1);

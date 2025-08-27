@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,21 +37,22 @@ contains
       !! The name for each Tekal block can be specified, or is auto-generated
       !! as 'L00x' otherwise.
    subroutine WRILDB(MPOL, XSH, YSH, NSH, NCLAN, nnclan, ZSH, nzsh, names, namlen, nnam)
-      use M_MISSING
-      use m_polygon ! , only : zpl, DZL, DZR, jakol45
-      use gridoperations
-      use m_readyy
-      use m_inview
+      use precision, only: dp
+      use M_MISSING, only: dmiss, kmod
+      use m_polygon, only: jakol45, xpl, ypl, zpl, dzl, dzr, dcrest, dtl, dtr, dveg
+      use m_readyy, only: readyy
+      use m_inview, only: inview
+      use m_filez, only: doclose, newfil
 
       integer, intent(inout) :: mpol !< Open file pointer where to write to.
-      double precision, intent(in) :: XSH(NSH), YSH(NSH) !< Coordinates, polylines can be separated by dmiss value.
       integer, intent(in) :: nsh !< Number of points in polyline.
+      real(kind=dp), intent(in) :: XSH(NSH), YSH(NSH) !< Coordinates, polylines can be separated by dmiss value.
       integer, intent(in) :: namlen !< string length of names.
-      character(len=namlen), intent(in) :: names(nnam) !< Names of all polylines, header of each Tekal Block.
       integer, intent(in) :: nnam !< Number of polyline names.
+      character(len=namlen), intent(in) :: names(nnam) !< Names of all polylines, header of each Tekal Block.
       integer, intent(in) :: NCLAN(*) !< Third integer value for each point in XSH, optional: use nnclan=0 to ignore
       integer, intent(in) :: nnclan !< Size of NCLAN, use 0 to ignore.
-      double precision, intent(in) :: ZSH(*) !< Third double  value for each point in XSH, optional: use nzsh=0 to ignore
+      real(kind=dp), intent(in) :: ZSH(*) !< Third double  value for each point in XSH, optional: use nzsh=0 to ignore
       integer, intent(in) :: nzsh !< Size of ZSH, use 0 to ignore.
 
       integer :: L

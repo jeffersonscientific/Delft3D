@@ -3,7 +3,7 @@ function [hNewVec,Error,FileInfo,PlotState]=qp_plot(PlotState,Ops)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -224,7 +224,6 @@ if ~strcmp(Parent,'loaddata')
         end
     end
 end
-Thresholds=[]; % Thresholds is predefined to make sure that Thresholds always exists when its value is checked at the end of this routine
 
 for i=5:-1:1
     multiple(i) = (length(Selected{i})>1) | isequal(Selected{i},0);
@@ -233,7 +232,8 @@ end
 if isfield(Ops,'axestimezone_shift') && ~isnan(Ops.axestimezone_shift)
     [Chk,datatimezone_shift,datatimezone_str] = qp_getdata(FileInfo,Domain,Props,'timezone');
     if isnan(datatimezone_shift)
-        error('Cannot convert unknown time zone to %s',Ops.axestimezone_str)
+        ui_message('warning','Cannot convert unknown time zone to %s.\nIgnoring time zone request.',Ops.axestimezone_str)
+        Ops.axestimezone_shift = NaN;
     else
         for i = length(data):-1:1
             data(i).Time = data(i).Time + (Ops.axestimezone_shift-datatimezone_shift)/24;
@@ -344,6 +344,14 @@ end
 
 if isfield(Ops,'plotcoordinate')
     % TODO: take into account the EdgeGeometry length ...
+    sName = '';
+    sUnits = [];
+    if isfield(data,'XName')
+        sName = data.XName;
+    end
+    if isfield(data,'XUnits')
+        sUnits = data.XUnits;
+    end
     switch Ops.plotcoordinate
         case {'path distance','reverse path distance'}
             if isfield(data,'FaceNodeConnect') || isfield(data,'EdgeNodeConnect')
@@ -396,7 +404,7 @@ if isfield(Ops,'plotcoordinate')
                 end
                 x = data.X(:,:,1);
                 y = data.Y(:,:,1);
-            else
+            elseif isfield(data,'X')
                 if size(data.X,2)==2 && size(data.X,1)>2
                     data.X = (data.X(:,1,:) + data.X(:,2,:))/2;
                 elseif size(data.X,1)==2 && size(data.X,2)>2
@@ -411,7 +419,7 @@ if isfield(Ops,'plotcoordinate')
             end
             if isfield(data,'XUnits') && strcmp(data.XUnits,'deg')
                 s = pathdistance(x,y,'geographic');
-                data.XUnits = 'm';
+                sUnits = 'm';
             else
                 s = pathdistance(x,y);
             end
@@ -425,12 +433,25 @@ if isfield(Ops,'plotcoordinate')
                 s = rot90(s,2);
             end
             s = reshape(repmat(s,[1 1 size(data.X,3)]),size(data.X));
+        case {'coordinate','index'}
+            if isfield(data,'X')
+                s = data.X;
+            else
+                s = 1:numel(data.Val);
+            end
         case 'x coordinate'
             s = data.X;
         case 'y coordinate'
             s = data.Y;
+            if isfield(data,'YName')
+                sName = data.YName;
+            end
+            if isfield(data,'YUnits')
+                sUnits = data.YUnits;
+            end
         case 'time'
             s = repmat(data.Time,[1 size(data.X,3)]);
+            sUnits = [];
     end
     data.X = squeeze(s);
     flds = {'Z','Val','XComp','YComp','ZComp'};
@@ -442,9 +463,18 @@ if isfield(Ops,'plotcoordinate')
     end
     if isfield(data,'Y')
         data = rmfield(data,'Y');
+        if isfield(data,'YName')
+            data = rmfield(data,'YName');
+        end
         if isfield(data,'YUnits')
             data = rmfield(data,'YUnits');
         end
+    end
+    if ~isempty(sName)
+        data.XName = sName;
+    end
+    if ~isempty(sUnits)
+        data.XUnits = sUnits;
     end
     data.Geom = 'sSEG';
 end
@@ -575,19 +605,17 @@ if NVal==0.6 || NVal==0.9
     % 0.9 = coloured thindam
     NVal=0.5;
 elseif  NVal==1.9 
-    if isequal(Ops.presentationtype,'edges') || ...
-             isequal(Ops.presentationtype,'edges m') || ...
-              isequal(Ops.presentationtype,'edges n') || ...
-              isequal(Ops.presentationtype,'values')
-        % 1.9 = coloured thindam or vector perpendicular to thindam
-        NVal=0.5;
-    else
-        % vector case: vector location is determined by computecomponent
-        NVal=2;
-        data.XComp = data.XDamVal;
-        data.YComp = data.YDamVal;
-        data = rmfield(data,{'XDam','YDam','XDamVal','YDamVal'});
-        Ops.vectorcomponent='edge';
+    % 1.9 = coloured thindam or vector perpendicular to thindam
+    switch Ops.presentationtype
+        case {'vector'}
+            % vector case: vector location is determined by computecomponent
+            NVal=2;
+            data.XComp = data.XDamVal;
+            data.YComp = data.YDamVal;
+            data = rmfield(data,{'XDam','YDam','XDamVal','YDamVal'});
+            Ops.vectorcomponent='edge';
+        otherwise
+            NVal=0.5;
     end
 end
 
@@ -779,7 +807,7 @@ else
     quivopt={};
 end
 
-if isequal(quivopt,{'automatic'})
+if isequal(quivopt,{'automatic'}) && ~strcmp(Parent,'loaddata')
     del2=0;
     if isfield(data,'X')
         del2 = del2 + (maxx-minx).^2/npnt;
@@ -849,11 +877,9 @@ if isequal(quivopt,{'automatic'})
     quivopt={0};
 end
 
-LocLabelClass=0;
-LocStartClass=0;
+classes_between_thresholds = 1;
 if isfield(Ops,'presentationtype') && strcmp(Ops.presentationtype,'coloured contour lines')
-    LocLabelClass=1;
-    LocStartClass=1;
+    classes_between_thresholds = 0;
 end
 
 if Props.NVal==6
@@ -865,6 +891,7 @@ if Props.NVal==6
     else
         Ops.Thresholds = 1:length(data(1).Classes);
     end
+    Ops.Thresholds(end+1) = inf;
 elseif isfield(Ops,'thresholds') && ~strcmp(Ops.thresholds,'none')
     if isfield(Ops,'colourlimits') && isequal(size(Ops.colourlimits),[1 2])
         minmax = Ops.colourlimits;
@@ -881,12 +908,28 @@ elseif isfield(Ops,'thresholds') && ~strcmp(Ops.thresholds,'none')
         end
         minmax = [miv mv];
     end
-    Ops.Thresholds = compthresholds(Ops,minmax,LocStartClass);
-    if minmax(1)<Ops.Thresholds(1) && ~LocLabelClass
-        Ops.Thresholds = [-inf Ops.Thresholds];
-    end
+    [Ops.Thresholds,Ops.PlotClass] = compthresholds(Ops,minmax,classes_between_thresholds);
 else
     Ops.Thresholds = 'none';
+    if isfield(Ops,'climclipping') && Ops.climclipping
+        for fldc = {'Val'}
+            fld = fldc{1};
+            if isfield(data,fld)
+                for d = 1:length(data)
+                    Val = data(d).(fld);
+                    Val(Val < Ops.colourlimits(1) | Val > Ops.colourlimits(2)) = NaN;
+                    data(d).(fld) = Val;
+                end
+            end
+        end
+    end
+end
+if ~isfield(Ops,'PlotClass')
+    if isequal(Ops.Thresholds,'none')
+        Ops.PlotClass = [];
+    else
+        Ops.PlotClass = true(size(Ops.Thresholds));
+    end
 end
 
 stn='';
@@ -1009,21 +1052,27 @@ if ~isempty(Parent) && all(ishandle(Parent)) && strcmp(get(Parent(1),'type'),'ax
 end
 
 if isfield(Ops,'linestyle') && isfield(Ops,'marker') && ~strcmp(Ops.presentationtype,'markers')
+    LineParams = {};
+    if strcmp(Ops.presentationtype,'coloured contour lines')
+        LineParams = {};
+    else
+        LineParams = {'color',Ops.colour};
+    end
     if isfield(Ops,'linewidth')
-        Ops.LineParams={'color',Ops.colour, ...
-            'linewidth',Ops.linewidth, ...
+        Ops.LineParams=[LineParams, ...
+            {'linewidth',Ops.linewidth, ...
             'linestyle',Ops.linestyle, ...
             'marker',Ops.marker, ...
             'markersize',Ops.markersize, ...
             'markeredgecolor',Ops.markercolour, ...
-            'markerfacecolor',Ops.markerfillcolour};
+            'markerfacecolor',Ops.markerfillcolour}];
     else % linewidth typically not specified if linestyle = 'none'
-        Ops.LineParams={'color',Ops.colour, ...
-            'linestyle',Ops.linestyle, ...
+        Ops.LineParams=[LineParams, ...
+            {'linestyle',Ops.linestyle, ...
             'marker',Ops.marker, ...
             'markersize',Ops.markersize, ...
             'markeredgecolor',Ops.markercolour, ...
-            'markerfacecolor',Ops.markerfillcolour};
+            'markerfacecolor',Ops.markerfillcolour}];
     end
 elseif isfield(Ops,'marker')
     Ops.LineParams={'linestyle','none', ...
@@ -1058,7 +1107,7 @@ end
 % If horizontal units is degrees, change to longitude and latitude plot
 % type.
 %
-if isfield(data,'XUnits') && ...
+if isfield(data,'XUnits') && ~isfield(data,'XName') && ...
         (strcmp(data(1).XUnits,'deg') || strcmp(data(1).XUnits,'degree'))
     Ops.axestype = strrep(Ops.axestype,'X-Y','Lon-Lat');
     Ops.axestype = strrep(Ops.axestype,'X-','Lon-');
@@ -1121,11 +1170,11 @@ if isfield(Ops,'plotcoordinate') && ~isempty(Ops.plotcoordinate)
             else
                 diststr = 'y coordinate';
             end
-        case 'coordinate'
+        case {'coordinate','index'}
             if isfield(data,'XName')
                 diststr = data(1).XName;
             else
-                diststr = 'coordinate';
+                diststr = Ops.plotcoordinate;
             end
     end
 end
@@ -1228,15 +1277,24 @@ else
         end
         switch geom
             case {'SEG','SEG-NODE','SEG-EDGE'}
-                [hNew{d},Thresholds,Param]=qp_plot_seg(plotargs{:});
+                [hNew{d},Param]=qp_plot_seg(plotargs{:});
             case 'PNT'
-                [hNew{d},Thresholds,Param,Parent]=qp_plot_pnt(plotargs{:});
+                [hNew{d},Param,Parent]=qp_plot_pnt(plotargs{:});
             case {'POLYL','POLYG'}
-                [hNew{d},Thresholds,Param]=qp_plot_polyl(plotargs{:});
+                [hNew{d},Param]=qp_plot_polyl(plotargs{:});
             case {'UGRID1D_NETWORK-NODE','UGRID1D_NETWORK-EDGE','UGRID1D-NODE','UGRID1D-EDGE','UGRID2D-NODE','UGRID2D-EDGE','UGRID2D-FACE'}
-                [hNew{d},Thresholds,Param]=qp_plot_ugrid(plotargs{:});
+                [hNew{d},Param]=qp_plot_ugrid(plotargs{:});
             otherwise
-                [hNew{d},Thresholds,Param,Parent]=qp_plot_default(plotargs{:});
+                if ~isfield(data,'TRI')
+                    % default structured mesh contourf function is not yet
+                    % suitable for PlotClass.
+                    switch Ops.presentationtype
+                        case {'coloured contour lines','contour patches','contour patches with lines'}
+                            Ops.climclipping = 0;
+                            Ops.PlotClass(:) = true;
+                    end
+                end
+                [hNew{d},Param,Parent]=qp_plot_default(plotargs{:});
                 PlotState.Parent=Parent;
         end
         hNew{d} = hNew{d}(:);
@@ -1246,7 +1304,7 @@ else
     end
     hNew = hNew(1:length(data));
     
-    ChangeCLim = strcmp(Thresholds,'none') || ~isempty(Ops.colourlimits);
+    ChangeCLim = strcmp(Ops.Thresholds,'none') || ~isempty(Ops.colourlimits);
 
     hNewVec=cat(1,hNew{:});
 end
@@ -1314,8 +1372,8 @@ if isempty(specialplot) && isfield(Ops,'basicaxestype') && ~isempty(Ops.basicaxe
                     if isfield(Props,'NName') && ~isempty(Props.NName)
                         dimension{d} = protectstring(Props.NName);
                     end
-                    if isfield(data,'YUnits') && ~isempty(data(1).YUnits)
-                        unit{d} = data(1).YUnits;
+                    if isfield(data,'XUnits') && ~isempty(data(1).XUnits) % YUnits have been transferred to XUnits
+                        unit{d} = data(1).XUnits;
                     end
                 else
                     if isfield(Props,'MName') && ~isempty(Props.MName)
@@ -1419,13 +1477,26 @@ if isfield(Ops,'colourbar') && ~strcmp(Ops.colourbar,'none')
             end
         end
         if ~strcmp(Ops.Thresholds,'none')
+            Thresholds = Ops.Thresholds;
+            PlotClass = Ops.PlotClass;
+            Classes = {};
+            LineParams = {};
             if Props.NVal==6
-                classbar(h,1:length(Thresholds),'labelcolor','label',Thresholds,data(1).Classes,'plotall','climmode','new')
-            elseif LocLabelClass
-                classbar(h,1:length(Thresholds),'labelcolor','label',Thresholds,'plotall','climmode','new')
+                Thresholds = Thresholds(1:end-1);
+                PlotClass = PlotClass(1:end-1);
+                LabelStyle = {'labelcolor'};
+                Classes = {data(1).Classes};
+            elseif classes_between_thresholds
+                LabelStyle = {};
+                % remove the infinity threshold ...
+                Thresholds = Ops.Thresholds(1:end-1);
+            elseif isfield(Ops,'LineParams') && ~isempty(Ops.LineParams)
+                LabelStyle = {'labellines'};
+                LineParams = {'lineparams',Ops.LineParams};
             else
-                classbar(h,1:length(Thresholds),'label',Thresholds,'plotall','climmode','new')
+                LabelStyle = {'labelcolor'};
             end
+            classbar(h,1:length(Thresholds),LabelStyle{:},'label',Thresholds,Classes{:},'plotselect',PlotClass,'climmode','new',LineParams{:})
         end
     end
 end
@@ -1446,8 +1517,8 @@ IUD.XInfo=[];
 if isfield(data,'XInfo')
     IUD.XInfo=data(1).XInfo;
 end
-if ~isempty(Thresholds)
-    IUD.XInfo.Thresholds=Thresholds;
+if ~isempty(Ops.Thresholds)
+    IUD.XInfo.Thresholds=Ops.Thresholds;
 end
 set(hNewVec,'userdata',[])
 set(hNewVec(1),'userdata',IUD)

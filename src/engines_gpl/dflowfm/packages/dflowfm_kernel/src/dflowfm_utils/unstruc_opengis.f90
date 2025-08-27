@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -632,8 +632,8 @@ contains
       integer :: level
 
       ! stop is not used in this subroutine and associate is introduced to avoid the warning
-      associate( stop => stop ); end associate 
-          
+      associate (stop => stop); end associate
+
       inputdata = transfer(data, inputdata)
       mout = inputdata(1) !< File pointer
       maxkeylength = inputdata(2)
@@ -664,6 +664,8 @@ contains
       use m_flowgeom
       use unstruc_files
       use properties
+      use m_filez, only: doclose, newfil
+
       character(len=*), intent(in) :: filename !< TODO: Output file names
 
       integer :: mfil
@@ -706,20 +708,6 @@ contains
 
       end subroutine write_points_
 
-      subroutine write_faces_(mout)
-         use network_data
-         integer, intent(in) :: mout !< File unit nr for output.
-
-         integer :: k
-         write (strtmp, '(i10)') numk
-         write (mout, '(a)') adjustl(strtmp)
-         write (mout, '(a)') '('
-         do k = 1, numk
-            write (mout, '(a,3(f25.16),a)') '(', xk(k), yk(k), zk(k), ')'
-         end do
-         write (mout, '(a)') ')'
-
-      end subroutine write_faces_
    end subroutine foam_write_polymesh
 
 end module io_openfoam

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,18 +33,19 @@
 !
 module m_getpos
 
-implicit none
+   implicit none
 
 contains
 
-      subroutine GETPOS(X, Y)
-         implicit none
-         double precision :: x
-         double precision :: y
-         real INFOGRAPHICS
-         X = INFOGRAPHICS(1)
-         Y = INFOGRAPHICS(2)
-         return
-      end
+   subroutine GETPOS(X, Y)
+      use precision, only: dp
+      implicit none
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real INFOGRAPHICS
+      X = INFOGRAPHICS(1)
+      Y = INFOGRAPHICS(2)
+      return
+   end
 
 end module m_getpos

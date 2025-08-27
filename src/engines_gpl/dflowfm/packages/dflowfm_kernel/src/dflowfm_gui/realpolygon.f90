@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,23 +32,22 @@
 module m_realpolygon
    implicit none
 contains
-      subroutine realPOLYGON(X, Y, N, NCOL)
-         use m_colnow
-         use m_set_col
-         use m_lnabs
-         use m_ptabs
+   subroutine realPOLYGON(X, Y, N, NCOL)
+      use m_set_col, only: setcol
+      use m_lnabs, only: lnabs
+      use m_ptabs, only: ptabs
 
-         integer :: i
-         integer :: n
-         integer :: ncol
-         real :: X(N), Y(N)
+      integer :: i
+      integer :: n
+      integer :: ncol
+      real :: X(N), Y(N)
 
-         call SETCOL(NCOL)
-         call PTABS(dble(X(1)), dble(Y(1)))
-         do I = 2, N
-            call LNABS(dble(X(I)), dble(Y(I)))
-         end do
-         call LNABS(dble(X(1)), dble(Y(1)))
-         return
-      end
+      call SETCOL(NCOL)
+      call PTABS(dble(X(1)), dble(Y(1)))
+      do I = 2, N
+         call LNABS(dble(X(I)), dble(Y(I)))
+      end do
+      call LNABS(dble(X(1)), dble(Y(1)))
+      return
+   end
 end module m_realpolygon

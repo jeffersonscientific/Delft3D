@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ contains
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, num_lat_ini_blocks
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, set_lateral_count_in_external_forcings_file
       use m_flowgeom, only: ba
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
       use string_module, only: str_tolower
@@ -55,6 +55,7 @@ contains
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_alloc, only: realloc
       use unstruc_messages, only: threshold_abort
+      use m_reallocsrc, only: reallocsrc
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -71,14 +72,15 @@ contains
       character(len=INI_VALUE_LEN) :: fnam, base_dir
       integer :: k, n, k1
       integer :: ib, ibqh, ibt
-      integer :: maxlatsg
+      integer :: maxlatsg, max_num_src
       integer :: major, minor
       character(len=:), allocatable :: file_name
       integer, allocatable :: itpenzr(:), itpenur(:)
 
+      iresult = DFM_NOERR
       file_name = trim(external_force_file_name)
       if (len_trim(file_name) <= 0) then
-         iresult = DFM_NOERR
+         ! empty line in MDU is allowed: exit without error
          return
       end if
 
@@ -86,6 +88,12 @@ contains
 
       call tree_create(file_name, bnd_ptr)
       call prop_file('ini', file_name, bnd_ptr, istat)
+      if (istat /= 0) then
+         write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(file_name), ''' could not be read'
+         call err_flush()
+         iresult = DFM_WRONGINPUT
+         return
+      end if
 
       ! check FileVersion
       major = 1
@@ -96,7 +104,7 @@ contains
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
             '. Ignoring this file.'
          call err_flush()
-         res = .false.
+         iresult = DFM_WRONGINPUT
          return
       end if
 
@@ -107,7 +115,8 @@ contains
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
       ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
-      allocate (itpenzr(num_items_in_file), itpenur(num_items_in_file))
+      allocate (itpenzr(num_items_in_file))
+      allocate (itpenur(num_items_in_file))
       itpenzr(:) = 0
       itpenur(:) = 0
       do ibt = 1, nbndz
@@ -126,11 +135,17 @@ contains
       ! Allocate lateral provider array now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
       maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
       if (maxlatsg > 0) then
-         call realloc(balat, maxlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qplat, (/max(1, kmx), maxlatsg/), keepExisting=.false., fill=0d0)
+         call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplat, (/max(1, kmx), maxlatsg/), keepExisting=.false., fill=0.0_dp)
          call realloc(lat_ids, maxlatsg, keepExisting=.false.)
          call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
          call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
+      end if
+
+      ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
+      max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      if (max_num_src > 0) then
+         call reallocsrc(max_num_src, 0)
       end if
 
       ib = 0
@@ -154,6 +169,9 @@ contains
          case ('meteo')
             res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
 
+         case ('sourcesink')
+            res = res .and. init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
+
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
             write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
@@ -162,11 +180,15 @@ contains
       end do
       threshold_abort = initial_threshold_abort
 
-      if (allocated(itpenzr)) deallocate (itpenzr)
-      if (allocated(itpenur)) deallocate (itpenur)
+      if (allocated(itpenzr)) then
+         deallocate (itpenzr)
+      end if
+      if (allocated(itpenur)) then
+         deallocate (itpenur)
+      end if
       if (numlatsg > 0) then
          do n = 1, numlatsg
-            balat(n) = 0d0
+            balat(n) = 0.0_dp
             do k1 = n1latsg(n), n2latsg(n)
                k = nnlat(k1)
                if (k > 0) then
@@ -186,7 +208,7 @@ contains
 
       call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
 
-      num_lat_ini_blocks = numlatsg !save number of laterals to module variable
+      call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
 
       call tree_destroy(bnd_ptr)
       if (allocated(thrtt)) then
@@ -212,14 +234,14 @@ contains
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
 
-      type(tree_data), pointer, intent(in) :: node_ptr
-      character(len=*), intent(in) :: base_dir
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
-      integer, dimension(:), intent(in) :: itpenzr
-      integer, dimension(:), intent(in) :: itpenur
-      integer, intent(inout) :: ib
-      integer, intent(inout) :: ibqh
+      type(tree_data), pointer, intent(in) :: node_ptr !< The tree node of the boundary block
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
+      integer, dimension(:), intent(in) :: itpenzr !< boundary condition nr in openbndsect for z
+      integer, dimension(:), intent(in) :: itpenur !< boundary condition nr in openbndsect for u
+      integer, intent(inout) :: ib !< block counter for boundaries
+      integer, intent(inout) :: ibqh !< block counter for qh boundaries
       logical :: res
 
       integer, dimension(1) :: target_index
@@ -230,7 +252,8 @@ contains
       logical :: is_successful
       integer :: method, num_items_in_block, j
 
-      res = .false.
+      res = .true.
+
       ! First check for required input:
       call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
@@ -275,6 +298,15 @@ contains
          num_items_in_block = size(node_ptr%child_nodes)
       end if
 
+      ! Perform dummy-reads of supported keywords to prevent them from being reported as unused input.
+      ! The keywords below were already read in read_location_files_from_boundary_blocks().
+      call prop_get(node_ptr, '', 'returnTime', property_value)
+      call prop_get(node_ptr, '', 'return_time', property_value)
+      call prop_get(node_ptr, '', 'openBoundaryTolerance', property_value)
+      call prop_get(node_ptr, '', 'nodeId', property_value)
+      call prop_get(node_ptr, '', 'bndWidth1D', property_value)
+      call prop_get(node_ptr, '', 'bndBlDepth', property_value)
+
       ! Now loop over all key-value pairs, to support reading *multiple* lines with forcingFile=...
       do j = 1, num_items_in_block
          block_ptr => node_ptr%child_nodes(j)%node_ptr
@@ -282,12 +314,7 @@ contains
          property_name = trim(tree_get_name(block_ptr))
          call tree_get_data_string(block_ptr, property_value, is_successful)
          if (is_successful) then
-            if (property_name == 'quantity') then
-               quantity = property_value ! We already knew this
-            else if (strcmpi(property_name, 'locationFile')) then
-               location_file = property_value ! We already knew this
-               call resolvePath(location_file, base_dir)
-            else if (strcmpi(property_name, 'forcingFile')) then
+            if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
                call resolvePath(forcing_file, base_dir)
                if (oper /= 'O' .and. oper /= '+') then
@@ -330,24 +357,6 @@ contains
                end if
                res = res .and. is_successful ! Remember any previous errors.
                oper = '-'
-            else if (property_name == 'operand') then
-               continue
-            else if (property_name == 'returntime' .or. property_name == 'return_time') then
-               continue ! used elsewhere to set Thatcher-Harleman delay
-            else if (property_name == 'openboundarytolerance') then
-               continue ! used in findexternalboundarypoints/readlocationfiles... to set search distance. Not relevant here.
-            else if (property_name == 'nodeid') then
-               continue
-            else if (property_name == 'bndwidth1d') then
-               continue
-            else if (property_name == 'bndbldepth') then
-               continue
-            else
-               ! res remains unchanged: support ignored lines in ext file.
-               write (msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', &
-                  trim(property_name), ' = ', trim(property_value), '. Ignoring this line.'
-               call warn_flush()
-               cycle
             end if
          end if
       end do
@@ -359,8 +368,6 @@ contains
          call mess(LEVEL_ERROR, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
                    '''. Check preceding log lines for details.')
       end if
-
-      res = .true.
 
    end function init_boundary_forcings
 
@@ -441,7 +448,7 @@ contains
 
          call prop_get(node_ptr, 'Lateral', 'branchId', branch_id)
          call prop_get(node_ptr, 'Lateral', 'chainage', chainage)
-         if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
+         if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0_dp) then
             loc_spec_type = LOCTP_BRANCHID_CHAINAGE
             ilattype = ILATTP_1D
             is_success = .true.
@@ -488,7 +495,7 @@ contains
 
    !> Read lateral blocks from new external forcings file and makes required initialisations
    function init_lateral_forcings(node_ptr, base_dir, block_number, major) result(is_successful)
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, msgbuf, mess, LEVEL_ERROR, LEVEL_INFO
       use string_module, only: str_tolower
       use tree_data_types, only: tree_data
       use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd, apply_transport
@@ -501,10 +508,11 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use timespace, only: selectelset_internal_nodes
 
-      type(tree_data), pointer, intent(in) :: node_ptr
-      character(len=*), intent(in) :: base_dir
-      integer, intent(in) :: block_number
-      integer, intent(in) :: major
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the lateral block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      integer, intent(in) :: block_number !< Number of the block, only used in error message.
+      integer, intent(in) :: major !< Major version number of ext-file
+
       character(len=INI_VALUE_LEN) :: loc_id
       integer :: loc_spec_type, num_coordinates
       character(len=INI_VALUE_LEN) :: node_id, branch_id, location_file, item_type
@@ -590,8 +598,10 @@ contains
       if (is_read) then
          jaqin = 1
          lat_ids(numlatsg) = loc_id
+         call mess(LEVEL_INFO, 'Succesfully added lateral '//trim(loc_id)//'.')
       else
          is_successful = .false.
+         call mess(LEVEL_ERROR, 'Lateral discharge information at '//trim(loc_id)//' could not be read from '//trim(rec)//'.')
          return
       end if
 
@@ -603,17 +613,23 @@ contains
       !! and do required initialisation for that quantity.
    function init_meteo_forcings(node_ptr, base_dir, file_name, group_name) result(res)
       use string_module, only: strcmpi, str_tolower
-      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
+      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess, warn_flush
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
-      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, update_method_in_case_extrapolation, convert_file_type_string_to_integer
-      use fm_external_forcings_data, only: filetype, transformcoef, kx, tair_available, dewpoint_available
+      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
+                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
+                           convert_file_type_string_to_integer
+      use fm_external_forcings_data, only: filetype, transformcoef, kx
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-      use m_wind, only: airdensity, jawindstressgiven, jaspacevarcharn, ja_airdensity, japatm, jawind, jarain, jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext
+      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
+                        jaqin, jaqext, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
+                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext, pseudo_air_pressure_available, &
+                        water_level_correction_available
       use m_flowgeom, only: ndx, lnx, xz, yz
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
+                                  btempforcingtypS, itempforcingtyp
       use timespace, only: timespaceinitialfield
       use m_meteo, only: ec_addtimespacerelation
       use dfm_error, only: DFM_NOERR
@@ -622,17 +638,18 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_alloc, only: aerr
 
-      type(tree_data), pointer, intent(in) :: node_ptr
-      character(len=*), intent(in) :: base_dir
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the meteo block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
+
       logical :: res
 
       integer, allocatable :: mask(:)
       logical :: invert_mask
       logical :: is_variable_name_available
       logical :: is_extrapolation_allowed
-      character(len=INI_KEY_LEN) :: variable_name
+      character(len=INI_VALUE_LEN) :: variable_name
       character(len=INI_VALUE_LEN) :: interpolation_method, forcing_file, forcing_file_type, item_type, quantity, target_mask_file
       character(len=1) :: oper
       real(dp) :: max_search_radius
@@ -663,7 +680,7 @@ contains
 
       call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
             ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
@@ -684,6 +701,7 @@ contains
       call prop_get(node_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
       if (is_successful) then
          method = convert_method_string_to_integer(interpolation_method)
+         call update_method_with_weightfactor_fallback(forcing_file_type, method)
       else
          method = get_default_method_for_file_type(forcing_file_type)
       end if
@@ -725,13 +743,24 @@ contains
          select case (quantity)
          case ('airdensity')
             kx = 1
-            if (.not. allocated(airdensity)) then
-               allocate (airdensity(ndx), stat=ierr, source=0d0)
-               call aerr('airdensity(ndx)', ierr, ndx)
+            if (.not. allocated(air_density)) then
+               allocate (air_density(ndx), stat=ierr, source=0.0_dp)
+               call aerr('air_density(ndx)', ierr, ndx)
             end if
          case ('airpressure', 'atmosphericpressure')
             kx = 1
-            ierr = allocate_patm(0._dp)
+            ierr = allocate_patm(0.0_dp)
+
+         case ('pseudoAirPressure')
+            kx = 1
+            ierr = allocate_pseudo_air_pressure(0.0_dp)
+            write (msgbuf, '(a)') 'quantity '//trim(quantity)//' is found in file '//file_name// &
+                '. Quantity waterLevelCorrection is more preferable.' 
+            call warn_flush()
+
+         case ('waterLevelCorrection')
+            kx = 1
+            ierr = allocate_water_level_correction(0.0_dp)
 
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
             kx = 1
@@ -740,16 +769,16 @@ contains
             jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
             jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
 
-            ierr = allocate_patm(100000._dp)
+            ierr = allocate_patm(100000.0_dp)
 
             if (.not. allocated(ec_pwxwy_x)) then
-               allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
+               allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0.0_dp)
                call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
             end if
 
             if (jaspacevarcharn == 1) then
                if (.not. allocated(ec_pwxwy_c)) then
-                  allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
+                  allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0.0_dp)
                   call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
                end if
             end if
@@ -757,7 +786,7 @@ contains
          case ('charnock')
             kx = 1
             if (.not. allocated(ec_charnock)) then
-               allocate (ec_charnock(ndx), stat=ierr, source=0d0)
+               allocate (ec_charnock(ndx), stat=ierr, source=0.0_dp)
                call aerr('ec_charnock(ndx)', ierr, ndx)
             end if
             if (.not. allocated(wcharnock)) then
@@ -775,7 +804,7 @@ contains
          case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
             kx = 1
             if (.not. allocated(rain)) then
-               allocate (rain(ndx), stat=ierr, source=0d0)
+               allocate (rain(ndx), stat=ierr, source=0.0_dp)
                call aerr('rain(ndx)', ierr, ndx)
             end if
 
@@ -812,7 +841,7 @@ contains
             res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
             return ! This was a special case, don't continue with timespace processing below.
          case default
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name// &
                '].'
             call err_flush()
             return
@@ -855,15 +884,21 @@ contains
       if (is_successful) then
          select case (quantity)
          case ('airdensity')
-            call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
+            call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
             ja_airdensity = 1
 
          case ('airpressure', 'atmosphericpressure')
-            japatm = 1
+            air_pressure_available = .true.
+
+         case ('pseudoAirPressure')
+            pseudo_air_pressure_available = .true.
+
+         case ('waterLevelCorrection')
+            water_level_correction_available = .true.
 
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
             jawind = 1
-            japatm = 1
+            air_pressure_available = .true.
 
          case ('charnock')
             jaspacevarcharn = 1
@@ -875,39 +910,43 @@ contains
          case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
             jawind = 1
          case ('airtemperature')
-            jatair = 1
             btempforcingtypA = .true.
-            tair_available = .true.
          case ('cloudiness')
-            jaclou = 1
             btempforcingtypC = .true.
          case ('humidity')
-            jarhum = 1
             btempforcingtypH = .true.
-         case ('dewpoint') ! Relative humidity array used to store dewpoints
+         case ('dewpoint')
             itempforcingtyp = 5
-            dewpoint_available = .true.
+            btempforcingtypD = .true.
          case ('solarradiation')
+            if (net_solar_radiation_available) then
+                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
+                call err_flush()
+                return
+            end if
             btempforcingtypS = .true.
-            solrad_available = .true.
+            solar_radiation_available = .true.
+         case ('netsolarradiation')
+            if (solar_radiation_available) then
+                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
+                call err_flush()
+                return
+            end if
+            btempforcingtypS = .true.
+            net_solar_radiation_available = .true.
          case ('longwaveradiation')
             btempforcingtypL = .true.
-            longwave_available = .true.
+            long_wave_radiation_available = .true.
          case ('humidity_airtemperature_cloudiness')
             itempforcingtyp = 1
          case ('dewpoint_airtemperature_cloudiness')
             itempforcingtyp = 3
-            dewpoint_available = .true.
-            tair_available = .true.
          case ('humidity_airtemperature_cloudiness_solarradiation')
             itempforcingtyp = 2
-            tair_available = .true.
-            solrad_available = .true.
+            solar_radiation_available = .true.
          case ('dewpoint_airtemperature_cloudiness_solarradiation')
             itempforcingtyp = 4
-            dewpoint_available = .true.
-            tair_available = .true.
-            solrad_available = .true.
+            solar_radiation_available = .true.
          end select
 
          res = .true.
@@ -915,6 +954,172 @@ contains
       end if
 
    end function init_meteo_forcings
+
+   !> Read sourcesink blocks from new external forcings file.
+   function init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf
+      use tree_data_types, only: tree_data
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use netcdf_utils, only: ncu_sanitize_name
+      use m_missing, only: dmiss
+      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
+      use fm_external_forcings_data, only: numsrc, qstss
+      use dfm_error, only: DFM_NOERR
+
+      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the sourcesink block.
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from node_ptr.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages.
+
+      character(len=INI_VALUE_LEN) :: sourcesink_id
+      character(len=INI_VALUE_LEN) :: sourcesink_name
+      character(len=INI_VALUE_LEN) :: location_file
+      character(len=INI_VALUE_LEN) :: discharge_input
+      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
+      character(len=NAMLEN) :: const_name_with_prefix
+      character(len=INI_VALUE_LEN) :: quantity_id, property_name
+
+      integer :: num_coordinates
+      real(kind=dp), dimension(:), allocatable :: x_coordinates
+      real(kind=dp), dimension(:), allocatable :: y_coordinates
+      ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      integer, parameter :: num_range_points = 2
+      real(kind=dp), dimension(num_range_points) :: z_range_source
+      real(kind=dp), dimension(num_range_points) :: z_range_sink
+      real(kind=dp) :: area
+      integer :: i_const
+      integer :: ierr
+      logical :: is_successful
+      logical :: is_read
+      logical :: have_location_file, have_location_coordinates
+
+      is_successful = .false.
+
+      sourcesink_id = ' '
+      call prop_get(node_ptr, '', 'id', sourcesink_id, is_read)
+      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      end if
+      call prop_get(node_ptr, '', 'name', sourcesink_name, is_read)
+
+      call prop_get(node_ptr, '', 'locationFile', location_file, have_location_file)
+      if (have_location_file) then
+         call resolvePath(location_file, base_dir)
+      else
+         call prop_get(node_ptr, '', 'numCoordinates', num_coordinates, is_read)
+         if (is_read) then
+            if (num_coordinates <= 0) then
+               write (msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
+               call err_flush()
+               return
+            end if
+            allocate (x_coordinates(num_coordinates), stat=ierr)
+            call prop_get(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_read)
+            if (is_read) then
+               allocate (y_coordinates(num_coordinates), stat=ierr)
+               call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
+            end if
+         end if
+         have_location_coordinates = is_read
+      end if
+      if (.not. have_location_file .and. .not. have_location_coordinates) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
+         call err_flush()
+         return
+      end if
+
+      ! read optional vertical profiles.
+      z_range_source(:) = dmiss
+      z_range_sink(:) = dmiss
+      call prop_get(node_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
+      call prop_get(node_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
+
+      call prop_get(node_ptr, '', 'discharge', discharge_input, is_read)
+      if (.not. is_read) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         call err_flush()
+         return
+      end if
+
+      ! read optional value 'area' to compute the momentum released
+      area = 0.0_dp
+      call prop_get(node_ptr, '', 'area', area, is_read)
+
+      if (have_location_file) then
+         call addsorsin_from_polyline_file(location_file, sourcesink_id, z_range_source, z_range_sink, area, ierr)
+      else
+         call addsorsin(sourcesink_id, x_coordinates, y_coordinates, &
+                        z_range_source, z_range_sink, area, ierr)
+      end if
+
+      if (ierr /= DFM_NOERR) then
+         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+            //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
+         call err_flush()
+         return
+      end if
+
+      quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
+      !call resolvePath(filename, basedir) ! TODO!
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
+                                                     1, qstss)
+
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+         call err_flush()
+         return
+      end if
+
+      ! Constituents (salinity, temperature, sediments, tracers) may have a timeseries file
+      ! specifying the difference in concentration added by the source/sink.
+      ! All these files are optional, so no check on 'is_read' can be present below.
+      if (NUMCONST > 0) then
+         allocate (constituent_delta_file(NUMCONST), stat=ierr)
+         do i_const = 1, NUMCONST
+            is_read = .false.
+            const_name_with_prefix = const_names(i_const)
+            if (i_const == ISALT) then
+               ! Rename 'salt' constituent to 'salinity' for source-sink input.
+               const_name_with_prefix = 'salinity'
+            else if (i_const == ITEMP) then
+               ! temperature name is correct already
+               continue
+            else if (i_const == ISPIR) then
+               ! Spiral flow intensity "constituent" not relevant for source-sinks.
+               cycle
+            else
+               ! Tracers and sediments: remove special characters from constituent name before constructing the property to read.
+               call ncu_sanitize_name(const_name_with_prefix)
+
+               ! Add correct "group" prefix to constituent name.
+               if (i_const >= ISED1 .and. i_const <= ISEDN) then
+                  const_name_with_prefix = 'sedFrac'//trim(const_name_with_prefix)
+               else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
+                  const_name_with_prefix = 'tracer'//trim(const_name_with_prefix)
+               end if
+            end if
+
+            property_name = trim(const_name_with_prefix)//'Delta'
+            call prop_get(node_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+
+            if (is_read) then
+               quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
+               !call resolvePath(filename, basedir) ! TODO!
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1) * (numsrc - 1) + 1 + i_const, &
+                                                              1, qstss)
+               continue
+            end if
+         end do
+      end if
+
+      is_successful = .true.
+
+   end function init_sourcesink_forcings
 
    !> Get several target grid properties for a given location type.
    !!
@@ -942,7 +1147,7 @@ contains
       case (UNC_LOC_U)
          target_num_points = lnx
          target_x => xu(1:target_num_points)
-         target_x => yu(1:target_num_points)
+         target_y => yu(1:target_num_points)
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
@@ -1005,7 +1210,7 @@ contains
 
    !> Scan the quantity name for heat relatede quantities.
    function scan_for_heat_quantities(quantity, kx) result(success)
-      use m_wind, only: tair, clou, rhum, qrad, longwave
+      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
 
@@ -1021,23 +1226,23 @@ contains
       select case (quantity)
 
       case ('airtemperature')
-         call realloc(tair, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('tair(ndx)', ierr, ndx)
+         call realloc(air_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('air_temperature(ndx)', ierr, ndx)
       case ('cloudiness')
-         call realloc(clou, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('clou(ndx)', ierr, ndx)
+         call realloc(cloudiness, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('cloudiness(ndx)', ierr, ndx)
       case ('humidity')
-         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('rhum(ndx)', ierr, ndx)
-      case ('dewpoint') ! Relative humidity array used to store dewpoints
-         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('rhum(ndx)', ierr, ndx)
-      case ('solarradiation')
-         call realloc(qrad, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('qrad(ndx)', ierr, ndx)
+         call realloc(relative_humidity, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('relative_humidity(ndx)', ierr, ndx)
+      case ('dewpoint')
+         call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('dew_point_temperature(ndx)', ierr, ndx)
+      case ('solarradiation', 'netsolarradiation')
+         call realloc(solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('solar_radiation(ndx)', ierr, ndx)
       case ('longwaveradiation')
-         call realloc(longwave, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('longwave(ndx)', ierr, ndx)
+         call realloc(long_wave_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('long_wave_radiation(ndx)', ierr, ndx)
       case ('humidity_airtemperature_cloudiness')
          kx = 3
       case ('dewpoint_airtemperature_cloudiness')

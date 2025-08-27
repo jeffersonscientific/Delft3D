@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,8 @@ module m_check_einstein_garcia
    implicit none
 contains
    subroutine check_einstein_garcia(aref, h, z0, rs, ein)
-      double precision :: aref, h, z0, rs, ein, ucrouse, z, dz
+      use precision, only: dp
+      real(kind=dp) :: aref, h, z0, rs, ein, ucrouse, z, dz
       integer :: num, k
 
       ein = 0d0

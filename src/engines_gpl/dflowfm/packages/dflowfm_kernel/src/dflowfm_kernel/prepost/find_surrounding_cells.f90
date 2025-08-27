@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,11 +31,19 @@
 !
 
 !>  find cells that are directly and indirectly connected to cell k
+module m_find_surrounding_cells
+
+   implicit none
+
+   private
+
+   public :: find_surrounding_cells
+
+contains
+
    subroutine find_surrounding_cells(kcell, nmax, ndirect, nindirect, kdirect, kindirect, kne)
       use m_netw
       use m_qnerror
-
-      implicit none
 
       integer, intent(in) :: kcell !< cell number
       integer, intent(in) :: nmax !< array size
@@ -142,3 +150,5 @@
 
       return
    end subroutine find_surrounding_cells
+
+end module m_find_surrounding_cells

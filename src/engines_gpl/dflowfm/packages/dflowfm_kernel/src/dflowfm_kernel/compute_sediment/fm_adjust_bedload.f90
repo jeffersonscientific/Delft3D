@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,21 +30,31 @@
 !
 !
 
+module m_fm_adjust_bedload
+
+   implicit none
+
+   private
+
+   public :: fm_adjust_bedload
+
+contains
+
    subroutine fm_adjust_bedload(sbn, sbt, avalan, slopecor)
       use m_physcoef, only: ag
       use m_sferic, only: pi
       use m_flowgeom, only: lnxi, kcs, ba, bl, Dx, wu_mor
       use m_flow, only: hu
-      use m_flowtimes
+      use m_flowtimes, only: dp
+      use precision, only: fp, comparereal
+      use m_alloc, only: realloc
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_turbulence, only: rhou
-      use precision
       use m_fm_erosed, only: stmpar, has_bedload, alfabn, alfabs, ashld, bshld, cshld, dm, dshld, e_dzdn, e_dzdt, alfpa, avaltime, duneavalan, fixfac
       use m_fm_erosed, only: frac, hidexp, islope, morfac, rhosol, sedd50fld, sedd50, taurat, tratyp, ust2, wetslope, lsedtot, thcrpa
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
       use m_sediment, only: bermslopeindexbed, bermslopeindexsus
-      use m_alloc
-      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -63,10 +73,10 @@
       logical :: di50spatial
       integer :: l, Lf, k1, k2, lb, lt
 
-      double precision :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
-      double precision :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
-      double precision :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
-      double precision :: eps = 1.0d-6
+      real(kind=dp) :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
+      real(kind=dp) :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
+      real(kind=dp) :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
+      real(kind=dp) :: eps = 1.0d-6
       !
    !! executable statements -------------------------------------------------------
       !
@@ -264,3 +274,5 @@
       end do ! Lf
 
    end subroutine fm_adjust_bedload
+
+end module m_fm_adjust_bedload

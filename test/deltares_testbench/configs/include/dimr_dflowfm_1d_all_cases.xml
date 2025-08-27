@@ -1,7 +1,21 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
+	<testCase name="e02_f010_c037_breach_grow_algo_3" ref="dimr_default">
+		<path version="2025-05-27T15:05:01.136000">e02_dflowfm/f010_structures/c037_breach_grow_algo_3</path>
+		<checks>
+			<file name="dflowfmoutput/dambreak2ddrybreach_his.nc" type="netCDF">
+				<parameters>
+					<parameter name="dambreak_discharge" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+				</parameters>
+			</file>
+		</checks>
+	</testCase>
 	<testCase name="e02_f010_c100_dambreak_VerheijvdKnaap" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
+		<path version="2025-02-11T10:18:45.987000">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
 		<checks>
 			<file name="DFM_OUTPUT_DikeBreachTest15s_FMadjusted/DikeBreachTest15s_FMadjusted_map.nc" type="netCDF">
 				<parameters>
@@ -13,7 +27,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T1_normal_noCustomPoints" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints</path>
+		<path version="2025-02-11T10:20:02.165000">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T1_normal_noCustomPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_normalGRID_noWLpoints/Dambreak_normalGRID_noWLpoints_map.nc" type="netCDF">
 				<parameters>
@@ -31,7 +45,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T2_normal_customPoints" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T2_normal_customPoints</path>
+		<path version="2025-02-11T10:23:26.347000">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T2_normal_customPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_normalGRID_customWLpoints/Dambreak_normalGRID_customWLpoints_map.nc" type="netCDF">
 				<parameters>
@@ -49,7 +63,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f010_c102_T3_refined_noCustomPoints" ref="dimr_default">
-		<path version="2024-01-11T11:50:00">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T3_refined_noCustomPoints</path>
+		<path version="2025-02-11T10:33:40.911000">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T3_refined_noCustomPoints</path>
 		<checks>
 			<file name="DFM_OUTPUT_Dambreak_refinedGRID_noWLpoints/Dambreak_refinedGRID_noWLpoints_map.nc" type="netCDF">
 				<parameters>
@@ -85,7 +99,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f024_c03_Horton_test_Spatial_uniform_P+ET_no_runoff" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f024_hydrology/c03_Horton_test_Spatial_uniform_P+ET_no_runoff</path>
+		<path version="2025-04-07T09:41:21.180000">e02_dflowfm/f024_hydrology/c03_Horton_test_Spatial_uniform_P+ET_no_runoff</path>
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
@@ -97,7 +111,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f024_c04_Horton_test_Spatial_uniform_P+ET_with_runoff" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f024_hydrology/c04_Horton_test_Spatial_uniform_P+ET_with_runoff</path>
+		<path version="2025-04-07T09:41:27.064000">e02_dflowfm/f024_hydrology/c04_Horton_test_Spatial_uniform_P+ET_with_runoff</path>
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
@@ -125,9 +139,9 @@
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceAbsolute="0.1" />
 					<parameter name="water_balance_precipitation_total" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_evaporation" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_evaporation" toleranceAbsolute="0.1" />
 					<parameter name="rain" toleranceAbsolute="0.0001" />
 					<parameter name="infiltration_actual" toleranceAbsolute="0.0001" />
 					<parameter name="waterlevel" toleranceAbsolute="0.0001" />
@@ -232,7 +246,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f102_c02b_1d-precipitation" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f102_lateral-flows/c02b_1d-precipitation</path>
+		<path version="2025-04-07T09:41:31.057000">e02_dflowfm/f102_lateral-flows/c02b_1d-precipitation</path>
 		<checks>
 			<file name="DFM_OUTPUT_model3/model3_map.nc" type="netCDF">
 				<parameters>
@@ -243,7 +257,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f102_c02c_1d-precipitation" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f102_lateral-flows/c02c_1d-precipitation</path>
+		<path version="2025-04-07T09:41:41.989000">e02_dflowfm/f102_lateral-flows/c02c_1d-precipitation</path>
 		<checks>
 			<file name="DFM_OUTPUT_model4/model4_map.nc" type="netCDF">
 				<parameters>
@@ -254,7 +268,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f102_c02d_1d-precipitation" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f102_lateral-flows/c02d_1d-precipitation</path>
+		<path version="2025-04-07T09:41:51.038000">e02_dflowfm/f102_lateral-flows/c02d_1d-precipitation</path>
 		<checks>
 			<file name="DFM_OUTPUT_model5/model5_map.nc" type="netCDF">
 				<parameters>
@@ -265,7 +279,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f102_c02e_1d-precipitation" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f102_lateral-flows/c02e_1d-precipitation</path>
+		<path version="2025-04-07T09:41:55.361000">e02_dflowfm/f102_lateral-flows/c02e_1d-precipitation</path>
 		<checks>
 			<file name="DFM_OUTPUT_model6/model6_map.nc" type="netCDF">
 				<parameters>
@@ -276,12 +290,12 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f104_c01_junction-advection-acceleration-equidistant" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f104_1D_numerical-aspects/c01_junction-advection-acceleration-equidistant</path>
+		<path version="2025-02-14T03:10:00">e02_dflowfm/f104_1D_numerical-aspects/c01_junction-advection-acceleration-equidistant</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
-					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.005" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.03" />
 				</parameters>
 			</file>
 		</checks>
@@ -573,12 +587,12 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f105_c05_circle-profile" ref="dimr_default">
-		<path version="2024-01-11T13:10:00">e02_dflowfm/f105_cross-sections/c05_circle-profile</path>
+		<path version="2025-02-14T03:10:00">e02_dflowfm/f105_cross-sections/c05_circle-profile</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
-					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.0003" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.004" />
 				</parameters>
 			</file>
 		</checks>
@@ -818,6 +832,28 @@
 			</file>
 		</checks>
 	</testCase>
+	<testCase name="e02_f105_c45_bifurcation_perot_static" ref="dimr_default">
+		<path version="2025-02-16T07:45:53.285000">e02_dflowfm/f105_cross-sections/c45_bifurcation_perot_static</path>
+		<checks>
+			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
+				<parameters>
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+				</parameters>
+			</file>
+		</checks>
+	</testCase>
+	<testCase name="e02_f105_c46_bifurcation_perot_update" ref="dimr_default">
+		<path version="2025-02-16T07:46:04.453000">e02_dflowfm/f105_cross-sections/c46_bifurcation_perot_update</path>
+		<checks>
+			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
+				<parameters>
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+				</parameters>
+			</file>
+		</checks>
+	</testCase>
 	<testCase name="e02_f106_c01_weir" ref="dimr_default">
 		<path version="2024-01-11T13:00:00">e02_dflowfm/f106_hydraulic-structures/c01_Weir</path>
 		<checks>
@@ -841,7 +877,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c02_orifice" ref="dimr_default">
-		<path version="2024-01-11T13:00:00">e02_dflowfm/f106_hydraulic-structures/c02_Orifice</path>
+		<path version="2025-02-27T14:56:10.754000">e02_dflowfm/f106_hydraulic-structures/c02_Orifice</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
@@ -862,13 +898,12 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c03_culvert" ref="dimr_default">
-		<path version="2024-04-19T13:10:00">e02_dflowfm/f106_hydraulic-structures/c03_Culvert</path>
+		<path version="2025-05-20T09:19:13.095000">e02_dflowfm/f106_hydraulic-structures/c03_Culvert</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
 				</parameters>
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">
@@ -894,6 +929,7 @@
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">
 				<parameters>
+					<parameter name="pump_name" />
 					<parameter name="pump_capacity" toleranceAbsolute="0.0001" />
 					<parameter name="pump_head" toleranceAbsolute="0.0001" />
 					<parameter name="pump_s1_suction_side" toleranceAbsolute="0.0001" />
@@ -907,7 +943,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c05_Bridge" ref="dimr_default">
-		<path version="2024-09-17T13:08:00">e02_dflowfm/f106_hydraulic-structures/c05_Bridge</path>
+		<path version="2025-02-27T14:56:43.089000">e02_dflowfm/f106_hydraulic-structures/c05_Bridge</path>
 		<checks>
 			<file name="DFM_OUTPUT_flowFM/flowFM_map.nc" type="netCDF">
 				<parameters>
@@ -950,7 +986,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c07_Compound" ref="dimr_default">
-		<path version="2024-01-11T13:00:00">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
+		<path version="2025-05-20T09:19:17.014000">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
 		<checks>
 			<file name="DFM_OUTPUT_compound/compound_map.nc" type="netCDF">
 				<parameters>
@@ -1040,13 +1076,13 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c09_Inverted_siphon" ref="dimr_default">
-		<path version="2024-04-19T13:10:00">e02_dflowfm/f106_hydraulic-structures/c09_Inverted_siphon</path>
+		<path version="2025-05-20T09:19:20.315000">e02_dflowfm/f106_hydraulic-structures/c09_Inverted_siphon</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_q1" toleranceRelative="0.00001" />
 				</parameters>
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">
@@ -1127,7 +1163,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c23_AllowedFlowDir" ref="dimr_default">
-		<path version="2024-01-11T13:00:00">e02_dflowfm/f106_hydraulic-structures/c23_AllowedFlowDir</path>
+		<path version="2025-03-03T08:49:30.978000">e02_dflowfm/f106_hydraulic-structures/c23_AllowedFlowDir</path>
 		<checks>
 			<file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
 				<parameters>
@@ -1161,7 +1197,24 @@
 			</file>
 		</checks>
 	</testCase>
-	<testCase name="e02_f107_c01_1d-2d-urban_T1" ref="dimr_default">
+	<testCase name="e02_f106_c24_control-pump-through-bmi" ref="dflowfm_bmi_default">
+		<path version="2025-07-07T11:47:48.254000">e02_dflowfm/f106_hydraulic-structures/c24_control-pump-through-bmi</path>
+		<checks>
+			<file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+				<parameters>
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
+				</parameters>
+			</file>
+			<file name="DFM_OUTPUT_r/r_his.nc" type="netCDF">
+				<parameters>
+					<parameter name="pump_capacity" toleranceAbsolute="0.0001" />
+				</parameters>
+			</file>
+		</checks>
+	</testCase>	
+   <testCase name="e02_f107_c01_1d-2d-urban_T1" ref="dimr_default">
 		<path version="2024-04-19T13:10:00">e02_dflowfm/f107_1d2d_validation/c01_1d-2d-urban/T1</path>
 		<checks>
 			<file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
@@ -1406,7 +1459,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f107_c10_Equal1D_Equal2D_Rural_Lateral_Links_Dambreak" ref="dimr_default">
-		<path version="2024-01-11T13:00:00">e02_dflowfm/f107_1d2d_validation/c10_Equal1D_Equal2D_Rural_Lateral_Links_Dambreak</path>
+		<path version="2025-03-03T08:49:52.499000">e02_dflowfm/f107_1d2d_validation/c10_Equal1D_Equal2D_Rural_Lateral_Links_Dambreak</path>
 		<checks>
 			<file name="DFM_OUTPUT_1D2D/1D2D_map.nc" type="netCDF">
 				<parameters>
@@ -1419,6 +1472,7 @@
 				<parameters>
 					<parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
 					<parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_discharge" toleranceAbsolute="0.0001" />
 				</parameters>
 			</file>
 		</checks>

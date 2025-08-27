@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,32 +30,43 @@
 !
 !
 
+module m_setucxqucyq_mor
+
+   implicit none
+
+   private
+
+   public :: setucxqucyq_mor
+
+contains
+
    subroutine setucxqucyq_mor(u1, ucxq, ucyq)
+      use precision, only: dp
       use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
       use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, lnx1D, kcs
-      use m_flow, only: hs, hu, zws, kmx, au, q1, lnkx, ndkx
+      use m_flow, only: hs, q1, au, kmx, hu, zws, lnkx, ndkx
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_flowparameters, only: jacstbnd, epshs, eps10, flow_solver, FLOW_SOLVER_FM
       use m_sediment, only: stmpar
       use m_turbulence, only: ln0
       use m_CrossSections, only: GetCSParsFlow
       use unstruc_channel_flow, only: network
       use m_f1dimp, only: f1dimppar
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
 
       implicit none
-      double precision, dimension(lnkx), intent(in) :: u1
-      double precision, dimension(ndkx), intent(in) :: ucxq
-      double precision, dimension(ndkx), intent(in) :: ucyq
+      real(kind=dp), dimension(lnkx), intent(in) :: u1
+      real(kind=dp), dimension(ndkx), intent(in) :: ucxq
+      real(kind=dp), dimension(ndkx), intent(in) :: ucyq
       integer :: L, LL, k, k1, k2, Lt, Lb, kk, kb, kt, idx_sre, kd
-      double precision :: wcxu, wcyu, cs, sn, uin, huL
+      real(kind=dp) :: wcxu, wcyu, cs, sn, uin, huL
       logical, pointer :: maximumwaterdepth
-      double precision, pointer :: maximumwaterdepthfrac
-      double precision, dimension(:), allocatable :: area
+      real(kind=dp), pointer :: maximumwaterdepthfrac
+      real(kind=dp), dimension(:), allocatable :: area
       integer :: qsign
-      double precision :: area_L
-      double precision :: width_L
-      double precision :: perim_L
+      real(kind=dp) :: area_L
+      real(kind=dp) :: width_L
+      real(kind=dp) :: perim_L
       integer :: nstruc
 
       maximumwaterdepth => stmpar%morpar%mornum%maximumwaterdepth
@@ -287,3 +298,5 @@
       end if !flow_solver
 
    end subroutine setucxqucyq_mor
+
+end module m_setucxqucyq_mor

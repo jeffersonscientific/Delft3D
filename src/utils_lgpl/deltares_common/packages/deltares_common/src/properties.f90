@@ -1,7 +1,7 @@
 module properties
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,7 @@ module properties
 !!--declarations----------------------------------------------------------------
    use precision
    use tree_structures
-   use string_module, only: str_tolower, str_lower
+   use string_module, only: str_tolower, str_lower, get_version_major_minor_integer
 
    implicit none
    private
@@ -102,6 +102,7 @@ module properties
       module procedure prop_set_integers
       module procedure prop_set_double
       module procedure prop_set_doubles
+      module procedure prop_set_logical
    end interface
 
    interface get_version_number
@@ -112,6 +113,7 @@ module properties
    public :: prop_file, prop_inifile, prop_write_xmlfile, prop_write_inifile, prop_get_alloc_string
    public :: node_value, tree_data, tree_get_name, tree_create, tree_create_node, tree_put_data, tree_get_node_by_name, tree_get_data_ptr, tree_remove_child_by_name
    public :: tree_destroy, tree_add_node, tree_disconnect_node, tree_get_data_string, tree_num_nodes, tree_traverse_level, tree_count_nodes_byname, tree_fold, tree_traverse, maxlen
+   public :: visit_tree
 
 contains
    ! ====================================================================
@@ -1826,23 +1828,23 @@ contains
          success = success_
       end if
    end subroutine prop_get_alloc_string
-   !
-   !
-   ! ====================================================================
-   subroutine visit_tree(tree, direction)
-      type(TREE_DATA), pointer :: tree
+
+   !> Marks a tree node and its entire subtree as visited.
+   !! Can be used later to check visit count or properties that have not been
+   !! read at all.
+   subroutine visit_tree(tree, mode)
+      type(TREE_DATA), pointer :: tree !< The current node/root of the tree that should be visited.
+      integer, intent(in) :: mode !< Mode: 1 = visit, -1 = unvisit (will decrement visit count).
+
       character(len=1), dimension(0) :: data
       logical :: stop
-      integer, intent(in) :: direction
-      if (direction > 0) then
+      if (mode > 0) then
          call tree_traverse(tree, node_visit, data, stop)
       else
          call tree_traverse(tree, node_unvisit, data, stop)
       end if
    end subroutine visit_tree
-   !
-   !
-   ! ====================================================================
+
    subroutine node_visit(node, data, stop)
       use TREE_DATA_TYPES
       type(TREE_DATA), pointer :: node
@@ -2821,9 +2823,29 @@ contains
          success = success_
       end if
    end subroutine prop_set_string
-   !
-   !
-   ! ====================================================================
+
+   !> Sets a logical property in the tree.
+   !! The property value is stored as a string representation.
+   subroutine prop_set_logical(tree, chapter, key, value, anno, success)
+      type(tree_data), pointer :: tree !< The property tree
+      character(*), intent(in) :: chapter !< Name of the chapter under which to store the property ('' or '*' for global)
+      character(*), intent(in) :: key !< Name of the property
+      logical, intent(in) :: value !< Value of the property
+      character(len=*), optional, intent(in) :: anno !< Optional annotation/comment
+      logical, optional, intent(out) :: success !< Returns whether the operation was successful
+      logical :: success_
+      integer :: integer_value
+      integer_value = merge(1, 0, value)
+      if (present(anno)) then
+         call prop_set_integer(tree, chapter, key, integer_value, anno=anno, success=success_)
+      else
+         call prop_set_integer(tree, chapter, key, integer_value, success=success_)
+      end if
+      if (present(success)) then
+         success = success_
+      end if
+   end subroutine prop_set_logical
+
    !> Sets a double precision array property in the tree.
    !! The property value is stored as a string representation.
    subroutine prop_set_doubles(tree, chapter, key, value, anno, success)
@@ -3081,7 +3103,7 @@ contains
       !
       ! Parameters
       !
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer, intent(in) :: tree
       character(*), intent(in) :: chapterin
       character(*), intent(in) :: keyin
       integer, intent(in) :: valuelength
@@ -3201,6 +3223,7 @@ contains
       logical :: isnum
       integer :: idot
       integer :: iend
+      integer :: major_, minor_
 
       if (present(chapterin)) then
          chapterin_ = chapterin
@@ -3222,29 +3245,15 @@ contains
          versionstring = string
       end if
 
-      idot = index(string, '.')
-      if (idot == 0) then
-         success = .false.
+      call get_version_major_minor_integer(string, major_, minor_, success)
+      if (.not. success) then
          return
       end if
-
       if (present(major)) then
-         read (string(1:idot - 1), *) major
+         major = major_
       end if
       if (present(minor)) then
-         iend = idot
-         isnum = .true.
-         do while (isnum)
-            if (iend + 1 > len(string)) then
-               isnum = .false.
-            elseif (scan(string(iend + 1:iend + 1), '0123456789') /= 0) then
-               iend = iend + 1
-            else
-               isnum = .false.
-            end if
-         end do
-
-         read (string(idot + 1:iend), *) minor
+         minor = minor_
       end if
    end subroutine prop_get_version_number
 end module properties

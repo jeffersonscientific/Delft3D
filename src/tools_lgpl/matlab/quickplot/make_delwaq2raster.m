@@ -7,7 +7,7 @@ function make_delwaq2raster(basedir,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -94,7 +94,7 @@ addpath ../../../../third_party_open/netcdf/matlab/mexnc
 addpath ../../../../third_party_open/netcdf/matlab/snctools
 %
 if nargin<4
-    [qpversion,hash,repo_url] = get_qpversion(sourcedir,'d3d_qp.m');
+    [qpversion,hash,repo_url] = get_qpversion;
     T = now;
 end
 fprintf('\nBuilding Delft3D-DELWAQ2RASTER version %s\n\n',qpversion);
