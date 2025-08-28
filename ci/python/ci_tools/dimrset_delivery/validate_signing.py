@@ -289,7 +289,15 @@ def _print_example_json_file_structure() -> None:
     print("}")
 
 
-def parse_common_arguments():
+def parse_common_arguments() -> argparse.Namespace:
+    """
+    Parse command-line arguments for validating file structure and signing status.
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed command-line arguments containing expected_structure_json, developer_prompt, and directory.
+    """
     parser = argparse.ArgumentParser(description="Validate file structure and signing status of files in a directory.")
     parser.add_argument(
         "expected_structure_json",
