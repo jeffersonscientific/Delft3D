@@ -36,8 +36,7 @@ class SshClient(ConnectionServiceInterface):
         connect_timeout : int, optional
             Timeout for SSH connection in seconds (default is 30).
         """
-        self.__username = credentials.username
-        self.__password = credentials.password
+        self.__credentials = credentials
         self.__connect_timeout = connect_timeout
 
         self._client = paramiko.SSHClient()
@@ -54,19 +53,20 @@ class SshClient(ConnectionServiceInterface):
             True if the connection test is successful or dry run is performed, False otherwise.
         """
         if self.__context.dry_run:
-            self.__context.log(f"SSH connection to '{self.__address}' with '{self.__username}'")
+            self.__context.log(f"SSH connection to '{self.__address}' with '{self.__credentials.username}'")
             success = True
         else:
             try:
                 self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 self._client.connect(
                     hostname=self.__address,
-                    username=self.__username,
-                    password=self.__password,
+                    username=self.__credentials.username,
+                    password=self.__credentials.password,
                     timeout=self.__connect_timeout,
                 )
                 self.__context.log(
-                    f"Successfully created an SSH connection to '{self.__address}' with '{self.__username}'."
+                    f"Successfully created an SSH connection to '{self.__address}' "
+                    f"with '{self.__credentials.username}'."
                 )
                 success = True
             except Exception as e:
@@ -76,7 +76,7 @@ class SshClient(ConnectionServiceInterface):
                 success = False
             finally:
                 self._client.close()
-                self.__context.log(f"Close SSH connection to '{self.__address}' with '{self.__username}'.")
+                self.__context.log(f"Close SSH connection to '{self.__address}' with '{self.__credentials.username}'.")
         return success
 
     def execute(self, command: str) -> bool:
@@ -84,7 +84,10 @@ class SshClient(ConnectionServiceInterface):
         success = False
         try:
             self._client.connect(
-                self.__address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
+                self.__address,
+                username=self.__credentials.username,
+                password=self.__credentials.password,
+                timeout=self.__connect_timeout,
             )
             _, stdout, _ = self._client.exec_command(command)
             exit_status = stdout.channel.recv_exit_status()
@@ -125,7 +128,10 @@ class SshClient(ConnectionServiceInterface):
         """
         try:
             self._client.connect(
-                self.__address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
+                self.__address,
+                username=self.__credentials.username,
+                password=self.__credentials.password,
+                timeout=self.__connect_timeout,
             )
             transport = self._client.get_transport()
             if transport is not None:

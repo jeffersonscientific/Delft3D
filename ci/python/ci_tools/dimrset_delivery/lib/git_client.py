@@ -24,8 +24,7 @@ class GitClient(ConnectionServiceInterface):
         context : DimrAutomationContext
             Context object containing settings and logging utilities.
         """
-        self.__username = credentials.username
-        self.__password = credentials.password
+        self.__credentials = credentials
         self.__context = context
 
         self.repo_url = ""
@@ -55,7 +54,11 @@ class GitClient(ConnectionServiceInterface):
                     ["git", "tag", tag_name, commit_hash],
                     capture_output=True,
                     text=True,
-                    env={"GIT_ASKPASS": "echo", "GIT_USERNAME": self.__username, "GIT_PASSWORD": self.__password},
+                    env={
+                        "GIT_ASKPASS": "echo",
+                        "GIT_USERNAME": self.__credentials.username,
+                        "GIT_PASSWORD": self.__credentials.password,
+                    },
                 )
             if result.returncode != 0:
                 self.__context.log(result.stderr)
@@ -124,4 +127,6 @@ class GitClient(ConnectionServiceInterface):
             return False
 
     def _get_authenticated_url(self) -> str:
-        return self.repo_url.replace("https://", f"https://{self.__username}:{self.__password}@")
+        return self.repo_url.replace(
+            "https://", f"https://{self.__credentials.username}:{self.__credentials.password}@"
+        )

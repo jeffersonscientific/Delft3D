@@ -129,6 +129,8 @@ class DimrAutomationContext:
             Whether to run in dry-run mode. Default is False.
         credentials : CredentialsStore, optional
             Credentials store for various services. Default is a new CredentialsStore.
+        teamcity_logger : bool, optional
+            Whether to use TeamCity-specific logging. Default is False.
         """
         self.build_id = build_id
         self.dry_run = dry_run
@@ -181,14 +183,14 @@ class DimrAutomationContext:
             If any required credentials are missing after prompting.
         """
         for service, credential in credentials:
-            new_credential = self.__prompt_credentials_if_not_yet_provided(credential, service)
+            new_credential = self.__prompt_credentials_if_not_yet_provided(service, credential)
             if new_credential:
                 credentials.add(service, new_credential)
 
     def __prompt_credentials_if_not_yet_provided(
         self,
-        credential_entry: CredentialEntry,
         service: ServiceName,
+        credential_entry: CredentialEntry,
     ) -> Optional[CredentialEntry]:
         if credential_entry is None or (
             credential_entry.required
