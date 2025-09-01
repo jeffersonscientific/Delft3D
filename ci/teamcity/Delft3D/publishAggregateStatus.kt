@@ -140,6 +140,8 @@ object PublishAggregateStatus : BuildType({
     dependencies {
         snapshot(Trigger) {
         }
+        snapshot(LinuxBuildTools) {
+        }
     }
 
     requirements {
