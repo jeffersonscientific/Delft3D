@@ -10,6 +10,7 @@ PROJECT_ID=""
 BRANCH_NAME=""
 COMMIT_SHA=""
 POLL_INTERVAL=30
+INTERACTIVE=false
 
 ENCODED_BRANCH_NAME=""
 TEAMCITY_BUILDS="${TEAMCITY_URL}/app/rest/builds"
@@ -58,12 +59,13 @@ Options:
   --branch-name NAME        Branch name to monitor (will be URL-encoded automatically)
   --commit-sha SHA          Commit SHA
   --poll-interval SECONDS   Polling interval in seconds (default: 30)
+  --interactive             Interactive build info switch
   --help                    Show this help message
 EOF
 }
 
 function parse_args() {
-  local long_options="help,teamcity-token:,project-id:,branch-name:,commit-sha:,poll-interval:"
+  local long_options="help,teamcity-token:,project-id:,branch-name:,commit-sha:,poll-interval:,interactive"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
     printf "parse_args: failed to parse arguments."
@@ -96,6 +98,10 @@ function parse_args() {
     --poll-interval)
       POLL_INTERVAL="$2"
       shift 2
+      ;;
+    --interactive)
+      INTERACTIVE=true
+      shift
       ;;
     --)
       shift
@@ -223,80 +229,137 @@ function get_status_unicode() {
   printf "%b" "${unicode}"
 }
 
+# store the number of lines from the last message
+declare -i LAST_UPDATE_MESSAGE_LINES=0
+
+function update_messages() {
+  local messages="$1"
+
+  # Count lines in the new message
+  local new_lines
+  new_lines=$(printf "%b" "${messages}" | wc --lines)
+
+  # If there is a previous message, move cursor up and clear all previous lines
+  if ((LAST_UPDATE_MESSAGE_LINES > 0)); then
+    # Move cursor up LAST_UPDATE_MESSAGE_LINES
+    printf "\033[%dA" "${LAST_UPDATE_MESSAGE_LINES}"
+    # Clear each line
+    for ((i = 0; i < LAST_UPDATE_MESSAGE_LINES; i++)); do
+      printf "\033[2K\n"
+    done
+    # Move cursor back up to the top line
+    printf "\033[%dA" "${LAST_UPDATE_MESSAGE_LINES}"
+  fi
+
+  # Print the new message
+  printf "%b\n" "${messages}"
+
+  # Update line count
+  LAST_UPDATE_MESSAGE_LINES=$((new_lines + 1))
+}
+
 function get_aggregate_teamcity_build_status() {
   local trigger_id="$1"
 
-  #local request_url="${TEAMCITY_BUILDS}?locator=snapshotDependency:(from:(id:${trigger_id}),includeInitial:true),defaultFilter:false"
+  local old_ids=()
 
-  local request_url="${TEAMCITY_BUILDS}?locator="
-  request_url+="affectedProject:${PROJECT_ID},"
-  request_url+="branch:${ENCODED_BRANCH_NAME},"
-  request_url+="revision:${COMMIT_SHA},"
-  request_url+="state:any,"
-  request_url+="canceled:any,"
-  request_url+="sinceBuild:${trigger_id},"
-  request_url+="count:1000"
+  local target_builds_request_url="${TEAMCITY_BUILDS}?locator="
+  target_builds_request_url+="affectedProject:${PROJECT_ID},"
+  target_builds_request_url+="branch:${ENCODED_BRANCH_NAME},"
+  target_builds_request_url+="revision:${COMMIT_SHA},"
+  target_builds_request_url+="state:any,"
+  target_builds_request_url+="canceled:any,"
+  target_builds_request_url+="sinceBuild:${trigger_id},"
+  target_builds_request_url+="count:1000"
 
-  local jobs
-  jobs="$(get_request "${request_url}")"
+  while true; do
 
-  #printf "%b" "\nSNAPSHOT DEPS\n=============\n"
-  #printf "%s" "${jobs}" | jq -r
+    # Fetch all builds since last trigger
+    local jobs
 
-  local tracked_build_ids=""
-  tracked_build_ids="$(jq -r '.build[]?.id' <<<"${jobs}" | tr -d '\r' | sort -nu | xargs)"
+    jobs="$(get_request "${target_builds_request_url}")"
 
-  if [ -z "${tracked_build_ids}" ]; then
-    printf "%b No builds detected.\n" ${UNICODE_SUCCESS}
-    return 0
-  fi
+    local tracked_build_ids=""
+    tracked_build_ids="$(jq -r '.build[]?.id' <<<"${jobs}" | tr -d '\r' | sort -nu | xargs)"
 
-  # Check status of all tracked builds
-
-  local ids=()
-  IFS=' ' read -r -a ids <<<"${tracked_build_ids}"
-  local states=()
-  local statuses=()
-  local web_urls=()
-  local build_type_ids=()
-
-  for id in "${ids[@]}"; do
-    local request_url="${TEAMCITY_BUILDS}/id:${id}"
-    local build_info
-    build_info="$(get_request "${request_url}")"
-    build_type_ids+=("$(printf "%s" "${build_info}" | jq -r '.buildTypeId')")
-    states+=("$(printf "%s" "${build_info}" | jq -r '.state')")
-    statuses+=("$(printf "%s" "${build_info}" | jq -r '.status')")
-    web_urls+=("$(printf "%s" "${build_info}" | jq -r '.webUrl')")
-  done
-
-  for i in "${!ids[@]}"; do
-    messages+="- Build ${build_type_ids[$i]}\n"
-    messages+="  id: ${ids[$i]}\n"
-    messages+="  State: ${states[$i]} $(get_state_unicode "${states[$i]}")\n"
-    messages+="  Status: ${statuses[$i]} $(get_status_unicode "${statuses[$i]}")\n"
-    messages+="  URL: ${web_urls[$i]}\n"
-  done
-  printf "%b" "${messages}"
-
-  for state in "${states[@]}"; do
-    if [[ "${state}" != "finished" ]]; then
-      # Some jobs have not finished yet (sufficient condition for blocking the merging of the PR).
-      # The status can be anything. The status become relevant when all finish.
-      exit 1
+    if [ -z "${tracked_build_ids}" ]; then
+      printf "%b No builds detected.\n" ${UNICODE_SUCCESS}
+      return 0
     fi
-  done
 
-  # All jobs have finished. Were they successful?
-  # Note: An unknown status is treated as a failure
-  for status in "${statuses[@]}"; do
-    if [[ "${status}" != "SUCCESS" ]]; then
-      printf "\n%b One or more tracked builds were not successful.\n" "${UNICODE_FAILURE}"
-      exit 1 # finished with errors
+    # Check status of all tracked builds
+
+    local ids=()
+    IFS=' ' read -r -a ids <<<"$tracked_build_ids"
+    local states=()
+    local statuses=()
+    local web_urls=()
+    local build_type_ids=()
+
+    for id in "${ids[@]}"; do
+      local request_url="${TEAMCITY_BUILDS}/id:${id}"
+      local build_info
+      build_info="$(get_request "${request_url}")"
+      build_type_ids+=("$(printf "%s" "${build_info}" | jq -r '.buildTypeId')")
+      states+=("$(printf "%s" "${build_info}" | jq -r '.state')")
+      statuses+=("$(printf "%s" "${build_info}" | jq -r '.status')")
+      web_urls+=("$(printf "%s" "${build_info}" | jq -r '.webUrl')")
+    done
+
+    local all_done=true
+    for state in "${states[@]}"; do
+      if [[ "${state}" != "finished" ]]; then
+        all_done=false
+        break
+      fi
+    done
+
+    function get_progress() {
+      local title="$1"
+      local messages="\n${title}\n=======\n"
+      for i in "${!ids[@]}"; do
+        messages+="- Build ${build_type_ids[$i]}\n"
+        messages+="  id: ${ids[$i]}\n"
+        messages+="  State: ${states[$i]} $(get_state_unicode "${states[$i]}")\n"
+        messages+="  Status: ${statuses[$i]} $(get_status_unicode "${statuses[$i]}")\n"
+        messages+="  URL: ${web_urls[$i]}\n"
+      done
+      printf "%b" "${messages}"
+    }
+
+    if ${INTERACTIVE}; then
+      local messages=""
+      if [[ "${all_done}" = false ]]; then
+        messages+="${UNICODE_WAIT} Waiting for builds to finish. Polling for updates every ${POLL_INTERVAL} seconds...\n"
+        messages+="$(get_progress "Updates")"
+        update_messages "${messages}"
+      fi
+    else
+      if [[ "${old_ids[*]}" != "${ids[*]}" ]]; then
+        old_ids=("${ids[@]}")
+        printf "\n%b Monitoring the following build configurations (the list will be updated if new builds are triggered):\n" "${UNICODE_WAIT}"
+        for i in "${!ids[@]}"; do
+          printf "   -%s (id: %d): %s\n" "${build_type_ids[$i]}" "${ids[$i]}" "${web_urls[$i]}"
+        done
+      fi
+
     fi
+
+    if [[ "${all_done}" = true ]]; then
+      get_progress "Results"
+      for status in "${statuses[@]}"; do
+        if [[ "${status}" != "SUCCESS" ]]; then
+          printf "\n%b One or more tracked builds were not successful.\n" "${UNICODE_FAILURE}"
+          exit 1
+        fi
+      done
+      printf "\n%b All tracked builds finished successfully!\n" "${UNICODE_SUCCESS}"
+      exit 0
+    fi
+
+    count_sheep
+
   done
-  printf "\n%b All tracked builds finished successfully!\n" "${UNICODE_SUCCESS}"
-  exit 0 # finished successfully
 }
 
 function main() {

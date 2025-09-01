@@ -4,7 +4,9 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.pullRequests
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
+
 import Trigger
+import Delft3D.linux.*
 
 object PublishAggregateStatus : BuildType({
     name = "Publish Aggregate Status"
@@ -40,6 +42,42 @@ object PublishAggregateStatus : BuildType({
         finishBuildTrigger {
             buildType = "${Trigger.id}"
             branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${LinuxBuild.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${LinuxUnitTest.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${LinuxBuild.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${LinuxBuildTools.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${LinuxThirdPartyLibs.id}"
+            branchFilter = """
+                -:*
                 +:pull/*
             """.trimIndent()
         }
