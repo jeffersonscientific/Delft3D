@@ -137,13 +137,6 @@ object PublishAggregateStatus : BuildType({
         }
     }
 
-    dependencies {
-        snapshot(Trigger) {
-        }
-        snapshot(LinuxBuildTools) {
-        }
-    }
-
     requirements {
         equals("teamcity.agent.jvm.os.name", "Linux")
     }
