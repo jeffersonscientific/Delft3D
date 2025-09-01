@@ -1711,21 +1711,12 @@ contains
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
-      case ('sea_ice_area_fraction', 'sea_ice_thickness')
-         ! if ice properties not yet read before, initialize ...
-         if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
       case ('seaiceareafraction', 'seaicethickness')
          if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
             call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
-         if (qid == 'sea_ice_area_fraction') then
-            ja_ice_area_fraction_read = 1
-         else
-            ja_ice_thickness_read = 1
-         end if
-
       case ('secchidepth')
          call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat = ierr)
          target_location_type = UNC_LOC_S
