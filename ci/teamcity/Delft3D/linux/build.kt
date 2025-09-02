@@ -107,8 +107,7 @@ object LinuxBuild : BuildType({
             name = "Update aggregate status"
             scriptContent = """
                 #!/usr/bin/env bash
-                BRANCH="%teamcity.build.branch%"
-                if [[ "${BRANCH}" =~ ^pull/ ]]; then
+                if [[ "%teamcity.build.branch%" =~ ^pull/ ]]; then
                     chmod +x ./ci/github/get_aggregate_teamcity_build_status.sh
                     ./ci/github/get_aggregate_teamcity_build_status.sh  \
                     --github-username "deltares-service-account" \
