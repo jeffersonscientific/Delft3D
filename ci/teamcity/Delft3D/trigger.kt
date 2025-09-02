@@ -34,6 +34,7 @@ object Trigger : BuildType({
         param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")
         param("product", "auto-select")
+        param("branch_name", "dummy_value")
     }
 
     steps {
@@ -42,7 +43,7 @@ object Trigger : BuildType({
         script {
             name = "Publish branch name for aggregate status publisher"
             scriptContent = """
-                echo "##teamcity[setParameter name='trigger.branch' value='%teamcity.build.branch%']"
+                echo "##teamcity[setParameter name='branch_name' value='%teamcity.build.branch%']"
             """.trimIndent()
         }
 
