@@ -1438,13 +1438,14 @@ contains
 
         integer :: i, k
         integer :: ierror
-        integer :: cum_layer_var_id, var_z_id, var_sigma_id, dlwq_z_id, dlwq_sigma_id
+        integer :: cum_layer_var_id, var_z_id, var_sigma_id, dlwq_z_id, dlwq_sigma_id, &
+                   var_sigma_z_id, dlwq_sigma_z_id, var_sigmazdepth_id, dlwq_sigmazdepth_id
         character(len = nf90_max_name) :: layer_dim_name, var_name
         real, dimension(size(thickness)) :: z_centre
         real(kind=kind(1.0d0)), dimension(size(thickness)) :: var_value
         real :: z_sum
 
-        dlwqnc_debug = .true.
+        dlwqnc_debug = .false.
 
         create_layer_dimension = nf90_noerr
 
@@ -1474,9 +1475,8 @@ contains
         ! Cumulative sigma/z coordinate
 
         ! Get the layer coordinates - sigma or z (or a combination)
-        ! Simply write both.
-        ! TODO:
-        ! The combination of z-layers and sigma-layers
+        ! Simply write all elements that might be present, but ignore
+        ! the errors that result if they are absent.
         dlwq_z_id     = 0
         dlwq_sigma_id = 0
         write(var_name, '(2a)') mesh_name(1:k), '_layer_z'
@@ -1493,6 +1493,20 @@ contains
             ierror = copy_variable_attributes(source_nc_id, nc_id, var_sigma_id, dlwq_sigma_id)
         endif
 
+        write(var_name, '(2a)') mesh_name(1:k), '_layer_sigma_z'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_sigma_z_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, (/ layers_dim_id /), dlwq_sigma_z_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_sigma_z_id, dlwq_sigma_z_id)
+        endif
+
+        write(var_name, '(2a)') mesh_name(1:k), '_sigmazdepth'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_sigmazdepth_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, dlwq_sigmazdepth_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_sigmazdepth_id, dlwq_sigmazdepth_id)
+        endif
+
         ! We have the relevant element, so get the data
         ierror = nf90_enddef(nc_id)
 
@@ -1507,6 +1521,20 @@ contains
             ierror = nf90_get_var(source_nc_id, var_sigma_id, var_value)
             if (ierror == nf90_noerr) then
                 ierror = nf90_put_var(nc_id, dlwq_sigma_id, real(var_value))
+            endif
+        endif
+
+        if ( dlwq_sigma_z_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_sigma_z_id, var_value)
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_sigma_z_id, real(var_value))
+            endif
+        endif
+
+        if ( dlwq_sigmazdepth_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_sigmazdepth_id, var_value(1))
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_sigmazdepth_id, real(var_value(1)))
             endif
         endif
 
