@@ -38,6 +38,14 @@ object Trigger : BuildType({
 
     steps {
         mergeTargetBranch {}
+
+        script {
+            name = "Publish branch name for aggregate status publisher"
+            scriptContent = """
+                echo "##teamcity[setParameter name='trigger.branch' value='%teamcity.build.branch%']"
+            """.trimIndent()
+        }
+
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {

@@ -40,7 +40,7 @@ object PublishAggregateStatus : BuildType({
                 ./ci/github/get_aggregate_teamcity_build_status.sh  \
                   --teamcity-token "%svc_teamcity_github_delft3d_access_token%" \
                   --project-id "${DslContext.projectId}" \
-                  --branch-name "%teamcity.build.branch%" \
+                  --branch-name "%trigger.branch%" \
                   --commit-sha "%build.vcs.number%" \
                   --poll-interval 10
             """.trimIndent()
@@ -51,77 +51,66 @@ object PublishAggregateStatus : BuildType({
         finishBuildTrigger {
             buildType = "${Trigger.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${LinuxBuild.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${LinuxTest.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${LinuxCollect.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${LinuxUnitTest.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${LinuxBuildTools.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${LinuxThirdPartyLibs.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${WindowsBuild.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${WindowsTest.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${WindowsUnitTest.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
             buildType = "${WindowsCollect.id}"
             branchFilter = """
-                -:*
                 +:pull/*
             """.trimIndent()
         }
