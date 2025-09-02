@@ -11,6 +11,12 @@ import Delft3D.linux.containers.*
 import Delft3D.windows.*
 
 object PublishAggregateStatus : BuildType({
+
+    templates(
+        TemplateMergeRequest,
+        TemplatePublishStatus,
+    )
+
     name = "Publish Aggregate Status"
 
     params {
@@ -120,45 +126,8 @@ object PublishAggregateStatus : BuildType({
         }
     }
 
-    features {
-        commitStatusPublisher {
-            publisher = github {
-                githubUrl = "https://api.github.com"
-                authType = vcsRoot()
-            }
-        }
-        pullRequests {
-            provider = github {
-                authType = vcsRoot()
-                filterSourceBranch = "+:*"
-                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER
-                ignoreDrafts = true
-            }
-        }
-    }
-
     dependencies {
         snapshot(Trigger) {
-        }
-        snapshot(LinuxBuild) {
-        }
-        snapshot(LinuxTest) {
-        }
-        snapshot(LinuxUnitTest) {
-        }
-        snapshot(LinuxCollect) {
-        }
-        snapshot(LinuxBuildTools) {
-        }
-        snapshot(LinuxThirdPartyLibs) {
-        }
-        snapshot(WindowsBuild) {
-        }
-        snapshot(WindowsTest) {
-        }
-        snapshot(WindowsUnitTest) {
-        }
-        snapshot(WindowsCollect) {
         }
     }
 
