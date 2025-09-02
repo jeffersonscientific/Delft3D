@@ -9,6 +9,7 @@ import Trigger
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
 import Delft3D.windows.*
+import Delft3D.template.*
 
 object PublishAggregateStatus : BuildType({
 
