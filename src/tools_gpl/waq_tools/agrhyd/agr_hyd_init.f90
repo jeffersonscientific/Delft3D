@@ -29,9 +29,10 @@
 
       ! global declarations
 
-      use m_logger_helper, only : stop_with_error
+      use m_logger_helper, only : write_error_message, stop_with_error
       use m_hydmod
       use m_aggregate_waqgeom
+      use m_alloc, only : realloc
       use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_WEIGHTED_AVERAGE
 
       implicit none
@@ -120,8 +121,7 @@
           success = aggregate_ugrid_geometry(input_hyd%waqgeom,output_hyd%waqgeom,input_hyd%edge_type,output_hyd%edge_type,apnt)
           if ( .not. success ) then
              write(message, *) 'There was and error when aggregating the grid! agrhyd will stop.'
-             call mess(LEVEL_ERROR, trim(message))
-             call stop_with_error()
+             call write_error_message(trim(message))
           endif
           output_hyd%num_layers_grid  = input_hyd%num_layers_grid
           output_hyd%num_layers = maxval(ipnt_v)

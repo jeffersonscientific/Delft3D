@@ -37,7 +37,12 @@ module m_aggregate_waqgeom
    use m_utils_waqgeom
 
    implicit none
-
+   
+   private
+   
+   public :: aggregate_ugrid_geometry
+   public :: aggregate_ugrid_layers_interfaces
+   
 contains
 !> Aggregates the given mesh geometry and edge type array using the given aggregation table.
 !! The mesh aggregation algorithm removes edges, but preserves the order of the edges. The edge type of a given edge stays the same.
@@ -268,6 +273,21 @@ contains
       success = .true.
 
    end function aggregate_ugrid_geometry
+
+   function aggregate_ugrid_layers_interfaces(input, output, layer_mapping_table) result(success)
+      use io_ugrid
+      use m_alloc
+
+      implicit none
+
+      type(t_ug_meshgeom), intent(in) :: input !< The mesh geometry to be aggregated.
+      type(t_ug_meshgeom), intent(inout) :: output !< Aggregated mesh geometry.
+      integer, dimension(:), intent(in) :: layer_mapping_table !< Mapping table flow cells -> waq cells.
+      logical :: success !< Result status, true if successful.
+      
+      success = .false.
+
+   end function aggregate_ugrid_layers_interfaces
 
 !
 !------------------------------------------------------------------------------
