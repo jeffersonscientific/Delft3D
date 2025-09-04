@@ -164,7 +164,6 @@ contains
       use m_alloc, only: reallocP
       use m_ec_parameters, only: ec_undef_int
       use m_cell_geometry, only: xz, yz
-      use string_module, only: str_tolower
 
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_missing, only: dmiss
@@ -186,7 +185,7 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, quantity_name_config_file_to_standard_name
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
       use fm_external_forcings_utils, only: get_tracername
 
@@ -266,14 +265,7 @@ contains
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
          ! convert quantity name used in configuration file to the corresponding internal CF name
-         select case (str_tolower(trim(qid)))
-         case ('seaiceareafraction')
-            qid = 'sea_ice_area_fraction'
-         case ('seaicethickness')
-            qid = 'sea_ice_thickness'
-         case ('bedrocksurfaceelevation')
-            qid = 'bedrock_surface_elevation'
-         end select
+         qid = quantity_name_config_file_to_standard_name(qid)
          
          if (ja == 1) then
             call resolvePath(filename, basedir)
