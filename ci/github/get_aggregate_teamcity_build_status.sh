@@ -4,11 +4,11 @@ set -o errexit
 set -o errtrace
 
 # Globals to be set by parse_args
-GITHUB_USERNAME=""
 GITHUB_TOKEN=""
 TEAMCITY_URL="https://dpcbuild.deltares.nl"
 TEAMCITY_TOKEN=""
-PROJECT_ID=""
+TEAMCITY_PROJECT_ID=""
+TEAMCITY_BUILD_CONFIG_ID=""
 BRANCH_NAME=""
 COMMIT_SHA=""
 POLL_INTERVAL=30
@@ -55,19 +55,19 @@ function usage() {
 Usage: $0 [OPTIONS]
 
 Options:
-  --github-username USERNAME  GitHub username
-  --github-token TOKEN        GitHub access token
-  --teamcity-token TOKEN      TeamCity access token
-  --project-id                TeamCity project ID
-  --branch-name NAME          Branch name to monitor (will be URL-encoded automatically)
-  --commit-sha SHA            Commit SHA
-  --poll-interval SECONDS     Polling interval in seconds (default: 30)
-  --help                      Show this help message
+  --github-token TOKEN           GitHub access token
+  --teamcity-token TOKEN         TeamCity access token
+  --teamcity-project-id ID       TeamCity project ID
+  --teamcity-build-config-id ID  ID of the TeamCity build config invoking the script  
+  --branch-name NAME             Branch name to monitor (will be URL-encoded automatically)
+  --commit-sha SHA               Commit SHA
+  --poll-interval SECONDS        Polling interval in seconds (default: 30)
+  --help                         Show this help message
 EOF
 }
 
 function parse_args() {
-  local long_options="help,github-username:,github-token:,teamcity-token:,project-id:,branch-name:,commit-sha:,poll-interval:"
+  local long_options="help,github-token:,teamcity-token:,teamcity-project-id:,teamcity-build-config-id:,branch-name:,commit-sha:,poll-interval:"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
     printf "parse_args: failed to parse arguments."
@@ -81,10 +81,6 @@ function parse_args() {
       usage
       exit 0
       ;;
-    --github-username)
-      GITHUB_USERNAME="$2"
-      shift 2
-      ;;
     --github-token)
       GITHUB_TOKEN="$2"
       shift 2
@@ -93,8 +89,12 @@ function parse_args() {
       TEAMCITY_TOKEN="$2"
       shift 2
       ;;
-    --project-id)
-      PROJECT_ID="$2"
+    --teamcity-project-id)
+      TEAMCITY_PROJECT_ID="$2"
+      shift 2
+      ;;
+    --teamcity-build-config-id)
+      TEAMCITY_BUILD_CONFIG_ID="$2"
       shift 2
       ;;
     --branch-name)
@@ -121,11 +121,13 @@ function parse_args() {
   done
 
   # Validate required params
-  if [[ -z "${TEAMCITY_TOKEN}" ||
-    -z "${PROJECT_ID}" ||
+  if [[ -z "${GITHUB_TOKEN}" || 
+    -z "${TEAMCITY_TOKEN}" ||
+    -z "${TEAMCITY_PROJECT_ID}" ||
+    -z "${TEAMCITY_BUILD_CONFIG_ID}" ||
     -z "${BRANCH_NAME}" ||
     -z "${COMMIT_SHA}" ]]; then
-    printf "%s\n" "Missing required arguments." >&2
+    printf "%s\n" "One or more required arguments were not provided." >&2
     usage
     exit 1
   fi
@@ -134,7 +136,7 @@ function parse_args() {
 function print_header() {
   printf "\n%s was invoked with\n" "$0"
   printf "TeamCity URL  : %s\n" "${TEAMCITY_URL}"
-  printf "Project ID    : %s\n" "${PROJECT_ID}"
+  printf "Project ID    : %s\n" "${TEAMCITY_PROJECT_ID}"
   printf "Branch name   : %s\n" "${BRANCH_NAME}"
   printf "Commit SHA    : %s\n" "${COMMIT_SHA}"
   printf "Poll interval : %s\n\n" "${POLL_INTERVAL}"
@@ -166,11 +168,11 @@ function count_sheep() {
 function trigger() {
   declare -n id="$1"
 
-  local build_type="${PROJECT_ID}_Trigger"
+  local build_type="${TEAMCITY_PROJECT_ID}_Trigger"
   local waiting=false
 
   local request_url="${TEAMCITY_BUILDS}?locator="
-  request_url+="project:${PROJECT_ID},"
+  request_url+="project:${TEAMCITY_PROJECT_ID},"
   request_url+="buildType:${build_type},"
   request_url+="branch:${ENCODED_BRANCH_NAME},"
   request_url+="revision:${COMMIT_SHA},"
@@ -268,7 +270,7 @@ function get_aggregate_teamcity_build_status() {
   local request_url="${TEAMCITY_BUILDS}?locator=snapshotDependency:(from:(id:${trigger_id}),includeInitial:true),defaultFilter:false"
 
   # local request_url="${TEAMCITY_BUILDS}?locator="
-  # request_url+="affectedProject:${PROJECT_ID},"
+  # request_url+="affectedProject:${TEAMCITY_PROJECT_ID},"
   # request_url+="branch:${ENCODED_BRANCH_NAME},"
   # request_url+="revision:${COMMIT_SHA},"
   # request_url+="state:any,"
@@ -349,6 +351,29 @@ function main() {
   local trigger_id
   trigger trigger_id
   get_aggregate_teamcity_build_status "${trigger_id}"
+
+
+  request_url="${TEAMCITY_BUILDS}?locator="
+  request_url+="buildType:${TEAMCITY_BUILD_CONFIG_ID},"
+  request_url+="branch:${ENCODED_BRANCH_NAME},"
+  request_url+="revision:${COMMIT_SHA},"
+  request_url+="count:1"
+  build_info="$(teamcity_get_request "${request_url}")"
+  build_id="$(printf "%s" "${build_info}" | jq -r '.build[0].id')"
+
+
+  # From the doc:
+  # The teamcity.build.step.status.<step_ID> parameters appear only after their corresponding steps finish,
+  # and are not available right from the moment a build starts. This means neither steps that are still running, 
+  # nor skipped steps have their teamcity.build.step.status.<step_ID> parameters available.
+  # impact: step calling this script doe not report itself, which is good.
+  request_url="${TEAMCITY_BUILDS}/id:${build_id}/resulting-properties"
+  teamcity_get_request "${request_url}" | #jq -r .
+    jq -r '
+    .property[] | select(.name | test("^teamcity.build.step.status\\.")) |
+    "\(.name) = \(.value)"
+  '
+
 }
 
 main "$@"
