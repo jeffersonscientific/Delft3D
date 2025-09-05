@@ -652,8 +652,6 @@ contains
       call find1dcells()
       netstat = NETSTAT_OK
 
-      call delete_dry_points_and_areas()
-
       if (numk == 0 .or. numl == 0) then
          write (message, "('While making partition domain #', I0, ': empty domain (', I0, ' net nodes, ', I0, ' net links).')") idmn, numk, numl
          call mess(LEVEL_WARN, trim(message))
