@@ -420,4 +420,14 @@
             </file>
         </checks>
     </testCase>
-</testCases>
+    <testCase name="e02_f203_c05_Waal_trachytopes_2D_single" ref="dimr">
+        <path version="2025-09-05T12:42:18.655000">e02_dflowfm/f203_3D_trachytopes/c05_Waal_trachytopes_2D_single</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="dflowfmoutput/Waal_2D_merged_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
