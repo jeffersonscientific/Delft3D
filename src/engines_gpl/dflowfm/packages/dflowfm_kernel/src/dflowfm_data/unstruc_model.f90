@@ -245,19 +245,10 @@ module unstruc_model
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
    character(len=128) :: md_dambreak_widening_method !< method for dambreak widening
 
-!   map file output format
-   integer, parameter :: NUMFORMATS = 4
-
    integer, parameter :: IFORMAT_NETCDF = 1
    integer, parameter :: IFORMAT_TECPLOT = 2
    integer, parameter :: IFORMAT_NETCDF_AND_TECPLOT = 3
    integer, parameter :: IFORMAT_UGRID = 4
-
-   character(len=128), dimension(NUMFORMATS) :: SFORMATNAMES = [character(len=128) :: &
-                                                                'netCDF', &
-                                                                'Tecplot', &
-                                                                'netCFD and Tecplot', &
-                                                                'NetCDF-UGRID']
 
    integer :: md_mapformat !< map file output format (one of IFORMAT_*)
    integer :: md_unc_conv !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
@@ -1912,6 +1903,11 @@ contains
       end if
 
       call prop_get(md_ptr, 'output', 'MapFormat', md_mapformat, success)
+      if (md_mapformat == IFORMAT_TECPLOT) then
+         call mess(LEVEL_ERROR, 'MapFormat = 2 (Tecplot) is no longer supported. Please use MapFormat=4 (UGRID).')
+      else if (md_mapformat == IFORMAT_NETCDF_AND_TECPLOT) then
+         call mess(LEVEL_ERROR, 'MapFormat = 3 (NetCDF and Tecplot) is no longer supported. Please use MapFormat=4 (UGRID).')
+      end if
       if (md_mapformat == IFORMAT_UGRID) then
          md_unc_conv = UNC_CONV_UGRID
       else
@@ -3829,11 +3825,7 @@ contains
       write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
       call prop_set(prop_ptr, 'output', 'TimeSplitInterval', trim(helptxt), 'Time splitting interval, after which a new output file is started. value+unit, e.g. ''1 M'', valid units: Y,M,D,h,m,s.')
 
-      write (helptxt, "('Map file format ')")
-      do i = 1, NUMFORMATS
-         write (helptxt, "(A, ', ', I0, ': ', A)") trim(helptxt), i, trim(SFORMATNAMES(i))
-      end do
-      call prop_set(prop_ptr, 'output', 'MapFormat', md_mapformat, trim(helptxt))
+      call prop_set(prop_ptr, 'output', 'MapFormat', md_mapformat, 'Map file format, 1: NetCDF, 4: NetCDF-UGRID')
 
       call prop_set(prop_ptr, 'output', 'NcFormat', md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 

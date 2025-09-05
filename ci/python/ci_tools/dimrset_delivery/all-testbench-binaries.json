@@ -497,10 +497,6 @@
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "lib\\tecio.dll",
-            "issuedTo": "Stichting Deltares"
-        },
-        {
             "file": "lib\\xerces-c_3_1.dll",
             "issuedTo": "Stichting Deltares"
         },
