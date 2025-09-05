@@ -57,12 +57,11 @@ contains
       integer :: jaiglobal_s
 
       num = 0
-      if (present(update_bl)) then
+      if (present(update_bl) .and. allocated(bl)) then
          update_bl_ = update_bl
       else
          update_bl_ = .false.
       end if
-      update_bl_ = .true.
 
 !     check if cellmask array is allocated
       if (.not. allocated(cellmask)) goto 1234
