@@ -26,17 +26,15 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-module m_start_parameters
+module m_boundary_condition_type
    implicit none
+   private
 
-   integer, parameter :: MD_NOAUTOSTART = 0 !< Do not autostart (nor stop) this model.
-   integer, parameter :: MD_AUTOSTART = 1 !< Autostart this model and then idle.
-   integer, parameter :: MD_AUTOSTARTSTOP = 2 !< Autostart this model and then exit (batchmode)
-
-   integer :: md_jaAutoStart !< Autostart simulation after loading or not.
-
-end module m_start_parameters
+   integer, parameter, public :: BOUNDARY_WATER_LEVEL = 1 ! water level boundary
+   integer, parameter, public :: BOUNDARY_WATER_LEVEL_NEUMANN = 2 ! water level neumann
+   integer, parameter, public :: BOUNDARY_VELOCITY_NORMAL_INFLOW = 3 ! velocity normal ingoing component
+   integer, parameter, public :: BOUNDARY_VELOCITY_FLUX = 4 ! velocity flux boundary
+   integer, parameter, public :: BOUNDARY_VELOCITY_RIEMANN = 5 ! velocity Riemann boundary
+   integer, parameter, public :: BOUNDARY_WATER_LEVEL_OUTFLOW = 6 ! water level outflow
+   integer, parameter, public :: BOUNDARY_DISCHARGE_HEAD = 7 ! discharge-head (qh) boundary
+end module m_boundary_condition_type
