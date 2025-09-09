@@ -290,39 +290,31 @@ contains
       integer :: i, old_layer, new_layer, increment !< Loop variable and increment variable.
       character(len=255) :: message !< Temporary variable for writing log messages.
 
-      ! Relevant variables from input and output .
-      ! integer  :: num_layers      = -1    !< Number of mesh layers (num interfaces == num_layers + 1), num_layers = 0 means "no layers".
-      ! integer  :: numtopsig       = -1    !< Number of top sigma layers in the case of z-sigma coordinates.
-      ! integer  :: layertype       = -1    !< Type of vertical layer definition (only if num_layers >= 1), one of LAYERTYPE_* parameters.
-      !
-      ! double precision, pointer :: layer_zs(:) => null()    !< Vertical coordinates of the mesh layers' center (either z or sigma).
-      ! double precision, pointer :: interface_zs(:)=> null() !< Vertical coordinates of the mesh layers' interface (either z or sigma).
-
-      ! Defaults
+      ! Set defaults
       success = .false.
       no_aggregation = .true.
       to_2D = .true.
 
       ! Check the validity of the layer mapping table
-      ! Equal size?
+      ! Is the size equal to the number of layer ins the input?
       if (size(layer_mapping_table) /= input%num_layers) then
          write (message, *) 'Definition of vertical layer mapping does not match the number of layers.'
          call mess(LEVEL_ERROR, trim(message))
          return
       end if
 
-      ! Starts with one?
+      ! Does it start with one?
       if (layer_mapping_table(1) /= 1) then
          write (message, *) 'Definition of vertical layer mapping should start with one.'
          call mess(LEVEL_ERROR, trim(message))
          return
       end if
 
+      ! Does the vertical layer mapping can only contain increments of one or stays the same between layers?
       do i = 1, input%num_layers - 1
-         ! Equal to previous or increments of one only?
          increment = layer_mapping_table(i + 1) - layer_mapping_table(i)
          if (increment > 1) then
-            write (message, *) 'Definition of vertical layer mapping can only contain increments of 1 or remain '// &
+            write (message, *) 'Definition of vertical layer mapping can only contain increments of one or remain '// &
                'the same between layers.'
             call mess(LEVEL_ERROR, trim(message))
             return
@@ -349,13 +341,6 @@ contains
          end if
       end if
 
-      ! When there is no aggregation, just copy the input and return.
-      if (no_aggregation) then
-         output = input
-         success = .true.
-         return
-      end if
-      
       ! When we aggregate to 2D, then the new %num_layers is 0, the rest is the default. We don't need to aggregate the layers.
       if (to_2D) then
          output%num_layers = 0
@@ -363,26 +348,38 @@ contains
          return
       end if
 
-      ! Layer type stays the same, determine the new total number of layers and sigma layers on top of z-layers in case of z-sigma-layers.
+      ! When there is no aggregation, just copy the input to the output and return.
+      if (no_aggregation) then
+         output = input
+         success = .true.
+         return
+      end if
+      
+      ! The layer type always stays the same
       output%layertype = input%layertype
+      
+      ! The new number of layers is equal to the last value in the layer mapping table.
       output%num_layers = layer_mapping_table(input%num_layers)
+      
+      ! For z-sigma-layers, the new numtopsig is equal to the value in the layer mapping table of the old numtopsig.
       if (input%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          output%numtopsig = layer_mapping_table(input%numtopsig)
       end if
 
-      ! Check if layers are defined from top to bottom.
+      ! Check if layers are defined from top to bottom based on the first two values.
       top_to_bottom = (input%interface_zs(1) > input%interface_zs(2))
 
-      ! Allocate output arrays %layer_zs and %interface_zs.
+      ! Allocate output arrays for layer_zs and interface_zs.
       call reallocP(output%layer_zs, output%num_layers)
       call reallocP(output%interface_zs, output%num_layers + 1)
 
-      ! Copy the remaining interfaces to the output array.
+      ! Copy the interfaces we need to keep to the output array.
       ! Always copy the first interface from the input.
       output%interface_zs(1) = input%interface_zs(1)
       new_layer = 1
-      ! Loop over input layers, skip if consecutive layers end up in the same new layer and copy the interfaces that remain.
+      ! Loop over input layers.
       do i = 2, input%num_layers
+         ! Skip if consecutive layers end up in the same new layer.
          if (top_to_bottom) then
             if (layer_mapping_table(i - 1) == layer_mapping_table(i)) then
                cycle
@@ -392,6 +389,7 @@ contains
                cycle
             end if
          end if
+         ! Copy the interfaces that we still need.
          new_layer = new_layer + 1
          output%interface_zs(new_layer) = input%interface_zs(i)
       end do
@@ -399,12 +397,12 @@ contains
       output%interface_zs(new_layer + 1) = input%interface_zs(input%num_layers + 1)
 
       ! Calculate the output layers as the average of the two surrounding interfaces.
-      ! Take special care when %layertype = LAYERTYPE_OCEAN_SIGMA_Z
       do i = 1, output%num_layers
          output%layer_zs(i) = (output%interface_zs(i) + output%interface_zs(i + 1)) / 2.0d0
       end do
       
-      ! Correct the last sigma layer layer_zs in case of z-sigma-layers.
+      ! Correct the last sigma layer in layer_zs in case of z-sigma-layers. We need this because the bottom interface of
+      ! the last sigma-layer of -1.0 is not in interface_zs. It overlaps with the top interface of the first z-layer.
       if (output%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          if (top_to_bottom) then
             output%layer_zs(output%numtopsig) = (output%interface_zs(output%numtopsig) - 1.0d0) / 2.0d0
