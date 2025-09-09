@@ -91,51 +91,92 @@ contains
    end subroutine
 
    subroutine test_aggregate_ugrid_layers_interfaces()
-      type(t_ug_meshgeom) :: input_s !< The layers and interfaces to be aggregated (sigma).
-      type(t_ug_meshgeom) :: input_z !< The layers and interfaces to be aggregated (z).
-      type(t_ug_meshgeom) :: input_zs !< The layers and interfaces to be aggregated (z-sigma).
-      type(t_ug_meshgeom), dimension(11) :: output !< Aggregated layers and interfaces.
-      type(t_ug_meshgeom), dimension(11) :: expected_output !< Aggregated layers and interfaces.
+      type(t_ug_meshgeom) :: input_bt_s !< Bottom to top layers and interfaces to be aggregated (sigma).
+      type(t_ug_meshgeom) :: input_bt_z !< Bottom to top layers and interfaces to be aggregated (z).
+      type(t_ug_meshgeom) :: input_bt_zs !< Bottom to top layers and interfaces to be aggregated (z-sigma).
+      type(t_ug_meshgeom) :: input_tb_s !< Top to bottom layers and interfaces to be aggregated (sigma).
+      type(t_ug_meshgeom) :: input_tb_z !< Top to bottom layers and interfaces to be aggregated (z).
+      type(t_ug_meshgeom) :: input_tb_zs !< Top to bottom layers and interfaces to be aggregated (z-sigma).
+      type(t_ug_meshgeom), dimension(13) :: output !< Aggregated layers and interfaces.
+      type(t_ug_meshgeom), dimension(13) :: expected_output !< Aggregated layers and interfaces.
       integer, dimension(7,20) :: layer_mapping_table !< Mapping table flow cells -> waq cells.
       logical :: success !< Result status, true if successful.
       logical :: is_equal !< Result status, true if successful.
       integer :: i
 
       ! The tests should be implemented for 3 cases with different layering:
-      ! 1) 3D 20 sigma layers
-      input_s%num_layers = 20
-      input_s%numtopsig = -1
-      input_s%layertype = LAYERTYPE_OCEANSIGMA
-      call reallocP(input_s%layer_zs, 20)
-      input_s%layer_zs = [-0.975, -0.925, -0.875, -0.825, -0.775, -0.725, -0.675, -0.625, -0.575, -0.525, &
-                          -0.475, -0.425, -0.375, -0.325, -0.275, -0.225, -0.175, -0.125, -0.075, -0.025]
-      call reallocP(input_s%interface_zs, 21)
-      input_s%interface_zs = [-1.0, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55, -0.50, &
+      ! 1) 3D 20 sigma layers (top to bottom)
+      input_tb_s%num_layers = 20
+      input_tb_s%numtopsig = -1
+      input_tb_s%layertype = LAYERTYPE_OCEANSIGMA
+      call reallocP(input_tb_s%layer_zs, 20)
+      input_tb_s%layer_zs = [-0.025, -0.075, -0.125, -0.175, -0.225, -0.275, -0.325, -0.375, -0.425, -0.475, &
+                             -0.525, -0.575, -0.625, -0.675, -0.725, -0.775, -0.825, -0.875, -0.925, -0.975]
+      call reallocP(input_tb_s%interface_zs, 21)
+      input_tb_s%interface_zs = [0.0, -0.05, -0.10, -0.15, -0.20, -0.25, -0.30, -0.35, -0.40, -0.45, -0.50, -0.55, &
+                                 -0.60, -0.65, -0.70, -0.75, -0.80, -0.85, -0.90, -0.95, -1.0]
+
+      ! 2) 3D 20 z-layers (top to bottom)
+      input_tb_z%num_layers = 20
+      input_tb_z%numtopsig = -1
+      input_tb_z%layertype = LAYERTYPE_Z
+      call reallocP(input_tb_z%layer_zs, 20)
+      input_tb_z%layer_zs = [-0.0275, -0.2825, -0.5375, -0.7925, -1.0475, -1.3025, -1.5575, -1.8125, -2.0675, -2.3225, &
+                             -2.5775, -2.8325, -3.0875, -3.3425, -3.5975, -3.8525, -4.1075, -4.3625, -4.6175, -4.8725]
+
+      call reallocP(input_tb_z%interface_zs, 21)
+      input_tb_z%interface_zs = [0.1, -0.155, -0.41, -0.665, -0.92, -1.175, -1.43, -1.685, -1.94, -2.195, -2.45, &
+                                 -2.705, -2.96, -3.215, -3.47, -3.725, -3.98, -4.235, -4.49, -4.745, -5.0]
+
+      ! 3) 3D 12/8 z-sigma layers (top to bottom)
+      input_tb_zs%num_layers = 20
+      input_tb_zs%numtopsig = 8
+      input_tb_zs%layertype = LAYERTYPE_OCEAN_SIGMA_Z
+      call reallocP(input_tb_zs%layer_zs, 20)
+      input_tb_zs%layer_zs = [-0.0625, -0.1875, -0.3125, -0.4375, -0.5625, -0.6875, -0.8125, -0.9375, -2.0675, -2.3225, &
+                              -2.5775, -2.8325, -3.0875, -3.3425, -3.5975, -3.8525, -4.1075, -4.3625, -4.6175, -4.8725]
+
+      call reallocP(input_tb_zs%interface_zs, 21)
+      input_tb_zs%interface_zs = [0.0, -0.125, -0.25, -0.375, -0.5, -0.625, -0.75, -0.875, -1.94, -2.195, -2.45, &
+                                 -2.705, -2.96, -3.215, -3.47, -3.725, -3.98, -4.235, -4.49, -4.745, -5.0]
+
+
+      ! But also when the layering is reversed:
+      ! 4) 3D 20 sigma layers (bottom to top)
+      input_bt_s%num_layers = 20
+      input_bt_s%numtopsig = -1
+      input_bt_s%layertype = LAYERTYPE_OCEANSIGMA
+      call reallocP(input_bt_s%layer_zs, 20)
+      input_bt_s%layer_zs = [-0.975, -0.925, -0.875, -0.825, -0.775, -0.725, -0.675, -0.625, -0.575, -0.525, &
+                             -0.475, -0.425, -0.375, -0.325, -0.275, -0.225, -0.175, -0.125, -0.075, -0.025]
+      call reallocP(input_bt_s%interface_zs, 21)
+      input_bt_s%interface_zs = [-1.0, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55, -0.50, &
                               -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05, 0.0]
 
-      ! 2) 3D 20 z-layers
-      input_z%num_layers = 20
-      input_z%numtopsig = -1
-      input_z%layertype = LAYERTYPE_Z
-      call reallocP(input_z%layer_zs, 20)
-      input_z%layer_zs = [-4.8725, -4.6175, -4.3625, -4.1075, -3.8525, -3.5975, -3.3425, -3.0875, -2.8325, -2.5775, &
+      ! 4) 3D 20 z-layers (bottom to top)
+      input_bt_z%num_layers = 20
+      input_bt_z%numtopsig = -1
+      input_bt_z%layertype = LAYERTYPE_Z
+      call reallocP(input_bt_z%layer_zs, 20)
+      input_bt_z%layer_zs = [-4.8725, -4.6175, -4.3625, -4.1075, -3.8525, -3.5975, -3.3425, -3.0875, -2.8325, -2.5775, &
                           -2.3225, -2.0675, -1.8125, -1.5575, -1.3025, -1.0475, -0.7925, -0.5375, -0.2825, -0.0275]
-      call reallocP(input_z%interface_zs, 21)
-      input_z%interface_zs = [-5.0, -4.745, -4.49, -4.235, -3.98, -3.725, -3.47, -3.215, -2.96, -2.705, -2.45, &
+      call reallocP(input_bt_z%interface_zs, 21)
+      input_bt_z%interface_zs = [-5.0, -4.745, -4.49, -4.235, -3.98, -3.725, -3.47, -3.215, -2.96, -2.705, -2.45, &
                               -2.195, -1.94, -1.685, -1.43, -1.175, -0.92, -0.665, -0.41, -0.155, 0.1]
 
-      ! 3) 3D 12/8 z-sigma layers
-      input_zs%num_layers = 20
-      input_zs%numtopsig = 8
-      input_zs%layertype = LAYERTYPE_OCEAN_SIGMA_Z
-      call reallocP(input_zs%layer_zs, 20)
-      input_zs%layer_zs = [-4.8725, -4.6175, -4.3625, -4.1075, -3.8525, -3.5975, -3.3425, -3.0875, -2.8325, -2.5775, &
+      ! 6) 3D 12/8 z-sigma layers (bottom to top)
+      input_bt_zs%num_layers = 20
+      input_bt_zs%numtopsig = 8
+      input_bt_zs%layertype = LAYERTYPE_OCEAN_SIGMA_Z
+      call reallocP(input_bt_zs%layer_zs, 20)
+      input_bt_zs%layer_zs = [-4.8725, -4.6175, -4.3625, -4.1075, -3.8525, -3.5975, -3.3425, -3.0875, -2.8325, -2.5775, &
                            -2.3225, -2.0675, -0.9375, -0.8125, -0.6875, -0.5625, -0.4375, -0.3125, -0.1875, -0.0625]
-      call reallocP(input_zs%interface_zs, 21)
-      input_zs%interface_zs = [-5.0, -4.745, -4.49, -4.235, -3.98, -3.725, -3.47, -3.215, -2.96, -2.705, -2.45, &
+      call reallocP(input_bt_zs%interface_zs, 21)
+      input_bt_zs%interface_zs = [-5.0, -4.745, -4.49, -4.235, -3.98, -3.725, -3.47, -3.215, -2.96, -2.705, -2.45, &
                                -2.195, -1.94, -0.875, -0.75, -0.625, -0.5, -0.375, -0.25, -0.125, 0.0]
 
-      ! The cases should be aggregated in three different ways:
+      ! The top to bottom cases should be aggregated in three different ways, where the layer mapping table is always
+      ! defined from top to bottom. The bottom to top case is anly tested with option 3).
       ! 1) no aggregation of layers (just copy current data)
       layer_mapping_table(1,:) = [(i, i=1, 20)]
       ! 2) 3D -> 2D layers
@@ -160,22 +201,22 @@ contains
       ! ======================
       
       ! Sigma-layers without aggregation
-      expected_output(1) = input_s
-      success = aggregate_ugrid_layers_interfaces(input_s, output(1), layer_mapping_table(1,:))
+      expected_output(1) = input_tb_s
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(1), layer_mapping_table(1,:))
       is_equal = compare_ugrid_layers_interfaces(output(1), expected_output(1), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for sigma-layers without aggregation.')
 
       ! Z-layers without aggregation
-      expected_output(2) = input_z
-      success = aggregate_ugrid_layers_interfaces(input_z, output(2), layer_mapping_table(1,:))
+      expected_output(2) = input_tb_z
+      success = aggregate_ugrid_layers_interfaces(input_tb_z, output(2), layer_mapping_table(1,:))
       is_equal = compare_ugrid_layers_interfaces(output(2), expected_output(2), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-layers without aggregation.')
 
       ! Z-sigma-layers without aggregation
-      expected_output(3) = input_zs
-      success = aggregate_ugrid_layers_interfaces(input_zs, output(3), layer_mapping_table(1,:))
+      expected_output(3) = input_tb_zs
+      success = aggregate_ugrid_layers_interfaces(input_tb_zs, output(3), layer_mapping_table(1,:))
       is_equal = compare_ugrid_layers_interfaces(output(3), expected_output(3), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-sigma-layers without aggregation.')
@@ -183,23 +224,23 @@ contains
       ! Testing 3D to 2D
       ! ================
       
-      ! Sigma-layers without aggregation
+      ! Sigma-layers 3D to 2D
       expected_output(4)%num_layers = 0
-      success = aggregate_ugrid_layers_interfaces(input_s, output(4), layer_mapping_table(2,:))
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(4), layer_mapping_table(2,:))
       is_equal = compare_ugrid_layers_interfaces(output(4), expected_output(4), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for sigma-layers without aggregation.')
 
-      ! Z-layers without aggregation
+      ! Z-layers 3D to 2D
       expected_output(5)%num_layers = 0
-      success = aggregate_ugrid_layers_interfaces(input_z, output(5), layer_mapping_table(2,:))
+      success = aggregate_ugrid_layers_interfaces(input_tb_z, output(5), layer_mapping_table(2,:))
       is_equal = compare_ugrid_layers_interfaces(output(5), expected_output(5), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-layers without aggregation.')
 
-      ! Z-sigma-layers without aggregation
+      ! Z-sigma-layers 3D to 2D
       expected_output(6)%num_layers = 0
-      success = aggregate_ugrid_layers_interfaces(input_zs, output(6), layer_mapping_table(2,:))
+      success = aggregate_ugrid_layers_interfaces(input_tb_zs, output(6), layer_mapping_table(2,:))
       is_equal = compare_ugrid_layers_interfaces(output(6), expected_output(6), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-sigma-layers without aggregation.')
@@ -208,72 +249,114 @@ contains
       ! ==========================================================
       ! the used layer_mapping_table(3,:) = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
       
-      ! Sigma-layers with a valid layer mapping
+      ! Sigma-layers
       expected_output(7)%num_layers = 8
       expected_output(7)%numtopsig = -1
       expected_output(7)%layertype = LAYERTYPE_OCEANSIGMA
       call reallocP(expected_output(7)%layer_zs, 8)
-      expected_output(7)%layer_zs = [-0.925, -0.775, -0.625, -0.475, -0.35, -0.25, -0.15, -0.05]
+      expected_output(7)%layer_zs = [-0.05, -0.15, -0.25, -0.35, -0.475, -0.625, -0.775, -0.925]
       call reallocP(expected_output(7)%interface_zs, 9)
-      expected_output(7)%interface_zs = [-1.0, -0.85, -0.70, -0.55, -0.40, -0.30, -0.20, -0.10, 0.0]
-
-
-      success = aggregate_ugrid_layers_interfaces(input_s, output(7), layer_mapping_table(3,:))
+      expected_output(7)%interface_zs = [0.0, -0.10, -0.20, -0.30, -0.40, -0.55, -0.70, -0.85, -1.0]
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(7), layer_mapping_table(3,:))
       is_equal = compare_ugrid_layers_interfaces(output(7), expected_output(7), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for sigma-layers with a 20 to 8 layer aggregation.')
 
-      ! Z-layers  with a valid layer mapping
+      ! Z-layers
       expected_output(8)%num_layers = 8
       expected_output(8)%numtopsig = -1
       expected_output(8)%layertype = LAYERTYPE_Z
       call reallocP(expected_output(8)%layer_zs, 8)
-      expected_output(8)%layer_zs = [-4.6175, -3.8525, -3.0875, -2.3225, -1.685, -1.175, -0.665, -0.155]
+      expected_output(8)%layer_zs = [-0.155, -0.665, -1.175, -1.685, -2.3225, -3.0875, -3.8525, -4.6175]
       call reallocP(expected_output(8)%interface_zs, 9)
-      expected_output(8)%interface_zs = [-5.0, -4.235, -3.47, -2.705, -1.94, -1.43, -0.92, -0.41, 0.1]
+      expected_output(8)%interface_zs = [0.1, -0.41, -0.92, -1.43, -1.94, -2.705, -3.47, -4.235, -5.0]
+      success = aggregate_ugrid_layers_interfaces(input_tb_z, output(8), layer_mapping_table(3,:))
       is_equal = compare_ugrid_layers_interfaces(output(8), expected_output(8), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-layers with a 20 to 8 layer aggregation.')
 
-      ! Z-sigma-layers  with a valid layer mapping
+      ! Z-sigma-layers
       expected_output(9)%num_layers = 8
-      expected_output(9)%numtopsig = 8
+      expected_output(9)%numtopsig = 4
       expected_output(9)%layertype = LAYERTYPE_OCEAN_SIGMA_Z
       call reallocP(expected_output(9)%layer_zs, 8)
-      expected_output(9)%layer_zs = [-4.6175, -3.8525, -3.0875, -2.3225, -0.875, -0.625, -0.375, -0.125]
+      expected_output(9)%layer_zs = [-0.125, -0.375, -0.625, -0.875, -2.3225, -3.0875, -3.8525, -4.6175]
       call reallocP(expected_output(9)%interface_zs, 9)
-      expected_output(9)%interface_zs = [-5.0, -4.235, -3.47, -2.705, -1.94, -0.75, -0.5, -0.25, 0.0]
-      success = aggregate_ugrid_layers_interfaces(input_zs, output(9), layer_mapping_table(3,:))
+      expected_output(9)%interface_zs = [0.0, -0.25, -0.5, -0.75, -1.94, -2.705, -3.47, -4.235, -5.0]
+      success = aggregate_ugrid_layers_interfaces(input_tb_zs, output(9), layer_mapping_table(3,:))
       is_equal = compare_ugrid_layers_interfaces(output(9), expected_output(9), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-sigma-layers with a 20 to 8 layer aggregation.')
 
-      ! Layer mapping table testing
-      ! ===========================
-      ! output(10) is a dummy, because output is not expected
+      ! Test a valid layer mapping table for all three bottom to top layer types
+      ! ========================================================================
+      ! the used layer_mapping_table(3,:) = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
+      
+      ! Sigma-layers
+      expected_output(10)%num_layers = 8
+      expected_output(10)%numtopsig = -1
+      expected_output(10)%layertype = LAYERTYPE_OCEANSIGMA
+      call reallocP(expected_output(10)%layer_zs, 8)
+      expected_output(10)%layer_zs = [-0.925, -0.775, -0.625, -0.475, -0.35, -0.25, -0.15, -0.05]
+      call reallocP(expected_output(10)%interface_zs, 9)
+      expected_output(10)%interface_zs = [-1.0, -0.85, -0.70, -0.55, -0.40, -0.30, -0.20, -0.10, 0.0]
+      success = aggregate_ugrid_layers_interfaces(input_bt_s, output(10), layer_mapping_table(3,:))
+      is_equal = compare_ugrid_layers_interfaces(output(10), expected_output(10), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for sigma-layers with a 20 to 8 layer aggregation.')
+
+      ! Z-layers
+      expected_output(11)%num_layers = 8
+      expected_output(11)%numtopsig = -1
+      expected_output(11)%layertype = LAYERTYPE_Z
+      call reallocP(expected_output(11)%layer_zs, 8)
+      expected_output(11)%layer_zs = [-4.6175, -3.8525, -3.0875, -2.3225, -1.685, -1.175, -0.665, -0.155]
+      call reallocP(expected_output(11)%interface_zs, 9)
+      expected_output(11)%interface_zs = [-5.0, -4.235, -3.47, -2.705, -1.94, -1.43, -0.92, -0.41, 0.1]
+      success = aggregate_ugrid_layers_interfaces(input_bt_z, output(11), layer_mapping_table(3,:))
+      is_equal = compare_ugrid_layers_interfaces(output(11), expected_output(11), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for z-layers with a 20 to 8 layer aggregation.')
+
+      ! Z-sigma-layers
+      expected_output(12)%num_layers = 8
+      expected_output(12)%numtopsig = 4
+      expected_output(12)%layertype = LAYERTYPE_OCEAN_SIGMA_Z
+      call reallocP(expected_output(12)%layer_zs, 8)
+      expected_output(12)%layer_zs = [-4.6175, -3.8525, -3.0875, -2.3225, -0.875, -0.625, -0.375, -0.125]
+      call reallocP(expected_output(12)%interface_zs, 9)
+      expected_output(12)%interface_zs = [-5.0, -4.235, -3.47, -2.705, -1.94, -0.75, -0.5, -0.25, 0.0]
+      success = aggregate_ugrid_layers_interfaces(input_bt_zs, output(12), layer_mapping_table(3,:))
+      is_equal = compare_ugrid_layers_interfaces(output(12), expected_output(12), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for z-sigma-layers with a 20 to 8 layer aggregation.')
+
+      ! Layer mapping table validity testing
+      ! ====================================
+      ! output(14) is a dummy, because output is not expected
 
       ! Layer mapping table is too short
-      success = aggregate_ugrid_layers_interfaces(input_s, output(10), [(i, i=1, 19)])
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(13), [(i, i=1, 19)])
       call assert_true(.not. success, 'No error when layer mapping table is too short.')
 
       ! Layer mapping table is too long
-      success = aggregate_ugrid_layers_interfaces(input_s, output(10), [(i, i=1, 21)])
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(13), [(i, i=1, 21)])
       call assert_true(.not. success, 'No error when layer mapping table is too long.')
 
       ! Layer mapping doesn't start with 1
-      success = aggregate_ugrid_layers_interfaces(input_s, output(10), layer_mapping_table(4,:))
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(13), layer_mapping_table(4,:))
       call assert_true(.not. success, 'No error when layer mapping table does not start with one.')
 
       ! Layer mapping is increasing by more than one
-      success = aggregate_ugrid_layers_interfaces(input_s, output(10), layer_mapping_table(5,:))
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(13), layer_mapping_table(5,:))
       call assert_true(.not. success, 'No error when layer mapping table increases with a step of more than one.')
       
       ! Layer mapping is decreasing
-      success = aggregate_ugrid_layers_interfaces(input_s, output(10), layer_mapping_table(6,:))
+      success = aggregate_ugrid_layers_interfaces(input_tb_s, output(13), layer_mapping_table(6,:))
       call assert_true(.not. success, 'No error when layer mapping table has a decreasing step.')
 
       ! Z-sigma-layers  with a invalid layer mapping
-      success = aggregate_ugrid_layers_interfaces(input_zs, output(10), layer_mapping_table(7,:))
+      success = aggregate_ugrid_layers_interfaces(input_tb_zs, output(13), layer_mapping_table(7,:))
       call assert_true(.not.success,  'No error when merging Z and sigma layers in z-sigma-layers model.')
 
       return

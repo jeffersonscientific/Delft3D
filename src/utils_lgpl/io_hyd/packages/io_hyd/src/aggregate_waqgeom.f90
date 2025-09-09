@@ -37,12 +37,12 @@ module m_aggregate_waqgeom
    use m_utils_waqgeom
 
    implicit none
-   
+
    private
-   
+
    public :: aggregate_ugrid_geometry
    public :: aggregate_ugrid_layers_interfaces
-   
+
 contains
 !> Aggregates the given mesh geometry and edge type array using the given aggregation table.
 !! The mesh aggregation algorithm removes edges, but preserves the order of the edges. The edge type of a given edge stays the same.
@@ -284,10 +284,10 @@ contains
       type(t_ug_meshgeom), intent(inout) :: output !< Aggregated layers and interfaces.
       integer, dimension(:), intent(in) :: layer_mapping_table !< Mapping table input layers and interfaces -> waq layers and interfaces.
       logical :: success !< Result status, true if successful.
-      logical :: valid !< Is layer_mapping_table valid?
       logical :: no_aggregation !< Is there no aggregation at all?
       logical :: to_2D !< Is there aggregation to 2D?
-      integer :: i, increment !< Loop variable and increment variable.
+      logical :: top_to_bottom !< Are layers defined from top to bottom?
+      integer :: i, old_layer, new_layer, increment !< Loop variable and increment variable.
       character(len=255) :: message !< Temporary variable for writing log messages.
 
       ! Relevant variables from input and output .
@@ -300,46 +300,54 @@ contains
 
       ! Defaults
       success = .false.
-      valid = .true.
       no_aggregation = .true.
       to_2D = .true.
-      
-      ! Check the validity of the layer mapping table (starts with 1 and increments of 0 or 1 only.
+
+      ! Check the validity of the layer mapping table
+      ! Equal size?
       if (size(layer_mapping_table) /= input%num_layers) then
          write (message, *) 'Definition of vertical layer mapping does not match the number of layers.'
          call mess(LEVEL_ERROR, trim(message))
          return
       end if
-      
+
+      ! Starts with one?
       if (layer_mapping_table(1) /= 1) then
          write (message, *) 'Definition of vertical layer mapping should start with one.'
          call mess(LEVEL_ERROR, trim(message))
          return
       end if
-      
+
       do i = 1, input%num_layers - 1
-         increment = layer_mapping_table(i+1) - layer_mapping_table(i)
-         if (increment>1) then
+         ! Equal to previous or increments of one only?
+         increment = layer_mapping_table(i + 1) - layer_mapping_table(i)
+         if (increment > 1) then
             write (message, *) 'Definition of vertical layer mapping can only contain increments of 1 or remain '// &
-                               'the same between layers.'
+               'the same between layers.'
             call mess(LEVEL_ERROR, trim(message))
             return
          end if
-         if (increment<0) then
+         if (increment < 0) then
             write (message, *) 'Definition of vertical layer mapping can not decrease between layers.'
             call mess(LEVEL_ERROR, trim(message))
             return
          end if
-         if (increment==0) then
+         if (increment == 0) then
             no_aggregation = .false.
          end if
-         if (increment==1) then
+         if (increment == 1) then
             to_2D = .false.
          end if
       end do
-      
-      ! Check we don't aggregate z and sigma layers using %numtopsig when we have %layertype = LAYERTYPE_OCEAN_SIGMA_Z, unless we aggregate to 2D.
-      ! Determine a the new %num_layers and the new %numtopsig when we have %layertype = LAYERTYPE_OCEAN_SIGMA_Z.
+
+      ! For z-sigma-layers, the last sigma-layer can not be merged with the first z-layer unless we aggregate to 2D.
+      if (input%layertype == LAYERTYPE_OCEAN_SIGMA_Z .and. .not. to_2D) then
+         if (layer_mapping_table(input%numtopsig)==layer_mapping_table(input%numtopsig + 1)) then
+            write (message, *) 'Z and sigma layers in z-sigma-layers model can not be merged!'
+            call mess(LEVEL_ERROR, trim(message))
+            return
+         end if
+      end if
 
       ! When there is no aggregation, just copy the input and return.
       if (no_aggregation) then
@@ -347,18 +355,64 @@ contains
          success = .true.
          return
       end if
-
-      ! When we aggregate to 2D, then the new %layertype should change/remain -1, and we don't need to aggregate the layers any more and return.
+      
+      ! When we aggregate to 2D, then the new %num_layers is 0, the rest is the default. We don't need to aggregate the layers.
       if (to_2D) then
          output%num_layers = 0
          success = .true.
          return
       end if
-      
+
+      ! Layer type stays the same, determine the new total number of layers and sigma layers on top of z-layers in case of z-sigma-layers.
+      output%layertype = input%layertype
+      output%num_layers = layer_mapping_table(input%num_layers)
+      if (input%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+         output%numtopsig = layer_mapping_table(input%numtopsig)
+      end if
+
+      ! Check if layers are defined from top to bottom.
+      top_to_bottom = (input%interface_zs(1) > input%interface_zs(2))
+
       ! Allocate output arrays %layer_zs and %interface_zs.
+      call reallocP(output%layer_zs, output%num_layers)
+      call reallocP(output%interface_zs, output%num_layers + 1)
+
       ! Copy the remaining interfaces to the output array.
+      ! Always copy the first interface from the input.
+      output%interface_zs(1) = input%interface_zs(1)
+      new_layer = 1
+      ! Loop over input layers, skip if consecutive layers end up in the same new layer and copy the interfaces that remain.
+      do i = 2, input%num_layers
+         if (top_to_bottom) then
+            if (layer_mapping_table(i - 1) == layer_mapping_table(i)) then
+               cycle
+            end if
+         else
+            if (layer_mapping_table(input%num_layers - i + 1) == layer_mapping_table(input%num_layers - i + 2)) then
+               cycle
+            end if
+         end if
+         new_layer = new_layer + 1
+         output%interface_zs(new_layer) = input%interface_zs(i)
+      end do
+      ! Always copy the last interface from the input.
+      output%interface_zs(new_layer + 1) = input%interface_zs(input%num_layers + 1)
+
       ! Calculate the output layers as the average of the two surrounding interfaces.
       ! Take special care when %layertype = LAYERTYPE_OCEAN_SIGMA_Z
+      do i = 1, output%num_layers
+         output%layer_zs(i) = (output%interface_zs(i) + output%interface_zs(i + 1)) / 2.0d0
+      end do
+      
+      ! Correct the last sigma layer layer_zs in case of z-sigma-layers.
+      if (output%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+         if (top_to_bottom) then
+            output%layer_zs(output%numtopsig) = (output%interface_zs(output%numtopsig) - 1.0d0) / 2.0d0
+         else
+            output%layer_zs(output%num_layers - output%numtopsig + 1) = & 
+               (output%interface_zs(output%num_layers - output%numtopsig + 2) - 1.0d0) / 2.0d0
+         end if
+      end if
 
       success = .true.
 
