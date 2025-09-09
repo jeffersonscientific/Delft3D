@@ -995,7 +995,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c012_gate_sub_3Dzsigma1" ref="dflowfm_default">
-      <path version="2025-09-09T09:18:45.711000">e02_dflowfm/f208_3D_hydraulic_structures/c012_gate_sub_3Dzsigma1</path>
+      <path version="2025-09-09T10:58:06.416000">e02_dflowfm/f208_3D_hydraulic_structures/c012_gate_sub_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/gatesub_3Dzsigma1_his.nc" type="netCDF">
@@ -1008,7 +1008,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c013_gate_sub_3Dzsigma2" ref="dflowfm_default">
-      <path version="2025-09-09T09:18:56.622000">e02_dflowfm/f208_3D_hydraulic_structures/c013_gate_sub_3Dzsigma2</path>
+      <path version="2025-09-09T13:47:40.300000">e02_dflowfm/f208_3D_hydraulic_structures/c013_gate_sub_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/gatesub_3Dzsigma2_his.nc" type="netCDF">
@@ -1034,7 +1034,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c015_gate_free_3Dz" ref="platform_specific">
-      <path version="2025-09-09T09:19:13.023000">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
+      <path version="2025-09-09T13:49:09.133000">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/gatefree_3Dz_his.nc" type="netCDF">
@@ -1087,7 +1087,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c019_sill_sub_3Dz" ref="platform_specific">
-      <path version="2025-09-09T09:19:29.588000">e02_dflowfm/f208_3D_hydraulic_structures/c019_sill_sub_3Dz</path>
+      <path version="2025-09-09T13:50:20.906000">e02_dflowfm/f208_3D_hydraulic_structures/c019_sill_sub_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/weirsub_3Dz_his.nc" type="netCDF">
@@ -1100,7 +1100,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c020_sill_sub_3Dzsigma1" ref="dflowfm_default">
-      <path version="2025-09-09T09:19:40.252000">e02_dflowfm/f208_3D_hydraulic_structures/c020_sill_sub_3Dzsigma1</path>
+      <path version="2025-09-09T13:53:04.965000">e02_dflowfm/f208_3D_hydraulic_structures/c020_sill_sub_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/weirsub_3Dzsigma1_his.nc" type="netCDF">
@@ -1113,7 +1113,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c021_sill_sub_3Dzsigma2" ref="dflowfm_default">
-      <path version="2025-09-09T09:19:51.801000">e02_dflowfm/f208_3D_hydraulic_structures/c021_sill_sub_3Dzsigma2</path>
+      <path version="2025-09-09T13:54:23.594000">e02_dflowfm/f208_3D_hydraulic_structures/c021_sill_sub_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/weirsub_3Dzsigma2_his.nc" type="netCDF">
