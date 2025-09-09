@@ -50,7 +50,8 @@ contains
 !! then the edges in the aggregated mesh will still be ordered (first flow links, then closed edges).
 !!
 !! since array pointers will become disassociated, possibly causing memory leaks.
-   function aggregate_ugrid_geometry(input, output, input_edge_type, output_edge_type, face_mapping_table) result(success)
+   function aggregate_ugrid_geometry(input, output, input_edge_type, output_edge_type, &
+                                     face_mapping_table, layer_mapping_table) result(success)
       use io_ugrid
       use geometry_module
       use m_alloc
@@ -62,6 +63,7 @@ contains
       integer, dimension(:), intent(in) :: input_edge_type !< The edge type array to be aggregated.
       integer, dimension(:), pointer, intent(out) :: output_edge_type !< Aggregated edge type array.
       integer, dimension(:), intent(in) :: face_mapping_table !< Mapping table flow cells -> waq cells.
+      integer, dimension(:), optional, intent(in) :: layer_mapping_table !< Mapping table input layers and interfaces -> waq layers and interfaces.
       logical :: success !< Result status, true if successful.
 
       character(len=255) :: message !< Temporary variable for writing log messages.
@@ -268,8 +270,15 @@ contains
       output%numEdge = output_edge_count
       output%numFace = output_face_count
 
-      !TODO deallocate temporary arrays
-
+      if (present(layer_mapping_table)) then
+         success = aggregate_ugrid_layers_interfaces(input, output, layer_mapping_table)
+         if (.not. success) then
+            write (message, *) 'There was a problem when trying to aggregate the layer information.'
+            call mess(LEVEL_ERROR, trim(message))
+            return
+         end if
+      end if
+      
       success = .true.
 
    end function aggregate_ugrid_geometry
