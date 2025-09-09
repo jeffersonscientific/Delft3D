@@ -534,7 +534,10 @@ subroutine debgrz(process_space_real , fl , ipoint , increm , num_cells , noflux
         fl (25 + iflux  ) = min(1.,(rmor + rhrv))*dens               !mortality (Dens [#/m3/d])
         ! shell fluxes (if taken into account) remain part of the structural volume
         ! hence, their (explicit) presence does thus not change any other fluxes
-        fl (26 + iflux  ) =  ((pomm-pca)/egsmo)*cso_cm3_gc * dens   ! change in organic shell matrix [gC/m3/d])
+        ! the size of the Pca flux is based on Pomm, but its carbon/energy is not coming from Pomm.
+        ! It is coming from dissipation fluxes instead and is thus subtracted from dRes.
+
+        fl (26 + iflux  ) =  (pomm/egsmo)* cso_cm3_gc * dens   ! change in organic shell matrix [gC/m3/d])
         fl (27 + iflux  ) =  (pca/egsmi) * csi_cm3_gc * dens       ! calcification of shell matrix [gC/m3/d])
 
         fl (28 + iflux  ) = (0.+ gem)*av%dfil(1) * dens                 !uptake    [gC/m3/d]
