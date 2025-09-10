@@ -155,6 +155,7 @@ if (UNIX)
 elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
+    include(InstallRequiredSystemLibraries)
 endif()
 
 # Expat:
