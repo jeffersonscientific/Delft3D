@@ -424,7 +424,7 @@
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <testCase name="e108_f03_c13_WalrusSurfaceWaterRsvFull" ref="drr_default">
+	    <testCase name="e108_f03_c13_WalrusSurfaceWaterRsvFull" ref="drr_windowsref">
             <path version="2025-09-11T11:51:25.804000">e108_drr/f03_walrus/c13_WalrusSurfaceWaterRsvFull</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
