@@ -1,7 +1,6 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
-import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.linux.*
@@ -60,7 +59,7 @@ object Publish : BuildType({
             display = ParameterDisplay.PROMPT)
         param("reverse.dep.*.product", "all-testbench")
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
-        param("source_image", "%dep.${LinuxRuntimeContainers.id}.runtime_container_image%")
+        param("source_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
         param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
         param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_type%-%release_version%")
     }
@@ -97,7 +96,7 @@ object Publish : BuildType({
                     onDependencyCancel = FailureAction.CANCEL
                 }
             }
-            dependency(LinuxRunAllDockerExamples) {
+            dependency(LinuxRunAllContainerExamples) {
                 snapshot {
                     onDependencyFailure = FailureAction.FAIL_TO_START
                     onDependencyCancel = FailureAction.CANCEL
@@ -108,17 +107,6 @@ object Publish : BuildType({
                     onDependencyFailure = FailureAction.FAIL_TO_START
                     onDependencyCancel = FailureAction.CANCEL
                 }
-            }
-        }
-        triggers {
-            finishBuildTrigger {
-                enabled = true
-                buildType = "DIMR_To_NGHS"
-                successfulOnly = true
-                branchFilter = """
-                    +:main
-                    +:release/*
-                """.trimIndent()
             }
         }
     }
@@ -159,6 +147,13 @@ object Publish : BuildType({
                 """.trimIndent()
             }
         }
+        script {
+            name = "Generate Apptainer SIF file"
+            workingDir = "src/scripts_lgpl/singularity"
+            scriptContent = """
+                apptainer pull docker-daemon:%destination_image_specific%
+            """.trimIndent()
+        }
         dockerCommand {
             name = "Push generic and specific images"
             commandType = push {
@@ -167,6 +162,7 @@ object Publish : BuildType({
                     "%destination_image_specific%"
                 """.trimIndent()
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Replace default image in run_docker.sh scripts"
@@ -176,16 +172,21 @@ object Publish : BuildType({
                     sed -i 's@^image=[^ ]*@image=%destination_image_specific%@' ${'$'}file
                 done
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Replace branding delft3dfm->dhydro"
-            conditions {
-                equals("brand", "dhydro")
-            }
             scriptContent = """
-                sed -i 's@delft3dfm@dhydro@' ci/teamcity/Delft3D/linux/docker/readme.txt
-                sed -i 's@Delft3D FM@D-HYDRO@' ci/teamcity/Delft3D/linux/docker/readme.txt
+                sed -i 's@delft3dfm@dhydro@' \
+                    ci/teamcity/Delft3D/linux/docker/readme.txt \
+                    src/scripts_lgpl/singularity/readme.txt \
+                    src/scripts_lgpl/singularity/submit_singularity_h7.sh
+                sed -i 's@Delft3D FM@D-HYDRO@' \
+                    ci/teamcity/Delft3D/linux/docker/readme.txt \
+                    src/scripts_lgpl/singularity/readme.txt \
+                    src/scripts_lgpl/singularity/submit_singularity_h7.sh
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         exec {
             name = "Create Docker ZIP file in /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Docker/"
@@ -195,6 +196,23 @@ object Publish : BuildType({
                 --release-version %release_version%
                 --commit-id-short %commit_id_short%
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+        }
+        script {
+            name = "Copy Apptainer packages to share"
+            workingDir = "src/scripts_lgpl/singularity"
+            scriptContent = """
+                tar -vczf %brand%_%release_type%-%release_version%.tar.gz \
+                    %brand%_%release_type%-%release_version%.sif \
+                    readme.txt \
+                    run_singularity.sh \
+                    execute_singularity_h7.sh \
+                    submit_singularity_h7.sh
+                
+                # Copy the artifact to network
+                cp -vf %brand%_%release_type%-%release_version%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
+            """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
 })
