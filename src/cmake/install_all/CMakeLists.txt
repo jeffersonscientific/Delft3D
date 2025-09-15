@@ -1,4 +1,5 @@
 install(CODE "
+    include(\"${CMAKE_CURRENT_LIST_DIR}/../functions.cmake\")
     execute_process(
         COMMAND bash \"${CMAKE_CURRENT_SOURCE_DIR}/copy_libs.sh\" \"${CMAKE_INSTALL_PREFIX}/bin\"
         RESULT_VARIABLE result
