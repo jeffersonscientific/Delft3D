@@ -55,6 +55,7 @@ contains
       use io_ugrid
       use geometry_module
       use m_alloc
+      use m_missing, only: dmiss, missing_value => imiss
 
       implicit none
 
@@ -67,7 +68,6 @@ contains
       logical :: success !< Result status, true if successful.
 
       character(len=255) :: message !< Temporary variable for writing log messages.
-      integer, parameter :: missing_value = -999
       integer, dimension(:), allocatable :: node_mapping_table, reverse_node_mapping_table, reverse_edge_mapping_table !< Mapping tables.
       integer :: input_edge_count, output_edge_count, output_node_count, output_face_count, max_nodes_per_face, node_count !< Counters.
       integer :: i, j, input_edge, output_edge, input_node, output_node, output_face !< Counters.
@@ -258,7 +258,7 @@ contains
 
          ! Note that passed xs and ys arrays are larger than the passed polygon size (extra elements are not used in subroutine comp_masscenter).
          call comp_masscenter(node_count, output%nodex(nodes(1:node_count)), output%nodey(nodes(1:node_count)), &
-                              output%facex(output_face), output%facey(output_face), area, counterclockwise, 0, 0, -999.0d0)
+                              output%facex(output_face), output%facey(output_face), area, counterclockwise, 0, 0, dmiss)
          ! Face z coordinates are unknown.
       end do
 
