@@ -78,6 +78,7 @@ if (UNIX)
     set(CMAKE_Fortran_FLAGS_RELEASE              "-O2")
     set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO       "-g -O2")
     set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -check uninit")
     set(fortran_standard_flag                    "-std")
 
     set(cpp_compiler_flags                       "-std=c++17")
