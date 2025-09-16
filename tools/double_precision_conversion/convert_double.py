@@ -10,15 +10,23 @@ It focuses on literal constants with exponent-letter 'D' as specified in the For
 All conversions are done in-place. Use git for version control safety.
 
 Usage:
+    # Convert files in-place
     python convert_double.py file1.f90 file2.f90
     python convert_double.py --directory path/to/fortran/files
+
+    # Check mode - validate without converting (returns error code if conversion needed)
+    python convert_double.py --check file1.f90 file2.f90
+    python convert_double.py --check --directory path/to/fortran/files
+
+Check mode is useful for CI/CD pipelines or pre-commit hooks to ensure code is already converted.
+Returns exit code 0 if no conversion needed, exit code 1 if conversion is required.
 """
 
-import re
 import sys
+import re
 import argparse
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 class FortranDoubleConverter:
     """
@@ -305,22 +313,82 @@ class FortranDoubleConverter:
             print(f"Error processing {input_path}: {e}")
             return False
 
-    def convert_directory(self, directory: Path, extensions: List[str] = None) -> Tuple[int, int]:
-        """Convert all Fortran files in a directory in-place."""
+    def _get_fortran_files(self, directory: Path, extensions: Optional[List[str]] = None) -> List[Path]:
+        """Get all unique Fortran files in a directory, avoiding duplicates from case-insensitive extensions."""
         if extensions is None:
             extensions = ['.f90', '.f95', '.f03', '.f08', '.F90', '.F95', '.F03', '.F08']
 
-        files_processed = 0
-        files_converted = 0
+        processed_files = set()  # Track processed files to avoid duplicates
+        unique_files = []
 
         for ext in extensions:
             for file_path in directory.rglob(f"*{ext}"):
-                files_processed += 1
-                if self.convert_file(file_path):
-                    files_converted += 1
+                # Use resolved path to handle case-insensitive duplicates
+                resolved_path = file_path.resolve()
+                if resolved_path in processed_files:
+                    continue
+                processed_files.add(resolved_path)
+                unique_files.append(file_path)
+
+        return unique_files
+
+    def convert_directory(self, directory: Path, extensions: Optional[List[str]] = None) -> Tuple[int, int]:
+        """Convert all Fortran files in a directory in-place."""
+        files_processed = 0
+        files_converted = 0
+
+        for file_path in self._get_fortran_files(directory, extensions):
+            files_processed += 1
+            if self.convert_file(file_path):
+                files_converted += 1
 
         return files_processed, files_converted
 
+    def check_file(self, input_path: Path) -> bool:
+        """Check if a file needs conversion without modifying it. Returns True if conversion is needed."""
+        try:
+            with open(input_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            _, needs_conversion = self.convert_text(content)
+
+            if needs_conversion:
+                # Count what would be converted for reporting
+                literal_matches = []
+                for match in self.d_literal_pattern.finditer(content):
+                    if not self._is_in_string_or_comment(content, match.start()):
+                        literal_matches.append(match)
+
+                declaration_matches = []
+                for match in self.double_precision_pattern.finditer(content):
+                    if not self._is_in_string_or_comment(content, match.start()):
+                        declaration_matches.append(match)
+
+                print(f"ERROR: {input_path} needs conversion:")
+                if literal_matches:
+                    print(f"  - {len(literal_matches)} double precision literals found")
+                if declaration_matches:
+                    print(f"  - {len(declaration_matches)} double precision declarations found")
+
+                return True
+
+            return False
+
+        except Exception as e:
+            print(f"Error checking {input_path}: {e}")
+            return True  # Treat errors as needing attention
+
+    def check_directory(self, directory: Path, extensions: Optional[List[str]] = None) -> Tuple[int, int]:
+        """Check all Fortran files in a directory for needed conversions. Returns (files_processed, files_needing_conversion)."""
+        files_processed = 0
+        files_needing_conversion = 0
+
+        for file_path in self._get_fortran_files(directory, extensions):
+            files_processed += 1
+            if self.check_file(file_path):
+                files_needing_conversion += 1
+
+        return files_processed, files_needing_conversion
 
 def main():
     parser = argparse.ArgumentParser(
@@ -330,6 +398,8 @@ def main():
 Examples:
   python convert_double.py input.f90 another.f90
   python convert_double.py --directory src/
+  python convert_double.py --check input.f90
+  python convert_double.py --check --directory src/
 
 Conversions performed:
   - Literals: 1d0 -> 1.0_dp, 2.5d-3 -> 2.5e-3_dp, etc.
@@ -343,6 +413,8 @@ The script automatically adds 'use precision, only: dp' when conversions are mad
     parser.add_argument('files', nargs='*', help='Input Fortran files to convert in-place')
     parser.add_argument('-d', '--directory', type=Path,
                        help='Process all Fortran files in directory recursively (in-place)')
+    parser.add_argument('-c', '--check', action='store_true',
+                       help='Check if files need conversion without modifying them (returns error code if conversion needed)')
     parser.add_argument('--extensions', nargs='+',
                        default=['.f90', '.f95', '.f03', '.f08', '.F90', '.F95', '.F03', '.F08'],
                        help='File extensions to process (default: Fortran extensions)')
@@ -351,24 +423,55 @@ The script automatically adds 'use precision, only: dp' when conversions are mad
 
     converter = FortranDoubleConverter()
 
-    if args.directory:
-        print(f"Processing directory: {args.directory}")
-        files_processed, files_converted = converter.convert_directory(
-            args.directory, args.extensions
-        )
-        print(f"Processed {files_processed} files, converted {files_converted} files")
+    if args.check:
+        # Check mode - don't convert, just report what needs conversion
+        conversion_needed = False
 
-    elif args.files:
-        for file_str in args.files:
-            input_path = Path(file_str)
-            converter.convert_file(input_path)
+        if args.directory:
+            print(f"Checking directory: {args.directory}")
+            files_processed, files_needing_conversion = converter.check_directory(
+                args.directory, args.extensions
+            )
+            print(f"Checked {files_processed} files, {files_needing_conversion} need conversion")
+            if files_needing_conversion > 0:
+                conversion_needed = True
+
+        elif args.files:
+            for file_str in args.files:
+                input_path = Path(file_str)
+                if converter.check_file(input_path):
+                    conversion_needed = True
+
+        else:
+            parser.print_help()
+            return 1
+
+        if conversion_needed:
+            print("\nERROR: Files found that need double precision conversion!")
+            return 1
+        else:
+            print("All files are already converted.")
+            return 0
 
     else:
-        parser.print_help()
-        return 1
+        # Normal conversion mode
+        if args.directory:
+            print(f"Processing directory: {args.directory}")
+            files_processed, files_converted = converter.convert_directory(
+                args.directory, args.extensions
+            )
+            print(f"Processed {files_processed} files, converted {files_converted} files")
 
-    return 0
+        elif args.files:
+            for file_str in args.files:
+                input_path = Path(file_str)
+                converter.convert_file(input_path)
 
+        else:
+            parser.print_help()
+            return 1
 
-if __name__ == '__main__':
+        return 0
+
+if __name__ == "__main__":
     sys.exit(main())

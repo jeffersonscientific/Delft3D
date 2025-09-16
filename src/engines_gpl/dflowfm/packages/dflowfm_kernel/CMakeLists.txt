@@ -253,6 +253,7 @@ if (WIN32)
     endif()
 
     add_warnings_as_errors_post_build_windows(${library_name})
+    check_style_double_precision(${library_name})
 endif(WIN32)
 
 if (UNIX)
