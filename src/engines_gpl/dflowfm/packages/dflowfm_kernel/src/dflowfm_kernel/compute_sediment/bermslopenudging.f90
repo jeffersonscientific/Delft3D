@@ -42,7 +42,7 @@ subroutine bermslopenudging(error)
 
    integer :: L, k1, k2
    integer :: lsd
-   double precision :: hwavu, slope, flx, frc, fixf, trmag_u, slpfac
+   double precision :: hwavu, slope, flx, fixf, trmag_u, slpfac
    double precision :: cosw, sinw, coswu
 
    error = .true.
@@ -107,13 +107,13 @@ subroutine bermslopenudging(error)
             trmag_u = hypot(e_sbcn(L, lsd), e_sbct(L, lsd))
             flx = trmag_u * slpfac
             e_sbcn(L, lsd) = e_sbcn(L, lsd) - flx
-            call getfracfixfac(L, k1, k2, lsd, e_sbcn(L, lsd), frc, fixf)
+            call getfixfac(L, k1, k2, lsd, e_sbcn(L, lsd), fixf)
             e_sbcn(L, lsd) = e_sbcn(L, lsd) * fixf
             !
             trmag_u = hypot(e_sbwn(L, lsd), e_sbwt(L, lsd))
             flx = trmag_u * slpfac
             e_sbwn(L, lsd) = e_sbwn(L, lsd) - flx
-            call getfracfixfac(L, k1, k2, lsd, e_sbwn(L, lsd), frc, fixf)
+            call getfixfac(L, k1, k2, lsd, e_sbwn(L, lsd), fixf)
             e_sbwn(L, lsd) = e_sbwn(L, lsd) * fixf
          end if
          !
@@ -121,13 +121,13 @@ subroutine bermslopenudging(error)
             trmag_u = abs(e_ssn(L, lsd))
             flx = trmag_u * slpfac
             e_ssn(L, lsd) = e_ssn(L, lsd) - flx
-            call getfracfixfac(L, k1, k2, lsd, e_ssn(L, lsd), frc, fixf)
+            call getfixfac(L, k1, k2, lsd, e_ssn(L, lsd), fixf)
             e_ssn(L, lsd) = e_ssn(L, lsd) * fixf
             !
             trmag_u = hypot(e_sswn(L, lsd), e_sswt(L, lsd))
             flx = trmag_u * slpfac
             e_sswn(L, lsd) = e_sswn(L, lsd) - flx
-            call getfracfixfac(L, k1, k2, lsd, e_sswn(L, lsd), frc, fixf)
+            call getfixfac(L, k1, k2, lsd, e_sswn(L, lsd), fixf)
             e_sswn(L, lsd) = e_sswn(L, lsd) * fixf
          end if
       end do
@@ -138,7 +138,7 @@ subroutine bermslopenudging(error)
 
 end subroutine bermslopenudging
 
-subroutine getfracfixfac(L, k1, k2, lsd, transp, frc, fixf)
+subroutine getfixfac(L, k1, k2, lsd, transp, fixf)
    use m_fm_erosed
    use m_flow, only: hu, epshu
    use m_flowgeom
@@ -147,18 +147,15 @@ subroutine getfracfixfac(L, k1, k2, lsd, transp, frc, fixf)
 
    integer, intent(in) :: L, k1, k2, lsd
    double precision, intent(in) :: transp
-   double precision, intent(out) :: frc, fixf
+   double precision, intent(out) :: fixf
 
    if (L > lnxi .and. hu(L) > epshu) then
       fixf = fixfac(k2, lsd)
-      frc = frac(k2, lsd)
    else
       if (transp >= 0) then
          fixf = fixfac(k1, lsd)
-         frc = frac(k1, lsd)
       else
          fixf = fixfac(k2, lsd)
-         frc = frac(k2, lsd)
       end if
    end if
-end subroutine getfracfixfac
+end subroutine getfixfac

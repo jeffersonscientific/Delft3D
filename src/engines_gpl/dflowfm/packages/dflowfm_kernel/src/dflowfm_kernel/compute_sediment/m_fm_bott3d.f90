@@ -256,7 +256,7 @@ contains
          if (dynroughveg > 0) then
             call determine_linkbased_cumblchg()
          end if
-      !
+         !
       else
          !
          ! if morphological computations haven't started yet
@@ -1138,13 +1138,13 @@ contains
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
                   Lf = abs(LL)
-                  flux = avalflux(Lf, l) * wu_mor(Lf)   !kg m-1 s-1 m
+                  flux = avalflux(Lf, l) * wu_mor(Lf) !kg m-1 s-1 m
                   call fm_sumflux(LL, sumflux, flux)
                end do
-               trndiv = trndiv + sumflux * bai_mor(nm)  ! kg m-2 s-1
+               trndiv = trndiv + sumflux * bai_mor(nm) ! kg m-2 s-1
             end if
             !
-            dsdnm = (trndiv + sedflx - eroflx) * dtmor   ! kg m-2 s-1 s = kg m-2
+            dsdnm = (trndiv + sedflx - eroflx) * dtmor ! kg m-2 s-1 s = kg m-2
             !
             ! Warn if bottom changes are very large,
             ! depth change NOT LIMITED
@@ -1167,7 +1167,7 @@ contains
             !
             ! Update dbodsd value at nm
             !
-            dbodsd(l, nm) = dbodsd(l, nm) + dsdnm       ! kg m-2
+            dbodsd(l, nm) = dbodsd(l, nm) + dsdnm ! kg m-2
          end do ! nm
       end do ! l
 
@@ -1608,7 +1608,7 @@ contains
          do ll = 1, stmpar%lsedsus ! works for sigma only
             do k = 1, ndx
                hsk = hs(k)
-               if (hsk<=epshs) cycle
+               if (hsk <= epshs) cycle
                botcrit = 0.95 * hsk
                ddp = hsk / max(hsk - blchg(k), botcrit)
                call getkbotktop(k, kb, kt)
@@ -2024,19 +2024,19 @@ contains
       use m_sediment, only: cumes
       use m_fm_erosed, only: blchg
       use m_flowgeom, only: lnx, ln, acl
-      
+
       implicit none
-      
+
       integer :: L, k1, k2
       double precision :: ac1, ac2
-      
+
       do L = 1, lnx
-         k1 = ln(1,L)
-         k2 = ln(2,L)
-         ac1 = acl(L); ac2 = 1d0-ac1
-         cumes(L) = cumes(L) + ac1*(blchg(k1)) + ac2*(blchg(k2))
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ac1 = acl(L); ac2 = 1d0 - ac1
+         cumes(L) = cumes(L) + ac1 * (blchg(k1)) + ac2 * (blchg(k2))
       end do
-   
+
    end subroutine determine_linkbased_cumblchg
 
 end module m_fm_bott3d

@@ -1487,7 +1487,6 @@ contains
       call prop_get(md_ptr, 'sediment', 'DiffusionScaling', difparam, success) ! Scaling factor to increase diffusion below reference level
       call prop_get(md_ptr, 'sediment', 'DiffusionCal', difcal, success) ! Scaling factor to change diffusion for ssc
 
-
       if (jased > 0 .and. .not. stm_included) then
          call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
          MxgrKrone = -1

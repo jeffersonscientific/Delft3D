@@ -2354,7 +2354,7 @@ subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
    use m_flowparameters, only: eps10
    use m_dlimiter_nonequi
    use m_dslim
-   
+
    implicit none
 
    double precision, intent(in) :: dtmaxwav
@@ -4864,7 +4864,7 @@ subroutine solve_roller_balance(x, y, mn, prev, hh, c, Dw, thetam, beta, ag, max
    real(dp), dimension(mn), intent(out) :: Dr
 
 ! Local constants
-   real(dp) :: hmin = 0.1d0   ! LSTF: 0.01 gives overshoots in horizontal velocity near shoreline
+   real(dp) :: hmin = 0.1d0 ! LSTF: 0.01 gives overshoots in horizontal velocity near shoreline
    real(dp) :: thetamean, sinthmean, costhmean
    integer, dimension(4) :: shift
    real(dp), dimension(:), allocatable :: ok
@@ -5954,12 +5954,12 @@ subroutine xbeach_wave_stationary(callType)
    ! wave directions
    select case (callType)
    case (callTypeStationary)
-      do concurrent (k=1:ndx, hhwlocal(k) > epshu)
+      do concurrent(k=1:ndx, hhwlocal(k) > epshu)
          thetamean(k) = (sum(ee_local(:, k) * thet(:, k)) / ntheta_local) / &
                         (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
       end do
    case (callTypeDirections)
-      do concurrent (k=1:ndx, hhwlocal(k) > epshu)
+      do concurrent(k=1:ndx, hhwlocal(k) > epshu)
          thetamean(k) = (sum(ee_local(:, k) * thet_s(:, k)) / ntheta_local) / &
                         (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
       end do
@@ -6006,7 +6006,7 @@ subroutine xbeach_wave_compute_flowforcing3D()
 
    ! distribute dissipation
    do k = 1, ndx
-     if (L1(k)<1d-1) then
+      if (L1(k) < 1d-1) then
          sxwav(k) = 0d0
          sywav(k) = 0d0
          sbxwav(k) = 0d0

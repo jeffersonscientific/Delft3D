@@ -1093,7 +1093,7 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     sedtra%sbxcum   = 0.0_fp
     sedtra%sbycum   = 0.0_fp
     sedtra%ssxcum   = 0.0_fp
-    sedtra%ssycum   = 0.0_fp    
+    sedtra%ssycum   = 0.0_fp
     !
     sedtra%srcmax   = 0.0_fp
     sedtra%fixfac   = 1.0_fp
