@@ -1138,13 +1138,13 @@ contains
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
                   Lf = abs(LL)
-                  flux = avalflux(Lf, l) * wu_mor(Lf)
+                  flux = avalflux(Lf, l) * wu_mor(Lf)   !kg m-1 s-1 m
                   call fm_sumflux(LL, sumflux, flux)
                end do
-               trndiv = trndiv + sumflux * bai_mor(nm)
+               trndiv = trndiv + sumflux * bai_mor(nm)  ! kg m-2 s-1
             end if
             !
-            dsdnm = (trndiv + sedflx - eroflx) * dtmor
+            dsdnm = (trndiv + sedflx - eroflx) * dtmor   ! kg m-2 s-1 s = kg m-2
             !
             ! Warn if bottom changes are very large,
             ! depth change NOT LIMITED
@@ -1167,7 +1167,7 @@ contains
             !
             ! Update dbodsd value at nm
             !
-            dbodsd(l, nm) = dbodsd(l, nm) + dsdnm
+            dbodsd(l, nm) = dbodsd(l, nm) + dsdnm       ! kg m-2
          end do ! nm
       end do ! l
 

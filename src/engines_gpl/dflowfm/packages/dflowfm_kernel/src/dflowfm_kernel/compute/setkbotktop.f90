@@ -368,7 +368,7 @@ contains
           vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1)) ! just for now here
           vol1(n) = vol1(n) + vol1(kk)
        end do
-
+       ! JRE todo: z lyr morpho
        kt0 = ktop0(n)
        if (kt0 > kt) then
           volkt = vol0(kt)

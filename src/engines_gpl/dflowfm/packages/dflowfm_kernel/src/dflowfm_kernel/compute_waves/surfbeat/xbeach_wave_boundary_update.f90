@@ -2316,10 +2316,10 @@ contains
       ! Calculate wave energy for each y-coordinate along seaside boundary for
       ! current computational directional bin
       allocate (nwc(ntheta))
-      allocate (Gn(wp%tslen))
+      allocate (Gn(wp%tslen));  Gn = 0d0
       allocate (tempinclude(wp%K))
-      allocate (tempcmplx(wp%tslen))
-      allocate (tempcmplxhalf(size(Gn(wp%tslen / 2 + 2:wp%tslen))))
+      allocate (tempcmplx(wp%tslen)); tempcmplx = 0d0
+      allocate (tempcmplxhalf(size(Gn(wp%tslen / 2 + 2:wp%tslen)))); tempcmplxhalf = 0d0
 
       do itheta = 1, ntheta
 
@@ -2362,7 +2362,7 @@ contains
                tempcmplxhalf = conjg(Gn(2:wp%tslen / 2))
                call flipiv(tempcmplxhalf, size(tempcmplxhalf))
                Gn(wp%tslen / 2 + 2:wp%tslen) = tempcmplxhalf
-
+               
                ! Inverse Discrete Fourier transformation to transform back to time
                ! domain from frequency domain
                tempcmplx = Gn
@@ -2429,7 +2429,7 @@ contains
                ! instantaneous water level excitation of all
                ! wave components to be used as weighing factor
                stdzeta = sqrt(sum(zeta(iy, :, itheta)**2) / (size(zeta(iy, :, itheta)) - 1))
-
+               !
                ! Calculate amplitude of directional wave envelope
                Ampzeta(iy, :, itheta) = Amp(iy, :) * stdzeta / stdeta
             else !  nwc==0

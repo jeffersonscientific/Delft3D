@@ -390,6 +390,8 @@ contains
       intrinsic MAXVAL, MOD, PRESENT, ISHFT, BIT_SIZE, SIN, COS, &
          CMPLX, real, AIMAG
 
+      factor = 0
+
       if (npass <= 1) return
 
       c72 = cos72
@@ -423,20 +425,24 @@ contains
 
       if (present(stat)) then
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor), STAT=stat)
+         ctmp = (0.0_fftkind, 0.0_fftkind); sine = 0d0; cosine= 0d0
          if (stat /= 0) return
          call transform()
          deallocate (sine, cosine, STAT=stat)
          if (stat /= 0) return
          allocate (perm(nperm), STAT=stat)
+         perm = 0
          if (stat /= 0) return
          call permute()
          deallocate (perm, ctmp, STAT=stat)
          if (stat /= 0) return
       else
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor))
+         ctmp = (0.0_fftkind, 0.0_fftkind); sine = 0d0; cosine= 0d0
          call transform()
          deallocate (sine, cosine)
          allocate (perm(nperm))
+         perm = 0
          call permute()
          deallocate (perm, ctmp)
       end if

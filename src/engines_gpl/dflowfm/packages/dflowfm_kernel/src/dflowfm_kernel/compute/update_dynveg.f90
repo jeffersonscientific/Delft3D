@@ -38,12 +38,12 @@ subroutine update_dynveg()
    implicit none
    
    if (dynroughveg > 0)  then
-      where ((dynveg) .and. (cumes .gt. 0d0))                 ! linear function do to deposition ( sedero > 0 )
+      where ((dynveg) .and. (cumes .gt. 0d0))                 ! linear function due to deposition ( sedero > 0 )
          frcu    = frcumin + min( max( (dstem-cumes)/dstem , 0.d0), 1.0d0) * (frcu0 - frcumin)
-      elsewhere   ((dynveg) .and. (cumes < (-1d0*droot) ) )   ! step function do to erosion larger than root than always minimum ( sedero < -droot )
+      elsewhere   ((dynveg) .and. (cumes < (-1d0*droot) ) )   ! step function due to erosion larger than root than always minimum ( sedero < -droot )
          frcu    = frcumin
          dynveg  = .false.
-      elsewhere (dynveg)                                               ! linear function do to deposition ( -droot < sedero < 0 )
+      elsewhere (dynveg)                                               ! linear function due to deposition ( -droot < sedero < 0 )
          frcu    = frcumin + min( max( (droot+cumes)/droot , 0.d0), 1.0d0) * (frcu0 - frcumin)
       elsewhere
          ! do nothing
