@@ -79,7 +79,7 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
     ! Activate the following line
     ! See also statements below
     !
-    use ifcore
+    ! use ifcore
     !
     ! global data declaration; compare with include 'globdat.igd'
     !
@@ -106,7 +106,7 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
     ! Activate the following line
     ! See also statements below
     !
-    INTEGER*4 OLD_FPE_FLAGS, NEW_FPE_FLAGS
+    ! INTEGER*4 OLD_FPE_FLAGS, NEW_FPE_FLAGS
 !
 !! executable statements -------------------------------------------------------
 
@@ -115,8 +115,8 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
     ! Activate the following two lines
     ! See also use statement above
     !
-    NEW_FPE_FLAGS = FPE_M_TRAP_OVF + FPE_M_TRAP_DIV0 + FPE_M_TRAP_INV
-    OLD_FPE_FLAGS = FOR_SET_FPE (NEW_FPE_FLAGS)
+    ! NEW_FPE_FLAGS = FPE_M_TRAP_OVF + FPE_M_TRAP_DIV0 + FPE_M_TRAP_INV
+    ! OLD_FPE_FLAGS = FOR_SET_FPE (NEW_FPE_FLAGS)
     !
     ! create and initialize GDP structure
     !
