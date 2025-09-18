@@ -1788,8 +1788,6 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
     }
 }
 
-
-
 //------------------------------------------------------------------------------
 // Search for a named component in the list of components
 dimr_component* Dimr::getComponent(const char* compName) {
@@ -1798,10 +1796,8 @@ dimr_component* Dimr::getComponent(const char* compName) {
             return &(componentsList.components[i]);
         }
     }
-    return nullptr;
+    throw Exception(true, Exception::ERR_INVALID_INPUT, "Found no component with name \"%s\".", compName);
 }
-
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers
@@ -1813,7 +1809,6 @@ dimr_coupler* Dimr::getCoupler(const char* coupName) {
     }
     return nullptr;
 }
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers
