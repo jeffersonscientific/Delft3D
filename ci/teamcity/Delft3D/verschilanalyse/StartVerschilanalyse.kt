@@ -122,6 +122,7 @@ object StartVerschilanalyse : BuildType({
         sshExec {
             name = "Schedule verschilanalyse run"
             commands = """
+                #!/bin/bash
                 set -eo pipefail
 
                 rm -rf bundle
