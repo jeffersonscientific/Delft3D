@@ -9,8 +9,8 @@
 #SBATCH --qos=verschilanalyse
 
 set -eo pipefail
-
-if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX ; then
+util.check_vars_are_set
+if !  BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX MINIO_UPLOAD ; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -43,8 +43,10 @@ rm -rf !(verschillen.zip)
 popd
 
 # Upload verschillen archive to MinIO.
-docker run --rm \
-    --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VERSCHILLENTOOL_DIR}:/data:ro" \
-    docker.io/amazon/aws-cli:2.22.7 \
-    --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/verschillentool/${REFERENCE_TAG}"
+if [[ "${MINIO_UPLOAD}" == true ]]; then
+    docker run --rm \
+        --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VERSCHILLENTOOL_DIR}:/data:ro" \
+        docker.io/amazon/aws-cli:2.22.7 \
+        --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
+        s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/verschillentool/${REFERENCE_TAG}"
+fi

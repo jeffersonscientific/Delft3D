@@ -51,6 +51,15 @@ object StartVerschilanalyse : BuildType({
             checked = "true", 
             unchecked = "false",
         )
+        checkbox(
+            "minio_upload",
+            "true",
+            display = ParameterDisplay.NORMAL,
+            label = "Upload results to Minio",
+            description = "Upload results to Minio after completion.",
+            checked = "true", 
+            unchecked = "false",
+        )
     }
 
     triggers {
@@ -129,13 +138,20 @@ object StartVerschilanalyse : BuildType({
                 export BRANCH_NAME='%teamcity.build.branch%'
                 export SEND_EMAIL='%send_email%'
 
+                if [[ "%minio_upload%" == "true" ]]; then
+                    MINIO_UPLOAD_FLAG=""
+                else
+                    MINIO_UPLOAD_FLAG="--disable-minio-upload"
+                fi
+
                 pushd bundle
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
-                    --model-filter='%model_filter%'
+                    --model-filter='%model_filter%' \
+                    $MINIO_UPLOAD_FLAG
                 popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"

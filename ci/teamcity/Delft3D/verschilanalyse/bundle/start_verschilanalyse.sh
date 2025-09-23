@@ -18,11 +18,13 @@ Usage: $0 -a <apptainer-image> -r <s3-path-prefix> -o <s3-path-prefix> [-m <mode
     The S3 path and local directory name for model data (default: input)
 -f|--model-filter grevelingen,volkerakzoommeer
     Comma-separated list of patterns. Only models with paths matching one of these patterns will be run.
+-d|--disable-minio-upload
+    If set the logs and output are not uploaded to Minio.
 EOF
 }
 
 # Parse command line options
-PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:' -- "$@")
+PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:d' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:,disable-minio-upload' -- "$@")
 eval set -- "$PARSED_OPTIONS"
 
 APPTAINER=
@@ -30,6 +32,7 @@ REFERENCE_PREFIX=
 CURRENT_PREFIX=
 MODELS_PATH=
 MODEL_FILTER=
+MINIO_UPLOAD=true
 
 while true; do
     case "$1" in
@@ -52,6 +55,10 @@ while true; do
         -f|--model-filter)
             MODEL_FILTER="$2"
             shift 2
+            ;;
+        -d|disable-minio-upload)
+            MINIO_UPLOAD=false
+            shift
             ;;
         --)
             shift
@@ -90,6 +97,7 @@ export BUCKET='s3://devops-test-verschilanalyse'
 export BUILDS_DIR='/p/devops-dsc/verschilanalyse/builds'
 export VAHOME="${BUILDS_DIR}/${BUILD_ID:-latest}"
 export LOG_DIR="${VAHOME}/logs"
+export MINIO_UPLOAD="${MINIO_UPLOAD}"
 
 DELFT3D_SIF="${HOME}/.cache/verschilanalyse/delft3dfm.sif"
 
@@ -148,12 +156,14 @@ done
 JOB_ID_LIST=$(IFS=':'; echo "${JOB_IDS[*]}")
 
 # Archive and upload new output.
-UPLOAD_OUTPUT_JOB_ID=$( \
-    sbatch --parsable \
-        --output="${LOG_DIR}/va-upload-output-%j.out" \
-        --dependency="afterany:${JOB_ID_LIST}" \
-        ./jobs/upload_output.sh \
-)
+if [[ "${MINIO_UPLOAD}" == true ]]; then
+    UPLOAD_OUTPUT_JOB_ID=$( \
+        sbatch --parsable \
+            --output="${LOG_DIR}/va-upload-output-%j.out" \
+            --dependency="afterany:${JOB_ID_LIST}" \
+            ./jobs/upload_output.sh \
+    )
+fi
 
 # Generate report.
 RUN_VERSCHILLENTOOL_JOB_ID=$( \
