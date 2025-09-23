@@ -144,7 +144,7 @@ object StartVerschilanalyse : BuildType({
                 fi
 
                 pushd bundle
-                echo "HALLOOOOOOOO {'$'}MINIO_UPLOAD_FLAG"
+                echo "HALLOOOOOOOO ${'$'}MINIO_UPLOAD_FLAG"
 
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
@@ -152,7 +152,7 @@ object StartVerschilanalyse : BuildType({
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
                     --model-filter='%model_filter%' \
-                    {'$'}MINIO_UPLOAD_FLAG
+                    ${'$'}MINIO_UPLOAD_FLAG
                 popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"
