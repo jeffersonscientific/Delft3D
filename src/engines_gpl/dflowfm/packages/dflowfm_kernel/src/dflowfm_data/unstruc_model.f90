@@ -2413,6 +2413,12 @@ contains
       if (JaSubstancedensitycoupling == 1) then
          call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
       end if
+      call prop_get(md_ptr, 'processes', 'IntegrateSedimentationWaq', jaIntegratesedimentationwaq)
+      if (jaIntegratesedimentationwaq == 0) then
+         call mess(LEVEL_INFO, 'IntegrateSedimentationWaq = 0, FM integrates the sedimentation of Delwaq substances.')
+      else
+         call mess(LEVEL_INFO, 'IntegrateSedimentationWaq = 1, Delwaq integrates the sedimentation of Delwaq substances.')
+      end if
 
       call prop_get(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
       ti_waqproc = md_dt_waqproc
@@ -3948,6 +3954,7 @@ contains
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
+      call prop_set(prop_ptr, 'processes', 'IntegrateSedimentationWaq', jaIntegratesedimentationwaq, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
 
       call datum(rundat)
       write (mout, '(a,a)') '# Generated on ', trim(rundat)

@@ -49,6 +49,7 @@ contains
       use m_transport, only: ISED1, ISEDN ! preferably in argument list
       use m_sediment, only: mtd
       use m_sediment, only: jased, sedtra, stm_included
+      use m_fm_wq_processes, only: iconst2fallwaq, wfallwaq
       use timers, only: timon, timstrt, timstop
       use m_dlimiter, only: dlimiter
 
@@ -128,7 +129,11 @@ contains
                qw_loc = qw(k)
                if (jaimplicitfallvelocity == 0) then ! explicit
                   if (jased < 4) then
-                     qw_loc = qw(k) - wsf(j) * ba(kk)
+                     if (iconst2fallwaq(j) > 0) then
+                        qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * ba(kk)
+                     else
+                        qw_loc = qw(k) - wsf(j) * ba(kk)
+                     endif 
                   elseif (stm_included .and. j >= ISED1 .and. j <= ISEDN) then
                      ll = j - ISED1 + 1
                      if (k < sedtra%kmxsed(kk, ll)) then
@@ -137,10 +142,15 @@ contains
                         qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
                      end if
                   else
-                     qw_loc = qw(k) - wsf(j) * ba(kk) ! enable tracers with settling vel icw morphology
+                     ! enable tracers with settling vel icw morphology
+                     if (iconst2fallwaq(j) > 0) then
+                        qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * ba(kk)
+                     else
+                        qw_loc = qw(k) - wsf(j) * ba(kk) 
+                     end if
                   end if
                end if
-
+               
                if (cffacver > 0.0_dp) then
                   cf = cffacver * dt_loc * abs(qw_loc) / (ba(kk) * dz(k - kb + 2)) ! courant nr
                   cf = max(0.0_dp, 1.0_dp - cf) ! use high order only for small courant

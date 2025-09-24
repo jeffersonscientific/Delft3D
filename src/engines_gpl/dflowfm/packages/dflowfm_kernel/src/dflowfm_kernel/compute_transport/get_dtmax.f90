@@ -55,6 +55,7 @@ contains
       use timers, only: timon, timstrt, timstop
       use m_get_kbot_ktop, only: getkbotktop
       use m_sediment, only: mtd, stm_included
+      use m_fm_wq_processes, only: nfallwaq, wfallwaq
 
       implicit none
 
@@ -163,7 +164,19 @@ contains
                      bak = ba(kk)
                      do k = kb, kt
                         !sqtot = max(sqi(k),maxval(mtd%ws(k,:))*bak)
-                        sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
+                        if (nfallwaq > 0) then
+                           sqtot = sqi(k) + maxval([mtd%ws(k, :), wfallwaq(:,k)]) * bak
+                        else
+                           sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
+                        end if
+                        if (squ(k) > eps10 .or. sqtot > eps10) then
+                           dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqtot))
+                        end if
+                     end do
+                  elseif (nfallwaq > 0 .and. jaimplicitfallvelocity == 0) then
+                     bak = ba(kk)
+                     do k = kb, kt
+                        sqtot = sqi(k) + maxval(wfallwaq(:,k)) * bak
                         if (squ(k) > eps10 .or. sqtot > eps10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqtot))
                         end if
@@ -180,12 +193,25 @@ contains
                      bak = ba(kk)
                      do k = kb, kt
                         !sqtot = max(sqi(k)+sumdifflim(k),maxval(mtd%ws(k,:))*bak)
-                        sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
+                        if (nfallwaq > 0) then
+                           sqtot = sqi(k) + sumdifflim(k) + maxval([mtd%ws(k, :), wfallwaq(:,k)]) * bak
+                        else
+                           sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
+                        end if
                         if (sqtot > eps10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / sqtot)
                            ! dtmax(kk) = min(dtmax(kk),vol1(k)/(squ(k)+sumdifflim(k)))
                         end if
                      end do
+                  elseif (nfallwaq > 0 .and. jaimplicitfallvelocity == 0) then
+                     bak = ba(kk)
+                     do k = kb, kt
+                        sqtot = sqi(k) + sumdifflim(k) + maxval(wfallwaq(:,k)) * bak
+                        if (sqtot > eps10) then
+                           dtmax(kk) = min(dtmax(kk), vol1(k) / sqtot)
+                        end if
+                     end do
+
                   else
                      do k = kb, kt
                         if (sqi(k) + sumdifflim(k) > eps10) then

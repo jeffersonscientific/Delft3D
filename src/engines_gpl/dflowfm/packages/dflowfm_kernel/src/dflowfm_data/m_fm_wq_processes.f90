@@ -80,6 +80,7 @@ module m_fm_wq_processes
    integer :: num_exchanges_z_dir !< Number of exchanges vertical
    integer :: num_exchanges_bottom_dir !< Number of exchanges in the bed
    integer, allocatable, dimension(:) :: iexpnt !< Exchange pointer
+   integer, allocatable, dimension(:) :: iex2k !< Exchange to k mapping
 
    real(hp), allocatable, dimension(:, :) :: amass !< mass array to be updated
    logical, allocatable, dimension(:) :: wqactive !< indicates if processes are active based on volume ('VolumeDryThreshold') and depth ('DepthDryThreshold') criteria
@@ -105,6 +106,12 @@ module m_fm_wq_processes
    integer, allocatable, dimension(:) :: imbs2sys !< D-Flow FM mass balance number to WAQ substance (0=not a WAQ substance)
    integer, allocatable, dimension(:) :: isys2trac !< WAQ active system to D-FlowFM tracer
    integer, allocatable, dimension(:) :: isys2wqbot !< WAQ inactive system to D-FlowFM water quality bottom variable
+
+   integer :: jaIntegratesedimentationwaq = 0 !< Let Delwaq integrate sedimentation 1 = yes , 0 = no
+   real(hp), dimension(:, :), allocatable :: wfallwaq ! fall velocities from water quality processes (m/s)
+   integer :: nfallwaq ! number of substances with fall velocities
+   integer, allocatable, dimension(:) :: ifall2const ! substance-with-fall-velocity to constituent number
+   integer, allocatable, dimension(:) :: iconst2fallwaq ! constituent to waq fall velocity number
    integer, allocatable, dimension(:) :: ifall2vpnw !< substance-with-fall-velocity to WAQ numbering in fall-velocity array
 
    integer :: numwqbots = 0 !< number of water quality bottom variables
