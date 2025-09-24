@@ -185,7 +185,7 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, quantity_name_config_file_to_standard_name
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, quantity_name_config_file_to_internal_name
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
       use fm_external_forcings_utils, only: get_tracername
 
@@ -264,9 +264,8 @@ contains
          !! Step 1: Read each block
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
-         ! convert quantity name used in configuration file to the corresponding
-         ! internal name (matching CF conventions standard name when available)
-         qid = quantity_name_config_file_to_standard_name(qid)
+         ! convert quantity name used in configuration file to a consistent internal name
+         qid = quantity_name_config_file_to_internal_name(qid)
          
          if (ja == 1) then
             call resolvePath(filename, basedir)

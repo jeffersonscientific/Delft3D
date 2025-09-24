@@ -6735,24 +6735,25 @@ contains
    end subroutine operand_fm_to_ec
 
    !> Convert quantity names as given in user input (ini/ext file)
-   !! to accepted standard names (as used in data files and code)
-   pure function quantity_name_config_file_to_standard_name(quantity_input_name) result (quantity_standard_name)
+   !! to a consistent internal representation.
+   pure function quantity_name_config_file_to_internal_name(quantity_input_name) result (quantity_internal_name)
       character(len=*), intent(in) :: quantity_input_name !< given by the user in ini/ext file
-      character(len=:), allocatable :: quantity_standard_name !< known standard name
+      character(len=:), allocatable :: quantity_internal_name !< consistent internal name
       
-      select case(str_tolower(trim(quantity_input_name)))
+      ! the internal representation is always lower case for string comparisons
+      quantity_internal_name = str_tolower(trim(quantity_input_name))
+      select case(quantity_internal_name)
       case ('seaiceareafraction')
-         quantity_standard_name = 'sea_ice_area_fraction'
+         quantity_internal_name = 'sea_ice_area_fraction'
       case ('seaicethickness')
-         quantity_standard_name = 'sea_ice_thickness'
+         quantity_internal_name = 'sea_ice_thickness'
       case ('bedrocksurfaceelevation')
-         quantity_standard_name = 'bedrock_surface_elevation'
+         quantity_internal_name = 'bedrock_surface_elevation'
       case default
-         ! keep unrecognized names as they are
-         quantity_standard_name = trim(quantity_input_name)
+         ! keep other names unchanged
       end select
          
-   end function quantity_name_config_file_to_standard_name
+   end function quantity_name_config_file_to_internal_name
 
    !> Convert quantity names as given in user input (ext file)
    !! to accepted Unstruc names (as used in Fortran code)
