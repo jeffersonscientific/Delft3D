@@ -21,9 +21,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # Enable OpenMP
 find_package(OpenMP)
-if(OPENMP_FOUND)
-    add_compile_options("${OpenMP_CXX_FLAGS}")
-endif()
 
 # Boost C++, it is a required package, if not found configuration will abort
 if(WIN32)
@@ -118,7 +115,9 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
                        dl
                        Boost::system
                        Boost::boost
-                       Boost::filesystem)
+                       Boost::filesystem
+                       OpenMP::OpenMP_CXX
+    )
 endif()
 
 if(${CMAKE_COMPILER_IS_GNUCXX})

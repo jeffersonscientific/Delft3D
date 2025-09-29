@@ -237,6 +237,8 @@ contains
       use unstruc_files
       use m_partitioninfo
       use check_mpi_env
+      use precice, only: precicef_create
+      use, intrinsic :: iso_c_binding, only: c_char, c_int
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -247,6 +249,16 @@ contains
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
       logical :: mpi_initd
+      integer :: precice_coupling_ongoing
+      character(kind=c_char, len=2) :: precice_component_name
+      character(kind=c_char, len=21) :: precice_config_name
+
+      precice_component_name = "fm"
+      precice_config_name = "../precice_config.xml"
+
+      call precicef_create(precice_component_name, precice_config_name, 0, 1, 2, 21)
+      call precicef_is_coupling_ongoing(precice_coupling_ongoing)
+      print *, "PreCICE coupling is ongoing: ", precice_coupling_ongoing
 
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
       jampi = 0

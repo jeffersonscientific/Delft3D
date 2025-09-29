@@ -325,7 +325,7 @@ MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
 pushd "/var/cache/src/${BASEDIR}"
 ./configure CC=mpiicx CXX=mpiicpx FC=$MPIFC \
     --prefix=/usr/local \
-    --enable-build-mode=$BUILD_MODE \
+    --enable-build-mode="production" \
     --enable-fortran \
     --enable-parallel \
     --with-zlib=/usr/local/include,/usr/local/lib \
