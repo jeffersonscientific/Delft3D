@@ -41,6 +41,7 @@ module wave_main
    use wave_mpi
    use meteo
    use dwaves_version_module
+   use precice, only: precicef_create
 
    implicit none
 
@@ -58,6 +59,9 @@ module wave_main
    integer                                      :: n_flow_grids ! number of FLOW grids
    type(wave_data_type),target                  :: wavedata
    integer :: tmpchar
+ 
+   character(kind=c_char, len=4) :: precice_component_name
+   character(kind=c_char, len=21) :: precice_config_name  
 
 contains
 
@@ -123,6 +127,14 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    call initialize_wavedata(wavedata)
    call initialize_wave_mpi()
    retval = wave_init(mode_in, mdw_file)
+   
+
+   precice_component_name = "wave"
+   precice_config_name = "../precice_config.xml"
+
+   
+   !! register precice participant now
+   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, 4, 21)
 end function wave_main_init
 
 
@@ -162,6 +174,7 @@ function wave_init(mode_in, mdw_file) result(retval)
    real(fp)       , dimension(:,:), allocatable :: y_fp         ! Copy of y-coordinate of grid in flexible precision, needed for external forcing module
    character(60) , dimension(:), allocatable    :: extforce_quantities
    character(256), dimension(:), pointer        :: extforce_types
+   
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -182,6 +195,7 @@ function wave_init(mode_in, mdw_file) result(retval)
    if (wavedata%mode/=stand_alone .and. swan_run%flowgridfile/=' ') then
       swan_run%nttide = 1
    endif
+
    !
    ! All instances need to read the input, but the actual work is done by the master only
    !

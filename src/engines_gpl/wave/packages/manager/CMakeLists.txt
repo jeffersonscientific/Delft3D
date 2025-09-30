@@ -11,7 +11,6 @@ get_fortran_source_files(${src_path} source_files)
 set(library_name wave_manager)
 add_library(${library_name} ${source_files})
 
-
 # Set dependencies
 set(oss_dependencies    wave_data
                         delftio
@@ -20,7 +19,16 @@ set(oss_dependencies    wave_data
                         wave_io
                         wave_kernel) 
 
-target_link_libraries(${library_name} ${oss_dependencies})
+target_link_libraries(${library_name} PUBLIC ${oss_dependencies})
+
+# Add dependencies
+if (UNIX)
+    # the `pkg_check_modules` function is created with this call
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(precice REQUIRED IMPORTED_TARGET libprecice)
+
+    target_link_libraries(${library_name} PRIVATE PkgConfig::precice)
+endif(UNIX)
 
 include_directories(${mpi_module_path})
 
