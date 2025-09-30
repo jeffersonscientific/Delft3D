@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<precice-configuration>
+  <data:vector name="greeting" />
+
+  <mesh name="wave-mesh" dimensions="2">
+    <use-data name="greeting" />
+  </mesh>
+
+  <participant name="wave">
+    <provide-mesh name="wave-mesh" />
+    <read-data name="greeting" mesh="wave-mesh" />
+  </participant>
+
+  <participant name="dummy">
+    <receive-mesh name="wave-mesh" from="wave" />
+    <write-data name="greeting" mesh="wave-mesh" />
+  </participant>
+
+  <m2n:sockets acceptor="dummy" connector="wave" exchange-directory=".." />
+
+  <coupling-scheme:serial-explicit>
+    <time-window-size value="2.5e-2" />
+    <max-time value="2.5" />
+    <participants first="dummy" second="wave" />
+    <exchange data="greeting" mesh="wave-mesh" from="dummy" to="wave" />
+  </coupling-scheme:serial-explicit>
+</precice-configuration>
