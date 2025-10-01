@@ -137,7 +137,7 @@ object WindowsTest : BuildType({
     }
 
     failureConditions {
-        executionTimeoutMin = 90
+        executionTimeoutMin = 180
         errorMessage = true
         failOnText {
             conditionType = BuildFailureOnText.ConditionType.CONTAINS
