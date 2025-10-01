@@ -26,7 +26,7 @@ string(REPLACE "-" "+" git_describe "${git_describe}")
 set(PACKAGE_VERSION_FULL "${git_describe}")
 
 configure_file(config.h.in config.h ESCAPE_QUOTES)
-file(WRITE "wrappers/git_describe.txt" "${git_describe}")
+#file(WRITE "wrappers/git_describe.txt" "${git_describe}")
 
 ##############################################################################
 ################################## Options ###################################
