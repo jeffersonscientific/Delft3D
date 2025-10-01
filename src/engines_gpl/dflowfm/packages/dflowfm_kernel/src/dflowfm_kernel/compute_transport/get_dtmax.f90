@@ -40,8 +40,8 @@ contains
 
    subroutine get_dtmax()
       use precision, only: dp
-      use m_flowgeom, only: Ndx, Ndxi, ln, lnx, ba
-      use m_flow, only: squ, sqi, vol1, kmx, diusp, viu, Lbot, Ltop, jaimplicitfallvelocity
+      use m_flowgeom, only: Ndx, Ndxi, bl, ln, lnx, ba
+      use m_flow, only: s1, epshu, squ, sqi, vol1, kmx, diusp, viu, Lbot, Ltop, jaimplicitfallvelocity
       use m_flowparameters, only: eps10, cflmx, jadiusp
       use m_turbulence, only: sigdifi
       use m_flowtimes, only: time1
@@ -140,6 +140,7 @@ contains
          do kk = 1, Ndxi
             dtmax(kk) = dtmax_default
 
+            if (s1(kk) - bl(kk) > epshu) then
             call getkbotktop(kk, kb, kt)
             if (jalimitdtdiff == 0) then
                if (stm_included .and. ISED1 > 0 .and. jaimplicitfallvelocity == 0) then
@@ -184,6 +185,7 @@ contains
             if (dtmax(kk) < dtmin_transp) then
                dtmin_transp = dtmax(kk)
                kk_dtmin = kk
+            end if
             end if
 
          end do
