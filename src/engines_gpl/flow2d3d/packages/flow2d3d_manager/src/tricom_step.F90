@@ -351,6 +351,7 @@ subroutine tricom_step(gdp)
 !
 !! executable statements -------------------------------------------------------
 !
+    write(101,'(A)') 'tricom_step: start'
     thr                 => gdp%gdbetaro%thr
     ncmax               => gdp%d%ncmax
     nmax                => gdp%d%nmax
@@ -624,6 +625,7 @@ subroutine tricom_step(gdp)
     !
 
     do nst = itstrt, itstop - 1, 1
+       write(101,'(A,3I0)') 'time loop: nst=', itstrt, itstop, nst
        call timer_start(timer_timeintegr, gdp)
        !
        nst2go = itfinish - nst   !note: we want the steps for the entire simulation
@@ -909,5 +911,6 @@ subroutine tricom_step(gdp)
     if (error) then
       gdp%errorcode = -1 
     endif
+    write(101,'(A)') 'tricom_step: finish'
   
   end subroutine tricom_step

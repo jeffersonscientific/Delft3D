@@ -78,6 +78,7 @@ program waves_main
    ! ====================================================================================
    !
    mode_in = 0
+   write(123,'(A)') 'waves_main: start'
    select case(COMMAND_ARGUMENT_COUNT())
    case (1)
       call getarg(1,mdw_file)
@@ -95,6 +96,7 @@ program waves_main
       if (ichar(mdw_file(i:i)) == 0) mdw_file(i:i) = ' '
    enddo
    !
+   write(123,'(A)') 'waves_main_init'
    retval = wave_main_init(mode_in, mdw_file)
    !
    ! ====================================================================================
@@ -102,11 +104,13 @@ program waves_main
    ! ====================================================================================
    !
    stepsize = -1.0_hp
+   write(123,'(A)') 'waves_main_step'
    retval = wave_main_step(stepsize)
    !
    ! ====================================================================================
    ! FINALIZE
    ! ====================================================================================
    !
+   write(123,'(A)') 'waves_main_finish'
    retval = wave_main_finish()
 end program waves_main

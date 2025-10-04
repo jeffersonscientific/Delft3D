@@ -441,6 +441,7 @@ subroutine tricom_init(gdp)
 !
 !! executable statements -------------------------------------------------------
 !
+    write(101,'(A)') 'tricom_init: start'
     thr                 => gdp%gdbetaro%thr
     ncmax               => gdp%d%ncmax
     nmax                => gdp%d%nmax
@@ -1575,6 +1576,7 @@ subroutine tricom_init(gdp)
       gdp%errorcode = -1
       call d3stop(1, gdp)
     endif
+    write(101,'(A)') 'tricom_init: finished'
     
 end subroutine tricom_init
 

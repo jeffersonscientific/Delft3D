@@ -350,6 +350,7 @@ subroutine tricom_finish(gdp)
 !
 !! executable statements -------------------------------------------------------
 !
+    write(101,'(A)') 'tricom_finish: start'
     iphisc              => gdp%gdtricom%iphisc
     itima               => gdp%gdtricom%itima
     itlen               => gdp%gdtricom%itlen
@@ -805,4 +806,5 @@ subroutine tricom_finish(gdp)
     !
     call timer_stop(timer_close, gdp)
     call timer_stop(timer_tricomtot, gdp)
+    write(101,'(A)') 'tricom_finish: end'
 end subroutine tricom_finish

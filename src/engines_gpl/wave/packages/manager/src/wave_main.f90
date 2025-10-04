@@ -385,11 +385,13 @@ function wave_main_step(stepsize) result(retval)
       !
       ! master node does all the work ...
       !
+      write(123,'(A,I0)') 'waves_main_step - master - stepsize: ', stepsize
       retval = wave_master_step(stepsize)
    else
       !
       ! nothing to do for slave nodes except for waiting and calling swan as needed
       !
+      write(123,'(A)') 'waves_main_step - slave'
       retval = 0
       do
          call run_swan_slave (command, retval)
@@ -431,8 +433,10 @@ function wave_master_step(stepsize) result(retval)
       !
       ! In combination with flow, perform the swan computation (including mapping etc.)
       !
+      write(123,*) 'wave_master_step /= stand_alone'
       command = flow_wave_comm_perform_step
       do while (command == flow_wave_comm_perform_step)
+         write(123,*) 'waiting for Delft3D-FLOW ...'
          if (swan_run%flowgridfile == ' ') then
             write(*,'(a)') 'Waiting for communication with Delft3D-FLOW ...'
             mud     = .false.
@@ -453,6 +457,7 @@ function wave_master_step(stepsize) result(retval)
          else
             command = 0
          endif
+         write(123,*) 'start of Delft3D-WAVE ...'
          !
          write(*,'(a)')'*****************************************************************'
          write(*,'(a)')'*  Start of Delft3D-WAVE ...'
@@ -468,6 +473,7 @@ function wave_master_step(stepsize) result(retval)
          ! Run n_swan nested SWAN runs
          !
          call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0)
+         write(123,*) 'end of Delft3D-WAVE ...'
          write(*,'(a)')'*  End of Delft3D-WAVE'
          write(*,'(a)')'*****************************************************************'
          !
@@ -485,6 +491,7 @@ function wave_master_step(stepsize) result(retval)
       !
       ! Standalone swan computation
       !
+      write(123,*) 'wave_master_step == stand_alone'
       if (swan_run%flowgridfile == ' ') then
          call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0)
       elseif (swan_run%timwav(1) < 0.0) then
