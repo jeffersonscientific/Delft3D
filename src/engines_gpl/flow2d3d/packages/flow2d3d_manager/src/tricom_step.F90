@@ -625,7 +625,7 @@ subroutine tricom_step(gdp)
     !
 
     do nst = itstrt, itstop - 1, 1
-       write(101,'(A,3I6)') 'time loop: nst=', itstrt, itstop, nst
+       write(101,'(A,3I0)') 'time loop: nst=', itstrt, itstop, nst
        call timer_start(timer_timeintegr, gdp)
        !
        nst2go = itfinish - nst   !note: we want the steps for the entire simulation
@@ -730,7 +730,6 @@ subroutine tricom_step(gdp)
              ! ASSUMPTION: all partitions are running in the same working directory
              !
              call timer_start(timer_wait, gdp)
-             write(101,'(A)') 'waiting for Delft3D-WAVE ...'
              if (.not.parll .or. (parll .and. inode == master)) then
                 ierror = flow_to_wave_command(flow_wave_comm_perform_step, &
                                              & numdomains, mudlay, nst)
@@ -757,7 +756,6 @@ subroutine tricom_step(gdp)
                 open (newunit=lunfil, file = "TMP_sleepduringwave.txt", status = 'old')
                 close(lunfil, status='delete')
              endif
-             write(101,'(A)') '... continuing after Delft3D-WAVE'
              call timer_stop(timer_wait, gdp)
              if (ierror /= 0) then
                 txtput = 'Delftio command to waves failed'
@@ -775,7 +773,6 @@ subroutine tricom_step(gdp)
           !                                  an existing com-file
           if (nst == itrw .or. (nst == itstrt .and. restid /= ' ')) then
              if (waveol==2) then ! wave times can only be updated in online coupled mode
-                write(101,'(A)') 'reading wave data ...'
                 call rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
                           & waverd    ,nmaxus    ,mmax      ,gdp       )
                 if (error) then
@@ -790,7 +787,6 @@ subroutine tricom_step(gdp)
                    ifcore(1) = 0
                    ifcore(2) = 0
                 endif
-                write(101,'(A)') '... done'
              endif
           else
              waverd = .false.
@@ -871,7 +867,6 @@ subroutine tricom_step(gdp)
        ! Solve FLOW-hydrodynamic
        !
        call timer_start(timer_trisol, gdp)
-       write(101,'(A)') 'call trisol'
        if (.not.zmodel) then
           call trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & timnow    ,nst       ,itiwec    ,trasol    ,forfuv    , &
@@ -900,7 +895,6 @@ subroutine tricom_step(gdp)
                          & betac     ,tkemod    ,gdp       )
           endif
        endif
-       write(101,'(A)') 'return from trisol'
        call timer_stop(timer_trisol, gdp)
        call timer_stop(timer_timeintegr, gdp)
     enddo
