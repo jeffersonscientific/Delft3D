@@ -606,7 +606,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
 !
 !! executable statements -------------------------------------------------------
 !
-    write(101,*) 'Start of TRISOL'
+    !write(101,*) 'Start of TRISOL'
     iwrk1               => gdp%gdaddress%iwrk1
     iwrk2               => gdp%gdaddress%iwrk2
     wrka1               => gdp%gdaddress%wrka1
