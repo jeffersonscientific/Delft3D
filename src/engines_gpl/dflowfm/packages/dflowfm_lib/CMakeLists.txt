@@ -13,7 +13,6 @@ endif(UNIX)
 # Gather the source files
 set(source src/unstruc_bmi.F90
            src/unstruc_dll_api.F90
-           src/precice.F90
 )
 file(GLOB includes include/*.inc)
 
@@ -28,9 +27,8 @@ if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-    pkg_check_modules(precice REQUIRED IMPORTED_TARGET libprecice)
 
-    target_link_libraries(${library_name} PRIVATE PkgConfig::PETSC PkgConfig::precice)
+    target_link_libraries(${library_name} PRIVATE PkgConfig::PETSC)
 endif(UNIX)
 
 target_link_libraries(${library_name} PRIVATE
@@ -38,6 +36,7 @@ target_link_libraries(${library_name} PRIVATE
                       gridgeom
                       deltares_common
                       netcdff
+                      precice_module
 )
 
 if(UNIX)

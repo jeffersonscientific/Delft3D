@@ -212,6 +212,11 @@ if(NOT TARGET spherepack)
     add_subdirectory(${checkout_src_root}/${spherepack_module} spherepack)
 endif()
 
+# precice
+if(NOT TARGET precice_module)
+    add_subdirectory(${checkout_src_root}/${precice_module} precice_module)
+endif()
+
 #intel MPI & MKL
 if(NOT TARGET intelredist)
     add_subdirectory(${checkout_src_root}/${intelredist_module} intelredist)

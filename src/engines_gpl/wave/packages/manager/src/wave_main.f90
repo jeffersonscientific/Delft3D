@@ -41,7 +41,6 @@ module wave_main
    use wave_mpi
    use meteo
    use dwaves_version_module
-   use precice, only: precicef_create
 
    implicit none
 
@@ -59,9 +58,6 @@ module wave_main
    integer                                      :: n_flow_grids ! number of FLOW grids
    type(wave_data_type),target                  :: wavedata
    integer :: tmpchar
- 
-   character(kind=c_char, len=4) :: precice_component_name
-   character(kind=c_char, len=21) :: precice_config_name  
 
 contains
 
@@ -76,6 +72,10 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    ! use ifcore
    ! 
    use deltares_common_version_module
+   use m_alloc, only: realloc
+   use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
+      precicef_set_vertices, precicef_read_data, &
+      precicef_get_data_dimensions, precicef_get_max_time_step_size
    implicit none
 !
 ! return value
@@ -98,6 +98,22 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    ! See also statements below
    !
    ! INTEGER*4 OLD_FPE_FLAGS, NEW_FPE_FLAGS
+   integer(kind=c_int), parameter :: precice_component_name_length = 4
+   character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
+   integer(kind=c_int), parameter :: precice_config_name_length = 21
+   character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
+   integer(kind=c_int), parameter :: mesh_name_length = 9
+   character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "wave-mesh"
+   integer(kind=c_int), parameter :: max_greeting_length = 34
+   integer(kind=c_int) :: mesh_dimensions
+   real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
+   integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
+   integer(kind=c_int), parameter :: data_name_length = 8
+   character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
+   integer :: data_size, data_dimension
+   real(kind=c_double), dimension(:), allocatable :: data_values
+   character(kind=c_char), dimension(:), allocatable :: converted_data
+   real(kind=c_double) :: precice_time_step
 !
 !! executable statements -----------------------------------------------
 !
@@ -127,16 +143,29 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    call initialize_wavedata(wavedata)
    call initialize_wave_mpi()
    retval = wave_init(mode_in, mdw_file)
-   
 
-   precice_component_name = "wave"
-   precice_config_name = "../precice_config.xml"
-
-   
    !! register precice participant now
-   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, 4, 21)
-end function wave_main_init
+   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
+   call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
+   print *, '[wave] The number of dimensions of the wave-mesh is ', mesh_dimensions
 
+   mesh_coordinates = 0.0_c_double
+   call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
+   call precicef_initialize()
+
+   call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
+   data_size = data_dimension * max_greeting_length
+   print *, '[wave] data dimension: ', data_dimension, ' data size: ', data_size
+   call realloc(data_values, data_size)
+
+   call precicef_get_max_time_step_size(precice_time_step)
+   print *, '[wave] max time step: ', precice_time_step
+   call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
+                              mesh_name_length, data_name_length)
+
+   converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
+   print *, '[wave] message read: ', converted_data
+end function wave_main_init
 
 !
 ! ====================================================================================
@@ -557,6 +586,7 @@ end function wave_master_step
 ! ====================================================================================
 function wave_main_finish() result(retval)
    use wave_mpi
+   use precice, only: precicef_finalize
    implicit none
 !
 ! return value
@@ -576,6 +606,7 @@ function wave_main_finish() result(retval)
       !
       retval = 0
    endif
+   call precicef_finalize()
 end function wave_main_finish
 
 

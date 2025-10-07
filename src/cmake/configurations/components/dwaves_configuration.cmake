@@ -65,6 +65,10 @@ if(NOT TARGET esmfsm)
     add_subdirectory(${checkout_src_root}/${esmfsm_module} esmfsm)
 endif()
 
+# precice
+if(NOT TARGET precice_module)
+    add_subdirectory(${checkout_src_root}/${precice_module})
+endif()
 
 
 # Third party
