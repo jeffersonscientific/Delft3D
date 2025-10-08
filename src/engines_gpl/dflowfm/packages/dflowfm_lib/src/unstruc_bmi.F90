@@ -217,7 +217,7 @@ contains
       c_att_value = string_to_char_array(trim(att_value), len(trim(att_value)))
    end subroutine get_attribute
 
-#ifdef IS_FM_WITH_GREETER
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
    subroutine couple_to_greeter_dummy()
       use m_alloc, only: realloc
       use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
@@ -269,7 +269,7 @@ contains
       print *, '[FM] message read: ', converted_data
 
    end subroutine couple_to_greeter_dummy
-#endif // IS_FM_WITH_GREETER
+#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
 
 !! modelinformation
 !! \}
@@ -346,9 +346,9 @@ contains
 
 #endif
 
-#ifdef IS_FM_WITH_GREETER
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
       call couple_to_greeter_dummy()
-#endif // IS_FM_WITH_GREETER
+#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
 
       ! do this until default has changed
       jaGUI = 0
@@ -572,9 +572,9 @@ contains
 
       finalize = 0
 
-#ifdef IS_FM_WITH_GREETER
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING) || defined(HAS_PRECICE_FM_WAVE_COUPLING)
       call precicef_finalize()
-#endif // IS_FM_WITH_GREETER
+#endif
 
    end function finalize
 

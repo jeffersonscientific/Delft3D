@@ -61,7 +61,7 @@ module wave_main
 
 contains
 
-#ifdef IS_WAVE_WITH_GREETER
+#if defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
 subroutine couple_to_greeter_dummy()
    use m_alloc, only: realloc
    use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
@@ -106,7 +106,7 @@ subroutine couple_to_greeter_dummy()
    converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
    print *, '[wave] message read: ', converted_data
 end subroutine couple_to_greeter_dummy
-#endif // IS_WAVE_WITH_GREETER
+#endif // defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
 !
 ! ====================================================================================
 function wave_main_init(mode_in, mdw_file) result(retval)
@@ -170,9 +170,9 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    call initialize_wave_mpi()
    retval = wave_init(mode_in, mdw_file)
 
-#ifdef IS_WAVE_WITH_GREETER
+#if defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
    call couple_to_greeter_dummy()
-#endif // IS_WAVE_WITH_GREETER
+#endif // defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
 end function wave_main_init
 
 !
@@ -615,9 +615,9 @@ function wave_main_finish() result(retval)
       retval = 0
    endif
 
-#ifdef IS_WAVE_WITH_GREETER
+#if defined(HAS_PRECICE_WAVE_GREETER_COUPLING) || defined(HAS_PRECICE_FM_WAVE_COUPLING)
    call precicef_finalize()
-#endif // IS_WAVE_WITH_GREETER
+#endif
 end function wave_main_finish
 
 
