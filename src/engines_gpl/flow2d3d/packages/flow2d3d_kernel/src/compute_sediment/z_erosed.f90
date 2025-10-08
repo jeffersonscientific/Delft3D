@@ -73,6 +73,9 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use m_sand_mud
     use globaldata
     use dfparall
+    use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
+    use m_compsandfrac, only: compsandfrac
     !
     implicit none
     !
