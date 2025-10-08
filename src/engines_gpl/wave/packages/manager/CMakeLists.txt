@@ -19,16 +19,7 @@ set(oss_dependencies    wave_data
                         wave_io
                         wave_kernel) 
 
-target_link_libraries(${library_name} PUBLIC ${oss_dependencies})
-
-# Add dependencies
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(precice REQUIRED IMPORTED_TARGET libprecice)
-
-    target_link_libraries(${library_name} PRIVATE PkgConfig::precice)
-endif(UNIX)
+target_link_libraries(${library_name} PRIVATE ${oss_dependencies} precice_module)
 
 include_directories(${mpi_module_path})
 

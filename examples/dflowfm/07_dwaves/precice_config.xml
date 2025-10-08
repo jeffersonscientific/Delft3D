@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <precice-configuration>
-  <data:vector name="greeting" />
+  <log>
+    <sink type="stream" output="stdout" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+  </log>
+  <data:scalar name="greeting" />
 
   <mesh name="wave-mesh" dimensions="2">
     <use-data name="greeting" />
@@ -12,7 +15,7 @@
   </participant>
 
   <participant name="dummy">
-    <receive-mesh name="wave-mesh" from="wave" />
+    <receive-mesh name="wave-mesh" from="wave" api-access="true" />
     <write-data name="greeting" mesh="wave-mesh" />
   </participant>
 
