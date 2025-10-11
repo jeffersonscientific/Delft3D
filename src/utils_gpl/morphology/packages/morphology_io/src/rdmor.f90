@@ -1426,7 +1426,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     logical                                , pointer :: upwindbedload
     logical                                , pointer :: pure1d_mor
     character(256)                         , pointer :: bcmfilnam
-    character(256)                         , pointer :: flsthetsd
     character(20)          , dimension(:)  , pointer :: namsed
     type(handletype)                       , pointer :: bcmfile
     type(handletype)                       , pointer :: morfacfile
@@ -1546,7 +1545,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     eulerisoglm         => morpar%eulerisoglm
     glmisoeuler         => morpar%glmisoeuler
     l_suscor            => morpar%l_suscor
-    flsthetsd           => morpar%flsthetsd
     thetsduni           => morpar%thetsduni
     suscorfac           => morpar%suscorfac
     upwindbedload       => mornum%upwindbedload
@@ -1683,9 +1681,9 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     write (lundia, '(2a,e20.4)') txtput1, ':', bedw
     txtput1 = 'Min.depth for sed. calculations(SEDTHR)'
     write (lundia, '(2a,e20.4)') txtput1, ':', sedthr
-    if (flsthetsd /= ' ') then
+    if (morpar%flsthetsd /= ' ') then
        txtput1 = 'File dry cell erosion fact(THETSD)'
-       write (lundia, '(3a)') txtput1, ':  ', trim(flsthetsd)
+       write (lundia, '(3a)') txtput1, ':  ', morpar%flsthetsd
     else
        txtput1 = 'Uniform dry cell erosion fact(THETSD)'
        write (lundia, '(2a,e12.4)') txtput1, ':', thetsduni

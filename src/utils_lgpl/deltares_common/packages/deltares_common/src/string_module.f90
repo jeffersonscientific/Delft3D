@@ -1160,7 +1160,7 @@ contains
    else
       ! number found, try to convert
       write (fmt, '(a,i0,a)') '(f', ilast - ifirst + 1, '.0)'
-      read (string(i:len_trim(string)), fmt, iostat=ierr) value
+      read (string(ifirst:ilast), fmt, iostat=ierr) value
       if (ierr /= 0) then
          ierr = 4
       end if
