@@ -2328,7 +2328,6 @@ contains
    !!  Comments on this line:
    !!    Not allowed
    subroutine prop_get_logical(tree, chapter, key, value, success, value_parsed)
-      use string_module, only: str_toupper
       type(tree_data), pointer :: tree !< The property tree
       character(*), intent(in) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
       character(*), intent(in) :: key !< Name of the key (case-insensitive)
@@ -2338,57 +2337,89 @@ contains
       !
       ! Local variables
       !
-      integer :: k1
-      integer :: k2
-      integer :: spacepos
-      integer :: vallength
-      character(100) :: falsity
-      character(100) :: truth
       character(len=:), allocatable :: prop_value
+      logical :: bool
+      integer :: ierr
+      !
+      !! executable statements -------------------------------------------------------
       !
       if (present(value_parsed)) then
          value_parsed = .false.
       end if
-
-      truth = '|1|Y|YES|T|TRUE|.TRUE.|J|JA|W|WAAR|ON|'
-      falsity = '|0|N|NO|F|FALSE|.FALSE.|N|NEE|O|ONWAAR|OFF|'
-      !
-    !! executable statements -------------------------------------------------------
-      !
       call prop_get_alloc_string(tree, chapter, key, prop_value, success)
       if (.not. allocated(prop_value)) prop_value = ' '
-      vallength = len_trim(prop_value)
+      if (len_trim(prop_value) == 0) then
+         return
+      end if
+      call convert_to_logical(prop_value, bool, ierr)
+      if (ierr == 0) then
+         value = bool
+         if (present(value_parsed)) then
+            value_parsed = .true.
+         end if
+      end if
+   end subroutine prop_get_logical
+   
+   subroutine convert_to_logical(string, bool, ierr)
+      use string_module, only: str_toupper, convert_to_real
       !
-      ! Leave immediately in case prop_value is empty
+      character(len=*), intent(in) :: string
+      logical, intent(out) :: bool
+      integer, intent(out) :: ierr
       !
-      if (vallength == 0) return
-      spacepos = index(prop_value, ' ')
+      ! Local variables
+      !
+      integer :: k1
+      integer :: k2
+      integer :: spacepos
+      integer :: vallength
+      real(dp) :: float
+      character(100), parameter :: FALSITY = '|0|N|NO|F|FALSE|.FALSE.|N|NEE|O|ONWAAR|OFF|'
+      character(100), parameter :: TRUTH = '|1|Y|YES|T|TRUE|.TRUE.|J|JA|W|WAAR|ON|'
+      !
+      bool = .false.
+      !
+      vallength = len_trim(string)
+      if (vallength == 0) then
+         ierr = 1
+         return
+      end if
+      spacepos = index(string, ' ')
       if (spacepos > 0) vallength = min(spacepos - 1, vallength)
       !
       ! Extract the logical part
       !
-      k1 = index(truth, str_toupper(prop_value(1:vallength)))
-      k2 = index(falsity, str_toupper(prop_value(1:vallength)))
+      k1 = index(TRUTH, str_toupper(string(1:vallength)))
+      k2 = index(FALSITY, str_toupper(string(1:vallength)))
       !
       ! The value must match a complete word in string truth or falsity, bordered by two '|'s
       !
+      ierr = 0
       if (k1 > 0) then
-         if (truth(k1 - 1:k1 - 1) == '|' .and. truth(k1 + vallength:k1 + vallength) == '|') then
-            value = .true.
-            if (present(value_parsed)) then
-               value_parsed = .true.
+         if (TRUTH(k1 - 1:k1 - 1) == '|' .and. TRUTH(k1 + vallength:k1 + vallength) == '|') then
+            bool = .true.
+         else
+            ierr = 2
+         end if
+      else if (k2 > 0) then
+         if (FALSITY(k2 - 1:k2 - 1) == '|' .and. FALSITY(k2 + vallength:k2 + vallength) == '|') then
+            bool = .false.
+         else
+            ierr = 2
+         end if
+      else
+         call convert_to_real(string, float, ierr)
+         if (ierr == 0) then
+            if (comparereal(float,0.0_dp) == 0) then
+               bool = .false.
+            else
+               bool = .true.
             end if
+         else
+            ierr = 2
          end if
       end if
-      if (k2 > 0) then
-         if (falsity(k2 - 1:k2 - 1) == '|' .and. falsity(k2 + vallength:k2 + vallength) == '|') then
-            value = .false.
-            if (present(value_parsed)) then
-               value_parsed = .true.
-            end if
-         end if
-      end if
-   end subroutine prop_get_logical
+   end subroutine convert_to_logical
    !
    !
    ! ====================================================================
@@ -3215,6 +3246,7 @@ contains
    character(len=:), allocatable, intent(out) :: filename !< filename if string is a valid filename; ' ' otherwise
    
    integer :: ierr !< error flag for convert_to_real
+   logical :: bool !< temporary logical for convert_to_logical
    character(:), allocatable :: string !< string from property tree
    
    string = ' '
@@ -3230,9 +3262,19 @@ contains
       if (ierr == 0) then
          ! valid float
       else
-         ! not a valid float; string must be a filename
-         filename = combinepaths(reference, string)
-         is_float = .false.
+         call convert_to_logical(string, bool, ierr)
+         if (ierr == 0) then
+            ! valid logical: not a valid float; string must be a filename
+            if (bool) then
+               value = 1.0_fp
+            else
+               value = 0.0_fp
+            end if
+         else
+            ! not a valid float; string must be a filename
+            filename = combinepaths(reference, string)
+            is_float = .false.
+         end if
       end if
    end if
    
