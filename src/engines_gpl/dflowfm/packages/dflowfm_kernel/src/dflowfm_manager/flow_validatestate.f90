@@ -60,6 +60,7 @@ contains
       integer, intent(out) :: iresult ! validation result status
       real(kind=dp) :: dtavgwindow
       integer :: i, q, k
+      real(kind=dp) :: s1_s0_max
 
       iresult = DFM_NOERR
 
@@ -158,6 +159,19 @@ contains
                   end if
                end do
             end do
+         end if
+      end if
+
+      if (max_water_level_change_break > 0.0_dp) then
+         s1_s0_max = 0.0_dp
+         do i = 1, ndx
+            if (abs(s1(i) - s0(i)) > s01max) then
+               s1_s0_max = max(s1_s0_max, abs(s1(i) - s0(i)))
+            end if
+         end do
+         if (s1_s0_max < max_water_level_change_break) then
+            write (msgbuf, '(a)') 'Water level change below threshold MaxWaterlevelChangeBreak'
+            q = 1
          end if
       end if
 

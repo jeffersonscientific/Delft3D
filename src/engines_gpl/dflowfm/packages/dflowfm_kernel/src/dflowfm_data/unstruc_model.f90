@@ -121,6 +121,7 @@ module unstruc_model
    character(len=255) :: md_cutcelllist = ' ' !< contains list of cutcell polygons (e.g., *_cut.lst)
    character(len=255) :: md_fixedweirfile = ' ' !< Fixed weir pliz's                 (e.g., *_fxw.pli), = pli with x,y, Z  column
    character(len=255) :: md_pillarfile = ' ' !< pillar pliz's                     (e.g., *_pillar.pli), = pli with x,y, diameter and Cd columns
+   integer :: md_pillar_use_far_field_velocity = 1 !< 0: use local velocity, 1: use far-field velocity for computing pillar drag force
    character(len=255) :: md_roofsfile = ' ' !< Roof pliz's                      (e.g., *_roof.pli), = pli with x,y, Z  column
    character(len=255) :: md_gulliesfile = ' ' !< gullies pliz's                    (e.g., *_gul.pli), = pli with x,y, Z  column
    character(len=255) :: md_vertplizfile = ' ' !< Vertical layering pliz's          (e.g., *_vlay.pliz), = pliz with x,y, Z, first Z =nr of layers, second Z = laytyp
@@ -853,6 +854,7 @@ contains
       if (len_trim(md_pillarfile) > 0) then
          japillar = 3
       end if
+      call prop_get(md_ptr, 'geometry', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
 
@@ -1241,6 +1243,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Velocitywarn', u01warn)
       call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
       call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
+      call prop_get(md_ptr, 'numerics', 'MaxWaterlevelChangeBreak', max_water_level_change_break)
       call prop_get(md_ptr, 'numerics', 'MaxSSC', sscmax)
       call prop_get(md_ptr, 'numerics', 'Epshu', epshu)
       call prop_get(md_ptr, 'numerics', 'Epsz0', epsz0)
@@ -2708,6 +2711,7 @@ contains
       call prop_set(prop_ptr, 'geometry', 'Cutcelllist', trim(md_Cutcelllist), 'File with names of cutcell polygons, e.g. cutcellpolygons.lst')
       call prop_set(prop_ptr, 'geometry', 'FixedWeirFile', trim(md_fixedweirfile), 'Polyline file *_fxw.pliz, containing fixed weirs with rows x, y, crest level, left ground level, right ground level')
       call prop_set(prop_ptr, 'geometry', 'PillarFile', trim(md_pillarfile), 'Polyline file *_pillar.pliz, containing four colums with x, y, diameter and Cd coefficient')
+      call prop_set(prop_ptr, 'geometry', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no, 1: yes (default))')
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
@@ -3240,6 +3244,10 @@ contains
          call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtminbreak, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
       end if
 
+      if (writeall .or. (dtminbreak > 0.0_dp)) then
+         call prop_set(md_ptr, 'numerics', 'MaxWaterlevelChangeBreak', max_water_level_change_break)
+      end if
+      
       if ((writeall .or. (sscmax > 0.0_dp)) .and. jased == 4) then
          call prop_set(prop_ptr, 'numerics', 'MaxSSC', sscmax, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
       end if

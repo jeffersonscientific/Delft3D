@@ -1,9 +1,11 @@
    !modules from modules.f90
    module m_missing
+   use precision, only: dp
+   
    implicit none
-   double precision                  :: dmiss           = -999d0      !
-   double precision                  :: xymis           = -999d0      !
-   double precision                  :: dxymis          = -999d0
+   real(kind=dp)                     :: dmiss           = -999.0_dp
+   real(kind=dp)                     :: xymis           = -999.0_dp
+   real(kind=dp)                     :: dxymis          = -999.0_dp
    !double precision                 :: ieee_negative_inf = -1.7976931348623158e+308 ! IEEE standard for the maximum negative value
    integer                           :: intmiss         = -2147483647 ! integer fillvlue
    integer                           :: imiss           = -999        ! cf_dll missing value 

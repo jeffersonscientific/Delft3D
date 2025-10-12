@@ -49,6 +49,7 @@ contains
       use m_flowparameters, only: japillar
       use m_crspath
       use m_crspath_on_flowgeom
+      use unstruc_model, only: md_pillar_use_far_field_velocity
 
       integer :: i, j, k, L, Lf, La, m, n
       real(kind=dp) :: pi
@@ -164,7 +165,11 @@ contains
                Cpil(L) = 1.0e30_dp
                cycle
             end if
-            Cpil(L) = cdeq(L) * 0.5_dp * wu(L) / Aeff(L)**2
+            if (md_pillar_use_far_field_velocity == 1) then
+               Cpil(L) = cdeq(L) * 0.5_dp / wu(L)
+            else
+               Cpil(L) = cdeq(L) * 0.5_dp * wu(L) / Aeff(L)**2
+            end if
          end do
          deallocate (Aeff)
          deallocate (cdeq)
