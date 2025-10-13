@@ -17,6 +17,11 @@ int main(int argc, char** argv) {
 
     constexpr int commRank = 0;
     constexpr int commSize = 1;
+    double dummy_time = 0.0;
+    double precice_timeStep = 0.1;
+    double solver_timeStep = 1000;
+    double timeStep = 0.1;
+    int dummy_iteration = 0;
     constexpr std::string_view configFileName{"../precice_config.xml"};
     constexpr std::string_view solverName{"dummy"};
     precice::Participant participant{solverName, configFileName, commRank, commSize};
@@ -38,7 +43,7 @@ int main(int argc, char** argv) {
     std::vector<double> vertexCoordinates(meshVertexSize * meshDimension);
     participant.getMeshVertexIDsAndCoordinates(meshName, vertexIds, vertexCoordinates);
 
-    constexpr std::string_view greeting = "Hello there, I am greeter_dummy.";
+    std::string_view greeting = "Hello there, I am greeter_dummy.";
 
     std::vector<double> asciiCodes(meshVertexSize, 0.0);
 
@@ -49,7 +54,26 @@ int main(int argc, char** argv) {
     participant.writeData(meshName, dataName, vertexIds, asciiCodes);
     std::print("[greeter_dummy] I wrote the data.\n");
 
-    const double timeStep = participant.getMaxTimeStepSize();
-    participant.advance(timeStep);
+    while(participant.isCouplingOngoing())
+    {        
+        ++dummy_iteration;
+        precice_timeStep = participant.getMaxTimeStepSize();
+        timeStep = std::min(precice_timeStep, solver_timeStep);
+                // Update greeting with current iteration        std::string greeting = std::format("Greeter Dummy Iteration {}", dummy_iteration);
+
+        // Convert greeting to ASCII codes
+        std::ranges::transform(greeting | std::views::take(meshVertexSize),
+                             asciiCodes.begin(),
+                             [](char c) { return static_cast<double>(c); });
+
+        // Write the updated greeting
+        participant.writeData(meshName, dataName, vertexIds, asciiCodes);
+        std::print("[greeter_dummy] Current time: {0}, advancing by {1}, preCICE timestep is {2}.\n",
+            dummy_time, timeStep, precice_timeStep);
+        dummy_time += timeStep;
+        participant.advance(timeStep);
+    }
+    participant.finalize();
+    std::print("[greeter_dummy] Finished at time {0}.\n", dummy_time);
     return 0;
 }
