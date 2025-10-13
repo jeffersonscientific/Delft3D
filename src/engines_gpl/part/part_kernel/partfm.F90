@@ -224,16 +224,19 @@ contains
             if (oil) then
                 call oildspfm(itime)
             end if
-            if (abmmodel) then
-                call fm_abm(lunpr, itime, nmaxp, mmaxp, &
-                layt, ndx/kmx, kmx, mnmaxk, lgrid, &
-                lgrid2, lgrid3, nopart, npwndw, nosubs, &
-                mpart, wpart, iptime, wsettl, locdep, &
-                noconsp, const, concp, xa, ya, &
-                flow, depth, &
-                vdiff1, salin1, temper1, v_swim, d_swim, &
-                itstrtp, vel1, vel2, zmodel, laybot, laytop)
-            endif
+
+! AM: not yet, as support within unstructured grids is incomplete
+!            if (abmmodel) then
+!                call fm_abm(lunpr, itime, nmaxp, mmaxp, &
+!                layt, ndx/kmx, kmx, mnmaxk, lgrid, &
+!                lgrid2, lgrid3, nopart, npwndw, nosubs, &
+!                mpart, wpart, iptime, wsettl, locdep, &
+!                noconsp, const, concp, xa, ya, &
+!                flow, depth, &
+!                vdiff1, salin1, temper1, v_swim, d_swim, &
+!                itstrtp, vel1, vel2, zmodel, laybot, laytop)
+!            endif
+
             call fm_vert_disp(lun(2), itime)
             !     interpolation for wind speed/direction in the wind table
         end do
