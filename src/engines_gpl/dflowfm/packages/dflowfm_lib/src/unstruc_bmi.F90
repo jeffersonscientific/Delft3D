@@ -43,7 +43,10 @@
 module bmi
    use m_cosphiunetcheck, only: cosphiunetcheck
    use m_flow_run_usertimestep, only: flow_run_usertimestep
-   use m_flow_run_sometimesteps, only: flow_run_sometimesteps, couple_to_greeter_dummy
+   use m_flow_run_sometimesteps, only: flow_run_sometimesteps
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
+   use m_flow_run_sometimesteps, only: couple_to_greeter_dummy
+#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
    use m_flow_init_usertimestep, only: flow_init_usertimestep
    use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
    use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
