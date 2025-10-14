@@ -60,7 +60,8 @@ contains
       integer, intent(out) :: iresult ! validation result status
       real(kind=dp) :: dtavgwindow
       integer :: i, q, k
-      real(kind=dp) :: s1_s0_max
+      real(kind=dp) :: s1_s0_abs_max_current
+      real(kind=dp) :: s1_s0_abs_max_all
 
       iresult = DFM_NOERR
 
@@ -163,15 +164,25 @@ contains
       end if
 
       if (max_water_level_change_break > 0.0_dp) then
-         s1_s0_max = 0.0_dp
-         do i = 1, ndx
-            if (abs(s1(i) - s0(i)) > s01max) then
-               s1_s0_max = max(s1_s0_max, abs(s1(i) - s0(i)))
+         s1_s0_abs_max_current = dmiss
+         do k = 1, ndx
+            if (abs(s1(k) - s0(k)) > s1_s0_abs_max_current) then
+               s1_s0_abs_max_current = abs(s1(k) - s0(k))
             end if
          end do
-         if (s1_s0_max < max_water_level_change_break) then
-            write (msgbuf, '(a)') 'Water level change below threshold MaxWaterlevelChangeBreak'
-            q = 1
+         if (dnt < dble(NUMDTWINDOWSIZE)) then
+            ! First few time steps: just store all maxtime1's until array is full
+            s1_s0_abs_max(int(dnt + 1)) = s1_s0_abs_max_current
+         else
+            ! Array is full already, overwrite the oldest element (i.e. at current it_s1_s0_abs_max)
+            ! and increment start index, cycling back to 1 if necessary.
+            s1_s0_abs_max(it_s1_s0_abs_max) = s1_s0_abs_max_current
+            it_s1_s0_abs_max = mod(it_s1_s0_abs_max, NUMDTWINDOWSIZE) + 1
+            s1_s0_abs_max_all = maxval(s1_s0_abs_max)
+            if (s1_s0_abs_max_all < max_water_level_change_break) then
+               write (msgbuf, '(a)') 'Water level change below threshold MaxWaterlevelChangeBreak'
+               q = 1
+            end if
          end if
       end if
 
