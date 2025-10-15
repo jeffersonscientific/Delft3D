@@ -60,8 +60,10 @@ module m_flow_run_sometimesteps
    character(kind=c_char), dimension(:), allocatable :: converted_data
    real(kind=c_double) :: precice_time_step, timestep
 
-   public :: flow_run_sometimesteps, couple_to_greeter_dummy
-
+   public :: flow_run_sometimesteps
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
+   public :: couple_to_greeter_dummy
+#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
 contains
 
 
@@ -102,7 +104,7 @@ contains
 
    subroutine read_from_greeter_dummy()
       !! Insert calls to read from another participant using preCICE coupling here, if needed.
-      call realloc(data_values, data_size)
+      call realloc(data_values, data_size, keepExisting=.false.)
       call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, timestep, data_values, &
                              mesh_name_length, data_name_length)
       converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
