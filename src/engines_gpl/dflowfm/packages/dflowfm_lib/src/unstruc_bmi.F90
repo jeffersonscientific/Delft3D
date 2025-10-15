@@ -526,7 +526,6 @@ contains
    integer function finalize() bind(C, name="finalize")
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
-    !!  use precice, only: precicef_finalize
 
       call write_some_final_output()
 
@@ -538,10 +537,6 @@ contains
       call flowfinalize()
 
       finalize = 0
-
-#if defined(HAS_PRECICE_FM_GREETER_COUPLING) || defined(HAS_PRECICE_FM_WAVE_COUPLING)
-     !! call precicef_finalize()
-#endif
 
    end function finalize
 

@@ -34,12 +34,10 @@ namespace {
         std::vector<double> responseCodes(meshVertexSize, 0.0);
         participant.readData(settings.meshName, settings.responseName, vertexIds, timeStep, responseCodes);
 
-        std::string responseMessage(meshVertexSize, '\0');
-        std::ranges::transform(responseCodes,
-                          responseMessage.begin(),
-                          [](double code) {
-                              return (code > 0 && code <= 127) ? static_cast<char>(code) : '\0';
-                          });
+        std::string responseMessage;
+        std::ranges::copy(std::views::transform(responseCodes, [](double code) {
+                            return static_cast<char>(static_cast<int>(code));
+                          }), std::back_inserter(responseMessage));
 
         std::print("[greeter_dummy] Response received: '{}'\n", responseMessage);
     }
@@ -105,10 +103,9 @@ int main(int argc, char** argv) {
     {
         ++dummyIteration;
         const double preciceTimeStep = participant.getMaxTimeStepSize();
-        constexpr double solverTimeStep = 100;
         const double timeStep = std::min(preciceTimeStep, solverTimeStep);
 
-        readResponse(settings, participant, vertexIds, timeStep);
+        readResponse(settings, participant, vertexIds, preciceTimeStep);
 
         const auto greeting = std::format("Greeter Dummy Iteration {}", dummyIteration);
         writeGreeting(settings, participant, vertexIds, greeting);
