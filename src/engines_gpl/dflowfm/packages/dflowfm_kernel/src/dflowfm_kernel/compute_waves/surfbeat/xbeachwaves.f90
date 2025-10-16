@@ -1698,7 +1698,8 @@ subroutine xbeach_wave_bc()
    logical :: isRecomputed
 
    integer :: kb, ki, Lb, nw
-   integer :: LL1, LL2, n, lunfil
+   integer :: LL1, LL2, n
+   integer, save :: lunfil
 
    ierror = 1
    if (.not. allocated(dist)) allocate (dist(1:ntheta), factor(1:ntheta), e01(1:ntheta))
