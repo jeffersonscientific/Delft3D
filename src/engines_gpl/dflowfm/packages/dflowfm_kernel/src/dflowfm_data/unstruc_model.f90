@@ -1240,7 +1240,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Velocitywarn', u01warn)
       call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
       call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
-      call prop_get(md_ptr, 'numerics', 'MaxWaterlevelChangeBreak', max_water_level_change_break)
+      call prop_get(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', min_water_level_change_break)
       call prop_get(md_ptr, 'numerics', 'MaxSSC', sscmax)
       call prop_get(md_ptr, 'numerics', 'Epshu', epshu)
       call prop_get(md_ptr, 'numerics', 'Epsz0', epsz0)
@@ -3241,7 +3241,7 @@ contains
       end if
 
       if (writeall .or. (dtminbreak > 0.0_dp)) then
-         call prop_set(md_ptr, 'numerics', 'MaxWaterlevelChangeBreak', max_water_level_change_break)
+         call prop_set(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', min_water_level_change_break, 'stop the simulation when then water level change is below this value)
       end if
       
       if ((writeall .or. (sscmax > 0.0_dp)) .and. jased == 4) then

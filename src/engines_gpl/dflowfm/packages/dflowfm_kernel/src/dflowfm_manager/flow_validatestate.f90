@@ -163,7 +163,7 @@ contains
          end if
       end if
 
-      if (max_water_level_change_break > 0.0_dp) then
+      if (min_water_level_change_break > 0.0_dp) then
          s1_s0_abs_max_current = dmiss
          do k = 1, ndx
             if (abs(s1(k) - s0(k)) > s1_s0_abs_max_current) then
@@ -179,8 +179,8 @@ contains
             s1_s0_abs_max(it_s1_s0_abs_max) = s1_s0_abs_max_current
             it_s1_s0_abs_max = mod(it_s1_s0_abs_max, NUMDTWINDOWSIZE) + 1
             s1_s0_abs_max_all = sum(s1_s0_abs_max)/real(NUMDTWINDOWSIZE, kind=dp)
-            if (s1_s0_abs_max_all < max_water_level_change_break) then
-               write (msgbuf, '(a)') 'Water level change below threshold MaxWaterlevelChangeBreak'
+            if (s1_s0_abs_max_all < min_water_level_change_break) then
+               write (msgbuf, '(a)') 'Water level change below threshold MinWaterlevelChangeBreak'
                call warn_flush()
                q = 1
             end if

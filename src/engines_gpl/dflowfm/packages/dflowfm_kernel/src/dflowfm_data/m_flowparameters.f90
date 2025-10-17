@@ -338,7 +338,7 @@ module m_flowparameters
    real(kind=dp) :: umagwarn !< warning level velocity (m/s) for velocity magnitude in validation routine
    real(kind=dp) :: sscmax !< error level concentration (kg/m3) for velocity magnitude in validation routine
    ! See also m_flowtimes::dtminbreak
-   real(kind=dp) :: max_water_level_change_break !< end simulation when max abs change in water level < this value (m)
+   real(kind=dp) :: min_water_level_change_break !< end simulation when max abs change in water level < this value (m)
    ! parameters controlling flooding/drying/solving
    integer :: testdryflood !< Flag for testing alternative drying flooding algoritm; 0 = standard, 1 =Delft3D-FLOW
    integer :: testfixedweirs !< Flag for fixed weir options; 0 = original Villemonte approach, 1 = Sieben2007
@@ -898,7 +898,7 @@ contains
       u01warn = 0.0_dp
       umagwarn = 0.0_dp
       sscmax = 0.0_dp
-      max_water_level_change_break = dmiss
+      min_water_level_change_break = dmiss
       
       ! parameters controlling flooding/drying/solving
       epshu = 1.0e-4_dp ! minimum waterdepth for setting hu>0
