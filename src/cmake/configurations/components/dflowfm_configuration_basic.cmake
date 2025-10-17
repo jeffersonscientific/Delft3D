@@ -213,8 +213,8 @@ if(NOT TARGET spherepack)
 endif()
 
 # precice
-if(NOT TARGET precice_module)
-    add_subdirectory(${checkout_src_root}/${precice_module} precice_module)
+if(NOT TARGET precice_fortran)
+    add_subdirectory(${checkout_src_root}/${precice_module} precice_fortran)
 endif()
 
 #intel MPI & MKL

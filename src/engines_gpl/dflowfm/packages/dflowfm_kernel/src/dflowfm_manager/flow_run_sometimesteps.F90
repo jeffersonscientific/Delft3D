@@ -58,7 +58,7 @@ module m_flow_run_sometimesteps
    public :: flow_run_sometimesteps
 #if defined(HAS_PRECICE_FM_GREETER_COUPLING)
    public :: couple_to_greeter_dummy
-#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
+#endif
 contains
 
 #if defined(HAS_PRECICE_FM_GREETER_COUPLING)
@@ -199,7 +199,7 @@ contains
       call precicef_finalize()
    end subroutine finalize_greeter_dummy_coupling
 
-#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
+#endif
 
    subroutine flow_run_sometimesteps(dtrange, iresult) ! do computational flowsteps for as long as timeinterval dtrange
       use m_flow_init_usertimestep, only: flow_init_usertimestep

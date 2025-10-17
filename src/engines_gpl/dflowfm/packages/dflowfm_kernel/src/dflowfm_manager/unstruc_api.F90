@@ -53,6 +53,26 @@ module unstruc_api
    real(kind=dp) :: cpuall0
 contains
 
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   subroutine initialize_wave_coupling()
+      use precice, only: precicef_create
+      use m_partitioninfo, only: numranks, my_rank
+      use, intrinsic :: iso_c_binding, only: c_int, c_char
+
+      integer(kind=c_int), parameter :: precice_component_name_length = 2
+      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "fm"
+      integer(kind=c_int), parameter :: precice_config_name_length = 21
+      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
+
+      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
+   end subroutine initialize_wave_coupling
+
+   subroutine finalize_wave_coupling()
+      use precice, only: precicef_finalize
+      call precicef_finalize()
+   end subroutine finalize_wave_coupling
+#endif
+
 !> Initializes global program/core data, not specific to a particular model.
    subroutine init_core()
       use network_data
@@ -339,6 +359,10 @@ contains
       if (jawriteDetailedTimers > 0) then
          call timdump(trim(defaultFilename('timers_init')), .true.)
       end if
+
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+      call initialize_wave_coupling()
+#endif
    end function flowinit
 
    subroutine flowstep(jastop, iresult)
@@ -415,6 +439,9 @@ contains
       call dealloc_nfarrays()
       call dealloc_lateraldata()
       call close_fm_statistical_output()
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+      call finalize_wave_coupling()
+#endif
 
       if (.not. ecFreeInstance(ecInstancePtr)) then
          continue

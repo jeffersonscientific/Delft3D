@@ -36,16 +36,12 @@ target_link_libraries(${library_name} PRIVATE
                       gridgeom
                       deltares_common
                       netcdff
-                      precice_module
 )
 
 option(HAS_PRECICE_FM_GREETER_COUPLING "Compile FM with preCICE greeter_dummy coupling" OFF)
 if(HAS_PRECICE_FM_GREETER_COUPLING)
     target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_GREETER_COUPLING)
-endif()
-
-if(HAS_PRECICE_FM_WAVE_COUPLING)
-    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
+    target_link_libraries(${library_name} PRIVATE precice_fortran)
 endif()
 
 if(UNIX)

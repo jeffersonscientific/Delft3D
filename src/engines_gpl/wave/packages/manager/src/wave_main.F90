@@ -106,7 +106,7 @@ subroutine couple_to_greeter_dummy()
    converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
    print *, '[wave] message read: ', converted_data
 end subroutine couple_to_greeter_dummy
-#endif // defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
+#endif
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine couple_to_fm()
@@ -121,7 +121,7 @@ end subroutine couple_to_greeter_dummy
       ! precicef_create_with_communicator
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
    end subroutine couple_to_fm
-#endif // defined(HAS_PRECICE_FM_WAVE_COUPLING)
+#endif
 !
 ! ====================================================================================
 function wave_main_init(mode_in, mdw_file) result(retval)
@@ -187,10 +187,10 @@ function wave_main_init(mode_in, mdw_file) result(retval)
 
 #if defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
    call couple_to_greeter_dummy()
-#endif // defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
+#endif
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    call couple_to_fm()
-#endif // defined(HAS_PRECICE_FM_WAVE_COUPLING)
+#endif
 end function wave_main_init
 
 !

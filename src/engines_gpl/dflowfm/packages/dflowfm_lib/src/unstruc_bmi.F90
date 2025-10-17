@@ -46,7 +46,7 @@ module bmi
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
 #if defined(HAS_PRECICE_FM_GREETER_COUPLING)
    use m_flow_run_sometimesteps, only: couple_to_greeter_dummy
-#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
+#endif
    use m_flow_init_usertimestep, only: flow_init_usertimestep
    use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
    use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
@@ -220,21 +220,6 @@ contains
       c_att_value = string_to_char_array(trim(att_value), len(trim(att_value)))
    end subroutine get_attribute
 
-
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   subroutine couple_to_wave()
-      use precice, only: precicef_create
-
-      integer(kind=c_int), parameter :: precice_component_name_length = 2
-      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "fm"
-      integer(kind=c_int), parameter :: precice_config_name_length = 21
-      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
-
-      ! precicef_create_with_communicator
-      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
-   end subroutine couple_to_wave
-#endif // defined(HAS_PRECICE_FM_WAVE_COUPLING)
-
 !! modelinformation
 !! \}
 
@@ -312,10 +297,7 @@ contains
 
 #if defined(HAS_PRECICE_FM_GREETER_COUPLING)
       call couple_to_greeter_dummy()
-#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   call couple_to_wave()
-#endif // defined(HAS_PRECICE_FM_WAVE_COUPLING)
+#endif
 
       ! do this until default has changed
       jaGUI = 0
