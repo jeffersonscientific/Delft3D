@@ -20,6 +20,8 @@ set(oss_dependencies wave_data
                      wave_kernel
 )
 
+target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
+
 option(HAS_PRECICE_WAVE_GREETER_COUPLING "Compile wave with preCICE greeter_dummy coupling" OFF)
 if(HAS_PRECICE_WAVE_GREETER_COUPLING)
     target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_WAVE_GREETER_COUPLING)
@@ -29,7 +31,9 @@ if(HAS_PRECICE_FM_WAVE_COUPLING)
     target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
 endif()
 
-target_link_libraries(${library_name} PRIVATE ${oss_dependencies} precice_module)
+if(HAS_PRECICE_WAVE_GREETER_COUPLING OR HAS_PRECICE_FM_WAVE_COUPLING)
+     target_link_libraries(${library_name} PRIVATE precice_fortran)
+endif()
 
 include_directories(${mpi_module_path})
 
