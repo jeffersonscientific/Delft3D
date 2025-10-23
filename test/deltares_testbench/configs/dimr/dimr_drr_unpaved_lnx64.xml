@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" 
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-        xmlns:xi="http://www.w3.org/2001/XInclude" 
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
     <!--
     Basic Linux configuration file
@@ -78,7 +78,7 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>              <!-- adjusted to win64 ipv lnx64 -->
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
