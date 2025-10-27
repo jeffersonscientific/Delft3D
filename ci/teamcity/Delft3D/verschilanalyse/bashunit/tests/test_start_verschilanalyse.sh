@@ -376,7 +376,12 @@ function test_sync_input_data_mock_srun() {
   LOG=$(cat "$LOG_FILE")
 
   assert_not_empty  "$LOG_FILE"
-  assert_matches "srun --nodes=1 --ntasks=1 --cpus-per-task=16" "$LOG"
+  assert_matches "srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot" "$LOG"
+  assert_matches "--account=verschilanalyse --qos=verschilanalyse" "$LOG"
+  assert_matches "docker run --rm --volume=${HOME}/.aws:${HOME}/.aws:ro" "$LOG"
+  assert_matches "--volume=${VAHOME}/${MODELS_PATH}:/data docker.io/amazon/aws-cli:2.22.7" "$LOG"
+  assert_matches "--profile=verschilanalyse --endpoint-url=https://s3.deltares.nl" "$LOG"
+  assert_matches "s3 sync --delete --no-progress ${BUCKET}/${MODELS_PATH}/ /data" "$LOG"
   assert_exit_code 0
 }
 
