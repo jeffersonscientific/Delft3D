@@ -2,14 +2,20 @@
 <precice-configuration>
   <log>
     <sink type="file" output="precice_debug_output.txt" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+    <sink type="stream" output="stdout" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
   </log>
 
   <data:scalar name="fm-data" />
   <data:scalar name="wave-data" />
+  <data:scalar name="water_levels" />
 
   <mesh name="fm-mesh" dimensions="2">
     <use-data name="fm-data" />
     <use-data name="wave-data" />
+  </mesh>
+
+  <mesh name="fm_flow_nodes" dimensions="2">
+    <use-data name="water_levels" />
   </mesh>
 
   <mesh name="wave-mesh" dimensions="2">
@@ -17,20 +23,31 @@
     <use-data name="fm-data" />
   </mesh>
 
+  <mesh name="wave_nodes" dimensions="2">
+    <use-data name="water_levels" />
+  </mesh>
+
   <participant name="fm">
     <provide-mesh name="fm-mesh" />
-    <receive-mesh name="wave-mesh" from="wave"/>
-    <write-data name="fm-data" mesh="fm-mesh"/>
-    <read-data name="wave-data" mesh="fm-mesh"/>
-    <mapping:nearest-neighbor direction="write" from="fm-mesh" to="wave-mesh" constraint="consistent"/>
+    <provide-mesh name="fm_flow_nodes" />
+    <receive-mesh name="wave-mesh" from="wave" />
+    <receive-mesh name="wave_nodes" from="wave" />
+    <write-data name="fm-data" mesh="fm-mesh" />
+    <read-data name="wave-data" mesh="fm-mesh" />
+    <mapping:nearest-neighbor direction="write" from="fm-mesh" to="wave-mesh" constraint="consistent" />
+    <write-data name="water_levels" mesh="fm_flow_nodes" />
   </participant>
 
   <participant name="wave">
     <provide-mesh name="wave-mesh" />
-    <receive-mesh name="fm-mesh" from="fm"/>
-    <write-data name="wave-data" mesh="wave-mesh"/>
-    <read-data name="fm-data" mesh="wave-mesh"/>
-    <mapping:nearest-neighbor direction="write" from="wave-mesh" to="fm-mesh" constraint="consistent"/>
+    <provide-mesh name="wave_nodes" />
+    <receive-mesh name="fm-mesh" from="fm" />
+    <receive-mesh name="fm_flow_nodes" from="fm" />
+    <write-data name="wave-data" mesh="wave-mesh" />
+    <read-data name="fm-data" mesh="wave-mesh" />
+    <mapping:nearest-neighbor direction="write" from="wave-mesh" to="fm-mesh" constraint="consistent" />
+    <read-data name="water_levels" mesh="wave_nodes" />
+    <mapping:linear-cell-interpolation direction="read" from="fm_flow_nodes" to="wave_nodes" constraint="consistent" />
   </participant>
 
   <m2n:sockets acceptor="fm" connector="wave" exchange-directory=".." />
@@ -41,5 +58,6 @@
     <participants first="wave" second="fm" />
     <exchange data="fm-data" mesh="wave-mesh" from="fm" to="wave" />
     <exchange data="wave-data" mesh="fm-mesh" from="wave" to="fm" />
+    <exchange data="water_levels" mesh="fm_flow_nodes" from="fm" to="wave" />
   </coupling-scheme:serial-explicit>
 </precice-configuration>
