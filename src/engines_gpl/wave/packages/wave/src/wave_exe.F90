@@ -104,7 +104,7 @@ program waves_main
    enddo
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   call initialize_fm_coupling()
+   call initialize_fm_coupling(mdw_file)
 #endif
 
    retval = wave_main_init(mode_in, mdw_file)
