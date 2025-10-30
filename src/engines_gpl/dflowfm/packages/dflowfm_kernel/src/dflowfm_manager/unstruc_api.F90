@@ -56,9 +56,9 @@ contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_wave_coupling()
-      use precice, only: precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
+      use precice, only: precicef_create,precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
                   precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size
-      use m_partitioninfo, only: numranks, my_rank,  DFM_COMM_DFMWORLD
+      use m_partitioninfo, only: jampi, numranks, my_rank,  DFM_COMM_DFMWORLD
       use m_flowtimes, only: dt_user
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
@@ -78,7 +78,13 @@ contains
       integer(kind=c_int) :: mesh_dimensions
 
       ! First create preCICE to be able to query max time step
-      call precicef_create_with_communicator(precice_component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_component_name), len(precice_config_name))
+      if (jampi == 0) then
+         print *, '[FM] Initializing preCICE for serial execution'
+         call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
+      else
+         print *, '[FM] Initializing preCICE for parallel execution with ', numranks, ' ranks. This is rank ', my_rank
+         call precicef_create_with_communicator(precice_component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_component_name), len(precice_config_name))
+      end if
 
       print *, '[FM] max_time_step (', max_time_step, ') at initialization is compatible with dt_user (', dt_user, ')'
       
@@ -92,15 +98,15 @@ contains
       call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
 
       call precicef_initialize()
-            call precicef_get_max_time_step_size(max_time_step)
+      call precicef_get_max_time_step_size(max_time_step)
       
-      ! Check if max_time_step is a multiple of dt_user
-      remainder = mod(real(max_time_step, kind=c_double), real(dt_user, kind=c_double))
-      if (abs(remainder) > tolerance .and. abs(remainder - real(dt_user, kind=c_double)) > tolerance) then
-         print *, '[FM] ERROR: max_time_step (', max_time_step, ') is not a multiple of dt_user (', dt_user, ')'
-         print *, '[FM] Remainder: ', remainder
-         return
-      end if   
+      !! Ensure that max_time_step is a multiple of dt_user, not much can be done since it can only be done after coupling has been intialized
+      !remainder = mod(real(max_time_step, kind=c_double), real(dt_user, kind=c_double))
+      !if (abs(remainder) > tolerance .and. abs(remainder - real(dt_user, kind=c_double)) > tolerance) then
+      !   print *, '[FM] ERROR: max_time_step (', max_time_step, ') is not a multiple of dt_user (', dt_user, ')'
+       !  print *, '[FM] Remainder: ', remainder
+      !   return
+      !end if   
 
    end subroutine initialize_wave_coupling
 
