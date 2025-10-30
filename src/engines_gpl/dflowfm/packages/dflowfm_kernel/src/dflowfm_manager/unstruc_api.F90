@@ -52,6 +52,27 @@ module unstruc_api
 
    real(kind=dp) :: cpuall0
 
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   interface
+      subroutine tricall(jatri, xs, ys, ns, indx, numtri, edgeidx, numedge, triedge, xs3, ys3, ns3, trisize) bind(C, name="tricall_")
+         use, intrinsic :: iso_c_binding, only: c_int, c_double
+         implicit none(type, external)
+         integer(kind=c_int), intent(in) :: jatri
+         real(kind=c_double), dimension(*), intent(in) :: xs
+         real(kind=c_double), dimension(*), intent(in) :: ys
+         integer(kind=c_int), intent(in) :: ns
+         integer(kind=c_int), dimension(*), intent(out) :: indx
+         integer(kind=c_int), intent(inout) :: numtri
+         integer(kind=c_int), dimension(*), intent(out) :: edgeidx
+         integer(kind=c_int), intent(out) :: numedge
+         integer(kind=c_int), dimension(*), intent(out) :: triedge
+         real(kind=c_double), dimension(*), intent(out) :: xs3
+         real(kind=c_double), dimension(*), intent(out) :: ys3
+         integer(kind=c_int), intent(inout) :: ns3
+         real(kind=c_double), intent(in) :: trisize
+      end subroutine tricall
+   end interface
+#endif
 contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
@@ -65,17 +86,6 @@ contains
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "fm"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
-      character(kind=c_char, len=*), parameter :: mesh_name = "fm-mesh"
-      character(kind=c_char, len=*), parameter :: data_name = "fm-data"
-      integer(kind=c_int), parameter :: number_of_vertices = 13;
-      real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
-      integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
-      real(kind=c_double), dimension(number_of_vertices) :: initial_data
-      real(kind=c_double) :: max_time_step
-      real(kind=c_double) :: tolerance = 1.0e-12_c_double
-      real(kind=c_double) :: remainder
-
-      integer(kind=c_int) :: mesh_dimensions
 
       ! First create preCICE to be able to query max time step
       if (jampi == 0) then
@@ -85,30 +95,96 @@ contains
          print *, '[FM] Initializing preCICE for parallel execution with ', numranks, ' ranks. This is rank ', my_rank
          call precicef_create_with_communicator(precice_component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_component_name), len(precice_config_name))
       end if
-
-      print *, '[FM] max_time_step (', max_time_step, ') at initialization is compatible with dt_user (', dt_user, ')'
-      
-      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
-      print *, '[FM] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
-
-      mesh_coordinates = [(real(i / 2, kind=c_double), integer :: i = 1, 2 * number_of_vertices)] ! Diagonal line {(0,0), (1,1), (2,2), ...}
-      call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
-
-      initial_data = [(real(i, kind=c_double), integer :: i = 1, number_of_vertices)] ! fm-data is equal to x-coordinates
-      call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
-
+      call register_com_mesh_with_precice()
+      call register_flow_nodes_with_precice()
       call precicef_initialize()
-      call precicef_get_max_time_step_size(max_time_step)
-      
-      !! Ensure that max_time_step is a multiple of dt_user, not much can be done since it can only be done after coupling has been intialized
-      !remainder = mod(real(max_time_step, kind=c_double), real(dt_user, kind=c_double))
-      !if (abs(remainder) > tolerance .and. abs(remainder - real(dt_user, kind=c_double)) > tolerance) then
-      !   print *, '[FM] ERROR: max_time_step (', max_time_step, ') is not a multiple of dt_user (', dt_user, ')'
-       !  print *, '[FM] Remainder: ', remainder
-      !   return
-      !end if   
 
    end subroutine initialize_wave_coupling
+
+   subroutine register_flow_nodes_with_precice()
+      use precice, only: precicef_set_vertices, precicef_set_mesh_triangles, precicef_requires_mesh_connectivity_for
+      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
+      use m_flowgeom, only: xz, yz, ndxi
+      implicit none(type, external)
+
+      character(kind=c_char, len=*), parameter :: mesh_name = "fm_flow_nodes"
+      real(kind=c_double), dimension(:), allocatable :: x_coordinates
+      real(kind=c_double), dimension(:), allocatable :: y_coordinates
+      real(kind=c_double), dimension(:), allocatable :: mesh_coordinates
+      integer(kind=c_int), dimension(:), allocatable :: vertex_ids
+      integer(kind=c_int), dimension(:), allocatable :: triangle_nodes
+      integer(kind=c_int), dimension(:), allocatable :: precice_triangle_nodes
+      real(kind=c_double), dimension(1) :: dummy_xs3, dummy_ys3
+      integer(kind=c_int), dimension(1) :: dummy_edge_nodes, dummy_triangle_edges
+      integer(kind=c_int) :: dummy_ns3, dummy_num_edges
+      real(kind=c_double) :: dummy_trisize
+      integer(kind=c_int) :: num_triangles, jatri, is_required, i
+
+      call precicef_requires_mesh_connectivity_for(mesh_name, is_required, len(mesh_name))
+
+      if (is_required == 0) then
+         print *, '[FM] Mesh does not need to be registered with PreCICE.'
+         return
+      else
+         print *, '[FM] Registering mesh with PreCICE.'
+      end if
+
+      x_coordinates = xz(1:ndxi)
+      y_coordinates = yz(1:ndxi)
+
+      ! Allocate arrays for triangulation output
+      ! Maximum possible triangles for n points is approximately 2*n
+      num_triangles = 2 * ndxi
+      allocate (triangle_nodes(3 * num_triangles))
+
+      dummy_ns3 = 0
+      dummy_trisize = 0.0_c_double
+
+      ! Call tricall with jatri=1 for Delaunay triangulation
+      jatri = 1
+      call tricall(jatri, x_coordinates, y_coordinates, ndxi, &
+                   triangle_nodes, num_triangles, dummy_edge_nodes, dummy_num_edges, &
+                   dummy_triangle_edges, dummy_xs3, dummy_ys3, dummy_ns3, dummy_trisize)
+
+      if (num_triangles < 0) then
+         print *, '[FM] Error in triangulation'
+         return
+      else
+         print *, '[FM] Successfully generated ', num_triangles, ' triangles for ', ndxi, ' nodes'
+      end if
+
+      allocate (mesh_coordinates(2 * ndxi))
+      do i = 1, ndxi
+         mesh_coordinates(2 * i - 1) = x_coordinates(i)
+         mesh_coordinates(2 * i) = y_coordinates(i)
+      end do
+
+      allocate (vertex_ids(ndxi))
+      call precicef_set_vertices(mesh_name, ndxi, mesh_coordinates, vertex_ids, len(mesh_name))
+      print *, '[FM] Registered ', ndxi, ' vertices with preCICE'
+
+      allocate (precice_triangle_nodes(3 * num_triangles))
+      do i = 1, 3 * num_triangles
+         precice_triangle_nodes(i) = vertex_ids(triangle_nodes(i))
+      end do
+
+      call precicef_set_mesh_triangles(mesh_name, num_triangles, precice_triangle_nodes, len(mesh_name))
+      print *, '[FM] Registered ', num_triangles, ' triangles with preCICE'
+   end subroutine register_flow_nodes_with_precice
+
+   subroutine register_com_mesh_with_precice()
+      use precice, only: precicef_set_vertices
+      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
+      implicit none(type, external)
+
+      character(kind=c_char, len=*), parameter :: mesh_name = "fm_com_mesh"
+      real(kind=c_double), dimension(2) :: mesh_coordinates
+      integer(kind=c_int), dimension(1) :: vertex_ids
+
+      mesh_coordinates = [0.0_c_double, 0.0_c_double]
+
+      call precicef_set_vertices(mesh_name, 1, mesh_coordinates, vertex_ids, len(mesh_name))
+   end subroutine register_com_mesh_with_precice
 
    function is_wave_coupling_ongoing() result(is_ongoing)
       use precice, only: precicef_is_coupling_ongoing
