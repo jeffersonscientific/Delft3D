@@ -77,17 +77,16 @@ contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_wave_coupling()
-      use precice, only: precicef_create,precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
-                  precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size
-      use m_partitioninfo, only: jampi, numranks, my_rank,  DFM_COMM_DFMWORLD
+      use precice, only: precicef_create, precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
+                         precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size
+      use m_partitioninfo, only: jampi, numranks, my_rank, DFM_COMM_DFMWORLD
       use m_flowtimes, only: dt_user
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
-      implicit none (type, external)
+      implicit none(type, external)
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "fm"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
 
-      ! First create preCICE to be able to query max time step
       if (jampi == 0) then
          print *, '[FM] Initializing preCICE for serial execution'
          call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
@@ -195,8 +194,8 @@ contains
    end function is_wave_coupling_ongoing
 
    subroutine advance_time_window(dt_user)
-      use precice, only: precicef_advance      
-      use, intrinsic :: iso_c_binding, only:  c_double
+      use precice, only: precicef_advance
+      use, intrinsic :: iso_c_binding, only: c_double
       real(kind=c_double), intent(in) :: dt_user
       if (is_wave_coupling_ongoing()) then
          call precicef_advance(real(dt_user, kind=c_double))
@@ -508,7 +507,7 @@ contains
       use m_drawthis
       use m_draw_nu
       use m_flowtimes, only: dt_user
-      implicit none (type, external)
+      implicit none(type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
