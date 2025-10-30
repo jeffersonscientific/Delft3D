@@ -169,7 +169,7 @@ contains
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none(type, external)
 
-      character(kind=c_char, len=*), parameter :: mesh_name = "com_mesh"
+      character(kind=c_char, len=*), parameter :: mesh_name = "fm_com_mesh"
       real(kind=c_double), dimension(2) :: mesh_coordinates
       integer(kind=c_int), dimension(1) :: vertex_ids
 
