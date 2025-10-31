@@ -83,7 +83,7 @@ DtMax                               = 300.0000000                         # Max 
 DtInit                              = 1.                                 # Initial timestep in seconds
 AutoTimestep                        = 1                                  # Use CFL timestep limit or not (1/0)
 TStart                              = 0.0000000e+00                      # Start time w.r.t. RefDate (in TUnit)
-TStop                               = 8.6400000e+03                      # Stop  time w.r.t. RefDate (in TUnit)
+TStop                               = 7200                               # Stop  time w.r.t. RefDate (in TUnit)
 
 [restart]
 RestartFile                         =                                    # Restart file, only map, hence: *_map.nc
