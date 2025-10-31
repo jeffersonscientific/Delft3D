@@ -92,7 +92,7 @@ contains
         integer(kind = int_wp), intent(in) :: ivpnt(num_substances_transported)            !< Additional velocity number per substance
         real(kind = real_wp), intent(inout) :: amass(num_substances_total, nosss)     !< Masses per substance per volume
         real(kind = real_wp), intent(inout) :: conc(num_substances_total, nosss)      !< Concentrations at previous time level
-        real(kind = dp), intent(inout) :: dconc2(num_substances_total, nosss)    !< Estimate used in flux correction
+        real(kind = dp), intent(inout) :: dconc2(num_substances_total, nosss)    !< Estimate of conc used in flux correction
         real(kind = real_wp), intent(in) :: bound(num_substances_transported, *)         !< Open boundary concentrations
         integer(kind = int_wp), intent(in) :: idt                     !< Time step in seconds
         integer(kind = int_wp), intent(inout) :: idx_box_cell(num_cells)             !< In which basket is my cell
@@ -143,10 +143,10 @@ contains
         integer(kind = int_wp) :: iqd                         !< Help variable for dump pointers
         real(kind = dp) :: a                                  !< This area
         real(kind = dp) :: q                                  !< Flow for this exchange
-        real(kind = dp) :: e                                  !< Didpersion for this exchange
+        real(kind = dp) :: e                                  !< Dispersion for this exchange
         real(kind = dp) :: al                                 !< This length
         real(kind = dp) :: dl                                 !< Area / length
-        real(kind = dp) :: d                                  !< Didpersion for this substance
+        real(kind = dp) :: d                                  !< Dispersion for this substance
         real(kind = dp) :: dq                                 !< Total flux from and to
         real(kind = dp) :: pivot                              !< Help variable matrix inversion
         real(kind = dp) :: vol                                !< Helpvariable for this volume
@@ -169,11 +169,14 @@ contains
         integer(kind = int_wp), allocatable, save :: sep_vert_flow_per_box(:) !< Separation point flows in 3rd direction
         integer(kind = int_wp), save :: count_columns                !< Number of cells per layer
         integer(kind = int_wp) :: isums, isumf                !< Accumulators
-        integer(kind = int_wp) :: ibox, count_used_boxes                    !< Help variable for boxes
-        integer(kind = int_wp) :: idx_cell, idx_flux                  !< Offsets in the arrays
-        integer(kind = int_wp) :: first_box_smallest_dt, last_box_largest_dt, nbox            !< Box range
+        integer(kind = int_wp) :: ibox                        !< Auxiliary variable for loops along boxes
+        integer(kind = int_wp) :: count_used_boxes            !< Number of used boxes
+        integer(kind = int_wp) :: idx_cell, idx_flux          !< Offsets in the arrays
+        integer(kind = int_wp) :: first_box                   !< First box (with smallest dt) that has been assigned to cells
+        integer(kind = int_wp) :: last_box                    !< Last box (with largest dt) that has been assigned to cells
+        integer(kind = int_wp) :: nbox                        !< Last box to integrate at current sub step
         real(kind = dp) :: fact                               !< Interpolation factor for volumes
-        integer(kind = int_wp) :: i_substep, count_substeps                !< Fractional step variables
+        integer(kind = int_wp) :: i_substep, count_substeps   !< Fractional step variables
         integer(kind = int_wp) :: i_cell_begin, i_cell_end, i_flow_begin, i_flow_end          !< Loop variables per box
         integer(kind = int_wp) :: i_top_curr_col, i_top_next_col !< Help variables parallellism
         integer(kind = int_wp) :: ilay                        !< Loop counter layers
@@ -567,7 +570,7 @@ contains
         ! smallest time step => first box to evaluate
         do ibox = count_boxes, 1, -1
             if (count_cells_for_box(ibox) > 0) then
-                first_box_smallest_dt = ibox
+                first_box = ibox
                 exit
             end if
         end do
@@ -580,18 +583,18 @@ contains
         end do
 
         ! Number of used boxes
-        count_used_boxes = first_box_smallest_dt - last_box_largest_dt + 1
+        count_used_boxes = first_box - last_box_largest_dt + 1
 
         count_substeps = 1
-        do ibox = 2, first_box_smallest_dt
+        do ibox = 2, first_box
             count_substeps = count_substeps * 2 ! number of sub-time steps that will be set
         end do
         
         if (report) then
-            write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', count_used_boxes, ',first: ', last_box_largest_dt, ', last: ', first_box_smallest_dt
-            write (file_unit, '(a,e15.7/)') 'Smallest time step in sec.: ', dt(first_box_smallest_dt)
+            write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', count_used_boxes, ',first: ', last_box_largest_dt, ', last: ', first_box
+            write (file_unit, '(a,e15.7/)') 'Smallest time step in sec.: ', dt(first_box)
         end if
-        dt(count_boxes + 1) = dt(first_box_smallest_dt) ! boxes running wet are calculated using the smallest step size
+        dt(count_boxes + 1) = dt(first_box) ! boxes running wet are calculated using the smallest step size
 
         !   1i: Create backpointers from cell to order of execution and to box nr.
 
@@ -636,19 +639,17 @@ contains
         do i_substep = 1, count_substeps
             ! Interpolation factor of this step
             fact = real(i_substep) / real(count_substeps, kind = dp)
-
-                                                                ! ||i_substep ||  boxes to integrate        ||    modulo logic ||
-                                                                !  last box to integrate for this sub step
+                                                                ! ||i_substep ||  boxes to integrate        ||  modulo logic  ||
                                                                 ! | 1         | fbox                         |                 |
                                                                 ! | 2         | fbox, fbox-1                 | mod(2    ) = 0  |
-            nbox = first_box_smallest_dt                        ! | 3         | fbox                         |                 |
+            nbox = first_box                                    ! | 3         | fbox                         |                 |
             idx_flux = 1                                        ! | 4         | fbox, fbox-1, fbox-2         | mod(2&4  ) = 0  |
             do ibox = 1, count_used_boxes - 1                   ! | 5         | fbox                         |                 |
                 idx_flux = idx_flux * 2                         ! | 6         | fbox, fbox-1                 | mod(2    ) = 0  |
                 if (mod(i_substep, idx_flux) == 0) then         ! | 7         | fbox                         |                 |
                     nbox = nbox - 1                             ! | 8         | fbox, fbox-1, fbox-2, fbox-3 | mod(2&4&8) = 0  |
                 end if                                          ! | ...       | ...                          |                 |
-            end do    
+            end do
 
             !  PART2a: deal with those cells that are filling up with water (running wet)
 
@@ -706,7 +707,7 @@ contains
                     iq = sorted_fluxes(i)
                     if (iq < 0) cycle                ! this flux has been resolved already (it has been previously marked with a negative number)
                     if (flow(iq) == 0.0) cycle
-                    q = flow(iq) * dt(first_box_smallest_dt)
+                    q = flow(iq) * dt(first_box)
                     ifrom = ipoint(1, iq)
                     ito =   ipoint(2, iq)
                     ipb = 0
@@ -853,7 +854,7 @@ contains
                 iq = sorted_fluxes(i)
                 if (iq < 0) cycle
                 if (flow(iq) == 0.0) cycle
-                q = flow(iq) * dt(first_box_smallest_dt)
+                q = flow(iq) * dt(first_box)
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 ipb = 0
@@ -929,7 +930,7 @@ contains
             do i = i_cell_begin, i_cell_end
                 iseg2 = sorted_cells(i)                                          ! cell number
                 if (wdrawal(iseg2) == 0.0) cycle
-                q = wdrawal(iseg2) * dt(first_box_smallest_dt)
+                q = wdrawal(iseg2) * dt(first_box)
                 cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column
                 if (q <= volint(cell_i)) then
                     volint(cell_i) = volint(cell_i) - q
@@ -974,7 +975,7 @@ contains
                         iseg2 = ivert(j)
                         vol = vol + fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2)
                         do substance_i = 1, num_substances_transported                                  !    apply the derivatives (also wasteloads)
-                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, iseg2) * dt(first_box_smallest_dt)
+                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, iseg2) * dt(first_box)
                         end do
                     end do
                     ! calculate concentrations based on new volumes
@@ -1002,7 +1003,7 @@ contains
 
             ! PART2b: set a first order initial horizontal step for all cells in the boxes of this time step
             if (timon) call timstrt("explicit hor-step", ithand3)
-            do ibox = first_box_smallest_dt, nbox, -1
+            do ibox = first_box, nbox, -1
                 i_flow_begin = count_flows_for_box(ibox + 1) + 1
                 i_flow_end = sep_vert_flow_per_box(ibox)
                 do i = i_flow_begin, i_flow_end
@@ -1069,7 +1070,9 @@ contains
                     end if
                 end do                                                  ! End of the loop over exchanges
             end do                                                     ! End of the loop over boxes
-            do ibox = first_box_smallest_dt, nbox, -1
+            
+            ! Update dconc2 (Estimate of conc used in flux correction)
+            do ibox = first_box, nbox, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -1089,7 +1092,7 @@ contains
 
             ! PART2c: apply the horizontal flux correction for all cells in the boxes of this time step
             if (timon) call timstrt("flux correction", ithand4)
-            do ibox = first_box_smallest_dt, nbox, -1
+            do ibox = first_box, nbox, -1
                 i_flow_begin = count_flows_for_box(ibox + 1) + 1
                 i_flow_end = sep_vert_flow_per_box(ibox)
                 do i = i_flow_begin, i_flow_end
@@ -1196,29 +1199,39 @@ contains
                         if (d < 0.0d0) then
                             e2 = d * (conc(substance_i, ifrom) - conc(substance_i, ito))
                             s = sign(1.0d0, e2)
+
+                            ! concentration for node 'from-1' based on type of cell 'from-1'
                             select case (ifrom_1)
-                            case (1:)
-                                cfrm_1 = dconc2(substance_i, ifrom_1)
-                            case (0)
-                                if (s > 0) then
-                                    cfrm_1 = 0.0d0
-                                else
-                                    cfrm_1 = 2.0d0 * dconc2(substance_i, ifrom)
-                                end if
-                            case (:-1)
-                                cfrm_1 = bound(substance_i, -ifrom_1)
+                                ! normal (internal) cell
+                                case (1:)
+                                    cfrm_1 = dconc2(substance_i, ifrom_1)
+                                ! (thin) wall
+                                case (0)
+                                    if (s > 0) then
+                                        cfrm_1 = 0.0d0
+                                    else
+                                        cfrm_1 = 2.0d0 * dconc2(substance_i, ifrom)
+                                    end if
+                                ! boundary
+                                case (:-1)
+                                    cfrm_1 = bound(substance_i, -ifrom_1)
                             end select
+
+                            ! concentration for node 'to+1' based on type of cell 'to+1'
                             select case (ito_1)
-                            case (1:)
-                                cto_1 = dconc2(substance_i, ito_1)
-                            case (0)
-                                if (s > 0) then
-                                    cto_1 = 2.0 * dconc2(substance_i, ito)
-                                else
-                                    cto_1 = 0.0d0
-                                end if
-                            case (:-1)
-                                cto_1 = bound(substance_i, -ito_1)
+                                ! normal (internal) cell
+                                case (1:)
+                                    cto_1 = dconc2(substance_i, ito_1)
+                                ! (thin) wall
+                                case (0)
+                                    if (s > 0) then
+                                        cto_1 = 2.0 * dconc2(substance_i, ito)
+                                    else
+                                        cto_1 = 0.0d0
+                                    end if
+                                ! boundary
+                                case (:-1)
+                                    cto_1 = bound(substance_i, -ito_1)
                             end select
                             e1 = (dconc2(substance_i, ifrom) - cfrm_1) * vfrom
                             e3 = (cto_1 - dconc2(substance_i, ito)) * vto
@@ -1249,7 +1262,7 @@ contains
 
             ! PART2c1: Set the vertical advection of water only for all cells in the boxes of this time step
             if (timon) call timstrt("implicit ver-step", ithand5)
-            do ibox = first_box_smallest_dt, nbox, -1
+            do ibox = first_box, nbox, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -1273,18 +1286,22 @@ contains
                             cell_i = ivert(j)
                             volint(cell_i) = volint(cell_i) - work(3, cell_i) + work(1, cell_i)    ! Valid for Upwind AND Central (JvG)
                             ilay = ilay + 1
+                            ! if vertical upwind
                             if (vertical_upwind) then
                                 dia(ilay) = volint(cell_i)
+
                                 if (work(1, cell_i) > 0.0d0) then
                                     low(ilay) = low(ilay) - work(1, cell_i)
                                 else
                                     dia(ilay) = dia(ilay) - work(1, cell_i)
                                 end if
+
                                 if (work(3, cell_i) > 0.0d0) then
                                     dia(ilay) = dia(ilay) + work(3, cell_i)
                                 else
                                     upr(ilay) = upr(ilay) + work(3, cell_i)
                                 end if
+                            ! non vertical upwind = central?
                             else
                                 upr(ilay) = work(3, cell_i) / 2.0d0
                                 dia(ilay) = volint(cell_i) + work(3, cell_i) / 2.0d0 - work(1, cell_i) / 2.0d0
@@ -1306,7 +1323,6 @@ contains
                         end do
 
                         ! The backward sweep of the double sweep procedure.
-
                         do j = i_top_next_col - 2, i_top_curr_col, -1
                             cell_i = ivert(j)
                             iseg2 = ivert(j + 1)
@@ -1336,7 +1352,7 @@ contains
 
             ! PART2c2: apply all withdrawals that were present in the hydrodynamics as negative wasteload rather than as open boundary flux
             if (timon) call timstrt("massbal", ithand6)
-            do ibox = first_box_smallest_dt, nbox, -1
+            do ibox = first_box, nbox, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -1368,7 +1384,8 @@ contains
                     end do
                 end do
                 if (.not. fluxes) cycle
-                i_flow_begin = sep_vert_flow_per_box(ibox) + 1                                     ! Reconstruct vertical transport for mass balances
+                ! Reconstruct vertical transport for mass balances
+                i_flow_begin = sep_vert_flow_per_box(ibox) + 1
                 i_flow_end = count_flows_for_box(ibox)
                 do i = i_flow_begin, i_flow_end
                     iq = sorted_fluxes(i)
@@ -1376,27 +1393,35 @@ contains
                     if (ipb == 0) cycle
                     ifrom = ipoint(1, iq)
                     ito = ipoint(2, iq)
+                    ! if any wall, cycle
                     if (ifrom == 0 .or. ito == 0) cycle
+
+                    ! if upwind differences
                     if (vertical_upwind) then
-                        q = flow(iq) * dt(ibox)                      ! This is the upwind differences version
+                        q = flow(iq) * dt(ibox)
+                        ! if flow q goes from cell 'from' to 'to'
                         if (q > 0.0) then
                             do substance_i = 1, num_substances_transported
                                 dq = q * dconc2(substance_i, ifrom)
                                 dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                             end do
+                        ! else flow q goes from cell 'to' to 'from'
                         else
                             do substance_i = 1, num_substances_transported
                                 dq = q * dconc2(substance_i, ito)
                                 dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
                             end do
                         end if
+                    ! else central differences
                     else
-                        q = flow(iq) * dt(ibox) / 2.0d0              ! This is the central differences version
+                        q = flow(iq) * dt(ibox) / 2.0d0
+                        ! if flow q goes from cell 'from' to 'to'
                         if (q > 0.0) then
                             do substance_i = 1, num_substances_transported
                                 dq = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
                                 dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                             end do
+                        ! else flow q goes from cell 'to' to 'from'
                         else
                             do substance_i = 1, num_substances_transported
                                 dq = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
@@ -1408,18 +1433,20 @@ contains
             end do
 
             ! PART2e: store the final results in the appropriate arrays for next fractional steps
-            do ibox = first_box_smallest_dt, nbox, -1
+            do ibox = first_box, nbox, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
                     cell_i = sorted_cells(i)
                     vol = fact * volnew(cell_i) + (1.0d0 - fact) * volold(cell_i)
                     volint(cell_i) = vol
+                    ! if cell is not dry
                     if (vol > 1.0d-25) then
                         do substance_i = 1, num_substances_transported
                             rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * dt(ibox)
                             conc(substance_i, cell_i) = rhs(substance_i, cell_i) / vol
                         end do
+                    ! else cell is dry
                     else
                         do substance_i = 1, num_substances_transported
                             rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * dt(ibox)
@@ -1432,18 +1459,23 @@ contains
             ! End of loop over fractional time steps
         end do
 
+        ! All substeps have been calculated, so we have moved one simulation time step
+
         if (report .and. (acc_changed > 0.0 .or. acc_remained > 0.0)) then
             write (file_unit, '(a)') 'Averaged over all steps in this iteration:'
             write (file_unit, '(a,2g12.4)') 'Number of segments changed:  ', acc_changed / count_substeps
             write (file_unit, '(a,2g12.4)') 'Number of segments remained: ', acc_remained / count_substeps
         end if
 
-        do i = 1, count_cells_for_box(count_boxes + 2)                  !  update mass of box of dry cells
+        !  update mass of box of dry cells
+        ! using deriv(substance_i, cell_i) * idt
+        do i = 1, count_cells_for_box(count_boxes + 2)
             cell_i = sorted_cells(i)
             do substance_i = 1, num_substances_transported
                 rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * idt
             end do
         end do
+
 
         ! PART3:  set now the implicit step of additional velocities and diffusions per substance in the vertical
         ! There is also an implicit part in the bed if num_exchanges_bottom_dir > 0.
@@ -1452,10 +1484,11 @@ contains
         if (noqv <= 0) goto 9999
         if (timon) call timstrt("vert.add.fluxes", ithand7)
 
-        ! adjust the vertical distances in the grid
+        ! adjust the vertical distances (mixing lengths) in the grid
         do ibox = count_boxes + 1, nbox, -1
             i_flow_begin = sep_vert_flow_per_box(ibox) + 1
             i_flow_end = count_flows_for_box(ibox)
+            ! loop along vertical flows in each box
             do i = i_flow_begin, i_flow_end
                 iq = sorted_fluxes(i)
                 ifrom = ipoint(1, iq)
@@ -1471,7 +1504,10 @@ contains
             vol = volnew(cell_i)
             do substance_i = 1, num_substances_transported
                 diag(substance_i, cell_i) = vol
-                if (cell_i > num_cells) rhs(substance_i, cell_i) = amass(substance_i, cell_i) + deriv(substance_i, cell_i) * idt
+                ! if volume at sediment bed
+                if (cell_i > num_cells) then
+                    rhs(substance_i, cell_i) = amass(substance_i, cell_i) + deriv(substance_i, cell_i) * idt
+                end if
             end do
         end do
 
@@ -1479,16 +1515,19 @@ contains
         acodia(:, 1:noqv) = 0.0d0
         bcodia(:, 1:noqv) = 0.0d0
 
-        ! Loop over exchanges to fill the matrices
+        ! Loop over (vertical? + sediment?) exchanges to fill the matrices
         do iq = noqh + 1, num_exchanges + num_exchanges_bottom_dir
 
             ! Initialisations, check for transport anyhow
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
+            ! if any wall, cycle
             if (ifrom == 0 .or. ito == 0) cycle
+            ! if two B.C.'s, cycle
             if (ifrom < 0 .and. ito < 0) cycle
             abound = .false.
+            ! if one B.C.
             if (ifrom < 0 .or. ito < 0) abound = .true.
 
             a = area(iq)
@@ -1513,10 +1552,11 @@ contains
             if (iq > num_exchanges) e = 0.0d0        !  no constant water diffusion in the bed
 
             do substance_i = 1, num_substances_transported
-
                 ! advection
                 q = 0.0d0
                 if (ivpnt(substance_i) > 0) q = velo(ivpnt(substance_i), iq) * a
+                
+                ! assign q1 and q2
                 if (sw_settling) then         !  additional velocity upwind
                     if (q > 0.0d0) then
                         q1 = q
@@ -1553,21 +1593,26 @@ contains
                 if (idpnt(substance_i) > 0) d = d + disper(idpnt(substance_i), iq) * dl
                 if (abound .and. disp0bnd) d = 0.0d0
 
-                !           fill the tridiag matrix
-
+                ! fill the tridiag matrix
                 q3 = (q1 + d) * idt
                 q4 = (q2 - d) * idt
+
+                ! if inner cell
                 if (.not. abound) then   ! the regular case
                     diag(substance_i, ifrom) = diag(substance_i, ifrom) + q3
                     bcodia(substance_i, iqv) = bcodia(substance_i, iqv) + q4
                     diag(substance_i, ito) = diag(substance_i, ito) - q4
                     acodia(substance_i, iqv) = acodia(substance_i, iqv) - q3
                 else
+                    ! 'to' cell is not a BC
+                    ! 'from' cell is a BC
                     if (ito > 0) then
                         q3 = q3 * bound(substance_i, -ifrom)
                         diag(substance_i, ito) = diag(substance_i, ito) - q4
                         rhs(substance_i, ito) = rhs(substance_i, ito) + q3
                     end if
+                    ! 'from' cell is not a BC
+                    ! 'to' cell is a BC
                     if (ifrom > 0) then
                         q4 = q4 * bound(substance_i, -ito)
                         diag(substance_i, ifrom) = diag(substance_i, ifrom) + q3
@@ -1601,7 +1646,7 @@ contains
             iq3 = 0                            !  find the second equivalent
             do iq2 = iq + 1, num_exchanges + num_exchanges_bottom_dir            !  pointer
                 if (ipoint(1, iq2) == ifrom .and. &
-                        ipoint(2, iq2) == ito) then
+                    ipoint(2, iq2) == ito) then
                     iq3 = iq2
                     exit
                 end if
@@ -1774,8 +1819,7 @@ contains
 
         end do
 
-        ! take care that rhs of water cells contains the mass again
-
+        ! Convert rhs from concentration to mass using cell volume
         9998 do cell_i = 1, num_cells
             vol = volnew(cell_i)
             do substance_i = 1, num_substances_transported
