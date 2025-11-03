@@ -592,7 +592,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c012_frisianinlet_BLOOM_restart" ref="dflowfm_default_restart">
-  <path version="2025-09-03T12:23:05.532000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
+  <path version="2025-11-03T15:01:54.393000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_restart_map.nc" type="netCDF">
       <parameters>
@@ -1165,7 +1165,7 @@
 </testCase>
 
 <testCase name="e02_f030_c045_simple_solar_radiation_model_all_defaults_BLOOM" ref="dflowfm_default">
-  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c045_simple_solar_radiation_model_all_defaults_BLOOM</path>
+  <path version="2025-11-03T14:30:25.108000">e02_dflowfm/f030_water_quality_processes/c045_simple_solar_radiation_model_all_defaults_BLOOM</path>
   <checks>
     <file name="output/model_map.nc" type="netCDF">
       <parameters>
@@ -1175,7 +1175,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c046_simple_solar_radiation_model_default_albedo_BLOOM" ref="dflowfm_default">
-  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c046_simple_solar_radiation_model_default_albedo_BLOOM</path>
+  <path version="2025-11-03T14:30:26.804000">e02_dflowfm/f030_water_quality_processes/c046_simple_solar_radiation_model_default_albedo_BLOOM</path>
   <checks>
     <file name="output/model_map.nc" type="netCDF">
       <parameters>
@@ -1185,7 +1185,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c047_simple_solar_radiation_model_custom_albedo_BLOOM" ref="dflowfm_default">
-  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c047_simple_solar_radiation_model_custom_albedo_BLOOM</path>
+  <path version="2025-11-03T14:30:29.032000">e02_dflowfm/f030_water_quality_processes/c047_simple_solar_radiation_model_custom_albedo_BLOOM</path>
   <checks>
     <file name="output/model_map.nc" type="netCDF">
       <parameters>
@@ -1195,7 +1195,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c048_simple_net_solar_radiation_model_BLOOM" ref="dflowfm_default">
-  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c048_simple_net_solar_radiation_model_BLOOM</path>
+  <path version="2025-11-03T14:30:30.614000">e02_dflowfm/f030_water_quality_processes/c048_simple_net_solar_radiation_model_BLOOM</path>
   <checks>
     <file name="output/model_map.nc" type="netCDF">
       <parameters>
