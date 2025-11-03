@@ -589,8 +589,8 @@ contains
             count_flows_for_box(ibox) = count_flows_for_box(ibox) + count_flows_for_box(ibox + 1)
         end do
 
-        ! Number of used boxes
-        count_used_boxes = first_box - last_box_largest_dt + 1
+        ! Number of used boxesfirst_box
+        count_used_boxes =  - last_box_largest_dt + 1
 
         count_substeps = 1
         do ibox = 2, first_box
@@ -651,17 +651,17 @@ contains
                                                                 ! ||i_substep ||  boxes to integrate        ||  modulo logic  ||
                                                                 ! | 1         | fbox                         |                 |
                                                                 ! | 2         | fbox, fbox-1                 | mod(2    ) = 0  |
-            last_integr_box = first_box                                    ! | 3         | fbox                         |                 |
+            last_integr_box = first_box                         ! | 3         | fbox                         |                 |
             idx_flux = 1                                        ! | 4         | fbox, fbox-1, fbox-2         | mod(2&4  ) = 0  |
             do ibox = 1, count_used_boxes - 1                   ! | 5         | fbox                         |                 |
                 idx_flux = idx_flux * 2                         ! | 6         | fbox, fbox-1                 | mod(2    ) = 0  |
                 if (mod(i_substep, idx_flux) == 0) then         ! | 7         | fbox                         |                 |
-                    last_integr_box = last_integr_box - 1                             ! | 8         | fbox, fbox-1, fbox-2, fbox-3 | mod(2&4&8) = 0  |
+                    last_integr_box = last_integr_box - 1       ! | 8         | fbox, fbox-1, fbox-2, fbox-3 | mod(2&4&8) = 0  |
                 end if                                          ! | ...       | ...                          |                 |
             end do
 
-            !  PART2a: deal with those cells that are filling up with water (running wet)
-
+            !  PART2a: cells that change volume: in box [count_boxes + 1]; deal with those cells that are filling up with water (running wet)
+            ! All sections of Part2a use delta_t_box(first_box)
             if (timon) call timstrt("flooding", ithand2)      !  'flooding' is evaluated with highest frequency
             i_flow_begin = count_flows_for_box(count_boxes + 2) + 1   !  loop limits for fluxes in this box
             i_flow_end =   sep_vert_flow_per_box(count_boxes + 1)
@@ -671,33 +671,39 @@ contains
             !  PART2a1: sum the mass and volume vertically
             !  to calculate the column averaged concentrations
             !  assigning those values to the upper-most cell in each column
+
+            ! sum volumes (volint) and masses (rhs) onto upper-most cell of each column
             do i = i_cell_begin, i_cell_end
                 cell_i = sorted_cells(i)
                 j = nvert(2, cell_i)                                    ! column number if cell_i == head of column
                 if (j <= 0) cycle                                       ! negative or zero if not head of column
-                i_top_curr_col = nvert(1, j)                            ! pointer to first cell of this column
+                i_top_curr_col = nvert(1, j)                            ! index in ivert() of upper-most cell of this column
                 if (j < num_cells) then
-                    i_top_next_col = nvert(1, j + 1)                    ! pointer to first cell of next column
+                    i_top_next_col = nvert(1, j + 1)                    ! index in ivert() of upper-most cell of next column
                 else
                     i_top_next_col = num_cells + 1                      ! or to just over the edge if j == last column
                 end if
+                ! loop along cells in one column
                 do j = i_top_curr_col + 1, i_top_next_col - 1
-                    iseg2 = ivert(j)                                    ! cell number of this cell in column
+                    iseg2 = ivert(j)                                    ! original cell number; j== index in ivert for this cell
                     volint(cell_i) = volint(cell_i) + volint(iseg2)     ! sum volumes to volumes of 'head of column'
                     do substance_i = 1, num_substances_transported
-                        rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + rhs(substance_i, iseg2)   ! sum masses to masses  of 'head of column'
+                        rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + rhs(substance_i, iseg2)   ! sum masses along column in upper-most cell ('head of column')
                     end do
                 end do
             end do
+            ! update average column concentrations (conc) in upper-most cell; if cell is dry set to 0 mass (rhs) for dissolved species
             do i = i_cell_begin, i_cell_end
                 cell_i = sorted_cells(i)
                 j = nvert(2, cell_i)
                 if (j <= 0) cycle
+                ! if cell is not dry
                 if (abs(volint(cell_i)) > 1.0d-25) then
                     do substance_i = 1, num_substances_transported
                         conc(substance_i, cell_i) = rhs(substance_i, cell_i) / volint(cell_i)      ! column averaged concentrations
                     end do
-                else                                                      ! dry
+                ! else, the cell is fry
+                else
                     do substance_i = 1, num_substances_transported
                         rhs(substance_i, cell_i) = 0.0d0
                         conc(substance_i, cell_i) = 0.0d0
@@ -705,10 +711,10 @@ contains
                 end if
             end do
 
-            ! PART2a1: apply all influxes to the cells first
+            ! PART2a1: apply all influxes to the cells first; volumes and masses are updated
             remained = 1
             iter = 0
-            do while (remained > 0)
+            do while (remained > 0) ! destination is always upper-most cell, origin is upper-most cell if cell is wetting
                 changed = 0
                 remained = 0
                 iter = iter + 1
@@ -720,15 +726,17 @@ contains
                     ifrom = ipoint(1, iq)
                     ito =   ipoint(2, iq)
                     ipb = 0
+                    ! if mass balance output
                     if (fluxes) then
                         if (iqdmp(iq) > 0) ipb = iqdmp(iq)
                     end if
+
                     if (ifrom < 0) then  ! B.C. at cell from
                         if (q > 0.0d0) then
                             ito = ivert(nvert(1, abs(nvert(2, ito))))   ! idx of cell head of collumn
                             volint(ito) = volint(ito) + q
                             do substance_i = 1, num_substances_transported
-                                dq = q * bound(substance_i, -ifrom) !! ?? does the array "bound" contain the bc with positive indices for the corresponding negative ones in cell indexing????
+                                dq = q * bound(substance_i, -ifrom) !! ??
                                 rhs(substance_i, ito) = rhs(substance_i, ito) + dq
                                 conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                 if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dq
@@ -737,8 +745,9 @@ contains
                             sorted_flows(i) = -sorted_flows(i)           ! mark this flux as resolved
                             changed = changed + 1                          ! count fluxes taken care of
                         end if
-                        cycle
+                        cycle ! proceed with next flow
                     end if
+
                     if (ito < 0) then    ! B.C. at cell to
                         if (q < 0.0d0) then
                             ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
@@ -760,7 +769,7 @@ contains
 
                     ! if q is going in direction 'from' --> 'to'
                     if (q > 0) then
-                        ! if destination cell 'to' is wetting (if q > 0)
+                        ! if destination cell ('to') is wetting (if q > 0)
                         if (idx_box_cell(ito) == count_boxes + 1) then
                             ! if origin cell 'from' is also wetting in this time step
                             if (idx_box_cell(ifrom) == count_boxes + 1) then
@@ -784,7 +793,7 @@ contains
                                 end if
                             ! else origin cell 'from' is not 'wetting', so it has enough volume
                             else
-                                ito = ivert(nvert(1, abs(nvert(2, ito))))
+                                ito = ivert(nvert(1, abs(nvert(2, ito)))) ! what about ifrom? no correction to upper-most cell?
                                 volint(ifrom) = volint(ifrom) - q
                                 volint(ito) = volint(ito) + q
                                 do substance_i = 1, num_substances_transported
@@ -979,7 +988,7 @@ contains
                         i_top_next_col = num_cells + 1
                     end if
                     vol = 0.0d0                                            ! determine new integrated volume in the flow-file
-                    ! loop along all cells in current column
+                    ! loop along all cells in current column, sum volumes and update mass with 'deriv'
                     do j = i_top_curr_col, i_top_next_col - 1
                         iseg2 = ivert(j)
                         vol = vol + fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2)
@@ -987,15 +996,16 @@ contains
                             rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, iseg2) * delta_t_box(first_box)
                         end do
                     end do
-                    ! calculate concentrations based on new volumes
+                    ! now calculate concentrations based on new volumes (sum of whole column)
                     if (vol > 1.0d-25) then
                         do substance_i = 1, num_substances_transported
                             conc(substance_i, cell_i) = rhs(substance_i, cell_i) / vol
                         end do
                     end if
+                    ! apply to all cells in the column the same (column-averaged) concentration, and assign corresponding mass to rhs
                     do j = i_top_curr_col, i_top_next_col - 1
                         iseg2 = ivert(j)
-                        f1 = fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2)
+                        f1 = fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2) ! volume at end of sub-timestep
                         volint(iseg2) = f1
                         do substance_i = 1, num_substances_transported
                             conc(substance_i, iseg2) = conc(substance_i, cell_i)
