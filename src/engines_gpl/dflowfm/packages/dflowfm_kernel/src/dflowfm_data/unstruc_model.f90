@@ -1770,7 +1770,7 @@ contains
       call prop_get(md_ptr, 'Time', 'dtInit', dt_init)
 
       call prop_get(md_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis)
-      call prop_get(md_ptr, 'Time', 'transportLocalTimeStepping', ja_transport_local_time_step)
+      call prop_get(md_ptr, 'Time', 'transportLocalTimeStep', ja_transport_local_time_step)
 
       call prop_get(md_ptr, 'Time', 'startDateTime', start_date_time, success)
       if (len_trim(start_date_time) > 0 .and. success) then
