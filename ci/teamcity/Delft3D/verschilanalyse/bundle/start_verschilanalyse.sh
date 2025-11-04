@@ -85,6 +85,7 @@ echo "Using MODEL_REGEX: ${MODEL_REGEX}"
 
 export CURRENT_PREFIX
 export REFERENCE_PREFIX
+export MODELS_PATH
 export MODEL_REGEX
 export BUCKET='s3://devops-test-verschilanalyse'
 export BUILDS_DIR='/p/devops-dsc/verschilanalyse/builds'
