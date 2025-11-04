@@ -52,7 +52,7 @@ contains
       use m_transport, only: dtmin_transp, kk_dtmin
       use m_get_dtmax, only: get_dtmax
       use m_comp_dxiAu, only: comp_dxiAu
-      use m_flowtimes, only: ja_transport_local_time_step
+      use m_flowparameters, only: ja_transport_local_time_step
 
       integer, intent(out) :: jareduced ! maximum time-step is already globally reduced (1) or not (0)
 

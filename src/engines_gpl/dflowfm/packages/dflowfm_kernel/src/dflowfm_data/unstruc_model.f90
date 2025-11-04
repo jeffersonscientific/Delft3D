@@ -1059,6 +1059,7 @@ contains
       if (jatransportautotimestepdiff == 3 .and. kmx > 0) then
          call mess(LEVEL_ERROR, 'Implicit horizontaldiffusion is only implemented in 2D', 'set TransportAutoTimestepdiff = 0, 1 or 2')
       end if
+      call prop_get(md_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step)
 
       call prop_get(md_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D)
       if (Implicitdiffusion2D == 1) then
@@ -1770,7 +1771,6 @@ contains
       call prop_get(md_ptr, 'Time', 'dtInit', dt_init)
 
       call prop_get(md_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis)
-      call prop_get(md_ptr, 'Time', 'transportLocalTimeStep', ja_transport_local_time_step)
 
       call prop_get(md_ptr, 'Time', 'startDateTime', start_date_time, success)
       if (len_trim(start_date_time) > 0 .and. success) then
@@ -2992,6 +2992,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff, 'Auto Timestepdiff in Transport, 0 : lim diff, no lim Dt_tr, 1 : no lim diff, lim Dt_tr, 2: no lim diff, no lim Dt_tr, 3=implicit (only 2D)')
+      call prop_set(prop_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step, '0=no, 1=yes (default) enables local time stepping in the transport module')
       call prop_set(prop_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D, '1 = Yes, 0 = No')
 
       call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')
@@ -3653,7 +3654,6 @@ contains
       call prop_set(prop_ptr, 'Time', 'dtInit', dt_init, 'Initial computation timestep (s)')
 
       call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=yes (default)')
-      call prop_set(prop_ptr, 'Time', 'transportLocalTimeStep', ja_transport_local_time_step, '0=no, 1=yes (default) enables local time stepping in the transport module')
 
       if (writeall .or. ja_timestep_auto /= 1) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
