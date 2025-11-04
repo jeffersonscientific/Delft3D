@@ -1,4 +1,4 @@
-!----- LGPL --------------------------------------------------------------------
+!----- LGPL --------------------------------------------------------------------!----- LGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2025.
 !
@@ -32,9 +32,9 @@
    use precision, only : hp
    implicit none
    real(kind=hp)   , allocatable :: XCENT(:), YCENT(:)
+   integer, allocatable          :: INDX(:,:)
    integer, allocatable          :: EDGEINDX(:,:)
    integer, allocatable          :: TRIEDGE(:,:)
-   integer, allocatable          :: INDX(:,:)
    integer                       :: NUMTRI
    integer                       :: NUMTRIINPOLYGON
    integer                       :: NUMEDGE
@@ -721,15 +721,13 @@
    !! 3: also produce node-edge-triangle mapping tables
    !! for use in Triangulatesamplestonetwork.
 
-   integer              :: maxtri, num_edges
+   integer              :: maxtri
    integer numtriangles
    integer, parameter   :: nh= 1   ! SPvdP: too small if jatri == 0
    integer              :: nsm
    real(kind=hp)        :: trisize
    real(kind=hp)        :: XH(NH), YH(NH)
    integer, allocatable :: idum(:)
-   integer, allocatable          :: INDX2(:,:)
-   integer, allocatable          :: INDX3(:,:)
    
 
    !     check memory
@@ -758,8 +756,6 @@
    do while ( numtri < 0 )
       NSM    = 6*NS + 10
       call realloc (indx, (/3, nsm/), keepExisting=.false., fill=0, stat=ierr)
-      call realloc (indx2, (/3, nsm/), keepExisting=.false., fill=0, stat=ierr)
-      call realloc (indx3, (/3, nsm/), keepExisting=.false., fill=0, stat=ierr)
       CALL AERR ('INDX(3,NSM)',IERR,INT(3*NSM))
 
       if (jatri==3) then
@@ -774,11 +770,10 @@
       MAXTRI = NSM !?
 
       numtri = NSM ! Input value should specify max nr of triangles in indx.
-      CALL TRICALL(jatri,XS,YS,NS,INDX2,NUMTRI,EDGEINDX,NUMEDGE,TRIEDGE,XH,YH,NH,trisize)
-      indx  = INDX2
+      CALL TRICALL(jatri,XS,YS,NS,INDX,NUMTRI,EDGEINDX,NUMEDGE,TRIEDGE,XH,YH,NH,trisize)
       if ( numtri < 0 ) nsm = -numtri
       
-      call delaunay_triangulate_with_edges(xs, ys, ns, indx, numtri, maxtri, edgeindx, numedge, 2*nsm, triedge, ierr)
+      !call delaunay_triangulate_with_edges(xs, ys, ns, indx, numtri, maxtri, edgeindx, numedge, 2*nsm, triedge, ierr)
    end do
    end subroutine DLAUN
       !> Generate Delaunay triangulation mesh with unique edge table
