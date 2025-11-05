@@ -310,7 +310,7 @@ contains
          deallocate (f1dimppar%sectv)
       end if
       allocate (f1dimppar%sectv(ngrid, 8))
-      
+
       if (allocated(nd_mor)) then
          deallocate (nd_mor)
       end if
@@ -437,7 +437,7 @@ contains
       if (allocated(f1dimppar%sectc)) then
          deallocate (f1dimppar%sectc)
       end if
-      allocate (f1dimppar%sectc(ngrid,3))
+      allocate (f1dimppar%sectc(ngrid, 3))
 !
 !cross-section (gridpoint,level)
 !
@@ -1376,8 +1376,8 @@ contains
 
          !bfrict
          do k2 = 1, network%rgs%count !< network%rgs%count = 3 - > main channel, floodplain 1, floodplain 2
-            !Check that the type of friction in FM is valid in SRE. 
-            select case (network%rgs%rough(k2)%frictiontype) 
+            !Check that the type of friction in FM is valid in SRE.
+            select case (network%rgs%rough(k2)%frictiontype)
             case (R_CHEZY)
                bfrict(k2, kbr) = CFRCHC
             case default
@@ -1385,15 +1385,15 @@ contains
                call err_flush()
                iresult = 1
             end select
-            
-            !Check that the same type of friction is applied to all subsections. 
-            if (k2>1) then
-                if (network%rgs%rough(k2)%frictiontype /= network%rgs%rough(k2-1)%frictiontype) then
-                   write (msgbuf, '(a)') 'The same type of friction must be applied to all subsections (i.e., main channel, floodplain 1, floodplain 2, ...).'
-                   call err_flush()
-                   iresult = 1
-                end if
-            end if 
+
+            !Check that the same type of friction is applied to all subsections.
+            if (k2 > 1) then
+               if (network%rgs%rough(k2)%frictiontype /= network%rgs%rough(k2 - 1)%frictiontype) then
+                  write (msgbuf, '(a)') 'The same type of friction must be applied to all subsections (i.e., main channel, floodplain 1, floodplain 2, ...).'
+                  call err_flush()
+                  iresult = 1
+               end if
+            end if
          end do
 !
 !bfrict(1,i)=cfrchc (1) : Chezy constant
@@ -1407,8 +1407,8 @@ contains
 
       end do !kbr
 
-      last_friction_type=network%rgs%rough(1)%frictiontype !initially the overall value. It has already been checked it is the same for all section. 
-      
+      last_friction_type = network%rgs%rough(1)%frictiontype !initially the overall value. It has already been checked it is the same for all section.
+
       do ksre = 1, ngrid
 
          idx_fm = grd_sre_fm(ksre) !index of the global grid point in fm for the global gridpoint <k> in SRE
@@ -1424,10 +1424,10 @@ contains
                call err_flush()
                iresult = 1
             end if
-            last_friction_type=network%crs%cross(idx_crs)%frictiontypepos(k2)
+            last_friction_type = network%crs%cross(idx_crs)%frictiontypepos(k2)
          end do
-         
-         !`sectc(:,1)` = `subsec` 
+
+         !`sectc(:,1)` = `subsec`
          ! subsec(ngrid)     I  Defines the number of sub sections for every
          !                      cross section:
          !                      c1sec (0) : Main section only (0 sub sections)
@@ -1435,55 +1435,55 @@ contains
          !                      c3sec (2) : 2 sub sections
          !                      (For a circle cross section   : 0 ;
          !                       For a sedredge cross section : 1 )
-         sectc(ksre,1)=network%crs%cross(idx_crs)%frictionsectionscount-1
-         
+         sectc(ksre, 1) = network%crs%cross(idx_crs)%frictionsectionscount - 1
+
          !!!
          !!!SUBSECTION 1
          !!!
-         idx_h=network%crs%cross(idx_crs)%tabdef%plainslocation(1)
-         
+         idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(1)
+
          !`sectv(1,2)` = `secth0`
          ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
          !                         grid point.
-         sectv(ksre,2)=network%crs%cross(idx_crs)%tabdef%height(idx_h)
+         sectv(ksre, 2) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
          !`sectv(1,4)` = `afh0`
          ! afh0(ngrid)       I  Flow area Af at water level h=h0 for every
          !                      grid point.
-         sectv(ksre,4)=network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+         sectv(ksre, 4) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
          ! `sectv(1,6)` = `oh0`
          ! oh0(ngrid)        I  Wetted perimeter Ot at water level h=h0 for
-         !                      every grid point.         
-         sectv(ksre,6)=network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
-         
+         !                      every grid point.
+         sectv(ksre, 6) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+
          !
-         !`sectc(:,2)` = `wfh0` 
+         !`sectc(:,2)` = `wfh0`
          ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
          !                      grid point.
-         sectc(ksre,2)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
+         sectc(ksre, 2) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
 
          !!!
          !!!SUBSECTION 2
          !!!
-         idx_h=network%crs%cross(idx_crs)%tabdef%plainslocation(2)
-         
-         !`sectv(1,3)` = `secth1`         
+         idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(2)
+
+         !`sectv(1,3)` = `secth1`
          ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
          !                         point.
-         sectv(ksre,3)=network%crs%cross(idx_crs)%tabdef%height(idx_h)
+         sectv(ksre, 3) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
          !`sectv(1,5)` = `afh1`
          ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
-         !                      grid point.  
-         sectv(ksre,5)=network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+         !                      grid point.
+         sectv(ksre, 5) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
          ! `sectv(1,7)` = `oh1`
          ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
          !                      every grid point.
-         sectv(ksre,7)=network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
-         
+         sectv(ksre, 7) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+
          !
-         !`sectc(:,3)` = `wfh1` 
+         !`sectc(:,3)` = `wfh1`
          ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
          !                      grid point.
-         sectc(ksre,3)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
+         sectc(ksre, 3) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
 
          !bfricp(6,ngrid)   I  Bed friction parameters:
          !                     (1,i) = Parameter for positive flow direction
