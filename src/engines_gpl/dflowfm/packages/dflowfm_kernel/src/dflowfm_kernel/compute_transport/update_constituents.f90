@@ -167,8 +167,9 @@ contains
          end if
       end if
 
-      jaupdate = 1
-
+      jaupdate = 1 ! always update the first step
+      jaupdatehorflux=1 ! always update the first step
+      
       fluxhor = 0.0_dp ! not necessary
       sumhorflux = 0.0_dp
 
@@ -185,9 +186,9 @@ contains
             fluxver = 0.0_dp
          end if
 
-!     determine which fluxes need to be updated
+!     determine which fluxes need to be updated in a second step
          if (nsubsteps > 1) then
-            call get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
+            call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
          end if
 
 !     compute horizontal fluxes, explicit part
