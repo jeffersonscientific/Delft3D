@@ -3271,15 +3271,10 @@ contains
       !                                              VORtech)
       !     Version 1.0    Date 24-01-2008   initial version
       !
-      !     Copyright (c) "E.J.O. Schrama".
-      !     Permission to copy or distribute this software or documentation
-      !     in hard copy or soft copy granted only by written license
-      !     obtained from "Rijkswaterstaat".
-      !     All rights reserved. No part of this publication may be
-      !     reproduced, stored in a retrieval system (e.g., in memory, disk,
-      !     or core) or be transmitted by any means, electronic, mechanical,
-      !     photocopy, recording, or otherwise, without written permission
-      !     from the publisher.
+      !     Copyright © 2025, Rijkswaterstaat, All Rights Reserved.
+      !
+      !     This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
+      !     https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
       !
       ! ********************************************************************
       !
