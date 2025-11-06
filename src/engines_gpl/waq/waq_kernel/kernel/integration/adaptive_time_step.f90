@@ -1430,33 +1430,33 @@ contains
 
                     ! if upwind differences
                     if (vertical_upwind) then
-                        q = flow(iq) * delta_t_box(ibox)
-                        ! if flow q goes from cell 'from' to 'to'
-                        if (q > 0.0) then
+                        dlt_vol = flow(iq) * delta_t_box(ibox)
+                        ! if flow dlt_vol goes from cell 'from' to 'to'
+                        if (dlt_vol > 0.0) then
                             do substance_i = 1, num_substances_transported
-                                dlt_mass = q * dconc2(substance_i, ifrom)
+                                dlt_mass = dlt_vol * dconc2(substance_i, ifrom)
                                 dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             end do
-                        ! else flow q goes from cell 'to' to 'from'
+                        ! else flow dlt_vol goes from cell 'to' to 'from'
                         else
                             do substance_i = 1, num_substances_transported
-                                dlt_mass = q * dconc2(substance_i, ito)
+                                dlt_mass = dlt_vol * dconc2(substance_i, ito)
                                 dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end do
                         end if
                     ! else central differences
                     else
-                        q = flow(iq) * delta_t_box(ibox) / 2.0d0
-                        ! if flow q goes from cell 'from' to 'to'
-                        if (q > 0.0) then
+                        dlt_vol = flow(iq) * delta_t_box(ibox) / 2.0d0
+                        ! if flow dlt_vol goes from cell 'from' to 'to'
+                        if (dlt_vol > 0.0) then
                             do substance_i = 1, num_substances_transported
-                                dlt_mass = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
+                                dlt_mass = dlt_vol * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
                                 dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             end do
-                        ! else flow q goes from cell 'to' to 'from'
+                        ! else flow dlt_vol goes from cell 'to' to 'from'
                         else
                             do substance_i = 1, num_substances_transported
-                                dlt_mass = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
+                                dlt_mass = dlt_vol * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
                                 dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end do
                         end if
