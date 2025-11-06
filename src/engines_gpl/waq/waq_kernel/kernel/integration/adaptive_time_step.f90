@@ -149,13 +149,14 @@ contains
         real(kind = dp) :: al                                 !< This length
         real(kind = dp) :: dl                                 !< Area / length
         real(kind = dp) :: d                                  !< Dispersion for this substance
-        real(kind = dp) :: dq                                 !< Total flux from and to
         real(kind = dp) :: pivot                              !< Help variable matrix inversion
         real(kind = dp) :: vol                                !< Helpvariable for this volume
         real(kind = dp) :: e1, e2, e3                         !< Limiter help variable
         real(kind = dp) :: s                                  !< Limiter sign variable
         real(kind = dp) :: f1, f2                             !< Correction factors central differences
         real(kind = dp) :: q1, q2, q3, q4                     !< Helpvariables to fill the matrix
+        real(kind = dp) :: dlt_vol                            !< delta volume for the sub-time step
+        real(kind = dp) :: dlt_mass                           !< delta mass for the sub-time step
         logical disp0q0                                     !< Bit zero  of integration_id: 1 if no dispersion at zero flow
         logical disp0bnd                                    !< Bit one   of integration_id: 1 if no dispersion across boundaries
         logical loword                                      !< Bit two   of integration_id: 1 if lower order across boundaries
@@ -615,7 +616,7 @@ contains
         work = 0.0
         ! Fill the off-diagonals only once per time step
         ! only done for vertical flows
-        do ibox = count_boxes, last_box_largest_dt, -1
+        do ibox = count_boxes, last_box_largest_dt, -1 !!??????????????????????????????????????????????????????????????
             ! first vertical flow for this box index
             i_flow_begin = sep_vert_flow_per_box(ibox) + 1
             ! last vertical flow for this box index
@@ -626,7 +627,7 @@ contains
                 iq = sorted_flows(i)
                 ifrom = ipoint(1, iq)             !  The diagonal now is the sum of the
                 ito = ipoint(2, iq)               !  new volume that increments with each step
-                if (ifrom == 0 .or. ito == 0) cycle ! if there's any thin wall
+                if (ifrom == 0 .or. ito == 0) cycle ! if it is top of column or bottom of water column, rarely there's any thin wall
                 q = flow(iq) * delta_t_box(ibox)
                 work(3, ifrom) = q               ! flow through lower surface (central or upwind now arranged in one spot, further down)
                 work(1, ito) = q                 ! flow through upper surface
@@ -653,7 +654,7 @@ contains
                                                                 ! ||i_substep ||  boxes to integrate        ||  modulo logic  ||
                                                                 ! | 1         | fbox                         |                 |
                                                                 ! | 2         | fbox, fbox-1                 | mod(2    ) = 0  |
-            last_integr_box = first_box_smallest_dt                         ! | 3         | fbox                         |                 |
+            last_integr_box = first_box_smallest_dt             ! | 3         | fbox                         |                 |
             idx_flux = 1                                        ! | 4         | fbox, fbox-1, fbox-2         | mod(2&4  ) = 0  |
             do ibox = 1, count_used_boxes - 1                   ! | 5         | fbox                         |                 |
                 idx_flux = idx_flux * 2                         ! | 6         | fbox, fbox-1                 | mod(2    ) = 0  |
@@ -704,7 +705,7 @@ contains
                     do substance_i = 1, num_substances_transported
                         conc(substance_i, cell_i) = rhs(substance_i, cell_i) / volint(cell_i)      ! column averaged concentrations
                     end do
-                ! else, the cell is fry
+                ! else, the cell is dry
                 else
                     do substance_i = 1, num_substances_transported
                         rhs(substance_i, cell_i) = 0.0d0
@@ -724,7 +725,7 @@ contains
                     iq = sorted_flows(i)
                     if (iq < 0) cycle                ! this flux has been resolved already (it has been previously marked with a negative number)
                     if (flow(iq) == 0.0) cycle
-                    q = flow(iq) * delta_t_box(first_box_smallest_dt)
+                    dlt_vol = flow(iq) * delta_t_box(first_box_smallest_dt)
                     ifrom = ipoint(1, iq)
                     ito =   ipoint(2, iq)
                     ipb = 0
@@ -734,15 +735,15 @@ contains
                     end if
 
                     if (ifrom < 0) then  ! B.C. at cell from
-                        if (q > 0.0d0) then
-                            ito = ivert(nvert(1, abs(nvert(2, ito))))   ! idx of cell head of collumn
-                            volint(ito) = volint(ito) + q
+                        if (dlt_vol > 0.0d0) then
+                            ito = ivert(nvert(1, abs(nvert(2, ito))))   ! idx of cell head of column
+                            volint(ito) = volint(ito) + dlt_vol
                             do substance_i = 1, num_substances_transported
-                                dq = q * bound(substance_i, -ifrom) !! ??
-                                rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                                dlt_mass = dlt_vol * bound(substance_i, -ifrom) !! ??
+                                rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                                 conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             end do
                             sorted_flows(i) = -sorted_flows(i)           ! mark this flux as resolved
                             changed = changed + 1                          ! count fluxes taken care of
@@ -751,15 +752,15 @@ contains
                     end if
 
                     if (ito < 0) then    ! B.C. at cell to
-                        if (q < 0.0d0) then
+                        if (dlt_vol < 0.0d0) then
                             ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
-                            volint(ifrom) = volint(ifrom) - q
+                            volint(ifrom) = volint(ifrom) - dlt_vol
                             do substance_i = 1, num_substances_transported
-                                dq = q * bound(substance_i, -ito)
-                                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
+                                dlt_mass = dlt_vol * bound(substance_i, -ito)
+                                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
                                 conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
-                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end do
                             sorted_flows(i) = -sorted_flows(i)
                             changed = changed + 1
@@ -769,49 +770,49 @@ contains
 
                     ! No B.C. => Internal volumes
 
-                    ! if q is going in direction 'from' --> 'to'
-                    if (q > 0) then
-                        ! if destination cell ('to') is wetting (if q > 0)
+                    ! if dlt_vol is going in direction 'from' --> 'to'
+                    if (dlt_vol > 0) then
+                        ! if destination cell ('to') is wetting (if dlt_vol > 0)
                         if (idx_box_cell(ito) == count_boxes + 1) then
                             ! if origin cell 'from' is also wetting in this time step
                             if (idx_box_cell(ifrom) == count_boxes + 1) then
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))   ! idx of upper most cell in column of cell from
                                 ito =   ivert(nvert(1, abs(nvert(2, ito))))     ! idx of upper most cell in column of cell to
-                                if (volint(ifrom) >= q) then           !  it should then have enough volume
-                                    volint(ifrom) = volint(ifrom) - q
-                                    volint(ito) = volint(ito) + q
+                                if (volint(ifrom) >= dlt_vol) then           !  it should then have enough volume
+                                    volint(ifrom) = volint(ifrom) - dlt_vol
+                                    volint(ito) = volint(ito) + dlt_vol
                                     do substance_i = 1, num_substances_transported
-                                        dq = q * conc(substance_i, ifrom)
-                                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                                        rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                                        dlt_mass = dlt_vol * conc(substance_i, ifrom)
+                                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                                        rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                                         if (volint(ifrom) > 1.0d-25) conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
                                         conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                                        if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                        if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                                     end do
                                     sorted_flows(i) = -sorted_flows(i)  ! mark this flux as dealt with
                                     changed = changed + 1                 ! add one to the number of fluxes dealt with
                                 else
-                                    remained = remained + 1               ! add one to the number of fluxes not dealt with because of no water
+                                    remained = remained + 1               ! add one to the number of fluxes not dealt with because of not enough water
                                 end if
                             ! else origin cell 'from' is not 'wetting', so it has enough volume
                             else
                                 ito = ivert(nvert(1, abs(nvert(2, ito)))) ! what about ifrom? no correction to upper-most cell?
-                                volint(ifrom) = volint(ifrom) - q
-                                volint(ito) = volint(ito) + q
+                                volint(ifrom) = volint(ifrom) - dlt_vol
+                                volint(ito) = volint(ito) + dlt_vol
                                 do substance_i = 1, num_substances_transported
-                                    dq = q * conc(substance_i, ifrom)
-                                    rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                                    rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                                    dlt_mass = dlt_vol * conc(substance_i, ifrom)
+                                    rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                                    rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                                     if (volint(ifrom) > 1.0d-25) conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
                                     conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                                    if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                    if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                                 end do
                                 sorted_flows(i) = -sorted_flows(i)  ! mark this flux as dealt with
                                 changed = changed + 1                 ! add one to the number of fluxes dealt with
                             end if
                         end if
-                    ! else q is going in direction 'to' --> 'from' (or q==0)
-                    else                                              ! same procedure but now mirrorred for q < 0
+                    ! else dlt_vol is going in direction 'to' --> 'from' (or dlt_vol==0)
+                    else                                              ! same procedure but now mirrorred for dlt_vol < 0
                         ! if destination cell ('from') is wetting
                         if (idx_box_cell(ifrom) == count_boxes + 1) then
                             ! if origin cell ('to') is also wetting
@@ -819,16 +820,16 @@ contains
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom)))) ! upper-most cell in 'from' cell column
                                 ito = ivert(nvert(1, abs(nvert(2, ito))))     ! upper-most cell in 'to' cell column
                                 ! if origin cell ('to') won't go dry
-                                if (volint(ito) > -q) then
-                                    volint(ifrom) = volint(ifrom) - q
-                                    volint(ito) = volint(ito) + q
+                                if (volint(ito) > -dlt_vol) then
+                                    volint(ifrom) = volint(ifrom) - dlt_vol
+                                    volint(ito) = volint(ito) + dlt_vol
                                     do substance_i = 1, num_substances_transported
-                                        dq = q * conc(substance_i, ito)
-                                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                                        rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                                        dlt_mass = dlt_vol * conc(substance_i, ito)
+                                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                                        rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                                         conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
                                         if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                                        if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                        if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                                     end do
                                     sorted_flows(i) = -sorted_flows(i) ! mark this flux as dealt with
                                     changed = changed + 1                ! add one to the number of fluxes dealt with
@@ -839,15 +840,15 @@ contains
                             ! else origin cell ('to') is not wetting
                             else
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
-                                volint(ifrom) = volint(ifrom) - q
-                                volint(ito) = volint(ito) + q
+                                volint(ifrom) = volint(ifrom) - dlt_vol
+                                volint(ito) = volint(ito) + dlt_vol
                                 do substance_i = 1, num_substances_transported
-                                    dq = q * conc(substance_i, ito)
-                                    rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                                    rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                                    dlt_mass = dlt_vol * conc(substance_i, ito)
+                                    rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                                    rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                                     conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
                                     if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                                    if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                    if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                                 end do
                                 sorted_flows(i) = -sorted_flows(i) ! mark this flux as dealt with
                                 changed = changed + 1                ! add one to the number of fluxes dealt with
@@ -874,7 +875,7 @@ contains
                 iq = sorted_flows(i)
                 if (iq < 0) cycle
                 if (flow(iq) == 0.0) cycle
-                q = flow(iq) * delta_t_box(first_box_smallest_dt)
+                dlt_vol = flow(iq) * delta_t_box(first_box_smallest_dt)
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 ipb = 0
@@ -883,30 +884,30 @@ contains
                 end if
                 ! if 'from' cell is a B.C.
                 if (ifrom < 0) then
-                    if (q < 0.0d0) then
+                    if (dlt_vol < 0.0d0) then
                         ito = ivert(nvert(1, abs(nvert(2, ito))))
-                        volint(ito) = volint(ito) + q
+                        volint(ito) = volint(ito) + dlt_vol
                         do substance_i = 1, num_substances_transported
-                            dq = q * conc(substance_i, ito)
-                            rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                            dlt_mass = dlt_vol * conc(substance_i, ito)
+                            rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                             if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                            if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dq
-                            if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                            if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dlt_mass
+                            if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                         end do
                     end if
                     cycle
                 end if
                 ! if 'to' cell is a boundary
                 if (ito < 0) then
-                    if (q > 0.0d0) then
+                    if (dlt_vol > 0.0d0) then
                         ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
-                        volint(ifrom) = volint(ifrom) - q
+                        volint(ifrom) = volint(ifrom) - dlt_vol
                         do substance_i = 1, num_substances_transported
-                            dq = q * conc(substance_i, ifrom)
-                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
+                            dlt_mass = dlt_vol * conc(substance_i, ifrom)
+                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
                             if (volint(ifrom) > 1.0d-25) conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
-                            if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dq
-                            if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                            if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dlt_mass
+                            if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                         end do
                     end if
                     cycle
@@ -914,31 +915,31 @@ contains
 
                 ! inner cells, no B.C.
 
-                ! if q is going in direction 'from' --> 'to'
-                if (q > 0) then
-                    ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))         !    'from' should be wetting if q > 0
-                    volint(ifrom) = volint(ifrom) - q
-                    volint(ito) = volint(ito) + q
+                ! if dlt_vol is going in direction 'from' --> 'to'
+                if (dlt_vol > 0) then
+                    ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))         !    'from' should be wetting if dlt_vol > 0
+                    volint(ifrom) = volint(ifrom) - dlt_vol
+                    volint(ito) = volint(ito) + dlt_vol
                     do substance_i = 1, num_substances_transported
-                        dq = q * conc(substance_i, ifrom)
-                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                        rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                        dlt_mass = dlt_vol * conc(substance_i, ifrom)
+                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                        rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                         if (volint(ifrom) > 1.0d-25) conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
                         conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                        if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                        if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                     end do
-                ! else q is going in direction 'to' --> 'from'
+                ! else dlt_vol is going in direction 'to' --> 'from'
                 else                                                      ! The mirrorred case
-                    ito = ivert(nvert(1, abs(nvert(2, ito))))         !    'to' should be wetting if q < 0
-                    volint(ifrom) = volint(ifrom) - q
-                    volint(ito) = volint(ito) + q
+                    ito = ivert(nvert(1, abs(nvert(2, ito))))         !    'to' should be wetting if dlt_vol < 0
+                    volint(ifrom) = volint(ifrom) - dlt_vol
+                    volint(ito) = volint(ito) + dlt_vol
                     do substance_i = 1, num_substances_transported
-                        dq = q * conc(substance_i, ito)
-                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                        rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                        dlt_mass = dlt_vol * conc(substance_i, ito)
+                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                        rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                         conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
                         if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-                        if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                        if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                     end do
                 end if
             end do
@@ -950,27 +951,27 @@ contains
             do i = i_cell_begin, i_cell_end
                 iseg2 = sorted_cells(i)                                          ! cell number
                 if (wdrawal(iseg2) == 0.0) cycle
-                q = wdrawal(iseg2) * delta_t_box(first_box_smallest_dt)
+                dlt_vol = wdrawal(iseg2) * delta_t_box(first_box_smallest_dt)
                 cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column
-                if (q <= volint(cell_i)) then
-                    volint(cell_i) = volint(cell_i) - q
+                if (dlt_vol <= volint(cell_i)) then
+                    volint(cell_i) = volint(cell_i) - dlt_vol
                 else
-                    write (file_unit, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg2, q, &
+                    write (file_unit, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg2, dlt_vol, &
                             ' m3. Available is', volint(cell_i), ' m3!'
-                    q = volint(cell_i)
+                    dlt_vol = volint(cell_i)
                     volint(cell_i) = 0.0d0
                 end if
                 ipb = isdmp(iseg2)
                 do substance_i = 1, num_substances_transported
-                    dq = q * conc(substance_i, cell_i)
-                    rhs(substance_i, cell_i) = rhs(substance_i, cell_i) - dq
-                    if (massbal) amass2(substance_i, 3) = amass2(substance_i, 3) - dq
-                    if (ipb > 0) dmps(substance_i, ipb, 3) = dmps(substance_i, ipb, 3) + dq
+                    dlt_mass = dlt_vol * conc(substance_i, cell_i)
+                    rhs(substance_i, cell_i) = rhs(substance_i, cell_i) - dlt_mass
+                    if (massbal) amass2(substance_i, 3) = amass2(substance_i, 3) - dlt_mass
+                    if (ipb > 0) dmps(substance_i, ipb, 3) = dmps(substance_i, ipb, 3) + dlt_mass
                 end do
                 do k = 1, num_waste_loads
                     if (iseg2 == iwaste(k)) then
                         do substance_i = 1, num_substances_transported
-                            wstdmp(substance_i, k, 2) = wstdmp(substance_i, k, 2) + q * conc(substance_i, cell_i)
+                            wstdmp(substance_i, k, 2) = wstdmp(substance_i, k, 2) + dlt_vol * conc(substance_i, cell_i)
                         end do
                         exit
                     end if
@@ -1031,66 +1032,66 @@ contains
                 do i = i_flow_begin, i_flow_end
                     iq = sorted_flows(i)
                     if (flow(iq) == 0.0) cycle
-                    q = flow(iq) * delta_t_box(ibox)
+                    dlt_vol = flow(iq) * delta_t_box(ibox)
                     ifrom = ipoint(1, iq)
                     ito = ipoint(2, iq)
                     if (ifrom == 0 .or. ito == 0) cycle
                     ! 'from' cell is a boundary
                     if (ifrom < 0) then
-                        volint(ito) = volint(ito) + q
+                        volint(ito) = volint(ito) + dlt_vol
                         ! if flow is in direction 'from' --> 'to'
-                        if (q > 0.0d0) then
+                        if (dlt_vol > 0.0d0) then
                             do substance_i = 1, num_substances_transported
-                                dq = q * bound(substance_i, -ifrom)
-                                rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                                dlt_mass = dlt_vol * bound(substance_i, -ifrom)
+                                rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                             end do
                         ! else flow is in direction 'to' --> 'from'
                         else
                             do substance_i = 1, num_substances_transported
-                                dq = q * conc(substance_i, ito)
-                                rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                                dlt_mass = dlt_vol * conc(substance_i, ito)
+                                rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                             end do
                         end if
                         cycle
                     end if
                     ! 'to' cell is a boundary
                     if (ito < 0) then
-                        volint(ifrom) = volint(ifrom) - q
+                        volint(ifrom) = volint(ifrom) - dlt_vol
                         ! if flow is in direction 'from' --> 'to'
-                        if (q > 0.0d0) then
+                        if (dlt_vol > 0.0d0) then
                             do substance_i = 1, num_substances_transported
-                                dq = q * conc(substance_i, ifrom)
-                                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
+                                dlt_mass = dlt_vol * conc(substance_i, ifrom)
+                                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
                             end do
                         ! else flow is in direction 'to' --> 'from'
                         else
                             do substance_i = 1, num_substances_transported
-                                dq = q * bound(substance_i, -ito)
-                                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
+                                dlt_mass = dlt_vol * bound(substance_i, -ito)
+                                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
                             end do
                         end if
                         cycle
                     end if
 
                     ! Inner cells, no boundaries
-                    volint(ifrom) = volint(ifrom) - q
-                    volint(ito) = volint(ito) + q
+                    volint(ifrom) = volint(ifrom) - dlt_vol
+                    volint(ito) = volint(ito) + dlt_vol
                     ! if flow is in direction 'from' --> 'to'
-                    if (q > 0.0d0) then
+                    if (dlt_vol > 0.0d0) then
                         do substance_i = 1, num_substances_transported
-                            dq = q * conc(substance_i, ifrom)
-                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                            rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                            dlt_mass = dlt_vol * conc(substance_i, ifrom)
+                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                            rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                         end do
                     ! else flow is in direction 'to' --> 'from'
                     else
                         do substance_i = 1, num_substances_transported
-                            dq = q * conc(substance_i, ito)
-                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                            rhs(substance_i, ito) = rhs(substance_i, ito) + dq
+                            dlt_mass = dlt_vol * conc(substance_i, ito)
+                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                            rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                         end do
                     end if
-                end do                                                  ! End of the loop over exchanges
+                end do                                                 ! End of the loop over exchanges
             end do                                                     ! End of the loop over boxes
             
             ! Update dconc2 in all cells along entire column (Estimate of conc used in flux correction)
@@ -1165,20 +1166,20 @@ contains
                         end if
                         d = d * delta_t_box(ibox)
                         do substance_i = 1, num_substances_transported
-                            dq = d * (bound(substance_i, -ifrom) - conc(substance_i, ito))
-                            rhs(substance_i, ito) = rhs(substance_i, ito) + dq
-                            dconc2(substance_i, ito) = dconc2(substance_i, ito) + dq / vto
+                            dlt_mass = d * (bound(substance_i, -ifrom) - conc(substance_i, ito))
+                            rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
+                            dconc2(substance_i, ito) = dconc2(substance_i, ito) + dlt_mass / vto
                             if (q > 0.0d0) then
-                                dq = dq + q * bound(substance_i, -ifrom) * delta_t_box(ibox)
+                                dlt_mass = dlt_mass + q * bound(substance_i, -ifrom) * delta_t_box(ibox)
                             else
-                                dq = dq + q * conc(substance_i, ito) * delta_t_box(ibox)
+                                dlt_mass = dlt_mass + q * conc(substance_i, ito) * delta_t_box(ibox)
                             end if
-                            if (dq > 0.0d0) then
-                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                            if (dlt_mass > 0.0d0) then
+                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             else
-                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end if
                         end do
                         cycle
@@ -1196,20 +1197,20 @@ contains
                         end if
                         d = d * delta_t_box(ibox)
                         do substance_i = 1, num_substances_transported
-                            dq = d * (conc(substance_i, ifrom) - bound(substance_i, -ito))
-                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                            dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dq / vfrom
+                            dlt_mass = d * (conc(substance_i, ifrom) - bound(substance_i, -ito))
+                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                            dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dlt_mass / vfrom
                             if (q > 0.0d0) then
-                                dq = dq + q * conc(substance_i, ifrom) * delta_t_box(ibox)
+                                dlt_mass = dlt_mass + q * conc(substance_i, ifrom) * delta_t_box(ibox)
                             else
-                                dq = dq + q * bound(substance_i, -ito) * delta_t_box(ibox)
+                                dlt_mass = dlt_mass + q * bound(substance_i, -ito) * delta_t_box(ibox)
                             end if
-                            if (dq > 0.0d0) then
-                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                            if (dlt_mass > 0.0d0) then
+                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             else
-                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end if
                         end do
                         cycle
@@ -1262,24 +1263,24 @@ contains
                             end select
                             e1 = (dconc2(substance_i, ifrom) - cfrm_1) * vfrom
                             e3 = (cto_1 - dconc2(substance_i, ito)) * vto
-                            dq = s * max(0.0d0, min(s * e1, s * e2, s * e3))
+                            dlt_mass = s * max(0.0d0, min(s * e1, s * e2, s * e3))
                         else
-                            dq = d * (dconc2(substance_i, ifrom) - dconc2(substance_i, ito))
+                            dlt_mass = d * (dconc2(substance_i, ifrom) - dconc2(substance_i, ito))
                         end if
-                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                        rhs(substance_i, ito)   = rhs(substance_i, ito)   + dq
-                        dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dq / vfrom
-                        dconc2(substance_i, ito)   = dconc2(substance_i, ito)   + dq / vto
+                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                        rhs(substance_i, ito)   = rhs(substance_i, ito)   + dlt_mass
+                        dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dlt_mass / vfrom
+                        dconc2(substance_i, ito)   = dconc2(substance_i, ito)   + dlt_mass / vto
                         if (ipb > 0) then
                             if (q > 0.0d0) then
-                                dq = dq + q * conc(substance_i, ifrom) * delta_t_box(ibox)
+                                dlt_mass = dlt_mass + q * conc(substance_i, ifrom) * delta_t_box(ibox)
                             else
-                                dq = dq + q * conc(substance_i, ito)   * delta_t_box(ibox)
+                                dlt_mass = dlt_mass + q * conc(substance_i, ito)   * delta_t_box(ibox)
                             end if
-                            if (dq > 0.0d0) then
-                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                            if (dlt_mass > 0.0d0) then
+                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             else
-                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end if
                         end if
                     end do
@@ -1400,10 +1401,10 @@ contains
                     end if
                     ipb = isdmp(cell_i)
                     do substance_i = 1, num_substances_transported
-                        dq = q * dconc2(substance_i, cell_i)
-                        rhs(substance_i, cell_i) = rhs(substance_i, cell_i) - dq
-                        if (massbal) amass2(substance_i, 3) = amass2(substance_i, 3) - dq
-                        if (ipb > 0) dmps(substance_i, ipb, 3) = dmps(substance_i, ipb, 3) + dq
+                        dlt_mass = q * dconc2(substance_i, cell_i)
+                        rhs(substance_i, cell_i) = rhs(substance_i, cell_i) - dlt_mass
+                        if (massbal) amass2(substance_i, 3) = amass2(substance_i, 3) - dlt_mass
+                        if (ipb > 0) dmps(substance_i, ipb, 3) = dmps(substance_i, ipb, 3) + dlt_mass
                     end do
                     do k = 1, num_waste_loads
                         if (cell_i == iwaste(k)) then
@@ -1433,14 +1434,14 @@ contains
                         ! if flow q goes from cell 'from' to 'to'
                         if (q > 0.0) then
                             do substance_i = 1, num_substances_transported
-                                dq = q * dconc2(substance_i, ifrom)
-                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                dlt_mass = q * dconc2(substance_i, ifrom)
+                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             end do
                         ! else flow q goes from cell 'to' to 'from'
                         else
                             do substance_i = 1, num_substances_transported
-                                dq = q * dconc2(substance_i, ito)
-                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                dlt_mass = q * dconc2(substance_i, ito)
+                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end do
                         end if
                     ! else central differences
@@ -1449,14 +1450,14 @@ contains
                         ! if flow q goes from cell 'from' to 'to'
                         if (q > 0.0) then
                             do substance_i = 1, num_substances_transported
-                                dq = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
-                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                dlt_mass = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
+                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                             end do
                         ! else flow q goes from cell 'to' to 'from'
                         else
                             do substance_i = 1, num_substances_transported
-                                dq = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
-                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                dlt_mass = q * (dconc2(substance_i, ifrom) + dconc2(substance_i, ito))
+                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end do
                         end if
                     end if
@@ -1829,28 +1830,28 @@ contains
                 q4 = (q2 - d) * idt
                 if (abound) then
                     if (ito > 0) then
-                        dq = q3 * bound(substance_i, -ifrom) + q4 * rhs(substance_i, ito)
-                        if (dq > 0.0d0) then
-                            amass2(substance_i, 4) = amass2(substance_i, 4) + dq
+                        dlt_mass = q3 * bound(substance_i, -ifrom) + q4 * rhs(substance_i, ito)
+                        if (dlt_mass > 0.0d0) then
+                            amass2(substance_i, 4) = amass2(substance_i, 4) + dlt_mass
                         else
-                            amass2(substance_i, 5) = amass2(substance_i, 5) - dq
+                            amass2(substance_i, 5) = amass2(substance_i, 5) - dlt_mass
                         end if
                     else
-                        dq = q3 * rhs(substance_i, ifrom) + q4 * bound(substance_i, -ito)
-                        if (dq > 0.0d0) then
-                            amass2(substance_i, 5) = amass2(substance_i, 5) + dq
+                        dlt_mass = q3 * rhs(substance_i, ifrom) + q4 * bound(substance_i, -ito)
+                        if (dlt_mass > 0.0d0) then
+                            amass2(substance_i, 5) = amass2(substance_i, 5) + dlt_mass
                         else
-                            amass2(substance_i, 4) = amass2(substance_i, 4) - dq
+                            amass2(substance_i, 4) = amass2(substance_i, 4) - dlt_mass
                         end if
                     end if
                 else
-                    dq = q3 * rhs(substance_i, ifrom) + q4 * rhs(substance_i, ito)
+                    dlt_mass = q3 * rhs(substance_i, ifrom) + q4 * rhs(substance_i, ito)
                 end if
                 if (iqd > 0) then
-                    if (dq > 0) then
-                        dmpq(substance_i, iqd, 1) = dmpq(substance_i, iqd, 1) + dq
+                    if (dlt_mass > 0) then
+                        dmpq(substance_i, iqd, 1) = dmpq(substance_i, iqd, 1) + dlt_mass
                     else
-                        dmpq(substance_i, iqd, 2) = dmpq(substance_i, iqd, 2) - dq
+                        dmpq(substance_i, iqd, 2) = dmpq(substance_i, iqd, 2) - dlt_mass
                     end if
                 end if
             end do
