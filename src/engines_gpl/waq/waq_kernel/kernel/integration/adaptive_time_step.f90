@@ -135,8 +135,8 @@ contains
         integer(kind = int_wp) :: iq                          !< Loop counter exchanges
         integer(kind = int_wp) :: iq2, iq3                    !< Help variables to identify first or second pointers
         integer(kind = int_wp) :: iqv                         !< Help variables in vertical arrays
-        integer(kind = int_wp) :: substance_i                        !< Loop counter substance
-        integer(kind = int_wp) :: cell_i, iseg2                 !< Loopcounter computational volumes
+        integer(kind = int_wp) :: substance_i                 !< Loop counter substance
+        integer(kind = int_wp) :: cell_i, iseg2               !< Loopcounter computational volumes
         integer(kind = int_wp) :: ifrom, ito                  !< From and to volume numbers
         real(kind = dp) :: vfrom, vto                         !< From and to   volumes
         integer(kind = int_wp) :: ifrom_1, ito_1              !< From-1 and to+1 volume numbers
@@ -157,15 +157,15 @@ contains
         real(kind = dp) :: q1, q2, q3, q4                     !< Helpvariables to fill the matrix
         real(kind = dp) :: dlt_vol                            !< delta volume for the sub-time step
         real(kind = dp) :: dlt_mass                           !< delta mass for the sub-time step
-        logical disp0q0                                     !< Bit zero  of integration_id: 1 if no dispersion at zero flow
-        logical disp0bnd                                    !< Bit one   of integration_id: 1 if no dispersion across boundaries
-        logical loword                                      !< Bit two   of integration_id: 1 if lower order across boundaries
-        logical fluxes                                      !< Bit three of integration_id: 1 if mass balance output
-        logical abound                                      !< Is it a boundary?
-        logical wetting                                     !< Are cells becoming wet?
-        logical, save :: sw_settling                        !< Should settling be dealt with upwind?
+        logical disp0q0                                       !< Bit zero  of integration_id: 1 if no dispersion at zero flow
+        logical disp0bnd                                      !< Bit one   of integration_id: 1 if no dispersion across boundaries
+        logical loword                                        !< Bit two   of integration_id: 1 if lower order across boundaries
+        logical fluxes                                        !< Bit three of integration_id: 1 if mass balance output
+        logical abound                                        !< Is it a boundary?
+        logical wetting                                       !< Are cells becoming wet?
+        logical, save :: sw_settling                          !< Should settling be dealt with upwind?
         integer(kind = int_wp), save :: init = 0              !< First call ?
-        integer(kind = int_wp), save :: count_boxes                   !< Number of baskets for transportables
+        integer(kind = int_wp), save :: count_boxes           !< Number of baskets for transportables
         integer(kind = int_wp), allocatable, save :: count_cells_for_box(:)   !< Baskets accumulator cells
         integer(kind = int_wp), allocatable, save :: count_flows_for_box(:)   !< Baskets accumulator flows    , nob+2 stays dry
         real(kind = dp), allocatable, save :: delta_t_box(:)           !< Delta time value of baskets  , nob+1 becomes wet
