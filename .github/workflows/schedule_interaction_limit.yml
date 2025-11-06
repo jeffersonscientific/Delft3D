@@ -1,0 +1,28 @@
+name: "Schedule Interaction Limit for collaborators_only"
+on:
+  # Should be less than the expiration time of the interaction limits
+  schedule:
+    - cron: "*/5 * * * *" # Every 5 minutes
+  workflow_dispatch:
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Malix-Labs/GitHub-Action_Permanent-Interaction-Limits@v1.0.0
+        # See https://github.com/marketplace/actions/permanent-interaction-limits#inputs-variables-and-secrets
+        with:
+          # Description: The target of the interaction limits.
+          # Type: "repository" | "organization" | "user"
+          # Required: False
+          # Default: repository
+          target: repository
+        
+          # Description: The scope of the interaction limits
+          # Type: "existing_users" | "contributors_only" | "collaborators_only"
+          # Required: False
+          # Default: Current interaction limits setting
+          scope: collaborators_only
+
+        env:
+          # See https://github.com/marketplace/actions/permanent-interaction-limits#pre-requisites
+          TOKEN: ${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}
