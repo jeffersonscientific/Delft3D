@@ -6,7 +6,7 @@ If you are entirely new to contributing to open source, [this generic guide](htt
 ## Workflow
  - Request for access on https://github.com/Deltares/Delft3D
  - Create an issue in https://issuetracker.deltares.nl
-   If an issue is not created, you have to create a branch of type "research"
+   For 3rd party developers: create a branch of type "research", or communicate with a Deltares contact person
  - Clone the repository
  - Create a branch using the naming convention below.
    The frequency of updating your branch from main is up to personal taste.
@@ -15,20 +15,6 @@ If you are entirely new to contributing to open source, [this generic guide](htt
    - Continuous Integration pipelines will be triggered: these consist of (Deltares-internal) TeamCity projects to build the source code (Windows and Linux) and subsequently a set of model simulation testbenches. Continuation is only possible when all checks succeed. This will take at least 30 minutes.
    - You have to assign the Pull request to a core developer for reviewing and testing. When succeeded, the tester/reviewer is allowed to merge into main.
  - Official binary deliveries are only allowed using Deltares TeamCity server
-
-## Development workflow
-- Request for access on https://github.com/Deltares/Delft3D
-- Create an issue in https://issuetracker.deltares.nl
-  For 3rd party developers: create a branch of type research, or communicate with a Deltares contact person
-- Clone the repository
-- Create a branch using the naming convention below
-  The frequency of updating your branch from main is up to personal taste.
-  Yet, merge from main as often as possible, and merge back to main as early as possible.
-- Create a Pull Request (not for research branches):
-  - TeamCity projects will be automatically triggered to build the source code (Windows and Linux). Continuation is only possible when it succeeds. This will take at least 30 minutes.
-  - A small set of QuickTests will be triggered on TeamCity. Continuation is only possible when it succeeds. This will take at least 30 minutes.
-  - You have to assign the Pull Request to a core developer for reviewing and testing. When succeeded, the tester/reviewer is allowed to merge into trunk.
-- Official binary deliveries are only allowed using Deltares TeamCity server
 
 ## Branch naming
 For each issue or feature, a separate branch should be created from the main.
