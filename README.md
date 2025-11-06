@@ -1,7 +1,7 @@
 # Delft3D
 This Delft3D repository contains the source code of the simulation engines of the Delft3D 4 and Delft3D Flexible Mesh Suites.
 The two modelling suites can be used for the coastal, estuarine, river, rural and urban applications.
-The engines cover hydrodynamics (D-Flow FM, Delft3D-FLOW), hydrology (D-Hydrology), real time control (D-Real Time Control), morphodynamics (D-Morphology), waves (D-Waves, Delft3D-WAVE), water quality (D-Water Quality, Delft3D-WAQ) and particle tracking (Delft3D-PART).
+The engines cover hydrodynamics (D-Flow FM, Delft3D-FLOW), hydrology (D-Hydrology), real-time control (D-Real Time Control), morphodynamics (D-Morphology), waves (D-Waves, Delft3D-WAVE), water quality (D-Water Quality, Delft3D-WAQ) and particle tracking (Delft3D-PART).
 
 <div align="center">
 <img src="doc/images/Delft3D_logo.png" width="20%">
@@ -12,7 +12,7 @@ For a description of the functionality included in the various components, pleas
 
 ## Support packages
 
-If you're interested in using these products, but don't want to compile or contribute to the development, then check out the following websites for software service packages:
+If you are interested in using these products, but don't want to compile or contribute to the development, then check out the following websites for software service packages:
 
 - **Delft3D 4 Suite website:** https://www.deltares.nl/en/software-and-data/products/delft3d-4-suite
 - **Delft3D FM Suite:** https://www.deltares.nl/en/software-and-data/products/delft3d-flexible-mesh-suite
@@ -28,6 +28,11 @@ Community websites:
 - **Delft3D 4 Community website:** https://oss.deltares.nl/web/delft3d
 - **Delft3D FM Community website:** https://oss.deltares.nl/web/delft3dfm
 
+### Building and running
 For information on compiling, testing and development see the [development](doc/development.md) page.
 
-If you are new to contributing to open source, [this guide](https://opensource.guide/how-to-contribute/) helps explain why, what, and how to successfully get involved.
+### Contributing
+If you want to contribute improvements or new features to our codebase, please see the [contributing](doc/contributing.md) page for information about developer guidelines, code branches and our review process.
+
+## License
+Most simulation engines are licensed under AGPL-3.0 or GPL-3.0, several utility libraries are licensed under LGPL-2.1, and several third-party packages under their original license. Details are listed in the respective subdirectories or source files.

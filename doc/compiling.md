@@ -38,20 +38,6 @@ Replace "..." by the actual path on your system to the checkout directory.
     -> Working Directory: ...\examples\12_dflowfm\test_data\e100_f02_c02-FriesianInlet_schematic_FM
     -> Environment: PATH=...\build_fm-suite\x64\Debug;%PATH%;...\fm-suite\x64\Release\share\bin
 
-# Workflow
-- Request for access on https://github.com/Deltares/Delft3D
-- Create an issue in https://issuetracker.deltares.nl
-  If an issue is not created, you have to create a branch of type research
-- Clone the repository
-- Create a branch using the naming convention below
-  The frequency of updating your branch from main is up to personal taste.
-  Yet, merge from main as often as possible, and merge back to main as early as possible.
-- Create a MergeRequest (not for research branches):
-  - TeamCity projects will be triggered to build the source code (Windows and Linux). Continuation is only possible when it succeeds. This will take at least 30 minutes.
-  - A small set of QuickTests will be triggered on TeamCity. Continuation is only possible when it succeeds. This will take at least 30 minutes.
-  - You have to assign the MergeRequest to a core developer for reviewing and testing. When succeeded, the tester/reviewer is allowed to merge into trunk.
-- Official binary deliveries are only allowed using Deltares TeamCity server
-
 # Unit tests
 ## Running Unit tests
 After building the source code, you can run the unit tests with `ctest`. 
