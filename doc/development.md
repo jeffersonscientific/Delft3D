@@ -1,10 +1,9 @@
-# Development
+# Getting started with code compilation and development
 
 See the following sub-pages:
 
-- [**Compiling**](compiling.md)
+- Prerequisites and **compilation steps** for [Windows](compiling_Windows.md) and [Linux](compiling_Lnux.md).
 - To be added section on **Building containers**; for the time being check the ci/dockerfiles folder.
-- [**Debugging**](debugging.md)
-- [**Unit testing**](unit-testing.md)
-- To be added sections on **Regression testing** and **Validation testing**
-- [**Contributing**](contributing.md)
+- How to **debug** the code on [Windows](debugging.md) and Linux (to be added).
+- Various ways of testing the functionality: [**Unit testing**](unit-testing.md), **regression testing** and **validation** (latter sections to be added).
+- How to [**contribute**](contributing.md) to the development?

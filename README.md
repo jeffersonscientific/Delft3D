@@ -14,22 +14,24 @@ For a description of the functionality included in the various components, pleas
 
 ## Support packages
 
-If you are interested in using these products, but don't want to compile or contribute to the development, then check out the following websites for software service packages:
+If you are interested in using these products, and do not (yet) want to compile or contribute to the development, then check out the following websites for software service packages:
 
 - **Delft3D 4 Suite website:** https://www.deltares.nl/en/software-and-data/products/delft3d-4-suite
 - **Delft3D FM Suite:** https://www.deltares.nl/en/software-and-data/products/delft3d-flexible-mesh-suite
 
+and contact our **sales team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
+
 ## Bug reports
 
-- **Sales and support teams:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
+In case you encounter bugs, please report them to our **support team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
 
 ## Open Source Community
 
-Community websites:
+Community websites for [Delft3D 4](https://oss.deltares.nl/web/delft3d) and [Delft3D FM](https://oss.deltares.nl/web/delft3dfm).
+Source code repositories for the Delft3D [simulation engines](https://github.com/Deltares/Delft3D) (self-reference to this page unless you're looking at a forked version), the MATLAB-based postprocessing package [Delft3D-QUICKPLOT](https://github.com/Deltares/QUICKPLOT), the Python-based pre- and postprocessing packages [dfm_tools](https://github.com/Deltares/dfm_tools) and [hydrolib-core](https://github.com/Deltares/HYDROLIB-core), and our grid generation library [MeshKernel](https://github.com/Deltares/MeshKernel).
 
-- **Delft3D GitHub source code repository:** https://github.com/Deltares/Delft3D (which is this page unless you're looking at a forked version)
-- **Delft3D 4 Community website:** https://oss.deltares.nl/web/delft3d
-- **Delft3D FM Community website:** https://oss.deltares.nl/web/delft3dfm
+A set of pre-compiled user interfaces (Windows only) is available for Delft3D 4 after registration on the Deltares software website.
+See [this page](https://download.deltares.nl/en/delft3d-4-gui-open-source) for details.
 
 ### Building and running
 For information on compiling, testing and development see the [development](doc/development.md) page.

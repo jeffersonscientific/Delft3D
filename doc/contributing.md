@@ -1,18 +1,20 @@
 # Contributing
-In addition to read-only access to the source code, we encourage contributions from our user community. Below are the specifics about our contributing process.
+In addition to read-only access to the source code, we encourage contributions from our user community.
+Below are the specifics about our contributing process.
 
 If you are entirely new to contributing to open source, [this generic guide](https://opensource.guide/how-to-contribute/) also helps explain why, what, and how to successfully get involved in open source projects.
 
 ## Workflow
- - Request for access on https://github.com/Deltares/Delft3D
+ - Create a fork of the Delft3D repository, or request write-access to our Delft3D repository via Delft3D support.
  - Create an issue in https://issuetracker.deltares.nl
    For 3rd party developers: create a branch of type "research", or communicate with a Deltares contact person
- - Clone the repository
+ - Checkout/Clone the repository locally.
  - Create a branch using the naming convention below.
    The frequency of updating your branch from main is up to personal taste.
    Yet, merge from main as often as possible, and merge back to main as early as possible.
- - Create a Pull request (not required for "research" branches):
-   - Continuous Integration pipelines will be triggered: these consist of (Deltares-internal) TeamCity projects to build the source code (Windows and Linux) and subsequently a set of model simulation testbenches. Continuation is only possible when all checks succeed. This will take at least 30 minutes.
+ - Make and test the modifications.
+ - Provide a patch-file, or create a pull request:
+   - Our Continuous Integration pipelines will only be triggered if the pull request is created by a Deltares contact person. These pipelines consist of (Deltares-internal) TeamCity projects to build the source code (Windows and Linux) and subsequently a set of model simulation testbenches. Continuation is only possible when all checks succeed. This will take at least 30 minutes.
    - You have to assign the Pull request to a core developer for reviewing and testing. When succeeded, the tester/reviewer is allowed to merge into main.
  - Official binary deliveries are only allowed using Deltares TeamCity server
 
