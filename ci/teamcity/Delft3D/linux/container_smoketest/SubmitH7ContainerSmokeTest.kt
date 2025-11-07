@@ -83,11 +83,11 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                 echo and prepare run scripts
                 cp ${'$'}hpc_smoke_path/common_utilities.sh .
                 cp ${'$'}hpc_smoke_path/run_all_models.sh .
-                cp ${'$'}hpc_smoke_path/schedule_tc_job.sh .
-                cp ${'$'}hpc_smoke_path/schedule_tc_job_wrapper.sh .
-                sed -i 's/CONFIGURATION_ID="${'$'}1"/CONFIGURATION_ID="%teamcity_receive_config%"/' schedule_tc_job_wrapper.sh
-                sed -i 's/DEPENDENCY_BUILD_ID="${'$'}2"/DEPENDENCY_BUILD_ID="%teamcity.build.id%"/' schedule_tc_job_wrapper.sh
-                sed -i 's/VCS_COMMIT_HASH="${'$'}3"/VCS_COMMIT_HASH="%build.vcs.number%"/' schedule_tc_job_wrapper.sh
+                cp ${'$'}hpc_smoke_path/schedule_teamcity_receive_job.sh .
+                cp ${'$'}hpc_smoke_path/schedule_teamcity_receive_job_wrapper.sh .
+                sed -i 's/CONFIGURATION_ID="${'$'}1"/CONFIGURATION_ID="%teamcity_receive_config%"/' schedule_teamcity_receive_job_wrapper.sh
+                sed -i 's/DEPENDENCY_BUILD_ID="${'$'}2"/DEPENDENCY_BUILD_ID="%teamcity.build.id%"/' schedule_teamcity_receive_job_wrapper.sh
+                sed -i 's/VCS_COMMIT_HASH="${'$'}3"/VCS_COMMIT_HASH="%build.vcs.number%"/' schedule_teamcity_receive_job_wrapper.sh
             """.trimIndent()
         }
         script {

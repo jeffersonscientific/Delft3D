@@ -32,6 +32,6 @@ echo "VCS Commit Hash: $VCS_COMMIT_HASH"
 echo "VCS Commit Hash short: $VCS_HASH_SHORT"
 
 # Execute the TeamCity scheduler script
-./schedule_tc_job.sh "$CONFIGURATION_ID" --depend-on-build "$DEPENDENCY_BUILD_ID" build.vcs.number="$VCS_COMMIT_HASH" build.revisions.short="$VCS_HASH_SHORT"
+./schedule_teamcity_receive_job.sh "$CONFIGURATION_ID" --depend-on-build "$DEPENDENCY_BUILD_ID" build.vcs.number="$VCS_COMMIT_HASH" build.revisions.short="$VCS_HASH_SHORT"
 
 echo "TeamCity job scheduler completed at: $(date)"

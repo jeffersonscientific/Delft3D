@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to schedule a build on TeamCity server
-# Usage: ./schedule_tc_job.sh <configuration_id> [--depend-on-build <build_id>] [param_name=param_value] ...
+# Usage: ./schedule_teamcity_receive_job.sh <configuration_id> [--depend-on-build <build_id>] [param_name=param_value] ...
 
 # Check if at least configuration ID is provided
 if [ $# -lt 1 ]; then

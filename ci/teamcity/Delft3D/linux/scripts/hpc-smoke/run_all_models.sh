@@ -61,7 +61,7 @@ submit_dependent_tc_job() {
     local dependency_list=$(IFS=:; echo "${job_ids_array[*]}")
         
     # Submit the dependent job
-    local sbatch_cmd="sbatch --dependency=afterany:${dependency_list} schedule_tc_job_wrapper.sh"
+    local sbatch_cmd="sbatch --dependency=afterany:${dependency_list} schedule_teamcity_receive_job_wrapper.sh"
     echo "Submitting TeamCity job with command: ${sbatch_cmd}"
     local tc_job_output=$(${sbatch_cmd})
     local tc_job_id=$(echo "$tc_job_output" | grep -oE '[0-9]+')
