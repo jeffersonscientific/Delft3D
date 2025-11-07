@@ -46,10 +46,6 @@ module timespace_read
 !
 !!--pseudo code and references--------------------------------------------------
 !
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
-!
 !!--declarations----------------------------------------------------------------
    use precision, only: dp
    implicit none
@@ -142,11 +138,6 @@ module timespace_data
 !!--description-----------------------------------------------------------------
 !
 !!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@deltares.nl
-! Herman.Kernkamp@deltares.nl
-! Adri.Mourits@deltares.nl
-! Edwin.Spee@deltares.nl
 !
 !!--declarations----------------------------------------------------------------
    use precision
@@ -3731,12 +3722,6 @@ contains
    subroutine astrol(mjdate, six)
       ! ====================================================================
       !
-      !     Programmer     R. D. Ray
-      !
-      !     Version 1.0    Date dec. 1990    initial version
-      !
-      ! ********************************************************************
-      !
       !     DESCRIPTION
       !
       !     This copied from richard's subroutine astrol, in goes the
@@ -3750,7 +3735,6 @@ contains
       !     by David Cartwright (personal comm., Nov. 1990).
       !     TIME is UTC in decimal MJD.
       !     All longitudes returned in degrees.
-      !     R. D. Ray    Dec. 1990
       !
       !     Non-vectorized version.
       !
@@ -4483,7 +4467,6 @@ contains
    !>
    subroutine pinpok(xl, yl, n, x, y, inside)
 
-      ! Author: H. Kernkamp
       implicit none
 
       real(kind=dp), intent(in) :: xl, yl ! point under consideration
@@ -5387,12 +5370,6 @@ module timespace
 !    meteogetpaver    : returns the average atmospheric pressure read
 !    meteogetpcorr    : returns whether pressure correction is switched on on
 !                       the boundaries
-!
-!!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
 !
 !!--declarations----------------------------------------------------------------
    use precision
