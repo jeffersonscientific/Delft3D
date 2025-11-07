@@ -119,7 +119,7 @@ get_model_config_from_json() {
     return 1
 }
 
-get_user_nodes_and_tasks() {
+get_nodes_and_tasks() {
     local model_name="$1"
     
     # First, try to get configuration from JSON
@@ -271,7 +271,7 @@ prepare_directory() {
     local model_name=$(basename "$dir")
     echo "    Model: $model_name"
     local nodes_tasks_output
-    nodes_tasks_output=$(get_user_nodes_and_tasks "$model_name")
+    nodes_tasks_output=$(get_nodes_and_tasks "$model_name")
     
     # Display all lines except the last one (status messages)
     echo "$nodes_tasks_output" | head -n -1
