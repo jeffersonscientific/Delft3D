@@ -1,7 +1,9 @@
 # Delft3D
-This Delft3D repository contains the source code of the simulation engines of the Delft3D 4 and Delft3D Flexible Mesh Suites.
-The two modelling suites can be used for the coastal, estuarine, river, rural and urban applications.
-The engines cover hydrodynamics (D-Flow FM, Delft3D-FLOW), hydrology (D-Hydrology), real-time control (D-Real Time Control), morphodynamics (D-Morphology), waves (D-Waves, Delft3D-WAVE), water quality (D-Water Quality, Delft3D-WAQ) and particle tracking (Delft3D-PART).
+This Delft3D repository contains the source code of the simulation engines of the Delft3D 4 and Delft3D Flexible Mesh Suites developed by [Deltares](https://www.deltares.nl/en).
+Both modelling suites can be used for the coastal, estuarine, river, rural and urban applications.
+The Delft3D 4 Suite supports only structured grids.
+Its successor, the Delft3D FM Suite, allows for unstructured grids including 1D networks.
+The simulation engines cover hydrodynamics (D-Flow FM, Delft3D-FLOW), hydrology (D-Hydrology), real-time control (D-Real Time Control), morphodynamics (D-Morphology), waves (D-Waves, Delft3D-WAVE), water quality (D-Water Quality, Delft3D-WAQ) and particle tracking (Delft3D-PART).
 
 <div align="center">
 <img src="doc/images/Delft3D_logo.png" width="20%">
@@ -25,6 +27,7 @@ If you are interested in using these products, but don't want to compile or cont
 
 Community websites:
 
+- **Delft3D GitHub source code repository:** https://github.com/Deltares/Delft3D (which is this page unless you're looking at a forked version)
 - **Delft3D 4 Community website:** https://oss.deltares.nl/web/delft3d
 - **Delft3D FM Community website:** https://oss.deltares.nl/web/delft3dfm
 
