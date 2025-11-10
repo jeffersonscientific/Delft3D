@@ -19,7 +19,14 @@ object LinuxCollect : BuildType({
 
     name = "Collect"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
+
     allowExternalStatus = true
+    artifactRules = """
+        #teamcity:symbolicLinks=as-is
+        lnx64 => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
+        dimrset_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
+        dimrset_version*txt => version
+    """.trimIndent()
 
     vcs {
         root(DslContext.settingsRoot)
@@ -53,11 +60,25 @@ object LinuxCollect : BuildType({
             arguments = "ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
         }
         script {
-            name = "Prepare artifacts to upload"
+            name = "Prepare artifact to upload"
             scriptContent = """
-                echo "Creating lnx64_%build.vcs.number%.tar.gz..."
+                echo "Creating dimrset_lnx64_%build.vcs.number%.tar.gz..."
                 tar -czf dimrset_lnx64_%build.vcs.number%.tar.gz lnx64 dimrset_version_lnx64.txt
             """.trimIndent()
+        }
+        step {
+            name = "Upload artifact to Nexus"
+            type = "RawUploadNexus"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("file_path", "dimrset_lnx64_%build.vcs.number%.tar.gz")
+            param("nexus_username", "%nexus_username%")
+            param("plugin.docker.imagePlatform", "")
+            param("plugin.docker.imageId", "")
+            param("teamcity.step.phase", "")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_url", "https://artifacts.deltares.nl/repository/")
+            param("plugin.docker.run.parameters", "")
+            param("target_path", "delft3d-dev/linux/dimrset/dimrset_lnx64_%build.vcs.number%.tar.gz")
         }
     }
 
