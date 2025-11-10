@@ -18,8 +18,12 @@ digraph ec_module_interpolation {
     fontname="Arial";
     fontsize=12;
     
+    // INTERACTIVE FEATURES: All boxes contain clickable links (URL attributes) 
+    // that navigate directly to relevant source code files in the repository.
+    // Use with Doxygen or GraphViz tools that support URL navigation.
+    
     // Node styling
-    node [shape=record, style=filled, fontname="Arial", fontsize=9];
+    node [shape=box, style=filled, fontname="Arial", fontsize=9];
     edge [fontname="Arial", fontsize=8];
     
     // Input data types
@@ -28,9 +32,9 @@ digraph ec_module_interpolation {
         style=filled;
         fillcolor="lightgray";
         
-        point_data [label="Point Data\n|{Meteorological Stations|Boundary Points|Observation Data}", fillcolor="lightblue"];
-        grid_data [label="Grid Data\n|{Regular Grids|Curvilinear Grids|Unstructured Meshes}", fillcolor="lightgreen"];
-        time_series [label="Time Series\n|{Temporal Sequences|Multi-dimensional|Variable Time Steps}", fillcolor="lightyellow"];
+        point_data [label="Point Data\nMeteorological Stations\nBoundary Points\nObservation Data", fillcolor="lightblue", URL="../../../../../../examples/"];
+        grid_data [label="Grid Data\nRegular Grids\nCurvilinear Grids\nUnstructured Meshes", fillcolor="lightgreen", URL="../../../../../../examples/"];
+        time_series [label="Time Series\nTemporal Sequences\nMulti-dimensional\nVariable Time Steps", fillcolor="lightyellow", URL="../../../../../../examples/"];
     }
     
     // Spatial interpolation methods
@@ -39,10 +43,10 @@ digraph ec_module_interpolation {
         style=filled;
         fillcolor="orange";
         
-        triangulation [label="Triangulation\n|{Delaunay Triangulation|Barycentric Coordinates|Natural Neighbors}", fillcolor="orange"];
-        bilinear [label="Bilinear Interpolation\n|{Grid-based|Four-point|Rectangular Cells}", fillcolor="orange"];
-        nearest [label="Nearest Neighbor\n|{KD-Tree Search|Voronoi Cells|Distance-based}", fillcolor="orange"];
-        averaging [label="Spatial Averaging\n|{Weighted Average|Inverse Distance|Gaussian Kernel}", fillcolor="orange"];
+        triangulation [label="Triangulation\nDelaunay Triangulation\nBarycentric Coordinates\nNatural Neighbors", fillcolor="orange", URL="../../src/ec_basic_interpolation.f90"];
+        bilinear [label="Bilinear Interpolation\nGrid-based\nFour-point\nRectangular Cells", fillcolor="orange", URL="../../src/ec_basic_interpolation.f90"];
+        nearest [label="Nearest Neighbor\nKD-Tree Search\nVoronoi Cells\nDistance-based", fillcolor="orange", URL="../../../../../../third_party_open/kdtree2"];
+        averaging [label="Spatial Averaging\nWeighted Average\nInverse Distance\nGaussian Kernel", fillcolor="orange", URL="../../src/ec_basic_interpolation.f90"];
     }
     
     // Temporal interpolation
@@ -51,9 +55,9 @@ digraph ec_module_interpolation {
         style=filled;
         fillcolor="green";
         
-        linear_time [label="Linear Interpolation\n|{Time-weighted|Piecewise Linear|Continuous}", fillcolor="lightgreen"];
-        block_time [label="Block Function\n|{Constant Intervals|Step-wise|Nearest Time}", fillcolor="lightgreen"];
-        harmonic_time [label="Harmonic Analysis\n|{Tidal Components|Fourier Series|Phase-amplitude}", fillcolor="lightgreen"];
+        linear_time [label="Linear Interpolation\nTime-weighted\nPiecewise Linear\nContinuous", fillcolor="lightgreen", URL="../../src/ec_field.f90"];
+        block_time [label="Block Function\nConstant Intervals\nStep-wise\nNearest Time", fillcolor="lightgreen", URL="../../src/ec_field.f90"];
+        harmonic_time [label="Harmonic Analysis\nTidal Components\nFourier Series\nPhase-amplitude", fillcolor="lightgreen", URL="../../../../../../third_party_open/spherepack"];
     }
     
     // Coordinate transformations
@@ -62,9 +66,9 @@ digraph ec_module_interpolation {
         style=filled;
         fillcolor="purple";
         
-        cartesian [label="Cartesian\n|{X-Y Coordinates|Local Projection|Metric System}", fillcolor="lightcoral"];
-        spherical [label="Spherical\n|{Lat-Lon Coordinates|Geographic System|WGS84}", fillcolor="lightcoral"];
-        curvilinear [label="Curvilinear\n|{Body-fitted|Orthogonal|Non-orthogonal}", fillcolor="lightcoral"];
+        cartesian [label="Cartesian\nX-Y Coordinates\nLocal Projection\nMetric System", fillcolor="lightcoral", URL="../../../../../../utils_lgpl/gridgeom"];
+        spherical [label="Spherical\nLat-Lon Coordinates\nGeographic System\nWGS84", fillcolor="lightcoral", URL="../../../../../../utils_lgpl/gridgeom"];
+        curvilinear [label="Curvilinear\nBody-fitted\nOrthogonal\nNon-orthogonal", fillcolor="lightcoral", URL="../../../../../../utils_lgpl/gridgeom"];
     }
     
     // Algorithm implementations
@@ -73,10 +77,10 @@ digraph ec_module_interpolation {
         style=filled;
         fillcolor="red";
         
-        delaunay [label="Delaunay Algorithm\n|{Triangle Generation|Circumcircle Test|Edge Flipping}", fillcolor="red", fontcolor="white"];
-        kdtree_alg [label="KD-Tree Algorithm\n|{Space Partitioning|Balanced Tree|Range Search}", fillcolor="red", fontcolor="white"];
-        polygon_alg [label="Polygon Algorithm\n|{Point-in-Polygon|Clipping|Intersection}", fillcolor="red", fontcolor="white"];
-        transformation [label="Coordinate Transform\n|{Projection|Rotation|Scaling}", fillcolor="red", fontcolor="white"];
+        delaunay [label="Delaunay Algorithm\nTriangle Generation\nCircumcircle Test\nEdge Flipping", fillcolor="red", fontcolor="white", URL="../../../../../../third_party_open/triangle"];
+        kdtree_alg [label="KD-Tree Algorithm\nSpace Partitioning\nBalanced Tree\nRange Search", fillcolor="red", fontcolor="white", URL="../../../../../../third_party_open/kdtree2"];
+        polygon_alg [label="Polygon Algorithm\nPoint-in-Polygon\nClipping\nIntersection", fillcolor="red", fontcolor="white", URL="../../../../../../third_party_open/polypack"];
+        transformation [label="Coordinate Transform\nProjection\nRotation\nScaling", fillcolor="red", fontcolor="white", URL="../../../../../../utils_lgpl/gridgeom"];
     }
     
     // Target applications
@@ -85,10 +89,10 @@ digraph ec_module_interpolation {
         style=filled;
         fillcolor="yellow";
         
-        meteo_forcing [label="Meteorological Forcing\n|{Wind Fields|Pressure|Temperature|Humidity}", fillcolor="yellow"];
-        boundary_cond [label="Boundary Conditions\n|{Water Levels|Discharges|Concentrations}", fillcolor="yellow"];
-        initial_cond [label="Initial Conditions\n|{Field Initialization|Restart Data|Spin-up}", fillcolor="yellow"];
-        coupling_data [label="Model Coupling\n|{Inter-model Data|Feedback|Synchronization}", fillcolor="yellow"];
+        meteo_forcing [label="Meteorological Forcing\nWind Fields\nPressure\nTemperature\nHumidity", fillcolor="yellow", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/meteo1.f90"];
+        boundary_cond [label="Boundary Conditions\nWater Levels\nDischarges\nConcentrations", fillcolor="yellow", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/externals"];
+        initial_cond [label="Initial Conditions\nField Initialization\nRestart Data\nSpin-up", fillcolor="yellow", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/prepost"];
+        coupling_data [label="Model Coupling\nInter-model Data\nFeedback\nSynchronization", fillcolor="yellow", URL="../../../../../../engines_gpl/dimr"];
     }
     
     // Data flow connections

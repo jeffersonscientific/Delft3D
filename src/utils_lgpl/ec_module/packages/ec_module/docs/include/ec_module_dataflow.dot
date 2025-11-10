@@ -18,8 +18,12 @@ digraph ec_module_dataflow {
     fontname="Arial";
     fontsize=12;
     
+    // INTERACTIVE FEATURES: All boxes contain clickable links (URL attributes) 
+    // that navigate directly to relevant source code files in the repository.
+    // Use with Doxygen or GraphViz tools that support URL navigation.
+    
     // Node styling
-    node [shape=record, style=filled, fontname="Arial", fontsize=9];
+    node [shape=box, style=filled, fontname="Arial", fontsize=9];
     edge [fontname="Arial", fontsize=8];
     
     // Data sources
@@ -28,9 +32,9 @@ digraph ec_module_dataflow {
         style=filled;
         fillcolor="lightgray";
         
-        netcdf_files [label="NetCDF Files\n|Grid Data|Time Series", fillcolor="lightblue"];
-        ascii_files [label="ASCII Files\n|Boundary Conditions|Meteorology", fillcolor="lightgreen"];
-        bc_files [label="BC Files\n|Forcing Data|Parameters", fillcolor="lightyellow"];
+        netcdf_files [label="NetCDF Files\nGrid Data\nTime Series", fillcolor="lightblue", URL="../../../../../../examples/"];
+        ascii_files [label="ASCII Files\nBoundary Conditions\nMeteorolog", fillcolor="lightgreen", URL="../../../../../../examples/"];
+        bc_files [label="BC Files\nForcing Data\nParameters", fillcolor="lightyellow", URL="../../../../../../examples/"];
     }
     
     // File readers
@@ -39,9 +43,9 @@ digraph ec_module_dataflow {
         style=filled;
         fillcolor="orange";
         
-        nc_reader [label="NetCDF Reader\n|ecNetcdfInit|ecNetcdfRead", fillcolor="orange"];
-        ascii_reader [label="ASCII Reader\n|ecBCInit|ecBCRead", fillcolor="orange"];
-        multi_reader [label="Multi-file Reader\n|ecFieldCreate", fillcolor="orange"];
+        nc_reader [label="NetCDF Reader\necNetcdfInit\necNetcdfRead", fillcolor="orange", URL="../../src/ec_filereader.F90"];
+        ascii_reader [label="ASCII Reader\necBCInit\necBCRead", fillcolor="orange", URL="../../src/ec_filereader.F90"];
+        multi_reader [label="Multi-file Reader\necFieldCreate", fillcolor="orange", URL="../../src/ec_field.f90"];
     }
     
     // EC-Module core processing
@@ -50,9 +54,9 @@ digraph ec_module_dataflow {
         style=filled;
         fillcolor="red";
         
-        ec_instance [label="EC Instance\n|tEcInstance|Item Management", fillcolor="red", fontcolor="white"];
-        field_manager [label="Field Manager\n|tEcField|Data Structure", fillcolor="red", fontcolor="white"];
-        connection_mgr [label="Connection Manager\n|tEcConnection|Link Management", fillcolor="red", fontcolor="white"];
+        ec_instance [label="EC Instance\ntEcInstance\nItem Management", fillcolor="red", fontcolor="white", URL="../../src/ec_instance.f90"];
+        field_manager [label="Field Manager\ntEcField\nData Structure", fillcolor="red", fontcolor="white", URL="../../src/ec_field.f90"];
+        connection_mgr [label="Connection Manager\ntEcConnection\nLink Management", fillcolor="red", fontcolor="white", URL="../../src/ec_connection.f90"];
     }
     
     // Interpolation engine
@@ -61,10 +65,10 @@ digraph ec_module_dataflow {
         style=filled;
         fillcolor="green";
         
-        triangulation [label="Triangulation\n|ecTriangulationCreate|Delaunay Triangles", fillcolor="lightgreen"];
-        bilinear [label="Bilinear\n|ecBilinearInterpolation|Grid-based", fillcolor="lightgreen"];
-        averaging [label="Averaging\n|ecAveraging|Point-to-Grid", fillcolor="lightgreen"];
-        kdtree [label="KD-Tree\n|ecKDTreeCreate|Nearest Neighbor", fillcolor="lightgreen"];
+        triangulation [label="Triangulation\necTriangulationCreate\nDelaunay Triangles", fillcolor="lightgreen", URL="../../src/ec_basic_interpolation.f90"];
+        bilinear [label="Bilinear\necBilinearInterpolation\nGrid-based", fillcolor="lightgreen", URL="../../src/ec_basic_interpolation.f90"];
+        averaging [label="Averaging\necAveraging\nPoint-to-Grid", fillcolor="lightgreen", URL="../../src/ec_basic_interpolation.f90"];
+        kdtree [label="KD-Tree\necKDTreeCreate\nNearest Neighbor", fillcolor="lightgreen", URL="../../../../../../third_party_open/kdtree2"];
     }
     
     // Target processing
@@ -73,10 +77,10 @@ digraph ec_module_dataflow {
         style=filled;
         fillcolor="purple";
         
-        dflowfm_data [label="D-Flow FM\n|Meteorology|Boundaries", fillcolor="lightcoral"];
-        dwaq_data [label="D-Water Quality\n|Flow Data|Concentrations", fillcolor="lightcoral"];
-        morph_data [label="D-Morphology\n|Velocities|Sediment", fillcolor="lightcoral"];
-        wave_data [label="D-Waves\n|Wind|Water Levels", fillcolor="lightcoral"];
+        dflowfm_data [label="D-Flow FM\nMeteorology\nBoundaries", fillcolor="lightcoral", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/meteo1.f90"];
+        dwaq_data [label="D-Water Quality\nFlow Data\nConcentrations", fillcolor="lightcoral", URL="../../../../../../engines_gpl/waq"];
+        morph_data [label="D-Morphology\nVelocities\nSediment", fillcolor="lightcoral", URL="../../../../../../engines_gpl/morphology"];
+        wave_data [label="D-Waves\nWind\nWater Levels", fillcolor="lightcoral", URL="../../../../../../engines_gpl/wave"];
     }
     
     // Data flow connections

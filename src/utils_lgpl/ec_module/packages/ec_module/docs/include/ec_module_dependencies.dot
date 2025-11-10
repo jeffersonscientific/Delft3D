@@ -18,6 +18,10 @@ digraph ec_module_dependencies {
     fontname="Arial";
     fontsize=12;
     
+    // INTERACTIVE FEATURES: All boxes contain clickable links (URL attributes) 
+    // that navigate directly to relevant source code files in the repository.
+    // Use with Doxygen or GraphViz tools that support URL navigation.
+    
     // Node styling
     node [shape=box, style=filled, fontname="Arial", fontsize=10];
     edge [fontname="Arial", fontsize=8, color="navy"];
@@ -32,30 +36,30 @@ digraph ec_module_dependencies {
     {rank=same; netcdf_c; hdf5; mpi; blas_lapack; spherepack; polypack;}
     
     // Top level - EC-Module
-    ec_module [label="EC-Module\n(Main Package)", fillcolor="red", fontcolor="white"];
+    ec_module [label="EC-Module\n(Main Package)", fillcolor="red", fontcolor="white", URL="../../../../../../utils_lgpl/ec_module"];
     
     // Second level - Core dependencies
-    deltares_common [label="deltares_common\n(Shared Utilities)", fillcolor="orange"];
-    gridgeom [label="gridgeom\n(Geometric Operations)", fillcolor="orange"];
-    kdtree2 [label="kdtree2\n(Spatial Search)", fillcolor="orange"];
-    io_netcdf [label="io_netcdf\n(NetCDF Interface)", fillcolor="orange"];
-    ec_support [label="ec_support\n(Helper Functions)", fillcolor="orange"];
+    deltares_common [label="deltares_common\n(Shared Utilities)", fillcolor="orange", URL="../../../../../../utils_lgpl/deltares_common"];
+    gridgeom [label="gridgeom\n(Geometric Operations)", fillcolor="orange", URL="../../../../../../utils_lgpl/gridgeom"];
+    kdtree2 [label="kdtree2\n(Spatial Search)", fillcolor="orange", URL="../../../../../../third_party_open/kdtree2"];
+    io_netcdf [label="io_netcdf\n(NetCDF Interface)", fillcolor="orange", URL="../../../../../../utils_lgpl/io_netcdf"];
+    ec_support [label="ec_support\n(Helper Functions)", fillcolor="orange", URL="../../../../../../utils_lgpl/ec_module"];
     
     // Third level - Implementation libraries
-    precision [label="precision\n(Floating Point)", fillcolor="lightblue"];
-    netcdf_fortran [label="netcdf-fortran\n(NetCDF F90)", fillcolor="lightblue"];
-    kdtree_wrapper [label="kdtree_wrapper\n(C Interface)", fillcolor="lightblue"];
-    io_netcdf_data [label="io_netcdf_data\n(Data Structures)", fillcolor="lightblue"];
-    string_module [label="string_module\n(String Operations)", fillcolor="lightblue"];
-    alloc [label="m_alloc\n(Memory Management)", fillcolor="lightblue"];
+    precision [label="precision\n(Floating Point)", fillcolor="lightblue", URL="../../../../../../utils_lgpl/precision"];
+    netcdf_fortran [label="netcdf-fortran\n(NetCDF F90)", fillcolor="lightblue", URL="../../../../../../third_party_open/netcdf"];
+    kdtree_wrapper [label="kdtree_wrapper\n(C Interface)", fillcolor="lightblue", URL="../../../../../../utils_lgpl/kdtree_wrapper"];
+    io_netcdf_data [label="io_netcdf_data\n(Data Structures)", fillcolor="lightblue", URL="../../../../../../utils_lgpl/io_netcdf"];
+    string_module [label="string_module\n(String Operations)", fillcolor="lightblue", URL="../../../../../../utils_lgpl/deltares_common"];
+    alloc [label="m_alloc\n(Memory Management)", fillcolor="lightblue", URL="../../../../../../utils_lgpl/deltares_common"];
     
     // Fourth level - System libraries
-    netcdf_c [label="NetCDF-C\n(C Library)", fillcolor="lightgreen"];
-    hdf5 [label="HDF5\n(Data Format)", fillcolor="lightgreen"];
-    mpi [label="MPI\n(Parallel Comm)", fillcolor="lightgreen"];
-    blas_lapack [label="BLAS/LAPACK\n(Linear Algebra)", fillcolor="lightgreen"];
-    spherepack [label="SPHEREPACK\n(Spherical Harmonics)", fillcolor="lightgreen"];
-    polypack [label="POLYPACK\n(Polygon Operations)", fillcolor="lightgreen"];
+    netcdf_c [label="NetCDF-C\n(C Library)", fillcolor="lightgreen", URL="https://github.com/Unidata/netcdf-c"];
+    hdf5 [label="HDF5\n(Data Format)", fillcolor="lightgreen", URL="https://github.com/HDFGroup/hdf5"];
+    mpi [label="MPI\n(Parallel Comm)", fillcolor="lightgreen", URL="../../../../../../utils_lgpl/deltares_common_mpi"];
+    blas_lapack [label="BLAS/LAPACK\n(Linear Algebra)", fillcolor="lightgreen", URL="../../../../../../third_party_open"];
+    spherepack [label="SPHEREPACK\n(Spherical Harmonics)", fillcolor="lightgreen", URL="../../../../../../third_party_open/spherepack"];
+    polypack [label="POLYPACK\n(Polygon Operations)", fillcolor="lightgreen", URL="../../../../../../third_party_open/polypack"];
     
     // Primary dependencies
     ec_module -> deltares_common [label="utilities"];

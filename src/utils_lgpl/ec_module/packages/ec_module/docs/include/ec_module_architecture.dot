@@ -18,6 +18,10 @@ digraph ec_module_architecture {
     fontname="Arial";
     fontsize=12;
     
+    // INTERACTIVE FEATURES: All boxes contain clickable links (URL attributes) 
+    // that navigate directly to relevant source code files in the repository.
+    // Use with Doxygen or GraphViz tools that support URL navigation.
+    
     // Node styling
     node [shape=box, style=filled, fontname="Arial", fontsize=10];
     edge [fontname="Arial", fontsize=8, color=gray50];
@@ -28,10 +32,10 @@ digraph ec_module_architecture {
         style=filled;
         fillcolor="lightgray";
         
-        dflowfm [label="D-Flow FM\n(Flow Simulation)", fillcolor="lightblue"];
-        dwaq [label="D-Water Quality\n(Water Quality)", fillcolor="lightgreen"];
-        dmorphology [label="D-Morphology\n(Sediment Transport)", fillcolor="lightyellow"];
-        dwaves [label="D-Waves\n(Wave Modeling)", fillcolor="lightcoral"];
+        dflowfm [label="D-Flow FM\n(Flow Simulation)", fillcolor="lightblue", URL="../../../../../../engines_gpl/dflowfm"];
+        dwaq [label="D-Water Quality\n(Water Quality)", fillcolor="lightgreen", URL="../../../../../../engines_gpl/waq"];
+        dmorphology [label="D-Morphology\n(Sediment Transport)", fillcolor="lightyellow", URL="../../../../../../engines_gpl/morphology"];
+        dwaves [label="D-Waves\n(Wave Modeling)", fillcolor="lightcoral", URL="../../../../../../engines_gpl/wave"];
     }
     
     subgraph cluster_infrastructure {
@@ -39,9 +43,9 @@ digraph ec_module_architecture {
         style=filled;
         fillcolor="lightsteelblue";
         
-        ecmodule [label="EC-Module\n(Central Data Exchange)", fillcolor="red", fontcolor="white"];
-        gridgeom [label="Grid Geometry\n(Mesh Operations)", fillcolor="orange"];
-        netcdf_io [label="NetCDF I/O\n(File Operations)", fillcolor="purple", fontcolor="white"];
+        ecmodule [label="EC-Module\n(Central Data Exchange)", fillcolor="red", fontcolor="white", URL="../../../../../../utils_lgpl/ec_module"];
+        gridgeom [label="Grid Geometry\n(Mesh Operations)", fillcolor="orange", URL="../../../../../../utils_lgpl/gridgeom"];
+        netcdf_io [label="NetCDF I/O\n(File Operations)", fillcolor="purple", fontcolor="white", URL="../../../../../../utils_lgpl/io_netcdf"];
     }
     
     subgraph cluster_external {
@@ -49,8 +53,8 @@ digraph ec_module_architecture {
         style=filled;
         fillcolor="lightpink";
         
-        precice [label="preCICE\n(D-Waves only)", fillcolor="magenta", fontcolor="white"];
-        external [label="External Models\n(Third-party)", fillcolor="darkred", fontcolor="white"];
+        precice [label="preCICE\n(D-Waves only)", fillcolor="magenta", fontcolor="white", URL="../../../../../../engines_gpl/wave/packages/wave/src/precice"];
+        external [label="External Models\n(Third-party)", fillcolor="darkred", fontcolor="white", URL="https://github.com/precice/precice"];
     }
     
     // Core EC-Module connections

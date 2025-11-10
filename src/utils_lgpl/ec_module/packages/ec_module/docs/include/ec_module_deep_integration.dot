@@ -18,6 +18,10 @@ digraph ec_module_deep_integration {
     fontname="Arial";
     fontsize=12;
     
+    // INTERACTIVE FEATURES: All boxes contain clickable links (URL attributes) 
+    // that navigate directly to relevant source code files in the repository.
+    // Use with Doxygen or GraphViz tools that support URL navigation.
+    
     // Node styling
     node [shape=box, style=filled, fontname="Arial", fontsize=9];
     edge [fontname="Arial", fontsize=8];
@@ -28,8 +32,8 @@ digraph ec_module_deep_integration {
         style=filled;
         fillcolor="lightsteelblue";
         
-        dimr_config [label="DIMR Config\nXML Configuration\nProcess Management\nComponent Orchestration", fillcolor="steelblue", fontcolor="white"];
-        component_manager [label="Component Manager\nFlow2D3D | D-Flow FM\nD-WAQ | D-Waves | RTC", fillcolor="lightblue"];
+        dimr_config [label="DIMR Config\nXML Configuration\nProcess Management\nComponent Orchestration", fillcolor="steelblue", fontcolor="white", URL="../../../../../../engines_gpl/dimr/packages/dimr_lib/include/dimr.h"];
+        component_manager [label="Component Manager\nFlow2D3D | D-Flow FM\nD-WAQ | D-Waves | RTC", fillcolor="lightblue", URL="../../../../../../engines_gpl/flow2d3d/packages/flow2d3d/src/flow2d3d.cpp"];
     }
     
     // D-Flow FM Instance Level
@@ -39,12 +43,12 @@ digraph ec_module_deep_integration {
         fillcolor="lightcyan";
         
         // Global EC Instance (Singleton Pattern)
-        ec_global_instance [label="Global EC Instance\ntype(tEcInstance), pointer, save\necInstancePtr\nSingleton per D-Flow FM process\nCoordinate System Setup", fillcolor="red", fontcolor="white"];
+        ec_global_instance [label="Global EC Instance\ntype(tEcInstance), pointer, save\necInstancePtr\nSingleton per D-Flow FM process\nCoordinate System Setup", fillcolor="red", fontcolor="white", URL="../../src/ec_instance.f90"];
         
         // D-Flow FM Core Modules
-        meteo_module [label="m_meteo Module\ninitialize_ec_module()\nGlobal Item IDs\nFlow-EC Interface", fillcolor="orange"];
-        flow_init [label="Flow Initialization\nflow_flowinit()\ncall initialize_ec_module()\nEC instance creation", fillcolor="orange"];
-        ext_forcings [label="External Forcings\nfm_external_forcings\nBoundary Updates\nTime-space Relations", fillcolor="orange"];
+        meteo_module [label="m_meteo Module\ninitialize_ec_module()\nGlobal Item IDs\nFlow-EC Interface", fillcolor="orange", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/meteo1.f90"];
+        flow_init [label="Flow Initialization\nflow_flowinit()\ncall initialize_ec_module()\nEC instance creation", fillcolor="orange", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/prepost/flow_flowinit.f90"];
+        ext_forcings [label="External Forcings\nfm_external_forcings\nBoundary Updates\nTime-space Relations", fillcolor="orange", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/fm_external_forcings.f90"];
     }
     
     // Global Data Structures and Shared Memory
@@ -54,16 +58,16 @@ digraph ec_module_deep_integration {
         fillcolor="lightyellow";
         
         // Flow Arrays (Target Memory)
-        flow_arrays [label="Flow Arrays (Targets)\ns1(ndx) - Water levels\nu1(lnx) - Velocities\nconstituents(:,:)\nGrid coordinates\nBoundary conditions", fillcolor="lightgreen"];
+        flow_arrays [label="Flow Arrays (Targets)\ns1(ndx) - Water levels\nu1(lnx) - Velocities\nconstituents(:,:)\nGrid coordinates\nBoundary conditions", fillcolor="lightgreen", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_data/m_flow.f90"];
         
         // Meteo Arrays (Target Memory) 
-        meteo_arrays [label="Meteo Arrays (Targets)\nwindx, windy - Wind components\npatm - Atmospheric pressure\nrainfall, evaporation\ntemperature, humidity", fillcolor="lightgreen"];
+        meteo_arrays [label="Meteo Arrays (Targets)\nwindx, windy - Wind components\npatm - Atmospheric pressure\nrainfall, evaporation\ntemperature, humidity", fillcolor="lightgreen", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/meteo1.f90#L6320"];
         
         // EC Item Registry (Linking Structure)
-        item_registry [label="EC Item Registry\nitem_windx, item_windy\nitem_waterlevelbnd\nitem_velocitybnd\nitem_salinitybnd\nTarget Item IDs", fillcolor="yellow"];
+        item_registry [label="EC Item Registry\nitem_windx, item_windy\nitem_waterlevelbnd\nitem_velocitybnd\nitem_salinitybnd\nTarget Item IDs", fillcolor="yellow", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/meteo1.f90#L6317"];
         
         // Grid Geometry (Shared Reference)
-        grid_geometry [label="Grid Geometry\nxz(ndx), yz(ndx) - Node coordinates\nxu(lnx), yu(lnx) - Link coordinates\nba(ndx) - Cell areas\nCoordinate system", fillcolor="lightcoral"];
+        grid_geometry [label="Grid Geometry\nxz(ndx), yz(ndx) - Node coordinates\nxu(lnx), yu(lnx) - Link coordinates\nba(ndx) - Cell areas\nCoordinate system", fillcolor="lightcoral", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_data/m_flowgeom.f90"];
     }
     
     // EC-Module Internal Structure
@@ -73,10 +77,10 @@ digraph ec_module_deep_integration {
         fillcolor="mistyrose";
         
         // EC Instance Components
-        ec_connections [label="EC Connections\necConnectionsPtr(10)\nSource-Target Links\nInterpolation Methods\nMemory References", fillcolor="pink"];
-        ec_fields [label="EC Fields\necFieldsPtr\nData Arrays\nSpatial-Temporal Data\nNetCDF mappings", fillcolor="pink"];
-        ec_converters [label="EC Converters\necConvertersPtr\nUnit Conversions\nCoordinate Transforms\nValue Mappings", fillcolor="pink"];
-        ec_filereaders [label="EC File Readers\nFile I/O Handles\nNetCDF Readers\nASCII Parsers\nMulti-file Support", fillcolor="pink"];
+        ec_connections [label="EC Connections\necConnectionsPtr(10)\nSource-Target Links\nInterpolation Methods\nMemory References", fillcolor="pink", URL="../../src/ec_connection.f90"];
+        ec_fields [label="EC Fields\necFieldsPtr\nData Arrays\nSpatial-Temporal Data\nNetCDF mappings", fillcolor="pink", URL="../../src/ec_field.f90"];
+        ec_converters [label="EC Converters\necConvertersPtr\nUnit Conversions\nCoordinate Transforms\nValue Mappings", fillcolor="pink", URL="../../src/ec_converter.f90"];
+        ec_filereaders [label="EC File Readers\nFile I/O Handles\nNetCDF Readers\nASCII Parsers\nMulti-file Support", fillcolor="pink", URL="../../src/ec_filereader.F90"];
     }
     
     // Memory Sharing and References
@@ -85,9 +89,9 @@ digraph ec_module_deep_integration {
         style=filled;
         fillcolor="lavender";
         
-        pointer_targets [label="Target Pointers\nDirect Memory References\nNo Data Copying\nReal-time Updates\nFortran C_LOC mappings", fillcolor="mediumpurple", fontcolor="white"];
-        spatial_coupling [label="Spatial Coupling\nKD-Tree Spatial Search\nTriangulation References\nGrid Interpolation\nNearest Neighbor", fillcolor="mediumpurple", fontcolor="white"];
-        temporal_sync [label="Temporal Synchronization\nTime Step Coordination\nInterpolation in Time\nData Validity Windows\nUpdate Triggers", fillcolor="mediumpurple", fontcolor="white"];
+        pointer_targets [label="Target Pointers\nDirect Memory References\nNo Data Copying\nReal-time Updates\nFortran C_LOC mappings", fillcolor="mediumpurple", fontcolor="white", URL="../../src/ec_instance.f90"];
+        spatial_coupling [label="Spatial Coupling\nKD-Tree Spatial Search\nTriangulation References\nGrid Interpolation\nNearest Neighbor", fillcolor="mediumpurple", fontcolor="white", URL="../../src/ec_basic_interpolation.f90"];
+        temporal_sync [label="Temporal Synchronization\nTime Step Coordination\nInterpolation in Time\nData Validity Windows\nUpdate Triggers", fillcolor="mediumpurple", fontcolor="white", URL="../../src/ec_field.f90"];
     }
     
     // Runtime Data Flow
@@ -96,8 +100,8 @@ digraph ec_module_deep_integration {
         style=filled;
         fillcolor="lightgray";
         
-        update_cycle [label="Update Cycle\n1. ec_gettimespacevalue()\n2. Interpolate to targets\n3. Update flow arrays\n4. Continue simulation", fillcolor="gray", fontcolor="white"];
-        boundary_update [label="Boundary Updates\nfm_external_forcings_update_boundaries\nDirect array updates\nReal-time forcing", fillcolor="darkgray", fontcolor="white"];
+        update_cycle [label="Update Cycle\n1. ec_gettimespacevalue()\n2. Interpolate to targets\n3. Update flow arrays\n4. Continue simulation", fillcolor="gray", fontcolor="white", URL="../../src/ec_module.f90"];
+        boundary_update [label="Boundary Updates\nfm_external_forcings_update_boundaries\nDirect array updates\nReal-time forcing", fillcolor="darkgray", fontcolor="white", URL="../../../../../../engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/fm_external_forcings.f90"];
     }
     
     // Integration Connections
