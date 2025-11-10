@@ -12,7 +12,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
     
     templates(
         TemplateMonitorPerformance,
-         TemplateDockerRegistry
+        TemplateDockerRegistry
     )
 
     name = "Receive"
