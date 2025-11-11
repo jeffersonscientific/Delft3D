@@ -1,7 +1,7 @@
 /**
  * @file ec_module_architecture.dot
  * @brief EC-Module Architecture Diagram
- * @details Shows the central role of EC-Module in Delft3D suite data exchange and coupling
+ * @details Shows the central role of EC-Module in DFlowFM suite data exchange and coupling
  * 
  * To generate diagram in Doxygen, use:
  * @dot
@@ -28,7 +28,7 @@ digraph ec_module_architecture {
     
     // Define clusters for grouping
     subgraph cluster_models {
-        label="Delft3D Model Suite";
+        label="DFlowFM Model Suite";
         style=filled;
         fillcolor="lightgray";
         
@@ -48,15 +48,6 @@ digraph ec_module_architecture {
         netcdf_io [label="NetCDF I/O\n(File Operations)", fillcolor="purple", fontcolor="white", URL="../../../../../../utils_lgpl/io_netcdf"];
     }
     
-    subgraph cluster_external {
-        label="External Coupling";
-        style=filled;
-        fillcolor="lightpink";
-        
-        precice [label="preCICE\n(D-Waves only)", fillcolor="magenta", fontcolor="white", URL="../../../../../../engines_gpl/wave/packages/wave/src/precice"];
-        external [label="External Models\n(Third-party)", fillcolor="darkred", fontcolor="white", URL="https://github.com/precice/precice"];
-    }
-    
     // Core EC-Module connections
     ecmodule -> dflowfm [label="meteorology\nboundary conditions"];
     ecmodule -> dwaq [label="flow data\nconcentrations"];
@@ -67,10 +58,6 @@ digraph ec_module_architecture {
     ecmodule -> gridgeom [label="spatial\ninterpolation"];
     ecmodule -> netcdf_io [label="file I/O\ndata access"];
     
-    // External coupling (separate from EC-Module)
-    dwaves -> precice [label="direct\nintegration"];
-    precice -> external [label="multi-physics\ncoupling"];
-    
     // Data flow from models back to EC-Module
     dflowfm -> ecmodule [label="computed\nresults", style=dashed];
     
@@ -79,5 +66,5 @@ digraph ec_module_architecture {
     
     // Title and notes
     labelloc="t";
-    label="EC-Module Architecture in Delft3D Suite\n(preCICE integration currently in D-Waves only)";
+    label="EC-Module Architecture in DFlowFM Suite";
 }

@@ -154,7 +154,7 @@ digraph ec_module_deep_integration {
     
     // Title and Notes
     labelloc="t";
-    label="EC-Module Deep Integration Patterns in Delft3D\nShowing Instance Management, Memory Sharing, and Runtime Coupling";
+    label="EC-Module Deep Integration Patterns in DFlowFM\nShowing Instance Management, Memory Sharing, and Runtime Coupling";
     
     // Add detailed annotations
     annotation [label="Key Integration Patterns:\n• Single EC instance per D-Flow FM process\n• Direct memory references (no copying)\n• Shared coordinate system and grid geometry\n• Real-time array updates via pointers\n• Spatial interpolation with grid coupling\n• Temporal synchronization in update cycles", 

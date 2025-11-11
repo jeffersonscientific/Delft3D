@@ -3,7 +3,7 @@ This page describes the DOT diagrams used in EC-Module documentation.
 
 # EC-Module Documentation Diagrams
 
-This directory contains 4 DOT files for generating professional diagrams in Doxygen documentation of the EC-Module in Delft3D.
+This page contains 4 DOT files for generating professional diagrams in Doxygen documentation of the EC-Module in Delft3D.
 
 ## Files Overview
 
@@ -14,7 +14,6 @@ This directory contains 4 DOT files for generating professional diagrams in Doxy
 - Central data exchange hub
 - Connections to D-Flow FM, D-Water Quality, D-Morphology, D-Waves
 - Infrastructure components (Grid Geometry, NetCDF I/O)
-- **Important**: Shows that preCICE integration is currently only in D-Waves (not EC-Module)
 
 ### 2. `ec_module_dataflow.dot`
 \dotfile ec_module_dataflow.dot "Data Processing Pipeline"
@@ -57,88 +56,6 @@ This directory contains 4 DOT files for generating professional diagrams in Doxy
 - **Shared Grid Geometry**: Coordinate system setup and spatial coupling
 - **Runtime Patterns**: Update cycles, boundary synchronization, temporal coordination
 
-## Usage in Doxygen
-
-### Method 1: Inline DOT graphs
-Add directly to your Doxygen comments:
-
-```
-/**
- * @brief EC-Module Architecture Overview
- * 
- * @dot
- * digraph ec_architecture {
- *     // Copy content from ec_module_architecture.dot here
- *     // (remove the outer digraph declaration)
- * }
- * @enddot
- */
-```
-
-### Method 2: External DOT files
-Reference external files in Doxygen:
-
-```
-/**
- * @brief EC-Module Architecture
- * @dotfile ec_module_architecture.dot "EC-Module Architecture"
- */
-```
-
-### Method 3: Include in documentation pages
-Add to your main documentation page:
-
-```
-/**
- * @mainpage EC-Module Documentation
- * 
- * @section architecture Architecture Overview
- * @dotfile ec_module_architecture.dot "System Architecture"
- * 
- * @section integration Deep Integration Patterns
- * @dotfile ec_module_deep_integration.dot "Instance Management and Memory Sharing"
- * 
- * @section dataflow Data Flow
- * @dotfile ec_module_dataflow.dot "Data Processing Pipeline"
- * 
- * @section dependencies Dependencies
- * @dotfile ec_module_dependencies.dot "Dependency Structure"
- * 
- * @section interpolation Interpolation Methods
- * @dotfile ec_module_interpolation.dot "Interpolation Algorithms"
- */
-```
-
-## Doxygen Configuration
-
-Ensure your Doxyfile has these settings:
-
-```
-HAVE_DOT = YES
-DOT_PATH = /path/to/dot
-CALL_GRAPH = YES
-CALLER_GRAPH = YES
-DOT_IMAGE_FORMAT = svg
-DOT_TRANSPARENT = YES
-DOT_MULTI_TARGETS = YES
-```
-
-## Customization
-
-Each DOT file includes:
-- **Color coding** for different component types
-- **Clustering** for logical grouping
-- **Multiple edge styles** (solid, dashed, dotted)
-- **Shape variety** (boxes, records, ellipses)
-- **Comprehensive labels** with detailed information
-
-You can modify:
-- Colors by changing `fillcolor` attributes
-- Layout by adjusting `rankdir` (TB, LR, BT, RL)
-- Node shapes using `shape` attribute
-- Edge styles using `style` attribute
-- Clustering by modifying `subgraph cluster_*` sections
-
 ## Current State Accuracy
 
 These diagrams reflect the **current implementation** as of the analysis:
@@ -152,13 +69,5 @@ These diagrams reflect the **current implementation** as of the analysis:
 - ✅ **DIMR orchestration**: Component management at process level
 - ✅ **Shared grid geometry**: Coordinate system and spatial coupling
 - ✅ **Real-time updates**: Direct array updates through pointer references
-
-## Generated Formats
-
-Doxygen with Graphviz can generate these diagrams in multiple formats:
-- **SVG** (recommended for web documentation)
-- **PNG** (for PDF documentation)  
-- **EPS** (for LaTeX documentation)
-- **PDF** (for standalone diagrams)
 
 The diagrams are optimized for professional technical documentation and provide comprehensive visual representation of the EC-Module's role and implementation within the Delft3D suite.
