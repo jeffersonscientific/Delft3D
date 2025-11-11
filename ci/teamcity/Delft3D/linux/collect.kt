@@ -62,15 +62,15 @@ object LinuxCollect : BuildType({
         script {
             name = "Prepare artifact to upload"
             scriptContent = """
-                echo "Creating dimrset_lnx64_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz..."
-                tar -czf dimrset_lnx64_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz lnx64 dimrset_version_lnx64.txt
+                echo "Creating dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz..."
+                tar -czf dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz lnx64 dimrset_version_lnx64.txt
             """.trimIndent()
         }
         step {
             name = "Upload artifact to Nexus"
             type = "RawUploadNexusLinux"
             executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("file_path", "dimrset_lnx64_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+            param("file_path", "dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
             param("nexus_username", "%nexus_username%")
             param("plugin.docker.imagePlatform", "")
             param("plugin.docker.imageId", "")
@@ -79,7 +79,7 @@ object LinuxCollect : BuildType({
             param("nexus_repo", "/delft3d-dev")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
             param("plugin.docker.run.parameters", "")
-            param("target_path", "/07_day_retention/dimrset/dimrset_lnx64_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+            param("target_path", "/07_day_retention/dimrset/dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
         }
     }
 
