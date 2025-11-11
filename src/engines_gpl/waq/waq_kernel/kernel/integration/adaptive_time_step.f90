@@ -230,7 +230,6 @@ contains
 
         ! PART 1 : make the administration for the variable time step approach
 
-        !   1a: fill the array with time-tresholds per basket, 13 baskets span 1 hour - 0.9 second
         delta_t_box = get_delta_t_for_boxes(idt, count_boxes)
 
         call calculate_flows_for_cells(num_cells, num_exchanges, noqh, &
@@ -238,115 +237,29 @@ contains
                                     num_exchanges_u_dir, disp0bnd, disp0q0, &
                                     work)
 
-        
+
         call assign_dt_boxes_to_cells(num_cells, work, delta_t_box, &
-        volnew, volold, count_boxes, ivert, nvert, &
-        count_cells_for_box, count_columns, &
-        file_unit, report, &
-        idx_box_cell)
+                        volnew, volold, count_boxes, ivert, nvert, &
+                        count_cells_for_box, count_columns, &
+                        file_unit, report, &
+                        idx_box_cell)
 
-        !   1c: assign a box/ basket number to each cell
-        ! idx_box_cell = 0
-        ! wetting = .false.
-        ! do cell_i = 1, num_cells
-        !     ! no flow at all => dry cell assigned to box (count_boxes + 2)
-        !     if (work(1, cell_i) <= 0.0d0 .and. &       ! no outflow
-        !             work(2, cell_i) <= 0.0d0 .and. &   ! no inflow
-        !             work(3, cell_i) <= 0.0d0) then     ! no dispersive flow
-        !         idx_box_cell(cell_i) = count_boxes + 2 ! cell is dry, the number (count_boxes + 2) is 1 higher than
-        !         cycle                                  ! the number of wet and 'wetting' basket (count_boxes + 1)
-        !     end if
-        !     if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < volold(cell_i)) then    !  box 1 works even if volnew(cell_i) is zero
-        !         idx_box_cell(cell_i) = 1
-        !         cycle
-        !     end if
-        !     ! if the volume has NOT decreased at the end of the timestep
-        !     if (volnew(cell_i) >= volold(cell_i)) then  !  use only volold(cell_i) to determine fractional step
-        !         do ibox = 2, count_boxes
-        !             if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(ibox) < volold(cell_i)) then
-        !                 idx_box_cell(cell_i) = ibox     !  this cell in the basket of this dt(ibox)
-        !                 exit
-        !             end if
-        !             if (ibox == count_boxes) then   !  no suitable time step in range
-        !                 idx_box_cell(cell_i) = count_boxes + 1    !  cell is filling up / becoming wet
-        !                 wetting = .true.      !  by simultaneous inflow: 'wetting' basket.
-        !             end if
-        !         end do
-        !    ! else the volume has decreased at the end of the timestep
-        !     else !  also the last fractional step should be stable
-        !         do ibox = 2, count_boxes
-        !             ! if net value of delta_vol for delta_t_box(ibox) < volnew(cell_i)
-        !             if ((work(1, cell_i) + work(3, cell_i) - (volold(cell_i) - volnew(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < volnew(cell_i)) then
-        !                 idx_box_cell(cell_i) = ibox        !  this cell in the basket of this dt(ibox)
-        !                 exit
-        !             end if
-        !             if (ibox == count_boxes) then               ! no suitable time step in range
-        !                 idx_box_cell(cell_i) = count_boxes + 1  ! so cell is considered becoming dry
-        !                 wetting = .true.                        ! by simultaneous inflow: 'wetting' basket.
-        !             end if
-        !         end do
-        !     end if
+        call assign_dt_boxes_to_exchanges(num_exchanges, ipoint, idx_box_cell, &
+        idx_box_flow, count_flows_for_box)
+
+        ! !   1f: assign a box to each flow and determine how many cells in the entire domain are assigned to each type of box or basket        !   1f: assign a box to each flow and determine how many fluxes in the entire domain are assigned to each type of box or basket (highest of 'from' and 'to')
+        ! count_flows_for_box = 0
+        ! idx_box_flow = 0
+        ! do iq = 1, num_exchanges
+        !     ifrom = ipoint(1, iq)
+        !     ito = ipoint(2, iq)
+        !     ibox = 0
+        !     if (ifrom > 0)   ibox = idx_box_cell(ifrom)
+        !     if (ito > 0)     ibox = max(ibox, idx_box_cell(ito))
+        !     if (ibox == 0)   ibox = count_boxes + 2
+        !     idx_box_flow(iq) = ibox
+        !     count_flows_for_box(ibox) = count_flows_for_box(ibox) + 1
         ! end do
-
-        ! !   1d: assign each cell the highest box number of the column it belongs to
-        ! do i = 1, count_columns
-        !     i_cell_begin = nvert(1, i)
-        !     if (i < num_cells) then
-        !         i_cell_end = nvert(1, i + 1)
-        !     else
-        !         i_cell_end = num_cells + 1
-        !     end if
-        !     box_max = 0
-        !     do j = i_cell_begin, i_cell_end - 1
-        !         cell_i = ivert(j)
-        !         if (idx_box_cell(cell_i) <= count_boxes + 1) then
-        !             box_max = max(box_max, idx_box_cell(cell_i))
-        !         end if
-        !     end do
-        !     if (box_max == 0) cycle
-        !     do j = i_cell_begin, i_cell_end - 1
-        !         cell_i = ivert(j)
-        !         if (idx_box_cell(cell_i) <= count_boxes + 1) then
-        !             idx_box_cell(cell_i) = box_max
-        !         end if
-        !     end do
-        ! end do
-        ! if (wetting .and. report) then
-        !     if (count_columns == num_cells) then
-        !         write (file_unit, '(/A/A)') &
-        !                 ' WARNING in locally_adaptive_time_step, next cells are becoming wet or dry:', &
-        !                 '  cell       outflow         inflow          diffusion       volume-1        volume-2'
-        !     else
-        !         write (file_unit, '(/A/A)') &
-        !                 ' WARNING in locally_adaptive_time_step, next cells and the cells underneith are becoming wet or dry:', &
-        !                 '  cell       outflow         inflow          diffusion       volume-1        volume-2'
-        !     end if
-        !     do i = 1, count_columns
-        !         cell_i = ivert(nvert(1, i))
-        !         if (idx_box_cell(cell_i) == count_boxes + 1) write (file_unit, '(i10,5e16.7)') &
-        !                 cell_i, work(1, cell_i), work(2, cell_i), work(3, cell_i), volold(cell_i), volnew(cell_i)
-        !     end do
-        ! end if
-
-        ! !   1e: count how many cells in the entire domain are assigned to each type of box (basket)
-        ! count_cells_for_box = 0
-        ! do cell_i = 1, num_cells
-        !     count_cells_for_box(idx_box_cell(cell_i)) = count_cells_for_box(idx_box_cell(cell_i)) + 1
-        ! end do
-
-        !   1f: assign a box to each flow and determine how many fluxes in the entire domain are assigned to each type of box or basket (highest of 'from' and 'to')
-        count_flows_for_box = 0
-        idx_box_flow = 0
-        do iq = 1, num_exchanges
-            ifrom = ipoint(1, iq)
-            ito = ipoint(2, iq)
-            ibox = 0
-            if (ifrom > 0)   ibox = idx_box_cell(ifrom)
-            if (ito > 0)     ibox = max(ibox, idx_box_cell(ito))
-            if (ibox == 0)   ibox = count_boxes + 2
-            idx_box_flow(iq) = ibox
-            count_flows_for_box(ibox) = count_flows_for_box(ibox) + 1
-        end do
 
         ! 1g: write report on basket sizes
         if (report) then
@@ -2160,5 +2073,40 @@ contains
         end do
 
     end subroutine assign_dt_boxes_to_cells
+
+    subroutine assign_dt_boxes_to_exchanges(num_exchanges, ipoint, dt_box_for_cell, &
+        dt_box_for_exchange, count_flows_for_box)
+        !> Assigns a delta time box to each exchange based on the boxes of the connected cells.
+        implicit none
+
+        integer, intent(in) :: num_exchanges !< total number of exchanges or flows between cells
+        integer, intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
+        integer, intent(in) :: dt_box_for_cell(:) !< delta time box index assigned to each cell
+        integer, intent(out) :: count_flows_for_box(:) !< number of exchanges assigned to each box
+
+        integer, intent(out) :: dt_box_for_exchange(num_exchanges) !< delta time box index assigned to each exchange
+
+        ! Local variables
+        integer :: idx_exchange !< exchange index in loops
+        integer :: cell_i_from  !< index of cell from which flow originates
+        integer :: cell_i_to    !< index of cell to which flow goes
+        integer :: box_from     !< box index of cell from which flow originates
+        integer :: box_to       !< box index of cell to which flow goes
+
+        !   1f: assign a box/ basket number to each exchange based on the boxes of the connected cells
+        dt_box_for_exchange = 0
+        count_flows_for_box = 0
+        do idx_exchange = 1, num_exchanges
+            cell_i_from = ipoint(1, idx_exchange)
+            cell_i_to = ipoint(2, idx_exchange)
+            box_from = 0
+            box_to = 0
+            if (cell_i_from > 0) box_from = dt_box_for_cell(cell_i_from)
+            if (cell_i_to > 0) box_to = dt_box_for_cell(cell_i_to)
+            dt_box_for_exchange(idx_exchange) = max(box_from, box_to)
+            count_flows_for_box(dt_box_for_exchange(idx_exchange)) = &
+                count_flows_for_box(dt_box_for_exchange(idx_exchange)) + 1
+        end do
+    end subroutine assign_dt_boxes_to_exchanges
 
 end module m_locally_adaptive_time_step
