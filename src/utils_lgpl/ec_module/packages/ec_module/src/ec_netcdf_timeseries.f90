@@ -267,7 +267,7 @@ contains
          ! Check for important var: was it vertical layering?
          positive = ''
          zunits = ''
-         
+         ! TK_Temp
          if (ncptr%standard_names(iVars) == 'z') then ! Only for "existing" netcdf files, Skip for history files
              ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
              if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute

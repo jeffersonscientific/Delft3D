@@ -1874,10 +1874,14 @@ contains
          bctfiletype = BC_FTYPE_ASCII
       else if (index(trim(bctfilename)//'|', '.nc|') > 0) then ! NETCDF: nc-format
          bctfiletype = BC_FTYPE_NETCDF
+         ! TK_Temp
          if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
             call str_lower(quantityname)
             if (quantityname == 'waterlevelbnd') then
                quantityname = 'waterlevel'
+            end if
+            if (quantityname == 'salinitybnd') then
+               quantityname = 'salinity'
             end if
          end if
       else
