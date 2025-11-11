@@ -156,7 +156,7 @@ contains
       dts_store = dts
 
 !  set dts to smallest timestep
-      dts = dts / nsubsteps
+      dts = dts / real(nsubsteps, kind=dp)
 
       if (jampi /= 0) then
 !     determine at which sub timesteps to update
