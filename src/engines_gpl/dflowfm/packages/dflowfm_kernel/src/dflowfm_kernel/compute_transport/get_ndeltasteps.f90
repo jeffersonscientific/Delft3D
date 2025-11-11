@@ -69,7 +69,7 @@ contains
       else
          logtwo = log(2.0_dp)
          nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999_dp))
-         dtmin = dts / nsubsteps
+         dtmin = dts / real(nsubsteps, kind=dp)
 !     get number of substeps
          do kk = 1, Ndxi
             dt = dtmax(kk)
