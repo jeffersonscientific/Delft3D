@@ -62,7 +62,7 @@ object LinuxCollect : BuildType({
         script {
             name = "Prepare artifact to upload"
             scriptContent = """
-                echo "Creating dimrset_lnx64_%product_%build.vcs.number%.tar.gz..."
+                echo "Creating dimrset_lnx64_%product%_%build.vcs.number%.tar.gz..."
                 tar -czf dimrset_lnx64_%product%_%build.vcs.number%.tar.gz lnx64 dimrset_version_lnx64.txt
             """.trimIndent()
         }
