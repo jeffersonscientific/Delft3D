@@ -41,11 +41,7 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    use swan_input
    use flow_data
    use wave_data
-   use m_precice_state_t, only: precice_state_t
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   use precice, only: precicef_read_data
-   use, intrinsic :: iso_c_binding, only: c_double
-#endif
+   use m_wave_precice_state_t, only: wave_precice_state_t
    implicit none
 !
 ! Global variables
@@ -60,7 +56,7 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    integer, dimension(:,:), pointer :: covered
    type(wave_data_type)             :: wavedata
    type(swan_type)                  :: sr               ! swan input structure
-   type(precice_state_t), intent(in) :: precice_state
+   type(wave_precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
@@ -72,10 +68,6 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    logical            :: clbot        = .true.
    character(256)     :: mudfilnam    = ' '
    type(input_fields) :: fif                    ! input fields defined on flow grid
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   real(kind=c_double), dimension(:), allocatable :: bed_level_values
-   integer :: n_points
-#endif
 
    interface
       subroutine grmap_esmf(i1, f1, n1, f2, mmax, nmax, f2s, f2g)
@@ -128,20 +120,7 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
                    & iprint       )
       else
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-         n_points = size(precice_state%vertex_ids)
-         allocate(bed_level_values(n_points))
-         call precicef_read_data(precice_state%swan_mesh_name, precice_state%bed_levels_name, &
-                                 n_points, precice_state%vertex_ids, 0.0_c_double, bed_level_values, &
-                                 len(precice_state%swan_mesh_name), len(precice_state%bed_levels_name))
-         precice_index = 0
-         do j = 1, sif%nmax
-            do i = 1, sif%mmax
-               if (sg%kcs(i, j) /= 0) then
-                  precice_index = precice_index + 1
-                  sif%dps(i, j) = bed_level_values(precice_index)
-               end if
-            end do
-         end do
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%bed_levels_name, sif%dps)
 #else
          !
          ! Read depth from netcdf-file
@@ -167,7 +146,7 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    if (sr%dom(i_swan)%qextnd(q_wl)>0) then
       if (sr%flowgridfile == ' ') then
          !
-         ! Read water level from com-file
+         ! Read water level from com-file (Delft3d4)
          !
          call get_lev (wavedata%time , &
                      & fif%s1, fif%mmax, fif%nmax, &
@@ -180,6 +159,9 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
                    & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                    & iprint       )
       else
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%water_levels_name, sif%s1)
+#else
          !
          ! Read water level from netcdf-file
          !
@@ -192,6 +174,7 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
          call grmap_esmf (i_flow       , fif%s1  , fif%npts, &
                         & sif%s1       , sif%mmax, sif%nmax, &
                         & f2s          , sg      )
+#endif
       endif
    endif
    !
@@ -386,4 +369,38 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
    !
    call dealloc_input_fields(fif, wavedata%mode)
 end subroutine get_flow_fields
+
+subroutine precice_read_data(swan_grid_mask, m_max, n_max, precice_state, field_name, output_field)
+   use, intrinsic :: iso_c_binding, only: c_double
+   use precision, only: sp
+   use m_wave_precice_state_t, only: wave_precice_state_t
+   use swan_flow_grid_maps, only: input_fields, grid
+   use precice, only: precicef_read_data
+   implicit none(type, external)
+
+   integer, dimension(:,:), intent(in) :: swan_grid_mask
+   integer, intent(in) :: m_max
+   integer, intent(in) :: n_max
+   type(wave_precice_state_t), intent(in) :: precice_state
+   character(*), intent(in) :: field_name
+   real(kind=sp), dimension(:, :), intent(inout) :: output_field
+
+   integer :: n_points, precice_index, i, j
+   real(kind=c_double), dimension(:), allocatable :: data_values
+
+   n_points = size(precice_state%vertex_ids)
+   allocate(data_values(n_points))
+   call precicef_read_data(precice_state%swan_mesh_name, field_name, &
+                           n_points, precice_state%vertex_ids, 0.0_c_double, data_values, &
+                           len(precice_state%swan_mesh_name), len(field_name))
+   precice_index = 0
+   do j = 1, n_max
+      do i = 1, m_max
+         if (swan_grid_mask(i, j) /= 0) then
+            precice_index = precice_index + 1
+            output_field(i, j) = data_values(precice_index)
+         end if
+      end do
+   end do
+end subroutine precice_read_data
 end module m_get_flow_fields

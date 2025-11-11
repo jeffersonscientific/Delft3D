@@ -82,6 +82,7 @@ contains
                          precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size, precicef_requires_initial_data
       use m_partitioninfo, only: jampi, numranks, my_rank, DFM_COMM_DFMWORLD
       use m_flowgeom, only: bl
+      use m_flow, only: s1
       use m_fm_precice_state_t, only: fm_precice_state_t
       use, intrinsic :: iso_c_binding, only: c_int, c_char
       implicit none(type, external)
@@ -103,7 +104,7 @@ contains
       call register_flow_nodes_with_precice(precice_state%flow_vertex_ids)
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
-         call precice_write_bed_levels(precice_state, bl)
+         call precice_write_data(precice_state, bl, s1)
       end if
       call precicef_initialize()
    end subroutine initialize_precice_coupling
@@ -201,7 +202,7 @@ contains
       call precicef_is_coupling_ongoing(is_ongoing)
    end function is_coupling_ongoing
 
-   subroutine advance_precice_time_window(user_time_step, precice_state, bed_levels)
+   subroutine advance_precice_time_window(user_time_step, precice_state, bed_levels, water_levels)
       use precice, only: precicef_advance
       use precision, only: dp
       use, intrinsic :: iso_c_binding, only: c_double
@@ -211,9 +212,10 @@ contains
       real(kind=dp), intent(in) :: user_time_step
       type(fm_precice_state_t), intent(in) :: precice_state
       real(kind=dp), dimension(:), intent(in) :: bed_levels
+      real(kind=dp), dimension(:), intent(in) :: water_levels
 
       if (is_coupling_ongoing() /= 0) then
-         call precice_write_bed_levels(precice_state, bed_levels)
+         call precice_write_data(precice_state, bed_levels, water_levels)
          call precicef_advance(real(user_time_step, kind=c_double))
       end if
    end subroutine advance_precice_time_window
@@ -223,6 +225,18 @@ contains
       implicit none(type, external)
       call precicef_finalize()
    end subroutine finalize_precice_coupling
+
+   subroutine precice_write_data(precice_state, bed_levels, water_levels)
+      use precision, only: dp
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      implicit none(type, external)
+      type(fm_precice_state_t), intent(in) :: precice_state
+      real(kind=dp), dimension(:), intent(in) :: bed_levels
+      real(kind=dp), dimension(:), intent(in) :: water_levels
+
+      call precice_write_bed_levels(precice_state, bed_levels)
+      call precice_write_water_levels(precice_state, water_levels)
+   end subroutine precice_write_data
 
    subroutine precice_write_bed_levels(precice_state, bed_levels)
       use precision, only: dp
@@ -244,6 +258,20 @@ contains
                                size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
                                inverted_bed_levels, len(precice_state%mesh_name), len(precice_state%bed_levels_name))
    end subroutine precice_write_bed_levels
+
+   subroutine precice_write_water_levels(precice_state, water_levels)
+      use precision, only: dp
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      use, intrinsic :: iso_c_binding, only: c_double
+      use precice, only: precicef_write_data
+      implicit none(type, external)
+      type(fm_precice_state_t), intent(in) :: precice_state
+      real(kind=dp), dimension(:), intent(in) :: water_levels
+
+      call precicef_write_data(precice_state%mesh_name, precice_state%water_levels_name, &
+                               size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
+                               water_levels, len(precice_state%mesh_name), len(precice_state%water_levels_name))
+   end subroutine precice_write_water_levels
 #endif
 
 !> Initializes global program/core data, not specific to a particular model.
@@ -553,6 +581,7 @@ contains
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       use m_flowtimes, only: dt_user
       use m_flowgeom, only: bl
+      use m_flow, only: s1
 #endif
       implicit none(type, external)
 
@@ -574,7 +603,7 @@ contains
       call flow_usertimestep(key, iresult) ! one user_step consists of several flow computational time steps
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      call advance_precice_time_window(dt_user, precice_state, bl)
+      call advance_precice_time_window(dt_user, precice_state, bl, s1)
 #endif
       if (iresult /= DFM_NOERR) then
          jastop = 1
