@@ -247,19 +247,6 @@ contains
         call assign_dt_boxes_to_exchanges(num_exchanges, ipoint, idx_box_cell, &
         idx_box_flow, count_flows_for_box)
 
-        ! !   1f: assign a box to each flow and determine how many cells in the entire domain are assigned to each type of box or basket        !   1f: assign a box to each flow and determine how many fluxes in the entire domain are assigned to each type of box or basket (highest of 'from' and 'to')
-        ! count_flows_for_box = 0
-        ! idx_box_flow = 0
-        ! do iq = 1, num_exchanges
-        !     ifrom = ipoint(1, iq)
-        !     ito = ipoint(2, iq)
-        !     ibox = 0
-        !     if (ifrom > 0)   ibox = idx_box_cell(ifrom)
-        !     if (ito > 0)     ibox = max(ibox, idx_box_cell(ito))
-        !     if (ibox == 0)   ibox = count_boxes + 2
-        !     idx_box_flow(iq) = ibox
-        !     count_flows_for_box(ibox) = count_flows_for_box(ibox) + 1
-        ! end do
 
         ! 1g: write report on basket sizes
         if (report) then
@@ -661,7 +648,7 @@ contains
 
                 ! inner cells, no B.C.
 
-                ! if dlt_vol is going in direction 'from' --> 'to'
+                ! if dlt_vol is going in direction 'from' =source --> 'to'=target
                 if (dlt_vol > 0) then
                     ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))         !    'from' should be wetting if dlt_vol > 0
                     volint(ifrom) = volint(ifrom) - dlt_vol
@@ -674,7 +661,7 @@ contains
                         conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                         if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
                     end do
-                ! else dlt_vol is going in direction 'to' --> 'from'
+                ! else dlt_vol is going in direction 'to' = source --> 'from' = target
                 else                                                      ! The mirrorred case
                     ito = ivert(nvert(1, abs(nvert(2, ito))))         !    'to' should be wetting if dlt_vol < 0
                     volint(ifrom) = volint(ifrom) - dlt_vol
@@ -695,10 +682,12 @@ contains
 
             ! PART2a3: apply all withdrawals that were present in the hydrodynamics as negative wasteload rather than as open boundary flux; uses volint
             do i = i_cell_begin, i_cell_end
+                ! iseg2 == target cell for withdrawal
                 iseg2 = sorted_cells(i)                                          ! cell number
                 if (wdrawal(iseg2) == 0.0) cycle
                 dlt_vol = wdrawal(iseg2) * delta_t_box(first_box_smallest_dt)
-                cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column
+                ! cell_i == head of column for this cell, source of withdrawal
+                cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column, source
                 if (dlt_vol <= volint(cell_i)) then
                     volint(cell_i) = volint(cell_i) - dlt_vol
                 else
