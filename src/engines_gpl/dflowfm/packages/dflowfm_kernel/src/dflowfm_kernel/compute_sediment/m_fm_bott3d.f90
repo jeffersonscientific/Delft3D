@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -84,6 +84,7 @@ contains
       use m_tables, only: interpolate
       use Timers
       use m_reconstruct_sed_transports
+      use m_waveconst
 
       implicit none
 
@@ -91,8 +92,8 @@ contains
    !! Local parameters
    !!
 
-      real(kind=dp), parameter :: DAY2SEC = 86400.0d0 !< seconds in a day
-      real(kind=dp), parameter :: H2SEC = 3600.0d0 !< seconds in an hour
+      real(kind=dp), parameter :: DAY2SEC = 86400.0_dp !< seconds in a day
+      real(kind=dp), parameter :: H2SEC = 3600.0_dp !< seconds in an hour
       logical, parameter :: AVALANCHE_ON = .true.
       logical, parameter :: AVALANCHE_OFF = .false.
       logical, parameter :: SLOPECOR_ON = .true.
@@ -125,8 +126,8 @@ contains
       dtmor = dts * morfac
       error = .false.
       timhr = time1 / H2SEC
-      blchg(:) = 0d0
-      e_ssn(:, :) = 0d0
+      blchg(:) = 0.0_dp
+      e_ssn(:, :) = 0.0_dp
 
       call fm_suspended_sand_correction()
 
@@ -156,14 +157,14 @@ contains
       ! Bed-slope and sediment availability effects for
       ! wave-related bed load transport
       !
-      if (bedw > 0.0_fp .and. jawave > 0) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES) then
          call fm_adjust_bedload(e_sbwn, e_sbwt, AVALANCHE_OFF, SLOPECOR_ON)
       end if
       !
       ! Sediment availability effects for
       ! wave-related suspended load transport
       !
-      if (susw > 0.0_fp .and. jawave > 0) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES) then
          call fm_adjust_bedload(e_sswn, e_sswt, AVALANCHE_OFF, SLOPECOR_OFF)
       end if
       !
@@ -211,13 +212,19 @@ contains
          call collectcumultransports() ! Always needed, written on last timestep of simulation
          call fm_exclude_cmpupdfrac() ! Conditionally exclude specific fractions from erosion and sedimentation
 
-         if (stmpar%morpar%moroutput%morstats .and. ti_sed > 0d0) then
+         if (stmpar%morpar%moroutput%morstats .and. ti_sed > 0.0_dp) then
             call morstats(dbodsd, hs_mor, ucxq_mor, ucyq_mor, sbcx, sbcy, sbwx, sbwy, sscx, sscy, sswx, sswy)
          end if
          !
          ! Apply erosion and sedimentation to bookkeeping system
          !
          if (cmpupd) then
+            !
+            ! Diffuse fractions in active layer
+            !
+            if (stmpar%morlyr%settings%active_layer_diffusion > 0) then
+               call fm_diffusion_active_layer()
+            end if
             !
             ! Determine new thickness of transport layer
             !
@@ -249,7 +256,7 @@ contains
          ! Note: dtmor in seconds, morft in days!
          !
          morft = morft + dtmor / DAY2SEC
-         if (morfac > 0d0) hydrt = hydrt + dts / DAY2SEC
+         if (morfac > 0.0_dp) hydrt = hydrt + dts / DAY2SEC
          if (stmpar%morpar%moroutput%morstats) then
             if (comparereal(time1, ti_seds, eps10) >= 0) morstatt0 = morft
          end if
@@ -262,7 +269,7 @@ contains
          !
          ! if morphological computations haven't started yet
          !
-         blchg(1:ndx) = 0d0
+         blchg(1:ndx) = 0.0_dp
 
       end if ! time1<tmor
 
@@ -328,13 +335,13 @@ contains
    !! Execute
    !!
 
-      e_scrn(:, :) = 0d0
-      e_scrt(:, :) = 0d0
+      e_scrn(:, :) = 0.0_dp
+      e_scrt(:, :) = 0.0_dp
 
       !
       ! calculate corrections
       !
-      if (sus /= 0d0 .and. l_suscor) then
+      if (sus /= 0.0_dp .and. l_suscor) then
          !
          ! suspension transport correction vector only for 3D
          !
@@ -351,9 +358,9 @@ contains
                   ! Determine aks
                   !
                   do Lx = 1, lnx
-                     if (wu_mor(Lx) == 0d0) cycle
+                     if (wu_mor(Lx) == 0.0_dp) cycle
                      ac1 = acL(Lx)
-                     ac2 = 1d0 - ac1
+                     ac2 = 1_dp - ac1
                      k1 = ln(1, Lx); k2 = ln(2, Lx)
                      call getLbotLtop(Lx, Lb, Lt)
                      if (Lt < Lb) cycle
@@ -382,7 +389,7 @@ contains
                         ! work up through layers integrating transport flux
                         ! below aksu, according to Bert's new implementation
                         !
-                        zktop = 0d0
+                        zktop = 0.0_dp
                         ka = 0
                         if (kmx == 1) then
                            if (aksu > hu(Lx)) then
@@ -435,7 +442,7 @@ contains
                            ! If there is a significant concentration gradient, and significant
                            ! reference concentration
                            !
-                           if (ceavg > r1avg * 1.1d0 .and. ceavg > 0.05d0) then
+                           if (ceavg > r1avg * 1.1_dp .and. ceavg > 0.05_dp) then
                               !
                               ! Compute Rouse number based on reference concentration and
                               ! concentration of the layer above it. Make sure that Rouse number
@@ -453,13 +460,13 @@ contains
                               ! c(z) = c_a*(a/z)^R = c_a*(z/a)^-R
                               !
                               z = zktop + dzup / 2.0_fp
-                              apower = log(max(r1avg / ceavg, 1d-5)) / log(z / aksu)
-                              if (apower > -1.05d0 .and. apower <= -1.0d0) then ! you have decide on the eq to -1.0
-                                 apower = -1.05d0
-                              elseif (apower > -1.0d0 .and. apower < -0.95d0) then
-                                 apower = -0.95d0
+                              apower = log(max(r1avg / ceavg, 1.0e-5_dp)) / log(z / aksu)
+                              if (apower > -1.05_dp .and. apower <= -1.0_dp) then ! you have decide on the eq to -1.0
+                                 apower = -1.05_dp
+                              elseif (apower > -1.0_dp .and. apower < -0.95_dp) then
+                                 apower = -0.95_dp
                               end if
-                              apower = min(max(-10.0d0, apower), 10.0d0)
+                              apower = min(max(-10.0_dp, apower), 10.0_dp)
                               !
                               ! Compute the average concentration cavg between the reference
                               ! height a and the top of the current layer (bottom of layer above) z.
@@ -467,8 +474,8 @@ contains
                               ! cavg*dz = | c(z) dz = c_a/(-R+1)*(z/a)^(-R+1)*a | = c_a/(-R+1)*a^R*z^(-R+1) |
                               !          /a                                     a                           a
                               !
-                              cavg1 = (ceavg / (apower + 1.0d0)) * (1d0 / aksu)**apower
-                              cavg2 = zktop**(apower + 1.0d0) - aksu**(apower + 1.0d0)
+                              cavg1 = (ceavg / (apower + 1.0_dp)) * (1_dp / aksu)**apower
+                              cavg2 = zktop**(apower + 1.0_dp) - aksu**(apower + 1.0_dp)
                               cavg = cavg1 * cavg2 ! kg/m3/m
                               !
                               ! The corresponding effective suspended load flux is
@@ -478,10 +485,10 @@ contains
                               ! Increment the correction by the part of the suspended load flux
                               ! that is in excess of the flux computed above, but never opposite.
                               !
-                              if (fluxhortot(ll, ka) > 0.0d0 .and. cflux > 0.0d0) then
-                                 cumflux = cumflux + max(0.0d0, fluxhortot(ll, ka) - cflux)
-                              elseif (fluxhortot(ll, ka) < 0.0d0 .and. cflux < 0.0_fp) then
-                                 cumflux = cumflux + min(fluxhortot(ll, ka) - cflux, 0.0d0)
+                              if (fluxhortot(ll, ka) > 0.0_dp .and. cflux > 0.0_dp) then
+                                 cumflux = cumflux + max(0.0_dp, fluxhortot(ll, ka) - cflux)
+                              elseif (fluxhortot(ll, ka) < 0.0_dp .and. cflux < 0.0_fp) then
+                                 cumflux = cumflux + min(fluxhortot(ll, ka) - cflux, 0.0_dp)
                                  !else
                                  !   cumflux = cumflux + fluxhortot(ll,ka)    ! don't correct in aksu layer
                               end if
@@ -494,13 +501,13 @@ contains
                         ! a case, the suspended sediment transport vector must
                         ! also be reduced.
                         !
-                        if (e_scrn(Lx, l) > 0.0d0 .and. Lx <= lnxi) then
+                        if (e_scrn(Lx, l) > 0.0_dp .and. Lx <= lnxi) then
                            e_scrn(Lx, l) = e_scrn(Lx, l) * fixfac(k1, l) ! outgoing (cumflux<0)
                         else
                            e_scrn(Lx, l) = e_scrn(Lx, l) * fixfac(k2, l) ! take inner point fixfac on bnd
                         end if
                      else
-                        e_scrn(Lx, l) = 0.0d0
+                        e_scrn(Lx, l) = 0.0_dp
                      end if
                   end do ! lnx
                end if ! tratyp == TRA_COMBINE
@@ -575,7 +582,7 @@ contains
       if (istat == 0) allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
       if (istat == 0) allocate (branInIDLn(network%nds%Count), stat=istat)
 
-      qb_out(:) = 0d0; width_out(:) = 0d0; sb_in(:, :) = 0d0; sb_dir(:, :, :) = 1
+      qb_out(:) = 0_dp; width_out(:) = 0_dp; sb_in(:, :) = 0_dp; sb_dir(:, :, :) = 1
       BranInIDLn(:) = 0
 
    !!
@@ -595,7 +602,7 @@ contains
                !
                wb1d = wu_mor(L)
                !
-               if (u1(L) * Ldir < 0d0) then
+               if (u1(L) * Ldir < 0_dp) then
                   ! Outgoing discharge
                   qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
                   width_out(inod) = width_out(inod) + wb1d
@@ -666,7 +673,7 @@ contains
             pnod => network%nds%node(inod)
             if (pnod%nodeType == nt_LinkNode) then ! connection node
 
-               facCheck = 0.d0
+               facCheck = 0._dp
 
                if (pnod%numberofconnections == 1) cycle
 
@@ -701,7 +708,7 @@ contains
 
                         elseif (pNodRel%Method == 'table') then
 
-                           facCheck = 1.0d0
+                           facCheck = 1.0_dp
 
                            if (L == pNodRel%BranchOut1Ln) then
                               Qbr1 = qb1d
@@ -773,7 +780,7 @@ contains
    !> Apply morphodynamic boundary condition on bed level
    subroutine fm_bed_boundary_conditions(timhr)
       use precision, only: dp
-
+      use m_waveconst
    !!
    !! Declarations
    !!
@@ -837,7 +844,7 @@ contains
    !!
 
       if (flowWithoutWaves) then
-         jawaveswartdelwaq_local = 0
+         jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
       else
          jawaveswartdelwaq_local = jawaveswartdelwaq
       end if
@@ -862,14 +869,14 @@ contains
             !
             ! Prepare loop over boundary points
             !
-            tausum2(1) = 0d0
+            tausum2(1) = 0_dp
             do ib = 1, morbnd(jb)%npnt
                lm = morbnd(jb)%lm(ib)
                k2 = morbnd(jb)%nxmx(ib)
                if (jampi == 1) then
                   if (.not. (idomain(k2) == my_rank)) cycle ! internal cells at boundary are in the same domain as the link
                end if
-               if (u1(lm) < 0.0d0) cycle
+               if (u1(lm) < 0.0_dp) cycle
                call get_tau(k2, taucurc, czc, jawaveswartdelwaq_local)
                tausum2(1) = tausum2(1) + taucurc**2 ! sum of the shear stress squared
             end do ! the distribution of bedload is scaled with square stress
@@ -877,7 +884,7 @@ contains
             ! in combination with non-uniform cells.
             li = 0
             do l = 1, lsedtot
-               sbsum = 0d0
+               sbsum = 0_dp
                !
                ! bed load transport only for fractions with bedload component
                !
@@ -916,7 +923,7 @@ contains
                !
                ! Detect the case based on the value of nxmx.
                !
-               if (u1(lm) < 0.0d0) cycle ! check based on depth averaged velocity value
+               if (u1(lm) < 0.0_dp) cycle ! check based on depth averaged velocity value
                !
                ! The velocity/transport points to the left and top are part
                ! of this cell. nxmx contains by default the index of the
@@ -935,7 +942,7 @@ contains
                   !
                   if (morbnd(jb)%ibcmt(3) == lsedbed) then
                      call get_tau(ln(2, lm), taucurc, czc, jawaveswartdelwaq_local)
-                     if (tausum2(1) > 0d0 .and. wu_mor(lm) > 0d0) then ! fix cutcell
+                     if (tausum2(1) > 0_dp .and. wu_mor(lm) > 0_dp) then ! fix cutcell
                         rate = bc_sed_distribution(li) * taucurc**2 / wu_mor(lm) / tausum2(1)
                      else
                         rate = bc_mor_array(li)
@@ -1032,7 +1039,7 @@ contains
       !
       ! Update quantity of bottom sediment
       !
-      dbodsd(:, :) = 0d0
+      dbodsd(:, :) = 0_dp
       !
       ! compute change in bodsed (dbodsd)
       !
@@ -1044,29 +1051,29 @@ contains
          ! loop over internal (ndxi) nodes - don't update the boundary nodes
          !
          do nm = 1, Ndxi_mor
-            trndiv = 0d0
-            sedflx = 0d0
-            eroflx = 0d0
+            trndiv = 0_dp
+            sedflx = 0_dp
+            eroflx = 0_dp
             !FM1DIMP2DO: I do not like this, but I cannot think of a better way.
             !The added flownodes at junctions are after the boundary ghost nodes.
             !We have to skip the boundaries but loop over the added flownodes.
             if ((nm > ndxi) .and. (nm < ndx + 1)) then
                cycle
             end if
-            if (sus /= 0d0 .and. .not. bedload) then
+            if (sus /= 0_dp .and. .not. bedload) then
                if (neglectentrainment) then
                   !
                   ! mass balance based on transport fluxes only: entrainment and deposition
                   ! do not lead to erosion/sedimentation.
                   !
-                  sumflux = 0d0
+                  sumflux = 0_dp
                   if (kmx > 0) then
                      do ii = 1, nd(nm)%lnx
                         LL = nd(nm)%ln(ii)
                         Lf = abs(LL)
                         call getLbotLtop(Lf, Lb, Lt)
                         if (Lt < Lb) cycle
-                        flux = 0d0
+                        flux = 0_dp
                         do iL = Lb, Lt
                            flux = flux + fluxhortot(j, iL)
                         end do
@@ -1112,24 +1119,30 @@ contains
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
                      !
-                     if (sedtyp(l) == SEDTYP_SAND) then
-                        sedflx = sedflx + ssccum(l, nm)
-                     elseif (sedtyp(l) <= max_mud_sedtyp) then
-                        ! 3. if silt/clay and drying, mass to fluff layer
-                        if (iflufflyr == 1) then
-                           mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm)
-                        else ! iflufflyr == 2
-                           mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm)
-                           sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                     ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
+                     if (ssccum(l, nm) > 0.0_fp) then
+                        if (sedtyp(l) <= max_mud_sedtyp) then
+                           ! if silt/clay some mass may go to fluff layer
+                           if (iflufflyr == 1 .or. mfluff(l, nm) < 0.0_fp) then
+                              ! all mass to fluff layer
+                              mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm) * dts
+                           else ! iflufflyr == 2
+                              ! part to fluff layer, part to bed layer
+                              mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm) * dts
+                              sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                           end if
+                        else
+                           ! for sand all mass to bed layer
+                           sedflx = sedflx + ssccum(l, nm)
                         end if
                      end if
                   end if
-                  ssccum(l, nm) = 0d0
+                  ssccum(l, nm) = 0_dp
                   eroflx = sourse(nm, l) * thick1 ! mass conservation, different from D3D
                   !
                   ! add suspended transport correction vector
                   !
-                  sumflux = 0d0
+                  sumflux = 0_dp
                   do ii = 1, nd(nm)%lnx
                      LL = nd(nm)%ln(ii)
                      Lf = abs(LL)
@@ -1139,8 +1152,8 @@ contains
                   trndiv = trndiv + sumflux * bai_mor(nm)
                end if
             end if
-            if (bed /= 0.0d0) then
-               sumflux = 0d0
+            if (bed /= 0.0_dp) then
+               sumflux = 0_dp
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
                   Lf = abs(LL)
@@ -1151,7 +1164,7 @@ contains
             end if
             !
             if (duneavalan) then ! take fluxes out of timestep restriction
-               sumflux = 0d0 ! drawback: avalanching fluxes not included in total transports
+               sumflux = 0_dp ! drawback: avalanching fluxes not included in total transports
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
                   Lf = abs(LL)
@@ -1166,8 +1179,8 @@ contains
             ! Warn if bottom changes are very large,
             ! depth change NOT LIMITED
             !
-            dhmax = 0.05d0
-            h1 = max(0.01d0, s1(nm) - bl(nm))
+            dhmax = 0.05_dp
+            h1 = max(0.01_dp, s1(nm) - bl(nm))
             if (abs(dsdnm) > dhmax * h1 * cdryb(1) .and. bedupd) then
                !
                ! Only write bed change warning when bed updating is true
@@ -1177,7 +1190,7 @@ contains
                bedchangemesscount = bedchangemesscount + 1
                if (bedchangemesscount <= BEDCHANGEMESSMAX) then
                   write (mdia, '(a,f5.1,a,i0,a,i0,a,f10.0,a,f10.0)') &
-                     & '*** WARNING Bed change exceeds ', dhmax * 100.0d0, ' % of waterdepth after ', int(dnt),  &
+                     & '*** WARNING Bed change exceeds ', dhmax * 100.0_dp, ' % of waterdepth after ', int(dnt),  &
                      & ' timesteps, flow node = (', nm, ') at x=', xz(nm), ', y=', yz(nm)
                end if
             end if
@@ -1246,7 +1259,7 @@ contains
          !
          if (kfsed(nm) /= 1 .or. (s1(nm) - bl(nm)) < epshs .or. thetsd(nm) <= 0) cycle ! check whether sufficient as condition
          !
-         totdbodsd = 0d0
+         totdbodsd = 0_dp
          do l = 1, lsedtot
             totdbodsd = totdbodsd + real(dbodsd(l, nm), hp)
          end do
@@ -1254,7 +1267,7 @@ contains
          ! If this is a cell where erosion is occuring (accretion is not
          ! distributed to dry points) then...
          !
-         if (totdbodsd < 0d0) then
+         if (totdbodsd < 0_dp) then
             !
             ! Note: contrary to the previous implementation, this new
             ! implementation erodes the sediment from nm and
@@ -1267,7 +1280,7 @@ contains
             ! individual fractions.
             !
             bamin = ba(nm)
-            totfixfrac = 0d0
+            totfixfrac = 0_dp
             !
             do L = 1, nd(nm)%lnx
                k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
@@ -1290,7 +1303,7 @@ contains
             ! Re-distribute THET % of erosion in nm to surrounding cells
             ! THETSD is a user-specified maximum value, range 0-1
             !
-            if (totfixfrac > 1d-7) then
+            if (totfixfrac > 1.0e-7_dp) then
                !
                ! Compute local re-distribution factor THET
                !
@@ -1316,7 +1329,7 @@ contains
                      k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
                      Lf = abs(nd(nm)%ln(L))
                      ! cutcells
-                     if (wu_mor(Lf) == 0d0) cycle
+                     if (wu_mor(Lf) == 0_dp) cycle
                      !
                      if (k2 == nm) then
                         knb = k1
@@ -1327,7 +1340,7 @@ contains
                         dv = thet * fixfac(knb, ll) * frac(knb, ll)
                         dbodsd(ll, knb) = dbodsd(ll, knb) - dv * bai_mor(knb)
                         dbodsd(ll, nm) = dbodsd(ll, nm) + dv * bai_mor(nm)
-                        e_sbn(Lf, ll) = e_sbn(Lf, ll) + dv / (dtmor * wu_mor(Lf)) * sign(1d0, nd(nm)%ln(L) + 0d0)
+                        e_sbn(Lf, ll) = e_sbn(Lf, ll) + dv / (dtmor * wu_mor(Lf)) * sign(1_dp, nd(nm)%ln(L) + 0_dp)
                      end if
                   end do ! L
                end do ! ll
@@ -1375,13 +1388,13 @@ contains
          jamerge = .false.
          if (jamormergedtuser > 0) then
             mergebodsed = mergebodsed + dbodsd
-            dbodsd(:, :) = 0d0
+            dbodsd(:, :) = 0_dp
             if (comparereal(time1, time_user, eps10) >= 0) then
                jamerge = .true.
             end if
          else
             mergebodsed = dbodsd
-            dbodsd(:, :) = 0d0
+            dbodsd(:, :) = 0_dp
             jamerge = .true.
          end if
          if (jamerge) then
@@ -1402,7 +1415,7 @@ contains
                   dbodsd(ll, nm) = real(stmpar%morpar%mergebuf(ii), fp)
                end do
             end do
-            mergebodsed(:, :) = 0d0
+            mergebodsed(:, :) = 0_dp
          end if
       end if
 
@@ -1502,7 +1515,7 @@ contains
             ! will be equal to 1.
             !
             icond = morbnd(jb)%icond
-            if (u1(lm) < 0d0) icond = 0 ! to do: 3d
+            if (u1(lm) < 0_dp) icond = 0 ! to do: 3d
             !
             select case (icond)
             case (0, 4, 5)
@@ -1574,14 +1587,13 @@ contains
    end subroutine fm_apply_bed_boundary_condition
 
    !< Update concentrations in water column to conserve mass because of bottom update
-   !! This needs to happen in work array sed, not constituents, because of copying back and forth later on
    subroutine fm_update_concentrations_after_bed_level_update()
       use precision, only: dp
 
       use m_flow, only: kmx, hs
       use m_flowgeom, only: ndx
-      use m_transport, only: constituents, itra1, itran, isalt
-      use m_sediment, m_sediment_sed => sed
+      use m_transport, only: constituents, itra1, itran, isalt, ised1
+      use m_sediment, only: botcrit, stmpar
       use m_fm_erosed, only: blchg
       use m_flowparameters, only: epshs, jasal
       use m_get_kbot_ktop
@@ -1611,7 +1623,7 @@ contains
             botcrit = 0.95 * hsk
             ddp = hsk / max(hsk - blchg(k), botcrit)
             do ll = 1, stmpar%lsedsus
-               m_sediment_sed(ll, k) = m_sediment_sed(ll, k) * ddp
+               constituents(ised1 + ll - 1, k) = constituents(ised1 + ll - 1, k) * ddp
             end do !ll
             !
             if (jasal > 0) then
@@ -1633,7 +1645,7 @@ contains
                ddp = hsk / max(hsk - blchg(k), botcrit)
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
-                  m_sediment_sed(ll, kk) = m_sediment_sed(ll, kk) * ddp
+                  constituents(ised1 + ll - 1, kk) = constituents(ised1 + ll - 1, kk) * ddp
                end do !kk
             end do !k
          end do !ll
@@ -1691,12 +1703,12 @@ contains
       do ll = 1, lsed
          j = lstart + ll ! constituent index
          do L = 1, lnx
-            e_ssn(L, ll) = 0d0
-            if (wu_mor(L) == 0d0) cycle
+            e_ssn(L, ll) = 0_dp
+            if (wu_mor(L) == 0_dp) cycle
             call getLbotLtop(L, Lb, Lt)
             if (Lt < Lb) cycle
             do iL = Lb, Lt
-               e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1d-3) ! timestep transports per layer [kg/s/m]
+               e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1.0e-3_dp) ! timestep transports per layer [kg/s/m]
             end do
             e_ssn(L, ll) = e_ssn(L, ll) + e_scrn(L, ll) ! bottom layer correction
          end do
@@ -1723,8 +1735,8 @@ contains
    !! Execute
    !!
 
-      e_sbn(:, :) = 0d0
-      e_sbt(:, :) = 0d0
+      e_sbn(:, :) = 0_dp
+      e_sbt(:, :) = 0_dp
       do l = 1, lsedtot
          if (has_bedload(tratyp(l))) then
             do nm = 1, lnx
@@ -1801,7 +1813,7 @@ contains
    !!
 
       if (.not. cmpupd) then
-         blchg(:) = 0d0
+         blchg(:) = 0_dp
          do ll = 1, lsedtot
             do nm = 1, ndx
                blchg(nm) = blchg(nm) + dbodsd(ll, nm) / cdryb(ll)
@@ -2003,12 +2015,12 @@ contains
    !! Execute
    !!
 
-      if (dtmor > 0d0) then
+      if (dtmor > 0_dp) then
          do nm = 1, ndx
             dzbdt(nm) = blchg(nm) / dtmor
          end do
       else
-         dzbdt(:) = 0d0
+         dzbdt(:) = 0_dp
       end if
 
    end subroutine fm_erosion_velocity
@@ -2042,5 +2054,52 @@ contains
       end if
 
    end subroutine fm_sumflux
+
+   !> Apply diffusion to sediment mass in the active layer.
+   subroutine fm_diffusion_active_layer()
+      use precision, only: dp
+      use m_fm_advec_diff_2d, only: fm_advec_diff_2d
+      use m_fm_erosed, only: lsedtot, tratyp, stmpar
+      use m_flowgeom, only: lnx, ndx
+      use sediment_basics_module, only: has_bedload
+      use m_alloc, only: realloc
+      use m_sediment, only: aldiff_links
+      use m_turbulence, only: BACKGROUND_DIFFUSION_OFF
+
+      real(kind=dp), dimension(1), parameter :: ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR = [BACKGROUND_DIFFUSION_OFF] !< background diffusion factor [-]. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional.
+      integer, parameter :: LIMITER_TYPE = 4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`.
+   !!
+   !! I/O
+   !!
+
+   !!
+   !! Local variables
+   !!
+      real(kind=dp), dimension(:), allocatable :: uadv
+      real(kind=dp), dimension(:), allocatable :: qadv
+      real(kind=dp), dimension(:), allocatable :: sour
+      real(kind=dp), dimension(:), allocatable :: sink
+
+      integer :: l
+      integer :: ierror
+
+   !!
+   !! Execute
+   !!
+
+      ierror = 0
+
+      call realloc(uadv, lnx, keepExisting=.false., fill=0.0_dp)
+      call realloc(qadv, lnx, keepExisting=.false., fill=0.0_dp)
+      call realloc(sour, ndx, keepExisting=.false., fill=0.0_dp)
+      call realloc(sink, ndx, keepExisting=.false., fill=0.0_dp)
+
+      do l = 1, lsedtot
+         if (has_bedload(tratyp(l))) then
+            call fm_advec_diff_2d(stmpar%morlyr%state%msed(l, 1, :), uadv, qadv, sour, sink, aldiff_links, ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR, LIMITER_TYPE, ierror)
+         end if
+      end do
+
+   end subroutine fm_diffusion_active_layer
 
 end module m_fm_bott3d

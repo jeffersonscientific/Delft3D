@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -178,13 +178,13 @@ contains
       call zeronet()
       KN3TYP = 1
       K1 = 0
-      rcir = 1d-10 ! isnode only for 'exact' hits
+      rcir = 1.0e-10_dp ! isnode only for 'exact' hits
       do i = 1, npl
          if (XPL(i) == dmiss) then
             K1 = 0
             cycle
          end if
-         zp = 0d0
+         zp = 0.0_dp
          call ISNODE(KP, XPL(i), YPL(i), zp)
          if (KP == 0) then
             call dSETNEWPOINT(XPL(i), YPL(i), KP)

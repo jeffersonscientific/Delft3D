@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,12 +46,13 @@ contains
       use m_flowgeom, only: acl, snu, csu, kcu
       use m_flow, only: u1, epshu, hu
       use m_sediment, only: stmpar, jabndtreatment
-      use sediment_basics_module
+      use sediment_basics_module, only: has_bedload
       use m_fm_erosed, only: link1, link1sign, tratyp, kfsed, link1sign2
       use m_fm_erosed, only: ln => ln_mor
-      use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
+      use m_fm_erosed, only: ndx => ndx_mor
+
       implicit none
 
       integer, intent(in) :: lsedtot !< number of sediment fractions
@@ -164,8 +165,8 @@ contains
                   if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
                   !
                   if (kfsed(k1) * kfsed(k2) == 0) then
-                     e_sn(Lf, l) = 0d0
-                     e_st(Lf, l) = 0d0
+                     e_sn(Lf, l) = 0.0_dp
+                     e_st(Lf, l) = 0.0_dp
                      cycle
                   end if
                   !
@@ -175,7 +176,7 @@ contains
                      else
                         e_sn(Lf, l) = link1sign(k2) * sx(k2, l) ! TODO: check
                      end if
-                     e_st(Lf, l) = 0d0
+                     e_st(Lf, l) = 0.0_dp
                   else
                      e_sn(Lf, l) = csu(Lf) * sx(k2, l) + snu(Lf) * sy(k2, l)
                      e_st(Lf, l) = -snu(Lf) * sx(k2, l) + csu(Lf) * sy(k2, l)
@@ -194,8 +195,8 @@ contains
                   if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
                   !
                   if (kfsed(k1) * kfsed(k2) == 0) then
-                     e_sn(Lf, l) = 0d0
-                     e_st(Lf, l) = 0d0
+                     e_sn(Lf, l) = 0.0_dp
+                     e_st(Lf, l) = 0.0_dp
                      cycle
                   end if
                   !

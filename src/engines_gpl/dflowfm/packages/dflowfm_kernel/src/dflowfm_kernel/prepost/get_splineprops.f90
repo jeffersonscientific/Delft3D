@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,10 +46,10 @@ contains
       use m_get_crosssplines, only: get_crosssplines
       use precision, only: dp
       use m_allocate_splineprops, only: allocate_splineprops
-      use m_splines
-      use m_spline2curvi
-      use m_alloc
-      use m_deallocate_spline_props
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_spline2curvi, only: splineprops, daspect
+      use m_alloc, only: realloc
+      use m_deallocate_spline_props, only: deallocate_splineprops
       use m_splinelength, only: splinelength
 
       integer, intent(in) :: mcs_old !< number of original splines
@@ -74,7 +74,7 @@ contains
 
 !     reallocate if necessary
          if (num > ubound(xlist, 1)) then
-            numnew = int(1.2d0 * dble(num)) + 1
+            numnew = int(1.2_dp * dble(num)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if
@@ -164,10 +164,10 @@ contains
          if (ncs == 0) then
             splineprops(is)%hmax = daspect * dslength
          else
-            hmax = 0d0
+            hmax = 0.0_dp
             do i = 1, ncs
-               hsumL = 0d0
-               hsumR = 0d0
+               hsumL = 0.0_dp
+               hsumR = 0.0_dp
                do j = 1, splineprops(is)%NsubL(i)
                   hsumL = hsumL + splineprops(is)%hL(j, i)
                end do

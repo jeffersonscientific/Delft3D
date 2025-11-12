@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,21 @@
 !
 !
 module m_flow_f0isf1
+
    use m_a1vol1tot, only: a1vol1tot
 
+   use precision, only: dp
    implicit none
 contains
    subroutine flow_f0isf1() ! Todo: make pointer stucture and reset pointers
       use m_flowgeom, only: ndxi
-      use m_flow
+      use m_flow, only : hsaver, a1tot, vol1tot, vinbnd, qinbnd, voutbnd, qoutbnd, vincel, qincel, voutcel, qoutcel, vinbndcum, voutbndcum, vincelcum, voutcelcum, volerr, vol0tot, volerrcum, jahisbal, vinrain, qinrain, vinrainground, qinrainground, vouteva, qouteva, voutevaicept, qoutevaicept, vinlat, qinlat, voutlat, qoutlat, vingrw, qingrw, voutgrw, qoutgrw, qinsrc, qoutsrc, numsrc, qsrc, ksrc, vinsrc, voutsrc, vinext, qinext, voutext, qoutext, vinraincum, voutevacum, vinlatcum, voutlatcum, vingrwcum, voutgrwcum, vinsrccum, voutsrccum, vinextcum, voutextcum, volcur, idx_stor, idx_voltot, idx_volerr, idx_bndin, idx_bndout, idx_bndtot, idx_exchin, idx_exchout, idx_exchtot, q1, idx_precip_total, idx_precip_ground, idx_evap, idx_sour, idx_icept, vol1icept, idx_evap_icept, jafrcinternaltides2d, idx_internaltidesdissipation, dissinternaltides, jatidep, jaselfal, idx_gravinput, gravinput, idx_salinput, salinput, idx_salinput2, salinput2, idx_grwin, idx_grwout, idx_grwtot, idx_latin, idx_latout, idx_lattot, idx_latin1d, idx_latout1d, idx_lattot1d, idx_latin2d, idx_latout2d, idx_lattot2d, idx_extin, idx_extout, idx_exttot, idx_extin1d, idx_extout1d, idx_exttot1d, idx_extin2d, idx_extout2d, idx_exttot2d, cumvolcur, kmx, volerror, vol1, vol0, sqi, squ, a0tot
+      use m_partitioninfo, only: jampi, idomain, my_rank
+      use m_drawthis, only: ndraw
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
-      use m_partitioninfo
       use m_sediment, only: jamorf, stm_included
       use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
-      use m_drawthis
-      use m_get_kbot_ktop
 
       integer :: k, kk, kb, kt, Lf, i, k1, k2
 
@@ -52,7 +54,7 @@ contains
       !           if ( idomain(n).ne.my_rank ) cycle
       ! UNST-904: AND, create some reduce_bal() subroutine
 
-      hsaver = 0d0
+      hsaver = 0.0_dp
       if (a1tot /= 0) then
          hsaver = vol1tot / a1tot
       end if
@@ -94,10 +96,10 @@ contains
          vingrw = qingrw * dts
          voutgrw = qoutgrw * dts
 
-         qinsrc = 0d0
-         qoutsrc = 0d0
+         qinsrc = 0.0_dp
+         qoutsrc = 0.0_dp
          do i = 1, numsrc
-            if (qsrc(i) > 0d0) then
+            if (qsrc(i) > 0.0_dp) then
                k1 = ksrc(1, i)
                k2 = ksrc(4, i)
             else
@@ -137,9 +139,9 @@ contains
          volcur(IDX_BNDIN) = vinbnd
          volcur(IDX_BNDOUT) = voutbnd
          volcur(IDX_BNDTOT) = (vinbnd - voutbnd)
-         volcur(IDX_EXCHIN) = 0d0
-         volcur(IDX_EXCHOUT) = 0d0
-         volcur(IDX_EXCHTOT) = 0d0
+         volcur(IDX_EXCHIN) = 0.0_dp
+         volcur(IDX_EXCHOUT) = 0.0_dp
+         volcur(IDX_EXCHTOT) = 0.0_dp
          do i = 1, nbnd1d2d
             Lf = kbnd1d2d(3, i)
             volcur(IDX_EXCHTOT) = volcur(IDX_EXCHTOT) + q1(Lf) * dts
@@ -159,21 +161,21 @@ contains
          if (jaFrcInternalTides2D == 1) then
             volcur(IDX_InternalTidesDIssipation) = DissInternalTides * dts
          else
-            volcur(IDX_InternalTidesDIssipation) = 0d0
+            volcur(IDX_InternalTidesDIssipation) = 0.0_dp
          end if
 
          if (jatidep > 0 .or. jaselfal > 0) then
             volcur(IDX_GravInput) = GravInput * dts
          else
-            volcur(IDX_GravInput) = 0d0
+            volcur(IDX_GravInput) = 0.0_dp
          end if
 
          if (jaselfal > 0) then
             volcur(IDX_SALInput) = SALInput * dts
             volcur(IDX_SALInput2) = SALInput2 * dts
          else
-            volcur(IDX_SALInput) = 0d0
-            volcur(IDX_SALInput2) = 0d0
+            volcur(IDX_SALInput) = 0.0_dp
+            volcur(IDX_SALInput2) = 0.0_dp
          end if
          volcur(IDX_GRWIN) = vingrw
          volcur(IDX_GRWOUT) = voutgrw

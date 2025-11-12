@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,6 +31,7 @@
 !
 
 module m_step_reduce_transport_morpho
+
    use m_subsupl_update_s1, only: subsupl_update_s1
    use m_setucxucy_mor, only: setucxucy_mor
    use m_fm_flocculate, only: fm_flocculate
@@ -40,6 +41,7 @@ module m_step_reduce_transport_morpho
    use m_u1q1, only: u1q1
    use m_transport_sub, only: transport
 
+   use precision, only: dp
    implicit none
 
    private
@@ -78,16 +80,22 @@ contains
       use m_fm_erosed_sub, only: fm_erosed
 
       numnodneg = 0
-      if (wrwaqon .and. allocated(qsrcwaq)) then
-         qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+      if (wrwaqon) then
+         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
+         if (allocated(qsrcwaq)) then
+            qsrcwaq0 = qsrcwaq
+         end if
+         if (allocated(qlatwaq)) then
+            qlatwaq0 = qlatwaq
+         end if
       end if
 
-!-----------------------------------------------------------------------------------------------
-! TODO: AvD: consider moving everything below to flow_finalize single_timestep?
-      call setkbotktop(0) ! bottom and top layer indices and new sigma distribution
+      !-----------------------------------------------------------------------------------------------
+      ! TODO: AvD: consider moving everything below to flow_finalize single_timestep?
+      call set_kbot_ktop(jazws0=0) ! bottom and top layer indices and new sigma distribution
 
       if (flow_solver == FLOW_SOLVER_FM) then
-         call u1q1() ! the vertical flux qw depends on new sigma => after setkbotktop
+         call u1q1() ! the vertical flux qw depends on new sigma => after set_kbot_ktop
          call compute_q_total_1d2d()
       end if
 
@@ -99,7 +107,7 @@ contains
          call update_s_explicit()
       end if
       hs = s1 - bl
-      hs = max(hs, 0d0)
+      hs = max(hs, 0.0_dp)
 
       if (jased > 0 .and. stm_included) then
          if (time1 >= tstart_user + ti_sedtrans * tfac) then
@@ -150,16 +158,8 @@ contains
          end if
          call volsur() ! update volumes 2d
          if (kmx > 0) then
-            call setkbotktop(0) ! and 3D for cell volumes
+            call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
          end if
-      end if
-
-      ! Moved to flow_finalize_single_timestep: call flow_f0isf1()                                  ! mass balance and vol0 = vol1
-
-      if (layertype > 1 .and. kmx > 0) then
-
-         ! ln = ln0 ! was ok.
-
       end if
 
    end subroutine step_reduce_transport_morpho

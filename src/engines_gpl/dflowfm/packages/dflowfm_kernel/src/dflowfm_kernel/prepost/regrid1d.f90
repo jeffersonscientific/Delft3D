@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -69,7 +69,7 @@ contains
 
       numk = 0; numl = 0; n = 0
       do ibr = 1, mxnetbr ! SET UP BRANCH DISTANCE COORDINATE
-         XLB = 0d0
+         XLB = 0.0_dp
          do LL = 1, netbr(ibr)%NX
             L = netbr(ibr)%ln(LL); LA = abs(L)
             if (L > 0) then
@@ -99,7 +99,7 @@ contains
             dxa = zpl(n) / nh
             nh = nh + 1
             allocate (xh(nh), yh(nh), zh(nh))
-            zh(1) = 0d0
+            zh(1) = 0.0_dp
             do k = 2, nh
                zh(k) = zh(k - 1) + dxa
             end do

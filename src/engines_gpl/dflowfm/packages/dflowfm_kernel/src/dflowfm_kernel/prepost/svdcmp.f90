@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -225,9 +225,9 @@ contains
             end if
 !          IF (ITS.EQ.30) PAUSE 'No convergence in 30 iterations'
             if (ITS == 30) then ! SPvdP: error handling
-               A = 0d0
-               W = 0d0
-               V = 0d0
+               A = 0.0_dp
+               W = 0.0_dp
+               V = 0.0_dp
                return
             end if
             X = W(L)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,19 +43,23 @@ module m_read_samples_from_geotiff
 contains
 
    function read_samples_from_geotiff(filename) result(success)
-      use precision, only: dp
-      use MessageHandling
-      use, intrinsic :: iso_c_binding
+      use MessageHandling, only: mess, level_warn
 #ifdef HAVE_GDAL
-      use fortranc
-      use gdal
-#endif
-      use m_samples
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_float, c_null_char, c_associated, c_ptr
+      use fortranc, only: strtofchar
+      use gdal, only: gdaldataseth, gdalrasterbandh, gdalallregister, gdalopen, ga_readonly, gdalassociated, &
+                      gdalgetrasterxsize, gdalgetrasterysize, gdalgetrastercount, gdalgetrasterband, gdalgetdatatypesize, &
+                      gdalgetrasterdatatype, gdaldatasetrasterio_f, gf_read, gdalgetgeotransform, gdalgetmetadataitem, &
+                      gdalmajorobjecth_new, gdalclose
+      use m_samples, only: increasesam, ns, xs, ys, zs, mxsam, mysam, ipstat, ipstat_notok, ipsam, ipstat_ok
+      use m_drawthis, only: ndraw
+      use m_readyy, only: readyy
+      use m_get_samples_boundingbox, only: get_samples_boundingbox
+      use precision, only: dp
+      use messagehandling, only: msgbuf, warn_flush
       use m_samples_refine, only: iHesstat, iHesstat_DIRTY
       use string_module, only: strcmpi
-      use m_drawthis
-      use m_readyy
-      use m_get_samples_boundingbox
+#endif
 
       character(len=*), intent(in) :: filename !< Path of the file to be read
       logical :: success !< Return value to describe success of the operations
@@ -82,7 +86,7 @@ contains
       ! Register all available gdal drivers
       call gdalallregister()
 
-      call READYY('Reading GeoTIFF file', 0d0)
+      call READYY('Reading GeoTIFF file', 0.0_dp)
       ! Opening a GeoTIFF gdal dataset for reading
       dataset = gdalopen(trim(filename)//char(0), GA_ReadOnly)
       if (.not. gdalassociated(dataset)) then
@@ -139,7 +143,7 @@ contains
       dya = geotransform(6)
 
       ! Throw warning if rotated TIFF was given
-      eps = 1d-6
+      eps = 1.0e-6_dp
       if (abs(geotransform(3)) > eps .or. abs(geotransform(5)) > eps) then
          call mess(LEVEL_WARN, 'Rotated GeoTIFF files are currently not supported: '//trim(filename))
          goto 888
@@ -157,20 +161,20 @@ contains
       end if
 
       if (is_area) then
-         pixeloffset = .5d0
+         pixeloffset = 0.5_dp
       else
-         pixeloffset = 0d0
+         pixeloffset = 0.0_dp
       end if
 
-      call READYY('Reading GeoTIFF file', 0.5d0)
+      call READYY('Reading GeoTIFF file', 0.5_dp)
 
       ! Set global sample arrays xs, ys, zs of m_samples
       call increasesam(nx * ny)
-      istep = max(int(nx / 100d0 + .5d0), 1)
+      istep = max(int(nx / 100.0_dp + 0.5_dp), 1)
       ns = 0
       do i = 1, nx
          if (mod(i, istep) == 0) then
-            call readyy('Reading GeoTIFF file', min(1d0, .5d0 + .5d0 * dble(i) / nx))
+            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * dble(i) / nx))
          end if
          do j = ny, 1, -1
             ns = ns + 1
@@ -205,7 +209,7 @@ contains
       call get_samples_boundingbox()
       ipstat = IPSTAT_OK
 
-      call READYY('Reading GeoTIFF file', 1d0)
+      call READYY('Reading GeoTIFF file', 1.0_dp)
       success = .true.
       return
 

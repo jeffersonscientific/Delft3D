@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.!
+!  Copyright (C)  Stichting Deltares, 2017-2025.!
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -195,9 +195,8 @@ contains
 !> Input:  "Pointers to data inside COSUMO_BMI" (nf_q_source, nf_q_intake, ..., nf_src_mom)
 !> Result: "NearField arrays on FM domain" are filled (nf_sink_n, nf_sour_n, ..., nf_intake_z)
    subroutine desa()
-      use m_alloc
-      use MessageHandling, only: IdLen
-      use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
+      use m_alloc, only: realloc
+      use m_GlobalParameters, only: INDTP_2D
       !
       ! Locals
       integer :: idif
@@ -215,13 +214,13 @@ contains
       if (allocated(nf_intake_n)) deallocate (nf_intake_n, stat=istat)
       !
       ! Sink: dimension is read from NearField and is fixed: allocate
-      call realloc(nf_sink_n, (/nf_num_dif, nf_numsink/), keepExisting=.false., fill=0)
+      call realloc(nf_sink_n, [nf_num_dif, nf_numsink], keepExisting=.false., fill=0)
       call realloc(nf_sour_wght_sum, nf_num_dif, keepExisting=.false., fill=0.0_hp)
       !
       ! Source: number of source points is going to be determined. start with 1.
       nf_sour_track_max = 1
-      nf_sour_wght = 0.0d0
-      nf_sour_wght_sum = 0.0d0
+      nf_sour_wght = 0.0_dp
+      nf_sour_wght_sum = 0.0_dp
       !
       ! Intake: May vary per diffuser. Start with 0 or 1
       call realloc(nf_numintake_idif, nf_num_dif, keepExisting=.false., fill=nf_numintake)
@@ -230,7 +229,7 @@ contains
       else
          nf_intake_cnt_max = 1
       end if
-      nf_intake_wght = 0.0d0
+      nf_intake_wght = 0.0_dp
       !
       ! For each diffuser
       do idif = 1, nf_num_dif
@@ -263,7 +262,7 @@ contains
 !>            cssrc : cosine of angle of discharge
 !>            snsrc : sinus  of angle of discharge
    subroutine nearfieldToFM()
-      use m_alloc
+      use m_alloc, only: realloc
       use m_physcoef, only: NFEntrainmentMomentum
       !
       ! Locals
@@ -317,7 +316,7 @@ contains
 !> Use find_flownode to convert x,y-coordinates of each sink location into nf_sink_n index
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
    subroutine getSinkLocations(idif, jakdtree, jaoutside, iLocTp)
-      use m_alloc
+      use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       !
       ! Arguments
@@ -365,10 +364,10 @@ contains
 !> Use find_flownode to convert x,y-coordinates of each intake location into nf_intake_n index
 !> Also get nk-index, sum for each nk, define weights
    subroutine getIntakeLocations(idif, jakdtree, jaoutside, iLocTp)
-      use m_alloc
+      use m_alloc, only: realloc
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flow, only: zws
       use m_find_flownode, only: find_nearest_flownodes
-      use m_get_kbot_ktop
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
@@ -414,10 +413,10 @@ contains
          ! First handle the first intake point of this diffuser: it will always result in an additional intake point
          ! Copy nf_intake(:,:,NF_IZ) to nf_intake_z: administration index has changed
          nf_intake_cnt = 1
-         call realloc(nf_intake_n, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0)
-         call realloc(nf_intake_nk, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0)
-         call realloc(nf_intake_z, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0.0_hp)
-         call realloc(nf_intake_wght, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0.0_hp)
+         call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+         call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+         call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
+         call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
          if (find_n(1) == 0) then
             call mess(LEVEL_ERROR, "Intake point '", trim(find_name(1)), "' not found")
          end if
@@ -464,10 +463,10 @@ contains
             if (nk /= 0) then
                nf_intake_cnt = nf_intake_cnt + 1 ! For this diffuser
                nf_intake_cnt_max = max(nf_intake_cnt_max, nf_intake_cnt) ! Of all diffusers
-               call realloc(nf_intake_n, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0)
-               call realloc(nf_intake_nk, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0)
-               call realloc(nf_intake_z, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0.0_hp)
-               call realloc(nf_intake_wght, (/nf_num_dif, nf_intake_cnt_max/), keepExisting=.true., fill=0.0_hp)
+               call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+               call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+               call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
+               call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
                nf_intake_n(idif, nf_intake_cnt) = find_n(i)
                nf_intake_nk(idif, nf_intake_cnt) = nk
                nf_intake_z(idif, nf_intake_cnt) = -nf_intake(idif, i, NF_IZ)
@@ -487,7 +486,7 @@ contains
 !> Use find_flownode to convert x,y-coordinates of each sink location into nf_sink_n index
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
    subroutine getSourceLocations(idif, jakdtree, jaoutside, iLocTp)
-      use m_alloc
+      use m_alloc, only: realloc
       use mathconsts, only: pi
       use m_find_flownode, only: find_nearest_flownodes
       !
@@ -561,8 +560,8 @@ contains
             !
             ! First handle the first source_track point of this diffuser: it will always result in an additional source point
             nf_sour_track = 1
-            call realloc(nf_sour_n, (/nf_num_dif, nf_sour_track_max/), keepExisting=.true., fill=0)
-            call realloc(nf_sour_wght, (/nf_num_dif, nf_sour_track_max/), keepExisting=.true., fill=0.0_hp)
+            call realloc(nf_sour_n, [nf_num_dif, nf_sour_track_max], keepExisting=.true., fill=0)
+            call realloc(nf_sour_wght, [nf_num_dif, nf_sour_track_max], keepExisting=.true., fill=0.0_hp)
             if (find_n(1) == 0) then
                call mess(LEVEL_ERROR, "Source point '", trim(find_name(1)), "' not found")
             end if
@@ -580,8 +579,8 @@ contains
                if (find_n(itrack) /= nf_sour_n(idif, nf_sour_track)) then
                   nf_sour_track = nf_sour_track + 1 ! For this diffuser
                   nf_sour_track_max = max(nf_sour_track_max, nf_sour_track) ! Of all diffusers
-                  call realloc(nf_sour_n, (/nf_num_dif, nf_sour_track_max/), keepExisting=.true., fill=0)
-                  call realloc(nf_sour_wght, (/nf_num_dif, nf_sour_track_max/), keepExisting=.true., fill=0.0_hp)
+                  call realloc(nf_sour_n, [nf_num_dif, nf_sour_track_max], keepExisting=.true., fill=0)
+                  call realloc(nf_sour_wght, [nf_num_dif, nf_sour_track_max], keepExisting=.true., fill=0.0_hp)
                   nf_sour_n(idif, nf_sour_track) = find_n(itrack)
                end if
                nf_sour_wght(idif, nf_sour_track) = nf_sour_wght(idif, nf_sour_track) + 1.0_fp ! weight/wght_tot: relative discharge in this cell
@@ -605,8 +604,8 @@ contains
             ! Keep the sources separated, even if they are in the same cell: momentum specification might differ
             !
             nf_sour_track_max = max(nf_sour_track_max, nf_numsour) ! Of all diffusers
-            call realloc(nf_sour_n, (/nf_num_dif, nf_sour_track_max/), keepExisting=.true., fill=0)
-            call realloc(nf_sour_wght, (/nf_num_dif, nf_sour_track_max/), keepExisting=.true., fill=0.0_hp)
+            call realloc(nf_sour_n, [nf_num_dif, nf_sour_track_max], keepExisting=.true., fill=0)
+            call realloc(nf_sour_wght, [nf_num_dif, nf_sour_track_max], keepExisting=.true., fill=0.0_hp)
             nf_sour_wght_sum(idif) = real(nf_numsour, fp)
             do isour = 1, nf_numsour
                if (find_n(isour) == 0) then
@@ -629,10 +628,10 @@ contains
 !> Convert entrainment data into src arrays of D-Flow FM
 !> From each sink point to each source (track) point
    subroutine entrainmentToSrc(idif)
-      use m_alloc
+      use m_alloc, only: realloc
+      use m_get_kbot_ktop, only: getkbotktop
       use m_physcoef, only: NFEntrainmentMomentum
       use m_flow, only: zws
-      use m_get_kbot_ktop
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
@@ -662,7 +661,7 @@ contains
                nf_entr_end(idif) = nf_entr_end(idif) + 1
                nf_entr_max = max(nf_entr_max, nf_entr_end(idif) - nf_entr_start(idif) + 1)
             end if
-            call reallocsrc(numsrc)
+            call reallocsrc(numsrc, 2)
             !
             ! Name
             write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
@@ -699,7 +698,7 @@ contains
                ! Store the nk index of the flow nodes containing the sink locations.
                ! They are used in subroutine setNFEntrainmentMomentum
                !
-               call realloc(nf_sinkid, (/nf_num_dif, nf_entr_max/), keepExisting=.true., fill=0)
+               call realloc(nf_sinkid, [nf_num_dif, nf_entr_max], keepExisting=.true., fill=0)
                call getkbotktop(nf_sink_n(idif, isink), kbot, ktop)
                do nk = kbot, ktop
                   if (zws(nk) > -nf_sink(idif, isink, NF_IZ) .or. nk == ktop) then
@@ -717,7 +716,7 @@ contains
 !> Convert entrainment data into src arrays of D-Flow FM
 !> For each source (track) point, no related sink point
    subroutine dischargeToSrc(idif, sum_weight_intakes)
-      use m_alloc
+      use m_alloc, only: realloc
       use mathconsts, only: degrad, eps_fp
       !
       ! Arguments
@@ -760,7 +759,7 @@ contains
          if (nf_sour_n(idif, isour) == 0) exit
          numsrc_nf = numsrc_nf + 1
          numsrc = numsrc + 1
-         call reallocsrc(numsrc)
+         call reallocsrc(numsrc, 2)
          if (nf_numsour == 1) then
             sourId = nf_numsour
          else
@@ -852,7 +851,7 @@ contains
          if (nf_intake_n(idif, iintake) == 0) exit
          numsrc_nf = numsrc_nf + 1
          numsrc = numsrc + 1
-         call reallocsrc(numsrc)
+         call reallocsrc(numsrc, 2)
          !
          ! Name
          write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake

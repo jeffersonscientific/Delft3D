@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,18 +41,18 @@ contains
 
       use m_samples, only: ns, xs, ys, zs
       use m_missing, only: dmiss
-      use m_isoscaleunit
+      use m_isoscaleunit, only: unit
+      use m_paramtext, only: paramtext
+      use m_inview, only: inview
       use m_depmax2, only: vmax => vmax2, vmin => vmin2, dv => dv2, val => val2, nv => nv2, jaauto => jaauto2
-      use m_paramtext
-      use m_inview
 
       real(kind=dp) :: rmin, rmax
       character(len=256) :: buffer
       integer :: k, i
 
       if (jaauto > 0) then
-         rmin = 1d30
-         rmax = -1d30
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
 
          do k = 1, ns
             if (zs(k) == DMISS) cycle
@@ -82,12 +82,12 @@ contains
    subroutine minmxarc()
       use precision, only: dp
 
-      use m_arcinfo
-      use m_missing
-      use m_isoscaleunit
+      use m_arcinfo, only: nca, mca, x0, dxa, y0, dya, d
+      use m_missing, only: dmiss
+      use m_isoscaleunit, only: unit
+      use m_paramtext, only: paramtext
+      use m_inview, only: inview
       use m_depmax2, only: vmax => vmax2, vmin => vmin2, dv => dv2, val => val2, nv => nv2, jaauto => jaauto2
-      use m_paramtext
-      use m_inview
 
       implicit none
 
@@ -96,8 +96,8 @@ contains
       integer :: m, n, i
 
       if (jaauto > 0) then
-         rmin = 1d30
-         rmax = -1d30
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
 
          do n = 1, nca
             do m = 1, mca

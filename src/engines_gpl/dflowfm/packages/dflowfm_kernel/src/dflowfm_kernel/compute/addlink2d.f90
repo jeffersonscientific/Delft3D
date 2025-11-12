@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,12 +42,12 @@ contains
 
    subroutine addlink2D(L, japerim) ! and add area's and volumes of 2D links
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: bob, wu, ln, dx, acl, lncn, ucnx, csu, ucny, snu, aifu
+      use m_flow, only: s1, a1, vol1, hu, jaconveyance2d, frcu, ifrcutp, cfuhi, ag, au
+      use m_get_link_area_wid2D, only: getlinkareawid2d
+      use m_get_prof2d, only: getprof2d
+      use m_get_hpr_nostruc, only: get_hpr_nostruc
       use m_sferic, only: jasfer3d
-      use m_get_link_area_wid2D
-      use m_get_prof2d
-      use m_get_hpr_nostruc
       use m_cor2linx, only: cor2linx
       use m_cor2liny, only: cor2liny
 
@@ -55,7 +55,7 @@ contains
 
       integer :: japerim, L
 
-      integer :: k1, k2, k3, k4, jaconv, ifrctyp
+      integer :: k1, k2, k3, k4, jaconv, friction_type
       real(kind=dp) :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu
       real(kind=dp) :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
       real(kind=dp) :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, hsmall
@@ -74,7 +74,7 @@ contains
          hpr1 = s1(k1) - BL1
          if (hpr1 > 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
-            dx1 = 0.5d0 * dx(L) * acl(L)
+            dx1 = 0.5_dp * dx(L) * acl(L)
             a1(k1) = a1(k1) + dx1 * wid1
             vol1(k1) = vol1(k1) + dx1 * ar1
          end if
@@ -82,12 +82,12 @@ contains
          hpr2 = s1(k2) - BL1 ! == 5,6: (ibedlevtyp=3), 2D conveyance, link or node
          if (hpr2 > 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
-            dx2 = 0.5d0 * dx(L) * (1d0 - acl(L))
+            dx2 = 0.5_dp * dx(L) * (1.0_dp - acl(L))
             a1(k2) = a1(k2) + dx2 * wid2
             vol1(k2) = vol1(k2) + dx2 * ar2
          end if
 
-      else if (hu(L) > 0d0) then
+      else if (hu(L) > 0.0_dp) then
 
          bob1 = bob(1, L); bob2 = bob(2, L)
 
@@ -105,7 +105,7 @@ contains
 
          if (jaconveyance2D > 0) then
 
-            frcn = frcu(L); ifrctyp = ifrcutp(L)
+            frcn = frcu(L); friction_type = ifrcutp(L)
 
             jaconv = jaconveyance2D
 
@@ -122,7 +122,7 @@ contains
 
                if (jaconv == 4) then
                   hsmall = BL1 + hpr1 - BL2 ! depth at shallow side
-                  if (hsmall / hpr1 > 0.9d0) then
+                  if (hsmall / hpr1 > 0.9_dp) then
                      jaconv = 1 ! Hydr rad
                   end if
                end if
@@ -134,14 +134,14 @@ contains
                      uucn = abs(csu(L) * cor2linx(L, 1, ucnx(k3), ucny(k3)) + snu(L) * cor2liny(L, 1, ucnx(k3), ucny(k3)))
                   end if
                   ucna = (ucnx(k3)**2 + ucny(k3)**2)
-                  if (ucna > 0d0 .and. uucn > 0d0) then
+                  if (ucna > 0.0_dp .and. uucn > 0.0_dp) then
                      ucna = sqrt(ucna)
                      beta = sqrt(uucn / ucna)
-                     if (beta > 0.97d0) then
-                        beta = 1d0
+                     if (beta > 0.97_dp) then
+                        beta = 1.0_dp
                      end if
                   else
-                     beta = 1d0 ! do simple hydraulic radius approach
+                     beta = 1.0_dp ! do simple hydraulic radius approach
                   end if
 
                   if (jasfer3D == 0) then
@@ -150,20 +150,20 @@ contains
                      uucn = abs(csu(L) * cor2linx(L, 2, ucnx(k4), ucny(k4)) + snu(L) * cor2liny(L, 2, ucnx(k4), ucny(k4)))
                   end if
                   ucna = (ucnx(k4)**2 + ucny(k4)**2)
-                  if (ucna > 0d0 .and. uucn > 0d0) then
+                  if (ucna > 0.0_dp .and. uucn > 0.0_dp) then
                      ucna = sqrt(ucna)
                      bt2 = sqrt(uucn / ucna)
-                     if (bt2 > 0.97d0) then
-                        bt2 = 1d0
+                     if (bt2 > 0.97_dp) then
+                        bt2 = 1.0_dp
                      end if
                   else
-                     bt2 = 1d0
+                     bt2 = 1.0_dp
                   end if
 
                   deltaa = (beta - bt2) / wu2
 
                   if (jaconv == 4) then
-                     if (beta == 1d0 .and. bt2 == 1d0) then
+                     if (beta == 1.0_dp .and. bt2 == 1.0_dp) then
                         jaconv = 2
                      end if
                   end if
@@ -172,12 +172,12 @@ contains
 
             end if
 
-            call getprof2d(hpr1, wu2, b21, ai, frcn, ifrctyp, widu, aru, aconvu, jaconv, beta, deltaa, hyr)
+            call getprof2d(hpr1, wu2, b21, ai, frcn, friction_type, widu, aru, aconvu, jaconv, beta, deltaa, hyr, L)
 
             if (frcn > 0) then
                cfuhi(L) = aifu(L) * ag * aconvu
             else
-               cfuhi(L) = 0d0
+               cfuhi(L) = 0.0_dp
             end if
             au(L) = aru
          else

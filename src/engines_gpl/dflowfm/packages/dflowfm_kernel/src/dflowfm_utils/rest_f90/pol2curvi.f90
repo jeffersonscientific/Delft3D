@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,13 +54,11 @@ contains
       use m_tranfn2, only: tranfn2
       use m_get_polstartend, only: get_polstartend
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
-      use m_alloc
-      use m_missing
-      use m_polygon
-      use m_qnerror
-      use m_increase_grid
+      use m_grid, only: mc, nc, mmax, nmax, xc, yc
+      use m_gridsettings, only: mfac, nfac
+      use m_polygon, only: npl, xpl, ypl
+      use m_qnerror, only: qnerror
+      use m_increase_grid, only: increasegrid
 
       integer, intent(in) :: i1, i2, i3 !< first, second and third corner point in polygon, respectively
       integer, intent(in) :: ja4 !< use polygon for fourth side (1) or not (0)
@@ -144,8 +142,8 @@ contains
 !     interpolate fourth side
          do i = 1, nc
             xi = dble(i - 1) / dble(nc - 1)
-            xh(i, 1) = (1d0 - xi) * xpl(i1) + xi * xpl(i4)
-            yh(i, 1) = (1d0 - xi) * ypl(i1) + xi * ypl(i4)
+            xh(i, 1) = (1.0_dp - xi) * xpl(i1) + xi * xpl(i4)
+            yh(i, 1) = (1.0_dp - xi) * ypl(i1) + xi * ypl(i4)
          end do
       end if
 
@@ -196,8 +194,12 @@ contains
       end if
 
 !  deallocate
-      if (allocated(xh)) deallocate (xh)
-      if (allocated(yh)) deallocate (yh)
+      if (allocated(xh)) then
+         deallocate (xh)
+      end if
+      if (allocated(yh)) then
+         deallocate (yh)
+      end if
 
       return
    end subroutine pol2curvi

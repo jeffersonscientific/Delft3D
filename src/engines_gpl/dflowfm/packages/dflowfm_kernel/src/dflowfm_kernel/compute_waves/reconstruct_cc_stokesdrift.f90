@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,7 +45,7 @@ contains
       use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
       use m_flow, only: kmx
       use m_waves, only: ustokes
-      use m_get_Lbot_Ltop_max
+      use m_get_Lbot_Ltop_max, only: getlbotltopmax
 
       implicit none
 
@@ -57,7 +57,7 @@ contains
       integer :: L, LL, Lb, Lt, k1, k2
       real(kind=dp) :: ustL
 
-      ust_x = 0d0; ust_y = 0d0
+      ust_x = 0.0_dp; ust_y = 0.0_dp
 
       if (kmx == 0) then
          do L = 1, lnx

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -134,11 +134,11 @@ contains
                ZD = ZK(K2) - ZK(K1)
                RD = sqrt(XD * XD + YD * YD + ZD * ZD)
                REK = 0 ! ( RD - RL(L) ) / RL(L)
-               if (LC(L) == 0) REK = max(0d0, REK)
+               if (LC(L) == 0) REK = max(0.0_dp, REK)
                SP = E0 * REK
                FSP = 0 ! SP*EA(L)/1e3  ! spanning in kN
                if (MET == 9) then
-                  V = 0d0 ! TODO: AvD: Mag weg
+                  V = 0.0_dp ! TODO: AvD: Mag weg
                end if
             else if (MET == 10) then
                V = DBDISTANCE(XK(K1), YK(K1), XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
@@ -163,9 +163,9 @@ contains
                   kR = lne(2, L)
                   call getcellsurface(kL, areaL, xc, yc)
                   call getcellsurface(kR, areaR, xc, yc)
-                  if (areaL < 1d-12 .or. areaR < 1d-12) cycle
+                  if (areaL < 1.0e-12_dp .or. areaR < 1.0e-12_dp) cycle
                   V = areaR / areaL
-                  if (V < 1d0) V = 1d0 / V
+                  if (V < 1.0_dp) V = 1.0_dp / V
                end if
             else if (MET == 17) then ! link size criterion
                if (lnn(L) < 2) then
@@ -175,7 +175,7 @@ contains
                   kR = lne(2, L)
                   call getcellsurface(kL, areaL, xc, yc)
                   call getcellsurface(kR, areaR, xc, yc)
-                  if (areaL < 1d-12 .or. areaR < 1d-12) cycle
+                  if (areaL < 1.0e-12_dp .or. areaR < 1.0e-12_dp) cycle
                   k1 = kn(1, L)
                   k2 = kn(2, L)
                   aa = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss) * dbdistance(xz(kL), yz(kL), xz(kR), yz(kR), jsferic, jasfer3D, dmiss)
@@ -197,13 +197,17 @@ contains
 
       if (met == 4) then
          npdf = 20
-         if (allocated(xpdf)) deallocate (xpdf, ypdf); allocate (xpdf(npdf), ypdf(npdf)); xpdf = 0d0
-         aa = 1d0
+         if (allocated(xpdf)) then
+            deallocate (xpdf, ypdf)
+         end if
+         allocate (xpdf(npdf), ypdf(npdf))
+         xpdf = 0.0_dp
+         aa = 1.0_dp
          do i = 1, npdf - 1
-            aa = 0.6666d0 * aa
+            aa = 0.6666_dp * aa
             ypdf(i) = aa
          end do
-         ypdf(npdf) = 0d0
+         ypdf(npdf) = 0.0_dp
          call makepdf(rlin, numL)
       end if
 

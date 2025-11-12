@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_resetflow
    use m_reset_movobs, only: reset_movobs
+   use m_waveconst
 
    implicit none
 
@@ -64,6 +65,8 @@ contains
       use m_sedtrails_data
       use m_nearfield, only: reset_nearfieldData
       use m_laterals, only: reset_lateral
+      use m_flow_validatestate, only: reset_flow_validatestate
+
       implicit none
 
       ! Only reset counters and other scalars, allocatables should be
@@ -101,7 +104,7 @@ contains
 
       call reset_statistics()
 
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          call xbeach_reset()
       end if
 
@@ -112,6 +115,8 @@ contains
       call reset_hydrology_data()
 
       call reset_nearfieldData()
+
+      call reset_flow_validatestate()
 
    end subroutine resetFlow
 

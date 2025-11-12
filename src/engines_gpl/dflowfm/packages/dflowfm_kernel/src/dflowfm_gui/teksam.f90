@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,7 +63,7 @@ contains
       if (MET == 0) return
 
       if (MET == 4 .or. MET == 5) call SETTEXTSIZE()
-      RC = 1.7d0 * RCIR
+      RC = 1.7_dp * RCIR
       HRC = RCIR / 2
       KMOD = max(1, NS / 100)
       key = 0
@@ -116,7 +116,7 @@ contains
       integer :: met, m, n, key
 
       if (MET == 4 .or. MET == 5) call SETTEXTSIZE()
-      RC = 1.7d0 * RCIR
+      RC = 1.7_dp * RCIR
       HRC = RCIR / 2
 
       if (met == 5) then
@@ -177,7 +177,7 @@ contains
 !               CALL CIR(RCIR)
 !!              CALL HTEXT(ZS(I),X,Y)
 
-               call box(x - 0.5d0 * rcir, y - 0.5d0 * rcir, x + 0.5d0 * rcir, y + 0.5d0 * rcir)
+               call box(x - 0.5_dp * rcir, y - 0.5_dp * rcir, x + 0.5_dp * rcir, y + 0.5_dp * rcir)
 
                if (MET == 2) then
                   call MOVABS(X, Y)

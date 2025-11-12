@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,9 +44,9 @@ contains
 
    subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
       use precision, only: dp
-      use m_splines
-      use m_spline2curvi
-      use m_alloc
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_spline2curvi, only: dtolcos
+      use m_alloc, only: realloc
       use stdlib_sorting, only: sort_index
 
       integer, intent(in) :: num !< number of spline control points
@@ -74,13 +74,13 @@ contains
 !  find the cross splines
       ncs = 0
       ics = 0
-      t = 1d99 ! default values will cause sorting to disregard non cross splines
+      t = 1.0e99_dp ! default values will cause sorting to disregard non cross splines
       do js = 1, mcs
          call nump(js, numj)
 
 !     reallocate if necessary
          if (numj > ubound(xlist, 1)) then
-            numnew = int(1.2d0 * dble(numj)) + 1
+            numnew = int(1.2_dp * dble(numj)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if
@@ -95,13 +95,13 @@ contains
                      max(num, numj), crp, num, numj, numcro, tt, tj, xp, yp)
 
          if (abs(crp) < dtolcos) then
-            numcro = 0d0
+            numcro = 0.0_dp
          end if
 
          if (numcro == 1) then ! intersection found
             ncs = ncs + 1
             ics(js) = js
-            if (crp > 0d0) then
+            if (crp > 0.0_dp) then
                Lorient(js) = .false.
             else
                Lorient(js) = .true.

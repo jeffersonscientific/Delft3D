@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,8 +39,7 @@ contains
 
    subroutine comp_subheights(is, Lorient, num, xs, ys, ncs, ics, t, nsubL, nsubR, hL, hR)
       use precision, only: dp
-      use m_splines
-      use m_spline2curvi
+      use m_spline2curvi, only: nsubmax, splineprops
       use m_splinelength_int, only: splinelength_int
 
       integer, intent(in) :: is !< center spline number
@@ -58,8 +57,8 @@ contains
 
       real(kind=dp), dimension(Nsubmax) :: hdum
 
-      hL = 0d0
-      hR = 0d0
+      hL = 0.0_dp
+      hR = 0.0_dp
 
 !  for this cross spline, find the left and right neighboring splines w.r.t. the center spline
       kL = 0
@@ -96,7 +95,7 @@ contains
 !         hR(NsubR) = cosphi(ncs)*hR(NsubR)
 !     end test
 
-      if (NsubR < Nsubmax) hR(NsubR + 1:Nsubmax) = 0d0
+      if (NsubR < Nsubmax) hR(NsubR + 1:Nsubmax) = 0.0_dp
 
       NsubL = 0
       kkL = k
@@ -114,13 +113,13 @@ contains
 
       end do
       NsubL = NsubL + 1
-      hL(NsubL) = splinelength_int(num, xs, ys, 0d0, t(kkL))
+      hL(NsubL) = splinelength_int(num, xs, ys, 0.0_dp, t(kkL))
 
 !     begin test
 !         hL(NsubL) = cosphi(1)*hL(NsubL)
 !     end test
 
-      if (NsubL < Nsubmax) hL(NsubL + 1:Nsubmax) = 0d0
+      if (NsubL < Nsubmax) hL(NsubL + 1:Nsubmax) = 0.0_dp
 
 !  check orientation
       if (.not. Lorient) then

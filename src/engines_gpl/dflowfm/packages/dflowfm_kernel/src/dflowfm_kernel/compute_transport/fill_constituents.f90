@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,19 +43,19 @@ contains
 
    subroutine fill_constituents(jas) ! if jas == 1 do sources
       use m_apply_sediment_bc, only: apply_sediment_bc
-      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, difsedw
+      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, molecular_diffusion_coeff
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, Jaallowcoolingbelowzero, ag, vonkar
-      use m_nudge, only: nudge_rate, nudge_tem, nudge_sal
+      use m_physcoef, only: dicouv, constant_dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
+      use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_sferic, only: jsferic, fcorio
-      use m_flowtimes, only: dts, time1, tstart_user, tfac
+      use m_flowtimes, only: dts
       use m_flowparameters, only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
       use m_laterals, only: add_lateral_load_and_sink, apply_transport_is_used
       use m_missing, only: dmiss
@@ -89,7 +89,7 @@ contains
             constituents(ISPIR, k) = spirint(k)
          end if
 
-         if (ISED1 /= 0) then
+         if (ISED1 /= 0 .and. .not. stm_included) then
             do jsed = 1, mxgr
                iconst = ISED1 + jsed - 1
                constituents(iconst, k) = sed(jsed, k)
@@ -97,23 +97,7 @@ contains
          end if
       end do
 
-      if (stm_included) then
-         if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
-            if (ISED1 /= 0) then
-               do k = 1, ndx
-                  if (hs(k) < stmpar%morpar%sedthr) then
-                     do jsed = 1, mxgr
-                        iconst = ISED1 + jsed - 1
-                        call getkbotktop(k, kb, kt)
-                        constituents(iconst, kb:kt) = 0.0_dp
-                     end do
-                  end if
-               end do
-            end if
-         end if
-      end if
-
-      difsedu = 0.0_dp; difsedw = 0.0_dp; sigdifi = 0.0_dp
+      difsedu = 0.0_dp; molecular_diffusion_coeff = 0.0_dp; sigdifi = 0.0_dp
 
 !  diffusion coefficients
 
@@ -121,8 +105,8 @@ contains
          if (dicouv >= 0.0_dp) then
             difsedu(ISALT) = difmolsal
          end if
-         if (dicoww >= 0.0_dp) then
-            difsedw(ISALT) = dicoww + difmolsal
+         if (constant_dicoww >= 0) then
+            molecular_diffusion_coeff(ISALT) = difmolsal
             sigdifi(ISALT) = 1.0_dp / Schmidt_number_salinity
          end if
       end if
@@ -131,15 +115,15 @@ contains
          if (dicouv >= 0.0_dp) then
             difsedu(ITEMP) = difmoltem
          end if
-         if (dicoww >= 0.0_dp) then
-            difsedw(ITEMP) = dicoww + difmoltem
+         if (constant_dicoww >= 0) then
+            molecular_diffusion_coeff(ITEMP) = difmoltem
             sigdifi(ITEMP) = 1.0_dp / Prandtl_number_temperature
          end if
       end if
 
       if (jasecflow > 0 .and. jaequili == 0 .and. kmx == 0) then
          difsedu(ISPIR) = 0.0_dp
-         difsedw(ISPIR) = 0.0_dp !dicoww + difmoltem
+         molecular_diffusion_coeff(ISPIR) = 0.0_dp
          sigdifi(ISPIR) = 0.0_dp !/sigspi
       end if
 
@@ -147,8 +131,8 @@ contains
          do jsed = 1, mxgr
             iconst = ISED1 + jsed - 1
             if (dicouv >= 0.0_dp) difsedu(iconst) = 0.0_dp
-            if (dicoww >= 0.0_dp) then
-               difsedw(iconst) = dicoww
+            if (constant_dicoww >= 0) then
+               molecular_diffusion_coeff(iconst) = 0.0_dp
                sigdifi(iconst) = 1.0_dp / sigsed(jsed)
             end if
             if (jased < 4) wsf(iconst) = ws(jsed)
@@ -158,8 +142,8 @@ contains
       if (ITRA1 > 0) then
          do jtra = ITRA1, ITRAN
             difsedu(jtra) = difmoltracer
-            if (dicoww >= 0.0_dp) then
-               difsedw(jtra) = dicoww + difmoltracer
+            if (constant_dicoww >= 0) then
+               molecular_diffusion_coeff(jtra) = difmoltracer
                sigdifi(jtra) = 1.0_dp / Schmidt_number_tracer
             end if
             wsf(jtra) = wstracers(jtra - ITRA1 + 1)
@@ -188,27 +172,27 @@ contains
 
 !        temperature
             if (jatem > 1) then
-               if (Jaallowcoolingbelowzero == 0) then ! default behaviour since 2017
+               if (use_salinity_freezing_point) then ! allowing cooling below 0 degrees
+                  const_sour(ITEMP, k) = heatsrc(k) * dvoli
+               else ! default behaviour since 2017
                   ! no cooling below 0 degrees
                   if (heatsrc(k) > 0.0_dp) then
                      const_sour(ITEMP, k) = heatsrc(k) * dvoli
                   else if (heatsrc(k) < 0.0_dp) then
                      const_sink(ITEMP, k) = -heatsrc(k) * dvoli / max(constituents(itemp, k), 0.001_dp)
                   end if
-               else ! allowing cooling below 0 degrees
-                  const_sour(ITEMP, k) = heatsrc(k) * dvoli
                end if
             end if
 
 !        nudging
             if (Trefi > 0.0_dp) then
-               if (ITEMP > 0 .and. nudge_tem(k) /= DMISS) then
-                  const_sour(ITEMP, k) = const_sour(ITEMP, k) + nudge_tem(k) * Trefi
+               if (ITEMP > 0 .and. nudge_temperature(k) /= DMISS) then
+                  const_sour(ITEMP, k) = const_sour(ITEMP, k) + nudge_temperature(k) * Trefi
                   const_sink(ITEMP, k) = const_sink(ITEMP, k) + Trefi
                end if
 
-               if (ISALT > 0 .and. nudge_sal(k) /= DMISS) then
-                  const_sour(ISALT, k) = const_sour(ISALT, k) + nudge_sal(k) * Trefi
+               if (ISALT > 0 .and. nudge_salinity(k) /= DMISS) then
+                  const_sour(ISALT, k) = const_sour(ISALT, k) + nudge_salinity(k) * Trefi
                   const_sink(ISALT, k) = const_sink(ISALT, k) + Trefi
                end if
             end if

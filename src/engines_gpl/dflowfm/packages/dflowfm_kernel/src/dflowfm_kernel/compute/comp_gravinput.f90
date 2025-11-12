@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
    !> compute Graviational Input from tidal forces and SAL
    subroutine comp_GravInput()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_partitioninfo
+      use m_flowgeom, only: lnx, ln, dxi, ndxi, ba, wcx1, wcy1, wcx2, wcy2
+      use m_flow, only: gravinput, salinput, salinput2, tidef, jaselfal, tidep, rho, hs, ucx, ucy, sq
+      use m_partitioninfo, only: jampi, idomain, my_rank
       implicit none
 
       real(kind=dp) :: force, dfac
@@ -54,15 +54,15 @@ contains
       logical :: Ldoit1, Ldoit2
 
 !     initialize
-      GravInput = 0d0
-      SALInput = 0d0
-      force = 0d0
+      GravInput = 0.0_dp
+      SALInput = 0.0_dp
+      force = 0.0_dp
 
-      SALinput2 = 0d0
+      SALinput2 = 0.0_dp
 
 !     reconstruct tidel force at cell centers and compute power at once
       do L = 1, Lnx
-         if (tidef(L) /= 0d0) then
+         if (tidef(L) /= 0.0_dp) then
             k1 = ln(1, L)
             k2 = ln(2, L)
 
@@ -71,8 +71,8 @@ contains
                force = (tidep(1, k2) - tidep(1, k1)) * dxi(L)
 
                !           compute limitation factor (see setextforcechkadvec)
-               dfac = 1d0
-               if (abs(force) > 0d0) then
+               dfac = 1.0_dp
+               if (abs(force) > 0.0_dp) then
                   dfac = tidef(L) / force
                end if
 

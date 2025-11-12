@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,9 +41,9 @@ contains
    subroutine sort_flowlinks_ccw()
       use precision, only: dp
       use m_flowgeom, only: xz, yz, nd, Ndx, ln
-      use m_sferic
-      use m_alloc
-      use geometry_module, only: getdxdy, dcosphi
+      use m_sferic, only: jsferic, pi
+      use m_alloc, only: realloc
+      use geometry_module, only: getdxdy
       use stdlib_sorting, only: sort_index
 
       integer :: k ! node number
@@ -83,7 +83,7 @@ contains
             end if
 
             call getdxdy(xz(k1), yz(k1), xz(k2), yz(k2), dx, dy, jsferic)
-            if (abs(dx) < 1d-14 .and. abs(dy) < 1d-14) then
+            if (abs(dx) < 1.0e-14_dp .and. abs(dy) < 1.0e-14_dp) then
                if (dy < 0) then
                   phi = -pi / 2
                else
@@ -97,7 +97,7 @@ contains
             end if
 
             arglin(L) = phi - phi0
-            if (arglin(L) < 0d0) arglin(L) = arglin(L) + 2d0 * pi
+            if (arglin(L) < 0.0_dp) arglin(L) = arglin(L) + 2.0_dp * pi
          end do
 
          call sort_index(arglin(1:lnxx), inn(1:lnxx))
@@ -109,9 +109,15 @@ contains
 
       end do ! do k=1,Ndx
 
-      if (allocated(linnrs)) deallocate (linnrs)
-      if (allocated(arglin)) deallocate (arglin)
-      if (allocated(inn)) deallocate (inn)
+      if (allocated(linnrs)) then
+         deallocate (linnrs)
+      end if
+      if (allocated(arglin)) then
+         deallocate (arglin)
+      end if
+      if (allocated(inn)) then
+         deallocate (inn)
+      end if
 
       return
    end subroutine sort_flowlinks_ccw

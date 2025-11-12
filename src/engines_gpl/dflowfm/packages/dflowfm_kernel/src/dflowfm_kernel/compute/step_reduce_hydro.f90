@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -79,9 +79,12 @@ contains
       numnodneg = 0
       last_iteration = .false.
 
-      if (numsrc > 0) then
-         if (wrwaqon .and. size(qsrcwaq) > 0) then
-            qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+      if (wrwaqon) then
+         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
+         if (allocated(qsrcwaq)) then
+            qsrcwaq0 = qsrcwaq
+         end if
+         if (allocated(qlatwaq)) then
             qlatwaq0 = qlatwaq
          end if
       end if
@@ -89,7 +92,7 @@ contains
       setback: do
 
          time1 = time0 + dts ! try to reach time1
-         dti = 1d0 / dts
+         dti = 1.0_dp / dts
          nums1it = 0
          nums1mit = 0
          dnums1it = 0
@@ -121,7 +124,7 @@ contains
 
                !-----------------------------------------------------------------------------------------------
 
-               nonlincont: do ! entry point for non-linear continuity
+               nonlincont: do ! entry point for non-linear continuity interation
                   call s1nod()
                   if (ifixedWeirScheme1d2d == 1) then
                      if (last_iteration) then
@@ -171,10 +174,15 @@ contains
                         cycle wetdry
                      end if
 
-                     if (numsrc > 0) then
-                        if (wrwaqon .and. allocated(qsrcwaq)) then
-                           qsrcwaq = qsrcwaq0 ! restore cumulative qsrc for waq from start of this time step to avoid
-                        end if ! double accumulation and use of incorrect dts in case of time step reduction
+                     if (wrwaqon) then
+                        ! restore cumulative qsrc and qlat for waq from start of this time step to avoid
+                        ! double accumulation and use of incorrect dts in case of time step reduction
+                        if (allocated(qsrcwaq)) then
+                           qsrcwaq = qsrcwaq0
+                        end if
+                        if (allocated(qlatwaq)) then
+                           qlatwaq = qlatwaq0
+                        end if
                      end if
                      call setkfs()
                      if (jposhchk == 2 .or. jposhchk == 4) then ! redo without timestep reduction, setting hu=0 => wetdry s1ini
@@ -217,13 +225,13 @@ contains
                            noiterations(noddifmaxlev) = noiterations(noddifmaxlev) + 1
                         end if
 
-                        write (msgbuf, '(''No convergence in nonlinear solver at time '', g12.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5d0 * dts
+                        write (msgbuf, '(''No convergence in nonlinear solver at time '', g12.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5_dp * dts
                         !if (nonlin1D == 2) then
                         !   ! Nested Newton
                         !   !call err_flush()
                         !else
                         call warn_flush()
-                        dts = 0.5d0 * dts
+                        dts = 0.5_dp * dts
                         dsetb = dsetb + 1 ! total nr of setbacks
                         s1 = s0
                         if (dts < dtmin) then
@@ -263,7 +271,7 @@ contains
                      ! beyond or past this point s1 is converged
 
                      if (nonlin >= 2) then
-                        difmaxlevm = 0d0; noddifmaxlevm = 0
+                        difmaxlevm = 0.0_dp; noddifmaxlevm = 0
                         do k = 1, ndx
                            dif = abs(s1m(k) - s1(k))
                            if (dif > difmaxlevm) then

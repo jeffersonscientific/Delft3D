@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -109,12 +109,14 @@ module m_observations_data
    integer :: IVAL_TEPS
    integer :: IVAL_VIU
    integer :: IVAL_VICWWS
+   integer :: IVAL_DIFWWS
    integer :: IVAL_VICWWU
    integer :: IVAL_WS1
    integer :: IVAL_WSN
    integer :: IVAL_SEDDIF1
    integer :: IVAL_SEDDIFN
    integer :: IVAL_RICH
+   integer :: IVAL_RICHS
    integer :: IVAL_TAIR
    integer :: IVAL_WIND
    integer :: IVAL_RHUM
@@ -127,6 +129,17 @@ module m_observations_data
    integer :: IVAL_QFRE
    integer :: IVAL_QFRC
    integer :: IVAL_QTOT
+
+   integer :: IVAL_ICE_S1
+   integer :: IVAL_ICE_ZMIN
+   integer :: IVAL_ICE_ZMAX
+   integer :: IVAL_ICE_AREA_FRACTION
+   integer :: IVAL_ICE_THICKNESS
+   integer :: IVAL_ICE_PRESSURE
+   integer :: IVAL_ICE_TEMPERATURE
+   integer :: IVAL_SNOW_THICKNESS
+   integer :: IVAL_SNOW_TEMPERATURE
+
    integer :: IVAL_RHOP
    integer :: IVAL_RHO
    integer :: IVAL_SBCX1
@@ -215,11 +228,13 @@ module m_observations_data
    integer :: IPNT_TEPS
    integer :: IPNT_VIU
    integer :: IPNT_VICWWS
+   integer :: IPNT_DIFWWS
    integer :: IPNT_VICWWU
    integer :: IPNT_WS1
    integer :: IPNT_WSN
    integer :: IPNT_SEDDIF1
    integer :: IPNT_RICH
+   integer :: IPNT_RICHS
    integer :: IPNT_TAIR
    integer :: IPNT_WIND
    integer :: IPNT_RHUM
@@ -232,6 +247,17 @@ module m_observations_data
    integer :: IPNT_QFRE
    integer :: IPNT_QFRC
    integer :: IPNT_QTOT
+
+   integer :: IPNT_ICE_S1
+   integer :: IPNT_ICE_ZMIN
+   integer :: IPNT_ICE_ZMAX
+   integer :: IPNT_ICE_AREA_FRACTION
+   integer :: IPNT_ICE_THICKNESS
+   integer :: IPNT_ICE_PRESSURE
+   integer :: IPNT_ICE_TEMPERATURE
+   integer :: IPNT_SNOW_THICKNESS
+   integer :: IPNT_SNOW_TEMPERATURE
+
    integer :: IPNT_NUM
    integer :: IPNT_RHOP
    integer :: IPNT_RHO

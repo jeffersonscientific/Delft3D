@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,7 +57,7 @@ contains
          call aerr('rn(numk)', ierr, numk)
       end if
 
-      rnod = 0d0; rn = 0d0
+      rnod = 0.0_dp; rn = 0.0_dp
       do n = 1, ndx2d
          nn4 = netcell(n)%n
 

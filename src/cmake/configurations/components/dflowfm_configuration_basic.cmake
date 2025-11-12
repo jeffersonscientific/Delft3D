@@ -47,11 +47,8 @@ if(NOT TARGET flow1d_implicit)
 endif()
 
 # Waq
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_base.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_dflowfm_online_coupling.cmake)
-
-
-
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_base.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
 # Morphology
 if(NOT TARGET morphology_plugins_c)
@@ -98,8 +95,6 @@ endif()
 if(NOT TARGET dfm_api_access)
     add_subdirectory(${checkout_src_root}/${dfm_api_access_module} dfm_api_access)
 endif()
-
-
 
 # Third party libraries
 # kdtree2
@@ -148,6 +143,11 @@ if(NOT TARGET FLAP)
     add_subdirectory(${checkout_src_root}/${FLAP_module} FLAP)
 endif()
 
+if(WIN32)
+   if (NOT TARGET gdal)
+      add_subdirectory(${checkout_src_root}/${gdal_module} gdal)
+   endif()
+endif(WIN32)
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
@@ -165,9 +165,11 @@ if(WIN32)
 endif(WIN32)
 
 # netcdf
-if(NOT TARGET netcdff)
-    add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-endif()
+if(WIN32)
+    if(NOT TARGET netcdff)
+        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
+    endif()
+endif(WIN32)
 
 # io_netcdf
 if(NOT TARGET io_netcdf)
@@ -186,11 +188,6 @@ endif()
 # gridgeom
 if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
-endif()
-
-# icepack
-if(NOT TARGET icepack)
-    add_subdirectory(${checkout_src_root}/${icepack_module} icepack)
 endif()
 
 if(NOT WITH_INTERACTER)
@@ -215,6 +212,11 @@ if(NOT TARGET spherepack)
     add_subdirectory(${checkout_src_root}/${spherepack_module} spherepack)
 endif()
 
+#intel MPI & MKL
+if(NOT TARGET intelredist)
+    add_subdirectory(${checkout_src_root}/${intelredist_module} intelredist)
+endif()
+
 # Unit tests for dflowfm and io_netcdf
 # Only for the version without interacter
 if(NOT WITH_INTERACTER)
@@ -225,11 +227,11 @@ if(NOT WITH_INTERACTER)
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
-    
+
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
     endif()
-    
+
     if(NOT TARGET test_ec_module)
         add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
     endif()
@@ -238,12 +240,6 @@ if(NOT WITH_INTERACTER)
         add_subdirectory(${checkout_src_root}/${test_io_netcdf} test_io_netcdf)
     endif()
 endif(NOT WITH_INTERACTER)
-
-
-if(UNIX)
-    # install
-    add_subdirectory(${checkout_src_root}/${install_dflowfm_module} install_dflowfm)
-endif()
 
 # Plugins
 if(NOT TARGET plugin_culvert)

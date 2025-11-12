@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,13 +43,14 @@ contains
 
    subroutine copyspline(ispline, inode, xp, yp)
       use precision, only: dp
-      use m_splines
-      use m_sferic
+      use m_splines, only: nump, maxspl, xsp, ysp, dxymis, newspline, addsplinepoint, mcs
+      use m_sferic, only: jsferic, jasfer3d, ra, dg2rd
+      use m_splint, only: splint
+      use m_spline, only: spline
+      use m_splines, only: maxsplen
+      use m_comp_curv, only: comp_curv
       use geometry_module, only: dbdistance, dcosphi
       use m_missing, only: dmiss
-      use m_splint
-      use m_spline
-      use m_comp_curv
 
       integer, intent(inout) :: ispline !< spline number
       integer, intent(in) :: inode !< spline control point
@@ -62,7 +63,7 @@ contains
 
       integer :: i, j, num
 
-      real(kind=dp), parameter :: EPS = 1d-4
+      real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
       integer, parameter :: Nresample = 1
 
@@ -83,7 +84,7 @@ contains
          end if
 
          alphan = dcosphi(x0, y0, x0 + EPS * dnx, y0 + EPS * dny, x0, y0, xp, yp, jsferic, jasfer3D, dxymis) * ds
-         alphas = 0d0
+         alphas = 0.0_dp
 
          call newspline()
 

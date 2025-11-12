@@ -8,58 +8,56 @@ import Delft3D.template.*
 import Delft3D.step.*
 
 object WindowsBuild : BuildType({
+
+    description = "CMake build."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateFailureCondition,
+        TemplateDockerRegistry
     )
  
     name = "Build"
     buildNumberPattern = "%product%: %build.vcs.number%"
-    description = "Windows build."
 
     allowExternalStatus = true
     artifactRules = """
         #teamcity:symbolicLinks=as-is
         **/*.log => logging
         build_%product%/install/** => oss_artifacts_x64_%build.vcs.number%.zip!x64
+        unit-test-report-windows.xml
     """.trimIndent()
 
     params {
-        param("intel_fortran_compiler", "ifort")
+        param("intel_fortran_compiler", "ifx")
+        param("container.tag", "vs2022-intel2024")
+        param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
-        param("generator", """"Visual Studio 16 2019"""")
-        param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
-        param("build_type", "Release")
+        select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
     }
 
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
-        checkoutDir = "ossbuild-lnx64"
+        checkoutDir = "ossbuild-win"
     }
 
     steps {
         mergeTargetBranch {
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
         python {
             name = "Determine product by branch prefix"
-            command = script {
-                content="""
-                    if "%product%" == "auto-select":
-                        if "merge-request" in "%teamcity.build.branch%":
-                            product = "%teamcity.pullRequest.source.branch%".split("/")[0]
-                        else:
-                            product = "%teamcity.build.branch%".split("/")[0]
-                        print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
-                        print(f"##teamcity[buildNumber '{product}: %build.vcs.number%']")
-                """.trimIndent()
+            command = file {
+                filename ="""ci\\teamcity\\Delft3D\\windows\\scripts\\determineProduct.py"""
+                scriptArguments = "%product% %teamcity.build.branch% %teamcity.build.branch.is_default% %build.vcs.number% %teamcity.pullRequest.source.branch%"
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
@@ -70,73 +68,30 @@ object WindowsBuild : BuildType({
                 echo #define BUILD_NR "%build.vcs.number%" > checkout_info.h
                 echo #define BRANCH "%teamcity.build.branch%" >> checkout_info.h
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
         script {
             name = "Build"
             scriptContent = """
+                call C:/set-env-vs2022.cmd
                 cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%product% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
+                cmake --build ./build_%product% -j --target install --config %build_type%
 
-                cd build_%product%
-
-                cmake --build . -j --target install --config %build_type%
+                ctest --test-dir ./build_%product% --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:vs2019-oneapi2023"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
-        powerShell {
-            name = "Add FBC-tools"
-            scriptMode = script {
-                content="""
-                    robocopy fbctools build_%product%\install /E /XC /XN /XO
-                """.trimIndent()
-            }
-        }
-    }
-
-    failureConditions {
-        executionTimeoutMin = 1800
-        errorMessage = true
-        failOnText {
-            conditionType = BuildFailureOnText.ConditionType.REGEXP
-            pattern = "Artifacts path .* not found"
-            failureMessage = "Artifacts are missing"
-            reverse = false
-        }
-        failOnText {
-            conditionType = BuildFailureOnText.ConditionType.CONTAINS
-            pattern = "Failed to resolve artifact dependency"
-            failureMessage = "Unable to collect all dependencies"
-            reverse = false
-            stopBuildOnFailure = true
-        }
-    }
-
-    dependencies {
-        dependency(AbsoluteId("FbcTools_FbcToolsBuildOssX64CMakeReleaseWin64")) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-            artifacts {
-                artifactRules = """
-                    *.dll => fbctools/lib
-                    *.xsd => fbctools/share/drtc
-                """.trimIndent()
-            }
-        }
     }
 
     features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
+        xmlReport {
+            reportType = XmlReport.XmlReportType.JUNIT
+            rules = "+:unit-test-report-windows.xml"
         }
     }
-
 })

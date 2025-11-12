@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,11 +46,12 @@ contains
       use m_flowgeom
       use network_data
       use m_sferic
-      use m_partitioninfo
+      use m_partitioninfo, only: jampi, idomain, ighostlev, my_rank
       use stdlib_sorting, only: sort_index
       use geometry_module, only: dbdistance, normalout
       use m_missing, only: dmiss, dxymis
       use m_alloc
+      use m_link_ghostdata, only: link_ghostdata
 
       type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on flow geometry.
       integer, intent(in) :: includeghosts !< include ghost links in path (1) or not (0)
@@ -115,10 +116,10 @@ contains
                yn = rd2dg * yn / ra
             end if
 
-            x1 = .5d0 * (xz(n1) + xz(n2)) - .5d0 * xn
-            y1 = .5d0 * (yz(n1) + yz(n2)) - .5d0 * yn
-            x2 = .5d0 * (xz(n1) + xz(n2)) + .5d0 * xn
-            y2 = .5d0 * (yz(n1) + yz(n2)) + .5d0 * yn
+            x1 = 0.5_dp * (xz(n1) + xz(n2)) - 0.5_dp * xn
+            y1 = 0.5_dp * (yz(n1) + yz(n2)) - 0.5_dp * yn
+            x2 = 0.5_dp * (xz(n1) + xz(n2)) + 0.5_dp * xn
+            y2 = 0.5_dp * (yz(n1) + yz(n2)) + 0.5_dp * yn
          end if
          if (jaloc3 > 0) then ! for Crs defined by branchID and chainage
             call increaseCrossSectionPath(path, 0, 1)
@@ -138,21 +139,21 @@ contains
 
             !  determine permutation array of flowlinks by increasing arc length order
             do i = 1, path%lnx
-               path%sp(i) = dble(path%indexp(i)) + (1d0 - path%wfp(i))
+               path%sp(i) = dble(path%indexp(i)) + (1.0_dp - path%wfp(i))
             end do
 
             call sort_index(path%sp(1:path%lnx), path%iperm(1:path%lnx))
 
             !  compute arc length
             allocate (dpl(path%np))
-            dpl(1) = 0d0
+            dpl(1) = 0.0_dp
             do i = 2, path%np
                dpl(i) = dpl(i - 1) + dbdistance(path%xp(i - 1), path%yp(i - 1), path%xp(i), path%yp(i), jsferic, jasfer3D, dmiss)
             end do
 
             do i = 1, path%lnx
                path%sp(i) = dpl(path%indexp(i)) * path%wfp(i) + &
-                            dpl(path%indexp(i) + 1) * (1d0 - path%wfp(i))
+                            dpl(path%indexp(i) + 1) * (1.0_dp - path%wfp(i))
             end do
 
             deallocate (dpl)

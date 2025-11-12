@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,8 +43,7 @@ contains
 
    subroutine updateValuesOnRunupGauges()
       use precision, only: dp
-      use m_monitoring_runupgauges
-      use m_missing
+      use m_monitoring_runupgauges, only: num_rugs, dmiss, rug
       use m_flow, only: s1, hs
       use m_cell_geometry, only: xz, yz
       use m_flowgeom, only: ln, bl
@@ -56,9 +55,9 @@ contains
       real(kind=dp) :: max_x, max_y, maxz, maxk
 
 !   update runup on gauge locations
-      hs = max(s1 - bl, 0d0)
+      hs = max(s1 - bl, 0.0_dp)
       do irug = 1, num_rugs
-         maxz = -huge(0d0)
+         maxz = -huge(0.0_dp)
          max_x = dmiss
          max_y = dmiss
          maxk = 0

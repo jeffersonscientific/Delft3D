@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -118,7 +118,7 @@ contains
       if (adm%Ncell < 1) goto 1234
 
 !  reallocate kkc if necessary
-      if (adm%Ncell > ubound(adm%kkc, 2)) call realloc(adm%kkc, (/M, adm%Ncell/))
+      if (adm%Ncell > ubound(adm%kkc, 2)) call realloc(adm%kkc, [M, adm%Ncell])
 
 !  make the node administration kk2 and kkc
       adm%kk2 = 0

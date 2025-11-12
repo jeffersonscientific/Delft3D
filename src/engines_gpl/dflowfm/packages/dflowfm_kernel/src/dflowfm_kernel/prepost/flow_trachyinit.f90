@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -78,7 +78,7 @@ contains
       integer, pointer :: ntrtobs
       !
       real(kind=dp) :: xE, yE, xF, yF, x, y, dist
-      real(kind=dp), parameter :: dtol_trachy = 1d-4 !< tolerance for distance in finding net-link numbers based on xuL,yuL
+      real(kind=dp), parameter :: dtol_trachy = 1.0e-4_dp !< tolerance for distance in finding net-link numbers based on xuL,yuL
       !
       real(kind=dp), dimension(:), allocatable :: xuL !< xu points on net-links
       real(kind=dp), dimension(:), allocatable :: yuL !< yu points on net-links
@@ -96,7 +96,7 @@ contains
       integer :: ddbval = 0
       integer :: threshold_abort_current
 
-      real(kind=dp) :: dummy_tunit = 1d0
+      real(kind=dp) :: dummy_tunit = 1.0_dp
       !
       logical :: lftrto
       logical :: error
@@ -112,17 +112,29 @@ contains
       flnmD90 => bfmpar%flnmD90
       lfbedfrmrou => bfmpar%lfbedfrmrou
       !
-      if (allocated(sig)) deallocate (sig)
-      if (allocated(umag)) deallocate (umag)
-      if (allocated(z0rou)) deallocate (z0rou)
-      if (allocated(dx_trt)) deallocate (dx_trt)
-      if (allocated(hu_trt)) deallocate (hu_trt)
-      if (allocated(kcu_trt)) deallocate (kcu_trt)
+      if (allocated(sig)) then
+         deallocate (sig)
+      end if
+      if (allocated(umag)) then
+         deallocate (umag)
+      end if
+      if (allocated(z0rou)) then
+         deallocate (z0rou)
+      end if
+      if (allocated(dx_trt)) then
+         deallocate (dx_trt)
+      end if
+      if (allocated(hu_trt)) then
+         deallocate (hu_trt)
+      end if
+      if (allocated(kcu_trt)) then
+         deallocate (kcu_trt)
+      end if
 
       kmaxtrt = max(kmx, 1)
-      allocate (sig(kmaxtrt)); sig = 0d0
-      allocate (umag(ndx)); umag = 0d0
-      allocate (z0rou(ndx)); z0rou = 0d0
+      allocate (sig(kmaxtrt)); sig = 0.0_dp
+      allocate (umag(ndx)); umag = 0.0_dp
+      allocate (z0rou(ndx)); z0rou = 0.0_dp
       !
       ! Allocate arrays for moving data from flow links to net links
       !
@@ -135,7 +147,7 @@ contains
       threshold_abort_current = threshold_abort
       threshold_abort = LEVEL_FATAL
       !
-      z0rou = 0d0
+      z0rou = 0.0_dp
       do L = 1, lnx
          k1 = ln(1, L); k2 = ln(2, L)
          z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L)
@@ -363,8 +375,12 @@ contains
          end if
       end do
 
-      if (allocated(xuL)) deallocate (xuL)
-      if (allocated(yuL)) deallocate (yuL)
+      if (allocated(xuL)) then
+         deallocate (xuL)
+      end if
+      if (allocated(yuL)) then
+         deallocate (yuL)
+      end if
       threshold_abort = threshold_abort_current
 
    end subroutine flow_trachyinit

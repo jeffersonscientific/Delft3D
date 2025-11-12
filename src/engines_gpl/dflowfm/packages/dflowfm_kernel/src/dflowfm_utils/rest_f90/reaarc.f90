@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,15 +42,15 @@ contains
 
    subroutine REAARC(MINP, japrompt)
       use precision, only: dp
-      use m_getreal
-      use m_arcinfo
-      use m_polygon
-      use m_missing
-      use m_alloc
-      use m_qnerror
-      use m_readarcinfoheader
-      use m_read_arc_info_block
-      use m_read_large_arc_info_block
+      use m_getreal, only: getreal
+      use m_arcinfo, only: mca, nca, x0, y0, dxa, dya, rmis, d, maxarctile
+      use m_polygon, only: npl, xpl, ypl
+      use m_missing, only: dmiss
+      use m_alloc, only: aerr
+      use m_qnerror, only: qnerror
+      use m_readarcinfoheader, only: readarcinfoheader
+      use m_read_arc_info_block, only: readarcinfoblock
+      use m_read_large_arc_info_block, only: readlargearcinfoblock
 
       integer :: ierr
       integer :: minp
@@ -102,10 +102,10 @@ contains
 !           automatic istep, jstep
             dsqrtnumcur = sqrt(dble(iend - istart + 1)) * sqrt(dble(jend - jstart + 1))
             distep = dsqrtnumcur / sqrt(dble(MAXARCTILE))
-            distep = dble(int(distep + 0.5d0))
+            distep = dble(int(distep + 0.5_dp))
             djstep = distep
 
-            if (distep > 1d0) then ! only if necessary
+            if (distep > 1.0_dp) then ! only if necessary
                call getreal("istep = ", distep)
                call getreal("jstep = ", djstep)
             end if
@@ -137,8 +137,8 @@ contains
 !        modife arcinfo module data
 !         X0 = X0 + dble(istep-1)*0.5d0*DXa
 !         Y0 = Y0 + dble(jstep-1)*0.5d0*DYa
-         X0 = X0 + (istart - 1) * Dxa + dble(istep - 1) * 0.5d0 * DXa
-         Y0 = Y0 + (jstart - 1) * Dya + dble(jstep - 1) * 0.5d0 * DYa
+         X0 = X0 + (istart - 1) * Dxa + dble(istep - 1) * 0.5_dp * DXa
+         Y0 = Y0 + (jstart - 1) * Dya + dble(jstep - 1) * 0.5_dp * DYa
          DXa = dble(istep) * DXa
          DYa = dble(jstep) * DYa
 

@@ -5,6 +5,7 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
+import jetbrains.buildServer.configs.kotlin.failureConditions.*
 import Delft3D.template.*
 import Delft3D.step.*
 
@@ -13,14 +14,17 @@ import CsvProcessor
 
 object WindowsTest : BuildType({
 
+    description = "Run TestBench.py on a list of testbench XML files."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Test"
-    buildNumberPattern = "%build.vcs.number%"
+    buildNumberPattern = "%product%: %build.vcs.number%"
 
     artifactRules = """
         test\deltares_testbench\data\cases\**\*.pdf      => pdf
@@ -51,11 +55,13 @@ object WindowsTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
+        param("container.tag", "%build.vcs.number%")
+        param("product", "unknown")
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
-        
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+
     }
 
     features {
@@ -71,10 +77,8 @@ object WindowsTest : BuildType({
         mergeTargetBranch {}
         python {
             name = "Run TestBench.py"
+            id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
-            environment = venv {
-                requirementsFile = "pip/win-requirements.txt"
-            }
             command = file {
                 filename = "TestBench.py"
                 scriptArguments = """
@@ -88,38 +92,17 @@ object WindowsTest : BuildType({
                     --teamcity
                 """.trimIndent()
             }
+            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
         script {
             name = "Copy cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
-            scriptContent = "cp -r data/cases copy_cases"
-        }
-        script {
-            name = "Kill dimr.exe, mpiexec.exe, and hydra_pmi_proxy.exe"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            scriptContent = """
-                echo off
-                REM taskkill does not automatically kill child processes, and mpiexec spawns some
-                call :kill_program dimr.exe
-                call :kill_program mpiexec.exe
-                call :kill_program hydra_pmi_proxy.exe
-                call :kill_program mormerge.exe
-                set errorlevel=0
-                goto :eof
-                
-                :kill_program
-                set program_name=%~1
-                tasklist | find /i "%%program_name%%" > NUL 2>&1
-                if errorlevel 1 (
-                    echo %%program_name%% is not running.
-                ) else (
-                    echo Executing 'taskkill /f /im %%program_name%% /t'
-                    taskkill /f /im %%program_name%% /t > NUL 2>&1
-                )
-                exit /b 0
-            """.trimIndent()
+            scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
         }
     }
 
@@ -139,6 +122,12 @@ object WindowsTest : BuildType({
                 artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
             }
         }
+        dependency(WindowsTestEnvironment) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
             buildRule = lastSuccessful()
             cleanDestination = true
@@ -151,7 +140,14 @@ object WindowsTest : BuildType({
         }
     }
 
-    requirements {
-        startsWith("teamcity.agent.jvm.os.name", "Windows 1")
+    failureConditions {
+        executionTimeoutMin = 90
+        errorMessage = true
+        failOnText {
+            conditionType = BuildFailureOnText.ConditionType.CONTAINS
+            pattern = "[ERROR  ]"
+            failureMessage = "There was an ERROR in the TestBench.py output."
+            reverse = false
+        }
     }
 })

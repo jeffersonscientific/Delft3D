@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,11 +50,9 @@ contains
       use precision, only: dp
       use m_averagediff, only: averagediff
       use m_accumulatedistance, only: accumulatedistance
-      use M_POLYGON
-      use M_MISSING
-      use m_ec_triangle
-      use M_SAMPLES
-      use m_alloc
+      use M_POLYGON, only: savepol, npl, xpl, ypl, zpl, dxuni, xph, yph, zph, maxpol
+      use M_MISSING, only: dmiss, dxymis
+      use m_alloc, only: aerr, realloc
 
       integer :: i1, i2
       integer, intent(in) :: jauniform !< use uniform spacing (1) or not (0)
@@ -79,7 +77,7 @@ contains
       integer :: NX, JDLA
 
       JDLA = 1
-      THIRD = 1d0 / 3d0; TWOTHIRD = 1d0 - THIRD
+      THIRD = 1.0_dp / 3.0_dp; TWOTHIRD = 1.0_dp - THIRD
 
       call SAVEPOL()
 
@@ -137,8 +135,8 @@ contains
       call averageDiff(DPL, DXA, NO) ! OORSPRONKELIJKE SEGMENTSIZE
 
       if (jauniform /= 1) then
-         DXS1 = 1d0 * DXA(1) ! Start segment
-         DXS2 = 1d0 * DXA(NO) ! Eind segment
+         DXS1 = 1.0_dp * DXA(1) ! Start segment
+         DXS2 = 1.0_dp * DXA(NO) ! Eind segment
       else
          DXS1 = min(dxuni, DPL(NO))
          DXS2 = DXS1
@@ -163,7 +161,7 @@ contains
                   DXS(N) = DXA(N)
                end if
             end do
-            TXS = sum(DXS(1:NPL)) - 0.5d0 * (DXS(1) + DXS(NPL)) ! Som van gewenste delta xjes
+            TXS = sum(DXS(1:NPL)) - 0.5_dp * (DXS(1) + DXS(NPL)) ! Som van gewenste delta xjes
 
             call SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH WEIGHTFACTOR DESIRED
          end do
@@ -185,7 +183,7 @@ contains
             end if
          end do
 
-         if (NMN /= 0 .and. TXS - 1.5d0 * DXS(max(NMN, 1)) > TXA) then ! TOT STREEFLENGTE MIN KLEINSTE STREEF LENGTE GROTER DAN TOTLENGTE
+         if (NMN /= 0 .and. TXS - 1.5_dp * DXS(max(NMN, 1)) > TXA) then ! TOT STREEFLENGTE MIN KLEINSTE STREEF LENGTE GROTER DAN TOTLENGTE
             ! => KLEINSTE VERWIJDEREN
             NPL = NPL - 1
             do N = NMN, NPL
@@ -193,7 +191,7 @@ contains
             end do
             JA = 1
 
-         else if (TXS + 0.5d0 * DXA(NMX) < TXA) then ! TOT STREEFLENGTE PLUS HALVE GROOTSTE KLEINER DAN TOTLENGTE
+         else if (TXS + 0.5_dp * DXA(NMX) < TXA) then ! TOT STREEFLENGTE PLUS HALVE GROOTSTE KLEINER DAN TOTLENGTE
             ! => BIJZETTEN BIJ DE GROOTSTE
             NPL = NPL + 1
             if (NPL > NX) then
@@ -210,7 +208,7 @@ contains
                DPLA(N) = DPLA(N - 1)
             end do
 
-            DPLA(NMX + 1) = 0.5d0 * (DPLA(NMX) + DPLA(NMX + 2))
+            DPLA(NMX + 1) = 0.5_dp * (DPLA(NMX) + DPLA(NMX + 2))
 
             JA = 1
          else

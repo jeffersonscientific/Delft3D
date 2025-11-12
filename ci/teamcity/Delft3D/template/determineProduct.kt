@@ -18,12 +18,17 @@ object TemplateDetermineProduct : Template({
             command = script {
                 content="""
                     if "%product%" == "auto-select":
-                        if "merge-request" in "%teamcity.build.branch%":
-                            product = "%teamcity.pullRequest.source.branch%".split("/")[0]
+                        if "pull" in "%teamcity.build.branch%":
+                            if "%teamcity.pullRequest.source.branch%".startswith("revert-"):
+                                product = "tc"
+                            else:
+                                product = "%teamcity.pullRequest.source.branch%".split("/")[0]
                         else:
-                            product = "testbench-%teamcity.build.branch%".split("/")[0]
+                            product = "%teamcity.build.branch%".split("/")[0]
+                        if "%teamcity.build.branch.is_default%" == "true":
+                            product = "all"
                         print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
-                        print(f"##teamcity[buildNumber '{product}: %build.vcs.number%']")
+                        print(f"##teamcity[buildNumber '{product}-testbench: %build.vcs.number%']")
                 """.trimIndent()
             }
         }

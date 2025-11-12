@@ -9,6 +9,8 @@ import Delft3D.step.*
 
 object WindowsCollect : BuildType({
 
+    description = "Prepping the binaries for testing/release and verify the signing and directory structure."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,7 +19,6 @@ object WindowsCollect : BuildType({
 
     name = "Collect"
     buildNumberPattern = "%dep.${WindowsBuild.id}.product%: %build.vcs.number%"
-    description = "DIMRset collector for Linux."
 
     allowExternalStatus = true
     artifactRules = """
@@ -42,12 +43,36 @@ object WindowsCollect : BuildType({
             conditions {
                 equals("dep.${WindowsBuild.id}.product", "fm-suite")
             }
+        }      
+        powerShell {
+            name = "Copy DLLs"
+            scriptMode = script {
+            content = """
+                Copy-Item "C:\Windows\System32\vcomp140.dll" -Destination "x64\lib" -Force
+                Copy-Item "C:\Windows\System32\ucrtbased.dll" -Destination "x64\lib" -Force
+            """.trimIndent()
+            }
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
             command = file {
-                filename = """ci/DIMRset_delivery/scripts/list_all_what_strings.py"""
+                filename = """ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py"""
                 scriptArguments = "--srcdir x64 --output dimrset_version_x64.txt"
+            }
+        }
+        python {
+            name = "Verify (un)signed binaries and directory structure"
+            command = file {
+                filename = "ci/python/ci_tools/dimrset_delivery/validate_signing.py"
+                scriptArguments = """
+                    "ci\\python\\ci_tools\\dimrset_delivery\\%dep.${WindowsBuild.id}.product%-binaries.json" 
+                    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat"
+                    "x64"
+                """.trimIndent()
+            }
+            conditions {
+                matches("dep.${WindowsBuild.id}.product", "(fm-suite|all-testbench)")
+                matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
     }
@@ -71,19 +96,6 @@ object WindowsCollect : BuildType({
     }
 
     dependencies {
-        dependency(WindowsBuild) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-            artifacts {
-                artifactRules = """
-                    oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
-                    oss_artifacts_x64_*.zip!/x64/lib/** => x64/lib
-                    oss_artifacts_x64_*.zip!/x64/share/** => x64/share
-                """.trimIndent()
-            }
-        }
         dependency(AbsoluteId("${DslContext.getParameter("delft3d_signing_project_root")}_Sign")) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
@@ -93,6 +105,7 @@ object WindowsCollect : BuildType({
                 artifactRules = """
                     oss_artifacts_x64_*.zip!/x64/bin/** => x64/bin
                     oss_artifacts_x64_*.zip!/x64/lib/** => x64/lib
+                    ?:oss_artifacts_x64_*.zip!/x64/share/** => x64/share
                 """.trimIndent()
             }
         }
@@ -100,5 +113,6 @@ object WindowsCollect : BuildType({
     requirements {
         exists("env.PYTHON_PATH")
         contains("teamcity.agent.jvm.os.name", "Windows")
+        exists("VS2022")
     }
 })

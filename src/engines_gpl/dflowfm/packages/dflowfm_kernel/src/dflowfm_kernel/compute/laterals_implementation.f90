@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -173,21 +173,21 @@ contains
                   ! only multiply transport_load with concentration.
                   qlat = qqlat(i_layer, k1)
                   if (comparereal(qlat, 0._dp, eps10) > 0) then
-                     if (kmx==0) then
+                     if (kmx == 0) then
                         transport_load(i_const, i_cell) = transport_load(i_const, i_cell) &
-                                                       + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
-                       
-                     else 
+                                                          + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
+
+                     else
                         index_active_bottom_layer = kmx - kmxn(i_cell) + 1
                         if (i_layer >= index_active_bottom_layer) then
                            cell_layer_index = kbot(i_cell) + i_layer - index_active_bottom_layer
                            delta_cell_volume = 1._dp / max(cell_volume(cell_layer_index), dtol)
                            transport_load(i_const, cell_layer_index) = transport_load(i_const, cell_layer_index) &
-                                                       + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
+                                                                       + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
                         end if
                      end if
                   else
-                     if (kmx==0) then
+                     if (kmx == 0) then
                         ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
                         transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) - delta_cell_volume * qlat
                      else
@@ -237,6 +237,46 @@ contains
       end do
 
    end subroutine get_lateral_volume_per_layer
+
+   !> !< Initialize flow_parameter, allocate arrays and set pointers
+   module subroutine initialize_flow_parameter(this, num_elements, input_variable, weighing_variable, &
+                                               index_start, index_end, index_to_node)
+      class(t_flow_parameter), intent(inout) :: this !< Flow parameter object
+      integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
+      real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
+      real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
+      integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
+
+      allocate (this%values(num_elements))
+      this%num_elements = num_elements
+      this%input_variable => input_variable
+      this%weighing_variable => weighing_variable
+      this%is_used = .true.
+      this%index_start => index_start
+      this%index_end => index_end
+      this%index_to_node => index_to_node
+   end subroutine initialize_flow_parameter
+
+   !> !< Update flow_parameter, perform averaging.
+   module subroutine update_flow_parameter(this)
+      class(t_flow_parameter), intent(inout) :: this !< General structure for Flow parameters that require averaging.
+      real(kind=dp) :: cumulative_value, cumulative_weight
+      integer :: i_element, i_index, i_node
+
+      if (.not. this%is_used) return
+
+      do i_element = 1, this%num_elements
+         cumulative_value = 0.0_dp
+         cumulative_weight = 0.0_dp
+         do i_index = this%index_start(i_element), this%index_end(i_element)
+            i_node = this%index_to_node(i_index)
+            cumulative_value = cumulative_value + this%input_variable(i_node) * this%weighing_variable(i_node)
+            cumulative_weight = cumulative_weight + this%weighing_variable(i_node)
+         end do
+         this%values(i_element) = cumulative_value / max(cumulative_weight, eps10)
+      end do
+   end subroutine update_flow_parameter
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !!In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.

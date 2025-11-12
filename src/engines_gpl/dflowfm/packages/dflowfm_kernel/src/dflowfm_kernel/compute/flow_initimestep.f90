@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,6 +45,7 @@ module m_flow_initimestep
    use m_makeq1qaatstart
    use m_pillar_upd
    use m_heatu
+   use m_waveconst
 
    implicit none
 
@@ -67,16 +68,16 @@ contains
       use m_partitioninfo
       use m_sethu
       use fm_external_forcings, only: calculate_wind_stresses, set_external_forcings_boundaries
-      use m_wind, only: update_wind_stress_each_time_step
+      use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_fm_icecover, only: update_icecover
       implicit none
 
       integer, intent(in) :: jazws0
       logical, intent(in) :: set_hu !< Flag for updating `hu` (.true.) or not (.false.) in subroutine `calculate_hu_au_and_advection_for_dams_weirs` (`sethu`).
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
       integer :: ierror
-      real(kind=dp), parameter :: MMPHR_TO_MPS = 1d-3 / 3600d0
+      real(kind=dp), parameter :: MMPHR_TO_MPS = 1.0e-3_dp / 3600.0_dp
 
       iresult = DFM_GENERICERROR
 
@@ -95,7 +96,7 @@ contains
       end if
 
 ! due to tolerance in poshcheck, hs may be smaller than 0 (but larger than -1e-10)
-      hs = max(hs, 0d0)
+      hs = max(hs, 0.0_dp)
 
       if (nshiptxy > 0) then ! quick fix only for ships
          call setdt()
@@ -118,7 +119,7 @@ contains
          goto 888
       end if
 
-      if (tlfsmo > 0d0) then
+      if (tlfsmo > 0.0_dp) then
          alfsmo = (tim1bnd - tstart_tlfsmo_user) / tlfsmo
       end if
 
@@ -129,8 +130,8 @@ contains
       end if
       call timstop(handle_extra(42)) ! End u0u1
 
-      advi = 0d0
-      adve = 0d0
+      advi = 0.0_dp
+      adve = 0.0_dp
 
       call timstrt('Sethuau     ', handle_extra(39)) ! Start huau
       call calculate_hu_au_and_advection_for_dams_weirs(jazws0, set_hu)
@@ -158,13 +159,13 @@ contains
       end if
 
       ! Calculate max bed shear stress amplitude and z0rou without waves
-      if (jawave == 0) then
+      if (jawave == NO_WAVES) then
          call settaubxu_nowave(use_u1)
       end if
 
       ! Set wave parameters, adapted for present water depth/velocity fields
-      if (jawave > 0) then
-         taubxu = 0d0
+      if (jawave > NO_WAVES) then
+         taubxu = 0.0_dp
          call compute_wave_parameters()
       end if
 
@@ -186,7 +187,7 @@ contains
 
       ! Add wave model dependent wave force in RHS
       ! After setdt because surfbeat needs updated dts
-      if (jawave > 0 .and. .not. flowwithoutwaves) then
+      if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
          call compute_wave_forcing_RHS()
       end if
 
@@ -215,7 +216,7 @@ contains
       end if
 
       if (jatem > 1 .and. jaheat_eachstep == 1) then
-         call heatu(tim1bnd / 3600d0) ! from externalforcings
+         call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
       end if
       call update_icecover()
 

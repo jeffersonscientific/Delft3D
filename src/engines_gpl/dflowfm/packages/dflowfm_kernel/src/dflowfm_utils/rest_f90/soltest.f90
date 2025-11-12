@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,14 +46,13 @@ contains
       use m_solve_guus, only: solve_matrix
       use precision, only: dp
       use m_update_matrix, only: update_matrix
-      use m_partitioninfo
-      use m_timer
-      use m_flowgeom
+      use m_partitioninfo, only: jampi, jaoverlap, update_ghosts, itype_sall, idomain, my_rank, nghostlist_sall, ndomains, ighostlist_sall
+      use m_timer, only: jatimer, starttimer, itotal, stoptimer, gettimer, itotalsol, impicomm
+      use m_flowgeom, only: jarenumber, ndx, ndxi, nd
+      use m_flowparameters, only: icgsolver, epshu
+      use m_reduce, only: epsdiff, epscg, maxmatvecs, ccrsav, ccr
+      use m_flow, only: hu, realloc, s1, itsol
       use network_data, only: xzw
-      use m_flowparameters
-      use m_reduce
-      use m_flow
-      use m_alloc
       use m_flow_modelinit, only: flow_modelinit
       use m_solve_guus, only: pack_matrix
 
@@ -74,13 +73,13 @@ contains
       integer :: ierror
 
       jarenumber = 0
-      CFL = 10d0
+      CFL = 10.0_dp
 !      maxdge = 0d0
 !      icgsolver = 4
 !      ipre = 0
       Nruns = 1
 
-      if (iCFL > 0d0) then
+      if (iCFL > 0.0_dp) then
          CFL = dble(iCFL)
       end if
 
@@ -90,11 +89,11 @@ contains
       end if
 
       if (iepsdiff > 0) then
-         epsdiff = 10d0**(-iepsdiff)
+         epsdiff = 10.0_dp**(-iepsdiff)
       end if
 
       if (iepscg > 0) then
-         epscg = 10d0**(-iepscg)
+         epscg = 10.0_dp**(-iepscg)
       end if
 
       if (maxsubmatvecs > 0) then
@@ -230,8 +229,12 @@ contains
 
 1234  continue
 
-      if (allocated(sex)) deallocate (sex)
-      if (allocated(dmask)) deallocate (dmask)
+      if (allocated(sex)) then
+         deallocate (sex)
+      end if
+      if (allocated(dmask)) then
+         deallocate (dmask)
+      end if
 
       return
    end subroutine soltest

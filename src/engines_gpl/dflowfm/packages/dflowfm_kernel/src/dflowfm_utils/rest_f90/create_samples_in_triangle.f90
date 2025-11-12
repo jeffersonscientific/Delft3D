@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,13 +43,13 @@ contains
 
    subroutine create_samples_in_triangle()
       use precision, only: dp
-      use m_polygon
-      use m_samples
+      use m_polygon, only: npl, xpl, ypl
+      use m_samples, only: increasesam, ns, xs, ys, zs
+      use m_missing, only: dmiss, dxymis
+      use m_delsam, only: delsam
       use network_data, only: cornercos
-      use m_missing
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dbdistance, dcosphi
-      use m_delsam
 
       real(kind=dp), dimension(:, :), allocatable :: xx
       real(kind=dp), dimension(:, :), allocatable :: yy
@@ -107,9 +107,9 @@ contains
 
       Msize = max(M, N)
       allocate (xx(Msize, 3))
-      xx = 0d0
+      xx = 0.0_dp
       allocate (yy(Msize, 3))
-      yy = 0d0
+      yy = 0.0_dp
       do i = 1, M
          xx(i, 1) = xpl(n1 + i - 1) - xpl(n1)
          yy(i, 1) = ypl(n1 + i - 1) - ypl(n1)
@@ -146,7 +146,7 @@ contains
             if (jL >= N) jL = N - 1
             jR = jL + 1
 
-            dfac = 1d0 + eta * (N - 1) - jL
+            dfac = 1.0_dp + eta * (N - 1) - jL
 
             Ns = Ns + 1
 !         xs(Ns) = (1d0-xi)*xpl(n1) + xi*( (1-eta)*xpl(n2) + eta*xpl(n3) )
@@ -180,14 +180,18 @@ contains
       end do
 
       do i = 1, Ns
-         zs = 0d0
+         zs = 0.0_dp
       end do
 
 1234  continue
 
 !  deallocate
-      if (allocated(xx)) deallocate (xx)
-      if (allocated(yy)) deallocate (yy)
+      if (allocated(xx)) then
+         deallocate (xx)
+      end if
+      if (allocated(yy)) then
+         deallocate (yy)
+      end if
 
       return
    end subroutine create_samples_in_triangle

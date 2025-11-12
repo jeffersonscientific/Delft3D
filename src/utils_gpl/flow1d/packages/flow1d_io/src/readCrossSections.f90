@@ -1,7 +1,7 @@
 module m_readCrossSections
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -45,6 +45,7 @@ module m_readCrossSections
    private
    
    public readCrossSectionDefinitions
+   public parseCrossSectionDefinitionFile
    public readCrossSectionLocationFile
    public finalizeCrs
    !public write_cross_section_definition_cache
@@ -191,8 +192,8 @@ module m_readCrossSections
          pCrs%itabDef             = iref
          pCrs%tabDef              => network%CSDefinitions%CS(iref)
          
-         pCrs%shift = pCrs%shift + pCrs%tabDef%bedLevel
          call SetParsCross(network%CSDefinitions%CS(iref), network%crs%cross(inext))
+         pCrs%shift = pCrs%shift + pCrs%tabDef%bedLevel
          pCrs => network%crs%cross(inext)
          
          allocate(pCrs%frictionTypePos(pCrs%tabDef%frictionSectionsCount))        !< Friction type for positive flow direction

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,13 +45,12 @@ contains
    subroutine checknetwork()
       use precision, only: dp
 
-      use network_data
-      use unstruc_colors
-      use m_alloc
+      use network_data, only: numl, linkcross, nlinkcross, kn, xk, yk, nmk, nod, kn
+      use m_alloc, only: realloc
+      use m_readyy, only: readyy
       use geometry_module, only: cross
       use m_missing, only: dmiss
       use m_sferic, only: jsferic
-      use m_readyy
 
       integer, allocatable :: linkQueue(:), jaLinkVisited(:)
       integer :: nLink = 0
@@ -65,7 +64,9 @@ contains
 
 ! Allocate/reset linkcross array
       ncrossmax = max(1, int(numl * 0.01))
-      if (allocated(linkcross)) deallocate (linkcross)
+      if (allocated(linkcross)) then
+         deallocate (linkcross)
+      end if
       allocate (linkcross(2, ncrossmax))
       linkcross = 0
       nlinkcross = 0
@@ -97,7 +98,7 @@ contains
                if (jacros == 1 .and. SL > E .and. SL < E1 .and. SM > E .and. SM < E1) then
                   if (nlinkcross >= ncrossmax) then
                      ncrossmax = int(1.2 * ncrossmax) + 1
-                     call realloc(linkcross, (/2, ncrossmax/), fill=0)
+                     call realloc(linkcross, [2, ncrossmax], fill=0)
                   end if
                   nlinkcross = nlinkcross + 1
                   linkcross(1, nlinkcross) = L
@@ -108,7 +109,7 @@ contains
          end do lr
       end do
 
-      call readyy('Checking net link crossings', -1d0)
+      call readyy('Checking net link crossings', -1.0_dp)
       deallocate (linkQueue)
       deallocate (jaLinkVisited)
    contains
@@ -120,7 +121,7 @@ contains
 !! from each link (brute force approach O(numl*numl) would be too expensive.
       recursive subroutine findLinks(k)
 !use m_alloc
-         use network_data
+         use network_data, only: numk, nmk, nod, kn
          implicit none
          integer :: k
 !integer, intent(inout) :: linkQueue(:)

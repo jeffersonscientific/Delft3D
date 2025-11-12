@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@
 !> initialize transport, set the enumerators
 module m_ini_transport
 
+   use precision, only: dp
    implicit none
 
    private
@@ -64,6 +65,7 @@ contains
       character(len=256) :: msg
 
       integer :: i, itrace, ised, isf, ifrac, isys
+      logical :: allocate_transport
 
       NUMCONST = 0
       ISALT = 0
@@ -128,11 +130,23 @@ contains
          jalimitdtdiff = 0
       end select
 
-      if (numconst > 0 .or. bfmpar%lfbedfrm) call alloc_transport(.false.)
+      !Allocate arrays for transport, if necessary.
+      allocate_transport = .false.
+      if (numconst > 0 .or. bfmpar%lfbedfrm) then
+         allocate_transport = .true.
+      end if
+      if (jased > 0 .and. stm_included) then
+         if (stmpar%morlyr%settings%active_layer_diffusion > 0) then !`morlyr` is undefined if `jased=0`, but it is associated, so you cannot check `associated`.
+            allocate_transport = .true.
+         end if
+      end if
+      if (allocate_transport) then
+         call alloc_transport(.false.)
+      end if
 
       if (ISALT > 0) then
          if (javasal == 6) then
-            thetavert(ISALT) = 0d0 ! Ho explicit
+            thetavert(ISALT) = 0.0_dp ! Ho explicit
          else
             thetavert(ISALT) = tetav ! Central implicit
          end if
@@ -141,7 +155,7 @@ contains
 
       if (ITEMP > 0) then
          if (javatem == 6) then
-            thetavert(ITEMP) = 0d0 ! Ho explicit
+            thetavert(ITEMP) = 0.0_dp ! Ho explicit
          else
             thetavert(ITEMP) = tetav ! Central implicit  0.55d0
          end if
@@ -150,7 +164,7 @@ contains
 
       if (ISED1 > 0) then
          if (javased == 6) then
-            thetavert(ISED1:ISEDN) = 0d0
+            thetavert(ISED1:ISEDN) = 0.0_dp
          else
             thetavert(ISED1:ISEDN) = tetav
          end if
@@ -162,15 +176,13 @@ contains
             end do
          else
             !
-            maserrsed = 0d0 ! initialise mass error counter
+            maserrsed = 0.0_dp ! initialise mass error counter
             !
             ! Map fraction names from sed to constituents (moved from ini_transport)
             !
             do i = ISED1, ISEDN
                ised = i - ISED1 + 1
                const_names(i) = trim(stmpar%sedpar%NAMSED(sedtot2sedsus(ised))) ! JRE - netcdf output somehow does not tolerate spaces in varnames?
-               !call remove_all_spaces(const_names(i))                             ! see whether this fix works
-               !const_names(i) = trim(const_names(i))
             end do
             !
             !   Map sfnames to const_names
@@ -241,7 +253,7 @@ contains
       iconst_cur = min(NUMCONST, 1)
 
 !  local timestepping
-      time_dtmax = -1d0 ! cfl-numbers not evaluated
+      time_dtmax = -1.0_dp ! cfl-numbers not evaluated
       nsubsteps = 1
       ndeltasteps = 1
       jaupdatehorflux = 1

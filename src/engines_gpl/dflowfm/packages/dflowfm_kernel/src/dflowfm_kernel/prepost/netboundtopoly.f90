@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -77,7 +77,7 @@ contains
 
 !  add startnode to list
       nlist = nlist + 1
-      if (nlist > size(klist)) call realloc(klist, int(1.2d0 * dble(nlist)) + 1, fill=0, keepExisting=.true.)
+      if (nlist > size(klist)) call realloc(klist, int(1.2_dp * dble(nlist)) + 1, fill=0, keepExisting=.true.)
       klist(nlist) = kstart
 
 !  process the startnode list
@@ -126,9 +126,9 @@ contains
                ic = lne(1, L)
                crs = dprodout(xk(k), yk(k), xk(knext), yk(knext), xk(k), yk(k), xzw(ic), yzw(ic), jsferic, jasfer3D)
                iorient_new = -1
-               if (crs > 0d0) then
+               if (crs > 0.0_dp) then
                   iorient_new = 1
-               else if (crs < 0d0) then
+               else if (crs < 0.0_dp) then
                   iorient_new = 0
                end if
 
@@ -139,7 +139,7 @@ contains
 
 !              add new startnode to list
                   nlist = nlist + 1
-                  if (nlist > size(klist)) call realloc(klist, int(1.2d0 * dble(nlist)) + 1, fill=0, keepExisting=.true.)
+                  if (nlist > size(klist)) call realloc(klist, int(1.2_dp * dble(nlist)) + 1, fill=0, keepExisting=.true.)
                   klist(nlist) = k
                   cycle ! do not add this node to branch
                end if
@@ -204,7 +204,9 @@ contains
       ierror = 0
 1234  continue
 
-      if (allocated(klist)) deallocate (klist)
+      if (allocated(klist)) then
+         deallocate (klist)
+      end if
 
       return
    end subroutine netboundtopoly

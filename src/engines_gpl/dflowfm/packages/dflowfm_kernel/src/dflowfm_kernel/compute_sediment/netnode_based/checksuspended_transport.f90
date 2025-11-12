@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
 
    subroutine checksuspended_transport()
       use precision, only: dp
-      use m_check_einstein_garcia
+      use m_check_einstein_garcia, only: check_einstein_garcia
       use m_filez, only: doclose, newfil
 
       real(kind=dp) :: hsk
@@ -55,12 +55,12 @@ contains
 
       integer :: j, i, mout, nx = 4
 
-      ag = 9.81d0
+      ag = 9.81_dp
       sag = sqrt(ag)
-      vonkar = 0.41d0
-      ee = exp(1d0)
+      vonkar = 0.41_dp
+      ee = exp(1.0_dp)
 
-      ucur = 1d0 ! depth avaraged flow velocity
+      ucur = 1.0_dp ! depth avaraged flow velocity
       ueff = ucur ! effective velocity, possibly plus wave contribution
 
       call newfil(mout, 'rvrcheck.xyz')

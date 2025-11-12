@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,17 +38,17 @@ module m_change_samples_refine_param
 contains
 
    subroutine change_samples_refine_param(jacancelled)
-      use unstruc_colors
-      use unstruc_display_data
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_samples_refine, only: itype_ridge, itype_wavecourant, irefinetype, threshold, thresholdmin, hmin, nsamplesmooth, dt_maxcour, dx_mincour, jadirectional, jaoutsidecell, numrefcycles, nsamplesmooth_last, ihesstat, ihesstat_dirty
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
-      use m_samples_refine
       use m_ec_interpolationsettings, only: interpolationtype
-      use network_data, only: NUMITCOURANT
-      use m_helpnow
-      use m_save_keys
-      use m_restore_keys
-      use m_help
-      use m_highlight_form_line
+      use network_data, only: numitcourant
 
       implicit none
       integer, intent(out) :: jacancelled !< Whether or not (1/0) user has pressed 'Esc' in parameter screen.
@@ -96,7 +96,7 @@ contains
       OPTION(13) = 'USE SAMPLES OUTSIDE CELL (1) OR NOT (0)   '; IT(13 * 2) = 2
       OPTION(14) = 'Number of non-interactive refine cycles ()'; IT(14 * 2) = 2
       OPTION(15) = 'Interpolationtype 2 or 4                ()'; IT(15 * 2) = 2
-      OPTION(16) = 'Numitcourant smoothing cycles           ()'; IT(16 * 2) = 2
+      OPTION(16) = 'numitcourant smoothing cycles           ()'; IT(16 * 2) = 2
 
       HELPM(1) = 'INTEGER VALUE <                                             '
       HELPM(2) = '                                                            '

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,6 +36,7 @@
 !>   2) outside ALL "-1"-polygons (enclosures)
 module m_pol_to_cellmask
 
+   use precision, only: dp
    implicit none
 
    private
@@ -45,22 +46,23 @@ module m_pol_to_cellmask
 contains
 
    subroutine pol_to_cellmask()
-      use network_data
-      use m_polygon
+      use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
+      use m_readyy, only: readyy
       use m_missing, only: dmiss, JINS
       use geometry_module, only: dbpinpol_optinside_perpol
-      use m_readyy
 
       integer :: in, k, KMOD
       integer :: num
 
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (cellmask(nump1d2d))
       cellmask = 0
 
       if (NPL == 0) return ! no polygon
 
-      call READYY('Applying polygon cellmask', 0d0)
+      call READYY('Applying polygon cellmask', 0.0_dp)
       KMOD = max(1, NUMP / 100)
 
       !  generate cell mask
@@ -80,10 +82,10 @@ contains
             cellmask(k) = 1
          end if
          if (mod(k, KMOD) == 0) then
-            call READYY(' ', min(1d0, dble(k) / nump))
+            call READYY(' ', min(1.0_dp, dble(k) / nump))
          end if
       end do
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
       return
    end subroutine pol_to_cellmask

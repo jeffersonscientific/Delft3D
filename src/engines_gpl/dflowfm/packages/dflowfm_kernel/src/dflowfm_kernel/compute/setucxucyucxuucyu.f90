@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,17 +44,20 @@ contains
       use precision, only: dp
       use m_setuc1d, only: setuc1d
       use m_flowgeom
-      use m_flow
-      use m_sobekdfm
+      use m_flow, only: au_nostrucs, ucxq, ucyq, ucx, ucy, u1, u0, q1, hu, kmx, ln0, kmxl, hs, kbot, ktop, lbot, ltop, nbnduxy, struclink, zws, ducxdx, ducxdy, ducydx, ducydy, ucxu, ucyu, kmxn, kmxd, qa
+      use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
       use m_sediment, only: jased, stm_included
-      use m_missing
-      use m_flowparameters, only: jabarrieradvection
+      use fm_external_forcings_data, only: nbndz, nbndu, kbndu, kbndn, nbndt, kbndz, kbndt, kbnduxy, nbndn, zbndn, zbndt, zbnduxyval, zbnduxy
+      use m_missing, only: dmiss
+      use m_turbulence, only: rho
+      use m_flowparameters, only: jabarrieradvection, jasedtrails, jamapucmag, jamapucvec, Perot_type, NOT_DEFINED, changeVelocityAtStructures, jacstbnd, jaZerozbndinflowadvection, JaZlayercenterbedvel, PEROT_VOLUME_BASED, epshs, limtypmom, jarhoxu
       use m_sferic
       use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
       implicit none
 
       logical :: make2dh
@@ -64,17 +67,17 @@ contains
       real(kind=dp) :: dischcorrection
       real(kind=dp) :: uinx, uiny, u1L
 
-      if (iperot /= -1) then
-         ucxq = 0d0; ucyq = 0d0 ! zero arrays
-         ucx = 0d0; ucy = 0d0
+      if (Perot_type /= NOT_DEFINED) then
+         ucxq = 0.0_dp; ucyq = 0.0_dp ! zero arrays
+         ucx = 0.0_dp; ucy = 0.0_dp
 
          make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
 
          if (make2dh) then ! original 2D coding
 
             do L = 1, lnx1D
-               if (u1(L) /= 0d0) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
-                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= 21 .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+               if (u1(L) /= 0.0_dp) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else
@@ -100,8 +103,8 @@ contains
                if (jabarrieradvection == 3) then
                   if (struclink(L) == 1) cycle
                end if
-               if (u1(L) /= 0d0) then ! link flows
-                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= 21 .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+               if (u1(L) /= 0.0_dp) then ! link flows
+                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else
@@ -128,7 +131,7 @@ contains
             do LL = 1, lnx
                Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
                do L = Lb, Lt
-                  if (u1(L) /= 0d0) then ! link flows
+                  if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
                      k2 = ln0(2, L)
 
@@ -167,10 +170,10 @@ contains
             !$OMP PARALLEL DO           &
             !$OMP PRIVATE(k)
             do k = 1, ndxi
-               if (hs(k) > 0d0) then
+               if (hs(k) > 0.0_dp) then
                   ucxq(k) = ucxq(k) / hs(k)
                   ucyq(k) = ucyq(k) / hs(k)
-                  if (iperot == 2) then
+                  if (Perot_type == PEROT_VOLUME_BASED) then
                      ucx(k) = ucxq(k)
                      ucy(k) = ucyq(k)
                   end if
@@ -181,18 +184,18 @@ contains
 
          if (kmx > 0) then
             do nn = 1, ndxi
-               if (hs(nn) > 0d0) then
+               if (hs(nn) > 0.0_dp) then
                   kb = kbot(nn)
                   kt = ktop(nn)
                   ucxq(nn) = sum(ucxq(kb:kt)) / hs(nn) ! Depth-averaged cell center velocity in 3D, based on ucxq
                   ucyq(nn) = sum(ucyq(kb:kt)) / hs(nn)
                   do k = kb, kt
                      dzz = zws(k) - zws(k - 1)
-                     if (dzz > 0d0) then
+                     if (dzz > 0.0_dp) then
                         ucxq(k) = ucxq(k) / dzz
                         ucyq(k) = ucyq(k) / dzz
                      end if
-                     if (iperot == 2) then
+                     if (Perot_type == PEROT_VOLUME_BASED) then
                         ucx(k) = ucxq(k)
                         ucy(k) = ucyq(k)
                      end if
@@ -210,7 +213,7 @@ contains
          cs = csu(LL); sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= 2) then ! Neumann: always
+               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2), ucy(k2)) * cs + nod2liny(LL, 2, ucx(k2), ucy(k2)) * sn
                      ucx(kb) = uin * lin2nodx(LL, 1, cs, sn)
@@ -257,7 +260,7 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
                kbk = ln(1, L); k2k = ln(2, L)
-               if (jacstbnd == 0 .and. itpbn /= 2) then
+               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2k), ucy(k2k)) * cs + nod2liny(LL, 2, ucx(k2k), ucy(k2k)) * sn
                      ucx(kbk) = uin * lin2nodx(LL, 1, cs, sn)
@@ -298,7 +301,7 @@ contains
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
                if (u1(LL) > 0) then
-                  ucx(k1) = 0d0; ucy(k1) = 0d0
+                  ucx(k1) = 0.0_dp; ucy(k1) = 0.0_dp
                end if
             end do
          end do
@@ -307,7 +310,7 @@ contains
             LL = kbndz(3, n)
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
-               ucx(k1) = 0d0; ucy(k1) = 0d0
+               ucx(k1) = 0.0_dp; ucy(k1) = 0.0_dp
             end do
          end do
       end if
@@ -463,7 +466,7 @@ contains
          do L = Lb, Lt
             kbk = ln(1, L)
             kk = kmxd * (n - 1) + L - Lb + 1
-            uu = zbndn(kk); vv = 0d0
+            uu = zbndn(kk); vv = 0.0_dp
             uucx = uu * cs - vv * sn !
             uucy = uu * sn + vv * cs
             if (jasfer3D == 1) then
@@ -529,8 +532,8 @@ contains
 
       if (limtypmom == 6) then
 
-         ducxdx = 0d0; ducxdy = 0d0
-         ducydx = 0d0; ducydy = 0d0
+         ducxdx = 0.0_dp; ducxdy = 0.0_dp
+         ducydx = 0.0_dp; ducydy = 0.0_dp
          do LL = 1, lnx
             Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
@@ -580,8 +583,8 @@ contains
                   ucxu(L) = nod2linx(L, 2, ucx(ln(2, L)), ucy(ln(2, L)))
                   ucyu(L) = nod2liny(L, 2, ucx(ln(2, L)), ucy(ln(2, L)))
                else
-                  ucxu(L) = 0d0
-                  ucyu(L) = 0d0
+                  ucxu(L) = 0.0_dp
+                  ucyu(L) = 0.0_dp
                end if
             end do
             !$OMP END PARALLEL DO
@@ -596,8 +599,8 @@ contains
                   ucxu(L) = ucx(ln(2, L))
                   ucyu(L) = ucy(ln(2, L))
                else
-                  ucxu(L) = 0d0
-                  ucyu(L) = 0d0
+                  ucxu(L) = 0.0_dp
+                  ucyu(L) = 0.0_dp
                end if
             end do
             !$OMP END PARALLEL DO
@@ -626,8 +629,8 @@ contains
                         ucyu(L) = ucyu(L) * rho(ln(2, L))
                      end if
                   else
-                     ucxu(L) = 0d0
-                     ucyu(L) = 0d0
+                     ucxu(L) = 0.0_dp
+                     ucyu(L) = 0.0_dp
                   end if
                end do
             end do
@@ -655,8 +658,8 @@ contains
                         ucyu(L) = ucyu(L) * rho(ln(2, L))
                      end if
                   else
-                     ucxu(L) = 0d0
-                     ucyu(L) = 0d0
+                     ucxu(L) = 0.0_dp
+                     ucyu(L) = 0.0_dp
                   end if
                end do
             end do

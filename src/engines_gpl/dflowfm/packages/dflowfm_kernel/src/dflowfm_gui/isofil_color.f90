@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,12 +35,12 @@ contains
 
    subroutine isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
       use precision, only: dp
-      use m_topix
-      use m_drawthis
-      use m_sub_polygon
-      use m_pfiller
-      use m_set_col
-      use m_ptabs
+      use m_topix, only: topix
+      use m_drawthis, only: ndraw
+      use m_sub_polygon, only: polygon
+      use m_pfiller, only: pfiller
+      use m_set_col, only: setcol
+      use m_ptabs, only: ptabs
 
       integer :: n4, ncolr
       real(kind=dp) :: X(n4), Y(n4), Z(n4)
@@ -106,7 +106,7 @@ contains
                      if (Z(J2) > ZNOW) then
                         DZN = ZNOW - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -115,7 +115,7 @@ contains
                      if (Z(J2) > ZNEX) then
                         DZN = ZNEX - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -125,7 +125,7 @@ contains
                      if (Z(J2) < ZNEX) then
                         DZN = ZNEX - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -134,7 +134,7 @@ contains
                      if (Z(J2) < ZNOW) then
                         DZN = ZNOW - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -147,7 +147,7 @@ contains
                      if (Z(J2) < ZNOW) then
                         DZN = ZNOW - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -155,7 +155,7 @@ contains
                      else if (Z(J2) > ZNEX) then
                         DZN = ZNEX - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1

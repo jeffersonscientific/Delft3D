@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,8 +39,8 @@ contains
    subroutine linkstocentercartcomp(knod, vlin, vnod)
       use precision, only: dp
       use m_flow, only: kmx, lnkx
-      use m_flowgeom
-      use m_get_Lbot_Ltop
+      use m_flowgeom, only: nd, ln, wcx1, wcy1, wcx2, wcy2
+      use m_get_Lbot_Ltop, only: getlbotltop
 
       implicit none
 
@@ -50,7 +50,7 @@ contains
 
       integer :: L, k1, k2, k3, LL, LLL, Lb, Lt
 
-      vnod = 0d0
+      vnod = 0.0_dp
       if (kmx == 0) then
          do L = 1, nd(knod)%lnx
             LL = abs(L)

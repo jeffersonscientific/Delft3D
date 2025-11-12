@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,7 +57,7 @@ contains
       real(kind=dp) :: zkk
       real(kind=dp) :: xprange(4), yprange(4)
       real(kind=dp) :: xk1p, yk1p, xk2p, yk2p, rx, ry
-      real(kind=dp) :: H = 0.5d0
+      real(kind=dp) :: H = 0.5_dp
 
 ! store
       jins_old = jins

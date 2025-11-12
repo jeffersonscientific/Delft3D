@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,9 +38,8 @@ contains
 
    real(kind=dp) function horvic3(n12, L) ! horizontal viscosity term, out of face normal and tang comp's
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_missing
+      use m_flow, only: vicouv, ucx, ucy, javiusp, viusp
+      use m_flowgeom, only: csu, snu, ln, nd, lncn, dxi, ucnx, ucny, wui, wu, bai
       use m_cor2linx, only: cor2linx
       use m_cor2liny, only: cor2liny
       use m_lin2nodx, only: lin2nodx
@@ -64,7 +63,7 @@ contains
 
       integer :: ik1, ik2, in3, in4
 
-      horvic3 = 0d0
+      horvic3 = 0.0_dp
       csL = csu(L); snL = snu(L)
       k12 = ln(n12, L)
       vicL = vicouv

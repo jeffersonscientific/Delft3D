@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,6 +49,7 @@ contains
       use m_restore_keys
       use m_help
       use m_highlight_form_line
+      use m_wind, only: jarain, jaqin, rain, rainuni, windsp, winddir
 
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=15, NUMFLD=2 * NUMPAR)
@@ -171,7 +172,7 @@ contains
       call IFormPutDouble(2 * 5, vicouv, '(e9.2)')
       call IFormPutDouble(2 * 6, vicoww, '(e8.3)')
       call IFORMPUTdouble(2 * 7, dicouv, '(e8.3)')
-      call IFORMPUTdouble(2 * 8, dicoww, '(e8.3)')
+      call IFORMPUTdouble(2 * 8, constant_dicoww, '(e8.3)')
       call IFormPutDouble(2 * 9, wall_ks, '(F8.3)')
       call IFormPutDouble(2 * 10, Smagorinsky, '(F8.3)')
       call IFormPutDouble(2 * 11, Elder, '(F8.3)')
@@ -224,7 +225,7 @@ contains
             call IFormGetDouble(2 * 5, vicouv)
             call IFormGetDouble(2 * 6, vicoww)
             call IFORMGetdouble(2 * 7, dicouv)
-            call IFORMGetdouble(2 * 8, dicoww)
+            call IFORMGetdouble(2 * 8, constant_dicoww)
             call IFormGetDouble(2 * 9, wall_ks)
             call IFormGetDouble(2 * 10, Smagorinsky)
             call IFormGetDouble(2 * 11, Elder)
@@ -237,16 +238,16 @@ contains
                frcu = frcuni
             end if
 
-            if (rainuni > 0d0) then
+            if (rainuni > 0.0_dp) then
                if (.not. allocated(rain)) then
-                  allocate (rain(ndx), stat=ierr); rain = 0d0
+                  allocate (rain(ndx), stat=ierr); rain = 0.0_dp
                   call aerr('rain(ndx)', ierr, ndx)
                end if
                jarain = 1; jaqin = 1
             end if
 
-            wall_z0 = wall_ks / 30d0
-            if (windsp /= 0d0) then
+            wall_z0 = wall_ks / 30.0_dp
+            if (windsp /= 0.0_dp) then
                call setuniformwind()
             end if
 

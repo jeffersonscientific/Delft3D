@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -81,7 +81,7 @@ contains
       real(kind=dp) :: xn, yn, ddis, rL, ddismin ! in toland
       real(kind=dp) :: xn_prev, yn_prev, ddis_prev, rL_prev
 
-      real(kind=dp), parameter :: DISNEAREST = 2d0
+      real(kind=dp), parameter :: DISNEAREST = 2.0_dp
 
       logical, parameter :: LMASK = .true.
 
@@ -107,10 +107,14 @@ contains
       call admin_landboundary_segments()
 
 !  allocate arrays
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (nodemask(numk), linkmask(numL), cellmask(nump), klink(numk), stat=ierr)
 
-      if (allocated(lanseg_map)) deallocate (lanseg_map)
+      if (allocated(lanseg_map)) then
+         deallocate (lanseg_map)
+      end if
       allocate (lanseg_map(numk))
       lanseg_map = 0
 
@@ -201,8 +205,8 @@ contains
          !  set the outer land boundary points
          jleft = jend - 1
          jright = jstart
-         rLleft = 1d0
-         rLright = 0d0
+         rLleft = 1.0_dp
+         rLright = 0.0_dp
 
          if (jstart < 1 .or. jstart > MXLAN .or. jstart > jend) return
 
@@ -1022,7 +1026,7 @@ contains
          call dbpinpol(x1, y1, in, dmiss, JINS, NPL, xpl, ypl, zpl)
          if (in /= 1) return
 
-         dmeshwidth = 0d0
+         dmeshwidth = 0.0_dp
          do kk = 1, nmk(k)
             L = nod(k)%lin(kk)
             kother = kn(1, L) + kn(2, L) - k

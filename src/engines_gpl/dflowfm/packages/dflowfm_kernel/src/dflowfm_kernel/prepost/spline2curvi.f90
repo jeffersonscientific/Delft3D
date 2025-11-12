@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -88,7 +88,7 @@ contains
       logical :: jaAllPoints
       integer, external :: comp_nfac
       real(kind=dp), external :: comp_dgrow
-      real(kind=dp), parameter :: dnu = -0.50d0
+      real(kind=dp), parameter :: dnu = -0.50_dp
       integer :: nul, nul1(1), nul2(1, 1)
 
 !  Note: edge_vel is the grow velocity per front edge and in Cartesian coordinates
@@ -103,7 +103,7 @@ contains
 !      return
 !   end if
 
-      call READYY('Growing curvilinear grid', 0d0)
+      call READYY('Growing curvilinear grid', 0.0_dp)
 
 !  get the settings from a parameter menu, if user presses 'Esc', do nothing.
       jacancelled = 0
@@ -178,11 +178,11 @@ contains
             call normalout(xg1(i), yg1(i), xg1(i + 1), yg1(i + 1), nx, ny, jsferic, jasfer3D, dmiss, dxymis)
 
             if (jsferic /= 1) then
-               xs1 = xe + 2d0 * hmax * (/-nx, nx/)
-               ys1 = ye + 2d0 * hmax * (/-ny, ny/)
+               xs1 = xe + 2d0 * hmax*[-nx, nx]
+               ys1 = ye + 2d0 * hmax*[-ny, ny]
             else
-               xs1 = xe + 2d0 * hmax * (/-nx, nx/) / (Ra * dg2rd)
-               ys1 = ye + 2d0 * hmax * (/-ny, ny/) / (Ra * dg2rd)
+               xs1 = xe + 2d0 * hmax*[-nx, nx] / (Ra * dg2rd)
+               ys1 = ye + 2d0 * hmax*[-ny, ny] / (Ra * dg2rd)
             end if
 
             isnew = mcs + 1
@@ -284,7 +284,9 @@ contains
 
 !  deallocate
       if (allocated(edgevel)) deallocate (edgevel, nfac1, dgrow1, nlist)
-      if (allocated(ifront)) deallocate (ifront)
+      if (allocated(ifront)) then
+         deallocate (ifront)
+      end if
       if (allocated(xg1)) deallocate (xg1, yg1, sg1)
       call deallocate_splineprops()
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -106,8 +106,8 @@ contains
 
       L = N2
       K1 = KN(1, L); K2 = KN(2, L)
-      XP1 = 0.5d0 * (XK(K1) + YK(K2))
-      YP1 = 0.5d0 * (YK(K1) + YK(K2))
+      XP1 = 0.5_dp * (XK(K1) + YK(K2))
+      YP1 = 0.5_dp * (YK(K1) + YK(K2))
 
 !      CALL TEKNODE(K1,221)
 !      CALL TEKNODE(K1,31)

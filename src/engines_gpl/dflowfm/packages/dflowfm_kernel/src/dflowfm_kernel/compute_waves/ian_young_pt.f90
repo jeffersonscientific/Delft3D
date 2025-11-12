@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine ian_young_pt(U10, x, d, Hsig, Tsig)
       use precision, only: dp
-      use m_physcoef
+      use m_physcoef, only: ag
       implicit none
       real(kind=dp), intent(IN) :: d, U10, x
       real(kind=dp), intent(OUT) :: Hsig, Tsig
@@ -64,7 +64,7 @@ contains
       E = U10**4 * epsilon / ag**2 ! total energy from non-dim energy
       Hsig = 4 * sqrt(E) ! significant wave height
       fp = nu * ag / U10 ! peak freq from non-dim freq, Hz
-      Tsig = 1d0 / fp
+      Tsig = 1.0_dp / fp
    end subroutine ian_young_pt
 
 end module m_ian_young_pt

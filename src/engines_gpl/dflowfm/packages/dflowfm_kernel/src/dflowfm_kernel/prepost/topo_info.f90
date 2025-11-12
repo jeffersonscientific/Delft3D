@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -72,7 +72,7 @@ contains
 
       topo_info = -dble(n)
 
-      if (topo_info <= 0d0) topo_info = DMISS
+      if (topo_info <= 0.0_dp) topo_info = DMISS
 
       return
 

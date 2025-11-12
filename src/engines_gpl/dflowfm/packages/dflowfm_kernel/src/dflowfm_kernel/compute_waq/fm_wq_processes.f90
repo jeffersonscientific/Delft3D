@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2018-2024.
+!  Copyright (C)  Stichting Deltares, 2018-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 !-------------------------------------------------------------------------------
 
 submodule(m_fm_wq_processes_sub) m_fm_wq_processes_sub_
-
+   use precision, only: dp
    implicit none
 
 contains
@@ -49,12 +49,13 @@ contains
       use timers
       use m_string_utils, only: index_in_array
       use m_logger_helper, only: set_log_unit_number
-      use m_wind, only: jawind, jarain
+      use system_utils, only: get_executable_directory
 
       integer :: ierr_sub !< error status
       integer :: ierr_eho !< error status
-      character(256) :: cerr !< error message
 
+      character(256) :: cerr !< error message
+      character(len=1024) :: exe_dir, share_dir
       ! Other
       integer(4) :: nosys_eho, notot_eho, nocons_eho
       integer(4) :: i
@@ -80,6 +81,10 @@ contains
       bloom_file = md_blmfile
       statistics_file = md_sttfile
 
+      ! Get executable directory
+      call get_executable_directory(exe_dir, ierr)
+      share_dir = trim(exe_dir)//'../share/delft3d/'
+
       ! check if substance file exists
       inquire (file=substance_file, exist=Lsub)
       if (.not. Lsub) then
@@ -104,14 +109,20 @@ contains
          end if
       end if
 
-      !     check if proc_def file exists
+      ! check if proc_def file exists
       if (proc_def_file /= ' ') then
          inquire (file=proc_def_file, exist=Lpdf)
          if (.not. Lpdf) then
-            call mess(LEVEL_ERROR, 'Process library file does not exist: ', trim(proc_def_file))
+            call mess(LEVEL_ERROR, 'Specified process library file does not exist: ', trim(proc_def_file))
          end if
       else
-         call mess(LEVEL_ERROR, 'No process library file specified. Use commandline argument --processlibrary "<path>/<name>"')
+         proc_def_file = trim(share_dir)//'proc_def.dat'
+         inquire (file=proc_def_file, exist=Lpdf)
+         if (Lpdf) then
+            call mess(LEVEL_INFO, 'Using default Process library file: ', trim(proc_def_file))
+         else
+            call mess(LEVEL_ERROR, 'Default process library file does not exist: ', trim(proc_def_file))
+         end if
       end if
 
       ! check if open process dll/so file exists
@@ -126,7 +137,15 @@ contains
       if (bloom_file /= ' ') then
          inquire (file=bloom_file, exist=Lblm)
          if (.not. Lblm) then
-            call mess(LEVEL_ERROR, 'BLOOM species definition file specified, but does not exist: ', trim(bloom_file))
+            call mess(LEVEL_ERROR, 'Specified BLOOM species definition file does not exist: ', trim(bloom_file))
+         end if
+      else
+         bloom_file = trim(share_dir)//'bloom.spe'
+         inquire (file=bloom_file, exist=Lblm)
+         if (Lblm) then
+            call mess(LEVEL_INFO, 'Using default BLOOM species definition file: ', trim(bloom_file))
+         else
+            call mess(LEVEL_ERROR, 'Default BLOOM species definition file does not exist: ', trim(bloom_file))
          end if
       end if
 
@@ -274,9 +293,6 @@ contains
       if (.not. allocated(dsto)) then
          allocate (dsto(0))
       end if
-      if (.not. allocated(velonw)) then
-         allocate (velonw(0, 0))
-      end if
       if (.not. allocated(velx)) then
          allocate (velx(0, 0))
       end if
@@ -330,7 +346,7 @@ contains
          syunit(i) = syunit_sub(i)
       end do
 
-      call realloc(amass, [num_substances_total, num_cells], keepExisting=.false., fill=0.0d0) !< mass array to be updated
+      call realloc(amass, [num_substances_total, num_cells], keepExisting=.false., fill=0.0_dp) !< mass array to be updated
 
       !     add corresponding tracers and bottom substances, if not already defined by initial and/or boundary conditions
       transformcoef = 0.0_hp
@@ -368,7 +384,7 @@ contains
    end subroutine fm_wq_processes_ini_sub
 
    module subroutine fm_wq_processes_ini_proc()
-      use m_getkbotktopmax
+      use m_getkbotktopmax, only: getkbotktopmax
       use m_fm_wq_processes
       use m_wq_processes_initialise
       use m_wq_processes_pmsa_size
@@ -387,6 +403,8 @@ contains
       use m_wind, only: jawind, jarain
       use date_time_utils, only: compute_reference_day
       use m_logger_helper, only: set_log_unit_number
+      use m_wq_processes_mpi, only: wq_processes_mpi, wq_processes_mpi_subroutines
+      use m_waveconst
 
       implicit none
 
@@ -402,6 +420,7 @@ contains
       integer(4) :: i, j, ip, icon, ipar, ifun, isfun, ivar
       integer :: ipoifmlayer, ipoifmktop, ipoifmkbot
       integer(4) :: refdayNr ! reference day number, varying from 1 till 365
+      logical :: no_reflection_wq
 
       integer :: iex
       integer :: kk, k, kb, kt, ktmax
@@ -433,6 +452,9 @@ contains
       character(len=20), parameter :: cWaveT = 'WavePeriod'
 
       if (timon) call timstrt("fm_wq_processes_ini_proc", ithndl)
+
+      ! Register pointers to MPI subroutines
+      wq_processes_mpi = wq_processes_mpi_subroutines(wq_processes_mpi_mydomain, wq_processes_mpi_reduce_sum, wq_processes_mpi_reduce_int_max)
 
       !     try to open the lsp-file for logging output
       proc_log_file = defaultfilename('wq_lsp')
@@ -474,11 +496,11 @@ contains
          end if
       end if
       if (isftau > 0) then
-         if (jawaveSwartDelwaq == 0) then
+         if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_HYD) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 0 so tau/tauflow = taucur or tau from wave-current interaction if waves activated')
-         else if (jawaveSwartDelwaq == 1) then
+         else if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 1 so tau/tauflow = taucur + ftauw*tauwave')
-         else if (jawaveSwartDelwaq == 2) then
+         else if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_MAX_SHEAR_STRESS) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 2 so tau/tauflow = taubxu')
          end if
       end if
@@ -616,7 +638,7 @@ contains
       end if
       isffetchl = 0
       isffetchd = 0
-      if (jawave == 1 .or. jawave == 2) then ! copied from "set_external_forcings", call to "tauwavefetch"
+      if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then ! copied from "set_external_forcings", call to "tauwavefetch"
          if (icon > 0) then
             num_spatial_time_fuctions = num_spatial_time_fuctions + 1
             isffetchl = num_spatial_time_fuctions
@@ -637,18 +659,20 @@ contains
 
       icon = index_in_array(cirradiation, coname_sub)
       isfradsurf = 0
-      if (solrad_available .and. jatem > 1) then
+      no_reflection_wq = .false.
+      if (jatem == 5) then
          if (icon > 0) then
             num_spatial_time_fuctions = num_spatial_time_fuctions + 1
             isfradsurf = num_spatial_time_fuctions
+            no_reflection_wq = .true.
             call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='radsurf')
-            call mess(LEVEL_INFO, '''solar radiation'' connected as ''radsurf''')
+            call mess(LEVEL_INFO, '''net solar radiation'' connected as ''radsurf''')
          else
-            call mess(LEVEL_INFO, '''solar radiation'' not connected, because ''radsurf'' is not in the sub-file.')
+            call mess(LEVEL_INFO, '''net solar radiation'' not connected, because ''radsurf'' is not in the sub-file.')
          end if
       else
          if (icon > 0) then
-            call mess(LEVEL_INFO, '''radsurf'' is the sub-file but ''solar radiation'' is not in the hydrodynamic model.')
+            call mess(LEVEL_INFO, '''radsurf'' is the sub-file but ''net solar radiation'' is not at available because the composite (ocean) temperature model is not used.')
          end if
       end if
 
@@ -764,11 +788,11 @@ contains
       itfact = 86400
       itstrt_process = nint(tstart_user)
       if (ti_waqproc > 0) then
-         itstop_process = floor(tstop_user / ti_waqproc + 0.001d0) * ti_waqproc
+         itstop_process = floor(tstop_user / ti_waqproc + 0.001_dp) * ti_waqproc
       else
          itstop_process = tstop_user
       end if
-      otime = dble(julrefdat) - 0.5d0 !refdate_mjd
+      otime = dble(julrefdat) - 0.5_dp !refdate_mjd
 
       !     Compute refday needed for daylight process
       call compute_reference_day(refdat, refdayNr)
@@ -779,7 +803,7 @@ contains
 
       call mess(LEVEL_INFO, 'Initialising water quality processes.')
       call wq_processes_initialise(lunlsp, proc_def_file, proc_dllso_file, bloom_file, bloom_output_file, statistics_file, statprocesdef, outputs, &
-                                   nomult, imultp, constants, refdayNr, noinfo, nowarn, ierr)
+                                   nomult, imultp, constants, refdayNr, no_reflection_wq, noinfo, nowarn, ierr)
       call mess(LEVEL_INFO, 'Number of warnings during initialisation of the processes : ', nowarn)
       call mess(LEVEL_INFO, 'Number of errors during initialisation of the processes   : ', ierr)
       if (ierr /= 0) then
@@ -795,9 +819,8 @@ contains
       call realloc(process_space_int, process_space_int_len, keepExisting=.false., fill=0)
       call realloc(increm, process_space_int_len, keepExisting=.false., fill=0)
 
-      !     allocate deriv and velonw arrays
-      call realloc(deriv, [num_cells, num_substances_total], keepExisting=.false., fill=0.0d0) !< Model derivatives (= stochi(num_substances_total ,noflux) * flux(noflux, num_cells))
-      call realloc(velonw, [num_velocity_arrays_new, num_exchanges_z_dir], keepExisting=.false., fill=0.0)
+      !     allocate deriv array - holds all derivatives
+      call realloc(deriv, [num_cells, num_substances_total], keepExisting=.false., fill=0.0_dp) !< Model derivatives (= stochi(num_substances_total ,noflux) * flux(noflux, num_cells))
 
       !     Determine size of a array from process system and num_cells/num_exchanges_z_dir, and allocate it
       call wq_processes_pmsa_size(lunlsp, num_cells, num_exchanges_z_dir, sizepmsa)
@@ -868,7 +891,7 @@ contains
          bloom_ind = 0
       end if
 
-      call realloc(waqoutputs, [noout, num_cells], keepExisting=.false., fill=-999.0d0)
+      call realloc(waqoutputs, [noout, num_cells], keepExisting=.false., fill=-999.0_dp)
       call realloc(outvar, noout, keepExisting=.false., fill=0)
       do j = 1, noout
          ivar = index_in_array(outputs%names(j), varnam)
@@ -899,7 +922,6 @@ contains
 
 !! @return Integer result status (0 if successful)
    subroutine dfm_waq_initexternalforcings(iresult)
-      use precision, only: dp
       use fm_external_forcings
       use m_alloc
       use fm_external_forcings_data
@@ -927,7 +949,7 @@ contains
       integer, intent(out) :: iresult
 
       character(len=256) :: filename, sourcemask
-      integer :: kb, k, ja, method, kk, kt, lenqidnam, ipa, ifun, isfun, imna
+      integer :: kb, k, ja, method, kk, kt, lenqidnam, ipa, ifun, isfun
       integer :: klocal, waqseg2D, waqseglay
       character(len=NAMTRACLEN) :: qidnam
       character(len=20) :: waqinput
@@ -949,12 +971,6 @@ contains
       end if
       if (.not. allocated(sfunname)) then
          allocate (sfunname(0))
-      end if
-      if (.not. allocated(monname)) then
-         allocate (monname(0))
-      end if
-      if (.not. allocated(mondef)) then
-         allocate (mondef(0, 0))
       end if
 
       call settimespacerefdat(refdat, julrefdat, Tzone, Timjan)
@@ -1049,7 +1065,7 @@ contains
                               waqseglay = (int(viuh(kk)) - 1) / Nglobal_s + 1
                            end if
                            klocal = global_to_local(waqseg2D)
-                           if (klocal >= 1 .and. klocal <= Ndxi .and. waqseglay >= 1 .and. waqseglay <= kmx) then
+                           if (klocal >= 1 .and. klocal <= Ndxi .and. waqseglay >= 1 .and. waqseglay <= max(1, kmx)) then
                               call getkbotktop(klocal, kb, kt)
                               painp(ipa, kk) = max(kb, kb + kmxn(kk) - waqseglay) - kbx + 1
                            else
@@ -1071,7 +1087,7 @@ contains
                   if (ifun == 0) then
                      num_time_functions = num_time_functions + 1
                      call realloc(funame, num_time_functions, keepExisting=.true., fill=waqinput)
-                     call reallocP(funinp, [num_time_functions, 1], keepExisting=.true., fill=0.0d0)
+                     call reallocP(funinp, [num_time_functions, 1], keepExisting=.true., fill=0.0_dp)
                   end if
                   success = .true.
 
@@ -1082,37 +1098,9 @@ contains
                   if (isfun == 0) then
                      num_spatial_time_fuctions = num_spatial_time_fuctions + 1
                      call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill=waqinput)
-                     call reallocP(sfuninp, [num_spatial_time_fuctions, Ndkx], keepExisting=.true., fill=0.0d0)
+                     call reallocP(sfuninp, [num_spatial_time_fuctions, Ndkx], keepExisting=.true., fill=0.0_dp)
                   end if
                   success = .true.
-
-               else if (qid(1:17) == 'waqmonitoringarea') then
-                  imna = find_name(monname, waqinput)
-
-                  if (imna == 0) then
-                     nomon = nomon + 1
-                     imna = nomon
-                     call realloc(monname, nomon, keepExisting=.true., fill=waqinput)
-                     call realloc(mondef, [nomon, Ndkx], keepExisting=.true., fill=2)
-                  end if
-
-                  call realloc(viuh, Ndkx, keepExisting=.false., fill=dmiss)
-
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           mondef(imna, kk) = 1
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              mondef(imna, k) = 1
-                           end do
-                        end if
-                     end do
-                  end if
-                  deallocate (viuh)
                else
                   ! just accept any other keyword as success, they are evaluated again in unstruc.F90
                   success = .true.
@@ -1240,11 +1228,6 @@ contains
          if (len_trim(qidloc) > 18) then
             inputname = trim(qidloc(19:))
          end if
-      else if (qidloc(1:17) == 'waqmonitoringarea') then
-         qidname = qidloc(1:17)
-         if (len_trim(qidloc) > 17) then
-            inputname = trim(qidloc(18:))
-         end if
       end if
 
       return
@@ -1297,16 +1280,14 @@ contains
          !     realloc
          call realloc(wqbotnames, numwqbots, keepExisting=.true., fill=trim(wqbotnam))
          call realloc(wqbotunits, numwqbots, keepExisting=.true., fill=wqbotunit)
-         call realloc(wqbot, (/numwqbots, Ndkx/), keepExisting=.true., fill=0.0d0)
+         call realloc(wqbot, [numwqbots, Ndkx], keepExisting=.true., fill=0.0_dp)
       end if
    end subroutine add_wqbot
 
    module subroutine fm_wq_processes_step(dt, time)
-      use precision, only: dp
       use m_fm_wq_processes
       use m_wq_processes_proces
       use m_mass_balance_areas
-      use unstruc_model, only: md_flux_int
       use m_flow, only: vol1
       use timers
 
@@ -1329,7 +1310,6 @@ contains
       end if
 
       if (timon) call timstrt("fm_wq_processes_step", ithand0)
-      flux_int = md_flux_int
 
       !     copy data from D-FlowFM to WAQ
       if (timon) call timstrt("copy_data_from_fm_to_wq_processes", ithand1)
@@ -1350,9 +1330,9 @@ contains
                                num_processes_activated, num_fluxes, process_space_int, prvnio, promnr, iflux, increm, process_space_real(ipoiflux), flxdmp, stochi, &
                                ibflag, bloom_status_ind, bloom_ind, amass, num_substances_transported, isfact, itfact, iexpnt, iknmrk, num_exchanges_u_dir, &
                                num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, process_space_real(ipoiarea), num_dispersion_arrays_new, idpnew, dispnw, num_dispersion_arrays_extra, dspx, &
-                               dsto, num_velocity_arrays_new, ivpnw, velonw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
+                               dsto, num_velocity_arrays_new, ivpnw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
                                process_space_real(ipoidefa), prondt, prvvar, prvtyp, vararr, varidx, arrpoi, arrknd, arrdm1, &
-                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), flux_int)
+                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf))
 
       ! copy data from WAQ to D-FlowFM
       if (timon) call timstrt("copy_data_from_wq_processes_to_fm", ithand2)
@@ -1365,7 +1345,6 @@ contains
 
    subroutine copy_data_from_fm_to_wq_processes(time)
       !  copy data from D-FlowFM to WAQ
-      use precision, only: dp
       use m_getfetch, only: getfetch
       use m_getkbotktopmax
       use m_flowgeom, only: Ndxi, ba
@@ -1380,6 +1359,7 @@ contains
       use m_gettauswave
       use m_get_kbot_ktop
       use m_get_link1
+      use m_waveconst
       implicit none
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
@@ -1442,7 +1422,7 @@ contains
 
       if (isftau > 0) then
          ipoitau = arrpoi(iisfun) + (isftau - 1) * num_cells
-         if (jawave == 0 .or. flowWithoutWaves) then
+         if (jawave == NO_WAVES .or. flowWithoutWaves) then
             call gettaus(1, 2)
          else
             call gettauswave(jawaveswartdelwaq)
@@ -1532,9 +1512,9 @@ contains
                ! apparently wind is available at edges only, so just take the 1st edge
                call getlink1(kk, L)
                dir = atan2(wy(L), wx(L))
-               if (dir < 0d0) dir = dir + twopi
-               wdir = 270.0d0 - dir * rd2dg ! from rad to degree
-               if (wdir < 0d0) wdir = wdir + 360.0d0
+               if (dir < 0.0_dp) dir = dir + twopi
+               wdir = 270.0_dp - dir * rd2dg ! from rad to degree
+               if (wdir < 0.0_dp) wdir = wdir + 360.0_dp
                process_space_real(ipoiwinddir + kb - kbx:ipoiwinddir + ktmax - kbx) = wdir
             end do
          else
@@ -1560,7 +1540,7 @@ contains
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
             call getkbotktop(kk, kb, kt)
-            process_space_real(ipoiradsurf + kb - kbx:ipoiradsurf + ktmax - kbx) = qrad(kk)
+            process_space_real(ipoiradsurf + kb - kbx:ipoiradsurf + ktmax - kbx) = net_solar_radiation(kk)
          end do
       end if
 
@@ -1568,7 +1548,7 @@ contains
          ipoirain = arrpoi(iisfun) + (isfrain - 1) * num_cells
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
-            process_space_real(ipoirain + kb - kbx:ipoirain + ktmax - kbx) = rain(kk) / 24.0d0 ! rain: mm/day => mm/h
+            process_space_real(ipoirain + kb - kbx:ipoirain + ktmax - kbx) = rain(kk) / 24.0_dp ! rain: mm/day => mm/h
          end do
       end if
 
@@ -1585,9 +1565,9 @@ contains
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
             do k = ktmax, kb + 1, -1
-               process_space_real(ipoileng) = 0.5d0 * (zws(k) - zws(k - 1))
+               process_space_real(ipoileng) = 0.5_dp * (zws(k) - zws(k - 1))
                ipoileng = ipoileng + 1
-               process_space_real(ipoileng) = 0.5d0 * (zws(k - 1) - zws(k - 2))
+               process_space_real(ipoileng) = 0.5_dp * (zws(k - 1) - zws(k - 2))
                ipoileng = ipoileng + 1
             end do
          end do
@@ -1621,7 +1601,7 @@ contains
          else
             do isys = 1, num_substances_transported
                iconst = isys2const(isys)
-               amass(isys, k - kbx + 1) = 0.0d0
+               amass(isys, k - kbx + 1) = 0.0_dp
             end do
          end if
       end do
@@ -1701,7 +1681,7 @@ contains
       use m_flowparameters, only: eps10
       use m_fm_wq_processes
       use m_transport, only: constituents
-      use precision_basics
+      use precision_basics, only: comparereal
       use timers
 
       implicit none
@@ -1817,65 +1797,6 @@ contains
       return
    end subroutine copy_data_from_wq_processes_to_fm
 
-   logical function wq_processes_mydomain(iseg)
-
-      use m_fm_wq_processes
-      use m_partitioninfo
-
-      implicit none
-
-      integer :: iseg
-      if (jampi == 1) then
-         if (iseg > 0 .and. iseg <= num_cells) then
-            wq_processes_mydomain = wqmydomain(iseg)
-         else
-            wq_processes_mydomain = .false.
-         end if
-      else
-         wq_processes_mydomain = .true.
-      end if
-
-   end function wq_processes_mydomain
-
-   logical function reduce_sum_wq_processes(size_wq_processes_data, wq_processes_data)
-      use precision, only: dp
-
-      use m_partitioninfo
-
-      implicit none
-
-      integer :: size_wq_processes_data
-      real :: wq_processes_data(size_wq_processes_data)
-
-      real(kind=dp) :: mpi_wq_processes_data(size_wq_processes_data)
-      real(kind=dp) :: mpi_wq_processes_data_reduce(size_wq_processes_data)
-
-      if (jampi == 1) then
-         mpi_wq_processes_data = dble(wq_processes_data)
-         call reduce_double_sum(size_wq_processes_data, mpi_wq_processes_data, mpi_wq_processes_data_reduce)
-         wq_processes_data = real(mpi_wq_processes_data_reduce)
-      end if
-
-      reduce_sum_wq_processes = .true.
-
-   end function reduce_sum_wq_processes
-
-   logical function reduce_int_max_wq_processes(wq_processes_data)
-
-      use m_partitioninfo
-
-      implicit none
-
-      integer :: wq_processes_data
-
-      if (jampi == 1) then
-         call reduce_int1_max(wq_processes_data)
-      end if
-
-      reduce_int_max_wq_processes = .true.
-
-   end function reduce_int_max_wq_processes
-
    module subroutine default_fm_wq_processes()
       !> defaults for process library (WAQ)
       use m_fm_wq_processes
@@ -1886,10 +1807,66 @@ contains
       md_subfile = ''
       md_ehofile = ''
       md_sttfile = ''
-      md_thetav_waq = 0d0
-      md_dt_waqproc = 0d0
+      md_thetav_waq = 0.0_dp
+      md_dt_waqproc = 0.0_dp
 
       return
    end subroutine default_fm_wq_processes
 
+   !> The three subroutines below are can be called called within the processes library
+   !! for processes that require a check if a segment is in the current domain (and
+   !! not a ghost cell), and for MPI communication between domains (reduce_sum) when
+   !! the processes library is integrated in D-Flexible Mesh. In Delwaq there are stub
+   !! versions that return results as if it is a single domain run. By registation of
+   !! pointers to these routines in m_wq_processes_mpi, we make sure the right version
+   !! is used without having an unwanted dependency of Delwaq to MPI.
+   subroutine wq_processes_mpi_mydomain(iseg, mydomain)
+      use m_fm_wq_processes
+      use m_partitioninfo
+
+      implicit none
+
+      integer, intent(in) :: iseg
+      logical, intent(out) :: mydomain
+
+      if (jampi == 1) then
+         if (iseg > 0 .and. iseg <= num_cells) then
+            mydomain = wqmydomain(iseg)
+         else
+            mydomain = .false.
+         end if
+      else
+         mydomain = .true.
+      end if
+   end subroutine wq_processes_mpi_mydomain
+
+   subroutine wq_processes_mpi_reduce_sum(size_wq_processes_data, wq_processes_data)
+      use m_waq_precision, only: real_wp
+      use m_partitioninfo
+
+      implicit none
+
+      integer, intent(in) :: size_wq_processes_data
+      real(real_wp), intent(inout) :: wq_processes_data(size_wq_processes_data)
+
+      real(kind=dp) :: mpi_wq_processes_data(size_wq_processes_data)
+      real(kind=dp) :: mpi_wq_processes_data_reduce(size_wq_processes_data)
+
+      if (jampi == 1) then
+         mpi_wq_processes_data = real(wq_processes_data, kind=dp)
+         call reduce_double_sum(size_wq_processes_data, mpi_wq_processes_data, mpi_wq_processes_data_reduce)
+         wq_processes_data = real(mpi_wq_processes_data_reduce, kind=real_wp)
+      end if
+   end subroutine wq_processes_mpi_reduce_sum
+
+   subroutine wq_processes_mpi_reduce_int_max(wq_processes_data)
+      use m_partitioninfo
+
+      implicit none
+
+      integer, intent(inout) :: wq_processes_data
+      if (jampi == 1) then
+         call reduce_int1_max(wq_processes_data)
+      end if
+   end subroutine wq_processes_mpi_reduce_int_max
 end submodule m_fm_wq_processes_sub_

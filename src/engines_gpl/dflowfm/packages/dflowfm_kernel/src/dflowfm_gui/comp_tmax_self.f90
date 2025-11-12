@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,7 +40,7 @@ contains
    subroutine comp_tmax_self(mc, xc, yc, vel, tmax)
       use precision, only: dp
 
-      use m_missing
+      use m_missing, only: dmiss
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
       use m_dprodin, only: dprodin
@@ -59,17 +59,17 @@ contains
 
       integer :: i, jsferic_old
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
 !  work in model-coordinates
       jsferic_old = jsferic
       jsferic = 0
 
 !  take unit time-step for edge length increase
-      dt = 1d0
+      dt = 1.0_dp
 
 !  check for self-crossing
-      edge_incr = 1d99
+      edge_incr = 1.0e99_dp
       do i = 1, mc - 1
          if (xc(i) == DMISS .or. xc(i + 1) == DMISS) cycle
 
@@ -80,7 +80,7 @@ contains
       end do
 
       do i = 1, mc - 1
-         if (edge_incr(i) < 0d0) then
+         if (edge_incr(i) < 0.0_dp) then
             tmax(i) = -edge_width(i) / edge_incr(i)
          end if
       end do

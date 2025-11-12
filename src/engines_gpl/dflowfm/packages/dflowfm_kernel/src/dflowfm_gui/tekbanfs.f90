@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -62,8 +62,8 @@ contains
          n = nban(1, kk) ! net node
          k = nban(2, kk) ! flow node
 
-         x = 0.5d0 * (xk(n) + xz(k))
-         y = 0.5d0 * (yk(n) + yz(k))
+         x = 0.5_dp * (xk(n) + xz(k))
+         y = 0.5_dp * (yk(n) + yz(k))
          v = seq(jgrtek)
          call isocol(v, ncol)
 

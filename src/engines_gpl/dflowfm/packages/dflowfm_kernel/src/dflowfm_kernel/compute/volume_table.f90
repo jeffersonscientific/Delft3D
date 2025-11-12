@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -95,7 +95,6 @@ contains
 
    !> Allocate the volume table arrays and initialize to 0
    subroutine allocVoltable(this)
-      use m_flowparameters
 
       class(t_voltable) :: this
 
@@ -105,8 +104,8 @@ contains
 
       allocate (this%vol(this%count))
       allocate (this%sur(this%count))
-      this%vol = 0.0d0
-      this%sur = 0.0d0
+      this%vol = 0.0_dp
+      this%sur = 0.0_dp
 
       if (this%numberOfSummerDikes > 0) then
          allocate (this%inundationPhase(this%numberOfSummerDikes))
@@ -116,15 +115,15 @@ contains
          allocate (this%sdinVolume(this%numberOfSummerDikes, this%count))
          allocate (this%sdinArea(this%numberOfSummerDikes, this%count))
          this%inundationPhase = .false.
-         this%sdinVolume = 0d0
-         this%sdinArea = 0d0
+         this%sdinVolume = 0.0_dp
+         this%sdinArea = 0.0_dp
       end if
 
       if (this%hasDecreasingWidths) then
          allocate (this%volDecreasing(this%count))
          allocate (this%surDecreasing(this%count))
-         this%volDecreasing = 0.0d0
-         this%surDecreasing = 0.0d0
+         this%volDecreasing = 0.0_dp
+         this%surDecreasing = 0.0_dp
       end if
    end subroutine allocVoltable
 
@@ -153,16 +152,17 @@ contains
    !> Retrieve the volume for given volume table and water level
    real(kind=dp) function getVolumeVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
+      use m_globalparameters, only: summerDikeTransitionHeight
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
       integer :: i
       real(kind=dp) :: heightIncrement
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
-      heightIncrement = max(0d0, ((level - this%bedLevel) - dble(index - 1) * tableIncrement))
+      heightIncrement = max(0.0_dp, ((level - this%bedLevel) - dble(index - 1) * tableIncrement))
 
       getVolumeVoltable = this%vol(index) + this%sur(index) * heightIncrement
 
@@ -186,7 +186,8 @@ contains
    !> Retrieve the surface area for given volume table and water level
    real(kind=dp) function getSurfaceVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
+      use m_globalparameters, only: summerDikeTransitionHeight
 
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
@@ -194,11 +195,11 @@ contains
       integer :: index
       integer :: i
       if (level < this%bedlevel) then
-         getSurfaceVoltable = 0d0
+         getSurfaceVoltable = 0.0_dp
          return
       end if
 
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       getSurfaceVoltable = this%sur(index)
 
@@ -219,14 +220,14 @@ contains
    !> Returns the volume which is the result of a decreasing width for a given water level
    real(kind=dp) function getVolumeDecreasingVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
       real(kind=dp) :: heightIncrement
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       heightIncrement = ((level - this%bedLevel) - dble(index - 1) * tableIncrement)
 
@@ -237,13 +238,13 @@ contains
    !> Retrieve the surface area for given volume table and water level
    real(kind=dp) function getSurfaceDecreasingVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       getSurfaceDecreasingVoltable = this%surDecreasing(index)
 
@@ -251,7 +252,7 @@ contains
 
    !> Compute the surfaces in the volume table out of the volumes.
    subroutine computeSurfaceVoltable(this)
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
 
@@ -270,14 +271,10 @@ contains
 
    !> Generate the volume tables, by using GetCSParsTotal.
    subroutine makeVolumeTables(filename, branchOutput)
-
-      use unstruc_channel_flow
-      use m_flowparameters
-      use m_flowgeom
-      use m_GlobalParameters
-      use m_Storage
-      use m_flow
-      use m_missing
+      use m_crosssections, only: t_CrossSection
+      use m_storage, only: t_storage
+      use unstruc_channel_flow, only: usevolumetablefile, volumetablefile, network
+      use m_flowgeom, only: ndx, ndx2d, lnx1d, kcs, nd, lnxi, lbnd1d, kcu
 
       character(len=*), intent(in) :: filename !< Name of the volumetablefile
       logical, optional, intent(in) :: branchOutput !< Flag indicates whether the volumes on flow links are required.
@@ -321,14 +318,14 @@ contains
       allocate (vltb(ndx1d))
       do n = 1, ndx1d
          vltb(n)%count = 0
-         vltb(n)%topHeight = 0d0
+         vltb(n)%topHeight = 0.0_dp
       end do
 
       if (generateVLTBOnLinks) then
          allocate (vltbOnLinks(2, lnx1d))
          do n = 1, lnx1d
             vltbOnLinks(2, n)%count = 0
-            vltbOnLinks(2, n)%topHeight = 0d0
+            vltbOnLinks(2, n)%topHeight = 0.0_dp
          end do
       end if
 
@@ -378,7 +375,7 @@ contains
             end do
 
             if (vltb(n)%numberOfSummerDikes > 0) then
-               vltb(n)%sdinArea(i, vltb(n)%count) = 0d0
+               vltb(n)%sdinArea(i, vltb(n)%count) = 0.0_dp
                vltb(n)%inundationPhase = .true.
             end if
          end if
@@ -411,6 +408,7 @@ contains
       use m_flowparameters
       use m_flowgeom
       use unstruc_channel_flow
+      use m_globalparameters, only: summerDikeTransitionHeight
 
       type(t_voltable), dimension(:), intent(inout) :: vltb !< Volume tables.
 
@@ -829,7 +827,7 @@ contains
    end subroutine writeVolumeTables
 
    !> Read the volume tables from a previously saved binary file.
-   !> The function returns .true. when succesfull, otherwise .false. is returned
+   !> The function returns .true. when successful, otherwise .false. is returned
    logical function readVolumeTables()
 
       use m_flowgeom

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,18 +43,18 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow
+      use m_flow, only: srsn, vcsrc, numsrc, ksrc, qsrc, qstss, kmx, zsrc, dmiss, zws, zsrc2, vol1, jamess, ccsrc, qin, epshs, srcname
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
       use MessageHandling, only: LEVEL_WARN, msgbuf, mess
       use m_partitioninfo, only: jampi, reduce_srsn
-      use m_get_kbot_ktop
 
       integer :: n, kk, k, kb, kt, kk2, ku, numvals, L
       real(kind=dp) :: qsrck, qsrckk, dzss
-      real(kind=dp) :: frac = 0.5d0 ! cell volume fraction that can at most be extracted in one step
+      real(kind=dp) :: frac = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
-      srsn = 0d0; vcsrc = 0d0
+      srsn = 0.0_dp; vcsrc = 0.0_dp
       do n = 1, numsrc
          kk = ksrc(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
          kk2 = ksrc(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
@@ -97,7 +97,7 @@ contains
                      exit
                   end if
                end do
-               if (srsn(1, n) > 0d0) then
+               if (srsn(1, n) > 0.0_dp) then
                   do L = 1, numconst
                      srsn(1 + L, n) = srsn(1 + L, n) / srsn(1, n)
                   end do
@@ -151,7 +151,7 @@ contains
                      exit
                   end if
                end do
-               if (srsn(1 + numconst + 1, n) > 0d0) then
+               if (srsn(1 + numconst + 1, n) > 0.0_dp) then
                   do L = 1, numconst
                      srsn(1 + numconst + 1 + L, n) = srsn(1 + numconst + 1 + L, n) / srsn(1 + numconst + 1, n)
                   end do

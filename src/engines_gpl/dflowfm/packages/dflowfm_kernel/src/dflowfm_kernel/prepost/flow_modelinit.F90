@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,6 +42,7 @@ module m_flow_modelinit
    use m_init_lateral_his, only: init_lateral_his
    use m_flow_trachyinit, only: flow_trachyinit
    use m_flow_sedmorinit, only: flow_sedmorinit
+   use m_waveconst
 
    implicit none
 
@@ -52,7 +53,7 @@ module m_flow_modelinit
 contains
 
    !> Initializes the entire current model (geometry, boundaries, initial state)
- !! @return Error status: error (/=0) or not (0)
+ !! @return Error status: error [=0) or not (0)
    integer function flow_modelinit() result(iresult) ! initialise flowmodel
       use m_flow_geominit, only: flow_geominit
       use m_flow_fourierinit, only: flow_fourierinit
@@ -72,7 +73,7 @@ contains
       use timers
       use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
       use waq, only: reset_waq
-      use m_flow, only: kmx, kmxn, jasecflow, iperot, taubxu, ucxq, ucyq, fvcoro, vol1
+      use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1, s1, rho, ag
       use m_flowtimes
       use m_laterals, only: numlatsg
       use network_data, only: NETSTAT_CELLS_DIRTY
@@ -84,7 +85,7 @@ contains
       use unstruc_files, only: mdia
       use unstruc_netcdf
       use MessageHandling
-      use m_flowparameters, only: jawave, jatrt, jacali, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE
+      use m_flowparameters, only: jawave, jatrt, jacali, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
       use dfm_error
       use m_fm_wq_processes, only: jawaqproc
       use m_vegetation
@@ -109,7 +110,7 @@ contains
       use m_debug
       use m_flow_flowinit
       use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
-      use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
+      use m_fm_icecover, only: fm_ice_alloc, fm_icecover_prepare_output, fm_ice_echo
       use m_fixedweirs, only: weirdte, nfxw
       use mass_balance_areas_routines, only: mba_init
       use m_curvature, only: get_spirucm
@@ -128,6 +129,7 @@ contains
       use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
+      use m_fill_constituents, only: fill_constituents
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -154,7 +156,7 @@ contains
       call datum2(rundat2)
       L = len_trim(rundat2)
 
-      if (ti_waq > 0d0) then
+      if (ti_waq > 0.0_dp) then
          call makedir(getoutputdir('waq')) ! No problem if it exists already.
       end if
 
@@ -182,12 +184,8 @@ contains
 
       call timstop(handle_extra(1)) ! End basic steps
 
-      if (jagui == 1) then
-         call timini() ! this seems to work, initimer and timini pretty near to each other
-      end if
-
 ! JRE
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          call timstrt('Surfbeat input init', handle_extra(2)) ! Wave input
          bccreated = .false. ! for reinit
          call xbeach_wave_input() ! will set swave and lwave
@@ -270,7 +268,7 @@ contains
          is_is_numndvals = 3
       end if
 
-      if (my_rank == fetch_proc_rank .and. (jawave == 1 .or. jawave == 2)) then
+      if (my_rank == fetch_proc_rank .and. (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG)) then
          ! All helpers need no further model initialization.
          call tauwavefetch(0d0)
          iresult = DFM_USERINTERRUPT
@@ -281,7 +279,7 @@ contains
       call flow_allocflow() ! allocate   flow arrays
       call timstop(handle_extra(37)) ! end alloc flow
       !
-      if (jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES) then
          call alloc9basicwavearrays()
       end if
       if (jawave > 2) then
@@ -295,7 +293,7 @@ contains
       call timstop(handle_extra(7)) ! End flow griddim
 
       call timstrt('Bed forms init (1)  ', handle_extra(8)) ! Bed forms
-      if ((jased > 0 .and. stm_included) .or. bfm_included .or. jatrt > 0 .or. (jawave > 0 .and. modind == 9)) then
+      if ((jased > 0 .and. stm_included) .or. bfm_included .or. jatrt > 0 .or. (jawave > NO_WAVES .and. modind == 9)) then
          call flow_bedforminit(1) ! bedforms stage 1: datastructure init
       end if
       call timstop(handle_extra(8)) ! End bed forms
@@ -364,7 +362,7 @@ contains
       end if
       call timstop(handle_extra(16)) ! netlink tree 1
 
-      if (iperot == -1) then
+      if (Perot_type == NOT_DEFINED) then
          call reconst2ndini()
       end if
 
@@ -435,6 +433,7 @@ contains
 
       call timstrt('MBA init            ', handle_extra(24)) ! MBA init
       if (ti_mba > 0) then
+         call fill_constituents(1) ! mba_init assumes that the concentrations are in the constituents array ...
          call mba_init()
       end if
       call timstop(handle_extra(24)) ! end MBA init
@@ -455,7 +454,7 @@ contains
       end if
       call timstop(handle_extra(26)) ! end dredging init
 
-      if (jawave == 4 .and. jajre == 1) then
+      if (jawave == WAVE_SURFBEAT .and. jajre == 1) then
          call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
          if (jampi == 0) then
             if (nwbnd == 0) then
@@ -465,6 +464,8 @@ contains
          call xbeach_wave_init()
          call timstop(handle_extra(27))
       end if
+
+      call fm_icecover_prepare_output(s1, rho, ag) ! needs to happen before the (final/second) call to flow_obsinit
 
       call timstrt('Observations init 2 ', handle_extra(28)) ! observations init 2
       call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (2nd time required to fill values in observation stations)

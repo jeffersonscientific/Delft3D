@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,16 +45,16 @@ contains
       use m_sferic, only: pi
       use m_flowgeom, only: lnxi, kcs, ba, bl, Dx, wu_mor
       use m_flow, only: hu
-      use m_flowtimes
+      use m_flowtimes, only: dp
+      use precision, only: fp, comparereal
+      use m_alloc, only: realloc
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_turbulence, only: rhou
-      use precision
       use m_fm_erosed, only: stmpar, has_bedload, alfabn, alfabs, ashld, bshld, cshld, dm, dshld, e_dzdn, e_dzdt, alfpa, avaltime, duneavalan, fixfac
       use m_fm_erosed, only: frac, hidexp, islope, morfac, rhosol, sedd50fld, sedd50, taurat, tratyp, ust2, wetslope, lsedtot, thcrpa
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
       use m_sediment, only: bermslopeindexbed, bermslopeindexsus
-      use m_alloc
-      use m_get_Lbot_Ltop
 
       implicit none
 
@@ -76,7 +76,7 @@ contains
       real(kind=dp) :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
       real(kind=dp) :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
       real(kind=dp) :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
-      real(kind=dp) :: eps = 1.0d-6
+      real(kind=dp) :: eps = 1.0e-6_dp
       !
    !! executable statements -------------------------------------------------------
       !
@@ -87,12 +87,12 @@ contains
       !
       ! Make assumptions for friction angle
       !
-      phi = 30d0 / 180d0 * pi
+      phi = 30.0_dp / 180.0_dp * pi
       tphi = tan(phi)
 
       do Lf = 1, Lnx
          ! for cutcell
-         if (wu_mor(Lf) == 0d0) cycle
+         if (wu_mor(Lf) == 0.0_dp) cycle
          !
          ! no bed slope effects on links with bermslope adjustments
          ! fixfac and frac applied in bermslopenudging()
@@ -100,7 +100,7 @@ contains
             if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) cycle
          end if
          !
-         if (hu(Lf) > 0d0) then
+         if (hu(Lf) > 0.0_dp) then
             k1 = ln(1, Lf)
             k2 = ln(2, Lf)
             call getLbotLtop(Lf, Lb, Lt)
@@ -113,7 +113,7 @@ contains
                   !
                   ! Initialize variables
                   !
-                  sbedcorr = 0d0
+                  sbedcorr = 0.0_dp
                   !
                   ! calculate bed gradient parallel and perpendicular to BED LOAD
                   ! TRANSPORT vector. This exists in the links: e_dzdn, e_dzdt.
@@ -228,7 +228,7 @@ contains
                      end select ! islope
                   end if ! sbedm
                   !               !
-                  if (avalan .and. (.not. duneavalan) .and. wetslope < 9.99d0) then
+                  if (avalan .and. (.not. duneavalan) .and. wetslope < 9.99_dp) then
                      ! Uses a maximum wet slope (keyword WetSlope in the mor file).
                      ! The default for Wetslope is 10.0 (i.e. 10:1, extremely steep, so no avalanching).
                      !
@@ -241,7 +241,7 @@ contains
                      slp = sqrt(e_dzdn(Lf) * e_dzdn(Lf) + e_dzdt(Lf) * e_dzdt(Lf))
 
                      if (slp > wetslope) then
-                        avflux = ba(k1) * ba(k2) / (ba(k1) + ba(k2)) * (bl(k2) - bl(k1) + wetslope * (e_dzdn(Lf) / slp) * Dx(Lf)) / avaltime / max(morfac, 1d0)
+                        avflux = ba(k1) * ba(k2) / (ba(k1) + ba(k2)) * (bl(k2) - bl(k1) + wetslope * (e_dzdn(Lf) / slp) * Dx(Lf)) / avaltime / max(morfac, 1.0_dp)
                         sbncor(Lf) = sbncor(Lf) - avflux * rhosol(l) / wu_mor(Lf)
                      end if
                   end if ! avalan

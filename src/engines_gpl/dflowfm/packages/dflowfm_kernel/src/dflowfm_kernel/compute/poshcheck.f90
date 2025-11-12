@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,15 +37,15 @@ module m_poshcheck
 contains
 
    subroutine poshcheck(key)
-      use m_rcirc
-      use m_flow
-      use m_flowgeom
-      use m_flowtimes
-      use m_partitioninfo
-      use m_timer
-      use m_gui
-      use m_okay
-      use m_set_col
+      use m_rcirc, only: rcirc
+      use m_flow, only: s1, hu, nodneg, jposhchk, s0, vol1, vol0, dp, testdryflood, epshu, numnodneg, au, eps6, u1, jamapflowanalysis, negativedepths
+      use m_flowgeom, only: bl, ndxi, kfs, xz, yz, nd
+      use m_flowtimes, only: dts, dsetb, dtmin
+      use m_partitioninfo, only: jampi, reduce_int_max
+      use m_timer, only: jatimer, starttimer, impireduce, stoptimer
+      use m_gui, only: jagui
+      use m_okay, only: okay
+      use m_set_col, only: setcol
 
       implicit none
 
@@ -61,7 +61,7 @@ contains
       call set_water_level_and_hu_for_dry_cells(s1, hu)
 
       if (jampi == 1) then
-         reduced_data = (/key, nodneg/)
+         reduced_data = [key, nodneg]
 
          if (jatimer == 1) call starttimer(IMPIREDUCE)
          call reduce_int_max(2, reduced_data)
@@ -73,7 +73,7 @@ contains
 
       if (nodneg /= 0 .and. jposhchk /= -1) then
          if (jposhchk == 1 .or. jposhchk == 3 .or. jposhchk == 5 .or. jposhchk == 7) then
-            dts = 0.7d0 * dts
+            dts = 0.7_dp * dts
          end if
          dsetb = dsetb + 1 ! total nr of setbacks
          s1 = s0
@@ -100,12 +100,12 @@ contains
 
          integer :: node, link, link_index
          real(kind=dp) :: threshold
-         real(kind=dp), parameter :: WATER_LEVEL_TOLERANCE = 1d-10
-         real(kind=dp), parameter :: DELFT3D_MIN = 1d-9
-         real(kind=dp), parameter :: DELFT3D_MAX = 1d-3
-         real(kind=dp), parameter :: REDUCTION_FACTOR = 0.2d0
+         real(kind=dp), parameter :: WATER_LEVEL_TOLERANCE = 1.0e-10_dp
+         real(kind=dp), parameter :: DELFT3D_MIN = 1.0e-9_dp
+         real(kind=dp), parameter :: DELFT3D_MAX = 1.0e-3_dp
+         real(kind=dp), parameter :: REDUCTION_FACTOR = 0.2_dp
          integer, parameter :: FLAG_REDO_TIMESTEP = 2
-         real(kind=dp), parameter :: SET_VALUE = 0d0
+         real(kind=dp), parameter :: SET_VALUE = 0.0_dp
          integer, parameter :: DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS = 1
 
          Nodneg = 0
@@ -117,7 +117,7 @@ contains
          if (testdryflood == DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS) then
             threshold = max(DELFT3D_MIN, min(epshu, DELFT3D_MAX))
          else
-            threshold = 0d-0
+            threshold = 0.0e-0_dp
          end if
 
          do node = 1, ndxi

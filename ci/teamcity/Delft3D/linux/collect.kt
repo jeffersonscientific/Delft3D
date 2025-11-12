@@ -9,6 +9,8 @@ import Delft3D.step.*
 
 object LinuxCollect : BuildType({
 
+    description = "Prepping the binaries for testing/release."
+
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
@@ -17,14 +19,13 @@ object LinuxCollect : BuildType({
 
     name = "Collect"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
-    description = "DIMRset collector for Linux."
 
     allowExternalStatus = true
     artifactRules = """
         #teamcity:symbolicLinks=as-is
         lnx64 => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version*txt => version
+        dimrset_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
+        dimrset_version*txt => version
     """.trimIndent()
 
     vcs {
@@ -43,25 +44,20 @@ object LinuxCollect : BuildType({
             }
         }
         exec {
-            name = "Generate list of version numbers (from what-strings)"
-            path = "/usr/bin/python3"
-            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimr_version_lnx64.txt"
+            name = "Remove system libraries"
+            workingDir = "lnx64/lib"
+            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
         }
         script {
-            name = "Copy libraries"
-            workingDir = "lnx64/lib"
+            name = "Set execute rights"
             scriptContent = """
-                #!/usr/bin/env bash
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_core.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_avx*.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_def*.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_intel_thread.so* .
-                cp -av /opt/apps/intelmkl/2023.1.0/mkl/2023.1.0/lib/intel64/libmkl_sequential.so* .
-                cp -av /opt/apps/netcdf/4.9.2_4.6.1_intel2023.1.0/lib/libnetcdff.so* .
-                cp -av /opt/apps/netcdf/4.9.2_4.6.1_intel2023.1.0/lib/libnetcdf.so* .
-                cp -av /opt/apps/hdf5/1.14.0_intel2023.1.0/lib/libhdf5.so* .
-                cp -av /opt/apps/hdf5/1.14.0_intel2023.1.0/lib/libhdf5_hl.so* .
+                chmod a+x lnx64/bin/*
             """.trimIndent()
+        }
+        exec {
+            name = "Generate list of version numbers (from what-strings)"
+            path = "/usr/bin/python3"
+            arguments = "ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
         }
     }
 
@@ -84,6 +80,16 @@ object LinuxCollect : BuildType({
     }
 
     dependencies {
+        dependency(LinuxBuild2D3DSP) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+
+            artifacts {
+                artifactRules = "?:oss_artifacts_lnx64_*.tar.gz!lnx64/lib/libflow2d3d_sp.so => lnx64/lib"
+            }
+        }
         dependency(LinuxBuild) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
@@ -92,20 +98,6 @@ object LinuxCollect : BuildType({
 
             artifacts {
                 artifactRules = "oss_artifacts_lnx64_*.tar.gz!lnx64/** => lnx64"
-            }
-        }
-        dependency(AbsoluteId("Delft3DSobek_OssBuilds_Alma8LinuxTest_FbcToolsBuildOssX64Alma8CMakeReleaseLinux64")) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-            artifacts {
-                buildRule = lastSuccessful()
-                artifactRules = """
-                    FBCTools*.tar.gz!bin/* => lnx64/bin
-                    FBCTools*.tar.gz!lib/* => lnx64/lib
-                    FBCTools*.tar.gz!share/* => lnx64/share/drtc
-                """.trimIndent()
             }
         }
     }

@@ -3,19 +3,24 @@ package Delft3D.verschilanalyse
 import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 import Delft3D.verschilanalyse.ReportVerschilanalyse
 
 
 object StartVerschilanalyse : BuildType({
-    name = "Start verschilanalyse models"
+    name = "Submit"
+    description = "Submit verschilanalyse models to H7."
+    maxRunningBuilds = 1
 
     vcs {
         root(DslContext.settingsRoot)
+        cleanCheckout = true
     }
 
     params {
         param("harbor_webhook.image.tag", "latest")
+        param("va_harbor_protocol", "docker")
         param(
             "harbor_webhook.image.url", 
             sequenceOf(
@@ -25,12 +30,31 @@ object StartVerschilanalyse : BuildType({
             ).joinToString(separator="/")
         )         
         param("reference_prefix", "output/release/2025.01")
-        param("output_prefix", "output/weekly/latest")
+        checkbox(
+            "use_latest_weekly_reference_output",
+            "true",
+            display = ParameterDisplay.NORMAL,
+            label = "Use latest weekly reference output",
+            description = "Use the output of the latest successful weekly verschilanalyse as a reference for this verschilanalyse.",
+            checked = "true", 
+            unchecked = "false",
+        )
+        param("current_prefix", "output/weekly/latest")
+        param("models_path", "input")
         param("model_filter", "")
+        checkbox(
+            "send_email",
+            "true",
+            display = ParameterDisplay.NORMAL,
+            label = "Send email report",
+            description = "Send email with verschilanalyse results after completion.",
+            checked = "true", 
+            unchecked = "false",
+        )
     }
 
     triggers {
-        if (DslContext.getParameter("va_harbor_webhook_enabled", "false").lowercase() == "true") {
+        if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
             // TeamCity webhook plugin docs: https://github.com/tcplugins/tcWebHookTrigger
             // I couldn't find a webhook event payload example in the Harbor documenations,
             // but this GitHub issue comment has an example:
@@ -50,7 +74,7 @@ object StartVerschilanalyse : BuildType({
                     name=harbor_webhook.project::template=${'$'}{harbor_webhook.project}::regex=${DslContext.getParameter("va_harbor_project")}
                     name=harbor_webhook.repository::template=${'$'}{harbor_webhook.repository}::regex=${DslContext.getParameter("va_harbor_repository")}
                     name=harbor_webhook.image.tag::template=${'$'}{harbor_webhook.image.tag}::regex=${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
-                    name=output_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
+                    name=current_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
                 """.trimIndent())
                 param("webhook.build.trigger.include.payload", "true")
             }
@@ -58,6 +82,22 @@ object StartVerschilanalyse : BuildType({
     }
 
     steps {
+        python {
+            name = "Use the latest weekly verschilanalyse output as reference"
+            conditions { 
+                equals("use_latest_weekly_reference_output", "true")
+            }
+            pythonVersion = customPython {
+                executable = "python3.11"
+            }
+            environment = venv {
+                requirementsFile = ""
+                pipArgs = "--editable ./ci/python[verschilanalyse]"
+            }
+            command = module {
+                module = "ci_tools.verschilanalyse.find_latest_weekly_output"
+            }
+        }
         sshUpload { 
             name = "Upload bundle"
             transportProtocol = SSHUpload.TransportProtocol.SCP
@@ -87,12 +127,14 @@ object StartVerschilanalyse : BuildType({
                 export START_BUILD_TYPE_ID='${StartVerschilanalyse.id}'
                 export BUILD_ID='%teamcity.build.id%'
                 export BRANCH_NAME='%teamcity.build.branch%'
+                export SEND_EMAIL='%send_email%'
 
                 pushd bundle
                 ./start_verschilanalyse.sh \
-                    --apptainer='oras://%harbor_webhook.image.url%' \
+                    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
+                    --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
-                    --output-prefix='%output_prefix%' \
+                    --models-path='%models_path%' \
                     --model-filter='%model_filter%'
                 popd
             """.trimIndent()
@@ -101,6 +143,13 @@ object StartVerschilanalyse : BuildType({
                 username = "%h7_account_username%"
                 password = "%h7_account_password%"
             }
+        }
+    }
+
+    features {
+        swabra {}
+        provideAwsCredentials {
+            awsConnectionId = "minio_verschilanalyse_connection"
         }
     }
 

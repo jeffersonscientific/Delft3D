@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@ contains
    subroutine crosspoly(xa, ya, xb, yb, xpl, ypl, npl, XM, YM, CRPM, JA, isec, distanceStartPolygon)
       use precision, only: dp
 
-      use m_missing
+      use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: crossinbox, dbdistance
 
@@ -53,7 +53,7 @@ contains
 
       isec = 0
       JA = 0
-      distanceStartPolygon = 0.0d0
+      distanceStartPolygon = 0.0_dp
       do K = 1, NPL - 1
          KU = K + 1
          XP1 = XPL(K); YP1 = YPL(K)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,8 +52,10 @@
 
 !> Interface module to METIS's native error codes.
 module m_metis
+
 ! the parameters and enumerators are taken from
 !   ../third_party_open/metis-<version>/include/metis.h
+   use precision, only: dp
    integer, parameter :: METIS_NOPTIONS = 40
 
    integer, dimension(METIS_NOPTIONS) :: opts
@@ -237,9 +239,9 @@ module m_partitioninfo
    integer :: nbndint ! number of interface links
    integer, allocatable :: kbndint(:, :) ! interface administration, similar to kbndz, etc., dim(3,nbndint)
    real(kind=dp), allocatable :: zbndint(:, :) ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
-   real(kind=dp) :: stoptol = 1d-4 ! parameter of stopping criteria for subsolver of Schwarz method
-   real(kind=dp) :: sbeta = 10d0 ! beta value in Robin-Robin coupling for Schwarz iterations
-   real(kind=dp) :: prectol = 0.50d-2 ! tolerance for drop of preconditioner
+   real(kind=dp) :: stoptol = 1.0e-4_dp ! parameter of stopping criteria for subsolver of Schwarz method
+   real(kind=dp) :: sbeta = 10.0_dp ! beta value in Robin-Robin coupling for Schwarz iterations
+   real(kind=dp) :: prectol = 0.50e-2_dp ! tolerance for drop of preconditioner
    integer :: jabicgstab = 1 !
    integer :: Nsubiters = 1000
 
@@ -271,11 +273,11 @@ contains
 !! to allow 'holes' inside the outer region or even 'islands' inside 'holes'.
    subroutine partition_pol_to_idomain(janet, jafindcells)
 
-      use network_data
+      use network_data, only: nump1d2d, nump, xzw, yzw
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc
+      use gridoperations, only: findcells
       use m_flowgeom, only: Ndx, xz, yz
-      use m_missing
-      use m_alloc
-      use gridoperations
 
       implicit none
 
@@ -311,7 +313,7 @@ contains
             call find1dcells()
          end if
 
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     determine number of cells
@@ -344,7 +346,7 @@ contains
 !       by setting the first node z-value and determine number of partitions
 
 !     make all domain numbers available
-      idum = (/(i, i=1, npartition_pol)/)
+      idum = [(i, i=1, npartition_pol)]
 
 !     see wich domain numbers are already used
       do ipol = 1, npartition_pol
@@ -430,8 +432,7 @@ contains
 
 !> generate partition domain-numbers from selecting polygons
    subroutine generate_partitioning_from_pol()
-      use m_polygon
-      use network_data
+      use m_polygon, only: savepol, restorepol
 
       implicit none
 
@@ -503,9 +504,6 @@ contains
 !> initialize partitioning
    subroutine partition_init_1D2D(md_ident, ierror)
       use m_flowparameters, only: icgsolver
-      use m_polygon
-      use m_missing
-      use m_alloc
 
       implicit none
 
@@ -582,14 +580,13 @@ contains
 !> make a domain, including the ghostcells, by removing the other parts of the network
 !>   based on combined ghostlevels
    subroutine partition_make_domain(idmn, numlay_cell, numlay_node, jacells, ierror)
-      use MessageHandling
-      use dfm_error
-      use m_polygon
-      use network_data
-      use m_alloc
-      use gridoperations
+      use messagehandling, only: mess, level_warn
+      use dfm_error, only: dfm_genericerror, dfm_noerr
+      use m_polygon, only: npl
+      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use m_alloc, only: realloc
+      use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
-
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -598,10 +595,10 @@ contains
       integer, intent(in) :: jacells !< generate partition domain and cell numbers
       integer, intent(out) :: ierror !< error code
 
-      integer :: ic1, ic2, k1, k2, L
+      integer :: ic1, ic2, L
+      logical :: domain_needs_cell_1, domain_needs_cell_2
       integer :: i
       integer, dimension(:, :), allocatable :: lne_org
-      integer :: nLink2Dhang ! number of hanging 2D links found
       integer :: i_old
       character(len=128) :: message
 
@@ -611,55 +608,25 @@ contains
       call partition_set_ghostlevels(idmn, numlay_cell, numlay_node, 0, ierror)
       if (ierror /= 0) goto 1234
 
-!     delete other part of network, by using the node mask (network_data variable kc)
-!      if ( allocated(kc) ) deallocate(kc)
-!      allocate(kc(numk))
-!      kc = 0
-
 !     make link mask
       Lc = 0
-      nLink2Dhang = 0
       do L = 1, numL
-!        check for hanging 2D links (not supported)
-         if (kn(3, L) == 2 .and. lnn(L) == 0) then
-!            call qnerror('Hanging 2D links not supported', ' ', ' ')
-!            call teklink(L,NCOLWARN1)
-!            ierror=1
-!            goto 1234
-
-            Lc(L) = 0 ! deactive link
-            nLink2Dhang = nLink2dhang + 1
+         if ((kn(3, L) == LINK_2D .and. lnn(L) == 0)) then
+            ! check for hanging 2D
+            Lc(L) = 0 ! set mask to inactive
             cycle
          end if
-
          ic1 = abs(lne(1, L))
          ic2 = abs(lne(min(lnn(L), 2), L))
-         if (kn(3, L) == 2) then ! 2D links
-            if (idomain(ic1) == idmn .or. ighostlev(ic1) /= 0 .or. &
-                idomain(ic2) == idmn .or. ighostlev(ic2) /= 0) then
-               !kc(kn(1,L)) = 1
-               !kc(kn(2,L)) = 1
-               Lc(L) = 1
-            end if
-         else if (kn(3, L) /= 0) then ! kn(3,L)==1 .or. kn(3,L)==3 .or. kn(3,L)==4 ) then ! 1D link
-!           need to check connected netcells, since the netnode may not be associated with a 1D netcell (1D-2D coupling)
-            k1 = kn(1, L)
-            k2 = kn(2, L)
-            if ((idomain(ic1) == idmn .or. ighostlev(ic1) /= 0) .and. &
-                (idomain(ic2) == idmn .or. ighostlev(ic2) /= 0)) then ! active 1D cell
-               !kc(k1) = 1
-               !kc(k2) = 1
-               Lc(L) = 1
-            end if
+         domain_needs_cell_1 = idomain(ic1) == idmn .or. ighostlev(ic1) /= 0
+         domain_needs_cell_2 = idomain(ic2) == idmn .or. ighostlev(ic2) /= 0
+
+         if (kn(3, L) == LINK_2D .and. (domain_needs_cell_1 .or. domain_needs_cell_2)) then ! 2D links
+            Lc(L) = 1
+         else if (kn(3, L) /= 0 .and. (domain_needs_cell_1 .and. domain_needs_cell_2)) then ! 1D link
+            Lc(L) = 1
          end if
       end do
-
-!!     deactivate nodes
-!      do k=1,numk
-!         if ( kc(k).ne.1 ) then
-!            call delnode(k)
-!         end if
-!      end do
 
 !     deactive links
       do L = 1, numL
@@ -672,7 +639,6 @@ contains
 
       if (jacells == 1) then
          Nglobal_s = nump1d2d
-
 !        save lne
          allocate (lne_org(2, numL))
          lne_org = 0
@@ -688,21 +654,13 @@ contains
       call find1dcells()
       netstat = NETSTAT_OK
 
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
       if (numk == 0 .or. numl == 0) then
          write (message, "('While making partition domain #', I0, ': empty domain (', I0, ' net nodes, ', I0, ' net links).')") idmn, numk, numl
          call mess(LEVEL_WARN, trim(message))
          ierror = DFM_GENERICERROR
          goto 1234
-      end if
-
-!     output number of hanging 2D links
-      if (idmn == 0) then
-         if (nLink2Dhang > 0) then
-            write (message, "(I0, ' hanging 2D links disregarded.')") nLink2Dhang
-            call mess(LEVEL_WARN, trim(message))
-         end if
       end if
 
       if (jacells == 1) then
@@ -733,7 +691,7 @@ contains
          end do
 
 !        remove masked netcells
-         call remove_masked_netcells()
+         call remove_masked_netcells(update_blcell=.false.)
 
          call partition_make_1dugrid_in_domain(idmn, numl1d, Lperm, ierror)
          if (ierror /= 0) goto 1234
@@ -750,7 +708,7 @@ contains
    !! NOTE: mesh1dNodeIds is not partitioned.
    subroutine partition_make_1dugrid_in_domain(idmn, numl1d, L2Lorg, ierror)
       use m_save_ugrid_state, only: meshgeom1d, nodeids, nodelongnames
-      use network_data, only: netcell, netcell0, nump, nump1d2d
+      use network_data, only: nump0, nump, nump1d2d
       implicit none
       integer, intent(in) :: idmn !< domain number
       integer, intent(in) :: numl1d !< number of 1D links
@@ -760,7 +718,7 @@ contains
       integer, allocatable :: edge_nodes(:, :)
       integer, allocatable :: iglobal_edge(:) !< Original global number of all current 1D edges (that is: excluding 1d2d)
       integer, allocatable :: kperm(:) !< Permutation table for net nodes (from old to new numbering)
-      integer :: i, ii, ic_p, ic_g, i_p, i_g, n1dedges, numk1d
+      integer :: i, ii, ic_p, ic_g, i_p, i_g, n1dedges, numk1d, nump1d
       character(len=ug_idsLen), allocatable :: nodeids_p(:)
       character(len=ug_idsLongNamesLen), allocatable :: nodelongnames_p(:)
       real(kind=hp), pointer :: nodeoffsets_p(:)
@@ -791,18 +749,20 @@ contains
       call get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, iglobal_edge, kperm, ierror)
       if (ierror /= 0) return
 
-      ! partition node arrays
-      allocate (nbranchids_p(numk1d), nodeids_p(numk1d), nodeoffsets_p(numk1d), nodelongnames_p(numk1d), stat=ierror)
+      nump1d = nump1d2d - nump
+      ! partition node arrays, equal to number of 1d netcells (not number of 1d netnodes)
+      allocate (nbranchids_p(nump1d), nodeids_p(nump1d), nodeoffsets_p(nump1d), nodelongnames_p(nump1d), stat=ierror)
       if (ierror /= 0) return
+
       ! 1D cells have already been sorted in original global order
       ! and 1D net should be written in original order (with other partitions removed, that is: in the current 1:numk1d order)
-      do ic_p = nump + 1, nump1d2d
+      do i_p = 1, nump1d
          ! UNST-6571: deliberately not using kperm here, under the assumption that in input 1D netnodes are already sorted by branch,
          !            and this loop should stay consistent with the one in unc_write_net_ugrid2().
          !            This subroutine only deals with edge-ordering and partition-to-global mapping (i.e., no netnode remapping).
-         i_p = netcell(ic_p)%nod(1) ! 1D netcell -> 1D net node
+         ic_p = nump + i_p
          ic_g = iglobal_s(ic_p)
-         i_g = netcell0(ic_g)%nod(1) ! netcell0 currently still contains backup of unpartitioned original full grid.
+         i_g = ic_g - nump0 ! mesh1d node number derived from netcell number.
          nodeids_p(i_p) = nodeids_g(i_g)
          nbranchids_p(i_p) = nodebranchidx_g(i_g)
          nodeoffsets_p(i_p) = nodeoffsets_g(i_g)
@@ -834,6 +794,7 @@ contains
    !! A 1D edge is a true 1D netlink, i.e., not a 1D2D link.
    subroutine get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, Lorg, kperm, ierror)
       use network_data, only: kn, LNE
+      use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges
       implicit none
       integer, intent(in) :: numl1d !< number of 1D(+1D2D) links in current partition mesh
       integer, intent(in) :: L2Lorg(:) !< Mapping table current (new) to original global net link numbers
@@ -850,13 +811,7 @@ contains
       allocate (kperm(size), stat=ierror)
       if (ierror /= 0) return
       kperm(:) = 0
-
-      n1dedges = 0
-      do l = 1, numl1d
-         if (kn(3, l) == 1 .or. kn(3, l) == 6) then
-            n1dedges = n1dedges + 1
-         end if
-      end do
+      n1dedges = count_1d_edges(numl1d)
       allocate (edge_nodes(2, n1dedges), stat=ierror)
       if (ierror /= 0) return
       allocate (Lorg(n1dedges), stat=ierror)
@@ -865,7 +820,7 @@ contains
       n1dedges = 0
       numk1d = 0
       do l = 1, numl1d
-         if (kn(3, l) == 1 .or. kn(3, l) == 6) then
+         if (is_valid_1d_netlink(l)) then
             n1dedges = n1dedges + 1
 
             k1 = kn(1, l)
@@ -882,9 +837,8 @@ contains
             edge_nodes(1, n1dedges) = kperm(kn(1, l))
             edge_nodes(2, n1dedges) = kperm(kn(2, l))
             Lorg(n1dedges) = L2Lorg(L) ! Note: this assumes that in original net, all 1D net links come first in the range 1:numl1d, and the 1D2D links are all together at the end of that numl1d range.
-         else if (kn(3, l) >= 3 .and. kn(3, l) <= 7) then
-            ! We may encounter an orphan 1D2D link, where the 1D side has no own true 1D links.
-            ! In that case, only increment the numk1d counter, but don't add any 1d edge.
+
+         else if (is_valid_1d2d_netlink(l)) then
             if (lne(1, L) < 0) then ! #1 is the 1D side, as set in find1dcells()
                k1 = kn(1, L)
             else if (lne(2, L) < 0) then ! #2 is the 1D side, as set in find1dcells()
@@ -1157,7 +1111,7 @@ contains
 !>    it is assumed that module variable idomain has been filled
 !>    ghost cells are masked in module variable ighostlev_cellbased
    subroutine partition_set_ghostlevels_cellbased(idmn, numlay_loc, ierror)
-      use network_data
+      use network_data, only: numl, lnn, lne
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -1202,7 +1156,7 @@ contains
 !>    it is assumed that module variable idomain has been filled
 !>    ghost cells are masked in module variable ighostlev_nodebased
    subroutine partition_set_ghostlevels_nodebased(idmn, numlay_loc, ierror)
-      use network_data
+      use network_data, only: nump, netcell, nmk, nod
       use m_icommon, only: common_cell_for_two_net_links
       implicit none
 
@@ -1252,8 +1206,7 @@ contains
 
 !> set ghostlevels in boundary flownodes (copy from inner nodes)
    subroutine partition_set_ghostlevels_boundaries()
-      use network_data
-      use m_flowgeom
+      use m_flowgeom, only: lnxi, lnx, ln
       implicit none
 
       integer :: kb, ki, L
@@ -1280,8 +1233,6 @@ contains
 !> make the lists of ghost-water-levels and velocities
 !>    it is assumed that idomain and ighostlev are filled
    subroutine partition_make_ghostlists(domain_number, error)
-      use m_alloc
-      use m_flowgeom
 
       implicit none
 
@@ -1423,7 +1374,6 @@ contains
 !> make the lists of ghost-water-levels and velocities
 !>    it is assumed that idomain and ighostlev are filled
    subroutine partition_get_ghosts(domain_number, itype, ghost_list, ierror)
-      use m_alloc
 
       implicit none
 
@@ -1453,62 +1403,6 @@ contains
       return
    end subroutine partition_get_ghosts
 
-!> determine if flow link is ghost link, flow link domain number and ghost level
-!>
-!>   a flow link is owned by the adjacent cell with the smallest domain number
-!>   thus, a link is a ghost link if:
-!>                it connects two ghost cells, or
-!> ACTIVATED ->   it connects only one ghost cell, and the other domain number is smaller than the own domain number, or
-!                 it connects connects a cell in the own subdomain with ghostlevel >0 (at the boundary)
-   subroutine link_ghostdata(idmn, idmnL, idmnR, jaghost, idmn_link, ighostlevL, ighostlevR, iglev)
-      use m_flowgeom
-      implicit none
-
-      integer, intent(in) :: idmn !< domain number based on which the ghost-checking is done (typically my_rank)
-      integer, intent(in) :: idmnL !< domain number of left neighboring cell
-      integer, intent(in) :: idmnR !< domain number of right neighboring cell
-      integer, intent(out) :: jaghost !< flow link is ghost link (1) or not (0)
-      integer, intent(out) :: idmn_link !< flow link domain number
-      integer, intent(in), optional :: ighostlevL !< ghost level of left neighboring cell
-      integer, intent(in), optional :: ighostlevR !< ghost level of right neighboring cell
-      integer, intent(out), optional :: iglev !< flow link ghost level (if ghostlevels specified, otherwise 0)
-
-      jaghost = 0
-      idmn_link = idmn
-      if (present(iglev)) then
-         iglev = 0
-      end if
-
-      if ((idmnL /= idmn .and. idmnR /= idmn) .or. &
-          (idmnL == idmn .and. idmnR < idmn) .or. &
-          (idmnL < idmn .and. idmnR == idmn) &
-          ) then
-         jaghost = 1
-      else if (present(ighostlevL) .and. present(ighostlevR)) then
-         if ((idmnL == idmn .and. ighostlevL > 0) .or. &
-             (idmnR == idmn .and. ighostlevR > 0) &
-             ) then
-            jaghost = 1
-         end if
-      end if
-
-      if (jaghost == 1) then
-
-         if (present(ighostlevL) .and. present(ighostlevR) .and. present(iglev)) then
-            idmn_link = min(idmnL, idmnR) ! a choice
-
-!           ghost domain cannot be own domain
-            if (idmn_link == idmn) idmn_link = idmnL + idmnR - idmn
-            iglev = min(ighostlevL, ighostlevR)
-
-!           ghost level may be zero
-            if (iglev == 0) iglev = max(ighostlevL, ighostlevR)
-         end if
-      end if
-
-      return
-   end subroutine link_ghostdata
-
    !> Tells whether a particular flow node is a ghost node in the current domain.
    !! In sequential models, result is always .false.
    pure function is_ghost_node(k) result(is_ghost)
@@ -1524,7 +1418,7 @@ contains
    subroutine partition_fill_sendlist(own_domain_number, other_domain_number, itype, N_req, x_req, y_req, ghost_list, &
                                       send_list, nr_send_list, ierror)
 
-      use m_alloc
+      use m_alloc, only: realloc
       use network_data, only: numk, xzw, yzw, xk, yk
       use m_flowgeom, only: xu, yu
       use geometry_module, only: dbdistance
@@ -1550,7 +1444,7 @@ contains
       integer :: node
 
       integer :: jafound
-      real(kind=dp), parameter :: TOLERANCE = 1d-4
+      real(kind=dp), parameter :: TOLERANCE = 1.0e-4_dp
       character(len=80) :: message2, message3
 
       ierror = 1
@@ -1632,7 +1526,7 @@ contains
       else
          numnew = nr_send_list(numdomains - 1) + num
          if (numnew > ubound(send_list, 1)) then
-            call realloc(send_list, int(1.2d0 * dble(numnew) + 1d0), fill=0, keepExisting=.true.)
+            call realloc(send_list, int(1.2_dp * dble(numnew) + 1.0_dp), fill=0, keepExisting=.true.)
          end if
       end if
 
@@ -1657,9 +1551,9 @@ contains
 !>  make the sendlists
 !>    include additional layer to detect all flownodes and flowlinks ("enclosed, level-five" cells)
    subroutine partition_make_sendlists(idmn, fnam, ierror)
-      use m_polygon
-      use m_alloc
-      use m_reapol
+      use m_polygon, only: savepol, npl, xpl, ypl, restorepol
+      use m_alloc, only: realloc
+      use m_reapol, only: reapol
       use m_filez, only: oldfil
 
       implicit none
@@ -1794,12 +1688,11 @@ contains
 
 !> communicate ghost cells to other domains
    subroutine partition_make_sendlist_MPI(itype, numlay_cell, numlay_node, i_list, n_list, ifromto)
-      use m_alloc
-      use m_missing
+      use m_alloc, only: realloc
+      use mpi
       use network_data, only: xzw, yzw, xk, yk
       use m_flowgeom, only: xu, yu
 #ifdef HAVE_MPI
-      use mpi
 #endif
 
       implicit none
@@ -1965,7 +1858,7 @@ contains
 
 !        check recv array size
          if (icount > 2 * ubound(xy_recv, 2)) then ! reallocate if necessary
-            call realloc(xy_recv, (/2, int(1.2d0 * dble(icount / 2) + 1d0)/), keepExisting=.false., fill=0d0)
+            call realloc(xy_recv, [2, int(1.2_dp * dble(icount / 2) + 1.0_dp)], keepExisting=.false., fill=0.0_dp)
          end if
 
          call mpi_recv(xy_recv, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, status, error)
@@ -2028,7 +1921,7 @@ contains
 
       integer :: i, k, k1, k2, L, num
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       ierror = 1
 
@@ -2066,7 +1959,7 @@ contains
          L = abs(ighostlist_u(i))
 
 !        safety check
-         dum = abs(abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L)) - 1d0)
+         dum = abs(abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L)) - 1.0_dp)
          if (dum >= dtol) then
 !           check if this is a valid ghostlink (see also subroutine "disable_invalid_ghostcells_with_wu")
             k1 = ln(1, L)
@@ -2080,7 +1973,7 @@ contains
             end if
          end if
 
-         if (abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L) + 1d0) < dtol) then
+         if (abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L) + 1.0_dp) < dtol) then
             ighostlist_u(i) = -ighostlist_u(i)
             num = num + 1
          end if
@@ -2101,10 +1994,10 @@ contains
 
 !> copy sendlist to samples
    subroutine copy_sendlist_to_sam()
-      use m_samples
+      use m_samples, only: savesam, increasesam, ns, xs, ys, zs
+      use m_delsam, only: delsam
       use network_data, only: xzw, yzw
       use m_flowgeom, only: xu, yu
-      use m_delsam
 
       implicit none
 
@@ -2245,7 +2138,7 @@ contains
 
 !> generate non-overlapping ghost/sendlists (for solver)
    subroutine partition_fill_ghostsendlist_nonoverlap(error)
-      use m_alloc
+      use m_alloc, only: realloc
       implicit none
 
       integer, intent(out) :: error !< error (1) or not (0)
@@ -2341,12 +2234,11 @@ contains
 
    subroutine update_ghosts(itype, ndim, n, solution, error, ignore_orientation)
 #ifdef HAVE_MPI
-      use mpi
+      use m_flowgeom, only: dp, ndx, lnx
+      use messagehandling, only: mess, level_error
 #endif
-      use m_flowgeom
       use m_flow, only: kmxn, kmxL, kbot, Lbot, Ndkx, Lnkx
       use network_data, only: numk
-      use messageHandling
 
       implicit none
 
@@ -2456,9 +2348,9 @@ contains
    subroutine update_ghost_loc(ndomains, NDIM, N, s, numghost, ighost, nghost, numsend, isend, nsend, itag, ierror, nghost3d, nsend3d, kmxnL, kbot, ignore_orientation)
 #ifdef HAVE_MPI
       use mpi
+      use m_flowgeom, only: dp
+      use m_alloc, only: realloc
 #endif
-      use m_flowgeom
-      use m_alloc
 
       implicit none
 
@@ -2523,7 +2415,7 @@ contains
       end if
 
       if (ubound(work, 1) < num) then
-         call realloc(work, int(1.2d0 * dble(num) + 1d0))
+         call realloc(work, int(1.2_dp * dble(num) + 1.0_dp))
       end if
 
 !     fill work array
@@ -2650,7 +2542,7 @@ contains
       end if
 
       if (ubound(workrec, 1) < num) then
-         call realloc(workrec, int(1.2d0 * dble(num) + 1d0))
+         call realloc(workrec, int(1.2_dp * dble(num) + 1.0_dp))
       end if
 
       if (ja3d /= 1) then
@@ -3142,7 +3034,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2/)
+      dum = [var1, var2]
       call mpi_allreduce(dum, var_all, 2, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3168,7 +3060,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2, var3/)
+      dum = [var1, var2, var3]
       call mpi_allreduce(dum, var_all, 3, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3196,7 +3088,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2, var3, var4/)
+      dum = [var1, var2, var3, var4]
       call mpi_allreduce(dum, var_all, 4, mpi_integer, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3461,10 +3353,13 @@ contains
 !>   reduce: take global cell with lowest dist
    subroutine reduce_kobs(N, kobs, xobs, yobs, jaoutside)
       use m_flowgeom, only: xz, yz, nd
-      use messagehandling, only: LEVEL_ERROR, mess
+      use messagehandling, only: LEVEL_ERROR, LEVEL_WARN, mess
       use geometry_module, only: pinpok, dbdistance
       use m_missing, only: jins, dmiss
       use m_sferic, only: jsferic, jasfer3D
+      use m_observations_data, only: namobs
+      use precision_basics, only: comparereal
+
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3484,8 +3379,8 @@ contains
 
       integer :: i, other_domain, in, k1, ierror
 
-      real(kind=dp), parameter :: DPENALTY = 1d10 ! should be smaller than DREJECT
-      real(kind=dp), parameter :: DREJECT = 2d99 ! should be larger than DPENALTY
+      real(kind=dp), parameter :: DPENALTY = 1.0e10_dp ! should be smaller than DREJECT
+      real(kind=dp), parameter :: DREJECT = 2.0e99_dp ! should be larger than DPENALTY
 
       if (N < 1) return
 
@@ -3505,7 +3400,7 @@ contains
 !        determine preference
          if (in == 1) then
             if (idomain(k1) == my_rank) then
-               dist(i) = 0d0
+               dist(i) = 0.0_dp
             else
                dist(i) = DPENALTY
             end if
@@ -3521,29 +3416,6 @@ contains
             dist(i) = DREJECT
          end if
       end do
-
-!      BEGIN DEBUG
-!       call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       do idmn=0,ndomains-1
-!          if ( idmn.eq.my_rank) then
-!             open(newunit=lunfil,file='deleteme.txt', access='append')
-!
-!             if ( my_rank.eq.0 ) then
-!                write(lunfil,"('reduce_kobs')")
-!                write(lunfil,"('before reduce')")
-!             end if
-!
-!             write(lunfil,"('my_rank=',I0)") idmn
-!             do i=1,N
-!                write(lunfil,"(I4, I8, E17.4)") i, kobs(i), dist(i)
-!             end do
-!
-!             close(lunfil)
-!          end if
-!
-!          call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       end do
-!      END DEBUG
 
 !     globally reduce
       call mpi_allgather(dist, N, MPI_DOUBLE_PRECISION, dist_all, N, MPI_DOUBLE_PRECISION, DFM_COMM_DFMWORLD, ierror)
@@ -3572,46 +3444,25 @@ contains
       end do
 
 !     safety: check uniqueness
-      dist = 0d0
+      dist = 0.0_dp
       do i = 1, N
          if (kobs(i) > 0) then
-            dist(i) = 1d0
+            dist(i) = 1.0_dp
          end if
       end do
       call mpi_allreduce(dist, dist_all, N, MPI_DOUBLE_PRECISION, MPI_SUM, DFM_COMM_DFMWORLD, ierror) ! re-use (part of) dist_all
       do i = 1, N
-         if (dist_all(i, 0) > 1d0) then
+         if (comparereal(dist_all(i, 0), 1.0_dp) == 1) then
             call mess(LEVEL_ERROR, 'reduce_kobs: non-unique observation station(s)')
+         end if
+         if (comparereal(dist_all(i, 0), 0.0_dp) == 0) then
+            call mess(LEVEL_WARN, 'reduce_kobs: observation station '//trim(namobs(i))//' was not snapped to a valid flownode on any partition.')
          end if
       end do
 
-!      BEGIN DEBUG
-!       call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       do idmn=0,ndomains-1
-!          if ( idmn.eq.my_rank) then
-!             open(newunit=lunfil,file='deleteme.txt', access='append')
-!
-!             if ( my_rank.eq.0 ) then
-!                write(lunfil,"('after reduce')")
-!             end if
-!
-!             write(lunfil,"('my_rank=',I0)") idmn
-!             do i=1,N
-!                write(lunfil,"(I4, I8, 2E17.4)") i, kobs(i), dist(i), dist_all(i)
-!             end do
-!
-!             close(lunfil)
-!          end if
-!
-!          call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       end do
-!      END DEBUG
-
       if (allocated(dist)) deallocate (dist)
       if (allocated(dist_all)) deallocate (dist_all)
-
 #endif
-      return
    end subroutine reduce_kobs
 
 !> reduce outputted values at observation stations
@@ -3629,7 +3480,7 @@ contains
       integer, intent(in) :: numobs !< number of observation stations
       real(kind=dp), dimension(numobs, numvals), intent(inout) :: valobs !< values at obervations stations to be output.
 
-      real(kind=dp), parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
       integer :: iobs, ival
       integer :: ierror
 
@@ -3671,7 +3522,7 @@ contains
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that we wish to update.
 
-      real(kind=dp), parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
       integer :: i_stat, i_loc
       real(kind=dp), pointer :: stat_output(:) !< pointer to statistical output data array that is to be written to the Netcdf file after reduction across partitions.
       real(kind=dp), allocatable :: send_buffer(:) !< send buffer for mpi reduction because MPI_IN_PLACE does not work for unknown reasons.
@@ -3747,17 +3598,17 @@ contains
 
       integer, dimension(:), allocatable :: idum
 
-      real(kind=dp), parameter :: dtol = 1d-8
-      real(kind=dp), parameter :: DLARGE = 1d99
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: DLARGE = 1.0e99_dp
       real(kind=dp), parameter :: ILARGE = 10000
 
       integer :: i, ierror
 
       allocate (dum(Nproflocs))
-      dum = 0d0
+      dum = 0.0_dp
 
       allocate (idum(Nproflocs))
-      idum = 0d0
+      idum = 0.0_dp
 
       call MPI_allreduce(distsam, dum, Nproflocs, MPI_DOUBLE_PRECISION, MPI_MIN, DFM_COMM_DFMWORLD, ierror)
       if (ierror /= 0) goto 1234
@@ -3837,7 +3688,7 @@ contains
 #ifdef HAVE_MPI
 !     allocate
       allocate (resu_all(2, num_rugs))
-      resu_all = 0d0
+      resu_all = 0.0_dp
 
       call mpi_allreduce(resu, resu_all, num_rugs, mpi_2double_precision, mpi_maxloc, DFM_COMM_DFMWORLD, ierror)
       if (ierror /= 0) then
@@ -3878,7 +3729,7 @@ contains
       klp: do k = 1, Ndxi
          do LL = 1, nd(k)%lnx
             L = abs(nd(k)%ln(LL))
-            if (wu(L) /= 0d0) then
+            if (wu(L) /= 0.0_dp) then
                cycle klp
             end if
          end do
@@ -3977,7 +3828,7 @@ contains
 
       logical :: Lleftfound, Lrightfound
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
 !     count the number of branches
       numnetbr = mxnetbr
@@ -4015,18 +3866,18 @@ contains
       allocate (iordened_branches(numallnetbr))
       allocate (ipoint(numallnetbr + 1))
 
-      xyL_loc = 0d0
-      xyR_loc = 0d0
+      xyL_loc = 0.0_dp
+      xyR_loc = 0.0_dp
 
       do ibr = 1, numnetbr
          iglob = ibr + iglobalbranch_first - 1
          num = netbr(ibr)%NX
          LL = netbr(ibr)%LN(1)
          LR = netbr(ibr)%LN(num)
-         xyL_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LL))) + xk(kn(2, abs(LL))))
-         xyL_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LL))) + yk(kn(2, abs(LL))))
-         xyR_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LR))) + xk(kn(2, abs(LR))))
-         xyR_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LR))) + yk(kn(2, abs(LR))))
+         xyL_loc(1, iglob) = 0.5_dp * (xk(kn(1, abs(LL))) + xk(kn(2, abs(LL))))
+         xyL_loc(2, iglob) = 0.5_dp * (yk(kn(1, abs(LL))) + yk(kn(2, abs(LL))))
+         xyR_loc(1, iglob) = 0.5_dp * (xk(kn(1, abs(LR))) + xk(kn(2, abs(LR))))
+         xyR_loc(2, iglob) = 0.5_dp * (yk(kn(1, abs(LR))) + yk(kn(2, abs(LR))))
 
          xyL_loc(3, iglob) = dLinkangle(LL)
          xyR_loc(3, iglob) = dLinkangle(LR)
@@ -4047,9 +3898,9 @@ contains
 !     connect branches and make new global branch numbering
       inew = 0
       numnew = 0
-      dlL = 0d0
-      dlR = 0d0
-      dltot = 0d0
+      dlL = 0.0_dp
+      dlR = 0.0_dp
+      dltot = 0.0_dp
       iorient = 0
       ipoint(1) = 1
       do ibr = 1, numallnetbr
@@ -4098,8 +3949,8 @@ contains
                Lconnect = 0
             end if
 
-            dleft = 0d0
-            dlength = 0d0
+            dleft = 0.0_dp
+            dlength = 0.0_dp
             do k = 1, N
                L = netbr(ibrr)%LN(k)
                dlength = dlength + dlinklength(L)
@@ -4131,7 +3982,7 @@ contains
 
 !     compute the offset lengths and fill local branch properties
       do i = 1, numnew
-         dconnected = 0d0
+         dconnected = 0.0_dp
          do k = ipoint(i), ipoint(i + 1) - 1
             ibr_glob = abs(iordened_branches(k))
             ibrr = ibr_glob - iglobalbranch_first + 1
@@ -4476,16 +4327,15 @@ contains
       return
    end subroutine
 
-   !> Generic function for weighted average on a quantities defined on cells or links, also applying optional filters
+   !> Generic function for weighted average on quantities defined on cells or links, also applying optional filters
    !> optional firstFilter is defined on a global weights array [1, ncells/nlinks]
    !> optional secondFilter is defined on a local array [1,size(secondFilter)]
    !> works also across multiple MPI ranks
-   function getAverageQuantityFromLinks(startLinks, endLinks, weights, indsWeight, quantity, indsQuantity, results, quantityType, &
-                                        firstFilter, firstFilterValue, secondFilter, secondFilterValue) result(ierr)
+   function get_average_quantity_from_links(startLinks, endLinks, weights, indsWeight, quantity, indsQuantity, results, quantityType, &
+                                            firstFilter, firstFilterValue, secondFilter, secondFilterValue) result(ierr)
 
-      use mpi
-      use fm_external_forcings_data
-      use m_timer
+      use mpi, only: MPI_DOUBLE_PRECISION, MPI_SUM
+      use m_timer, only: jatimer, starttimer, stoptimer, IMPIREDUCE
 
       !inputs
       integer, intent(in), dimension(:) :: startLinks !< start indexes [1,nsegments]
@@ -4579,7 +4429,7 @@ contains
          if (jatimer == 1) call stoptimer(IMPIREDUCE)
       end if
 
-   end function getAverageQuantityFromLinks
+   end function get_average_quantity_from_links
 
    !> generate partitioning polygons
    ! Moved to module because of optional argument
@@ -4591,7 +4441,7 @@ contains
       use m_tpoly
       use m_sferic
       use messagehandling, only: LEVEL_WARN, mess
-      use gridoperations
+      use gridoperations, only: findcells
       use m_copynetboundstopol
       implicit none
 
@@ -4625,8 +4475,7 @@ contains
       if (netstat == NETSTAT_CELLS_DIRTY) then
          call findcells(0)
          call find1Dcells()
-
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     check for 1D cells (not supported)
@@ -4951,6 +4800,7 @@ contains
    subroutine get_ghost_links(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
       use m_flowgeom, only: Lnx, ln
       use m_alloc
+      use m_link_ghostdata, only: link_ghostdata
 
       implicit none
       integer, intent(in) :: domain_number
@@ -5733,7 +5583,7 @@ contains
          end if
 
 !        realloc
-         call realloc(xyrec, (/3, num/), keepExisting=.false., fill=0d0)
+         call realloc(xyrec, [3, num], keepExisting=.false., fill=0d0)
 
 !        recieve
          call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
@@ -6007,5 +5857,30 @@ contains
 
       return
    end subroutine update_ghostboundvals
+
+!> perform a logical AND across all partitions
+   subroutine logical_and_across_partitions(val, allval)
+      use messagehandling, only: LEVEL_FATAL, mess
+#ifdef HAVE_MPI
+      use mpi
+#endif
+      logical, intent(in) :: val !< partition specific value
+      logical, intent(out) :: allval !< reduced value across all partitions
+
+      integer :: ierror !< error
+
+      ierror = 0
+      allval = val
+      if (jampi) then
+#ifdef HAVE_MPI
+         call mpi_allreduce(val, allval, 1, MPI_LOGICAL, MPI_LAND, DFM_COMM_DFMWORLD, ierror)
+#endif
+      else
+         ! there is only one val, so it can keep its value
+      end if
+      if (ierror /= 0) then
+         call mess(LEVEL_FATAL, 'mpi_allreduce failed in logical_and_across_partitions')
+      end if
+   end subroutine logical_and_across_partitions
 
 end module m_partitioninfo

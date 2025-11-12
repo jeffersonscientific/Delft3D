@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,15 +43,15 @@ contains
 
    subroutine CREATESAMPLESINPOLYGON2()
       use precision, only: dp
-      use m_ec_triangle
+      use m_ec_triangle, only: numtri, indx, edgeindx, triedge, numedge
+      use M_SAMPLES, only: ns, increasesam, zs, xs, ys
+      use M_MISSING, only: dmiss, jins
+      use m_sferic, only: jsferic
+      use m_alloc, only: aerr, realloc
+      use m_polygon, only: npl, xpl, ypl
+      use m_qnerror, only: qnerror
       use network_data, only: TRIANGLESIZEFAC
-      use M_SAMPLES
-      use M_MISSING
-      use m_sferic
-      use m_alloc
       use geometry_module, only: dbpinpol, get_startend
-      use m_polygon
-      use m_qnerror
 
       integer :: ierr
       integer :: in
@@ -69,14 +69,14 @@ contains
 
       DLENAV = DLENPOL / NPL ! AVERAGE SIZE ON POLBND
 !   TRIAREA  = 0.5d0*DLENAV*DLENAV  ! AVERAGE TRIANGLE SIZE
-      TRIAREA = 0.25d0 * sqrt(3d0) * DLENAV * DLENAV ! AVERAGE TRIANGLE SIZE
+      TRIAREA = 0.25_dp * sqrt(3.0_dp) * DLENAV * DLENAV ! AVERAGE TRIANGLE SIZE
 
       SAFESIZE = 11 ! SAFETY FACTOR
 
       if (jsferic == 1) then
          ! DLENPOL and AREPOL are in metres, whereas Triangle gets spherical
          ! coordinates, so first scale desired TRIAREA back to spherical.
-         xplmin = 0d0; xplmax = dlenpol / 4d0; yplmin = 0d0; yplmax = dlenpol / 4d0
+         xplmin = 0.0_dp; xplmax = dlenpol / 4.0_dp; yplmin = 0.0_dp; yplmax = dlenpol / 4.0_dp
          call get_startend(NPL, XPL, YPL, n, nn, dmiss)
          if (nn > n) then
             xplmin = minval(xpl(n:nn))
@@ -108,12 +108,12 @@ contains
          allocate (INDX(3, NTX), STAT=IERR); INDX = 0
          call AERR('INDX(3,NTX)', IERR, int(3 * NTX))
 
-         call realloc(EDGEINDX, (/2, Ntx/), keepExisting=.false., fill=0, stat=ierr)
-         call realloc(TRIEDGE, (/3, Ntx/), keepExisting=.false., fill=0, stat=ierr)
+         call realloc(EDGEINDX, [2, Ntx], keepExisting=.false., fill=0, stat=ierr)
+         call realloc(TRIEDGE, [3, Ntx], keepExisting=.false., fill=0, stat=ierr)
 
          NN = NTX
          call increasesam(NS1 + NN)
-         zs(ns1:ubound(zs, 1)) = 0d0 ! zkuni ! SPvdP: used to be DMISS, but then the samples are not plotted
+         zs(ns1:ubound(zs, 1)) = 0.0_dp ! zkuni ! SPvdP: used to be DMISS, but then the samples are not plotted
 
          TRIAREA = TRIANGLESIZEFAC * TRIANGLESIZEFAC * TRIAREA
          NPL1 = NPL

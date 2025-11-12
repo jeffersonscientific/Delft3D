@@ -1,17 +1,20 @@
 !> module containing subroutine distribute_linearized_3d_structure_coefficients for distributing linearized 3D structure coefficients
 !! over the layers of the structure.
 module m_distribute_linearized_3d_structure_coefficients
+
+   use precision, only: dp
 contains
    !> distribute linearized 3D structure coefficients over the layers of the structure.
    subroutine distribute_linearized_3d_structure_coefficients(structure)
       use precision_basics, only: dp
-      use m_1d_structures, only: t_structure
-      use m_General_Structure, only: t_GeneralStructure
+
       use m_flowparameters, only: jastructurelayersactive
       use m_flowgeom, only: ln
       use m_flow, only: u1, s1, zws, au, fu, ru, hu
       use fm_external_forcings_data, only: ff3
       use m_get_Lbot_Ltop, only: getLbotLtop
+      use m_1d_structures, only: t_structure
+      use m_general_structure, only: t_generalstructure
 
       implicit none
 
@@ -61,7 +64,7 @@ contains
             else
                iup = 2
             end if
-            ff3(:, 0) = 0d0
+            ff3(:, 0) = 0.0_dp
             do LL = Lb, Lt
                kk = ln(iup, LL)
                if (genstr%au(1, L0) > 0) ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)

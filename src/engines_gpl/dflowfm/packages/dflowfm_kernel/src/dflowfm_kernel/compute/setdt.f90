@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,6 +36,7 @@ module m_setdt
    use m_xbeachwaves, only: xbeach_wave_maxtimestep
    use m_fm_mor_maxtimestep, only: fm_mor_maxtimestep
    use m_setdtmaxavalan, only: setdtmaxavalan
+   use m_waveconst
 
    implicit none
 
@@ -74,7 +75,7 @@ contains
          end if
       end if
 
-      if (jawave == 4 .and. swave == 1) then
+      if (jawave == WAVE_SURFBEAT .and. swave == 1) then
          if (.not. (trim(instat) == 'stat' .or. trim(instat) == 'stat_table')) then
             call xbeach_wave_maxtimestep()
          end if
@@ -100,8 +101,8 @@ contains
 
 !  account for user time step
       if (ja_timestep_auto >= 1) then
-         if (dts > dtfacmax * dtprev) then
-            dts = dtfacmax * dtprev
+         if (dts > dt_fac_max * dtprev) then
+            dts = dt_fac_max * dtprev
             nsteps = ceiling((time_user - time0) / dts)
             ! New timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
             if (1000 * dtprev > time_user - time0) then
@@ -131,7 +132,7 @@ contains
          end if
       else
          dts = dt_max
-         dtsc = 0d0 ! SPvdP: safety, was undefined but could be used later
+         dtsc = 0.0_dp ! SPvdP: safety, was undefined but could be used later
          kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
       end if
 
@@ -155,7 +156,7 @@ contains
 
       call timestepanalysis(dtsc_loc)
 
-      dti = 1d0 / dts
+      dti = 1.0_dp / dts
 
       if (jaGUI == 1) then
          call tekcflmx()

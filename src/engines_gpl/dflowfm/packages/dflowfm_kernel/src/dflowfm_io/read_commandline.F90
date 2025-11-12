@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,7 +46,7 @@ contains
    function read_commandline() result(istat)
       use m_commandline_option
       use unstruc_model
-      use m_gui
+      use m_gui, only: jagui
       use messagehandling, only: stringtolevel
       use unstruc_messages, only: loglevel_StdOut, loglevel_file
       use string_module, only: str_lower, str_tolower
@@ -57,9 +57,10 @@ contains
       use unstruc_api
       use m_makenet
       use m_sferic, only: jsferic, jasfer3D
-      use network_data, only: NUMITCOURANT, CONNECT1DEND, imake1d2dtype, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT, I1D2DTP_LONG, circumcenter_method
+      use network_data, only: numitcourant, connect1dend, imake1d2dtype, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT, I1D2DTP_LONG
+      use m_circumcenter_method, only: circumcenter_method, extract_circumcenter_method
       use m_missing, only: jadelnetlinktyp
-      use m_flowparameters, only: jalimnor
+      use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
       implicit none
 
       integer :: istat !< Returned result status
@@ -225,9 +226,9 @@ contains
                else if (trim(Skeys(ikey)) == 'drypointsfile') then
                   md_dryptsfile = trim(svals(ikey))
                else if (trim(Skeys(ikey)) == 'smoothiters') then
-                  NUMITCOURANT = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'circumcenter') then
-                  circumcenter_method = ivals(ikey)
+                  numitcourant = ivals(ikey)
+               else if (trim(Skeys(ikey)) == 'circumcentermethod') then
+                  circumcenter_method = extract_circumcenter_method(svals(ikey))
                end if
             end do
 
@@ -378,7 +379,7 @@ contains
 !           key-value pairs
             do ikey = 1, Nkeys
                if (trim(Skeys(ikey)) == 'connect1dend') then
-                  read (Svals(ikey), *) connect1Dend
+                  read (Svals(ikey), *) connect1dend
                else if (trim(Skeys(ikey)) == 'method') then
                   select case (str_tolower(trim(Svals(ikey))))
                   case ('1to1')
@@ -417,7 +418,6 @@ contains
 
          case ('jasfer3D')
             jasfer3D = 1
-            jalimnor = 1
 
          case ('cutcells')
             md_cutcells = 1
@@ -444,11 +444,7 @@ contains
             call mess(LEVEL_INFO, 'Using bloom species definition file: '//trim(md_blmfile))
 
          case ('convertlongculverts')
-            md_convertlongculverts = 1
-            k = k + 1
-            call get_command_argument(k, inarg)
-            md_culvertprefix = inarg
-            call mess(LEVEL_INFO, 'Generating culvert files with prefix: '//trim(md_culvertprefix))
+            call mess(LEVEL_ERROR, '--convertlongculverts has been made obsolete, work in progress!')
 
          case default
             inquire (FILE=trim(inarg), EXIST=JAWEL)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_reacrs
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -104,7 +105,7 @@ contains
 
 999   continue
       call QNEOFERROR(MMDD)
-      call READYY('Reading SIMONA *.bottom File', -1d0)
+      call READYY('Reading SIMONA *.bottom File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 0
       return

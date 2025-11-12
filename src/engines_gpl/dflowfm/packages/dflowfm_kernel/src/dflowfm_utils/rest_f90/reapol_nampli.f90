@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,14 +42,13 @@ contains
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
    module subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
       use precision, only: dp
-      use M_POLYGON
-      use network_data, only: NETSTAT_CELLS_DIRTY
+      use m_polygon, only: xpl, ypl, zpl, npl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
+      use m_alloc, only: realloc
+      use m_readyy, only: readyy
+      use m_qnerror, only: qnerror
+      use m_qn_read_error, only: qnreaderror
       use m_missing, only: dmiss, xymis
-      use m_alloc
       use m_flowparameters, only: ifixedweirscheme
-      use m_readyy
-      use m_qnerror
-      use m_qn_read_error
       use m_filez, only: doclose
 
       integer :: mpol
@@ -78,7 +77,7 @@ contains
          call realloc(nampli, 20, keepExisting=.false., fill=' ')
       end if
 
-      call READYY('READING POLYGON / land boundary / CRS-FILE', 0d0)
+      call READYY('READING POLYGON / land boundary / CRS-FILE', 0.0_dp)
 10    continue
       read (MPOL, '(A)', end=999, ERR=888) MATR
       if (MATR(1:1) == '*' .or. len_trim(matr) == 0) goto 10
@@ -145,7 +144,7 @@ contains
                read (REC, *, iostat=ierr) XX, YY
                if (ierr /= 0) goto 777
             end if
-            if (XX /= dmiss .and. XX /= 999.999d0) exit
+            if (XX /= dmiss .and. XX /= 999.999_dp) exit
             nmiss = nmiss + 1
             I = I + 1
             if (I > NROW) exit row ! Last row was also dmiss, now exit outer 'row' loop.
@@ -168,8 +167,12 @@ contains
                DZR(NPL) = DZ2
             else if (jakol45 == 2) then
                if (.not. allocated(IWEIRT)) then
-                  if (allocated(DZL)) deallocate (DZL)
-                  if (allocated(DZR)) deallocate (DZR)
+                  if (allocated(DZL)) then
+                     deallocate (DZL)
+                  end if
+                  if (allocated(DZR)) then
+                     deallocate (DZR)
+                  end if
                   allocate (DZL(MAXPOL), DZR(MAXPOL), DCREST(MAXPOL), DTL(MAXPOL), DTR(MAXPOL), DVEG(MAXPOL), IWEIRT(MAXPOL))
                   IWEIRT = dmiss
                end if
@@ -197,7 +200,7 @@ contains
 
          end if
          if (mod(NPL, 100) == 0) then
-            call READYY(' ', min(1d0, dble(I) / MAXPOL))
+            call READYY(' ', min(1.0_dp, dble(I) / MAXPOL))
          end if
 
       end do row
@@ -210,18 +213,18 @@ contains
             npl = npl - 1
          end if
       end if
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MPOL)
 
       return
 
 888   call QNREADERROR('SEARCHING NROWS,NCOLS, BUT GETTING', REC, MPOL)
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MPOL)
       return
 
 777   call QNREADERROR('READING COORDINATES BUT GETTING', REC, MPOL)
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MPOL)
       return
 

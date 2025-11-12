@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,7 +40,7 @@ contains
 
    subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
       use precision, only: dp
-      use m_makespl
+      use m_makespl, only: makespl
 
       integer, intent(in) :: mc !< number of gridnodes
       integer, intent(in) :: num !< number of splinenodes
@@ -55,7 +55,7 @@ contains
 
       if (mc < 2) return ! no curvigrid possible
 
-      startstop = (/0d0, dble(num - 1)/)
+      startstop = [0.0_dp, dble(num - 1)]
       call makespl(startstop, xsp, ysp, max(mc, num), num, 2, mc - 1, xc, yc, kmax, sc, h)
 
       if (kmax /= mc) then

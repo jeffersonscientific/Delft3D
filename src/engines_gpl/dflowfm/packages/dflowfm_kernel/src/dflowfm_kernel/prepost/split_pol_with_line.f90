@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -146,7 +146,7 @@ contains
          isleft = .false.
 
          if (x /= DMISS .and. y /= DMISS) then
-            if ((x - xa) * sx + (y - ya) * sy >= 0d0) then
+            if ((x - xa) * sx + (y - ya) * sy >= 0.0_dp) then
                isleft = .true.
             end if
          end if

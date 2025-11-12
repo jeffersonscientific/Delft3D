@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,8 +41,8 @@ contains
 
    subroutine smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
       use precision, only: dp
-      use m_missing
-      use m_readyy
+      use m_missing, only: dmiss
+      use m_readyy, only: readyy
 
       integer, intent(in) :: MXSAM, MYSAM !< structured block sizes (>0) or not structured (0)
       integer, intent(in) :: NS !< number of samples
@@ -59,7 +59,7 @@ contains
 
       integer :: ierror
 
-      real(kind=dp), parameter :: sigma = 0.5d0
+      real(kind=dp), parameter :: sigma = 0.5_dp
 
       ierror = 1
 
@@ -76,7 +76,7 @@ contains
          end do
       end do
 
-      call readyy('Smoothing samples', 0d0)
+      call readyy('Smoothing samples', 0.0_dp)
 
 !  Elliptic smoothing
       do iter = 1, Nsamplesmooth
@@ -95,21 +95,21 @@ contains
                if (zsdum(i, j) == DMISS) cycle
 
 !           compute weights
-               ciL = 1d0
-               ciR = 1d0
-               cjL = 1d0
-               cjR = 1d0
-               if (zsdum(i - 1, j) == DMISS) ciL = 0d0
-               if (zsdum(i + 1, j) == DMISS) ciR = 0d0
-               if (zsdum(i, j - 1) == DMISS) cjL = 0d0
-               if (zsdum(i, j + 1) == DMISS) cjR = 0d0
+               ciL = 1.0_dp
+               ciR = 1.0_dp
+               cjL = 1.0_dp
+               cjR = 1.0_dp
+               if (zsdum(i - 1, j) == DMISS) ciL = 0.0_dp
+               if (zsdum(i + 1, j) == DMISS) ciR = 0.0_dp
+               if (zsdum(i, j - 1) == DMISS) cjL = 0.0_dp
+               if (zsdum(i, j + 1) == DMISS) cjR = 0.0_dp
 
-               if (ciL * ciR * cjL * cjR == 0d0) cycle ! inner samples only
+               if (ciL * ciR * cjL * cjR == 0.0_dp) cycle ! inner samples only
 
                c0 = ciL + ciR + cjL + cjR
-               if (abs(c0) < 0.5d0) cycle
+               if (abs(c0) < 0.5_dp) cycle
 
-               zss(1, i, j) = (1d0 - sigma) * zsdum(i, j) + &
+               zss(1, i, j) = (1.0_dp - sigma) * zsdum(i, j) + &
                               sigma * ( &
                               ciL * zsdum(i - 1, j) + &
                               ciR * zsdum(i + 1, j) + &
@@ -123,12 +123,14 @@ contains
       ierror = 0
 !   Nsamplesmooth_last = Nsamplesmooth
 
-      call readyy('Smoothing samples', -1d0)
+      call readyy('Smoothing samples', -1.0_dp)
 
 1234  continue
 
 !  deallocate
-      if (allocated(zsdum)) deallocate (zsdum)
+      if (allocated(zsdum)) then
+         deallocate (zsdum)
+      end if
 
       return
    end subroutine smooth_samples

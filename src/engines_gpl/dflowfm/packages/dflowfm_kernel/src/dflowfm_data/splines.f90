@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,7 +29,7 @@
 
 !
 !
-module M_splines
+module m_splines
    use precision, only: dp
    use m_missing, only: dxymis
    use m_readyy
@@ -49,7 +49,7 @@ contains
 
 !> Increases memory for splines.
    subroutine increasespl(m, n)
-      use m_alloc
+      use m_alloc, only: realloc, aerr
 
       implicit none
 
@@ -71,7 +71,7 @@ contains
 
       if (IERR == 0) return
 
-      ibounds = (/maxspl, maxsplen/)
+      ibounds = [maxspl, maxsplen]
       call realloc(xsp, ibounds, stat=ierr, fill=dxymis)
       call aerr('xsp(maxspl, maxsplen)', ierr, maxspl * maxsplen)
       call realloc(ysp, ibounds, stat=ierr, fill=dxymis)
@@ -171,7 +171,7 @@ contains
       integer, intent(in) :: m
       real(kind=dp), intent(in) :: x, y
 
-      call addSplinePoints(m, (/x/), (/y/))
+      call addSplinePoints(m, [x], [y])
    end subroutine addSplinePoint
 
    subroutine addSplinePoints(m, x, y)
@@ -255,7 +255,7 @@ contains
 !> Finds a spline point within a certain radius of a clicked point.
    subroutine isSplinePoint(xl, yl, rcir, mv, nv)
       use precision, only: dp
-      use m_dispnode2
+      use m_dispnode2, only: dispnode2
 
       real(kind=dp), intent(inout) :: xl, yl !< The clicked point
       real(kind=dp), intent(in) :: rcir !< The search radius around the point
@@ -320,7 +320,7 @@ contains
       ! if jadoorladen...
       call delSplines()
 
-      call READYY('Reading Spline File', 0d0)
+      call READYY('Reading Spline File', 0.0_dp)
 
 10    continue
 
@@ -340,8 +340,8 @@ contains
 
 9999  continue
 
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call DOCLOSE(MSPL)
       return
 
@@ -349,7 +349,7 @@ contains
 
 !> write splines in TEKAL format
    subroutine writeSplines(mspl)
-      use m_firstlin
+      use m_firstlin, only: firstlin
       use m_filez, only: doclose
       implicit none
       integer :: mspl
@@ -357,7 +357,7 @@ contains
       integer :: i, j
       MATR = 'S   '
       call FIRSTLIN(MSPL)
-      call READYY('Writing Spline File', 0d0)
+      call READYY('Writing Spline File', 0.0_dp)
       do I = 1, mcs
          call READYY('Writing Spline File', dble(I) / dble(mcs))
          write (MATR(2:5), '(I4.4)') I
@@ -367,7 +367,7 @@ contains
             write (MSPL, '(1PE14.6, 1X, 1PE14.6)') xsp(I, J), ysp(I, J)
          end do
       end do
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(mspl)
       return
    end subroutine writeSplines

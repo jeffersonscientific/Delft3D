@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -87,15 +87,15 @@ contains
             if (is_1d_boundary_candidate(L, 1)) then
                xe(L) = xk(k1)
                ye(L) = yk(k1)
-               xyen(1, L) = 2d0 * xk(k1) - xk(k2)
-               xyen(2, L) = 2d0 * yk(k1) - yk(k2)
+               xyen(1, L) = 2.0_dp * xk(k1) - xk(k2)
+               xyen(2, L) = 2.0_dp * yk(k1) - yk(k2)
                kce(L) = 1
                ke(L) = -lne(1, L)
             else if (is_1d_boundary_candidate(L, 2)) then
                xe(L) = xk(k2)
                ye(L) = yk(k2)
-               xyen(1, L) = 2d0 * xk(k2) - xk(k1)
-               xyen(2, L) = 2d0 * yk(k2) - yk(k1)
+               xyen(1, L) = 2.0_dp * xk(k2) - xk(k1)
+               xyen(2, L) = 2.0_dp * yk(k2) - yk(k1)
                kce(L) = 1
                ke(L) = -lne(2, L)
             end if

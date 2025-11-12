@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -36,6 +36,7 @@ program test_dflowfm_kernel
     use test_lateral
     use test_temporal_statistics
     use test_read_statistical_output
+    use test_statistical_output
     
     implicit none
     
@@ -55,6 +56,7 @@ program test_dflowfm_kernel
     call tests_compute_airdensity()
     call tests_temporal_statistics()
     call tests_read_statistical_output()
+    call tests_statistical_output()
     !
     ! Done - properly finalize
     !

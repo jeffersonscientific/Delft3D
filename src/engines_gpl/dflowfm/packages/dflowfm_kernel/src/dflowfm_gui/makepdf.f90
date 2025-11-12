@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,22 +32,23 @@
 
 module m_makepdf
 
+   use precision, only: dp
    implicit none
 
 contains
 
    subroutine makepdf(r, n)
-      use m_statistics
+      use m_statistics, only: xpdf, npdf, ypdf
 
       integer :: n
       real :: r(n), s
       integer :: k, L
       if (n == 0) return
-      xpdf = 0d0
+      xpdf = 0.0_dp
       do L = 1, n
          do k = 1, npdf
             if (r(L) >= ypdf(k)) then
-               xpdf(k) = xpdf(k) + 1d0
+               xpdf(k) = xpdf(k) + 1.0_dp
                exit
             end if
          end do

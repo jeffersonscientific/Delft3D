@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -302,7 +302,7 @@ contains
    subroutine read_dem_data(fp, dem_info, arr)
       use precision, only: dp
       use messagehandling, only: msgbuf, msg_flush
-      use m_readyy
+      use m_readyy, only: readyy
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info
       integer, intent(out) :: arr(:, :)
@@ -324,7 +324,7 @@ contains
 
       ! sample the DEM values into our regular grid
 
-      call READYY('Reading DEM data', 0d0)
+      call READYY('Reading DEM data', 0.0_dp)
       do c = 1, dem_info%cols
 
          ! Read the Logical Record Type B at the start of the column
@@ -418,7 +418,7 @@ contains
 
       end do ! c=1,dem_info%cols
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
    end subroutine read_dem_data
 !

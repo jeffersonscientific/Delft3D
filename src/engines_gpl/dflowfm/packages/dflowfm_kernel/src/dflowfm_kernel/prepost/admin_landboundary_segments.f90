@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -70,7 +70,9 @@ contains
       logical :: Lisclose
 
 !  allocate
-      if (allocated(lanseg_startend)) deallocate (lanseg_startend)
+      if (allocated(lanseg_startend)) then
+         deallocate (lanseg_startend)
+      end if
 
       allocate (lanseg_startend(2, 1))
 
@@ -173,8 +175,8 @@ contains
 !     only store landboundary segments that are inside the selecting polygon
          if (lanmask(jstart) /= 0) then
             !     allocate and administer
-            call realloc(lanseg_startend, (/2, Nlanseg/))
-            lanseg_startend(:, Nlanseg) = (/jstart, jend/)
+            call realloc(lanseg_startend, [2, Nlanseg])
+            lanseg_startend(:, Nlanseg) = [jstart, jend]
          else
             Nlanseg = Nlanseg - 1
          end if
@@ -201,7 +203,7 @@ contains
 !            call darean(xlan(jstart:jend), ylan(jstart:jend), jend-jstart+1, darea, dlength, dlenmx)
 !            if ( dbdistance(xlan(jstart),ylan(jstart),xlan(jend),ylan(jend)).lt.0.1d0*dlength ) then
                Nnew = Nnew + 1
-               call realloc(lanseg_startend, (/2, Nnew/))
+               call realloc(lanseg_startend, [2, Nnew])
                jbreak = jstart + (jend - jstart) / 2
                lanseg_startend(2, i) = jbreak
                lanseg_startend(1, Nnew) = jbreak
