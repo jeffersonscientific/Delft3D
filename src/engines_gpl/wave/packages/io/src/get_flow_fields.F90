@@ -384,6 +384,7 @@ contains
       call dealloc_input_fields(fif, wavedata%mode)
    end subroutine get_flow_fields
 
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine precice_read_data(swan_grid_mask, m_max, n_max, precice_state, field_name, output_field_x, output_field_y)
       use, intrinsic :: iso_c_binding, only: c_double, c_int
       use precision, only: sp
@@ -429,4 +430,5 @@ contains
          end do
       end do
    end subroutine precice_read_data
+#endif
 end module m_get_flow_fields
