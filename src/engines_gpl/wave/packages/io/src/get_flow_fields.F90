@@ -260,6 +260,9 @@ contains
                       & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                       & iprint)
          else
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%wind_velocity_name, sif%windu, sif%windv)
+#else
             !
             ! Read wind components from netcdf-file
             !
@@ -278,6 +281,7 @@ contains
             call grmap_esmf(i_flow, fif%windv, fif%npts, &
                            & sif%windv, sif%mmax, sif%nmax, &
                            & f2s, sg)
+#endif
          end if
       end if
       !

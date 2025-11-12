@@ -8,6 +8,7 @@
   <data:scalar name="bed_levels" />
   <data:scalar name="water_levels" />
   <data:vector name="flow_velocity" />
+  <data:vector name="wind_velocity" />
   <data:scalar name="com_data_fm_to_wave" />
   <data:scalar name="com_data_wave_to_fm" />
 
@@ -15,6 +16,7 @@
     <use-data name="bed_levels" />
     <use-data name="water_levels" />
     <use-data name="flow_velocity" />
+    <use-data name="wind_velocity" />
   </mesh>
 
   <mesh name="com_mesh" dimensions="2">
@@ -26,6 +28,7 @@
     <use-data name="bed_levels" />
     <use-data name="water_levels" />
     <use-data name="flow_velocity" />
+    <use-data name="wind_velocity" />
   </mesh>
 
   <participant name="fm">
@@ -33,6 +36,7 @@
     <write-data name="bed_levels" mesh="fm_flow_nodes" />
     <write-data name="water_levels" mesh="fm_flow_nodes" />
     <write-data name="flow_velocity" mesh="fm_flow_nodes" />
+    <write-data name="wind_velocity" mesh="fm_flow_nodes" />
     <provide-mesh name="com_mesh" />
     <write-data name="com_data_fm_to_wave" mesh="com_mesh" />
     <read-data name="com_data_wave_to_fm" mesh="com_mesh" />
@@ -44,6 +48,7 @@
     <read-data name="bed_levels" mesh="wave_nodes" />
     <read-data name="water_levels" mesh="wave_nodes" />
     <read-data name="flow_velocity" mesh="wave_nodes" />
+    <read-data name="wind_velocity" mesh="wave_nodes" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_nodes" to="wave_nodes" constraint="consistent" />
     <receive-mesh name="com_mesh" from="fm" />
     <read-data name="com_data_fm_to_wave" mesh="com_mesh" />
@@ -60,6 +65,7 @@
     <exchange data="bed_levels" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
     <exchange data="water_levels" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
     <exchange data="flow_velocity" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
+    <exchange data="wind_velocity" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
     <exchange data="com_data_fm_to_wave" mesh="com_mesh" from="fm" to="wave" />
     <exchange data="com_data_wave_to_fm" mesh="com_mesh" from="wave" to="fm" />
   </coupling-scheme:serial-explicit>

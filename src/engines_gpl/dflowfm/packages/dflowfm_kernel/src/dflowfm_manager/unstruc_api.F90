@@ -302,6 +302,35 @@ contains
                                size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
                                flow_velocity_vector, len(precice_state%mesh_name), len(precice_state%flow_velocity_name))
    end subroutine precice_write_flow_velocities
+
+   subroutine precice_write_wind(precice_state)
+      use, intrinsic :: iso_c_binding, only: c_double
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      use m_wind, only: wx, wy
+      use precice, only: precicef_write_data
+      implicit none(type, external)
+      type(fm_precice_state_t), intent(in) :: precice_state
+
+      integer :: n_points, n, i
+      real(kind=c_double), dimension(:), allocatable :: wind_velocity_vector
+
+      n_points = size(precice_state%flow_vertex_ids)
+      allocate (wind_velocity_vector(2 * n_points), source=0.0_c_double)
+
+      do n = 1, n_points
+         if (nd(n)%lnx > 0) then
+            do i = 1, nd(n)%lnx
+               wind_velocity_vector(2 * n - 1) = wind_velocity_vector(2 * n - 1) + wx(abs(nd(n)%ln(i)))
+               wind_velocity_vector(2 * n) = wind_velocity_vector(2 * n) + wy(abs(nd(n)%ln(i)))
+            end do
+            wind_velocity_vector(2 * n - 1) = wind_velocity_vector(2 * n - 1) / nd(n)%lnx
+            wind_velocity_vector(2 * n) = wind_velocity_vector(2 * n) / nd(n)%lnx
+         end if
+      end do
+      call precicef_write_data(precice_state%mesh_name, precice_state%wind_velocity_name, &
+                               size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
+                               wind_velocity_vector, len(precice_state%mesh_name), len(precice_state%wind_velocity_name))
+   end subroutine precice_write_wind
 #endif
 
 !> Initializes global program/core data, not specific to a particular model.
