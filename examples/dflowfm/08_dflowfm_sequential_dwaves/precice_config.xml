@@ -9,6 +9,42 @@
   <data:scalar name="com_data_fm_to_wave" />
   <data:scalar name="com_data_wave_to_fm" />
 
+  <data:scalar name="hs" />
+  <data:scalar name="dir" />
+  <data:scalar name="dirc" />
+  <data:scalar name="dirs" />
+  <data:scalar name="period" />
+  <data:scalar name="depth" />
+  <data:scalar name="fx" />
+  <data:scalar name="fy" />
+  <data:scalar name="wsbodyu" />
+  <data:scalar name="wsbodyv" />
+  <data:scalar name="mx" />
+  <data:scalar name="my" />
+  <data:scalar name="dissip" />
+  <data:scalar name="ubot" />
+  <data:scalar name="steep" />
+  <data:scalar name="wlen" />
+  <data:scalar name="u" />
+  <data:scalar name="v" />
+  <data:scalar name="dspr" />
+  <data:scalar name="rleak" />
+  <data:scalar name="qb" />
+  <data:scalar name="x" />
+  <data:scalar name="y" />
+  <data:scalar name="rtp" />
+  <data:scalar name="hrms" />
+  <data:scalar name="tp" />
+  <data:scalar name="pdir" />
+  <data:scalar name="windu" />
+  <data:scalar name="windv" />
+  <data:scalar name="tps" />
+  <data:scalar name="tm02" />
+  <data:scalar name="tmm10" />
+  <data:scalar name="dhsign" />
+  <data:scalar name="drtm01" />
+  <data:scalar name="setup" />
+
   <mesh name="fm_flow_nodes" dimensions="2">
     <use-data name="bed_levels" />
   </mesh>

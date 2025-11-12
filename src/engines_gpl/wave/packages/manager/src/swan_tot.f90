@@ -3,6 +3,95 @@ module m_swan_tot
    private
    public :: swan_tot
    contains
+
+! write a single field to our mesh
+subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_grid, precice_state)
+   use precision
+   use swan_flow_grid_maps                         ! for grids and their types ...
+   use m_precice_state_t, only: precice_state_t    ! for our precice mesh data
+   !
+   real, dimension(:, :), pointer, intent(in) :: my_field_data ! value array
+   character(kind=c_char, len=*), intent(in) :: my_field_name  ! name of the field in mesh
+   type(grid), intent(in) :: my_swan_grid                      ! contains grid points (most importantly %kcs(:,:) for active points)
+   type(precice_state_t), intent(in) :: precice_state          ! precice definitions of our mesh
+   !
+   integer :: i
+   integer :: j
+   integer :: num_nodes
+   integer :: max_nodes
+   real(kind=c_double), dimension(:), allocatable :: data_values
+
+   ! Collect data into a single array.
+   max_nodes = my_swan_grid%nmax * my_swan_grid%mmax
+   allocate(data_values(max_nodes))
+   num_nodes = 0
+   do j = 1, my_swan_grid%nmax
+      do i = 1, my_swan_grid%mmax
+         if (my_swan_grid%kcs(i,j) == 1) then
+            num_nodes = num_nodes + 1
+            data_values(num_nodes) = my_field_data(i,j)
+         end if
+      end do
+   end do
+
+   ! Write it onto our mesh
+   call precicef_write_data(precice_state%swan_mesh_name, my_field_name, num_nodes, 0.0_c_double, data_values, len(precice_state%swan_mesh_name), len(my_field_name))
+
+end subroutine write_swan_field_to_precice
+
+! Write the supplied swan output fields to the precice mesh
+subroutine write_swan_data_to_precice(my_swan_output_fields, my_swan_grid, precice_state)
+   use precision
+   use swan_flow_grid_maps                         ! for grids and their types ...
+   use m_precice_state_t, only: precice_state_t    ! for our precice mesh data
+   !
+   type(output_fields), intent(in) :: my_swan_output_fields    ! The swan output data
+   type(grid), intent(in) :: my_swan_grid                      ! contains grid points (most importantly %kcs(:,:) for active points)
+   type(precice_state_t), intent(in) :: precice_state          ! precice definitions of our mesh
+   !
+   ! Write all fields to our mesh.
+   !
+   call write_swan_field_to_precice(my_swan_output_fields%hs, precice_state%hs_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dir, precice_state%dir_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dirc, precice_state%dirc_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dirs, precice_state%dirs_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%period, precice_state%period_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%depth, precice_state%depth_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%fx, precice_state%fx_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%fy, precice_state%fy_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%wsbodyu, precice_state%wsbodyu_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%wsbodyv, precice_state%wsbodyv_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%mx, precice_state%mx_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%my, precice_state%my_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dissip(:,:,1), precice_state%dissip1_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dissip(:,:,2), precice_state%dissip2_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dissip(:,:,3), precice_state%dissip3_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dissip(:,:,4), precice_state%dissip4_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%ubot, precice_state%ubot_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%steep, precice_state%steep_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%wlen, precice_state%wlen_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%u, precice_state%u_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%v, precice_state%v_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dspr, precice_state%dspr_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%rleak, precice_state%rleak_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%qb, precice_state%qb_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%x, precice_state%x_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%y, precice_state%y_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%rtp, precice_state%rtp_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%hrms, precice_state%hrms_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%tp, precice_state%tp_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%pdir, precice_state%pdir_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%windu, precice_state%windu_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%windv, precice_state%windv_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%tps, precice_state%tps_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%tm02, precice_state%tm02_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%tmm10, precice_state%tmm10_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%dhsign, precice_state%dhsign_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%drtm01, precice_state%drtm01_name, my_swan_grid, precice_state)
+   call write_swan_field_to_precice(my_swan_output_fields%setup, precice_state%setup_name, my_swan_grid, precice_state)
+   !
+end subroutine write_swan_data_to_precice
+
 subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !
@@ -415,6 +504,12 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
             call postprocess_ice(swan_input_fields%mmax, swan_input_fields%nmax, &
                                & swan_input_fields%ice_frac, swan_input_fields%floe_dia, &
                                & swan_output_fields%hs)
+         end if
+         !
+         !! Added precice writing here.
+         !
+         if (i_swan == 1) then
+            call write_swan_data_to_precice(swan_output_fields, swan_grids(i_swan), precice_state)
          end if
          !
          if (swan_run%swwav) then
