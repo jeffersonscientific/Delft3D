@@ -12,6 +12,7 @@ destination_bundle_dir="/workspace/bundle"
 # Disable Git Bash path rewriting
 MSYS_NO_PATHCONV=1 \
 docker run \
+  --rm \
   --name "${container_name}" \
   --volume "${test_dir}:${destination_test_dir}:ro" \
   --volume "${bundle_dir}:${destination_bundle_dir}:ro" \
