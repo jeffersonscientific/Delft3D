@@ -278,7 +278,8 @@ contains
          ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive) ! ierr = ncu_get_att(ncptr%ncid, iVars, 'axis', axis)
          if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
             ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
-            if (any((/ 'z            ', 'zcoordinate  ', 'zcoordinate_c'/) == ncptr%standard_names(iVars))) then
+            ! This line does not work: if (any((/ 'z            ', 'zcoordinate  ', 'zcoordinate_c'/) == ncptr%standard_names(iVars))) then
+            if (any((/ 'z            ', 'zcoordinate  '/) == ncptr%standard_names(iVars))) then
                ncptr%layervarid = iVars
                ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
                ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
