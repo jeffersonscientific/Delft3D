@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 #SBATCH --job-name=va-run-verschillentool
 #SBATCH --time=04:00:00
 #SBATCH --nodes=1
@@ -9,17 +9,19 @@
 #SBATCH --qos=verschilanalyse
 
 set -eo pipefail
+shopt -s extglob
+
 
 VERSCHILLENTOOL_DIR="${VAHOME}/verschillentool"
 
-validate_inputs() {
+function validate_inputs() {
 	if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX ; then
 		>&2 echo "Abort"
-		exit 1
+		return 1
 	fi
 }
 
-create_verschillentool_dir() {
+function create_verschillentool_dir() {
 	if [ ! -d "$VERSCHILLENTOOL_DIR" ]; then 
 		mkdir -p "$VERSCHILLENTOOL_DIR"
 	else
@@ -28,7 +30,7 @@ create_verschillentool_dir() {
 	fi
 }
 
-docker_login() {
+function docker_login() {
     local registry_url="containers.deltares.nl"
     local credentials_file="${HOME}/.harbor/verschillentool"
     local username="robot\$verschillentool+h7"
@@ -49,7 +51,7 @@ docker_login() {
 }
 
 # Run verschillentool (all configs).
-run_verschillentool() {
+function run_verschillentool() {
 	find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
 		--volume="${VAHOME}/input:/data/input:ro" \
 		--volume="${VAHOME}/reference:/data/reference:ro" \
@@ -59,7 +61,7 @@ run_verschillentool() {
 }
 
 # Create verschillen archive.
-create_verschillen_archive() {
+function create_verschillen_archive() {
 	local DIR=$1
 	pushd "$DIR" > /dev/null || return 1
 
@@ -71,14 +73,13 @@ create_verschillen_archive() {
     }
 
     # Remove everything except the archive
-    shopt -s extglob
     rm -rf !(verschillen.zip)
 
     popd > /dev/null
 }
 
 # Upload verschillen archive to MinIO.
-upload_verschillen() {
+function upload_verschillen() {
 	# Use the last part of the REFERENCE_PREFIX as the REFERENCE_TAG
 	local REFERENCE_TAG="${REFERENCE_PREFIX##*/}"
 	docker run --rm \
@@ -88,7 +89,7 @@ upload_verschillen() {
 		s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/verschillentool/${REFERENCE_TAG}"
 }
 
-main() {
+function main() {
 	validate_inputs
 	create_verschillentool_dir
 	docker_login
