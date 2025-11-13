@@ -250,53 +250,18 @@ contains
 
         ! 1g: write report on basket sizes
         if (report) then
-            write (file_unit, *) ' box       cells    fluxes'
-            isums = 0
-            isumf = 0
-            do ibox = 1, count_boxes + 2
-                write (file_unit, '(i5,2x,2i10)') ibox, count_cells_for_box(ibox), count_flows_for_box(ibox)
-                if (ibox == count_boxes) write (file_unit, '(A)') ' '
-                isums = isums + count_cells_for_box(ibox)
-                isumf = isumf + count_flows_for_box(ibox)
-            end do
-            write (file_unit, '(/a,2i9)') 'Total number of cells & fluxes: ', isums, isumf
+            call report_dt_box_distribution(file_unit, count_boxes, &
+                                        count_cells_for_box, count_flows_for_box)
         end if
 
         ! 1h: determine execution order of the cells and fluxes
         !     sort based on box number, from high to low, so from
         !     smaller dt -> run earlier
         !     to larger dt -> run later
-        idx_cell = 0
-        idx_flux = 0
-        do ibox = count_boxes + 2, 1, -1         ! start with highest frequency
-            ! Cells
-            do cell_i = 1, num_cells            ! array of cells segments in this basket
-                if (idx_box_cell(cell_i) == ibox) then
-                    idx_cell = idx_cell + 1
-                    sorted_cells(idx_cell) = cell_i
-                end if
-            end do
-
-            ! Fluxes
-            ! horizontal fluxes
-            do iq = 1, noqh
-                if (idx_box_flow(iq) == ibox) then
-                    idx_flux = idx_flux + 1
-                    sorted_flows(idx_flux) = iq
-                end if
-            end do
-
-            ! separation of the vertical fluxes
-            sep_vert_flow_per_box(ibox) = idx_flux
-
-            ! vertical fluxes
-            do iq = noqh + 1, num_exchanges
-                if (idx_box_flow(iq) == ibox) then
-                    idx_flux = idx_flux + 1
-                    sorted_flows(idx_flux) = iq
-                end if
-            end do
-        end do
+        call sort_cells_and_flows_using_dt_box(num_cells, noqh, num_exchanges, &
+                    count_boxes, idx_box_cell, idx_box_flow, &
+                    sorted_cells, sorted_flows, sep_vert_flow_per_box)
+        
 
         ! find lowest ACTUALLY USED box number
         ! largest time step => last box to evaluate
@@ -2097,5 +2062,92 @@ contains
                 count_flows_for_box(dt_box_for_exchange(idx_exchange)) + 1
         end do
     end subroutine assign_dt_boxes_to_exchanges
+
+    subroutine report_dt_box_distribution(file_unit, count_boxes, &
+        count_cells_for_box, count_flows_for_box)
+        !> Reports the distribution of cells and exchanges over the delta time boxes.
+        implicit none
+
+        integer, intent(in) :: file_unit !< unit number for output messages
+        integer, intent(in) :: count_boxes !< number of delta time boxes or baskets
+        integer, intent(in) :: count_cells_for_box(:) !< number of cells assigned to each box
+        integer, intent(in) :: count_flows_for_box(:) !< number of exchanges assigned to each box
+
+        ! Local variables
+        integer :: ibox !< box index in loops
+        integer :: isums !< sum of cells
+        integer :: isumf !< sum of exchanges
+
+        write (file_unit, *) ' box       cells    fluxes'
+        isums = 0
+        isumf = 0
+        do ibox = 1, count_boxes + 2
+            write (file_unit, '(i5,2x,2i10)') ibox, count_cells_for_box(ibox), count_flows_for_box(ibox)
+            if (ibox == count_boxes) write (file_unit, '(A)') ' '
+            isums = isums + count_cells_for_box(ibox)
+            isumf = isumf + count_flows_for_box(ibox)
+        end do
+        write (file_unit, '(/a,2i9)') 'Total number of cells & fluxes: ', isums, isumf
+
+    end subroutine report_dt_box_distribution
+
+    subroutine sort_cells_and_flows_using_dt_box(num_cells, noqh, num_exchanges, &
+        count_boxes, idx_box_cell, idx_box_flow, &
+        sorted_cells, sorted_flows, sep_vert_flow_per_box)
+        !> Sorts cells and exchanges based on their assigned delta time boxes.
+        !< Sorting is done grouping by box index.
+        !< Items assigned to box for a smaller dt (larger box umber) come first.
+        !< Items assigned to box for a larger dt (smaller box number) come last.
+        implicit none
+
+        integer, intent(in) :: num_cells !< total number of cells in the model
+        integer, intent(in) :: noqh      !< number of horizontal exchanges or flows between cells
+        integer, intent(in) :: num_exchanges !< total number of exchanges or flows between cells
+        integer, intent(in) :: count_boxes !< number of delta time boxes or baskets
+        integer, intent(in) :: idx_box_cell(:) !< array of box indices assigned to each cell
+        integer, intent(in) :: idx_box_flow(:) !< array of box indices assigned to each exchange
+        integer, intent(out) :: sorted_cells(:) !< array of cells sorted by box index
+        integer, intent(out) :: sorted_flows(:) !< array of exchanges sorted by box index
+        integer, intent(out) :: sep_vert_flow_per_box(:) !< separation index of vertical flows per box
+
+        ! Local variables
+        integer :: idx_cell !< index for cell sorted based on dt box index
+        integer :: idx_flux !< index for flow sorted based on dt box index
+        integer cell_i      !< cell index in loops
+        integer iq          !< flow index in loops
+        integer :: ibox     !< box index in loops
+
+        idx_cell = 0
+        idx_flux = 0
+        do ibox = count_boxes + 2, 1, -1         ! start with highest frequency
+            ! Cells
+            do cell_i = 1, num_cells            ! array of cells segments in this basket
+                if (idx_box_cell(cell_i) == ibox) then
+                    idx_cell = idx_cell + 1
+                    sorted_cells(idx_cell) = cell_i
+                end if
+            end do
+
+            ! horizontal fluxes
+            do iq = 1, noqh
+                if (idx_box_flow(iq) == ibox) then
+                    idx_flux = idx_flux + 1
+                    sorted_flows(idx_flux) = iq
+                end if
+            end do
+
+            ! separation of the vertical fluxes
+            sep_vert_flow_per_box(ibox) = idx_flux
+
+            ! vertical fluxes
+            do iq = noqh + 1, num_exchanges
+                if (idx_box_flow(iq) == ibox) then
+                    idx_flux = idx_flux + 1
+                    sorted_flows(idx_flux) = iq
+                end if
+            end do
+        end do
+
+    end subroutine sort_cells_and_flows_using_dt_box
 
 end module m_locally_adaptive_time_step
