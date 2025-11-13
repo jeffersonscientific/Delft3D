@@ -263,39 +263,14 @@ contains
                     sorted_cells, sorted_flows, sep_vert_flow_per_box)
         
 
-        ! find lowest ACTUALLY USED box number
+        call calculate_span_dt_boxes(count_boxes, &
+        count_cells_for_box, count_flows_for_box, &
+        last_box_largest_dt, first_box_smallest_dt, &
+        count_used_boxes, count_substeps)
+        
+                    ! find lowest ACTUALLY USED box number
         ! largest time step => last box to evaluate
-        do ibox = 1, count_boxes
-            if (count_cells_for_box(ibox) > 0) then
-                last_box_largest_dt = ibox
-                exit
-            end if
-        end do
-
-        ! find highest ACTUALLY USED box number
-        ! smallest time step => first box to evaluate
-        do ibox = count_boxes, 1, -1
-            if (count_cells_for_box(ibox) > 0) then
-                first_box_smallest_dt = ibox
-                exit
-            end if
-        end do
-
-        ! accumulate the counts in reversed order
-        ! number of items for that box or any smaller box
-        do ibox = count_boxes + 1, 1, -1
-            count_cells_for_box(ibox) = count_cells_for_box(ibox) + count_cells_for_box(ibox + 1)
-            count_flows_for_box(ibox) = count_flows_for_box(ibox) + count_flows_for_box(ibox + 1)
-        end do
-
-        ! Number of used boxes
-        count_used_boxes = first_box_smallest_dt - last_box_largest_dt + 1
-
-        ! calculate number of sub-time steps that will be set
-        count_substeps = 1
-        do ibox = 2, first_box_smallest_dt
-            count_substeps = count_substeps * 2
-        end do
+        
         
         if (report) then
             write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', count_used_boxes, ',first: ', last_box_largest_dt, ', last: ', first_box_smallest_dt
@@ -2149,5 +2124,60 @@ contains
         end do
 
     end subroutine sort_cells_and_flows_using_dt_box
+
+    subroutine calculate_span_dt_boxes(count_boxes, &
+        count_cells_for_box, count_flows_for_box, &
+        last_box_largest_dt, first_box_smallest_dt, &
+        count_used_boxes, count_substeps)
+
+        !> Calculates the span of used delta time boxes and the number of sub-time steps required.
+        implicit none
+        integer, intent(in) :: count_boxes !< number of delta time boxes or baskets
+        integer, intent(inout) :: count_cells_for_box(:) !< number of cells assigned to each box
+        integer, intent(inout) :: count_flows_for_box(:) !< number of exchanges assigned to each box
+        integer, intent(out) :: last_box_largest_dt !< index of the last box with largest delta t that is used
+        integer, intent(out) :: first_box_smallest_dt !< index of the first box with smallest delta t that is used
+        integer, intent(out) :: count_used_boxes !< number of used boxes
+        integer, intent(out) :: count_substeps !< number of sub-time steps required
+        ! Local variables
+        integer :: ibox !< box index in loops
+
+
+        ! find lowest ACTUALLY USED box number
+        ! largest time step => last box to evaluate
+        last_box_largest_dt = 0
+        do ibox = 1, count_boxes
+            if (count_cells_for_box(ibox) > 0) then
+                last_box_largest_dt = ibox
+                exit
+            end if
+        end do
+
+        ! find highest ACTUALLY USED box number
+        ! smallest time step => first box to evaluate
+
+        do ibox = count_boxes, 1, -1
+            if (count_cells_for_box(ibox) > 0) then
+                first_box_smallest_dt = ibox
+                exit
+            end if
+        end do
+
+        ! accumulate the counts in reversed order
+        ! number of items for that box or any smaller box
+        do ibox = count_boxes + 1, 1, -1
+            count_cells_for_box(ibox) = count_cells_for_box(ibox) + count_cells_for_box(ibox + 1)
+            count_flows_for_box(ibox) = count_flows_for_box(ibox) + count_flows_for_box(ibox + 1)
+        end do
+
+        ! Number of used boxes
+        count_used_boxes = first_box_smallest_dt - last_box_largest_dt + 1
+
+        ! calculate number of sub-time steps that will be set
+        count_substeps = 1
+        do ibox = 2, first_box_smallest_dt
+            count_substeps = count_substeps * 2
+        end do
+    end subroutine calculate_span_dt_boxes
 
 end module m_locally_adaptive_time_step
