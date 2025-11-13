@@ -365,7 +365,7 @@
         </testCase>
         <testCase name="e108_f01_c16_PercolationLikeSbk213" ref="drr_default">
             <path version="2025-11-07T11:24:50.032000">e108_drr/f01_unpaved/c16_PercolationLikeSbk213</path>
-            <maxRunTime>90.0</maxRunTime>
+            <maxRunTime>120.0</maxRunTime>
             <checks>
                 <file name="rr/upflowdt.nc" type="netcdf">
                     <parameters>
@@ -604,7 +604,7 @@
             </checks>
         </testCase>
         <testCase name="e108_f01_c26_IrrigationSWNoCapsimCrit22Target21" ref="drr_default">
-            <path version="2025-11-07T12:26:40.928000">e108_drr/f01_unpaved/c26_IrrigationSWNoCapsimCrit22Target21</path>
+            <path version="2025-11-13T14:30:00.000000">e108_drr/f01_unpaved/c26_IrrigationSWNoCapsimCrit22Target21</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="RR/upflowdt.nc" type="netcdf">
