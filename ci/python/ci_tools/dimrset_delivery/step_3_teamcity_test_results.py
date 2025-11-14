@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from enum import Enum
@@ -173,9 +174,10 @@ class TeamCityTestResultWriter(StepExecutorInterface):
 
         # 2. Loop over the builds and retrieve the test results and write to file
         result_list = []
+        regex = re.compile(r"^e[0-9]+_")
         for dep_build_id in dependency_chain:
             test_result = self.__services.teamcity.get_build_test_results_from_teamcity(dep_build_id)
-            if test_result:
+            if test_result and regex.match(test_result.name):
                 result_list.append(test_result)
 
         # 3. Write test results to file
