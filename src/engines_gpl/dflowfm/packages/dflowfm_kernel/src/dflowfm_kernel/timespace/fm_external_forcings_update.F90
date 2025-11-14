@@ -554,7 +554,7 @@ contains
 !
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine read_precice_wave_data()
-      use m_wave_precice_state, only : wave_precice_state_t;
+      use m_fm_precice_state_t, only : fm_precice_state_t;
       use precice, only: precicef_read_data
       implicit none(type,external)
       ! TODO: Implement me
