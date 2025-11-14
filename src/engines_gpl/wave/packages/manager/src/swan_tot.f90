@@ -9,6 +9,8 @@ subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_gri
    use precision
    use swan_flow_grid_maps                         ! for grids and their types ...
    use m_precice_state_t, only: precice_state_t    ! for our precice mesh data
+   use precice, only: precicef_write_data          ! for writing
+   implicit none(type, external)
    !
    real, dimension(:, :), pointer, intent(in) :: my_field_data ! value array
    character(kind=c_char, len=*), intent(in) :: my_field_name  ! name of the field in mesh
@@ -35,7 +37,7 @@ subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_gri
    end do
 
    ! Write it onto our mesh
-   call precicef_write_data(precice_state%swan_mesh_name, my_field_name, num_nodes, 0.0_c_double, data_values, len(precice_state%swan_mesh_name), len(my_field_name))
+   call precicef_write_data(precice_state%swan_mesh_name, my_field_name, num_nodes, precice_state%vertex_ids, data_values, len(precice_state%swan_mesh_name), len(my_field_name))
 
 end subroutine write_swan_field_to_precice
 
@@ -44,6 +46,7 @@ subroutine write_swan_data_to_precice(my_swan_output_fields, my_swan_grid, preci
    use precision
    use swan_flow_grid_maps                         ! for grids and their types ...
    use m_precice_state_t, only: precice_state_t    ! for our precice mesh data
+   implicit none(type, external)
    !
    type(output_fields), intent(in) :: my_swan_output_fields    ! The swan output data
    type(grid), intent(in) :: my_swan_grid                      ! contains grid points (most importantly %kcs(:,:) for active points)

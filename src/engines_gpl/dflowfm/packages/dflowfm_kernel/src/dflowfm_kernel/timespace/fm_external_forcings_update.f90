@@ -549,6 +549,9 @@ contains
    end subroutine get_values_and_consider_fww
 
 !> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
+!
+!  TODO: Check if we hit this function and if so: implement preCICE coupling here!
+!
    subroutine set_all_wave_parameters()
       ! This part must be skipped during initialization
       if (jawave == WAVE_SWAN_ONLINE) then
