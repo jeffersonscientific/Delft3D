@@ -306,53 +306,18 @@ contains
             !  PART2a: cells that change volume: in box [count_boxes + 1]; deal with those cells that are filling up with water (running wet)
             ! All sections of Part2a use delta_t_box(first_box)
             if (timon) call timstrt("flooding", ithand2)      !  'flooding' is evaluated with highest frequency
-            i_flow_begin = count_flows_for_box(count_boxes + 2) + 1   !  loop limits for fluxes in this box
-            i_flow_end =   sep_vert_flow_per_box(count_boxes + 1)
-            i_cell_begin = count_cells_for_box(count_boxes + 2) + 1   !  loop limits for cells in this box
-            i_cell_end =   count_cells_for_box(count_boxes + 1)
+
+            call calculate_loop_limits_for_current_substep(count_boxes, &
+                    count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
+                    i_flow_begin, i_flow_end, i_cell_begin, i_cell_end)
 
             !  PART2a1: sum the mass and volume vertically
             !  to calculate the column averaged concentrations
             !  assigning those values to the upper-most cell in each column
 
-            ! sum volumes (volint) and masses (rhs) onto upper-most cell of each column
-            do i = i_cell_begin, i_cell_end
-                cell_i = sorted_cells(i)
-                j = nvert(2, cell_i)                                    ! column number if cell_i == head of column
-                if (j <= 0) cycle                                       ! negative or zero if not head of column
-                i_top_curr_col = nvert(1, j)                            ! index in ivert() of upper-most cell of this column
-                if (j < num_cells) then
-                    i_top_next_col = nvert(1, j + 1)                    ! index in ivert() of upper-most cell of next column
-                else
-                    i_top_next_col = num_cells + 1                      ! or to just over the edge if j == last column
-                end if
-                ! loop along cells in one column
-                do j = i_top_curr_col + 1, i_top_next_col - 1
-                    iseg2 = ivert(j)                                    ! original cell number; j== index in ivert for this cell
-                    volint(cell_i) = volint(cell_i) + volint(iseg2)     ! sum volumes to volumes of 'head of column'
-                    do substance_i = 1, num_substances_transported
-                        rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + rhs(substance_i, iseg2)   ! sum masses along column in upper-most cell ('head of column')
-                    end do
-                end do
-            end do
-            ! update average column concentrations (conc) in upper-most cell using volint; if cell is dry set to 0 mass (rhs) for dissolved species
-            do i = i_cell_begin, i_cell_end
-                cell_i = sorted_cells(i)
-                j = nvert(2, cell_i)
-                if (j <= 0) cycle
-                ! if cell is not dry
-                if (abs(volint(cell_i)) > 1.0d-25) then
-                    do substance_i = 1, num_substances_transported
-                        conc(substance_i, cell_i) = rhs(substance_i, cell_i) / volint(cell_i)      ! column averaged concentrations
-                    end do
-                ! else, the cell is dry
-                else
-                    do substance_i = 1, num_substances_transported
-                        rhs(substance_i, cell_i) = 0.0d0
-                        conc(substance_i, cell_i) = 0.0d0
-                    end do
-                end if
-            end do
+            call store_total_vol_anbd_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
+                            sorted_cells, nvert, ivert, &
+                            volint, rhs, conc, num_substances_transported, num_cells)
 
             ! PART2a1: apply all influxes to the cells first; volumes and masses are updated
             remained = 1
@@ -2237,5 +2202,95 @@ contains
             end if                                          
         end do
     end function get_integration_limit_of_sub_time_step
+
+    subroutine calculate_loop_limits_for_current_substep(count_boxes, &
+        count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
+        i_flow_begin, i_flow_end, i_cell_begin, i_cell_end)
+        !> Calculates the loop limits for flows and cells for the current sub-time step.
+        implicit none
+        integer(kind = int_wp), intent(in) :: count_boxes !< number of delta time boxes or baskets
+        integer(kind = int_wp), intent(in) :: count_flows_for_box(:) !< array with counts of flows for each box
+        integer(kind = int_wp), intent(in) :: count_cells_for_box(:) !< array with counts of cells for each box
+        integer(kind = int_wp), intent(in) :: sep_vert_flow_per_box(:) !< separation index of vertical flows per box
+        integer(kind = int_wp), intent(out) :: i_flow_begin !< beginning index for flow loop
+        integer(kind = int_wp), intent(out) :: i_flow_end !< ending index for flow loop
+        integer(kind = int_wp), intent(out) :: i_cell_begin !< beginning index for cell loop
+        integer(kind = int_wp), intent(out) :: i_cell_end !< ending index for cell loop
+
+        
+        i_flow_begin = count_flows_for_box(count_boxes + 2) + 1   !  loop limits for fluxes in this box
+        i_flow_end =   sep_vert_flow_per_box(count_boxes + 1)
+        i_cell_begin = count_cells_for_box(count_boxes + 2) + 1   !  loop limits for cells in this box
+        i_cell_end =   count_cells_for_box(count_boxes + 1)
+    end subroutine calculate_loop_limits_for_current_substep
+
+    subroutine store_total_vol_anbd_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
+        sorted_cells, nvert, ivert, &
+        volint, rhs, conc, num_substances_transported, num_cells)
+        !> sum the mass and volume vertically
+        !  to calculate the column averaged concentrations
+        !  assigning those values to the upper-most cell in each column
+        implicit none
+        integer, intent(in) :: i_cell_begin !< index of first cell in the boxes that need to be integrated in this sub-time step
+        integer, intent(in) :: i_cell_end   !< index of last cell in the boxes that need to be integrated in this sub-time step
+        integer, intent(in) :: sorted_cells(:) !< array of cells sorted by box index
+        integer, intent(in) :: nvert(:,:)   !< Column number and indices of cells above/below
+        integer, intent(in) :: ivert(:)      !< ordering array of cells in vertical columns
+        real(kind = dp), intent(inout) :: volint(:) !< intermediate volume for each cell
+        real(kind = dp), intent(inout) :: rhs(:,:) !< right-hand side array with masses for each substance and cell
+        real(kind = real_wp), intent(inout) :: conc(:,:) !< concentration array for each substance and cell
+        integer, intent(in) :: num_substances_transported !< number of substances being transported
+        integer, intent(in) :: num_cells !< total number of cells
+
+        ! Local variables
+        integer :: i               !< loop index for sorted cells
+        integer :: i_cell          !< global cell index
+        integer :: j               !< column index of current cell
+        integer :: i_top_curr_col  !< index in ivert() of upper-most cell in current column
+        integer :: i_top_next_col  !< index in ivert() of upper-most cell in next column
+        integer :: iseg2           !< index of intermediate cell in same column as i_cell
+        integer :: substance_i     !< loop index for substances
+        
+        ! sum volumes (volint) and masses (rhs) onto upper-most cell of each column
+        do i = i_cell_begin, i_cell_end
+            i_cell = sorted_cells(i)
+            j = nvert(2, i_cell)                                    ! column number if cell_i == head of column
+            if (j <= 0) cycle                                       ! negative or zero if not head of column
+            i_top_curr_col = nvert(1, j)                            ! index in ivert() of upper-most cell of this column
+            if (j < num_cells) then
+                i_top_next_col = nvert(1, j + 1)                    ! index in ivert() of upper-most cell of next column
+            else
+                i_top_next_col = num_cells + 1                      ! or to just over the edge if j == last column
+            end if
+            ! loop along cells in one column
+            ! Sum volumes and masses into upper-most cell of the column
+            do j = i_top_curr_col + 1, i_top_next_col - 1
+                iseg2 = ivert(j)                                    ! original cell number; j== index in ivert for this cell
+                volint(i_cell) = volint(i_cell) + volint(iseg2)     ! sum volumes to volumes of 'head of column'
+                do substance_i = 1, num_substances_transported
+                    rhs(substance_i, i_cell) = rhs(substance_i, i_cell) + rhs(substance_i, iseg2)   ! sum masses along column in upper-most cell ('head of column')
+                end do
+            end do
+        end do
+        ! update average column concentrations (conc) in upper-most cell using volint
+        ! if cell is dry set to 0 mass (rhs) for dissolved species
+        do i = i_cell_begin, i_cell_end
+            i_cell = sorted_cells(i)
+            j = nvert(2, i_cell)
+            if (j <= 0) cycle
+            ! if cell is not dry
+            if (abs(volint(i_cell)) > 1.0d-25) then
+                do substance_i = 1, num_substances_transported
+                    conc(substance_i, i_cell) = rhs(substance_i, i_cell) / volint(i_cell)      ! column averaged concentrations
+                end do
+            ! else, the cell is dry
+            else
+                do substance_i = 1, num_substances_transported
+                    rhs(substance_i, i_cell) = 0.0d0
+                    conc(substance_i, i_cell) = 0.0d0
+                end do
+            end if
+        end do
+    end subroutine store_total_vol_anbd_average_conc_in_uppermost_cell
 
 end module m_locally_adaptive_time_step
