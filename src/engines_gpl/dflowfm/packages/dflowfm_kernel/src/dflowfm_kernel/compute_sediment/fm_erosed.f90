@@ -92,7 +92,7 @@ contains
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
       use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
-      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
+      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse, sink_im
       use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
       use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
       use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc
@@ -125,6 +125,7 @@ contains
       logical :: flmd2l = .false.
       logical :: wave
 
+      
       integer, pointer :: iunderlyr
       real(prec), dimension(:, :), pointer :: bodsed
       !
@@ -187,6 +188,8 @@ contains
       real(fp) :: temperature
       real(fp), dimension(max(kmx, 1)) :: thicklc
       real(fp), dimension(max(kmx, 1)) :: siglc
+      real(fp) :: sink_theta      
+      real(fp) :: sour_theta      
       real(fp) :: thick0
       real(fp) :: thick1
       real(fp) :: timhr
@@ -241,6 +244,9 @@ contains
       !
       error = .false.
       if (.not. stm_included) return
+      sink_theta = stmpar%morpar%mornum%sink_theta
+      sour_theta = stmpar%morpar%mornum%sour_theta
+      
       ubot_from_com = jauorbfromswan > 0
       timhr = time1 / 3600.0_fp
       !
@@ -330,6 +336,7 @@ contains
       sinkse = 0.0_fp
       sourse = 0.0_fp
       sour_im = 0.0_fp
+      sink_im = 0.0_fp
       ! source and sink terms fluff layer
       if (iflufflyr > 0) then
          sinkf = 0.0_fp
@@ -970,7 +977,7 @@ contains
                if (iflufflyr > 0) then
                   if (iflufflyr == 2) then
                      sinkf(l, nm) = sinktot * (1.0_fp - depfac(l, nm))
-                     sinkse(nm, l) = sinktot * depfac(l, nm)
+                     sinkse(nm, l) = sinktot * depfac(l, nm) ! apply sink_theta TO DO: WO
                   else
                      sinkf(l, nm) = sinktot
                      sinkse(nm, l) = 0.0_fp
@@ -1014,7 +1021,7 @@ contains
             !
             suspfrac = has_advdiff(tratyp(l))
             !
-            tsd = dmiss_pos
+            tsd = dmiss_neg
             di50 = sedd50(l)
             if (di50 < 0.0_fp) then
                !  Space varying sedd50 specified in array sedd50fld:
@@ -1241,7 +1248,8 @@ contains
                   !
                   call soursin_2d(umod(nm), ustarc, h0, h1, &
                                 & ws(kb, l), tsd, trsedeq, factsd,    &
-                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l))
+                                & sour_theta, sink_theta, &
+                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l), sink_im(nm, l))
                end if ! suspfrac
             end if ! kmaxlc = 1
             if (suspfrac) then
@@ -1346,22 +1354,16 @@ contains
          sourse = 0.0_dp
          sinkse = 0.0_dp
          sour_im = 0.0_dp
+         sink_im = 0.0_dp
       elseif (jasourcesink == 1) then
          !
       elseif (jasourcesink == 2) then
          sinkse = 0.0_dp
-         sour_im = 0.0_dp
+         sink_im = 0.0_dp
       elseif (jasourcesink == 3) then
          sourse = 0.0_dp
+         sour_im = 0.0_dp
       end if      
-      !
-      ! Add implicit part of source term to sinkse
-      !
-      do l = 1, lsed
-         do nm = 1, ndx
-            sinkse(nm, l) = sinkse(nm, l) + sour_im(nm, l)
-         end do
-      end do
       !
 
       deallocate (dzdx, dzdy, stat=istat)

@@ -181,6 +181,8 @@ contains
          q1sed = 0.0_dp
       end if
 
+      call comp_sinktot(1)
+      
       do istep = 0, nsubsteps - 1
          if (kmx > 0) then
             fluxver = 0.0_dp
@@ -262,7 +264,7 @@ contains
             end if
          end if
 
-         call comp_sinktot()
+         call comp_sinktot(2)
 
       end do
       if (jalimitdiff == 3 .and. kmx == 0) then
