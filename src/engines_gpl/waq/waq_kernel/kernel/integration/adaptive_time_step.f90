@@ -328,7 +328,7 @@ contains
                 iter = iter + 1
                 do i = i_flow_begin, i_flow_end
                     iq = sorted_flows(i)
-                    if (iq < 0) cycle                ! this flux has been resolved already (it has been previously marked with a negative number)
+                    if (iq < 0) cycle    ! this flux has been resolved already (it has been previously marked with a negative number)
                     if (flow(iq) == 0.0) cycle
                     dlt_vol = flow(iq) * delta_t_box(first_box_smallest_dt)
                     ifrom = ipoint(1, iq)
@@ -470,7 +470,7 @@ contains
                             end if
                         end if
                     end if
-                end do
+                end do ! end loop over flows: do i = i_flow_begin, i_flow_end
                 if (changed /= 0 .or. remained /= 0) then
                     acc_remained = acc_remained + remained
                     acc_changed = acc_changed + changed
@@ -558,6 +558,9 @@ contains
                     end do
                 end if
             end do
+
+
+            ! reset all indices of flows to positive numbers
             do i = i_flow_begin, i_flow_end                                             ! All fluxes of the 'wetting-group' should have been resolved
                 sorted_flows(i) = abs(sorted_flows(i))                                  ! Reset the flux pointer to its positive value
             end do
@@ -2333,7 +2336,7 @@ contains
         ! replace ifrom and ito with i_source and i_target to avoid different signs in formulas
         ! update cells if they are not bc cells
 
-        if (dlt_vol >= 0.0d0) then
+        if (dlt_vol > 0.0d0) then
             i_source = ifrom
             i_target = ito
         else
@@ -2344,8 +2347,8 @@ contains
 
         source_is_bc = is_bc_cell(i_source)
         target_is_bc = is_bc_cell(i_target)
-        source_is_wetting = (dx_box_cell(i_source) == count_boxes + 1) ! wetting == partially filled cell
-        target_is_wetting = (dx_box_cell(i_target) == count_boxes + 1) ! wetting == partially filled cell
+        source_is_wetting = (dt_box_cell(i_source) == count_boxes + 1) ! wetting == partially filled cell
+        target_is_wetting = (dt_box_cell(i_target) == count_boxes + 1) ! wetting == partially filled cell
 
         if (source_is_wetting) then
             i_source = get_top_cell_index(i_source, nvert, ivert)
