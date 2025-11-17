@@ -152,7 +152,7 @@ contains
 
       ! Allocate arrays for triangulation output
       ! Maximum possible triangles for n points is approximately 2*n
-      num_triangles = 2 * ndxi
+      num_triangles = 2 * ndx
       allocate (triangle_nodes(3 * num_triangles))
 
       dummy_ns3 = 0
@@ -160,7 +160,7 @@ contains
 
       ! Call tricall with jatri=1 for Delaunay triangulation
       jatri = 1
-      call tricall(jatri, x_coordinates, y_coordinates, ndxi, &
+      call tricall(jatri, x_coordinates, y_coordinates, ndx, &
                    triangle_nodes, num_triangles, dummy_edge_nodes, dummy_num_edges, &
                    dummy_triangle_edges, dummy_xs3, dummy_ys3, dummy_ns3, dummy_trisize)
 
@@ -168,7 +168,7 @@ contains
          print *, '[FM] Error in triangulation'
          return
       else
-         print *, '[FM] Successfully generated ', num_triangles, ' triangles for ', ndxi, ' nodes'
+         print *, '[FM] Successfully generated ', num_triangles, ' triangles for ', ndx, ' nodes'
       end if
 
       allocate (precice_triangle_nodes(3 * num_triangles))
