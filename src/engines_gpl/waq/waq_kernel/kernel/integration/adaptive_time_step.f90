@@ -341,6 +341,8 @@ contains
 
                     if (ifrom < 0) then  ! B.C. at cell from
                         if (dlt_vol > 0.0d0) then
+                            ! source cell -> B.C.
+                            ! target cell -> uppermost cell
                             ito = ivert(nvert(1, abs(nvert(2, ito))))   ! idx of cell head of column
                             volint(ito) = volint(ito) + dlt_vol
                             do substance_i = 1, num_substances_transported
@@ -353,11 +355,11 @@ contains
                             sorted_flows(i) = -sorted_flows(i)           ! mark this flux as resolved
                             changed = changed + 1                          ! count fluxes taken care of
                         end if
-                        cycle ! proceed with next flow
-                    end if
-
-                    if (ito < 0) then    ! B.C. at cell to
+                        ! cycle ! proceed with next flow
+                    else if (ito < 0) then    ! B.C. at cell to
                         if (dlt_vol < 0.0d0) then
+                            ! source cell -> B.C.
+                            ! target cell -> uppermost cell
                             ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                             volint(ifrom) = volint(ifrom) - dlt_vol
                             do substance_i = 1, num_substances_transported
@@ -370,17 +372,19 @@ contains
                             sorted_flows(i) = -sorted_flows(i)
                             changed = changed + 1
                         end if
-                        cycle
-                    end if
+                        !cycle
+                     !end if
 
-                    ! No B.C. => Internal volumes
+                     ! No B.C. => Internal volumes
 
-                    ! if dlt_vol is going in direction 'from' --> 'to'
-                    if (dlt_vol > 0) then
-                        ! if destination cell ('to') is wetting (if dlt_vol > 0)
+                     ! if dlt_vol is going in direction 'from' --> 'to' (dlt_vol > 0)
+                    else if (dlt_vol > 0) then
+                        ! if target cell ('to') is wetting
                         if (idx_box_cell(ito) == count_boxes + 1) then
-                            ! if origin cell 'from' is also wetting in this time step
+                            ! if source cell 'from' is also wetting in this time step
                             if (idx_box_cell(ifrom) == count_boxes + 1) then
+                                ! source cell is internal, wetting ==> upper most cell in column of source cell
+                                ! target cell is internal, wetting ==> upper most cell in column of target cell
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))   ! idx of upper most cell in column of cell from
                                 ito =   ivert(nvert(1, abs(nvert(2, ito))))     ! idx of upper most cell in column of cell to
                                 if (volint(ifrom) >= dlt_vol) then           !  it should then have enough volume
@@ -399,8 +403,10 @@ contains
                                 else
                                     remained = remained + 1               ! add one to the number of fluxes not dealt with because of not enough water
                                 end if
-                            ! else origin cell 'from' is not 'wetting', so it has enough volume
+                            ! else source cell 'from' is not 'wetting', so it has enough volume
                             else
+                                ! source cell is internal, NOT wetting ==> use as is, not uppermost one
+                                ! target cell is internal, wetting ==> upper most cell in column of target cell
                                 ito = ivert(nvert(1, abs(nvert(2, ito)))) ! what about ifrom? no correction to upper-most cell?
                                 volint(ifrom) = volint(ifrom) - dlt_vol
                                 volint(ito) = volint(ito) + dlt_vol
@@ -418,10 +424,12 @@ contains
                         end if
                     ! else dlt_vol is going in direction 'to' --> 'from' (or dlt_vol==0)
                     else                                              ! same procedure but now mirrorred for dlt_vol < 0
-                        ! if destination cell ('from') is wetting
+                        ! if target cell ('from') is wetting
                         if (idx_box_cell(ifrom) == count_boxes + 1) then
-                            ! if origin cell ('to') is also wetting
+                            ! if source cell ('to') is also wetting
                             if (idx_box_cell(ito) == count_boxes + 1) then
+                                ! target cell is internal, wetting ==> upper most cell in column of target cell
+                                ! source cell is internal, wetting ==> upper most cell in column of source cell
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom)))) ! upper-most cell in 'from' cell column
                                 ito = ivert(nvert(1, abs(nvert(2, ito))))     ! upper-most cell in 'to' cell column
                                 ! if origin cell ('to') won't go dry
@@ -442,8 +450,10 @@ contains
                                 else
                                     remained = remained + 1              ! add one to the number of fluxes not dealt with because of no water
                                 end if
-                            ! else origin cell ('to') is not wetting
+                            ! else source cell ('to') is not wetting
                             else
+                                ! target cell is internal, wetting ==> upper most cell in column of target cell
+                                ! source cell is internal, NOT wetting ==> use as is, not uppermost one
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                                 volint(ifrom) = volint(ifrom) - dlt_vol
                                 volint(ito) = volint(ito) + dlt_vol
@@ -2292,5 +2302,173 @@ contains
             end if
         end do
     end subroutine store_total_vol_and_average_conc_in_uppermost_cell
+
+    subroutine update_rhs_and_conc_in_cells(rhs, conc, volint, &
+        ifrom, ito, dlt_vol, bound, &
+        num_substances_transported, massbal, amass2, ipb, dmpq)
+        !> Updates the right-hand side and concentration arrays for the source and target cells of a flow.
+        implicit none
+
+        real(kind = dp),      intent(inout):: rhs(:,:)                   !< right-hand side array with masses for each substance and cell
+        real(kind = real_wp), intent(inout):: conc(:,:)                  !< concentration array for each substance and cell
+        real(kind = dp),      intent(in)   :: volint(:)                  !< intermediate volume for each cell
+        integer,              intent(in)   :: ifrom                      !< index of cell source for a positive flow
+        integer,              intent(in)   :: ito                        !< index of cell target for a positive flow
+        real(kind = dp),      intent(in)   :: dlt_vol                    !< delta volume for a flow
+        real(kind = dp),      intent(in)   :: bound(:,:)                 !< array with binding coefficients for each substance and cell
+        integer,              intent(in)   :: num_substances_transported !< number of substances being transported
+        logical,              intent(in)   :: massbal                    !< flag indicating if mass balance is enabled
+        real(kind = dp),      intent(inout):: amass2(:,:)                !< array for mass balance tracking
+        integer,              intent(in)   :: ipb                        !< index for some process or boundary condition
+        real(kind = dp),      intent(inout):: dmpq(:,:,:)                !< array for some process or boundary condition
+
+        ! Local variables
+        integer :: i_substance !< loop index for substances
+        real(kind = dp) :: dlt_mass !< delta mass for a substance
+        real(kind = dp), parameter :: tiny_value = 1.0d-25 !< extremely small value larger than zero
+        
+
+        ! ideas: use logical vars source_is_bc, target_is_bc
+        ! to avoid updating rhs and conc for b.c. cells
+        ! replace ifrom and ito with i_source and i_target to avoid different signs in formulas
+        ! update cells if they are not bc cells
+
+        if (dlt_vol >= 0.0d0) then
+            i_source = ifrom
+            i_target = ito
+        else
+            i_source = ito
+            i_target = ifrom
+        end if
+        dlt_vol = abs(dlt_vol) ! sign no longer required
+
+        source_is_bc = is_bc_cell(i_source)
+        target_is_bc = is_bc_cell(i_target)
+        source_is_wetting = (dx_box_cell(i_source) == count_boxes + 1) ! wetting == partially filled cell
+        target_is_wetting = (dx_box_cell(i_target) == count_boxes + 1) ! wetting == partially filled cell
+
+        if (source_is_wetting) then
+            i_source = get_top_cell_index(i_source, nvert, ivert)
+        end if
+
+        source_will_go_dry = ((.not. source_is_bc) .and. source_is_wetting .and. (volint(i_source) - dlt_vol < tiny_value)) ! assumption is that not wetting cell will have enough water not to go dry
+
+        i_target = get_top_cell_index(i_target, nvert, ivert)
+
+
+
+        if (source_is_bc) then
+            conc_source = bound(:, -i_source)
+        else
+            conc_source = conc(:, i_source)
+        end if
+
+
+        ! ***********************************************************************************************
+        ! First formulation, more verbose but closer to original logic and computationally more efficient
+            if (source_is_bc) then
+                ! flow will be processed
+                volint(i_target) = volint(i_target) + dlt_vol
+                ! loop update for each substance
+                do i_substance = 1, num_substances_transported
+                    dlt_mass = dlt_vol * conc_source(i_substance)
+                    rhs(i_substance, i_target) = rhs(i_substance, i_target) + dlt_mass
+                    conc(i_substance, i_target) = rhs(i_substance, i_target) / volint(i_target)
+                    !
+                        !if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) + dlt_mass
+                        !if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
+                    !
+                end do
+                sorted_flows(i) = -sorted_flows(i)  ! mark flow as successfully processed
+                changed = changed + 1               ! indicated that something has been achieved in this iteration
+            else if (target_is_wetting)
+                ! flow could be processed
+                if (source_will_go_dry) then
+                    ! flow will NOT be processed
+                    remained = remained + 1
+                else
+                    ! flow will be successfully processed
+                    volint(i_source) = volint(i_source) - dlt_vol
+                    volint(i_target) = volint(i_target) + dlt_vol
+                    ! loop update for each substance
+                    do i_substance = 1, num_substances_transported
+                        dlt_mass = dlt_vol * conc_source(i_substance)
+                        rhs(i_substance, i_source) = rhs(i_substance, i_source) - dlt_mass
+                        if (volint(i_source) > tiny_value) then
+                            conc(i_substance, i_source) = rhs(i_substance, i_source) / volint(i_source)
+                        else
+                            !! what to do?
+                            ! conc(i_substance, i_source) = 0.0d0
+                        end if
+                        rhs(i_substance, i_target) = rhs(i_substance, i_target) + dlt_mass
+                        conc(i_substance, i_target) = rhs(i_substance, i_target) / volint(i_target)
+                        !
+                        !if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) - dlt_mass
+                        !if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
+                        !
+                    end do
+                    sorted_flows(i) = -sorted_flows(i)  ! mark flow as successfully processed
+                    changed = changed + 1               ! indicated that something has been achieved in this iteration
+                end if
+            end if
+        ! ***********************************************************************************************
+
+        ! ***********************************************************************************************
+        ! Alternative formulation, shorter and possibly clearer but maybe less computationally efficient
+            if (source_is_bc .or. target_is_wetting) then
+                ! flow will be processed
+                volint(i_target) = volint(i_target) + dlt_vol
+                if (.not. source_is_bc) then
+                    volint(i_source) = volint(i_source) - dlt_vol
+                end if
+                ! loop update for each substance
+                do i_substance = 1, num_substances_transported
+                    dlt_mass = dlt_vol * conc_source(i_substance)
+                    rhs(i_substance, i_target) = rhs(i_substance, i_target) + dlt_mass
+                    conc(i_substance, i_target) = rhs(i_substance, i_target) / volint(i_target)
+                    if (.not. source_is_bc) then
+                        rhs(i_substance, i_source) = rhs(i_substance, i_source) - dlt_mass
+                        if (volint(i_source) > tiny_value) then
+                            conc(i_substance, i_source) = rhs(i_substance, i_source) / volint(i_source)
+                        else
+                            !! what to do?
+                            ! conc(i_substance, i_source) = 0.0d0
+                        end if
+                    end if
+                    !
+                        !if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) + dlt_mass
+                        !if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
+                    !
+                end do
+                sorted_flows(i) = -sorted_flows(i)  ! mark flow as successfully processed
+                changed = changed + 1               ! indicated that something has been achieved in this iteration
+            else if (source_will_go_dry) then
+                    ! flow will NOT be processed
+                    remained = remained + 1
+            end if
+        ! ***********************************************************************************************
+
+
+    end subroutine update_rhs_and_conc_in_cells
+
+    function is_bc_cell(cell_i) result(bc_flag)
+        !> Determines if a cell is a boundary condition cell.
+        implicit none
+        integer, intent(in) :: cell_i !< index of the cell
+        logical :: bc_flag !< flag indicating if the cell is a boundary condition cell
+
+        bc_flag = (cell_i <= 0)
+    end function is_bc_cell
+
+    function get_top_cell_index(cell_i, nvert, ivert) result(i_top_cell)
+        !> Returns the index of the top cell in the column to which the given cell belongs.
+        implicit none
+        integer, intent(in) :: cell_i !< index of the cell
+        integer, intent(in) :: nvert(:,:) !< Column number and indices of cells above/below
+        integer, intent(in) :: ivert(:) !< ordering array of cells in vertical columns
+        integer :: i_top_cell !< index of the top cell in the column
+
+        i_top_cell = ivert(nvert(1, abs(nvert(2, cell_i))))
+    end function get_top_cell_index
 
 end module m_locally_adaptive_time_step
