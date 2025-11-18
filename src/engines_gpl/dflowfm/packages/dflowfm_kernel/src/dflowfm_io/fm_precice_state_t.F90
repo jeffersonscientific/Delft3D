@@ -30,4 +30,5 @@ module m_fm_precice_state_t
       character(kind=c_char, len=4) :: pdir_name = "pdir"
 #endif
    end type fm_precice_state_t
+   type(fm_precice_state_t), public :: global_fm_precice_state
 end module m_fm_precice_state_t
