@@ -553,11 +553,20 @@ contains
 !  TODO: implement preCICE coupling here!
 !
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   subroutine read_precice_wave_data()
-      use m_fm_precice_state_t, only : fm_precice_state_t;
+   subroutine read_precice_wave_data(precice_state, data_name, data_values)
+      use, intrinsic :: iso_c_binding, only: c_int, c_char
+      use m_fm_precice_state_t, only : fm_precice_state_t
       use precice, only: precicef_read_data
       implicit none(type,external)
-      ! TODO: Implement me
+      !
+      type(fm_precice_state_t) :: precice_state
+      character(kind=c_char, len=*) :: data_name
+      real(kind=dp), allocatable, dimension(:) :: data_values
+      if (allocated(data_values)) then
+         call precicef_read_data(precice_state%mesh_name, data_name, size(precice_state%flow_vertex_ids), &
+            precice_state%flow_vertex_ids, ecTime%seconds(), data_values, &
+            len(precice_state%mesh_name), len(data_name))
+      end if
    end subroutine read_precice_wave_data
 #endif
 !
@@ -576,6 +585,18 @@ contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       ! TODO: Call precice reads here.
+      ! call read_precice_wave_data(precice_state, precice_state%hrms_name, hwavcom)
+      ! call read_precice_wave_data(precice_state, precice_state%tp_name, twavcom)
+      ! call read_precice_wave_data(precice_state, precice_state%pdir_name, phiwav)
+      ! call read_precice_wave_data(precice_state, precice_state%fx_name, sxwav)
+      ! call read_precice_wave_data(precice_state, precice_state%fy_name, sywav)
+      ! call read_precice_wave_data(precice_state, precice_state%wsbodyu_name, sbxwav)
+      ! call read_precice_wave_data(precice_state, precice_state%wsbodyv_name, sbywav)
+      ! call read_precice_wave_data(precice_state, precice_state%mx_name, mxwav)
+      ! call read_precice_wave_data(precice_state, precice_state%my_name, mywav)
+      ! call read_precice_wave_data(precice_state, precice_state%ubot_name, uorbwav)
+      ! call read_precice_wave_data(precice_state, precice_state%dissip2_name, dsurf)
+      ! call read_precice_wave_data(precice_state, precice_state%dissip3_name, dwcap)
 #endif 
 
       if (allocated(hwavcom)) then
