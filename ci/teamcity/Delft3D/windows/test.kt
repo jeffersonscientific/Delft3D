@@ -104,7 +104,7 @@ object WindowsTest : BuildType({
 
                     Expand-Archive -Path ${'$'}zipName -DestinationPath "temp_extract"
 
-                    Copy-Item "temp_extract/x64/*" -Destination ${'$'}dest -Recurse
+                    robocopy "temp_extract/x64" ${'$'}dest /E /XC /XN /XO
                 """.trimIndent()
             }
         }
