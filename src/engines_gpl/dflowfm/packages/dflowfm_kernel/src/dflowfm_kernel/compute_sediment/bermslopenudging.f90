@@ -116,28 +116,28 @@ contains
                trmag_u = hypot(e_sbcn(L, lsd), e_sbct(L, lsd))
                flx = trmag_u * slpfac
                e_sbcn(L, lsd) = e_sbcn(L, lsd) - flx
-               call getfracfixfac(L, k1, k2, lsd, e_sbcn(L, lsd), frc, fixf)
-               e_sbcn(L, lsd) = e_sbcn(L, lsd) * frc * fixf
+               call getfixfac(L, k1, k2, lsd, e_sbcn(L, lsd), fixf)
+               e_sbcn(L, lsd) = e_sbcn(L, lsd) * fixf
                !
                trmag_u = hypot(e_sbwn(L, lsd), e_sbwt(L, lsd))
                flx = trmag_u * slpfac
                e_sbwn(L, lsd) = e_sbwn(L, lsd) - flx
-               call getfracfixfac(L, k1, k2, lsd, e_sbwn(L, lsd), frc, fixf)
-               e_sbwn(L, lsd) = e_sbwn(L, lsd) * frc * fixf
+               call getfixfac(L, k1, k2, lsd, e_sbwn(L, lsd), fixf)
+               e_sbwn(L, lsd) = e_sbwn(L, lsd) * fixf
             end if
             !
             if (bermslopeindexsus(L) .and. sus /= 0.0 .and. lsd <= lsed) then
                trmag_u = abs(e_ssn(L, lsd))
                flx = trmag_u * slpfac
                e_ssn(L, lsd) = e_ssn(L, lsd) - flx
-               call getfracfixfac(L, k1, k2, lsd, e_ssn(L, lsd), frc, fixf)
-               e_ssn(L, lsd) = e_ssn(L, lsd) * frc * fixf
+               call getfixfac(L, k1, k2, lsd, e_ssn(L, lsd), fixf)
+               e_ssn(L, lsd) = e_ssn(L, lsd) * fixf
                !
                trmag_u = hypot(e_sswn(L, lsd), e_sswt(L, lsd))
                flx = trmag_u * slpfac
                e_sswn(L, lsd) = e_sswn(L, lsd) - flx
-               call getfracfixfac(L, k1, k2, lsd, e_sswn(L, lsd), frc, fixf)
-               e_sswn(L, lsd) = e_sswn(L, lsd) * frc * fixf
+               call getfracfixfac(L, k1, k2, lsd, e_sswn(L, lsd), fixf)
+               e_sswn(L, lsd) = e_sswn(L, lsd) * fixf
             end if
          end do
       end do

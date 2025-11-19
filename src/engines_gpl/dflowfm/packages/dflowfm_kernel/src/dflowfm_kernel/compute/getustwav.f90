@@ -61,6 +61,8 @@ contains
       real(kind=dp) :: Tsig, Hrms, asg, rk, shs, phi1, phi2, dks, aks, omeg, f1u, f2u, f3u, sintu
       real(kind=dp) :: p1, p2, h, z, uusto, fac
 
+      real(kind=dp), parameter :: alfaw = 20.0_dp
+
       Dfu = 0.0_dp; Dfuc = 0.0_dp; deltau = 0.0_dp; uorbu = 0.0_dp; csw = 1.0_dp; snw = 0.0_dp; costu = 1.0_dp; fw = 0.0_dp
 
       call getLbotLtop(LL, Lb, Lt)
@@ -127,13 +129,14 @@ contains
          aks = asg * shs / dks * fac ! uorbu/(omega*ks), uorbu/omega = particle excursion length
 
          deltau = 0.09_dp * dks * aks**0.82_dp ! thickness of wave boundary layer from Fredsoe and Deigaard (1992)
-         deltau = max(deltau, ee * z00) ! ustar / karman
-         deltau = min(0.5_dp * hu(LL), deltau) !
+         deltau = max(deltau, ee * z00) ! alfaw makes wbl at least ~2ks thick
 
          call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
-         Dfu = 0.28_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
-         Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by strlyrfac*deltau    (m2/s3)
+         Dfu = 0.2821_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
+         Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by 3 deltau    (m2/s3) see van Rijn, streaming layer about 3-5 times wbl
          Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
+         deltau = alfaw * deltau ! as in delft3d
+         deltau = min(0.5_dp * hu(LL), deltau) !
 
       else
          ustw2 = 0.0_dp

@@ -190,8 +190,8 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     dzdx, dzdy, dtol, phi, ucr, ucrb, Ucrs)
    !
    ! transport parameters
-   Asb=0.015_fp*h*(d50/h)**1.2_fp/(delta*ag*d50)**0.75_fp                         !bed load coefficent
-   Ass=0.012_fp*d50*dster**(-0.6_fp)/(delta*ag*d50)**1.2_fp                       !suspended load coeffient
+   Asb=0.015_fp*h*(d50/h)**1.2_fp/(delta*ag*d50)**0.75_fp                         !bed load coefficient
+   Ass=0.012_fp*d50*dster**(-0.6_fp)/(delta*ag*d50)**1.2_fp                       !suspended load coefficient
    !
    ! Van Rijn use Peak orbital flow velocity --> 0.64 corresponds to 0.4 coefficient regular waves Van Rijn (2007)
    term1=utot**2+0.64_fp*sws*urms2

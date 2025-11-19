@@ -944,7 +944,7 @@ contains
                   if (mfltot > 0.0_fp) fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
                end if
                !
-               kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
+               kmaxsd = kmaxlc ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
                thick0 = max(thicklc(kmaxsd) * h0, epshs)
                thick1 = max(thicklc(kmaxsd) * h1, epshs)
                !

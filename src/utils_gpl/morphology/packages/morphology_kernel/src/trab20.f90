@@ -181,8 +181,8 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
    Cd=(0.40_fp/(log(max(h,10.0_fp*z0)/z0)-1.0_fp))**2
    !
    ! transport parameters
-   Asb=0.005_fp*h*(d50/h/(delta*ag*d50))**1.2_fp            ! bed load coefficent
-   Ass=0.012_fp*d50*dster**(-0.6_fp)/(delta*ag*d50)**1.2_fp ! suspended load coeffient
+   Asb=0.005_fp*h*(d50/h/(delta*ag*d50))**1.2_fp            ! bed load coefficient
+   Ass=0.012_fp*d50*dster**(-0.6_fp)/(delta*ag*d50)**1.2_fp ! suspended load coefficient
    !
    term1=utot**2+0.018_fp/Cd*sws*urms2
    !

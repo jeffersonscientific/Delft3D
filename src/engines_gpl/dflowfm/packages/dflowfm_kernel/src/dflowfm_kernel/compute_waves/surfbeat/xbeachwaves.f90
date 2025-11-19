@@ -5975,7 +5975,7 @@ contains
       ! shortcut to switch off stokes drift
       if (jawavestokes == NO_STOKES_DRIFT) then
          ustokes = 0.0_dp; vstokes = 0.0_dp
-         ustx_cc(k) = 0.0_dp; usty_cc(k) = 0.0_dp ! output
+         ustx_cc = 0.0_dp; usty_cc = 0.0_dp ! output
          return
       end if
 
