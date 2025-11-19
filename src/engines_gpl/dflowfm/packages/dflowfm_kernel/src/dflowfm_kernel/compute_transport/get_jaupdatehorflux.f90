@@ -41,15 +41,18 @@ module m_get_jaupdatehorflux
 
 contains
 
-   subroutine get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
+   subroutine get_jaupdatehorflux(limtyp, jaupdate, ndeltasteps, jaupdatehorflux, dt_flux)
       use m_flowgeom, only: Lnx, ln, klnup, ndx
       use timers, only: timon, timstrt, timstop
+      use precision, only: dp
 
       implicit none
 
       integer, intent(in) :: limtyp !< limited higher-order upwind (>0) or first-order upwind (0)
       integer, dimension(Ndx), intent(in) :: jaupdate !< cell updated (1) or not (0)
+      integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of steps in current cell
       integer, dimension(Lnx), intent(out) :: jaupdatehorflux !< update horizontal flux (1) or not (0)
+      real(kind=dp), dimension(Lnx), intent(out) :: dt_flux !< time step for updating flux term
 
       integer :: k1, k2, LL
       integer :: kk1L, kk2L
@@ -59,6 +62,7 @@ contains
 
       if (timon) call timstrt("get_jaupdatehorflux", ithndl)
 
+      dt_flux = 0.0_dp
       jaupdatehorflux = 0
       if (limtyp == 0) then
          do LL = 1, Lnx
@@ -66,6 +70,7 @@ contains
             k2 = ln(2, LL)
             if (jaupdate(k1) == 1 .or. jaupdate(k2) == 1) then
                jaupdatehorflux(LL) = 1 ! also for diffusion
+               dt_flux(LL) = real(min(ndeltasteps(k1),ndeltasteps(k2)),kind=dp)
             end if
          end do
       else
@@ -74,6 +79,7 @@ contains
             k2 = ln(2, LL)
             if (jaupdate(k1) == 1 .or. jaupdate(k2) == 1) then
                jaupdatehorflux(LL) = 1 ! also for diffusion
+               dt_flux(LL) =  real(min(ndeltasteps(k1),ndeltasteps(k2)),kind=dp)
                cycle
             end if
 
@@ -81,6 +87,7 @@ contains
             if (kk1L /= 0) then
                if (jaupdate(abs(kk1L)) == 1) then
                   jaupdatehorflux(LL) = 1
+                  !dt_flux(LL) =  min(real(ndeltasteps(abs(kk1L)), kind=dp), dt_flux(LL)) 
                   cycle
                end if
 
@@ -88,6 +95,7 @@ contains
                   kk2L = klnup(2, LL)
                   if (jaupdate(abs(kk2L)) == 1) then
                      jaupdatehorflux(LL) = 1
+                     !dt_flux(LL) =  min(real(ndeltasteps(abs(kk2L)), kind=dp), dt_flux(LL)) 
                      cycle
                   end if
                end if
@@ -97,6 +105,7 @@ contains
             if (kk1R /= 0) then
                if (jaupdate(abs(kk1R)) == 1) then
                   jaupdatehorflux(LL) = 1
+                  !dt_flux(LL) =  min(real(ndeltasteps(abs(kk1R)), kind=dp), dt_flux(LL)) 
                   cycle
                end if
 
@@ -104,6 +113,7 @@ contains
                   kk2R = klnup(5, LL)
                   if (jaupdate(abs(kk2R)) == 1) then
                      jaupdatehorflux(LL) = 1
+                     !dt_flux(LL) =  min(real(ndeltasteps(abs(kk2R)), kind=dp), dt_flux(LL)) 
                   end if
                end if
             end if

@@ -40,14 +40,17 @@ module m_comp_horfluxtot
 
 contains
 
-   subroutine comp_horfluxtot()
+   subroutine comp_horfluxtot(dt_flux)
       use m_flowgeom, only: Lnx
       use m_flow, only: Lbot, Ltop, kmx
       use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot
       use m_flowtimes, only: dts
       use timers, only: timon, timstrt, timstop
+      use precision, only: dp
 
       implicit none
+
+      real(kind=dp), dimension(lnx), intent(in) :: dt_flux 
 
       integer :: LL, L, Lb, Lt
       integer :: j
@@ -59,7 +62,7 @@ contains
       if (kmx < 1) then
          do L = 1, Lnx
             do j = ISED1, ISEDN
-               fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts
+               fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts * dt_flux(L)
             end do
          end do
       else
@@ -68,7 +71,7 @@ contains
             Lt = Ltop(LL)
             do L = Lb, Lt
                do j = ISED1, ISEDN
-                  fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts
+                  fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts * dt_flux(L)
                end do
             end do
          end do

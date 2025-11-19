@@ -44,6 +44,7 @@ module m_fm_erosed_sub
    private
 
    public :: fm_erosed
+   public :: compute_sediment_mass
 
 contains
 
@@ -190,6 +191,8 @@ contains
       real(fp), dimension(max(kmx, 1)) :: siglc
       real(fp) :: sink_theta      
       real(fp) :: sour_theta      
+      real(fp) :: sink_factor      
+      real(fp) :: source_factor      
       real(fp) :: thick0
       real(fp) :: thick1
       real(fp) :: timhr
@@ -246,6 +249,8 @@ contains
       if (.not. stm_included) return
       sink_theta = stmpar%morpar%mornum%sink_theta
       sour_theta = stmpar%morpar%mornum%sour_theta
+      sink_factor = stmpar%morpar%mornum%sink_factor
+      source_factor = stmpar%morpar%mornum%source_factor
       
       ubot_from_com = jauorbfromswan > 0
       timhr = time1 / 3600.0_fp
@@ -977,7 +982,7 @@ contains
                if (iflufflyr > 0) then
                   if (iflufflyr == 2) then
                      sinkf(l, nm) = sinktot * (1.0_fp - depfac(l, nm))
-                     sinkse(nm, l) = sinktot * depfac(l, nm) ! apply sink_theta TO DO: WO
+                     sinkse(nm, l) = sinktot * depfac(l, nm)
                   else
                      sinkf(l, nm) = sinktot
                      sinkse(nm, l) = 0.0_fp
@@ -1248,7 +1253,7 @@ contains
                   !
                   call soursin_2d(umod(nm), ustarc, h0, h1, &
                                 & ws(kb, l), tsd, trsedeq, factsd,    &
-                                & sour_theta, sink_theta, &
+                                & sour_theta, sink_theta, source_factor, sink_factor, &
                                 & sourse(nm, l), sour_im(nm, l), sinkse(nm, l), sink_im(nm, l))
                end if ! suspfrac
             end if ! kmaxlc = 1
@@ -1376,4 +1381,69 @@ contains
 
    end subroutine fm_erosed
 
+   subroutine compute_sediment_mass(time, pos)
+      use precision, only: dp
+      use m_sediment, only: stmpar
+      use m_flowgeom, only: ndx, ba
+      use m_transport
+      use m_flow, only: vol0, vol1
+      
+      implicit none 
+      logical, save :: first = .true.
+
+      real(kind=dp) :: time
+      integer :: pos
+      character(len=30) :: extra
+      character(len=30) :: filename
+      
+      real(kind=dp) :: mbs, mbb, mba
+      integer :: k, klyr
+      integer :: unit
+      integer :: values(8)
+ 
+      call date_and_time(values=values) 
+    
+      if (pos == 1) then
+          extra = 'before erosed'
+      else if (pos == 2) then
+          extra = 'after erosed'
+      else if (pos == 3) then
+          extra = 'after transport'
+      else if (pos == 4) then
+          extra = 'after bed update'
+      else if (pos == 5) then
+          extra = 'after volsur'
+      else
+          pos = 1
+          extra = 'unknown'
+      end if
+      mbs = 0.0_dp
+      if (pos < 3) then 
+         do k = 1, ndx
+             mbs = mbs+constituents(1,k)*vol0(k) ! kg suspended
+         end do
+      else
+         do k = 1, ndx
+             mbs = mbs+constituents(1,k)*vol1(k) ! kg suspended
+         end do
+      end if 
+      mbb = 0.0_dp
+      do k = 1, ndx
+          do klyr = 1, stmpar%morlyr%settings%nlyr
+             mbb = mbb+stmpar%morlyr%state%msed(1, klyr, k) * ba(k) ! kg in bed
+          end do
+      end do
+      mba = mbb + mbs
+      write(filename, '(a,i2,i2,a)') 'mass', values(5), values(6), '.csv'
+      if (first) then 
+          open(newunit=unit, file=filename, status='replace')
+          write(unit,*) 'time, suspended [kg], bed [kg], total[kg], extra'
+          first = .false.
+      else 
+          open(newunit=unit, file=filename, access='append')
+      end if 
+      write(unit,'(F10.3,a,F20.4,a,F20.4,a,F20.4,a,a)') time, ',', mbs, ',', mbb, ',', mba, ', ', extra
+      close(unit)
+   end subroutine compute_sediment_mass
+   
 end module m_fm_erosed_sub

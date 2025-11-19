@@ -1,6 +1,6 @@
 subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
                     & ws        ,tsd       ,rsedeq    ,factsd    , &
-                    & sour_theta,sink_theta,& 
+                    & sour_theta,sink_theta,sink_factor,source_factor,& 
                     & sour_ex   ,sour_im   ,sink_ex   ,sink_im)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -55,8 +55,10 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     real(fp), intent(in)  :: ws
     real(fp), intent(in)  :: factsd
     real(fp)              :: tsd
-    real(fp)              :: sour_theta
     real(fp)              :: sink_theta
+    real(fp)              :: sour_theta
+    real(fp)              :: sink_factor
+    real(fp)              :: source_factor
     real(fp), intent(in)  :: rsedeq
     real(fp), intent(out) :: sour_ex
     real(fp), intent(out) :: sour_im
@@ -114,15 +116,15 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
           !
        endif
        hots = wsl/(tsd*factsd)
-       sour_ex = rsedeq*hots/h0
-       sour_im = (hots-wsl)/h1
-       sink_ex = (1.0_fp - sink_theta)*wsl/h0  
-       sink_im = sink_theta * wsl/h1  
+       sour_ex = source_factor*rsedeq*hots/h0
+       sour_im = source_factor*(hots-wsl)/h1
+       sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  
+       sink_im = sink_factor*sink_theta * wsl/h1  
     else
        sour_ex = 0.0_fp
        sour_im = 0.0_fp
-       sink_ex = (1.0_fp - sink_theta)*wsl/h0  
-       sink_im = sink_theta * wsl/h1  ! -(sink_theta * -wsl/h1) for opposite sign convention of wsl
+       sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  
+       sink_im = sink_factor*sink_theta * wsl/h1  ! -(sink_theta * -wsl/h1) for opposite sign convention of wsl
     endif
 end subroutine soursin_2d
 

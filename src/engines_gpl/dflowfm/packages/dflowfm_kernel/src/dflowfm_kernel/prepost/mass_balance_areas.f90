@@ -761,14 +761,18 @@ contains
       if (timon) call timstop(ithndl)
    end subroutine comp_horflowmba
 
-   subroutine comp_horfluxmba()
+   subroutine comp_horfluxmba(istep, dt_flux)
       use m_flow, only: Lbot, Ltop
+      use m_flowgeom, only: lnx
       use m_flowtimes, only: dts
       use m_mass_balance_areas
       use timers
-      use m_transport, only: numconst, fluxhor
+      use m_transport, only: numconst, fluxhor, ndeltasteps
       use m_fm_erosed, only: morfac
 
+      integer, intent(in) ::istep
+      real(kind=dp), intent(in) :: dt_flux(lnx) !< time step per link
+      
       integer :: i !< balance area exchange link index
       integer :: iconst !< constituent number
       integer :: k1 !< index of balance from-area
@@ -796,15 +800,17 @@ contains
             Lt = Ltop(LL)
             k1 = mbalnfromto(1, i)
             k2 = mbalnfromto(2, i)
+            if (mod(ndeltasteps(k1), istep+1) == 0 .and. mod(ndeltasteps(k2), istep+1) == 0) then
             do L = Lb, Lt
                if (fluxhor(iconst, L) > 0.0) then
-                  mbafluxhor(2, iconst, k1, k2) = mbafluxhor(2, iconst, k1, k2) + fluxhor(iconst, L) * dt
-                  mbafluxhor(1, iconst, k2, k1) = mbafluxhor(1, iconst, k2, k1) + fluxhor(iconst, L) * dt
+                  mbafluxhor(2, iconst, k1, k2) = mbafluxhor(2, iconst, k1, k2) + fluxhor(iconst, L) * dt * dt_flux(L)
+                  mbafluxhor(1, iconst, k2, k1) = mbafluxhor(1, iconst, k2, k1) + fluxhor(iconst, L) * dt * dt_flux(L)
                else
-                  mbafluxhor(1, iconst, k1, k2) = mbafluxhor(1, iconst, k1, k2) - fluxhor(iconst, L) * dt
-                  mbafluxhor(2, iconst, k2, k1) = mbafluxhor(2, iconst, k2, k1) - fluxhor(iconst, L) * dt
+                  mbafluxhor(1, iconst, k1, k2) = mbafluxhor(1, iconst, k1, k2) - fluxhor(iconst, L) * dt * dt_flux(L)
+                  mbafluxhor(2, iconst, k2, k1) = mbafluxhor(2, iconst, k2, k1) - fluxhor(iconst, L) * dt * dt_flux(L)
                end if
             end do
+            end if
          end do
 
          ! Note: mbafluxsorsin updated in fill_constitents ... uses always dts

@@ -41,10 +41,12 @@ module m_comp_sumhorflux
 
 contains
 
-   subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
+   subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux, istep, dt_flux)
       use precision, only: dp
       use m_flowgeom, only: Lnx, Ln ! static mesh information
       use timers, only: timon, timstrt, timstop
+      use m_flowtimes, only: dts
+      use m_transport, only: ndeltasteps
 
       implicit none
 
@@ -56,7 +58,8 @@ contains
       integer, dimension(Lnx), intent(in) :: Ltop !< flow-link based layer administration
       real(kind=dp), dimension(NUMCONST, Lnkx), intent(in) :: fluxhor !< horizontal advection fluxes
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux ! sum of horizontal fluxes, dim(NUMCONST,Ndkx)
-
+      real(kind=dp), dimension(Lnx), intent(in) :: dt_flux !< time step for updating flux term
+      integer, intent(in) :: istep 
       integer :: LL, L, Lb, Lt
       integer :: j, k1, k2
 
@@ -70,10 +73,13 @@ contains
 !        get neighboring flownodes
             k1 = ln(1, L)
             k2 = ln(2, L)
+            if (mod(ndeltasteps(k1), istep+1) == 0 .and. mod(ndeltasteps(k2), istep+1) == 0) then
             do j = 1, NUMCONST
-               sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L)
-               sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L)
-            end do
+               sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) * dts * dt_flux(L)
+               sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) * dts * dt_flux(L)
+            end do  
+            ! fluxhor = 0? 
+            end if 
          end do
       else
 !     add horizontal fluxes to right-hand side
@@ -85,8 +91,8 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
                do j = 1, NUMCONST
-                  sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L)
-                  sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L)
+                  sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) !* dts * dt_flux(L)
+                  sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) !* dts * dt_flux(L)
                end do
             end do
          end do

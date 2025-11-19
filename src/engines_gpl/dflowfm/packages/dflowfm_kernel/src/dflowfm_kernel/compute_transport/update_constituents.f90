@@ -128,6 +128,8 @@ contains
       integer :: numstepssync
 
       integer(4) :: ithndl = 0
+      real(kind=dp), dimension(lnx) :: dt_flux
+      real(kind=dp), dimension(lnx) :: dt_flux_sum
 
       if (NUMCONST == 0) return ! nothing to do
       if (timon) call timstrt("update_constituents", ithndl)
@@ -167,9 +169,10 @@ contains
          end if
       end if
 
-      jaupdatehorflux = 1 
+      jaupdatehorflux = 1
       jaupdate = 1
-      
+      dt_flux = 1.0_dp
+      dt_flux_sum = 0.0_dp
       fluxhor = 0.0_dp ! not necessary
       sumhorflux = 0.0_dp
 
@@ -181,62 +184,65 @@ contains
          q1sed = 0.0_dp
       end if
 
-      call comp_sinktot(1)
-      
+      call comp_sinktot(1) !explicit sink takes the full step
+
       do istep = 0, nsubsteps - 1
          if (kmx > 0) then
             fluxver = 0.0_dp
          end if
 
-!     determine which fluxes need to be updated in a second step
-         if (nsubsteps > 1) then
-            call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
-         end if
-
-!     compute horizontal fluxes, explicit part
-         if ((.not. stm_included) .or. flowwithoutwaves) then ! just do the normal stuff
-            call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
-         else
-            if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach
-               ! only add velocity asymmetry
-               do LL = 1, Lnx
-                  call getLbotLtop(LL, Lb, Lt) ! prefer this, as Ltop gets messed around with in hk specials
-                  do L = Lb, Lt
-                     u1sed(L) = u1(L) !+mtd%uau(LL)                    ! JRE to do, discuss with Dano
-                     q1sed(L) = q1(L) !+mtd%uau(LL)*Au(L)
-                  end do
-               end do
-            else if (jatranspvel == 2) then ! Eulerian approach
-!           stokes+asymmetry
-               do LL = 1, Lnx
-                  call getLbotLtop(LL, Lb, Lt)
-                  do L = Lb, Lt
-                     u1sed(L) = u1(L) - ustokes(L) !+mtd%uau(LL)
-                     q1sed(L) = q1(L) - ustokes(L) * Au(L) !+mtd%uau(LL)*Au(L)
-                  end do
-               end do
-            end if
-            call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1sed, q1sed, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, noupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
-!        water advection velocity
-            call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
-         end if
-
-         call starttimer(IDEBUG)
-         fluxhor=0.0_dp
-         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
-         call stoptimer(IDEBUG)
-
-         if (jased == 4 .and. stmpar%lsedsus > 0) then ! at moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary
-            call comp_horfluxtot()
-         end if
-
-         if (jamba > 0) then ! at moment, this function is only required for the mass balance areas
-            call comp_horfluxmba()
-         end if
-
 !     determine which cells need to be updated
          if (nsubsteps > 1) then
             call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
+         end if
+!     determine which fluxes need to be updated in a second step
+         if (nsubsteps > 1) then
+            call get_jaupdatehorflux(limtyp, jaupdate, ndeltasteps, jaupdatehorflux, dt_flux)
+         end if
+         dt_flux_sum = dt_flux_sum + dt_flux
+         if (istep == 0) then
+!     compute horizontal fluxes, explicit part
+            if ((.not. stm_included) .or. flowwithoutwaves) then ! just do the normal stuff
+               call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+            else
+               if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach
+                  ! only add velocity asymmetry
+                  do LL = 1, Lnx
+                     call getLbotLtop(LL, Lb, Lt) ! prefer this, as Ltop gets messed around with in hk specials
+                     do L = Lb, Lt
+                        u1sed(L) = u1(L) !+mtd%uau(LL)                    ! JRE to do, discuss with Dano
+                        q1sed(L) = q1(L) !+mtd%uau(LL)*Au(L)
+                     end do
+                  end do
+               else if (jatranspvel == 2) then ! Eulerian approach
+!           stokes+asymmetry
+                  do LL = 1, Lnx
+                     call getLbotLtop(LL, Lb, Lt)
+                     do L = Lb, Lt
+                        u1sed(L) = u1(L) - ustokes(L) !+mtd%uau(LL)
+                        q1sed(L) = q1(L) - ustokes(L) * Au(L) !+mtd%uau(LL)*Au(L)
+                     end do
+                  end do
+               end if
+               call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1sed, q1sed, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, noupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+!        water advection velocity
+               call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+            end if
+         end if
+
+         call starttimer(IDEBUG)
+         if (stmpar%morpar%mornum%suspended_flux_factor /= 1.0_dp) then
+            fluxhor = fluxhor * stmpar%morpar%mornum%suspended_flux_factor
+         end if
+         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux, istep, dt_flux)
+         call stoptimer(IDEBUG)
+
+         if (jased == 4 .and. stmpar%lsedsus > 0) then ! at the moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary
+            call comp_horfluxtot(dt_flux)
+         end if
+
+         if (jamba > 0) then ! at moment, this function is only required for the mass balance areas
+            call comp_horfluxmba(istep, dt_flux)
          end if
 
          if (kmx < 1) then ! 2D, call to 3D as well for now
