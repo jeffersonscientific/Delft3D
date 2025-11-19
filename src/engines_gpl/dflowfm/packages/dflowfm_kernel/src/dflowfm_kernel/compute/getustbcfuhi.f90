@@ -46,7 +46,7 @@ contains
       use m_get_czz0, only: getczz0
       use m_flowgeom, only: ln, dxi, csu, snu
       use m_flowtimes, only: dti
-      use m_waves, only: ustokes, vstokes, wblt, jawavevellogprof
+      use m_waves, only: ustokes, vstokes, wblt, jawavevellogprof, strlyrfac
       use m_waveconst, only: NO_WAVES, NO_STOKES_DRIFT, WAVE_STREAMING_OFF
       use m_sediment, only: stm_included
       use m_flowtimes, only: dts
@@ -75,7 +75,7 @@ contains
       real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
       real(kind=dp) :: cphi, sphi
       real(kind=dp) :: fsqrtt = sqrt(2.0_dp)
-      real(kind=dp) :: threedeltau
+      real(kind=dp) :: slfacdeltau
 
       cfuhi3D = 0_dp
       ustbLL = 0_dp; cfuhiLL = 0_dp; hdzb = 0_dp; z00 = 0_dp; cz = 0_dp; nit = 0
@@ -237,23 +237,23 @@ contains
             !
             if (stm_included) wblt(LL) = deltau
             !
-            ! Streaming below 3*deltau with linear distribution,, see van Rijn 2011 p9.177
-            if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1e-4_dp * hu(LL)) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
-               threedeltau = 3_dp * deltau
+            ! Streaming below strlyrfac*deltau with linear distribution,, see van Rijn 2011 p9.177
+            if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1e-4_dp) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
+               slfacdeltau = strlyrfac * deltau
                Dfu0 = Dfuc ! (m/s2)
                do L = Lb, Ltop(LL)
-                  if (hu(L) <= threedeltau) then
-                     htop = min(hu(L), threedeltau) ! max height within streaming layer
-                     alin = 1_dp - htop / threedeltau ! linear from 1 at bed to 0 at 3*deltau
+                  if (hu(L) <= slfacdeltau) then
+                     htop = min(hu(L), slfacdeltau) ! max height within streaming layer
+                     alin = 1_dp - htop / slfacdeltau ! linear from 1 at bed to 0 at 3*deltau
                      Dfu1 = Dfuc * alin
                      adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1)
                      Dfu0 = Dfu1
                   end if
-                  if (hu(L) > threedeltau) then
+                  if (hu(L) > slfacdeltau) then
                      if (L == Lb) then
-                        adve(L) = adve(L) - Dfuc * threedeltau / (2.0 * hu(L)) ! everything in bottom layer
+                        adve(L) = adve(L) - Dfuc * slfacdeltau / (2.0_dp * hu(L)) ! everything in bottom layer
                      else
-                        alin = (min(hu(L), threedeltau) - hu(L - 1)) / (2_dp * (hu(L) - hu(L - 1)))
+                        alin = (min(hu(L), slfacdeltau) - hu(L - 1)) / (2.0_dp * (hu(L) - hu(L - 1)))
                         Dfu1 = Dfuc * alin
                         adve(L) = adve(L) - Dfu1
                      end if

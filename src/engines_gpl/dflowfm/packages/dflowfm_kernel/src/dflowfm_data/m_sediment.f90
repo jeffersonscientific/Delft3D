@@ -172,8 +172,8 @@ contains
       jamormergedtuser = 0
       upperlimitssc = 1.0e6_dp
       inmorphopol = 1
-      difparam = 10_fp
-      difcal = 1_fp
+      difparam = 10.0_dp
+      difcal = 0.0_dp
 
    end subroutine default_sediment
 

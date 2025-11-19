@@ -39,9 +39,9 @@ module m_get_ustwav
 contains
    subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
       use precision, only: dp
-      use m_flow, only: hu, jawavestokes, ag, jawave, rhomean, eps10
+      use m_flow, only: hu, jawavestokes, ag, eps10
       use m_flowgeom, only: ln, csu, snu
-      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, alfdeltau, fwfac
+      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, fwfac, strlyrfac
       use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
       use m_sferic, only: twopi, dg2rd, pi
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -127,12 +127,12 @@ contains
          aks = asg * shs / dks * fac ! uorbu/(omega*ks), uorbu/omega = particle excursion length
 
          deltau = 0.09_dp * dks * aks**0.82_dp ! thickness of wave boundary layer from Fredsoe and Deigaard (1992)
-         deltau = max(deltau, 20_dp * ee * z00)
+         deltau = max(deltau, ee * z00) ! ustar / karman
          deltau = min(0.5_dp * hu(LL), deltau) !
 
          call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
          Dfu = 0.28_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
-         Dfu = fwfac * Dfu / 3_dp / deltau ! divided by 3*deltau    (m2/s3)
+         Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by strlyrfac*deltau    (m2/s3)
          Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
 
       else

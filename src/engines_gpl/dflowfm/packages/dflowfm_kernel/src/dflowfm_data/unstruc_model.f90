@@ -1655,6 +1655,7 @@ contains
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
       call prop_get(md_ptr, 'waves', 'fforc', fforc) ! factor for adjusting wave forces in momentum equation
+      call prop_get(md_ptr, 'waves', 'streamlyrfac', strlyrfac) ! factor for adjusting streaming layer thickness in momentum equation
 
       if (ftauw < 0.0_dp) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0, reset to 0.0. Bed shear stress due to waves switched off.')

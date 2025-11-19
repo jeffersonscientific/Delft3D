@@ -826,7 +826,7 @@ contains
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
                end if
 
-               if (jawave == NO_WAVES) then
+               if (jawave == NO_WAVES .or. (jawave > NO_WAVES .and. jawavebreakerturbulence == WAVE_BREAKER_TURB_OFF)) then
                   vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
                end if
                vicwwu(Lb0) = min(vicwwu(Lb0), vicwwu(Lb) * Eddyviscositybedfacmax)
