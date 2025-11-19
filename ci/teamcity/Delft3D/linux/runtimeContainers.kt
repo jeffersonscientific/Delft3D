@@ -65,11 +65,13 @@ object LinuxRuntimeContainers : BuildType({
 
                 tar -xzf dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz
 
-                cp -R lnx64/bin/. dimrset/bin/.
+                mkdir dimrset
 
-                cp -R lnx64/lib/. dimrset/lib/.
+                cp -r lnx64/bin dimrset/bin
 
-                cp -R lnx64/share/. dimrset/share/.
+                cp -r lnx64/lib dimrset/lib
+
+                cp -r lnx64/share dimrset/share
             """.trimIndent()
         }
         exec {
