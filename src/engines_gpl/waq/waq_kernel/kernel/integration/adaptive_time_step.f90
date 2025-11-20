@@ -1125,7 +1125,7 @@ contains
         do i = 1, count_cells_for_box(count_boxes + 2)
             cell_i = sorted_cells(i)
             do substance_i = 1, num_substances_transported
-                rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * idt
+                rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * idt ! dC/dt * dt because of reactions
             end do
         end do
 
@@ -2311,7 +2311,7 @@ contains
         flow, ipoint, delta_t_box, first_box_smallest_dt, &
         num_substances_transported, massbal, amass2, dmpq, &
         iqdmp, nvert, ivert, count_boxes, &
-        dt_box_cell, acc_remained, acc_changed, file_unit, report)
+        dt_box_cell, sum_remained, sum_changed, file_unit, report)
         !> Updates the right-hand side and concentration arrays for the source and target cells of a flow.
         implicit none
 
@@ -2336,9 +2336,9 @@ contains
         integer,              intent(in)   :: nvert(:,:)                 !< Column number and indices of cells above/below
         integer,              intent(in)   :: ivert(:)                   !< ordering array of cells in vertical columns
         integer,              intent(in)   :: count_boxes                !< number of delta time boxes or baskets
-        integer,              intent(in)   :: dt_box_cell(:)            !< array of box indices assigned to each cell
-        integer,              intent(inout):: acc_remained              !< accumulated count of flows that could not be processed
-        integer,              intent(inout):: acc_changed               !< accumulated count of successfully processed flows
+        integer,              intent(in)   :: dt_box_cell(:)             !< array of box indices assigned to each cell
+        integer,              intent(inout):: sum_remained               !< accumulated count of flows that could not be processed
+        integer,              intent(inout):: sum_changed                !< accumulated count of successfully processed flows
         integer,              intent(in)   :: file_unit                  !< unit number for output messages
         logical,              intent(in)   :: report                     !< flag indicating if reporting is enabled
 
@@ -2429,10 +2429,9 @@ contains
                             dlt_mass = dlt_vol * conc_source(i_substance)
                             rhs(i_substance, i_target) = rhs(i_substance, i_target) + dlt_mass
                             conc(i_substance, i_target) = rhs(i_substance, i_target) / volint(i_target)
-                            !
-                                !if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) + dlt_mass
-                                !if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
-                            !
+
+                            if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) + dlt_mass
+                            if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
                         end do
                         sorted_flows(flow_idx) = -sorted_flows(flow_idx)  ! mark flow as successfully processed
                         changed = changed + 1               ! indicated that something has been achieved in this iteration
@@ -2457,24 +2456,23 @@ contains
                                 end if
                                 rhs(i_substance, i_target) = rhs(i_substance, i_target) + dlt_mass
                                 conc(i_substance, i_target) = rhs(i_substance, i_target) / volint(i_target)
-                                !
-                                !if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) - dlt_mass
-                                !if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
-                                !
+
+                                if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) - dlt_mass
+                                if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
                             end do
                             sorted_flows(flow_idx) = -sorted_flows(flow_idx)  ! mark flow as successfully processed
-                            changed = changed + 1                             ! indicated that something has been achieved in this iteration
+                            changed = changed + 1                             ! indicates that something has been achieved in this iteration
                         end if
                     end if
             end do
             if (changed /= 0 .or. remained /= 0) then
-                acc_remained = acc_remained + remained
-                acc_changed = acc_changed + changed
+                sum_remained = sum_remained + remained
+                sum_changed = sum_changed + changed
                 if (remained > 0 .and. changed == 0) then
                     if (report) then
                         write (file_unit, *) 'Warning: No further progress in the wetting procedure!'
                     end if
-                    exit
+                    exit ! exit the while loop
                 end if
             end if
         end do ! while remained > 0
@@ -2518,7 +2516,7 @@ contains
             !         remained = remained + 1
             ! end if
         ! ***********************************************************************************************
-            
+
 
 
 
