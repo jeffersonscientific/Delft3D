@@ -60,6 +60,7 @@ object LinuxRuntimeContainers : BuildType({
         }
         script {
             name = "Extract artifact"
+            enabled = false
             scriptContent = """
                 echo "Extracting dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz..."
 
@@ -133,7 +134,7 @@ object LinuxRuntimeContainers : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-            
+
             artifacts {
                 artifactRules = """
                     dimrset_lnx64_*.tar.gz!lnx64/bin/** => dimrset/bin
