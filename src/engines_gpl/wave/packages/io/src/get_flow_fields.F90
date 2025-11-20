@@ -111,21 +111,10 @@ contains
             !
             call get_dep(fif%dps, fif%mmax, fif%nmax, &
                         & fg%grid_name)
-            !
-            ! Map depth to SWAN grid
-            !
-            call grmap(fif%dps, fif%npts, &
-                      & sif%dps, sif%npts, &
-                      & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                      & iprint)
          else
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%bed_levels_name, sif%dps)
          end if
       end if
-      !
-      ! Read polygons fixed structures
-      !
-      call dam_cod(fg%x, fg%y, fg%kcs, fg%mmax, fg%nmax)
       !
       if (sr%dom(i_swan)%qextnd(q_wl) > 0) then
          if (sr%flowgridfile == ' ') then
@@ -135,13 +124,6 @@ contains
             call get_lev(wavedata%time, &
                         & fif%s1, fif%mmax, fif%nmax, &
                         & fg%grid_name)
-            !
-            ! Map water level to SWAN grid
-            !
-            call grmap(fif%s1, fif%npts, &
-                      & sif%s1, sif%npts, &
-                      & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                      & iprint)
          else
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%water_levels_name, sif%s1)
          end if
@@ -162,18 +144,6 @@ contains
             call flow2wav(fif%u1, fif%v1, &
                          & fg%alfas, fg%guu, fg%gvv, fg%mmax, fg%nmax, fg%kcs, &
                          & fif%kfu, fif%kfv, alpb, clbot)
-            !
-            ! Map velocity to SWAN grid
-            ! NOTE: mapping procedure only updates the part of SWAN grid covered by current FLOW domain
-            !
-            call grmap(fif%u1, fif%npts, &
-                      & sif%u1, sif%npts, &
-                      & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                      & iprint)
-            call grmap(fif%v1, fif%npts, &
-                      & sif%v1, sif%npts, &
-                      & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                      & iprint)
          else
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%flow_velocity_name, sif%u1, sif%v1)
          end if
@@ -187,17 +157,6 @@ contains
             call get_wind(wavedata%time, &
                          & fif%windu, fif%windv, fif%mmax, fif%nmax, &
                          & fg%grid_name)
-            !
-            ! Map wind to SWAN grid
-            !
-            call grmap(fif%windu, fif%npts, &
-                      & sif%windu, sif%npts, &
-                      & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                      & iprint)
-            call grmap(fif%windv, fif%npts, &
-                      & sif%windv, sif%npts, &
-                      & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                      & iprint)
          else
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%wind_velocity_name, sif%windu, sif%windv)
          end if
@@ -251,23 +210,9 @@ contains
          !
          ! Map depth to SWAN grid
          !
-         call grmap(fif%dpsmud, fif%npts, &
-                   & sif%dpsmud, sif%npts, &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint)
-         !
-         ! Read mud level from mud-com-file
-         !
          call get_lev(wavedata%time, &
                      & fif%s1mud, fif%mmax, fif%nmax, &
                      & mudfilnam)
-         !
-         ! Map mud level to SWAN grid
-         !
-         call grmap(fif%s1mud, fif%npts, &
-                   & sif%s1mud, sif%npts, &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint)
       end if
       !
       ! Deallocate memory swan input fields defined on flow grid

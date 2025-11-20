@@ -82,7 +82,7 @@ subroutine flow_init (mode, it01, tscale)
       ! mode may be stand_alone or not
       !
       if (swan_run%useflowdata .or. swan_run%swwav) then
-         num_subdomains = checkcomfiles(swan_run%flowgridfile)
+         num_subdomains = 1
          if (num_subdomains == 1) then
             write(*,'(3a)') '*** MESSAGE: Using data from NetCDF file "', trim(swan_run%flowgridfile), '".'
          else
