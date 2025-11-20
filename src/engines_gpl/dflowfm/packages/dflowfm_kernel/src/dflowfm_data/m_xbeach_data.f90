@@ -262,7 +262,6 @@ module m_xbeach_data
    integer :: tsmult = -123 !  [-] multiplier, maximizes implicit timestep based on CFL based timestep for implicit solver
    real(kind=dp) :: waveps = -123 !  [-] eps for wave related quantities, for comparison with XBeach
    real(kind=dp) :: d_relaxfac = -123 !  [-] Relaxation factor for wave dissipation in stationary solver
-   real(kind=dp) :: DR_minthresh = -123 !  [-]
    !
    ! [Section] Roller and wave turbulence parameters
    real(kind=dp) :: BRfac = -123 !  [-] (advanced) Calibration factor surface slope

@@ -51,7 +51,7 @@ contains
 
       integer :: L, k1, k2
       integer :: lsd
-      real(kind=dp) :: hwavu, slope, flx, frc, fixf, trmag_u, slpfac
+      real(kind=dp) :: hwavu, slope, flx, fixf, trmag_u, slpfac
       real(kind=dp) :: cosw, sinw, coswu
 
       error = .true.
@@ -136,7 +136,7 @@ contains
                trmag_u = hypot(e_sswn(L, lsd), e_sswt(L, lsd))
                flx = trmag_u * slpfac
                e_sswn(L, lsd) = e_sswn(L, lsd) - flx
-               call getfracfixfac(L, k1, k2, lsd, e_sswn(L, lsd), fixf)
+               call getfixfac(L, k1, k2, lsd, e_sswn(L, lsd), fixf)
                e_sswn(L, lsd) = e_sswn(L, lsd) * fixf
             end if
          end do
@@ -147,9 +147,9 @@ contains
 
    end subroutine bermslopenudging
 
-   subroutine getfracfixfac(L, k1, k2, lsd, transp, frc, fixf)
+   subroutine getfixfac(L, k1, k2, lsd, transp, fixf)
       use precision, only: dp
-      use m_fm_erosed, only: fixfac, frac
+      use m_fm_erosed, only: fixfac
       use m_flowgeom, only: lnxi
       use m_flow, only: hu, epshu
 
@@ -157,20 +157,17 @@ contains
 
       integer, intent(in) :: L, k1, k2, lsd
       real(kind=dp), intent(in) :: transp
-      real(kind=dp), intent(out) :: frc, fixf
+      real(kind=dp), intent(out) :: fixf
 
       if (L > lnxi .and. hu(L) > epshu) then
          fixf = fixfac(k2, lsd)
-         frc = frac(k2, lsd)
       else
          if (transp >= 0) then
             fixf = fixfac(k1, lsd)
-            frc = frac(k1, lsd)
          else
             fixf = fixfac(k2, lsd)
-            frc = frac(k2, lsd)
          end if
       end if
-   end subroutine getfracfixfac
+   end subroutine getfixfac
 
 end module m_bermslopenudging

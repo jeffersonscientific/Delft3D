@@ -289,7 +289,6 @@ contains
          beta = readkey_dbl(md_surfbeatfile, 'beta', 0.10_dp, 0.05_dp, 0.3_dp)
          varbeta = readkey_int(md_surfbeatfile, 'varbeta', 1, 0, 1, strict=.true.)
          rfb = readkey_int(md_surfbeatfile, 'rfb', 0, 0, 1, strict=.true.)
-         DR_minthresh = readkey_dbl(md_surfbeatfile, 'DR_minthresh', 0.0_dp, 0.0_dp, 2.0_dp, strict=.true.)
          !
          !
          ! Wave-current interaction parameters
@@ -1687,7 +1686,8 @@ contains
       logical :: isRecomputed
 
       integer :: kb, ki, Lb, nw
-      integer :: LL1, LL2, n, lunfil
+      integer :: LL1, LL2, n
+      integer, save :: lunfil
 
       ierror = 1
       if (.not. allocated(dist)) allocate (dist(1:ntheta), factor(1:ntheta), e01(1:ntheta))
