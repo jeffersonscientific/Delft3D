@@ -70,8 +70,8 @@ contains
             k1 = ln(1, L)
             k2 = ln(2, L)
             do j = 1, NUMCONST
-               sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) !* dts * dt_flux(L)
-               sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) !* dts * dt_flux(L)
+               sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L)
+               sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L)
             end do  
          end do
       else
@@ -84,8 +84,8 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
                do j = 1, NUMCONST
-                  sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) !* dts * dt_flux(L)
-                  sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) !* dts * dt_flux(L)
+                  sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L)
+                  sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L)
                end do
             end do
          end do

@@ -128,8 +128,6 @@ contains
       integer :: numstepssync
 
       integer(4) :: ithndl = 0
-      real(kind=dp), dimension(lnx) :: dt_flux
-      real(kind=dp), dimension(lnx) :: dt_flux_sum
 
       if (NUMCONST == 0) return ! nothing to do
       if (timon) call timstrt("update_constituents", ithndl)
@@ -171,8 +169,6 @@ contains
 
       jaupdatehorflux = 1
       jaupdate = 1
-      dt_flux = 1.0_dp
-      dt_flux_sum = 0.0_dp
       fluxhor = 0.0_dp ! not necessary
       sumhorflux = 0.0_dp
 
@@ -197,9 +193,8 @@ contains
          end if
 !     determine which fluxes need to be updated in a second step
          if (nsubsteps > 1) then
-            call get_jaupdatehorflux(limtyp, jaupdate, ndeltasteps, jaupdatehorflux, dt_flux)
+            call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
          end if
-         dt_flux_sum = dt_flux_sum + dt_flux
          if (istep == 0) then
 !     compute horizontal fluxes, explicit part
             if ((.not. stm_included) .or. flowwithoutwaves) then ! just do the normal stuff
@@ -238,7 +233,7 @@ contains
          call stoptimer(IDEBUG)
 
          if (jased == 4 .and. stmpar%lsedsus > 0) then ! at the moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary
-            call comp_horfluxtot(dt_flux)
+            call comp_horfluxtot()
          end if
 
          if (jamba > 0) then ! at moment, this function is only required for the mass balance areas

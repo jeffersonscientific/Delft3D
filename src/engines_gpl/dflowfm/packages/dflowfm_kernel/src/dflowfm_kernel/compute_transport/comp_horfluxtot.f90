@@ -40,7 +40,7 @@ module m_comp_horfluxtot
 
 contains
 
-   subroutine comp_horfluxtot(dt_flux)
+   subroutine comp_horfluxtot()
       use m_flowgeom, only: Lnx
       use m_flow, only: Lbot, Ltop, kmx
       use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot
@@ -49,8 +49,6 @@ contains
       use precision, only: dp
 
       implicit none
-
-      real(kind=dp), dimension(lnx), intent(in) :: dt_flux 
 
       integer :: LL, L, Lb, Lt
       integer :: j
