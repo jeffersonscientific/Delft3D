@@ -9,8 +9,6 @@
   <data:scalar name="water_levels" />
   <data:vector name="flow_velocity" />
   <data:vector name="wind_velocity" />
-  <data:scalar name="com_data_fm_to_wave" />
-  <data:scalar name="com_data_wave_to_fm" />
 
   <data:scalar name="hs" />
   <data:scalar name="dir" />
@@ -94,11 +92,6 @@
     <use-data name="dhsign" />
     <use-data name="drtm01" />
     <use-data name="setup" />
-  </mesh>
-
-  <mesh name="com_mesh" dimensions="2">
-    <use-data name="com_data_fm_to_wave" />
-    <use-data name="com_data_wave_to_fm" />
   </mesh>
 
   <mesh name="wave_nodes" dimensions="2">
@@ -192,9 +185,6 @@
     <read-data name="drtm01" mesh="fm_flow_nodes" />
     <read-data name="setup" mesh="fm_flow_nodes" />
     <mapping:linear-cell-interpolation direction="read" from="wave_nodes" to="fm_flow_nodes" constraint="consistent" />
-    <provide-mesh name="com_mesh" />
-    <write-data name="com_data_fm_to_wave" mesh="com_mesh" />
-    <read-data name="com_data_wave_to_fm" mesh="com_mesh" />
     <export:vtu directory="precice-exports" />
   </participant>
 
@@ -244,9 +234,6 @@
     <write-data name="drtm01" mesh="wave_nodes" />
     <write-data name="setup" mesh="wave_nodes" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_nodes" to="wave_nodes" constraint="consistent" />
-    <receive-mesh name="com_mesh" from="fm" />
-    <read-data name="com_data_fm_to_wave" mesh="com_mesh" />
-    <write-data name="com_data_wave_to_fm" mesh="com_mesh" />
     <export:vtu directory="precice-exports" />
   </participant>
 
@@ -298,7 +285,5 @@
     <exchange data="dhsign" mesh="wave_nodes" from="wave" to="fm" />
     <exchange data="drtm01" mesh="wave_nodes" from="wave" to="fm" />
     <exchange data="setup" mesh="wave_nodes" from="wave" to="fm" />
-    <exchange data="com_data_fm_to_wave" mesh="com_mesh" from="fm" to="wave" />
-    <exchange data="com_data_wave_to_fm" mesh="com_mesh" from="wave" to="fm" />
   </coupling-scheme:serial-explicit>
 </precice-configuration>

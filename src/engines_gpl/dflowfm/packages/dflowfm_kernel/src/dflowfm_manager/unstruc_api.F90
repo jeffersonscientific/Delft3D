@@ -97,7 +97,6 @@ contains
          print *, '[FM] Initializing preCICE for parallel execution with ', numranks, ' ranks. This is rank ', my_rank
          call precicef_create_with_communicator(precice_state%component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_state%component_name), len(precice_config_name))
       end if
-      call register_com_mesh_with_precice()
       call register_flow_nodes_with_precice(precice_state%flow_vertex_ids)
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
@@ -176,19 +175,6 @@ contains
       call precicef_set_mesh_triangles(mesh_name, num_triangles, precice_triangle_nodes, len(mesh_name))
       print *, '[FM] Registered ', num_triangles, ' triangles with preCICE'
    end subroutine register_flow_nodes_with_precice
-
-   subroutine register_com_mesh_with_precice()
-      use precice, only: precicef_set_vertices
-      implicit none(type, external)
-
-      character(kind=c_char, len=*), parameter :: mesh_name = "com_mesh"
-      real(kind=c_double), dimension(2) :: mesh_coordinates
-      integer(kind=c_int), dimension(1) :: vertex_ids
-
-      mesh_coordinates = [0.0_c_double, 0.0_c_double]
-
-      call precicef_set_vertices(mesh_name, 1, mesh_coordinates, vertex_ids, len(mesh_name))
-   end subroutine register_com_mesh_with_precice
 
    function is_coupling_ongoing() result(is_ongoing)
       use precice, only: precicef_is_coupling_ongoing
