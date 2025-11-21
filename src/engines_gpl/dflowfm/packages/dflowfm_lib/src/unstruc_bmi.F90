@@ -44,9 +44,6 @@ module bmi
    use m_cosphiunetcheck, only: cosphiunetcheck
    use m_flow_run_usertimestep, only: flow_run_usertimestep
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
-#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
-   use m_flow_run_sometimesteps, only: couple_to_greeter_dummy
-#endif
    use m_flow_init_usertimestep, only: flow_init_usertimestep
    use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
    use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
@@ -295,10 +292,6 @@ contains
       !   make domain number string as soon as possible
       write (sdmn, '(I4.4)') my_rank
 
-#endif
-
-#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
-      call couple_to_greeter_dummy()
 #endif
 
       ! do this until default has changed

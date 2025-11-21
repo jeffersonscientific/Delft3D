@@ -4,7 +4,6 @@ module m_swan_tot
    public :: swan_tot
    contains
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
 ! write a single field to our mesh
 subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_grid, precice_state)
    use precision
@@ -13,7 +12,7 @@ subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_gri
    use precice, only: precicef_write_data          ! for writing
    implicit none(type, external)
    !
-   real, dimension(:, :), pointer, intent(in) :: my_field_data ! value array
+   real, dimension(:, :), intent(in) :: my_field_data ! value array
    character(kind=c_char, len=*), intent(in) :: my_field_name  ! name of the field in mesh
    type(grid), intent(in) :: my_swan_grid                      ! contains grid points (most importantly %kcs(:,:) for active points)
    type(wave_precice_state_t), intent(in) :: precice_state          ! precice definitions of our mesh
@@ -51,18 +50,27 @@ subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_gri
 end subroutine write_swan_field_to_precice
 
 ! Write the supplied swan output fields to the precice mesh
-subroutine write_swan_data_to_precice(my_swan_output_fields, my_swan_grid, precice_state)
+subroutine write_swan_data_to_precice(my_swan_output_fields, swan_run, my_swan_grid, precice_state)
    use precision
-   use swan_flow_grid_maps                         ! for grids and their types ...
-   use m_wave_precice_state_t, only: wave_precice_state_t    ! for our precice mesh data
+   use swan_flow_grid_maps
+   use swan_input, only: swan_type
+   use m_wave_precice_state_t, only: wave_precice_state_t
+   use m_transform_wave_physics, only: transform_wave_physics_sp
    implicit none(type, external)
    !
-   type(output_fields), intent(in) :: my_swan_output_fields    ! The swan output data
+   type(output_fields), intent(inout) :: my_swan_output_fields    ! The swan output data
+   type(swan_type), intent(in) :: swan_run
    type(grid), intent(in) :: my_swan_grid                      ! contains grid points (most importantly %kcs(:,:) for active points)
    type(wave_precice_state_t), intent(in) :: precice_state          ! precice definitions of our mesh
-   !
-   ! Write all fields to our mesh.
-   !
+
+   integer :: ierr
+
+   call transform_wave_physics_sp(my_swan_output_fields%hs, my_swan_output_fields%dir, my_swan_output_fields%period, &
+                                  my_swan_output_fields%depth, my_swan_output_fields%fx, my_swan_output_fields%fy, &
+                                  my_swan_output_fields%mx, my_swan_output_fields%my, &
+                                  my_swan_output_fields%dissip(:,:,1), my_swan_output_fields%dissip(:,:,2), my_swan_output_fields%dissip(:,:,3), &
+                                  my_swan_output_fields%mmax, my_swan_output_fields%nmax, my_swan_output_fields%hrms, my_swan_output_fields%tp, &
+                                  swan_run%grav, swan_run%swflux, swan_run%swdis, swan_run%gamma0, my_swan_output_fields%wsbodyu, my_swan_output_fields%wsbodyv, ierr)
    call write_swan_field_to_precice(my_swan_output_fields%hs, precice_state%hs_name, my_swan_grid, precice_state)
    call write_swan_field_to_precice(my_swan_output_fields%dir, precice_state%dir_name, my_swan_grid, precice_state)
    call write_swan_field_to_precice(my_swan_output_fields%dirc, precice_state%dirc_name, my_swan_grid, precice_state)
@@ -103,7 +111,6 @@ subroutine write_swan_data_to_precice(my_swan_output_fields, my_swan_grid, preci
    call write_swan_field_to_precice(my_swan_output_fields%setup, precice_state%setup_name, my_swan_grid, precice_state)
    !
 end subroutine write_swan_data_to_precice
-#endif
 
 subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_state)
 !----- GPL ---------------------------------------------------------------------
@@ -518,29 +525,8 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
                                & swan_input_fields%ice_frac, swan_input_fields%floe_dia, &
                                & swan_output_fields%hs)
          end if
-         !
-         !! Added precice writing here.
-         !
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
          if (i_swan == 1) then
-            call write_swan_data_to_precice(swan_output_fields, swan_grids(i_swan), precice_state)
-         end if
-         !
-#endif
-         if (swan_run%swwav) then
-            !
-            ! For each com-file (flow domain)
-            !
-            do i_flow = 1, n_flow_grids
-               !
-               ! Map WAVE parameters to FLOW grid
-               !
-               write (*, '(a,i10)') '  Map WAVE parameters to FLOW grid ', i_flow
-               call map_swan_output(swan_output_fields,            &
-                           &        flow_output_fields(i_flow),    &
-                           &        swan2flow_maps(i_swan, i_flow), &
-                           &        flow_grids(i_flow))
-            end do
+            call write_swan_data_to_precice(swan_output_fields, swan_run, swan_grids(i_swan), precice_state)
          end if
          if (dom%cgnum .and. wavedata%output%write_wavm) then
             !
@@ -610,47 +596,6 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
       ! Next time, use the last written hotfile
       !
       swan_run%usehottime = swan_run%writehottime
-      !
-      ! gl THINK THIS CHECK SHOULD BE AROUND ALL WRITING TO THE COM FILE
-      !
-      if (swan_run%swwav) then
-         do i_flow = 1, n_flow_grids
-            if (swan_run%flowgridfile == ' ') then
-               !
-               ! Convert vector fields to curvilinear directions
-               !
-               write (*, '(a,i10)') '  Convert vector field ', i_flow
-               call wave2flow(flow_output_fields(i_flow), flow_grids(i_flow))
-            end if
-            !
-            ! Convert some parameters to communication parameters
-            !
-            write (*, '(a)') '  Convert parameters'
-            call wave2com(flow_output_fields(i_flow), swan_run)
-            !
-            ! Write to communication file(s)
-            !
-            write (*, '(a)') '  Write to com-file'
-            itidewrite = itide
-            if (swan_run%append_com) itidewrite = -1
-            call put_wave_fields(flow_grids(i_flow), flow_output_fields(i_flow), itidewrite, &
-                                & wavedata, swan_run%swflux, swan_run%flowgridfile, &
-                                & swan_run%netcdf_sp)
-         end do
-         ! Initially comcount = 0
-         ! After writing the first data set to (all) the comfile(s), comcount must be increased
-         ! Always write to field 1, unless append_com is true
-         if (swan_run%append_com) then
-            ! comcount = 0: The first fields have just been written; next time: comcount = 2
-            if (wavedata%output%comcount == 0) then
-               wavedata%output%comcount = 2
-            else
-               wavedata%output%comcount = wavedata%output%comcount + 1
-            end if
-         else
-            wavedata%output%comcount = 1
-         end if
-      end if
    end do ! time steps
 end subroutine swan_tot
 end module m_swan_tot

@@ -550,25 +550,24 @@ contains
 
 !> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
 !
-!  TODO: implement preCICE coupling here!
-!
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine read_precice_wave_data(precice_state, data_name, data_values)
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       use m_fm_precice_state_t, only : fm_precice_state_t
-      use precice, only: precicef_read_data
+      use precice, only: precicef_read_data, precicef_get_max_time_step_size
       implicit none(type,external)
-      !
+
       type(fm_precice_state_t) :: precice_state
       character(kind=c_char, len=*) :: data_name
       real(kind=dp), allocatable, dimension(:) :: data_values
+      real(kind=c_double) :: max_time_step
+
       if (allocated(data_values)) then
+         call precicef_get_max_time_step_size(max_time_step)
          call precicef_read_data(precice_state%mesh_name, data_name, size(precice_state%flow_vertex_ids), &
-            precice_state%flow_vertex_ids, 0.0_c_double, data_values, &
+            precice_state%flow_vertex_ids, max_time_step, data_values, &
             len(precice_state%mesh_name), len(data_name))
       end if
    end subroutine read_precice_wave_data
-#endif
 !
    subroutine set_all_wave_parameters()
       use m_fm_precice_state_t, only: global_fm_precice_state
@@ -584,8 +583,6 @@ contains
       !
       print *, '[FM] We are in set_all_wave_parameters at ', ecTime%seconds()
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      ! TODO: Call precice reads here.
       call read_precice_wave_data(global_fm_precice_state, global_fm_precice_state%hrms_name, hwavcom)
       call read_precice_wave_data(global_fm_precice_state, global_fm_precice_state%tp_name, twavcom)
       call read_precice_wave_data(global_fm_precice_state, global_fm_precice_state%pdir_name, phiwav)
@@ -598,44 +595,6 @@ contains
       call read_precice_wave_data(global_fm_precice_state, global_fm_precice_state%ubot_name, uorbwav)
       call read_precice_wave_data(global_fm_precice_state, global_fm_precice_state%dissip2_name, dsurf)
       call read_precice_wave_data(global_fm_precice_state, global_fm_precice_state%dissip3_name, dwcap)
-#else
-      if (allocated(hwavcom)) then
-         success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      end if
-      if (allocated(twavcom)) then
-         success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      end if
-      if (allocated(phiwav)) then
-         call get_values_and_consider_fww(item_dir)
-      end if
-      if (allocated(sxwav)) then
-         call get_values_and_consider_fww(item_fx)
-      end if
-      if (allocated(sywav)) then
-         call get_values_and_consider_fww(item_fy)
-      end if
-      if (allocated(sbxwav)) then
-         call get_values_and_consider_fww(item_wsbu)
-      end if
-      if (allocated(sbywav)) then
-         call get_values_and_consider_fww(item_wsbv)
-      end if
-      if (allocated(mxwav)) then
-         call get_values_and_consider_fww(item_mx)
-      end if
-      if (allocated(mywav)) then
-         call get_values_and_consider_fww(item_my)
-      end if
-      if (allocated(uorbwav)) then
-         call get_values_and_consider_fww(item_ubot)
-      end if
-      if (allocated(dsurf)) then
-         call get_values_and_consider_fww(item_dissurf)
-      end if
-      if (allocated(dwcap)) then
-         call get_values_and_consider_fww(item_diswcap)
-      end if
-#endif
    end subroutine set_all_wave_parameters
 
 !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)

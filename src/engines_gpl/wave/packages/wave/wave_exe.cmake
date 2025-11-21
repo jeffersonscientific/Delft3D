@@ -10,10 +10,6 @@ add_executable(${executable_name}   ${executable_files}
                                     ${rc_version_file}
                                     ${icon_file})
 
-if(HAS_PRECICE_FM_WAVE_COUPLING)
-    target_compile_definitions(${executable_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
-endif()
-
 # Set dependencies
 if (WIN32)
     set(exe_dependencies    wave_data

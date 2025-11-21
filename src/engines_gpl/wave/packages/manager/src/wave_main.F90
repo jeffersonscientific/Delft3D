@@ -50,11 +50,9 @@ module wave_main
    public wave_main_init
    public wave_main_step
    public wave_main_finish
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    public :: initialize_fm_coupling
    public :: is_fm_coupling_ongoing
    public :: advance_fm_time_window
-#endif
 
    public wavedata
 !
@@ -67,54 +65,6 @@ module wave_main
 
 contains
 
-#if defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
-   subroutine couple_to_greeter_dummy()
-      use m_alloc, only: realloc
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
-                         precicef_set_vertices, precicef_read_data, &
-                         precicef_get_data_dimensions, precicef_get_max_time_step_size
-
-      integer(kind=c_int), parameter :: precice_component_name_length = 4
-      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
-      integer(kind=c_int), parameter :: precice_config_name_length = 21
-      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
-      integer(kind=c_int), parameter :: mesh_name_length = 9
-      character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "wave-mesh"
-      integer(kind=c_int), parameter :: max_greeting_length = 34
-      integer(kind=c_int) :: mesh_dimensions
-      real(kind=c_double), dimension(max_greeting_length*2) :: mesh_coordinates
-      integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
-      integer(kind=c_int), parameter :: data_name_length = 8
-      character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
-      integer :: data_size, data_dimension
-      real(kind=c_double), dimension(:), allocatable :: data_values
-      character(kind=c_char), dimension(:), allocatable :: converted_data
-      real(kind=c_double) :: precice_time_step
-
-      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
-      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
-      print *, '[wave] The number of dimensions of the wave-mesh is ', mesh_dimensions
-
-      mesh_coordinates = 0.0_c_double
-      call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
-      call precicef_initialize()
-
-      call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
-      data_size = data_dimension * max_greeting_length
-      print *, '[wave] data dimension: ', data_dimension, ' data size: ', data_size
-      call realloc(data_values, data_size)
-
-      call precicef_get_max_time_step_size(precice_time_step)
-      print *, '[wave] max time step: ', precice_time_step
-      call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
-                              mesh_name_length, data_name_length)
-
-      converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i=1, data_size)]
-      print *, '[wave] message read: ', converted_data
-   end subroutine couple_to_greeter_dummy
-#endif
-
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_fm_coupling(mdw_file_name, precice_state)
       use precice, only: precicef_create, precicef_initialize
       use m_wave_precice_state_t, only: wave_precice_state_t
@@ -359,7 +309,6 @@ contains
 
       write (*, '(a,i0,a,i0,a)') '[Wave] Swan grid dimensions: mmax=', swan_grid%mmax, ', nmax=', swan_grid%nmax
    end function get_swan_grid
-#endif
 !
 ! ====================================================================================
 function wave_main_init(mode_in, mdw_file) result(retval)
@@ -422,10 +371,6 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    call initialize_wavedata(wavedata)
    call initialize_wave_mpi()
    retval = wave_init(mode_in, mdw_file)
-
-#if defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
-   call couple_to_greeter_dummy()
-#endif
 end function wave_main_init
 
 !
@@ -873,9 +818,7 @@ function wave_main_finish() result(retval)
       retval = 0
    endif
 
-#if defined(HAS_PRECICE_WAVE_GREETER_COUPLING) || defined(HAS_PRECICE_FM_WAVE_COUPLING)
    call precicef_finalize()
-#endif
 end function wave_main_finish
 
 

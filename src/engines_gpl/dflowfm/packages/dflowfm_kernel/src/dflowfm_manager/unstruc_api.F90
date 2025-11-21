@@ -53,7 +53,6 @@ module unstruc_api
 
    real(kind=dp) :: cpuall0
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    interface
       subroutine tricall(jatri, xs, ys, ns, indx, numtri, edgeidx, numedge, triedge, xs3, ys3, ns3, trisize) bind(C, name="tricall_")
          use, intrinsic :: iso_c_binding, only: c_int, c_double
@@ -73,10 +72,8 @@ module unstruc_api
          real(kind=c_double), intent(in) :: trisize
       end subroutine tricall
    end interface
-#endif
 contains
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_precice_coupling(precice_state)
       use precice, only: precicef_create, precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
                          precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size, precicef_requires_initial_data
@@ -100,7 +97,6 @@ contains
          print *, '[FM] Initializing preCICE for parallel execution with ', numranks, ' ranks. This is rank ', my_rank
          call precicef_create_with_communicator(precice_state%component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_state%component_name), len(precice_config_name))
       end if
-      call register_com_mesh_with_precice()
       call register_flow_nodes_with_precice(precice_state%flow_vertex_ids)
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
@@ -179,19 +175,6 @@ contains
       call precicef_set_mesh_triangles(mesh_name, num_triangles, precice_triangle_nodes, len(mesh_name))
       print *, '[FM] Registered ', num_triangles, ' triangles with preCICE'
    end subroutine register_flow_nodes_with_precice
-
-   subroutine register_com_mesh_with_precice()
-      use precice, only: precicef_set_vertices
-      implicit none(type, external)
-
-      character(kind=c_char, len=*), parameter :: mesh_name = "com_mesh"
-      real(kind=c_double), dimension(2) :: mesh_coordinates
-      integer(kind=c_int), dimension(1) :: vertex_ids
-
-      mesh_coordinates = [0.0_c_double, 0.0_c_double]
-
-      call precicef_set_vertices(mesh_name, 1, mesh_coordinates, vertex_ids, len(mesh_name))
-   end subroutine register_com_mesh_with_precice
 
    function is_coupling_ongoing() result(is_ongoing)
       use precice, only: precicef_is_coupling_ongoing
@@ -364,7 +347,6 @@ contains
                                n_points, precice_state%flow_vertex_ids, &
                                stemheight, len(precice_state%mesh_name), len(precice_state%vegetation_height_name))
    end subroutine precice_write_vegetation
-#endif
 
 !> Initializes global program/core data, not specific to a particular model.
    subroutine init_core()
@@ -657,9 +639,7 @@ contains
          call timdump(trim(defaultFilename('timers_init')), .true.)
       end if
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       call initialize_precice_coupling(precice_state)
-#endif
    end function flowinit
 
    subroutine flowstep(jastop, iresult, precice_state)
@@ -669,11 +649,9 @@ contains
       use m_drawthis
       use m_draw_nu
       use m_fm_precice_state_t, only: fm_precice_state_t
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       use m_flowtimes, only: dt_user
       use m_flowgeom, only: bl
       use m_flow, only: s1
-#endif
       implicit none(type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
@@ -693,9 +671,7 @@ contains
 
       call flow_usertimestep(key, iresult) ! one user_step consists of several flow computational time steps
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       call advance_precice_time_window(dt_user, precice_state, bl, s1)
-#endif
       if (iresult /= DFM_NOERR) then
          jastop = 1
          goto 888
@@ -745,9 +721,7 @@ contains
       call dealloc_nfarrays()
       call dealloc_lateraldata()
       call close_fm_statistical_output()
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       call finalize_precice_coupling()
-#endif
 
       if (.not. ecFreeInstance(ecInstancePtr)) then
          continue

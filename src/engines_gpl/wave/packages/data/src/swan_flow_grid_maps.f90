@@ -232,7 +232,6 @@ contains
             write (*, '(a)') '*** ERROR: on calling read_netcdf_grd: filename not specified.'
             call wavestop(1, '*** ERROR: on calling read_netcdf_grd: filename not specified.')
          end if
-         call read_netcdf_grd(i_grid, g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%kmax, g%sferic, g%xymiss, g%bndx, g%bndy, g%numenclpts, g%numenclparts, g%numenclptsppart, filename, flowLinkConnectivity)
       case default
          ! grid type not supported
          write (*, '(3a)') '*** ERROR: Grid type ''', trim(grid_file_type), ''' not supported.'
