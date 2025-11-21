@@ -609,8 +609,25 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e03_f09_c62_channel3d_scheme17" ref="dwaq_default">
+    <!-- Use DELWAQ directly because of a small glitch in the cooperation with DIMR:
+         the DELWAQ run ends before DIMR is informed about it. This happens with steady-state options -->
+    <testCase name="e03_f09_c62_channel3d_scheme17" ref="dwaq_directly">
         <path version="2025-11-13T15:19:07.961000">e03_waq/f09_validation_water_quality_delwaq/c62_channel3d_scheme17</path>
+        <programs>
+            <program ref="WAQ">
+                <arguments>
+                    <argument>channel3d_option17.inp</argument>
+                </arguments>
+            </program>
+        </programs>
+        <location ref="reference_results" type="reference">
+            <from>lnx64</from>
+        </location>
+        <location ref="cases" type="input">
+            <from>.</from>
+        </location>
+        <maxRunTime>60.0</maxRunTime>
+        <!-- seconds -->
         <checks>
             <file name="channel3d_option17.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -621,8 +638,23 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e03_f09_c63_channel3d_scheme18" ref="dwaq_default">
+    <testCase name="e03_f09_c63_channel3d_scheme18" ref="dwaq_directly">
         <path version="2025-11-13T15:19:09.944000">e03_waq/f09_validation_water_quality_delwaq/c63_channel3d_scheme18</path>
+        <programs>
+            <program ref="WAQ">
+                <arguments>
+                    <argument>channel3d_option18.inp</argument>
+                </arguments>
+            </program>
+        </programs>
+        <location ref="reference_results" type="reference">
+            <from>lnx64</from>
+        </location>
+        <location ref="cases" type="input">
+            <from>.</from>
+        </location>
+        <maxRunTime>60.0</maxRunTime>
+        <!-- seconds -->
         <checks>
             <file name="channel3d_option18.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
