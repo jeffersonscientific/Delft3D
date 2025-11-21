@@ -1435,7 +1435,7 @@ contains
       end do
       mba = mbb + mbs
       if (first) then 
-          write(filename, '(a,i4,i02,i02,a,i02,i02,a)') 'mass_', values(1),values(2),values(3),'_',values(5), values(6), '.csv'
+          write(filename, '(a,i4,i2.2,i2.2,a,i2.2,i2.2,a)') 'mass_', values(1),values(2),values(3),'_',values(5), values(6), '.csv'
           open(newunit=unit, file=filename, status='replace')
           write(unit,*) 'time, suspended [kg], bed [kg], total[kg], extra'
           first = .false.
