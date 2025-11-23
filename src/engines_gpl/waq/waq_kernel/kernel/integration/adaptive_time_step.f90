@@ -338,95 +338,6 @@ contains
                             iqdmp, nvert, ivert)
 
 
-            ! do i = i_flow_begin, i_flow_end
-            !     iq = sorted_flows(i)
-            !     if (iq < 0) cycle
-            !     if (flow(iq) == 0.0) cycle
-            !     dlt_vol = flow(iq) * delta_t_box(first_box_smallest_dt)
-            !     ifrom = ipoint(1, iq)
-            !     ito = ipoint(2, iq)
-            !     ipb = 0
-            !     if (fluxes) then
-            !         if (iqdmp(iq) > 0) ipb = iqdmp(iq)
-            !     end if
-            !     ! if 'from' cell is a B.C.
-            !     if (ifrom < 0) then
-            !         ! if target (from) is a boundary
-            !         if (dlt_vol < 0.0d0) then
-            !             ! update source (to) cell in uppermost cell of column
-            !             ito = ivert(nvert(1, abs(nvert(2, ito))))
-            !             ! update matrix for upper-most cell of source column (target is B.C.)
-            !             volint(ito) = volint(ito) + dlt_vol
-            !             do substance_i = 1, num_substances_transported
-            !                 dlt_mass = dlt_vol * conc(substance_i, ito)
-            !                 rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
-            !                 if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-            !                 if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dlt_mass
-            !                 if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
-            !             end do
-            !         end if
-            !         !    cycle
-            !     !end if
-            !     ! if 'to' cell is a boundary
-            !     else if (ito < 0) then
-            !         ! if target (to) is a boundary
-            !         if (dlt_vol > 0.0d0) then
-            !             ! update source (from) cell in uppermost cell of column
-            !             ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
-            !             ! update matrix for upper-most cell of source column (target is B.C.)
-            !             volint(ifrom) = volint(ifrom) - dlt_vol
-            !             do substance_i = 1, num_substances_transported
-            !                 dlt_mass = dlt_vol * conc(substance_i, ifrom)
-            !                 rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
-            !                 if (volint(ifrom) > 1.0d-25) conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
-            !                 if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dlt_mass
-            !                 if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
-            !             end do
-            !         end if
-            !     !     cycle
-            !     ! end if
-            !     ! else inner cells, no B.C.
-            !     ! if dlt_vol is going in direction 'from' =source --> 'to'=target
-            !     else if (dlt_vol > 0) then
-            !         ! use upper-most cell of column of source cell
-            !         ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))         !    'from' should be wetting if dlt_vol > 0
-            !         ! update matrix for upper-most cell of source column
-            !         ! update matrix for real target cell 
-            !         volint(ifrom) = volint(ifrom) - dlt_vol
-            !         volint(ito) = volint(ito) + dlt_vol
-            !         do substance_i = 1, num_substances_transported
-            !             dlt_mass = dlt_vol * conc(substance_i, ifrom)
-            !             rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
-            !             rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
-            !             if (volint(ifrom) > 1.0d-25) conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
-            !             conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-            !             if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
-            !         end do
-            !     ! else dlt_vol is going in direction 'to' = source --> 'from' = target
-            !     else                                                      ! The mirrorred case
-            !         ! use upper-most cell of column of source cell
-            !         ito = ivert(nvert(1, abs(nvert(2, ito))))         !    'to' should be wetting if dlt_vol < 0
-            !         ! update matrix for upper-most cell of source column
-            !         ! update matrix for real target cell 
-            !         volint(ifrom) = volint(ifrom) - dlt_vol
-            !         volint(ito) = volint(ito) + dlt_vol
-            !         do substance_i = 1, num_substances_transported
-            !             dlt_mass = dlt_vol * conc(substance_i, ito)
-            !             rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
-            !             rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
-            !             conc(substance_i, ifrom) = rhs(substance_i, ifrom) / volint(ifrom)
-            !             if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
-            !             if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
-            !         end do
-            !     end if
-            ! end do
-
-
-            ! Remove marks of processed flows (make them all positive)
-            do i = i_flow_begin, i_flow_end  ! All fluxes possibly non CFL-compliant should have been processed
-                sorted_flows(i) = abs(sorted_flows(i))                                  ! Reset the flux pointer to its positive value
-            end do
-
             ! PART2a3: apply all withdrawals that were present in the hydrodynamics as negative wasteload rather than as open boundary flux; uses volint
             do i = i_cell_begin, i_cell_end
                 ! iseg2 == target cell for withdrawal
@@ -2378,7 +2289,7 @@ contains
         integer,              intent(in)   :: ivert(:)                   !< ordering array of cells in vertical columns
        !
 
-        ! Local variables
+       ! Local variables
         integer :: i_flow               !< loop index for sorted flows
         integer :: flow_idx              !< global flow index
         real(kind = dp) :: dlt_vol !< delta volume for a flow
@@ -2391,6 +2302,7 @@ contains
         integer :: i_target       !< index of target cell for the flow
         logical :: source_is_bc   !< flag indicating if source cell is a boundary condition cell
         logical :: target_is_bc   !< flag indicating if target cell is a boundary condition cell
+       !
 
 
          ! loop along flows with cfl condition that have not yet been processed
@@ -2444,6 +2356,13 @@ contains
                 end do
             end if
         end do ! loop along remaining flows with cfl condition
+
+        ! Remove marks of processed flows (make them all positive)
+        do i = i_flow_begin, i_flow_end  ! All fluxes possibly non CFL-compliant should have been processed
+            sorted_flows(i) = abs(sorted_flows(i))                                  ! Reset the flux pointer to its positive value
+        end do
+
+
     end subroutine update_system_for_remaining_flows_with_cfl_condition
 
     function is_bc_cell(cell_i) result(bc_flag)
