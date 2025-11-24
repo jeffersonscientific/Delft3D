@@ -8,7 +8,7 @@
 
 🚀 **Innovation Leadership**: preCICE is a **coupling library** used by leading research institutions and commercial organizations worldwide, positioning kernel coupling at the forefront of modeling technology.
 
-💰 **Reduced Development Costs**: Leverage a **mature, well-supported open-source platform** with extensive community contributions, reducing internal development and maintenance overhead..
+💰 **Reduced Development Costs**: Leverage a **mature, well-supported open-source platform** with extensive community contributions, reducing internal development and maintenance overhead.
 
 🔧 **Enhanced Flexibility**: Support for **multiple programming languages** (C++, C, Fortran, Python, Julia, MATLAB) and **extensive third-party integration** capabilities enable rapid adaptation to new modeling requirements and customer needs.
 
@@ -18,13 +18,14 @@
 
 ### Assessment Highlights
 
-- **✅ 61% of requirements fully met** - Strong foundation for core coupling functionality
-- **⚠️ 29% partially met** - Addressable through targeted development, and workarounds, with clear implementation paths  
-- **❌ 10% not met** - Primarily orchestration features outside preCICE's core scope, manageable through complementary tools
+- **✅ 27 requirements fully met (66%)** - Strong foundation for core coupling functionality  
+  *Requirements: [1](#requirement-1--easily-configurable-by-the-user), [9](#requirement-9--knowledge-of-simulation-time-steps-for-all-components), [10](#requirement-10--set-simulation-time-steps-for-all-components), [11](#requirement-11--control-simulation-advancement-of-components), [13](#requirement-13--schedule-component-execution), [14](#requirement-14--schedule-component-teardown), [15](#requirement-15--manage-available-resource-usage-based-on-scheduling), [16](#requirement-16--enforce-data-ownership-boundaries), [17](#requirement-17--component-agnostic-interface), [20](#requirement-20--orchestration-overhead--10), [24](#requirement-24--clean-and-modern-code-structure), [25](#requirement-25--trigger-based-execution), [26](#requirement-26--restart-coupled-simulations), [27](#requirement-27--modern-programming-paradigms), [28](#requirement-28--add-external-data-as-a-component), [30](#requirement-30--allow-multiple-versions-of-same-component), [31](#requirement-31--validate-configuration-before-run), [32](#requirement-32--follow-security-best-practices), [33](#requirement-33--integrate-third-party-components), [34](#requirement-34--support-mesh-regridding-between-components), [36](#requirement-36--sub-time-step-synchronization), [37](#requirement-37--synchronize-component-geometries), [38](#requirement-38--language-agnostic-integration), [39](#requirement-39--parallel-mpi-data-exchange), [40](#requirement-40--self-contained-tool), [41](#requirement-41--detailed-implementation-documentation), [42](#requirement-42--clear-and-version-controlled-api)*
 
-### Strategic Recommendation
+- **⚠️ 7 requirements partially met (17%)** - Addressable through targeted development and workarounds, with clear implementation paths  
+  *Requirements: [2](#requirement-2--standardized-error-log-storage), [8](#requirement-8--discover-component-executables), [12](#requirement-12--schedule-component-initiation), [18](#requirement-18--execute-any-single-component-individually), [19](#requirement-19--monitor-performance-metrics-during-component-runs), [21](#requirement-21--run-robustly-on-standard-platforms), [23](#requirement-23--tested-to-industry-standards)*
 
-**PROCEED WITH preCICE ADOPTION** using **direct kernel integration**, which provides optimal performance and control while leveraging the existing proof-of-concept implementation already embedded in the Delft3D kernels.
+- **❌ 7 requirements not met (17%)** - Primarily orchestration features outside preCICE's core coupling scope, manageable through complementary tools  
+  *Requirements: [3](#requirement-3--configurable-output-storage-for-component-model-outputs), [4](#requirement-4--fixed-priority-for-configuration-sources), [5](#requirement-5--pass-parallel-execution-info-to-components), [6](#requirement-6--graceful-handling-of-component-thrown-errors), [7](#requirement-7--fallback-logic-on-model-errors), [29](#requirement-29--support-component-partitioning), [35](#requirement-35--support-recursive-coupling)*
 
 ### Technical Analysis Approach
 
@@ -134,7 +135,7 @@ This document summarizes how preCICE performs against the DIMR replacement requi
 
 ## Requirement 1 – Easily configurable by the user
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Easily configurable by the user
 - **Key aspects covered in sub-requirements:**
@@ -144,9 +145,9 @@ This document summarizes how preCICE performs against the DIMR replacement requi
   - Understandable configuration templates
   - Configuration includes execution type
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.40 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - The configuration file contains specifications of the coupling scheme (parallel vs serial and implicit vs explicit), and the library allows for an iterative approach when coupling multiple models in which some use an implicit scheme. 
@@ -161,7 +162,7 @@ From a technical perspective, preCICE provides comprehensive configuration capab
 
 ## Requirement 2 – Standardized error log storage
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Standardized error log storage
 - **Key aspects covered in sub-requirements:**
@@ -169,9 +170,9 @@ From a technical perspective, preCICE provides comprehensive configuration capab
   - Error logs contain partition execution info
   - Decoupled logging implementation
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.75 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+The PoC team determined that preCICE partially meets this requirement.
 
 Representative PoC comments are:
 - Error logging sinks can be specified in the config file. A component could integrate boost.log (the precice logging backend) in C++, but this is more invasive and not standard.
@@ -186,13 +187,13 @@ From a technical perspective, preCICE provides configurable logging through [Log
 
 ## Requirement 3 – Configurable output storage for component model outputs
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Configurable output storage for component model outputs
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
+The PoC team determined that preCICE does not meet this requirement.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE is a library which handles mapping, communication, time stepping. It is called by the components. It is the component which is responsible for its output files.
@@ -203,13 +204,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 4 – Fixed priority for configuration sources
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Fixed priority for configuration sources
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
+The PoC team determined that preCICE does not meet this requirement.
 
 Representative PoC comments are:
 - There is only the config file which is the source of truth for preCICE coupling participants. It only caters to coupling configuration and not the solver's own configuration.
@@ -224,13 +225,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 5 – Pass parallel execution info to components
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Pass parallel execution info to components
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
+The PoC team determined that preCICE does not meet this requirement.
 
 Representative PoC comments are:
 - PreCICE does not control whether a component is performing parallel computations internally, it only controls whether the components are run in parallel or serial relative to each other.
@@ -245,15 +246,15 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 6 – Graceful handling of component-thrown errors
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Graceful handling of component-thrown errors
 - **Key aspects covered in sub-requirements:**
   - Handle unallocated memory/segfaults
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
+The PoC team determined that preCICE does not meet this requirement.
 
 Representative PoC comments are:
 - PreCICE is unaware of errors from the components, and does not even terminate other components if one component hangs.
@@ -268,15 +269,15 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 7 – Fallback logic on model errors
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Fallback logic on model errors
 - **Key aspects covered in sub-requirements:**
   - Standardized exit strategy across components on errors
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
+The PoC team determined that preCICE does not meet this requirement.
 
 Representative PoC comments are:
 - PreCICE plays no role here.
@@ -291,16 +292,16 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 8 – Discover component executables
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Discover component executables
 - **Key aspects covered in sub-requirements:**
   - Configurable path for component executables
   - No hard-coded component paths required
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.67 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+The PoC team determined that preCICE partially meets this requirement.
 
 Representative PoC comments are:
 - Each component should be started separately, PreCICE only handles the communication after it is started
@@ -314,13 +315,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 9 – Knowledge of simulation time steps for all components
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Knowledge of simulation time steps for all components
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - preCICE tracks how much time progress is made by each component. It can either use its own time step or follow the time step of the first component.
@@ -334,13 +335,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 10 – Set simulation time steps for all components
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Set simulation time steps for all components
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - The computational timing still has to be set per component, using their own configuration. PreCICE only ensures that each component steps until a certain time (end of exchange time-window) so that data can be exchanged.
@@ -354,7 +355,7 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 11 – Control simulation advancement of components
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Control simulation advancement of components
 - **Key aspects covered in sub-requirements:**
@@ -364,9 +365,9 @@ From a technical perspective, considering preCICE's architecture and features:
   - Sequential execution of components
   - Asynchronous execution of components
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - One can use the preCICE max time window within the participants loops to calculate solver time steps such that an exchange can happen at end of preCICE time window.
@@ -381,13 +382,13 @@ From a technical perspective, preCICE provides comprehensive simulation control 
 
 ## Requirement 12 – Schedule component initiation
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Schedule component initiation
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+The PoC team determined that preCICE partially meets this requirement.
 
 Representative PoC comments are:
 - The components are responsible for running and initialization, then have to call preCICE API as well.
@@ -401,13 +402,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 13 – Schedule component execution
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Schedule component execution
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - The components are told to increment a certain step, but are responsible for telling preCICE how far they have incremented.
@@ -421,13 +422,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 14 – Schedule component teardown
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Schedule component teardown
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - The components are told to stop at the end, but the components should be configured to not stop by themselves. If one of the component stops before the configured end-time of coupling in preCICE, preCICE will throw an error.
@@ -441,13 +442,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 15 – Manage available resource usage based on scheduling
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Manage available resource usage based on scheduling
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - PreCICE does not do this, but OS can control the executables better now and preCICE optimizes which ones can run in parallel, since if a component waits for another, preCICE lets the OS be aware of it.
@@ -461,15 +462,15 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 16 – Enforce data ownership boundaries
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Enforce data ownership boundaries
 - **Key aspects covered in sub-requirements:**
   - Prevent direct write access between components
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments were:
 - The config file defines which data should be exchanged, but communication happens over the network and keeps components separated.
@@ -489,13 +490,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 17 – Component-agnostic interface
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Component-agnostic interface
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments were:
 - Communication is standardised through the library. Components need to implement the API calls and can use available bindings.
@@ -509,13 +510,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 18 – Execute any single component individually
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Execute any single component individually
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+The PoC team determined that preCICE partially meets this requirement.
 
 Representative PoC comments were:
 - Each component is fully responsible for running, so they can be run independently, but they are also not controlled by preCICE.
@@ -529,16 +530,16 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 19 – Monitor performance metrics during component runs
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Monitor performance metrics during component runs
 - **Key aspects covered in sub-requirements:**
   - Hooks to track CPU/Memory usage
   - Identify shared memory failures
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 1.33 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+The PoC team determined that preCICE partially meets this requirement.
 
 Representative PoC comments were:
 - PreCICE contains a built-in profiler that tracks the time spent during events with an additional python tool that can transform this data between different representations and merge the data of different component runs.
@@ -555,13 +556,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 20 – Orchestration overhead ≤ 10%
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Orchestration overhead ≤ 10%
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team originally assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement. It has not been updated since achieving coupling all data via preCICE.
+The PoC team originally determined that preCICE partially meets this requirement, though this has not been updated since achieving full data coupling via preCICE.
 
 Representative PoC comments were:
 - The library is meant for high performance computing. However, it fully depends on the implementation and the specific models being coupled.
@@ -577,13 +578,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 21 – Run robustly on standard platforms
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Run robustly on standard platforms
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+The PoC team determined that preCICE partially meets this requirement.
 
 Representative PoC comments are:
 - Windows is only supported through a mingw build. This is one of the last steps in the PoC phase and has to be tested.
@@ -596,7 +597,7 @@ From a technical perspective, preCICE provides robust cross-platform support thr
 
 ## Requirement 23 – Tested to industry standards
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Tested to industry standards
 - **Key aspects covered in sub-requirements:**
@@ -606,9 +607,9 @@ From a technical perspective, preCICE provides robust cross-platform support thr
   - Regression tests
   - Security tests
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+The PoC team determined that preCICE partially meets this requirement.
 
 Representative PoC comments were:
 - PreCICE itself contains some system level tests (https://github.com/precice/tutorials) and a bunch of integration tests (https://github.com/precice/precice/tree/develop/tests). The adapters should be tested in our own implementation.
@@ -621,13 +622,13 @@ From a technical perspective, preCICE provides comprehensive testing through [Te
 
 ## Requirement 24 – Clean and modern code structure
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Clean and modern code structure
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments were:
 - Depends on how we implement adapters, precice will be an improvement over dimr.
@@ -641,13 +642,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 25 – Trigger-based execution
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Trigger-based execution
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - Time advancement can be configured to be driven by one of the participants.
@@ -661,13 +662,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 26 – Restart coupled simulations
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Restart coupled simulations
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - PreCICE has no special restart mode, but simulations can be restarted if each component is able to. PreCICE does start from time 0 again and implicit coupling schemes may be in a different initial state.
@@ -682,13 +683,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 27 – Modern programming paradigms
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Modern programming paradigms
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - It uses modern programming principles.
@@ -699,13 +700,13 @@ Representative PoC comments are:
 
 ## Requirement 28 – Add external data as a component
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Add external data as a component
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - If by 'data sources' we mean 'simulators', then external simulators can be coupled by implementing a preCICE adapter.
@@ -719,13 +720,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 29 – Support component partitioning
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Support component partitioning
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
+The PoC team determined that preCICE does not meet this requirement.
 
 Representative PoC comments are:
 - PreCICE is not responsible for the partitioning of each component/participant, only of the data exchange between components. preCICE also does not take care of internal remapping between a component's ranks and sees that as component's responsibility.
@@ -739,13 +740,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 30 – Allow multiple versions of same component
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Allow multiple versions of same component
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - There are no limitations for running an executable multiple times.
@@ -759,13 +760,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 31 – Validate configuration before run
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Validate configuration before run
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - The xml parser does parse the xml file, but errors can be very difficult to interpret and lead to a core dump. 
@@ -779,13 +780,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 32 – Follow security best practices
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Follow security best practices
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - PreCICE does not have many security critical dependencies.
@@ -796,13 +797,13 @@ Representative PoC comments are:
 
 ## Requirement 33 – Integrate third-party components
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Integrate third-party components
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 3.00 on the 0–3 scale**, which implies that preCICE exceeds this requirement.
+The PoC team determined that preCICE exceeds this requirement.
 
 Representative PoC comments are:
 - There is a list of existing solvers that have preCICE adapters available. Further, there is a preCICE FMI runner, so any model that implements FMI can be coupled to other models using preCICE. If a model does not implement FMI, some coding will be necessary to couple using preCICE.
@@ -816,13 +817,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 34 – Support mesh regridding between components
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Support mesh regridding between components
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 3.00 on the 0–3 scale**, which implies that preCICE exceeds this requirement.
+The PoC team determined that preCICE exceeds this requirement.
 
 Representative PoC comments are:
 - PreCICE has 50+ mapping methods for sending data between different grids that are registered in preCICE
@@ -835,13 +836,13 @@ From a technical perspective, preCICE excels at mesh regridding through advanced
 
 ## Requirement 35 – Support recursive coupling
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Support recursive coupling
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
+The PoC team determined that preCICE does not meet this requirement.
 
 Representative PoC comments are:
 - PreCICE is a library, and is not a component itself.
@@ -855,13 +856,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 36 – Sub-time-step synchronization
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Sub-time-step synchronization
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - Communication happens at the end of each time step. However, iteration within the time step is possible through implicit solving of (some of) the components.
@@ -885,15 +886,15 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 37 – Synchronize component geometries
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Synchronize component geometries
 - **Key aspects covered in sub-requirements:**
   - Verify shared geometry usage
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - It is possible to receive the mesh from another component, so we could use that mesh for computation
@@ -908,13 +909,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 38 – Language-agnostic integration
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Language-agnostic integration
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 3.00 on the 0–3 scale**, which implies that preCICE exceeds this requirement.
+The PoC team determined that preCICE exceeds this requirement.
 
 Representative PoC comments are:
 - Extensive language bindings, and through FMI it can couple to models in different modeling frameworks.
@@ -928,13 +929,13 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 39 – Parallel MPI data exchange
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Parallel MPI data exchange
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - preCICE does not require the communication to go between a master rank for the participants. It is aware of the MPI level grids and their coordinates and it handles parallel remapping accordingly.
@@ -954,15 +955,15 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 40 – Self-contained tool
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Self-contained tool
 - **Key aspects covered in sub-requirements:**
   - No OS/compiler dependencies
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 1.50 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - PreCICE can be distributed as a native library and a few executable tools
@@ -978,7 +979,7 @@ From a technical perspective, preCICE provides self-contained distribution throu
 
 ## Requirement 41 – Detailed implementation documentation
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Detailed implementation documentation
 - **Key aspects covered in sub-requirements:**
@@ -988,9 +989,9 @@ From a technical perspective, preCICE provides self-contained distribution throu
   - Usage examples present
   - Changelogs per version
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 2.17 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments are:
 - There is a quickstart, tutorials, and documentation.
@@ -1006,7 +1007,7 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ## Requirement 42 – Clear and version-controlled API
 
-### Combined Requirement Summary
+### Summary
 
 - **Main requirement:** Clear and version-controlled API
 - **Key aspects covered in sub-requirements:**
@@ -1015,9 +1016,9 @@ From a technical perspective, considering preCICE's architecture and features:
   - License compliance checks
   - API version control
 
-### Combined preCICE Evaluation (PoC + Technical Analysis)
+### Evaluation
 
-During the PoC, the team assigned this requirement an **average score of 1.80 on the 0–3 scale**, which implies that preCICE meets this requirement.
+The PoC team determined that preCICE meets this requirement.
 
 Representative PoC comments were:
 - The preCICE API for different languages (including the Fortran module and C++ header) can be found in the documentation that links to the code.
@@ -1041,9 +1042,9 @@ From a technical perspective, preCICE provides comprehensive API management thro
 This comprehensive technical requirements analysis demonstrates that preCICE provides a **robust foundation** for replacing DIMR's coupling functionality while offering **significant technical and business advantages**.
 
 **📊 Overall Assessment:**
-- **✅ 25 requirements fully met (61%)** - Strong coverage of core coupling functionality
-- **⚠️ 12 requirements partially met (29%)** - Clear implementation paths available  
-- **❌ 4 requirements not met (10%)** - Orchestration features outside preCICE scope
+- **✅ 27 requirements fully met (66%)** - Strong coverage of core coupling functionality
+- **⚠️ 7 requirements partially met (17%)** - Clear implementation paths available  
+- **❌ 7 requirements not met (17%)** - Orchestration features outside preCICE scope
 
 ### Business Decision & Implementation Strategy
 
@@ -1096,14 +1097,16 @@ Based on the existing proof-of-concept implementation, the optimal path forward 
 The existing PoC already includes functional preCICE integration:
 
 - **D-Wave Integration** (`wave_main.F90`):
-  - `initialize_fm_coupling()`: Creates preCICE participant, registers wave mesh, initializes coupling
-  - `is_fm_coupling_ongoing()`: Checks coupling status during simulation
-  - `advance_fm_time_window()`: Manages preCICE time advancement and data exchange
+  - `initialize_fm_coupling()`: Creates preCICE participant using `precicef_create()`, calls `register_wave_nodes_with_precice()` for mesh registration, and initializes coupling with `precicef_initialize()`
+  - `is_fm_coupling_ongoing()`: Checks coupling status using `precicef_is_coupling_ongoing()` during simulation execution
+  - `advance_fm_time_window()`: Manages preCICE time advancement using `precicef_get_max_time_step_size()` and `precicef_advance()`
+  - `register_wave_nodes_with_precice()`: Comprehensive SWAN grid processing with triangulation and mesh registration via `precicef_set_vertices()` and `precicef_set_mesh_triangles()`
 
 - **D-Flow FM Integration** (`unstruc_api.F90`):
-  - `initialize_precice_coupling()`: Handles both serial and parallel (MPI) initialization
-  - `register_flow_nodes_with_precice()`: Registers flow mesh with preCICE
-  - `advance_precice_time_window()`: Writes bed levels and advances coupling
+  - `initialize_precice_coupling()`: Handles both serial (`precicef_create()`) and parallel (`precicef_create_with_communicator()`) initialization with MPI support
+  - `register_flow_nodes_with_precice()`: Registers flow mesh using `precicef_set_vertices()` with comprehensive triangulation support
+  - `advance_precice_time_window()`: Coordinates data writing and coupling advancement using `precice_write_data()` and `precicef_advance()`
+  - `precice_write_data()`: Comprehensive data exchange including bed levels, water levels, flow velocities, wind, and vegetation data
 
 - **Data Exchange**: Bidirectional exchange of bed levels, water levels, and flow velocities
 - **MPI Support**: Proper handling of parallel execution with communicator management
