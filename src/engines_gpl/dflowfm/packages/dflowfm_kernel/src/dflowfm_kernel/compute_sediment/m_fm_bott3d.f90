@@ -1119,15 +1119,21 @@ contains
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
                      !
-                     if (sedtyp(l) == SEDTYP_SAND) then
-                        sedflx = sedflx + ssccum(l, nm)
-                     elseif (sedtyp(l) <= max_mud_sedtyp) then
-                        ! 3. if silt/clay and drying, mass to fluff layer
-                        if (iflufflyr == 1) then
-                           mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm)
-                        else ! iflufflyr == 2
-                           mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm)
-                           sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                     ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
+                     if (ssccum(l, nm) > 0.0_fp) then
+                        if (sedtyp(l) <= max_mud_sedtyp) then
+                           ! if silt/clay some mass may go to fluff layer
+                           if (iflufflyr == 1 .or. mfluff(l, nm) < 0.0_fp) then
+                              ! all mass to fluff layer
+                              mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm) * dts
+                           else ! iflufflyr == 2
+                              ! part to fluff layer, part to bed layer
+                              mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm) * dts
+                              sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                           end if
+                        else
+                           ! for sand all mass to bed layer
+                           sedflx = sedflx + ssccum(l, nm)
                         end if
                      end if
                   end if
@@ -1581,14 +1587,13 @@ contains
    end subroutine fm_apply_bed_boundary_condition
 
    !< Update concentrations in water column to conserve mass because of bottom update
-   !! This needs to happen in work array sed, not constituents, because of copying back and forth later on
    subroutine fm_update_concentrations_after_bed_level_update()
       use precision, only: dp
 
       use m_flow, only: kmx, hs
       use m_flowgeom, only: ndx
-      use m_transport, only: constituents, itra1, itran, isalt
-      use m_sediment, m_sediment_sed => sed
+      use m_transport, only: constituents, itra1, itran, isalt, ised1
+      use m_sediment, only: botcrit, stmpar
       use m_fm_erosed, only: blchg
       use m_flowparameters, only: epshs, jasal
       use m_get_kbot_ktop
@@ -1618,7 +1623,7 @@ contains
             botcrit = 0.95 * hsk
             ddp = hsk / max(hsk - blchg(k), botcrit)
             do ll = 1, stmpar%lsedsus
-               m_sediment_sed(ll, k) = m_sediment_sed(ll, k) * ddp
+               constituents(ised1 + ll - 1, k) = constituents(ised1 + ll - 1, k) * ddp
             end do !ll
             !
             if (jasal > 0) then
@@ -1640,7 +1645,7 @@ contains
                ddp = hsk / max(hsk - blchg(k), botcrit)
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
-                  m_sediment_sed(ll, kk) = m_sediment_sed(ll, kk) * ddp
+                  constituents(ised1 + ll - 1, kk) = constituents(ised1 + ll - 1, kk) * ddp
                end do !kk
             end do !k
          end do !ll

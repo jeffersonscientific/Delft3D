@@ -976,10 +976,16 @@ contains
                      sinkse(nm, l) = 0.0_fp
                   end if
                   !
-                  sourf(l, nm) = sourfluff
+                  ! prevent fluff layer source exceeding available mass
+                  !
+                  if (mfltot <= 0.0_fp) then
+                     sourf(l, nm) = 0.0_fp
+                  else
+                     sourf(l, nm) = min(sourfluff, mfltot/dts)
+                  end if
                else
                   sinkse(nm, l) = sinktot
-                  sourse(nm, l) = sourse(nm, l) + sourfluff
+                  ! sourse(nm,l) already set (sourfluff = 0)
                end if
                !
                if (kmx > 0) then
@@ -1004,7 +1010,7 @@ contains
                cycle
             end if
             !
-            ! sediment transport governed by bedoad vector and reference concentration
+            ! sediment transport governed by bedload vector and reference concentration
             !
             suspfrac = has_advdiff(tratyp(l))
             !

@@ -41,7 +41,7 @@ module m_step_reduce_transport_morpho
    use m_u1q1, only: u1q1
    use m_transport_sub, only: transport
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private
@@ -160,14 +160,6 @@ contains
          if (kmx > 0) then
             call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
          end if
-      end if
-
-      ! Moved to flow_finalize_single_timestep: call flow_f0isf1()                                  ! mass balance and vol0 = vol1
-
-      if (layertype > 1 .and. kmx > 0) then
-
-         ! ln = ln0 ! was ok.
-
       end if
 
    end subroutine step_reduce_transport_morpho
