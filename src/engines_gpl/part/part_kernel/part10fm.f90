@@ -45,6 +45,9 @@ contains
         use random_generator
         use timers
         use m_part_modeltypes
+        use m_fm_particles_in_grid, only: displace_spherical, part_findcellsingle
+
+        use spec_feat_par
 
         !locals
         logical :: partdomain, skip_pt, openbound, mirror
