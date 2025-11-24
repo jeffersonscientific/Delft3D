@@ -65,24 +65,26 @@ This document summarizes how preCICE performs against the DIMR replacement requi
 
 During the PoC, the team assigned this requirement an **average score of 2.40 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “The configuration file contains specifications of the coupling scheme (parallel vs serial and implicit vs explicit), and the library allows for an iterative approach when coupling multiple models in which some use an implicit scheme.”
-- “The configuration file specifies the name of the data, whether it is a scalar or a vector, the source and destination mesh names, and which components provide this data and these meshes.”
-- “Component specific descriptions of the data to be exchanged are possible in the config files.”
+Representative PoC comments are:
+- The configuration file contains specifications of the coupling scheme (parallel vs serial and implicit vs explicit), and the library allows for an iterative approach when coupling multiple models in which some use an implicit scheme. 
+- The configuration file specifies the name of the data, whether it is a scalar or a vector, the source and destination mesh names, and which components provide this data and these meshes.
+- Component specific descriptions of the data to be exchanged are possible in the config files.
 
 From a technical perspective, considering preCICE's architecture and features:
 
 **Configuration System**:
 - **XML-based configuration**: Comprehensive system supporting participants, coupling schemes (`serial-explicit`, `parallel-explicit`, `serial-implicit`, `parallel-implicit`), data exchange definitions, mapping configurations, and acceleration settings
-- **Coupling schemes**: Support for explicit (single execution per time window) and implicit coupling (iterative until convergence) with configurable time windows (`time-window-size`, `max-time-windows`)
+- **Coupling schemes**: Support for explicit (single execution per time window) and implicit coupling (iterative until convergence) with configurable time windows (`time-window-size`, `max-time-windows`). Multi-coupling for more than two participants
 - **Data exchange**: Detailed specification of data fields (scalar/vector), source/destination meshes, and participant mapping
-- **XML validation**: Built-in validation with detailed error reporting and configuration visualizer tools
+- **XML validation**: Built-in file validation (not model) with detailed error reporting and configuration visualizer tools
+- **Action configurations**: Modify coupling data at runtime, using built-in actions or python callback interface
+- **Export configuration**: Monitor exchanged data by exporting it at every exchange window
 
 **Time Management**:
 - **Time window coordination**: Manages logical coupling time ensuring synchronized participant progression with `isCouplingOngoing()` API for simulation steering
 - **Subcycling support**: Participants with smaller time steps automatically subcycle until coupling window reached
 - **Convergence criteria**: Multiple convergence measures (`relative-convergence-measure`, `absolute-convergence-measure`, `absolute-or-relative-convergence-measure`) for implicit coupling
-- **Acceleration schemes**: Constant under-relaxation, Aitken acceleration, and quasi-Newton methods (IQN-ILS/Anderson, IQN-IMVJ/Broyden) for stability and performance
+- **Acceleration schemes**: Constant under-relaxation, Aitken acceleration, and quasi-Newton methods (IQN-ILS/Anderson, IQN-IMVJ/Broyden) for stability and performance during parallel runs
 
 **Parallel Computing Integration**:
 - **MPI support**: Native integration with MPI-based solvers supporting domain decomposition and multi-rank data exchange
@@ -108,10 +110,10 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.75 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
 
-Representative PoC comments were:
-- “Error logging sinks can be specified in the config file. A component could integrate boost.log (the precice logging backend) in C++, but this is more invasive and not standard.”
-- “Each component gets its own precice log and its native log. Logs are not structured outside of the folder based separation.”
-- “Components are responsible for partitioning themselves, and they do not automatically integrate the precice logging framework”
+Representative PoC comments are:
+- Error logging sinks can be specified in the config file. A component could integrate boost.log (the precice logging backend) in C++, but this is more invasive and not standard.
+- Each component gets its own precice log and its native log. Logs are not structured outside of the folder based separation.
+- Components are responsible for partitioning themselves, and they do not automatically integrate the precice logging framework.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -142,11 +144,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
 
-Representative PoC comments were:
-- “Not done by default, C++ components could integrate boost.log but this is not taken care of by precice”
-
 From a technical perspective, considering preCICE's architecture and features:
-- preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts.
+- preCICE is a library which handles mapping, communication, time stepping. It is called by the components. It is the component which is responsible for its output files.
 
 ### Overall Assessment
 
@@ -162,11 +161,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
 
-Representative PoC comments were:
-- “There is only the config file”
+Representative PoC comments are:
+- There is only the config file which is the source of truth for preCICE coupling participants. It only caters to coupling configuration and not the solver's own configuration.
 
 From a technical perspective, considering preCICE's architecture and features:
-- preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts.
+- preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts. Through proper library integration, preCICE is aware of the participant ranks.
 - Fault recovery is limited: if a participant aborts or misbehaves, preCICE typically stops the coupling. There are no built-in fallback strategies (e.g., automatic restarts or degraded modes), so higher-level orchestration would be required to fully satisfy sophisticated recovery scenarios.
 
 ### Overall Assessment
@@ -183,12 +182,12 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
 
-Representative PoC comments were:
-- “PreCICE does not control whether a component is performing parallel computations internally, it only controls whether the components are run in parallel or serial relative to each other.”
+Representative PoC comments are:
+- PreCICE does not control whether a component is performing parallel computations internally, it only controls whether the components are run in parallel or serial relative to each other.
+- In a way this is good because components/solvers know best how to handle their partitioning and sharing of mesh data. They just keep preCICE informed using the api calls.
 
 From a technical perspective, considering preCICE's architecture and features:
 - **Business Impact**: preCICE focuses on coupling coordination rather than orchestration management [Config]. Each component manages its own parallel execution configuration independently.
-- **Workaround**: External orchestration scripts can provide parallel execution information to components before preCICE initialization.
 
 ### Overall Assessment
 
@@ -206,9 +205,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
 
-Representative PoC comments were:
-- “PreCICE is unaware of errors from the components, and does not even terminate other components if one component fails.”
-- “PreCICE plays no role here.”
+Representative PoC comments are:
+- PreCICE is unaware of errors from the components, and does not even terminate other components if one component hangs.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE itself focuses on logging coupling-related events (time window progression, communication, mapping, convergence), while each coupled solver keeps its own logs. It does not provide a centralized logging framework or structured error correlation across all components.
@@ -230,8 +228,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
 
-Representative PoC comments were:
-- “PreCICE plays no role here.”
+Representative PoC comments are:
+- PreCICE plays no role here.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE itself focuses on logging coupling-related events (time window progression, communication, mapping, convergence), while each coupled solver keeps its own logs. It does not provide a centralized logging framework or structured error correlation across all components.
@@ -254,12 +252,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.67 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
 
-Representative PoC comments were:
-- “Each component should be started separately, PreCICE only handles the communication when it is started”
-- “PreCICE plays no role here.”
+Representative PoC comments are:
+- Each component should be started separately, PreCICE only handles the communication after it is started
 
 From a technical perspective, considering preCICE's architecture and features:
-- preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts.
+- preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode is managed outside preCICE by the user or orchestration scripts.
 
 ### Overall Assessment
 
@@ -275,8 +272,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “preCICE tracks how much time progress is made by each component. It can either use its own time step or follow the time step of the first component.”
+Representative PoC comments are:
+- preCICE tracks how much time progress is made by each component. It can either use its own time step or follow the time step of the first component.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE manages logical coupling time, ensuring that participants progress in a synchronized way. It supports explicit and implicit coupling schemes, fixed-point iterations, and can prevent time drift between solvers, which addresses many time-advancement-related requirements.
@@ -295,8 +292,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “The timing still has to be set per component. PreCICE only ensures that each component steps until a certain time so that data can be exchanged.”
+Representative PoC comments are:
+- The computational timing still has to be set per component, using their own configuration. PreCICE only ensures that each component steps until a certain time (end of exchange time-window) so that data can be exchanged.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE manages logical coupling time, ensuring that participants progress in a synchronized way. It supports explicit and implicit coupling schemes, fixed-point iterations, and can prevent time drift between solvers, which addresses many time-advancement-related requirements.
@@ -321,10 +318,10 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “you can use the preCICE max time window within the participants loops”
-- “The config file specifies the run time and the time steps for the communication between components.”
-- “Each component has its own time step and runs independent of the other components, precice only tells it the target time to reach, so the component will subcycle until the exchange time window is reached.”
+Representative PoC comments are:
+- One can use the preCICE max time window within the participants loops to calculate solver time steps such that an exchange can happen at end of preCICE time window.
+- The config file specifies the run time and the time steps for the communication between components.
+- Each component has its own time step and runs independent of the other components, preCICE only tells it the target time to reach, so the component will subcycle until the exchange time window is reached.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -355,8 +352,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
 
-Representative PoC comments were:
-- “The components are responsible for running and initialization, then have to initialize precice as well”
+Representative PoC comments are:
+- The components are responsible for running and initialization, then have to call preCICE API as well.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts.
@@ -375,8 +372,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “The components are told to increment a certain step, but are responsible for telling precice how far they have incremented”
+Representative PoC comments are:
+- The components are told to increment a certain step, but are responsible for telling preCICE how far they have incremented.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts.
@@ -395,8 +392,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “The components are told to stop at the end, but the components should be configured to not stop by themselves”
+Representative PoC comments are:
+- The components are told to stop at the end, but the components should be configured to not stop by themselves. If one of the component stops before the configured end-time of coupling in preCICE, preCICE will throw an error.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts.
@@ -415,8 +412,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “PreCICE does not do this, but OS can control the executables better now and preCICE optimizes which ones can run in parallel”
+Representative PoC comments are:
+- PreCICE does not do this, but OS can control the executables better now and preCICE optimizes which ones can run in parallel, since if a component waits for another, preCICE lets the OS be aware of it.
 
 From a technical perspective, considering preCICE's architecture and features:
 - For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
@@ -438,7 +435,7 @@ From a technical perspective, considering preCICE's architecture and features:
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
 Representative PoC comments were:
-- “- "The config file defines which data should be exchanged, but communication happens over the network and keeps components separated"
+- The config file defines which data should be exchanged, but communication happens over the network and keeps components separated.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -472,10 +469,10 @@ From a technical perspective, considering preCICE's architecture and features:
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
 Representative PoC comments were:
-- “Communication is standardised through the library”
+- Communication is standardised through the library. Components need to implement the API calls and can use available bindings.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- For this requirement, preCICE is unaware of the component. It is the component which needs to make relevant API calls to preCICE to let it manage remapping, time-stepping, time interpolation, etc.
 
 ### Overall Assessment
 
@@ -492,10 +489,10 @@ From a technical perspective, considering preCICE's architecture and features:
 During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
 
 Representative PoC comments were:
-- “Each component is fully responsible for running, so they can be run independently, but they are also not controlled by preCICE”
+- Each component is fully responsible for running, so they can be run independently, but they are also not controlled by preCICE.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- For this requirement, preCICE needs to be implemented in a way that the calls in the component are suppressed when coupling isn't required. 
 
 ### Overall Assessment
 
@@ -515,10 +512,10 @@ From a technical perspective, considering preCICE's architecture and features:
 During the PoC, the team assigned this requirement an **average score of 1.33 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
 
 Representative PoC comments were:
-- “PreCICE contains a built-in profiler that tracks the time spent during events with an additional python tool that can transform this data between different representations and merge the data of different component runs.”
-- “Time is tracked, memory usage is not tracked.
-Since executables are seprate, can use tools in the OS to track”
-- “precice is not responsible for memory management or error propagation and plays no role here”
+- PreCICE contains a built-in profiler that tracks the time spent during events with an additional python tool that can transform this data between different representations and merge the data of different component runs.
+- Time is tracked, memory usage is not tracked.
+Since executables are seprate, we can use tools in the OS to track.
+- preCICE is not responsible for memory management or error propagation and plays no role here.
 
 From a technical perspective, considering preCICE's architecture and features:
 - While preCICE introduces relatively low overhead in most scenarios, it does not include a full performance monitoring stack. Performance analysis is typically done using external profilers and logging around the solvers and preCICE calls.
@@ -535,17 +532,19 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ### Combined preCICE Evaluation (PoC + Technical Analysis)
 
-During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
+During the PoC, the team originally assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement. It has not been updated since achieving coupling all data via preCICE.
 
 Representative PoC comments were:
-- “The library is meant for high performance computing. However, it fully depends on the implementation and the specific models being coupled”
+- The library is meant for high performance computing. However, it fully depends on the implementation and the specific models being coupled.
+- In our test cases, we did not see a decrease in performance, albeit, we saw MPI cases were faster with preCICE.
+- In prelimnary runs where all data in FM-Wave coupling is via preCICE< it is about 1-2 % improvement.
 
 From a technical perspective, considering preCICE's architecture and features:
 - preCICE manages logical coupling time, ensuring that participants progress in a synchronized way. It supports explicit and implicit coupling schemes, fixed-point iterations, and can prevent time drift between solvers, which addresses many time-advancement-related requirements.
 
 ### Overall Assessment
 
-- **Summary:** preCICE partially meets this requirement.
+- **Summary:** preCICE meets this requirement.
 
 ## Requirement 21 – Run robustly on standard platforms
 
@@ -557,8 +556,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
 
-Representative PoC comments were:
-- “Windows is only supported through a mingw build”
+Representative PoC comments are:
+- Windows is only supported through a mingw build. This is one of the last steps in the PoC phase and has to be tested.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -598,8 +597,7 @@ From a technical perspective, considering preCICE's architecture and features:
 During the PoC, the team assigned this requirement an **average score of 1.00 on the 0–3 scale**, which implies that preCICE partially meets this requirement.
 
 Representative PoC comments were:
-- “PreCICE itself contains some system level tests (https://github.com/precice/tutorials) and a bunch of integration tests (https://github.com/precice/precice/tree/develop/tests). The adapters should be tested in our own implementation”
-- “Not found”
+- PreCICE itself contains some system level tests (https://github.com/precice/tutorials) and a bunch of integration tests (https://github.com/precice/precice/tree/develop/tests). The adapters should be tested in our own implementation.
 
 From a technical perspective, considering preCICE's architecture and features:
 - While preCICE introduces relatively low overhead in most scenarios, it does not include a full performance monitoring stack. Performance analysis is typically done using external profilers and logging around the solvers and preCICE calls.
@@ -619,10 +617,10 @@ From a technical perspective, considering preCICE's architecture and features:
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
 Representative PoC comments were:
-- “Depends on how we implement adapters, precice will be an improvement over dimr”
+- Depends on how we implement adapters, precice will be an improvement over dimr.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- preCICE is programmed using modern programming paradigms in C++.
 
 ### Overall Assessment
 
@@ -638,11 +636,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “time advancement can be configured to be driven by one of the participants.”
+Representative PoC comments are:
+- Time advancement can be configured to be driven by one of the participants.
 
 From a technical perspective, considering preCICE's architecture and features:
-- preCICE manages logical coupling time, ensuring that participants progress in a synchronized way. It supports explicit and implicit coupling schemes, fixed-point iterations, and can prevent time drift between solvers, which addresses many time-advancement-related requirements.
+- preCICE configuration can be set to advance based on "first-participant". This means, preCICE advances the time window depending on when the first participant calls 'advance()' to preCICE.
 
 ### Overall Assessment
 
@@ -658,9 +656,9 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “PreCICE has no special restart mode, but simulations can be restarted if each component is able to. PreCICE does start from time 0 again and implicit coupling schemes may be in a different initial state.
-Participants must implement reading/writing of states for implicit coupling”
+Representative PoC comments are:
+- PreCICE has no special restart mode, but simulations can be restarted if each component is able to. PreCICE does start from time 0 again and implicit coupling schemes may be in a different initial state.
+- Participants must implement reading/writing of states for implicit coupling
 
 From a technical perspective, considering preCICE's architecture and features:
 - For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
@@ -679,11 +677,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “It does”
-
-From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+Representative PoC comments are:
+- It uses modern programming principles.
 
 ### Overall Assessment
 
@@ -699,11 +694,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “If by 'data sources' we mean 'simulators', then external simulators can be coupled by implementing a preCICE adapter.”
+Representative PoC comments are:
+- If by 'data sources' we mean 'simulators', then external simulators can be coupled by implementing a preCICE adapter.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- For this requirement, preCICE does not directly implement component level features. A component can be a participant to preCICE by implementing the API. It can also be a component with 0 timesteps, i.e., just a data provider to preCICE.
 
 ### Overall Assessment
 
@@ -719,11 +714,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
 
-Representative PoC comments were:
-- “PreCICE is not aware of the partitioning of each component, only of the data exchange between components.”
+Representative PoC comments are:
+- PreCICE is not responsible for the partitioning of each component/participant, only of the data exchange between components. preCICE also does not take care of internal remapping between a component's ranks and sees that as component's responsibility.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- preCICE is aware of MPI level participants if the APi calls are implemented in the solver. 
 
 ### Overall Assessment
 
@@ -739,11 +734,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “There are no limitations for running an executable multiple times”
+Representative PoC comments are:
+- There are no limitations for running an executable multiple times.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- For this requirement, preCICE does need the different executables to register themeselves with unique participant names.
 
 ### Overall Assessment
 
@@ -759,11 +754,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “The xml parser does parse the xml file, but errors can be very difficult to interpret and lead to a core dump”
+Representative PoC comments are:
+- The xml parser does parse the xml file, but errors can be very difficult to interpret and lead to a core dump. 
 
 From a technical perspective, considering preCICE's architecture and features:
-- preCICE uses an XML-based configuration file to define participants, meshes, data to be exchanged, mappings, and coupling schemes. This aligns well with requirements on explicit coupling configuration, but execution mode (e.g., serial vs. parallel launch of components) is managed outside preCICE by the user or orchestration scripts.
+- PreCICE config-checker tools just loads the configuration and checks if the mapping/data type etc. are consistent with each other. preCICE config-visualiser is a great tool to see the configuration as visual image.
 
 ### Overall Assessment
 
@@ -779,11 +774,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “PreCICE does not have many security critical dependencies”
-
-From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+Representative PoC comments are:
+- PreCICE does not have many security critical dependencies.
 
 ### Overall Assessment
 
@@ -799,11 +791,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 3.00 on the 0–3 scale**, which implies that preCICE exceeds this requirement.
 
-Representative PoC comments were:
-- “There is a list of existing solvers that have preCICE adapters available. Further, there is a preCICE FMI runner, so any model that implements FMI can be coupled to other models using preCICE. If a model does not implement FMI, some coding will be necessary to couple using preCICE.”
+Representative PoC comments are:
+- There is a list of existing solvers that have preCICE adapters available. Further, there is a preCICE FMI runner, so any model that implements FMI can be coupled to other models using preCICE. If a model does not implement FMI, some coding will be necessary to couple using preCICE.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- preCICE has quite a few official adapters (for eg. openFOAM, nutils, Fluent, etc.) but it also has a lot of community maintained adapters. This means, to couple with these tools, no work other than creating the precice-config, is required.
 
 ### Overall Assessment
 
@@ -819,8 +811,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 3.00 on the 0–3 scale**, which implies that preCICE exceeds this requirement.
 
-Representative PoC comments were:
-- “PreCICE has mapping methods for sending data between different grids that are registered in preCICE”
+Representative PoC comments are:
+- PreCICE has 50+ mapping methods for sending data between different grids that are registered in preCICE
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -857,11 +849,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 0.00 on the 0–3 scale**, which implies that preCICE does not meet this requirement.
 
-Representative PoC comments were:
-- “PreCICE is a library, and is not a component itself.”
+Representative PoC comments are:
+- PreCICE is a library, and is not a component itself.
 
 From a technical perspective, considering preCICE's architecture and features:
-- For this requirement, preCICE does not directly implement orchestration-level features, but can be a building block when combined with external scripts, workflow tools, or a dedicated orchestrator.
+- The intention of the requirement was to match to DIMR which itself has BMI interface. preCICE being a library, does not satisfy this requirement.
 
 ### Overall Assessment
 
@@ -877,10 +869,9 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “Representative PoC comments were:
-- "Communication happens at the end of each time step. However, iteration within the time step is possible through implicit solving of (some of) the components.
-preCICE can do read between 0 and time window max, using time interpolation in read calls. There is also implicit coupling"
+Representative PoC comments are:
+- Communication happens at the end of each time step. However, iteration within the time step is possible through implicit solving of (some of) the components.
+- preCICE can do read between 0 and time window max, using time interpolation in read calls. There is also implicit coupling.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -911,12 +902,12 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “It is possible to receive the mesh from another component, so we could use that mesh for computation”
-- “It is possible to receive the mesh from another component, so we could implement such verification ourselves”
+Representative PoC comments are:
+- It is possible to receive the mesh from another component, so we could use that mesh for computation
+- It is possible to receive the mesh from another component, so we could implement such verification ourselves
 
 From a technical perspective, considering preCICE's architecture and features:
-- preCICE manages logical coupling time, ensuring that participants progress in a synchronized way. It supports explicit and implicit coupling schemes, fixed-point iterations, and can prevent time drift between solvers, which addresses many time-advancement-related requirements.
+- preCICE allows mesh sharing between components.
 
 ### Overall Assessment
 
@@ -932,11 +923,11 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 3.00 on the 0–3 scale**, which implies that preCICE exceeds this requirement.
 
-Representative PoC comments were:
-- “Extensive language bindings, and through FMI it can couple to models in different modeling frameworks such”
+Representative PoC comments are:
+- Extensive language bindings, and through FMI it can couple to models in different modeling frameworks.
 
 From a technical perspective, considering preCICE's architecture and features:
-- The preCICE project provides APIs and adapters for C++, C, Fortran, Python, and several simulation frameworks (such as OpenFOAM, FEniCS, deal.II, and others). Custom adapters can be written to integrate additional models, which addresses extensibility aspects.
+- The preCICE project provides APIs and adapters for C++, C, Fortran, Python, Julia, and adapters to several simulation frameworks (such as OpenFOAM, FEniCS, deal.II, and others). Custom adapters can be written to integrate additional models, which addresses extensibility aspects.
 
 ### Overall Assessment
 
@@ -952,9 +943,8 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.00 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “Representative PoC comments were:
-- "If each partition mesh is defined separately in the precice config file, then data does not have to be aggregated and sent through a single MPI rank. The communication can happen over sockets or through an MPI communicator."
+Representative PoC comments are:
+- preCICE does not require the communication to go between a master rank for the participants. It is aware of the MPI level grids and their coordinates and it handles parallel remapping accordingly.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -985,9 +975,9 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 1.50 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “PreCICE can be distributed as a native library and a few executable tools”
-- “It currently only supports linux and macos natively. Native windows support is unlikely, an msys2 package exists.”
+Representative PoC comments are:
+- PreCICE can be distributed as a native library and a few executable tools
+- It currently only supports linux and macos natively. Native windows support is untested by PoC team, an msys2 package exists.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -1029,13 +1019,12 @@ From a technical perspective, considering preCICE's architecture and features:
 
 During the PoC, the team assigned this requirement an **average score of 2.17 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
-Representative PoC comments were:
-- “There is a quickstart, tutorials, and documentation.”
-- “The codebase of preCICE appears well structured and maintainable”
-- “There are dev docs”
+Representative PoC comments are:
+- There is a quickstart, tutorials, and documentation.
+- The codebase of preCICE appears well structured and maintainable.
+- There are dev docs”
 
 From a technical perspective, considering preCICE's architecture and features:
-- preCICE itself focuses on logging coupling-related events (time window progression, communication, mapping, convergence), while each coupled solver keeps its own logs. It does not provide a centralized logging framework or structured error correlation across all components.
 - preCICE is accompanied by extensive documentation, tutorials, and reference examples for various solver combinations. This supports onboarding and integration, though documentation is focused on coupling rather than full workflow orchestration.
 
 ### Overall Assessment
@@ -1058,9 +1047,9 @@ From a technical perspective, considering preCICE's architecture and features:
 During the PoC, the team assigned this requirement an **average score of 1.80 on the 0–3 scale**, which implies that preCICE meets this requirement.
 
 Representative PoC comments were:
-- "The preCICE API for different languages (including the Fortran module and C++ header) can be found in the documentation that links to the code"
-- "Doxygen API documentation exists"
-- "Rich set of language bindings"
+- The preCICE API for different languages (including the Fortran module and C++ header) can be found in the documentation that links to the code.
+- Doxygen API documentation exists.
+- Rich set of language bindings.
 
 From a technical perspective, considering preCICE's architecture and features:
 
@@ -1125,14 +1114,14 @@ preCICE provides **officially maintained OpenFOAM adapter** with significant bus
 - **Production-Ready Integration**: OpenFOAM-preCICE adapter is actively maintained by preCICE developers, ensuring compatibility and support
 - **Established Ecosystem**: Extensive documentation, tutorials, and community support for OpenFOAM coupling scenarios
 - **Proven Applications**: Widely used for Conjugate Heat Transfer (CHT), Fluid-Structure Interaction (FSI), and Fluid-Fluid (FF) coupling
-- **Future Flexibility**: Enables Deltares to couple Delft3D with industry-standard CFD capabilities for complex multi-physics scenarios
+- **Future Flexibility**: Enables Deltares to couple with industry-standard CFD capabilities for complex multi-physics scenarios
 
 **💼 Business Value of Existing Adapters:**
 
 The preCICE adapter ecosystem provides **immediate integration pathways** for Deltares:
 
-- **Official Adapters**: CalculiX, Code_Aster, deal.II, FEniCS, SU2 - all maintained by preCICE team
-- **Third-party Ecosystem**: 20+ additional solvers including ANSYS Fluent, COMSOL, ExaDG, extending Delft3D's coupling reach
+- **Official Adapters**: CalculiX, Code_Aster, deal.II, FEniCS, SU2, openFOAM - all maintained by preCICE team
+- **Third-party Ecosystem**: 20+ additional solvers including ANSYS Fluent, COMSOL, ExaDG, extending Delatres software's coupling reach
 - **Reduced Integration Risk**: Proven adapters reduce development time and technical risk for multi-physics applications
 - **Community Support**: Active community developing new adapters and sharing integration experiences
 
@@ -1219,10 +1208,12 @@ preCICE being an **external, community-maintained tool** provides significant ad
 **Short-term ROI (Q1 2026):**
 - Enhanced coupling performance and stability for FM-Wave applications
 - Reduced coupling setup complexity through improved configuration tools
+- Possibility of FM-FM coupling
 - Foundation for advanced multi-physics capabilities
 
 **Long-term Strategic Value (2026+):**
 - Platform for coupling with external solvers (OpenFOAM, CalculiX, etc.)
+- More modular and separated solvers, and applications
 - Competitive advantage in multi-physics consulting market
 - Technology leadership in coupling simulation capabilities
 
@@ -1297,11 +1288,6 @@ The existing PoC already includes functional preCICE integration:
 - **MPI Support**: Proper handling of parallel execution with communicator management
 - **Fortran Interface**: Direct use of `precice.F90` bindings for optimal performance
 
-**📅 Implementation Timeline:**
-- **Phase 1 (2-3 months)**: Production hardening of existing preCICE integration
-- **Phase 2 (3-4 months)**: Enhanced coupling features and robustness improvements
-- **Phase 3 (2-3 months)**: Performance optimization and deployment preparation
-
 ### Risk Mitigation
 
 **🛡 Addressing Key Concerns:**
@@ -1318,22 +1304,6 @@ The existing PoC already includes functional preCICE integration:
 - **Short-term**: Enhanced customer satisfaction, accelerated feature delivery
 - **Long-term**: Technology leadership position, sustainable maintenance model
 
-### Decision Recommendation
-
-**✅ PROCEED WITH preCICE ADOPTION**
+### Recommendation
 
 The analysis demonstrates that preCICE provides **substantial business value** with **manageable implementation risks**. The direct kernel integration approach leverages **existing PoC investments** while providing optimal performance and maintainability.
-
-**Next Steps:**
-1. Approve budget for production-grade preCICE integration (6-9 months, 2-3 developers)  
-2. Establish project timeline based on existing PoC foundation
-3. Begin Phase 1 production hardening of current `wave_main.F90` and `unstruc_api.F90` implementations
-4. Develop training program leveraging existing PoC knowledge and experience
-
-This strategic technology upgrade positions Deltares for continued leadership in computational modeling while delivering immediate operational improvements and long-term cost savings.
-- preCICE is accompanied by extensive documentation, tutorials, and reference examples for various solver combinations. This supports onboarding and integration, though documentation is focused on coupling rather than full workflow orchestration.
-
-### Overall Assessment
-
-- **Summary:** preCICE meets this requirement.
-
