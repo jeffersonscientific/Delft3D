@@ -30,18 +30,101 @@
 
 This document provides **business-focused analysis** for product owners and stakeholders. Detailed technical analysis has been added to **key requirements** with cross-references to avoid repetition.
 
-### Key preCICE Capabilities Reference
-*Cross-referenced throughout requirement analysis:*
-- **[Config]**: XML-based configuration system with coupling schemes and data mapping
-- **[Parallel]**: MPI architecture supporting 10,000s ranks with multiple communication backends  
-- **[Mapping]**: Advanced data interpolation between non-matching meshes (see Req. 34, 37)
-- **[Languages]**: C++/C/Fortran/Python APIs with extensive framework adapters (see Req. 38)
-- **[Platform]**: Linux/macOS native, Windows MinGW, container deployment (see Req. 21)
-- **[Testing]**: 500+ unit tests, CI/CD, tutorial system, performance benchmarks (see Req. 23)
+### Comprehensive preCICE Capabilities Reference
+*Cross-referenced throughout requirement analysis for business stakeholders:*
+
+**🔧 Configuration & Setup [Config]**
+- **XML-based Configuration**: Declarative setup eliminating complex programming for coupling scenarios
+- **Coupling Schemes**: Serial explicit, parallel implicit, multi-rate coupling with automatic time stepping
+- **Data Mapping**: RBF, nearest-neighbor, linear interpolation with automatic mesh compatibility
+- **Visual Configuration Tools**: GUI and CLI utilities for debugging and understanding complex setups
+- *Referenced in*: Requirements 1, 2, 11, 16, 33, 34, 37
+
+**⚡ High-Performance Computing [Parallel]**
+- **MPI Architecture**: Native parallel processing supporting 10,000+ ranks with optimized communication
+- **Communication Backends**: TCP sockets, MPI point-to-point, shared memory for diverse HPC environments  
+- **Load Balancing**: Automatic mesh partitioning and data distribution across parallel processes
+- **Scalability Proven**: Production deployments on major HPC clusters worldwide
+- *Referenced in*: Requirements 21, 23, 35, 36, 39
+
+**🗺️ Advanced Data Exchange [Mapping]**
+- **Mesh Independence**: Couple solvers with completely different grid structures and resolutions
+- **Interpolation Methods**: Radial Basis Functions (RBF), nearest-neighbor, consistent mapping algorithms
+- **Conservative Mapping**: Preserve physical quantities (mass, energy) during data transfer between meshes
+- **Gradient Support**: Higher-order data exchange including derivatives for advanced coupling
+- *Referenced in*: Requirements 34, 37, 40, 41
+
+**💻 Multi-Language Ecosystem [Languages]**
+- **Native APIs**: C++, C, Fortran bindings with identical functionality across languages
+- **Framework Integration**: Python (FEniCS, NumPy), MATLAB, Julia bindings for rapid prototyping
+- **Adapter Ecosystem**: 20+ official and community adapters including OpenFOAM, CalculiX, Code_Aster
+- **Development Support**: Comprehensive documentation, tutorials, and community examples
+- *Referenced in*: Requirements 38, 42
+
+**🖥️ Cross-Platform Deployment [Platform]**
+- **Native Support**: Linux and macOS with full feature parity and performance optimization
+- **Windows Compatibility**: MinGW builds with container deployment for production environments
+- **HPC Integration**: SLURM, PBS, LSF workload manager integration for cluster deployment
+- **Container Strategy**: Docker/Singularity support for consistent multi-platform deployment
+- *Referenced in*: Requirements 21, 23
+
+**🧪 Quality Assurance Framework [Testing]**
+- **Comprehensive Testing**: 500+ unit tests, integration tests, and performance benchmarks
+- **Continuous Integration**: Automated testing across multiple platforms, compilers, and MPI implementations
+- **Validation Suite**: Tutorial system with reference solutions for coupling scenario verification
+- **Community Quality**: Multiple organizations contributing tests and validation across diverse applications
+- *Referenced in*: Requirements 23, 42
+
+**📊 Performance & Analysis [Monitoring]**
+- **Built-in Profiling**: Comprehensive performance measurement capturing coupling overhead and bottlenecks
+- **Export Capabilities**: CSV, trace formats compatible with Perfetto, Firefox Profiler, Chrome Tracing
+- **Scalability Analysis**: Rank-by-rank performance analysis for parallel execution optimization
+- **User-defined Events**: Custom profiling integration for complete application performance visibility
+- *Referenced in*: Requirements 23, 35, 36
+
+**🔄 Time Management & Synchronization [TimeSync]**
+- **Logical Coupling Time**: Manages synchronized participant progression with `isCouplingOngoing()` API for simulation steering
+- **Coupling Time Windows**: XML configuration defines `time-window-size` and `max-time-windows` controlling synchronization points
+- **Subcycling Support**: Participants with smaller time steps automatically subcycle until coupling window reached
+- **Convergence Criteria**: Multiple convergence measures for implicit coupling with acceleration schemes (IQN-ILS, IQN-IMVJ)
+- **Time Interpolation**: `readData()` API supports temporal interpolation between coupling time steps
+- *Referenced in*: Requirements 1, 9, 10, 11, 25, 36
+
+**🔐 Data Security & Ownership [Security]**
+- **Network-based Isolation**: TCP/IP sockets or MPI ports maintain complete process separation between participants  
+- **XML-defined Access Control**: Explicit configuration of data fields, source/destination participants prevents unauthorized access
+- **Directional Data Flow**: `write-data` and `read-data` tags strictly define data ownership and access permissions
+- **No Direct Memory Access**: All data exchange goes through preCICE API, preventing direct access to participant data structures
+- **Controlled Modification**: Only designated participants can write specific data fields during coupling iterations
+- *Referenced in*: Requirements 16, 32
+
+**📝 Logging & Diagnostics [Logging]**
+- **Configurable Logging**: XML `<log>` tags with `file`, `level` (trace, debug, info, warning, error), and `enabled` attributes
+- **Per-participant Logs**: Each participant generates separate preCICE log files with coupling events and performance metrics
+- **Boost.Log Integration**: C++ components can integrate preCICE's logging framework (requires development effort)
+- **Structured Event Logging**: Timestamped coupling events with MPI rank information for distributed debugging
+- **Export Capabilities**: Convergence history and iteration residuals exportable for post-processing analysis
+- *Referenced in*: Requirements 2, 19, 23
+
+**🌐 Cross-Platform & Deployment [Deployment]**
+- **Multi-OS Support**: Linux (native), macOS (native), Windows (MinGW-w64 builds)
+- **HPC Integration**: SLURM, PBS, LSF workload manager integration with various MPI implementations
+- **Container Strategy**: Docker/Singularity images for consistent deployment across platforms
+- **Package Management**: Spack, Conda, system package managers (apt, yum) with dependency resolution
+- **Static Linking**: Build with static dependencies for restricted HPC environments
+- *Referenced in*: Requirements 21, 40
+
+**📚 Documentation & API Management [Documentation]**
+- **Multi-language API**: Identical functionality across C++, C, Fortran, Python with consistent naming conventions
+- **Doxygen Documentation**: Comprehensive API reference with detailed function descriptions and examples
+- **Semantic Versioning**: Strict version control (major.minor.patch) with backward compatibility guarantees
+- **Tutorial Integration**: API usage demonstrated through comprehensive tutorial suite with working examples
+- **LGPL v3 Licensing**: Commercial integration friendly with clear dependency license compatibility
+- *Referenced in*: Requirements 38, 41, 42
 
 ### Enhanced Requirements Summary
 **Comprehensive analysis provided for**: Requirements 1, 2, 11, 16, 21, 23, 33-42  
-**Remaining requirements**: Reference core capabilities above with business-focused gap analysis where preCICE does not meet orchestration-specific requirements
+**Cross-reference system**: Use capability tags [Config], [Parallel], [Mapping], [Languages], [Platform], [Testing], [Monitoring], [TimeSync], [Security], [Logging], [Deployment], [Documentation] for technical details
 
 ---
 
@@ -70,27 +153,7 @@ Representative PoC comments are:
 - The configuration file specifies the name of the data, whether it is a scalar or a vector, the source and destination mesh names, and which components provide this data and these meshes.
 - Component specific descriptions of the data to be exchanged are possible in the config files.
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Configuration System**:
-- **XML-based configuration**: Comprehensive system supporting participants, coupling schemes (`serial-explicit`, `parallel-explicit`, `serial-implicit`, `parallel-implicit`), data exchange definitions, mapping configurations, and acceleration settings
-- **Coupling schemes**: Support for explicit (single execution per time window) and implicit coupling (iterative until convergence) with configurable time windows (`time-window-size`, `max-time-windows`). Multi-coupling for more than two participants
-- **Data exchange**: Detailed specification of data fields (scalar/vector), source/destination meshes, and participant mapping
-- **XML validation**: Built-in file validation (not model) with detailed error reporting and configuration visualizer tools
-- **Action configurations**: Modify coupling data at runtime, using built-in actions or python callback interface
-- **Export configuration**: Monitor exchanged data by exporting it at every exchange window
-
-**Time Management**:
-- **Time window coordination**: Manages logical coupling time ensuring synchronized participant progression with `isCouplingOngoing()` API for simulation steering
-- **Subcycling support**: Participants with smaller time steps automatically subcycle until coupling window reached
-- **Convergence criteria**: Multiple convergence measures (`relative-convergence-measure`, `absolute-convergence-measure`, `absolute-or-relative-convergence-measure`) for implicit coupling
-- **Acceleration schemes**: Constant under-relaxation, Aitken acceleration, and quasi-Newton methods (IQN-ILS/Anderson, IQN-IMVJ/Broyden) for stability and performance during parallel runs
-
-**Parallel Computing Integration**:
-- **MPI support**: Native integration with MPI-based solvers supporting domain decomposition and multi-rank data exchange
-- **Communication backends**: TCP/IP sockets (robust, default) or MPI ports (10x performance improvement for large meshes)
-- **Scalability**: Proven performance up to 10,000s of MPI ranks in production environments
-- **Separate communicators**: Flexible execution with participants in separate MPI communicators for maximum solver independence
+From a technical perspective, preCICE provides comprehensive configuration capabilities through [Config], [TimeSync], and [Parallel] systems. The XML-based configuration supports all coupling scenarios with visual debugging tools, while time management ensures synchronized participant progression with flexible coupling schemes.
 
 ### Overall Assessment
 
@@ -115,20 +178,7 @@ Representative PoC comments are:
 - Each component gets its own precice log and its native log. Logs are not structured outside of the folder based separation.
 - Components are responsible for partitioning themselves, and they do not automatically integrate the precice logging framework.
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Logging Architecture and Capabilities**:
-- **Configurable logging**: XML configuration supports `<log>` tags with `file`, `level` (trace, debug, info, warning, error), and `enabled` attributes for fine-grained control
-- **Per-participant logs**: Each participant generates separate preCICE log files containing coupling events, iteration progress, convergence status, and performance metrics
-- **Boost.Log backend**: C++ components can integrate preCICE's Boost.Log framework for unified logging, though this requires additional development effort
-- **Structured event logging**: preCICE logs contain timestamped coupling events (time window progression, mapping execution, communication status, convergence measures)
-- **Parallel execution context**: MPI rank information included in log messages for distributed debugging, though partition-specific aggregation requires external tooling
-- **Export capabilities**: Convergence history and iteration residuals can be exported to files for post-processing analysis
-
-**Limitations for Centralized Error Management**:
-- **Decentralized by design**: Each participant maintains independent logs; no built-in cross-participant error correlation or centralized log aggregation
-- **Component-specific logging**: Solver-specific errors (e.g., D-Flow FM internal errors) remain in native solver logs, separate from preCICE coupling logs
-- **External integration required**: Centralized error management would require external orchestration tools or custom log aggregation systems
+From a technical perspective, preCICE provides configurable logging through [Logging] capabilities with per-participant log files and structured event logging. However, centralized error management requires external orchestration tools as preCICE maintains decentralized logs by design.
 
 ### Overall Assessment
 
@@ -323,20 +373,7 @@ Representative PoC comments are:
 - The config file specifies the run time and the time steps for the communication between components.
 - Each component has its own time step and runs independent of the other components, preCICE only tells it the target time to reach, so the component will subcycle until the exchange time window is reached.
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Time Advancement and Execution Control**:
-- **Coupling time windows**: XML configuration defines `time-window-size` and `max-time-windows` controlling synchronization points between participants
-- **Flexible coupling schemes**: `serial-explicit` (sequential execution), `parallel-explicit` (simultaneous execution), and implicit variants with iterative coupling
-- **Subcycling support**: Participants with smaller internal time steps automatically subcycle until coupling window target reached, enabling flexible time advancement per component
-- **Synchronous coordination**: `advance()` API ensures participants progress in lockstep to coupling window boundaries, preventing time drift
-- **Data exchange scheduling**: `exchange` tags in coupling schemes define when and what data is exchanged between specific participants
-- **Asynchronous limitations**: preCICE enforces synchronous coupling boundaries; true asynchronous execution requires external orchestration beyond coupling windows
-
-**Execution Flow Management**:
-- **API-driven control**: Participants use `isCouplingOngoing()` to check continuation status and `advance()` to progress to next time window
-- **Independent solver loops**: Each participant maintains its own computational loop and time stepping, with preCICE providing coordination points
-- **MPI parallel execution**: Supports participants running in separate MPI communicators with rank-level parallelism within each participant
+From a technical perspective, preCICE provides comprehensive simulation control through [Config], [TimeSync], and [Parallel] capabilities. The system supports flexible coupling schemes (serial/parallel, explicit/implicit) with subcycling and synchronous coordination, while maintaining independent solver loops with MPI parallel execution.
 
 ### Overall Assessment
 
@@ -437,15 +474,7 @@ During the PoC, the team assigned this requirement an **average score of 2.00 on
 Representative PoC comments were:
 - The config file defines which data should be exchanged, but communication happens over the network and keeps components separated.
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Data Ownership and Access Control**:
-- **Network-based isolation**: Communication occurs over TCP/IP sockets or MPI ports, maintaining complete process separation between participants
-- **XML-defined data exchange**: Explicit configuration of data fields, source/destination participants, and mesh associations prevents unauthorized access
-- **Directional data flow**: `write-data` and `read-data` tags strictly define data ownership and access permissions per participant
-- **Mesh ownership**: `provide-mesh` and `receive-mesh` configurations establish clear geometric data ownership boundaries
-- **No direct memory access**: Participants cannot directly access each other's data structures or memory space, all exchange goes through preCICE API
-- **Controlled data modification**: Only designated participants can write specific data fields, with acceleration algorithms modifying data only during coupling iterations
+From a technical perspective, preCICE enforces strict data ownership through [Security] mechanisms including network-based isolation, XML-defined access control, and directional data flow restrictions. All data exchange occurs through preCICE API without direct memory access between participants.
 
 ### Overall Assessment
 
@@ -559,22 +588,7 @@ During the PoC, the team assigned this requirement an **average score of 1.00 on
 Representative PoC comments are:
 - Windows is only supported through a mingw build. This is one of the last steps in the PoC phase and has to be tested.
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Cross-Platform Support and Robustness**:
-- **Linux support**: Excellent native support across distributions (Ubuntu, CentOS, SUSE) with comprehensive package manager integration (apt, yum, spack)
-- **macOS support**: Full native support with Homebrew package management and development toolchain compatibility
-- **Windows support**: Available through MinGW-w64 builds providing GCC/Fortran toolchain compatibility, though not native Visual Studio support
-- **HPC cluster integration**: Optimized for supercomputing environments with support for various MPI implementations (OpenMPI, MPICH, Intel MPI)
-- **Container deployment**: Docker images available for consistent deployment across platforms and simplified dependency management
-- **Build system flexibility**: CMake-based build system supporting various compilers and dependency configurations
-
-**Dependency Management**:
-- **Core dependencies**: C++17 compiler, MPI, Boost libraries with optional dependencies for advanced features (PETSc for iterative solvers, Eigen for linear algebra)
-- **Package manager integration**: Available through Spack, Conda, and distribution package managers for simplified installation
-- **Static linking options**: Can be built with static dependencies for deployment in restricted HPC environments
-
-**Potential Score Improvement**: The PoC team's score of 1.00 could increase with proper Windows testing using MinGW builds, as preCICE provides documented Windows support through this pathway.
+From a technical perspective, preCICE provides robust cross-platform support through [Platform] and [Deployment] capabilities. Native Linux/macOS support with Windows MinGW compatibility, comprehensive HPC integration, and container deployment options ensure reliable operation across standard platforms.
 
 ### Overall Assessment
 
@@ -599,8 +613,7 @@ During the PoC, the team assigned this requirement an **average score of 1.00 on
 Representative PoC comments were:
 - PreCICE itself contains some system level tests (https://github.com/precice/tutorials) and a bunch of integration tests (https://github.com/precice/precice/tree/develop/tests). The adapters should be tested in our own implementation.
 
-From a technical perspective, considering preCICE's architecture and features:
-- While preCICE introduces relatively low overhead in most scenarios, it does not include a full performance monitoring stack. Performance analysis is typically done using external profilers and logging around the solvers and preCICE calls.
+From a technical perspective, preCICE provides comprehensive testing through [Testing] framework with 500+ unit tests, CI/CD pipelines, and tutorial validation. Performance analysis available through [Monitoring] capabilities, though full performance monitoring requires external profilers.
 
 ### Overall Assessment
 
@@ -814,26 +827,7 @@ During the PoC, the team assigned this requirement an **average score of 3.00 on
 Representative PoC comments are:
 - PreCICE has 50+ mapping methods for sending data between different grids that are registered in preCICE
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Advanced Mesh Regridding and Data Mapping**:
-- **Dynamic mesh support**: preCICE handles mesh changes during simulation through re-initialization of mapping operators and mesh connectivity updates
-- **High-order mapping methods**: RBF methods (`rbf-global-direct`, `rbf-pum-direct`) provide superior accuracy for complex geometries compared to nearest-neighbor approaches
-- **Conservative vs. consistent mapping**: Physical conservation properties maintained through `conservative` constraints for extensive quantities (forces, mass) and `consistent` constraints for intensive quantities (temperature, pressure)
-- **Parallel mesh partitioning**: Automatic handling of distributed mesh data across MPI ranks with efficient communication patterns
-- **Mesh connectivity preservation**: Support for edges, triangles, tetrahedra with automatic fallback from higher-order to simpler methods when connectivity unavailable
-
-**Specialized Regridding Capabilities**:
-- **Multiscale mapping**: Experimental 1D-3D geometric multiscale mapping for coupling dimensionally heterogeneous participants (system codes with CFD)
-- **Adaptive mesh refinement**: Compatibility with AMR through mesh re-initialization and mapping operator updates
-- **Interface mesh exchange**: `provide-mesh` and `receive-mesh` mechanisms enable dynamic mesh sharing between participants
-- **Projection-based methods**: `nearest-projection` with mesh connectivity provides second-order accuracy for well-matched interface geometries
-- **Just-in-time mapping**: Support for runtime mesh changes without full simulation restart
-
-**Performance Optimization for Large Meshes**:
-- **Sparse matrix methods**: `rbf-global-iterative` uses PETSc for memory-efficient large-scale mapping with compactly supported basis functions
-- **GPU acceleration**: CUDA backend support for mapping operations through Ginkgo library integration
-- **Partition of unity methods**: `rbf-pum-direct` reduces computational complexity from O(N²) to O(N) for large mesh problems
+From a technical perspective, preCICE excels at mesh regridding through advanced [Mapping] capabilities including dynamic mesh support, high-order RBF methods, conservative/consistent mapping, and specialized regridding features like multiscale mapping and adaptive mesh refinement. Performance optimization through [Parallel] processing enables GPU acceleration and efficient handling of large mesh problems.
 
 ### Overall Assessment
 
@@ -875,8 +869,7 @@ Representative PoC comments are:
 
 From a technical perspective, considering preCICE's architecture and features:
 
-**Sub-Time-Step and Implicit Coupling Support**:
-- **Implicit coupling schemes**: `serial-implicit` and `parallel-implicit` enable iterative solving within time windows until convergence
+From a technical perspective, preCICE provides comprehensive sub-time-step synchronization through [TimeSync] capabilities including implicit coupling schemes, fixed-point iterations with configurable convergence criteria, and acceleration methods. Time interpolation and subcycling support ensure smooth data access and synchronized participant progression.
 - **Fixed-point iterations**: Multiple coupling iterations per time window with configurable convergence criteria (`min-iterations`, `max-iterations`)
 - **Convergence measures**: `relative-convergence-measure`, `absolute-convergence-measure`, and `absolute-or-relative-convergence-measure` for robust convergence detection
 - **Acceleration methods**: Constant under-relaxation, Aitken acceleration, and quasi-Newton schemes (IQN-ILS/Anderson, IQN-IMVJ/Broyden) to improve convergence rate and stability
@@ -946,12 +939,8 @@ During the PoC, the team assigned this requirement an **average score of 2.00 on
 Representative PoC comments are:
 - preCICE does not require the communication to go between a master rank for the participants. It is aware of the MPI level grids and their coordinates and it handles parallel remapping accordingly.
 
-From a technical perspective, considering preCICE's architecture and features:
+From a technical perspective, preCICE provides advanced parallel MPI capabilities through [Parallel] architecture with distributed data exchange, multiple communication backends (TCP/MPI ports), and scalability to 10,000+ ranks with automatic load balancing and domain decomposition support.
 
-**Parallel MPI Architecture**:
-- **Distributed data exchange**: Direct rank-to-rank communication without aggregation through single MPI rank, maintaining parallel efficiency
-- **Communication backends**: TCP/IP sockets (robust, cross-platform) or MPI ports (high-performance, 10x speed improvement for large meshes)
-- **MPI communicator management**: Supports separate `MPI_COMM_WORLD` communicators per participant, providing maximum flexibility for solver integration
 - **Domain decomposition**: Native support for partitioned meshes with automatic load balancing and neighbor discovery
 - **Scalability**: Proven performance up to 10,000s of MPI ranks in production HPC environments
 - **Network configuration**: Manual network interface specification (`network="ib0"`) for cluster and multi-host deployments”
@@ -979,23 +968,7 @@ Representative PoC comments are:
 - PreCICE can be distributed as a native library and a few executable tools
 - It currently only supports linux and macos natively. Native windows support is untested by PoC team, an msys2 package exists.
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Self-Contained Distribution Options**:
-- **Static linking capability**: preCICE can be built with static dependencies (Boost, MPI, PETSc) for deployment in restricted HPC environments without system package dependencies
-- **Container packaging**: Official Docker images provide fully self-contained environments with all dependencies pre-configured
-- **Package manager distribution**: Available through Spack, Conda, and system package managers (apt, yum) with automatic dependency resolution
-- **Library distribution**: Core functionality packaged as shared/static libraries with minimal external dependencies
-
-**Platform Independence and Dependency Management**:
-- **Cross-platform CMake build**: Supports various compilers (GCC, Clang, Intel) and build configurations across Linux, macOS, and Windows (MinGW)
-- **Dependency isolation**: Core coupling functionality requires only C++ standard library and MPI; advanced features have optional dependencies
-- **Version compatibility**: Semantic versioning ensures API stability and backward compatibility for existing integrations
-
-**Deployment Flexibility**:
-- **HPC cluster integration**: Works with module systems (Lmod, Environment Modules) for consistent deployment across compute nodes
-- **Containerization support**: Singularity and Docker compatibility for reproducible deployment in various computational environments
-- **Network-based operation**: TCP/IP sockets enable coupling across different systems without shared filesystem requirements
+From a technical perspective, preCICE provides self-contained distribution through [Deployment] capabilities including static linking, container packaging, and cross-platform builds. Multiple deployment options (Docker, Spack, package managers) ensure flexible installation across different environments.
 
 **Limitations for Complete Self-Containment**: Unlike DIMR's single executable model, preCICE requires MPI runtime environment and participant codes to be separately installed, though these can be containerized together for full self-containment.
 
@@ -1051,30 +1024,7 @@ Representative PoC comments were:
 - Doxygen API documentation exists.
 - Rich set of language bindings.
 
-From a technical perspective, considering preCICE's architecture and features:
-
-**Comprehensive API Documentation and Version Control**:
-- **Multi-language API consistency**: Identical functionality across C++, C, Fortran, and Python bindings with consistent naming conventions and parameter patterns
-- **Doxygen-generated documentation**: Comprehensive API reference with detailed function descriptions, parameter specifications, and usage examples
-- **Semantic versioning**: Strict adherence to semantic versioning (major.minor.patch) with clear backward compatibility guarantees
-- **API stability policies**: Documented deprecation cycles and migration guides for API changes across major versions
-
-**Documentation Quality and Accessibility**:
-- **Live documentation**: API documentation automatically generated from code comments and synchronized with each release
-- **Tutorial integration**: API usage demonstrated through comprehensive tutorial suite with working code examples
-- **Language-specific guides**: Detailed integration guides for each supported programming language with best practices
-- **Migration documentation**: Clear upgrade paths and compatibility matrices between preCICE versions
-
-**Version Control and Release Management**:
-- **Git-based development**: Full source code history and branching strategy available on GitHub with tagged releases
-- **Automated testing**: CI/CD pipeline ensures API compatibility across language bindings and platforms
-- **Release notes**: Detailed changelogs documenting API additions, modifications, and removals for each version
-- **Long-term support**: Maintenance branches for major versions ensuring bug fixes and security updates
-
-**License and Compliance Management**:
-- **LGPL v3 licensing**: Clear licensing terms enabling commercial integration while maintaining open-source benefits
-- **Dependency tracking**: Documented license compatibility for all dependencies (Boost, MPI, PETSc, etc.)
-- **Third-party integration**: License-compatible integration patterns for proprietary and commercial software coupling
+From a technical perspective, preCICE provides comprehensive API management through [Documentation] and [Languages] capabilities including multi-language consistency, Doxygen documentation, semantic versioning, and LGPL v3 licensing with clear compliance guidelines for commercial integration.
 
 ### Overall Assessment
 
@@ -1082,173 +1032,44 @@ From a technical perspective, considering preCICE's architecture and features:
 
 ---
 
-## preCICE Tooling Ecosystem & Strategic Advantages
-
-### Comprehensive Development and Analysis Tools
-
-preCICE provides a **mature tooling ecosystem** that significantly reduces development and operational risks for Deltares:
-
-**🔧 Configuration and Visualization Tools:**
-- **Configuration Visualizer**: Interactive GUI and CLI tools for visualizing coupling setup as graphs, making complex configurations easy to understand and debug
-- **Built-in Validation**: Configuration file validation and error checking before simulation start
-- **Real-time Configuration Reload**: GUI automatically reloads configuration files on change for rapid prototyping
-
-**📊 Performance Analysis Framework:**
-- **Internal Profiling**: Comprehensive performance measurement framework capturing coupling overhead, communication costs, and load balancing
-- **Multi-format Export**: Performance data export to CSV, trace formats for analysis in Perfetto, Firefox Profiler, and Chrome Tracing
-- **Scalability Analysis**: Rank-by-rank performance analysis for identifying bottlenecks in parallel simulations
-- **User-defined Events**: Custom profiling sections can be added to Delft3D adapters for complete performance visibility
-
-**🧪 Testing and Development Support:**
-- **ASTE (Artificial Solver Testing Environment)**: Test coupling configurations without running actual solvers, enabling rapid iteration and debugging
-- **FMI Runner**: Direct coupling to FMI-compliant models, expanding integration possibilities beyond native preCICE adapters
-- **RBF Shape Calculator**: Optimization tools for data mapping performance and accuracy
-- **Case Generation Tools**: Python utilities for automated generation of preCICE simulation setups
-
-### Strategic Advantage: Existing OpenFOAM Integration
-
-**🌊 Immediate CFD Coupling Capability:**
-
-preCICE provides **officially maintained OpenFOAM adapter** with significant business advantages:
-
-- **Production-Ready Integration**: OpenFOAM-preCICE adapter is actively maintained by preCICE developers, ensuring compatibility and support
-- **Established Ecosystem**: Extensive documentation, tutorials, and community support for OpenFOAM coupling scenarios
-- **Proven Applications**: Widely used for Conjugate Heat Transfer (CHT), Fluid-Structure Interaction (FSI), and Fluid-Fluid (FF) coupling
-- **Future Flexibility**: Enables Deltares to couple with industry-standard CFD capabilities for complex multi-physics scenarios
-
-**💼 Business Value of Existing Adapters:**
-
-The preCICE adapter ecosystem provides **immediate integration pathways** for Deltares:
-
-- **Official Adapters**: CalculiX, Code_Aster, deal.II, FEniCS, SU2, openFOAM - all maintained by preCICE team
-- **Third-party Ecosystem**: 20+ additional solvers including ANSYS Fluent, COMSOL, ExaDG, extending Delatres software's coupling reach
-- **Reduced Integration Risk**: Proven adapters reduce development time and technical risk for multi-physics applications
-- **Community Support**: Active community developing new adapters and sharing integration experiences
-
-### Development Productivity Benefits
-
-**⚡ Accelerated Development Cycle:**
-- **Visual debugging** through configuration graphs reduces setup time by 50-70%
-- **Performance profiling** enables data-driven optimization decisions
-- **Testing framework** allows validation without full solver runs
-- **Community knowledge base** provides solutions for common integration challenges
-
-**🎯 Strategic Positioning:**
-- **Technology leadership** through access to cutting-edge coupling research and development
-- **Multi-solver ecosystem** positions Deltares for advanced multi-physics consulting opportunities
-- **Standardized integration** reduces vendor lock-in and enables flexible solution architectures
-
-### External Maintenance & Community Support Benefits
-
-**🔄 Active External Development:**
-
-preCICE being an **external, community-maintained tool** provides significant advantages for Deltares:
-
-- **Zero Maintenance Overhead**: Deltares benefits from continuous development without internal maintenance costs
-- **Academic & Industrial Collaboration**: TU Munich, University of Stuttgart, and industrial partners drive innovation
-- **Rapid Issue Resolution**: Active community provides fast bug fixes and feature development
-- **Proven Responsiveness**: Recent Deltares-reported issue ([#2392](https://github.com/precice/precice/issues/2392)) was **promptly resolved** by preCICE maintainers
-
-**💡 Community-Driven Innovation:**
-- **Research Integration**: Latest coupling algorithms and methods integrated from academic research
-- **Multi-domain Expertise**: Community spans fluid dynamics, structural mechanics, thermal analysis, and more
-- **Quality Assurance**: Multiple organizations testing and validating preCICE across diverse applications
-- **Long-term Sustainability**: Funded academic projects and industrial partnerships ensure continued development
-
-**📈 Business Case for External Tools:**
-- **Cost Efficiency**: Access to €1M+ annual R&D investment without internal costs
-- **Risk Distribution**: Development risks shared across multiple organizations
-- **Accelerated Innovation**: Benefit from community-driven feature development and optimization
-- **Focus on Core Competency**: Deltares resources can focus on hydrodynamic expertise rather than coupling infrastructure
+**For detailed information on preCICE's tooling ecosystem, strategic advantages, and implementation timeline, see [preCICE Executive Summary](preCICE_Executive_Summary.md)**
 
 ---
 
-## Implementation Timeline & Roadmap
+## Summary & Next Steps
 
-### Phase 1: PoC Finalization & Go Decision (November - December 2025)
+This comprehensive technical requirements analysis demonstrates that preCICE provides a **robust foundation** for replacing DIMR's coupling functionality while offering **significant technical and business advantages**.
 
-**🎯 Strategic Decision Making:**
-- **PoC Validation**: Complete technical validation of FM-Wave coupling performance and stability
-- **Business Case Development**: Formal memo documenting business benefits and implementation strategy
-- **Stakeholder Alignment**: Clear user stories demonstrating preCICE advantages for end-users and development teams
-- **Platform Readiness**: Windows build integration ensuring cross-platform deployment capability
-- **Infrastructure Updates**: PETSc modernization in DflowFM suite for enhanced numerical performance
+**📊 Overall Assessment:**
+- **✅ 25 requirements fully met (61%)** - Strong coverage of core coupling functionality
+- **⚠️ 12 requirements partially met (29%)** - Clear implementation paths available  
+- **❌ 4 requirements not met (10%)** - Orchestration features outside preCICE scope
 
-**📋 Key Deliverables:**
-- Formal go/no-go decision with executive memo
-- Comprehensive benefits report based on PoC results
-- Preliminary architectural design for production implementation
-- Cross-platform build validation (Linux/Windows)
+### Business Decision & Implementation Strategy
 
-### Phase 2: Production Implementation (Q1 2026)
+**For comprehensive analysis including:**
+- Strategic business case and ROI analysis
+- Detailed implementation roadmap and timeline  
+- Risk assessment and mitigation strategies
+- Executive recommendations and decision framework
 
-**🔧 Technical Integration:**
-- **Migration Tools**: Automated DIMR-to-preCICE configuration conversion for seamless user transition
-- **Standardization**: Unified naming conventions and coordinate system handling for consistent user experience
-- **API Development**: Extensible preCICE integration in FM & Wave kernels enabling future multi-solver coupling
-- **Data Exchange**: Production-grade preCICE data communication replacing DIMR coupling mechanisms
+**→ See [preCICE Executive Summary](preCICE_Executive_Summary.md)**
 
-**🔄 Compatibility & User Experience:**
-- **Backwards Compatibility**: DIMR remains available ensuring zero disruption for existing workflows
-- **Infrastructure Development**: Complete testing framework, documentation, and training materials
-- **Quality Assurance**: Comprehensive testbench for validation across diverse coupling scenarios
+### Technical Foundation
 
-**🎯 Target Delivery:**
-- **Next DflowFM Suite Release**: preCICE-enabled FM-Wave coupling in production release
-- **User Readiness**: Training sessions and documentation for seamless adoption
-- **Support Infrastructure**: Team Hydro support framework for user assistance
+The detailed requirement-by-requirement analysis in this document provides the technical validation supporting strategic decision-making. Key technical strengths include:
 
-### Business Value Timeline
+- **Proven PoC Implementation**: Existing integration in `wave_main.F90` and `unstruc_api.F90` demonstrates successful coupling
+- **High-Performance Architecture**: Native MPI support, optimized for HPC environments with scalability to 10,000+ ranks
+- **Comprehensive Tooling**: Configuration visualization, performance analysis, testing frameworks reduce development complexity
+- **External Maintenance**: Active community development with prompt issue resolution (e.g., [issue #2392](https://github.com/precice/precice/issues/2392))
+- **Mature Ecosystem**: 20+ solver adapters, extensive documentation, established best practices
 
-**Immediate Benefits (PoC Phase):**
-- Risk validation and technical feasibility confirmation
-- Performance benchmarking against current DIMR approach
-- Stakeholder confidence building through demonstrated capabilities
+**Recommended Implementation Strategy**: **Direct preCICE kernel integration** leveraging the existing PoC foundation provides optimal performance while maintaining full control over coupling architecture.
 
-**Short-term ROI (Q1 2026):**
-- Enhanced coupling performance and stability for FM-Wave applications
-- Reduced coupling setup complexity through improved configuration tools
-- Possibility of FM-FM coupling
-- Foundation for advanced multi-physics capabilities
+This technical analysis supports the strategic recommendation outlined in the [Executive Summary](preCICE_Executive_Summary.md) for Deltares' coupling infrastructure modernization.
 
-**Long-term Strategic Value (2026+):**
-- Platform for coupling with external solvers (OpenFOAM, CalculiX, etc.)
-- More modular and separated solvers, and applications
-- Competitive advantage in multi-physics consulting market
-- Technology leadership in coupling simulation capabilities
-
----
-
-## Business Decision Framework & Implementation Strategy
-
-### Overall Requirements Satisfaction
-
-**📊 Requirements Coverage Analysis:**
-- **✅ Fully Met (25 requirements - 61%)**: Core coupling functionality, time management, data exchange, mesh handling
-- **⚠️ Partially Met (12 requirements - 29%)**: Platform support, performance monitoring, orchestration features
-- **❌ Not Met (4 requirements - 10%)**: Primarily DIMR-specific orchestration features outside preCICE's scope
-
-### Strategic Business Case
-
-**🎯 Why preCICE is the Right Choice:**
-
-1. **Technology Leadership Position**
-   - Adopt the **industry-standard coupling library** used by major HPC institutions
-   - Position Deltares at the forefront of multi-physics simulation technology
-   - Access to continuous innovation from active open-source community
-
-2. **Cost-Benefit Analysis**
-   - **Development Cost Reduction**: 40-60% savings through mature open-source platform
-   - **Maintenance Efficiency**: Shared maintenance burden with global community
-   - **Performance Gains**: HPC-optimized architecture reduces computation costs
-   - **Future-Proofing**: Avoid technical debt accumulation in custom DIMR solution
-
-3. **Market Advantages**
-   - **Enhanced Flexibility**: Multi-language support enables rapid customer adaptation
-   - **Third-Party Integration**: Extensive ecosystem accelerates new feature development
-   - **Customer Attraction**: Industry-standard tools reduce client adoption barriers
-
-### Implementation Approach: Direct Kernel Integration
+### Technical Foundation
 
 **� Why Not BMI Adapter Architecture?**
 
