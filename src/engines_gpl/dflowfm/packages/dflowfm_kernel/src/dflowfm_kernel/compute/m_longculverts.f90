@@ -1492,7 +1492,8 @@ contains
       use m_save_ugrid_state
 
       type(t_filenames), intent(in) :: md_1dfiles
-      character(len=9), allocatable :: md_culvertprefix
+      logical, optional, intent(in) :: write_converted_files
+      character(len=10), allocatable :: md_culvertprefix
       character(len=:), allocatable :: converted_fnamesstring
       character(len=:), allocatable :: converted_crsdefsstring
       character(len=:), allocatable :: tempstring_crsdef
@@ -1522,10 +1523,6 @@ contains
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-         !call split_filename(md_netfile, temppath, tempname, tempext)
-         !tempname = trim(md_culvertprefix)//tempname
-         !tempstring_netfile = cat_filename(temppath, tempname, tempext)
-
          nbranchlongnames = nbranchids
          nnodelongnames = nnodeids
          allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
@@ -1538,12 +1535,6 @@ contains
          end do
          i = 0
          call admin_network(network, i)
-
-         !md_netfile = tempstring_netfile
-         !md_1dfiles%structures = converted_fnamesstring
-         !md_1dfiles%cross_section_definitions = converted_crsdefsstring
-         !converted_fnamesstring = trim(trim(md_culvertprefix)//md_ident)//'.mdu'
-         !call writeMDUFile(converted_fnamesstring, istat)
       end if
 
    end subroutine makelongculverts_commandline
