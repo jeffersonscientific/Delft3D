@@ -281,6 +281,9 @@ contains
             end if
             
             ! Finally; vertical positions
+            ! Maybe not the right place to do this, fille interfaces with bed level and water surface in case of 2d model
+ 
+            
             if (model_is_3D()) then       
                !       interface
                call interpolate_horizontal (zws,i,IPNT_ZWS,UNC_LOC_W)
@@ -289,6 +292,11 @@ contains
                   tmp_interp(j) = 0.5_dp * (zws(j) + zws(j - 1))
                end do
                call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
+            else 
+                ! TK_Temp: Fill interfaces with surface and bed, centre with overage (woulde be nicer to fill zws with correct values)
+                valobs(i,IPNT_ZWS)     = valobs(i,IPNT_BL)
+                valobs(i,IPNT_ZWS + 1) = valobs(i,IPNT_S1)
+                valobs(i,IPNT_ZCS)     =  0.5_dp * (valobs(i,IPNT_BL) + valobs(i,IPNT_S1)) 
             end if
 
             ! Frome here: everything as snapped!!!

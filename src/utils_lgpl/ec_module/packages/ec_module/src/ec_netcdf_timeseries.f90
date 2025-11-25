@@ -159,7 +159,7 @@ contains
       allocate (character(len=0) :: zunits)
       
       ! TK_Temp, first determine old or new (his) nc file
-      !          dont lijke using file name to identify type but see no other way  
+      !          dont ljke using file name to identify type but see no other way  
       if (index(ncname,'_his.nc') > 0) then
           ncptr%ncType = 2
       else

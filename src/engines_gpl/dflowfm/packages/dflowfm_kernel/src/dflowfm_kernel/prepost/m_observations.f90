@@ -360,7 +360,8 @@ contains
       if (jased > 0 .and. .not. stm_included) then
          IVAL_SED = next_index(i)
       end if
-      if (kmx > 0) then
+      !TK_Temp: Also for KMX = 0
+      if (kmx >= 0) then
          IVAL_ZCS = next_index(i)
       end if
       if (use_density()) then
@@ -376,9 +377,12 @@ contains
 
 !  3D, layer interfaces
       i0 = i
-      if (kmx > 0) then
+      ! TK_Temp: also for kmx == 0
+      if (kmx >= 0) then
          IVAL_ZWS = next_index(i)
          IVAL_ZWU = next_index(i)
+      end if
+      if (kmx > 0) then
          IVAL_BRUV = next_index(i)
          if (iturbulencemodel > 0 .and. jahistur > 0) then
             IVAL_TKIN = next_index(i)
