@@ -45,12 +45,11 @@ module m_part_flow
     integer :: ndkx              !< dim of 3d flow nodes (internal + boundary)
     integer :: lnkx              !< dim of 3d flow links (internal + boundary)
 
-    integer :: layertype         !< 1= all sigma, 2 = all z, 3 = left sigma, 4 = left z
-
+    integer :: layertype         !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined z-layers, 4 = density controlled sigma-layers 
     integer, parameter :: LAYTP_SIGMA = 1
     integer, parameter :: LAYTP_Z = 2
-    integer, parameter :: LAYTP_LEFTSIGMA = 3
-    integer, parameter :: LAYTP_LEFTZ = 4
+    integer, parameter :: LAYTP_POLYGON_Z = 3
+    integer, parameter :: LAYTP_DENS_SIGMA = 4
 
     ! flow arrays
 

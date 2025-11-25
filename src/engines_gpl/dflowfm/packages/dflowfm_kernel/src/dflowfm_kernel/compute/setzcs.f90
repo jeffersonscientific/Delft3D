@@ -61,7 +61,7 @@ contains
          do k = kb, kt
             zcs(k) = 0.5_dp * (zws(k) + zws(k - 1))
          end do
-         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
+         if (layertype == LAYTP_Z .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
             call getzlayerindices(kk, nlayb, nrlay)
             zcs(kb) = 0.5_dp * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
             if (kt > kb .and. keepzlayeringatbed == 2) then
