@@ -61,6 +61,7 @@ object WindowsTest : BuildType({
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
 
     }
 
@@ -79,16 +80,12 @@ object WindowsTest : BuildType({
             name = "Download artifact from Nexus"
             type = "RawDownloadNexusWindows"
             executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("artifact_path", "/07_day_retention/dimrset/dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_username", "%nexus_username%")
-            param("plugin.docker.imagePlatform", "")
-            param("plugin.docker.imageId", "")
-            param("teamcity.step.phase", "")
             param("download_to", ".")
             param("nexus_password", "%nexus_password%")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("plugin.docker.run.parameters", "")
         }
         powerShell {
             name = "Extract artifact"
@@ -97,13 +94,11 @@ object WindowsTest : BuildType({
                 content = """
                     ${'$'}ErrorActionPreference = "Stop"
 
-                    ${'$'}zipName = "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip"
-
                     ${'$'}dest = "test/deltares_testbench/data/engines/teamcity_artifacts/x64"
 
-                    Write-Host "Extracting ${'$'}zipName ..."
+                    Write-Host "Extracting %file_path% ..."
 
-                    Expand-Archive -Path ${'$'}zipName -DestinationPath "temp_extract"
+                    Expand-Archive -Path %file_path% -DestinationPath "temp_extract"
 
                     robocopy "temp_extract/x64" ${'$'}dest /E /XC /XN /XO
                 """.trimIndent()

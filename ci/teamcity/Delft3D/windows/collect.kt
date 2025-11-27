@@ -27,6 +27,10 @@ object WindowsCollect : BuildType({
         dimrset_version*txt => version
     """.trimIndent()
 
+    params {
+        param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -81,13 +85,11 @@ object WindowsCollect : BuildType({
                 content = """
                     ${'$'}ErrorActionPreference = "Stop"
 
-                    ${'$'}zipName = "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip"
+                    Write-Host "Creating %file_path% ..."
 
-                    Write-Host "Creating ${'$'}zipName ..."
+                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath %file_path% -Force
 
-                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath ${'$'}zipName -Force
-
-                    Write-Host "ZIP created: ${'$'}zipName"
+                    Write-Host "ZIP created: %file_path%"
                 """.trimIndent()
             }
         }
@@ -95,16 +97,12 @@ object WindowsCollect : BuildType({
             name = "Upload artifact to Nexus"
             type = "RawUploadNexusWindows"
             executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+            param("file_path", "%file_path%")
             param("nexus_username", "%nexus_username%")
-            param("plugin.docker.imagePlatform", "")
-            param("plugin.docker.imageId", "")
-            param("teamcity.step.phase", "")
             param("nexus_password", "%nexus_password%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("plugin.docker.run.parameters", "")
-            param("target_path", "/07_day_retention/dimrset/dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+            param("target_path", "/07_day_retention/dimrset/%file_path%")
         }
     }
 
