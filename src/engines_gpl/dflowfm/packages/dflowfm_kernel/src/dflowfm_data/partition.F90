@@ -313,7 +313,7 @@ contains
             call find1dcells()
          end if
 
-         call delete_dry_points_and_areas(update_blcell = .false.)
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     determine number of cells
@@ -654,7 +654,7 @@ contains
       call find1dcells()
       netstat = NETSTAT_OK
 
-      call delete_dry_points_and_areas(update_blcell = .false.)
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
       if (numk == 0 .or. numl == 0) then
          write (message, "('While making partition domain #', I0, ': empty domain (', I0, ' net nodes, ', I0, ' net links).')") idmn, numk, numl
@@ -691,7 +691,7 @@ contains
          end do
 
 !        remove masked netcells
-         call remove_masked_netcells(update_blcell = .false.)
+         call remove_masked_netcells(update_blcell=.false.)
 
          call partition_make_1dugrid_in_domain(idmn, numl1d, Lperm, ierror)
          if (ierror /= 0) goto 1234
@@ -1526,7 +1526,7 @@ contains
       else
          numnew = nr_send_list(numdomains - 1) + num
          if (numnew > ubound(send_list, 1)) then
-            call realloc(send_list, int(1.2_dp * dble(numnew) + 1.0_dp), fill=0, keepExisting=.true.)
+            call realloc(send_list, int(1.2_dp * real(numnew, kind=dp) + 1.0_dp), fill=0, keepExisting=.true.)
          end if
       end if
 
@@ -1858,7 +1858,7 @@ contains
 
 !        check recv array size
          if (icount > 2 * ubound(xy_recv, 2)) then ! reallocate if necessary
-            call realloc(xy_recv, [2, int(1.2_dp * dble(icount / 2) + 1.0_dp)], keepExisting=.false., fill=0.0_dp)
+            call realloc(xy_recv, [2, int(1.2_dp * real(icount / 2, kind=dp) + 1.0_dp)], keepExisting=.false., fill=0.0_dp)
          end if
 
          call mpi_recv(xy_recv, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, status, error)
@@ -2022,7 +2022,7 @@ contains
             k = isendlist_s(j)
             xs(NS) = xzw(k)
             ys(NS) = yzw(k)
-            zs(NS) = dble(i)
+            zs(NS) = real(i, kind=dp)
          end do
       end do
 
@@ -2032,7 +2032,7 @@ contains
             k = isendlist_sall(j)
             xs(NS) = xzw(k)
             ys(NS) = yzw(k)
-            zs(NS) = dble(i)
+            zs(NS) = real(i, kind=dp)
          end do
       end do
 
@@ -2042,7 +2042,7 @@ contains
             k = abs(isendlist_u(j))
             xs(NS) = xu(k)
             ys(NS) = yu(k)
-            zs(NS) = -dble(i)
+            zs(NS) = -real(i, kind=dp)
          end do
       end do
 
@@ -2415,7 +2415,7 @@ contains
       end if
 
       if (ubound(work, 1) < num) then
-         call realloc(work, int(1.2_dp * dble(num) + 1.0_dp))
+         call realloc(work, int(1.2_dp * real(num, kind=dp) + 1.0_dp))
       end if
 
 !     fill work array
@@ -2542,7 +2542,7 @@ contains
       end if
 
       if (ubound(workrec, 1) < num) then
-         call realloc(workrec, int(1.2_dp * dble(num) + 1.0_dp))
+         call realloc(workrec, int(1.2_dp * real(num, kind=dp) + 1.0_dp))
       end if
 
       if (ja3d /= 1) then
@@ -2901,7 +2901,7 @@ contains
 
       if (jampi == 1) then
 !        update global ghost-cell numbers
-         dum = dble(iglobnum)
+         dum = real(iglobnum, kind=dp)
          if (jatime == 1) call starttimer(IMPICOMM)
          !call update_ghost(dum,ierror)
          if (jampi == 1) then
@@ -4475,7 +4475,7 @@ contains
       if (netstat == NETSTAT_CELLS_DIRTY) then
          call findcells(0)
          call find1Dcells()
-         call delete_dry_points_and_areas(update_blcell = .false.)
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     check for 1D cells (not supported)

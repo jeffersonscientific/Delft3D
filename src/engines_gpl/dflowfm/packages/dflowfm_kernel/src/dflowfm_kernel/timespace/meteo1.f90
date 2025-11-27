@@ -46,10 +46,6 @@ module timespace_read
 !
 !!--pseudo code and references--------------------------------------------------
 !
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
-!
 !!--declarations----------------------------------------------------------------
    use precision, only: dp
    implicit none
@@ -142,11 +138,6 @@ module timespace_data
 !!--description-----------------------------------------------------------------
 !
 !!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@deltares.nl
-! Herman.Kernkamp@deltares.nl
-! Adri.Mourits@deltares.nl
-! Edwin.Spee@deltares.nl
 !
 !!--declarations----------------------------------------------------------------
    use precision
@@ -598,7 +589,7 @@ contains
    !
    ! ==========================================================================
    !>
-   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps) ! call schrama's routines on reduced set
+   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps)
       use m_sferic
       use m_flowparameters, only: jatidep, jaselfal, jamaptidep
       use m_partitioninfo
@@ -3261,25 +3252,10 @@ contains
       !
       ! ====================================================================
       !
-      !     Programmer     E.J.O. Schrama
+      !     Copyright © 2025, Rijkswaterstaat, All Rights Reserved.
       !
-      !     Original URL: https://repos.deltares.nl/repos/simona/bo_omgeving/simona/src/waqua/waqpro/routines/wastfr.f
-      !     $Revision: 1850 $, $Date: 2008-04-18 09:19:37 +0200 (Fri, 18 Apr 2008) $
-      !
-      !     Version 1.1    Date 22-05-2008   c81402: extended for evaluation of
-      !                                              tidal forces on grids (AVe,
-      !                                              VORtech)
-      !     Version 1.0    Date 24-01-2008   initial version
-      !
-      !     Copyright (c) "E.J.O. Schrama".
-      !     Permission to copy or distribute this software or documentation
-      !     in hard copy or soft copy granted only by written license
-      !     obtained from "Rijkswaterstaat".
-      !     All rights reserved. No part of this publication may be
-      !     reproduced, stored in a retrieval system (e.g., in memory, disk,
-      !     or core) or be transmitted by any means, electronic, mechanical,
-      !     photocopy, recording, or otherwise, without written permission
-      !     from the publisher.
+      !     This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
+      !     https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
       !
       ! ********************************************************************
       !
@@ -3622,7 +3598,7 @@ contains
             if (abs(rlat - rlslat) > reps) then
                do nq = 2, 3
                   do mq = 0, nq
-                     fnm = 2.0_dp / dble(2 * nq + 1) * factorial(nq + mq) / factorial(nq - mq)
+                     fnm = 2.0_dp / real(2 * nq + 1, kind=dp) * factorial(nq + mq) / factorial(nq - mq)
                      fnm = sqrt(1.0_dp / (2.0_dp * pi * fnm)) * ((-1.0_dp)**mq)
                      call legpol1(rlat, nq, mq, pnm)
                      pol1(mq, nq) = fnm * pnm
@@ -3632,8 +3608,8 @@ contains
 
             if (abs(rlong - rlslon) > reps) then
                do mq = 0, 3
-                  cm1(mq) = +cos(dble(mq) * rlong)
-                  sm1(mq) = +sin(dble(mq) * rlong)
+                  cm1(mq) = +cos(real(mq, kind=dp) * rlong)
+                  sm1(mq) = +sin(real(mq, kind=dp) * rlong)
                end do
             end if
 
@@ -3685,7 +3661,7 @@ contains
       do i = 1, ntable
          argum = 0.0_dp
          do j = 1, 6
-            argfct = dble(itable(i, j))
+            argfct = real(itable(i, j), kind=dp)
             argum = argum + argfct * elmnts(j) * plsmin(j)
          end do
          ! argum = mod(argum, 360.0_dp)
@@ -3746,12 +3722,6 @@ contains
    subroutine astrol(mjdate, six)
       ! ====================================================================
       !
-      !     Programmer     R. D. Ray
-      !
-      !     Version 1.0    Date dec. 1990    initial version
-      !
-      ! ********************************************************************
-      !
       !     DESCRIPTION
       !
       !     This copied from richard's subroutine astrol, in goes the
@@ -3765,7 +3735,6 @@ contains
       !     by David Cartwright (personal comm., Nov. 1990).
       !     TIME is UTC in decimal MJD.
       !     All longitudes returned in degrees.
-      !     R. D. Ray    Dec. 1990
       !
       !     Non-vectorized version.
       !
@@ -3860,10 +3829,6 @@ contains
    !>
    subroutine legpol1(theta, n, m, pnm)
       ! ====================================================================
-      !
-      !     Programmer     E. Schrama <e.j.o.schrama@tudelft.nl>
-      !
-      ! ********************************************************************
       !
       !     DESCRIPTION
       !
@@ -4502,7 +4467,6 @@ contains
    !>
    subroutine pinpok(xl, yl, n, x, y, inside)
 
-      ! Author: H. Kernkamp
       implicit none
 
       real(kind=dp), intent(in) :: xl, yl ! point under consideration
@@ -5406,12 +5370,6 @@ module timespace
 !    meteogetpaver    : returns the average atmospheric pressure read
 !    meteogetpcorr    : returns whether pressure correction is switched on on
 !                       the boundaries
-!
-!!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
 !
 !!--declarations----------------------------------------------------------------
    use precision
@@ -6841,7 +6799,7 @@ contains
          dataPtr1 => wdsu_x
          itemPtr2 => item_stressxy_y
          dataPtr2 => wdsu_y
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')

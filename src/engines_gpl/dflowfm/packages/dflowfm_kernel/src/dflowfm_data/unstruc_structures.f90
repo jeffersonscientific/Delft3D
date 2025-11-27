@@ -38,6 +38,7 @@ module m_structures
    use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
    use m_structures_indices ! all of these indices are used in the module
 
+   use precision, only: dp
    implicit none
 
    type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
@@ -173,7 +174,7 @@ contains
       use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen
 
       use m_flowtimes, only: ti_rst
-      use m_longculverts, only: nlongculverts
+      use m_longculverts_data, only: nlongculverts
       use m_dambreak_breach, only: n_db_signals
       implicit none
 
@@ -321,7 +322,7 @@ contains
       use m_flowgeom, only: wu, ln, teta, bl
       use m_1d_structures, only: get_discharge_under_compound_struc
       use m_GlobalParameters, only: st_longculvert, st_pump, st_general_st, st_weir, st_orifice, st_bridge
-      use m_longculverts, only: longculverts
+      use m_longculverts_data, only: longculverts
       use m_flowparameters, only: epshs, epshu
       use m_general_structure, only: t_generalstructure
       implicit none
@@ -830,7 +831,7 @@ contains
 !! of a structure on flow links.
    integer function get_number_of_geom_nodes(istrtypein, i)
       use m_1d_structures
-      use m_longculverts
+      use m_longculverts_data, only: longculverts
       use m_GlobalParameters, only: ST_LONGCULVERT
       use m_partitioninfo, only: my_rank, jampi, idomain
       use m_link_ghostdata, only: link_ghostdata
@@ -917,7 +918,7 @@ contains
       use m_alloc
       use m_flowgeom, only: lncn
       use network_data, only: xk, yk
-      use m_longculverts
+      use m_longculverts_data, only: longculverts
       use m_GlobalParameters, only: ST_LONGCULVERT
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_link_ghostdata, only: link_ghostdata
@@ -1425,7 +1426,7 @@ contains
             end if
          end do
          if (jadif == 0) then
-            valstruct(IVAL_STATE) = dble(tmp)
+            valstruct(IVAL_STATE) = real(tmp, kind=dp)
          else
             valstruct(IVAL_STATE) = dmiss
          end if

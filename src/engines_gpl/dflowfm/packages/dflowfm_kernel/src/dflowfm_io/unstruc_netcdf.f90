@@ -2958,7 +2958,7 @@ contains
       use m_partitioninfo, only: jampi, idomain, iglobal_s
       use m_structures, only: get_max_numlinks, valculvert, valgenstru, valweirgen, valorifgen, valpump
       use m_globalparameters, only: st_general_st, st_weir, st_orifice
-      use m_longculverts, only: nlongculverts, longculverts
+      use m_longculverts_data, only: nlongculverts, longculverts
       use m_structures_saved_parameters, only: process_structures_saved_parameters, define_ncdf_data_id, write_data_to_file
       use m_gettaus, only: gettaus
       use m_gettauswave, only: gettauswave
@@ -6529,7 +6529,7 @@ contains
       if (jamapnumlimdt > 0) then
          ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_numlimdt, UNC_LOC_S, numlimdt) ! TODO: AvD: integer version of this routine
          call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
-         numlimdtdbl = dble(numlimdt) ! To prevent stack overflow. TODO: remove once integer version is available.
+         numlimdtdbl = real(numlimdt, kind=dp) ! To prevent stack overflow. TODO: remove once integer version is available.
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_numlimdt, UNC_LOC_S, numlimdtdbl, jabndnd=jabndnd_)
          deallocate (numlimdtdbl)
       end if
@@ -15657,6 +15657,7 @@ contains
       use Timers
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
+
       implicit none
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
@@ -15714,9 +15715,6 @@ contains
       n1d2dcontacts = 0
       n1dedges = 0
       start_index = 1
-      !if (present(id_tsp_)) then
-      !   id_tsp = id_tsp_
-      !endif
 
       if (ndxi <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
@@ -15790,20 +15788,25 @@ contains
             x1dn(n) = xz(ndx2d + n)
             y1dn(n) = yz(ndx2d + n)
 
-            if (n <= ndx1d) then ! exclude boundary nodes
+            if (n <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then ! exclude boundary nodes
                ! Also store the original mesh1d/network variables in the new flowgeom order for ndx1d nodes:
-               k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the node index from *before* setnodadm(),
+               k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the netnode index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (k1 > 0 .and. associated(meshgeom1d%ngeopointx)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
+               if (size(meshgeom1d%nodeidx_inverse) > 0) then
+                  k1 = meshgeom1d%nodeidx_inverse(k1)
+               end if
                   nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
                   nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
-                  nodeids_remap(n) = nodeids(k1)
+                  if (allocated(nodeids)) then
+                     nodeids_remap(n) = nodeids(k1)
+                  end if
+                  if (allocated(nodelongnames)) then
                   nodelongnames_remap(n) = nodelongnames(k1)
-               end if
+                  end if
             end if
          end do
 
-         !count 1d mesh edges and 1d2d contacts
+!count 1d mesh edges and 1d2d contacts
          n1dedges = 0
          n1d2dcontacts = 0
          do L = 1, lnx1d
@@ -15815,6 +15818,7 @@ contains
                continue
             end if
          end do
+
          if (jabndnd_ == 1) then
             ! when writing boundary points, include the boundary links as well
             n1dedges = n1dedges + (lnx1db - lnxi)
@@ -15854,13 +15858,15 @@ contains
                x1du(n1dedges) = xu(L)
                y1du(n1dedges) = yu(L)
                L1 = Lperm(ln2lne(L)) ! This is the edge index from *before* setnodadm(),
+               if (L1 > size(meshgeom1d%edgebranchidx)) then
+                  L1 = n1dedges !> don't remap edgebranchIDX if original array is incomplete
+               end if
                ! i.e., as was read from input *_net.nc file.
-               if (L1 > 0 .and. associated(meshgeom1d%ngeopointx)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
+               if(associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
-               else
-                  continue
                end if
+
             else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                ! 1D2D link, find the 2D flow node and store its cell center as '1D' node coordinates
                n1d2dcontacts = n1d2dcontacts + 1
@@ -16673,7 +16679,7 @@ contains
       jareinitialize_ = 0
       if (present(jareinitialize)) jareinitialize_ = jareinitialize
 
-      call readyy('Reading net data', 0d0)
+      call readyy('Reading net data', 0.0_dp)
 
       call prepare_error('Could not read net cells from NetCDF file '''//trim(filename)//''' (is not critical). Details follow:', LEVEL_DEBUG)
 
@@ -16774,7 +16780,7 @@ contains
          goto 888
       end if
 
-      call readyy('Reading net data', .1d0)
+      call readyy('Reading net data', 0.1_dp)
 
 !    if (nerr_ > 0) goto 888
 
@@ -16783,7 +16789,7 @@ contains
       !ierr = nf90_inq_varid(inetfile, 'ElemCenter_y', id_elemceny)
       !call check_error(ierr, 'y coordinate of cell center')
 
-      call readyy('Reading net data', .3d0)
+      call readyy('Reading net data', 0.3_dp)
 
       call increasenetcells(nump1d2d, 1.0, .false.)
 
@@ -16863,7 +16869,7 @@ contains
          end if
       end do
 
-      call readyy('Reading net data', .8d0)
+      call readyy('Reading net data', 0.8_dp)
 
       if (jaugrid == 1) then
          ierr = ionc_get_ncid(ioncid, inetfile)
@@ -17017,11 +17023,11 @@ contains
          end if
       end if
 
-      call readyy('Reading net data', 1d0)
+      call readyy('Reading net data', 1.0_dp)
       ierr = ionc_close(ioncid)
       if (nerr_ > 0) goto 888
 
-      call readyy('Reading net data', -1d0)
+      call readyy('Reading net data', -1.0_dp)
       return ! Return with success
 
 888   continue
@@ -17054,7 +17060,7 @@ contains
       integer, intent(in) :: jaerror2sam !< add unfound nodes to samples (1) or not (0)
       integer :: ierror = 1
       integer :: k, nn, i, jj, kk, jamerge2own
-      real(kind=dp) :: R2search = 1d-8 !< Search radius
+      real(kind=dp) :: R2search = 1.0e-8_dp !< Search radius
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
       real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
@@ -17106,7 +17112,7 @@ contains
                NS = NS + 1
                xs(Ns) = x_tmp(kk)
                ys(NS) = y_tmp(kk)
-               zs(NS) = dble(NN)
+               zs(NS) = real(NN, kind=dp)
             end if
 
             cycle ! no points found
@@ -17131,7 +17137,7 @@ contains
                   NS = NS + 1
                   xs(Ns) = x_tmp(kk)
                   ys(NS) = y_tmp(kk)
-                  zs(NS) = dble(NN)
+                  zs(NS) = real(NN, kind=dp)
                end if
 
             end if
@@ -17180,7 +17186,7 @@ contains
 
       real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
       integer :: i
-      real(kind=dp) :: dist, dtol = 1d-8
+      real(kind=dp) :: dist, dtol = 1.0e-8_dp
       character(len=128) :: message
 
       ierror = 0
@@ -17369,7 +17375,7 @@ contains
       use m_1d_structures
       use m_General_Structure
       use fm_external_forcings_data
-      use m_longculverts
+      use m_longculverts_data, only : longculverts, nlongculverts
       implicit none
       integer, intent(in) :: ncid !< ID of the rst file
       character(len=*), intent(in) :: filename !< Name of rst file.

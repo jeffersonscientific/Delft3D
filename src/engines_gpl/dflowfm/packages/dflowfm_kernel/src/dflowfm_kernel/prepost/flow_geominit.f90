@@ -265,7 +265,7 @@ contains
       !   enddo
       !   deallocate(fnames)
       !end if
-      call delete_dry_points_and_areas(update_blcell = .false.)
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
 ! also disabled isolated cells due to cutcells and store masks
       call cutcell_list(6, 1)
@@ -384,7 +384,7 @@ contains
 
          kcs(n) = 2
          if (mod(n, M) == 0) then
-            af = 0.2_dp + 0.6_dp * dble(n) / dble(ndx2d)
+            af = 0.2_dp + 0.6_dp * real(n, kind=dp) / real(ndx2d, kind=dp)
             call readyy('geominit-cell areas ba', af)
          end if
 

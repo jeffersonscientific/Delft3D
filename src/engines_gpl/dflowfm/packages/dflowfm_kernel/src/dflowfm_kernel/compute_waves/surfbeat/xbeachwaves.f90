@@ -123,7 +123,7 @@ contains
       call writelog('l', '', 'Wave boundary condition parameters: ')
       allocate (allowednames(12), oldnames(12))
       allowednames = ['stat        ', 'bichrom     ', 'ts_1        ', 'ts_2        ', 'jons        ', 'swan        ', &
-                       'vardens     ', 'reuse       ', 'off         ', 'stat_table  ', 'jons_table  ']
+                      'vardens     ', 'reuse       ', 'off         ', 'stat_table  ', 'jons_table  ']
       oldnames = ['0 ', '1 ', '2 ', '3 ', '4 ', '5 ', '6 ', '7 ', '9 ', '40', '41']
       !             function =   file         key      default  n allowed  n old allowed  allowed names  old allowed names
       instat = readkey_str(md_surfbeatfile, 'instat', 'bichrom', 11, 11, allowednames, oldnames, required=(swave == 1))
@@ -471,7 +471,7 @@ contains
 
          !if (windmodel.eq.0) then
          do k = 1, ndx
-            sigmwav(k) = sum(sigt(:, k), dim=1) / dble(ntheta)
+            sigmwav(k) = sum(sigt(:, k), dim=1) / real(ntheta, kind=dp)
             L0(k) = 2 * pi * ag / (sigmwav(k)**2)
             L1(k) = L0(k)
             Ltemp(k) = L0(k)
@@ -1866,7 +1866,7 @@ contains
                do itheta = 1, ntheta
                   sigt(itheta, :) = 2.0_dp * pi / Trep
                end do
-               sigmwav = max(sum(sigt, 1) / dble(ntheta), waveps)
+               sigmwav = max(sum(sigt, 1) / real(ntheta, kind=dp), waveps)
                call xbeach_dispersion(hs)
             end if
             !
@@ -1939,7 +1939,7 @@ contains
                   end do
                end do
 
-               sigmwav = max(sum(sigt, 1) / dble(ntheta), epshu)
+               sigmwav = max(sum(sigt, 1) / real(ntheta, kind=dp), epshu)
                call xbeach_dispersion(hs)
 
                dist = (cos(thetabin - theta0))**m
@@ -2004,7 +2004,7 @@ contains
                ki = kbndw(2, n)
                zbndw(:, n) = e01 * 0.5_dp * &
                              (1.0_dp + cos(2 * pi * (time0 / Tlong - (sin(theta0) * (ybndw(n) - yref0) &
-                                                                    + cos(theta0) * (xbndw(n) - xref0)) / Llong))) * &
+                                                                      + cos(theta0) * (xbndw(n) - xref0)) / Llong))) * &
                              min(time0 / taper, 1.0_dp)
                if (nbndu > 0) then
                   Lb = kbndw2kbndu(n)
@@ -4710,7 +4710,7 @@ contains
             end do
             !
             ! Percentage of converged points
-            percok = sum(ok) / dble(mn) * 100.0_dp
+            percok = sum(ok) / real(mn, kind=dp) * 100.0_dp
             eemax = maxval(ee)
             ! Relative maximum error
             error = maxval(diff) / eemax
@@ -4877,7 +4877,7 @@ contains
          end do
          !
          if (sweep == 4) then
-            percok = sum(ok) / dble(mn) * 100.0_dp
+            percok = sum(ok) / real(mn, kind=dp) * 100.0_dp
             write (*, *) 'iteration: ', iter / 4, '   % ok: ', percok
             if (jampi > 0) then
                call reduce_double_min(percok)
@@ -5597,7 +5597,7 @@ contains
       real(kind=dp), intent(out) :: t
       integer :: count, count_rate, count_max
       call system_clock(count, count_rate, count_max)
-      t = dble(count) / count_rate
+      t = real(count, kind=dp) / count_rate
    end subroutine timer
 
 ! -----------------------------------------------------------
@@ -5619,7 +5619,7 @@ contains
       ! what time is it
       call system_clock(COUNT=clock)
       ! define the seed vector based on a prime, the clock and the set of integers
-      seed = clock + 37 * [(i - 1, i=1, n)]
+      seed = clock + 37*[(i - 1, i=1, n)]
       ! if mpi do we need a different seed on each node or the same???
       ! if we do need different seeds on each node
       ! seed *= some big prime * rank ?
