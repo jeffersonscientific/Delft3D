@@ -86,7 +86,7 @@ contains
 
    !> Loads the long culverts from a structures.ini file and
    !! creates extra netnodes+links for them.
-   subroutine convertLongCulvertsAsNetwork(structurefile, jaKeepExisting, culvertprefix, structures_output, crsdef_output, ierr, crsdeffile)
+   subroutine convertLongCulvertsAsNetwork(structurefile, jaKeepExisting, culvertprefix, structures_output, crsdef_output, ierr, crsdeffile, write_converted_files)
       use dfm_error, only: dfm_noerr, dfm_wronginput
       use m_polygon, only: savepol, xpl, ypl, zpl, npl, increasepol, restorepol
       use m_missing, only: dmiss
@@ -112,6 +112,7 @@ contains
       character(len=:), allocatable, intent(out) :: structures_output !< structures ini output file ( = culvertprefix // structurefile )
       character(len=:), allocatable, intent(out) :: crsdef_output !< crs def ini output file
       character(len=*), optional, intent(in) :: crsdeffile !< File name of the original crsdef.ini file.
+      logical, optional, intent(in) :: write_converted_files
       integer, intent(out) :: ierr !< Result status, DFM_NOERR in case of success.
 
       character(len=128) :: crsdef_filename
@@ -130,10 +131,11 @@ contains
       logical :: success
       integer :: istart
       integer :: nlongculverts0
-      !integer :: mout
+      integer :: mout
       integer :: longculvertindex
       integer :: longculvertindex2
       character(len=IdLen) :: temppath, tempname, tempext
+      logical :: write_converted_files_
 
       ierr = DFM_NOERR
 
@@ -146,6 +148,11 @@ contains
       else
          crsdef_filename = trim(culvertprefix)//crsdef_filename
          crsdef_output = crsdef_filename
+      end if
+
+      write_converted_files_ = .false.
+      if (present(write_converted_files)) then
+         write_converted_files_ = write_converted_files
       end if
 
       ! Determine new structures file name
@@ -1446,13 +1453,21 @@ contains
 
    end subroutine count_long_culverts_in_structure_file
 
-   subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts)
+   subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files)
       use m_set_nod_adm, only: setnodadm
       use m_globalparameters, only: t_filenames
 
       type(t_filenames), intent(inout) :: md_1dfiles
       integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
+      logical, optional, intent(in) :: write_converted_files
       character(:), allocatable :: structure_files
+      logical :: write_converted_files_
+
+      write_converted_files_ = .false.
+      if (present(write_converted_files)) then
+         write_converted_files_ = write_converted_files
+      end if
+
       structure_files = md_1dfiles%structures
       call count_long_culverts_in_structure_file(structure_files)
       if (nlongculverts > 0) then
@@ -1461,7 +1476,7 @@ contains
             call initialize_existing_long_culverts(structure_files)
          else !> old style long culvert input
             if (md_convertlongculverts > 0) then !> convert on-the-fly
-               call makelongculverts_commandline(md_1dfiles)
+               call makelongculverts_commandline(md_1dfiles, write_converted_files=write_converted_files_)
                newculverts = .true.
             else ! initialize old-style (Herman) long culverts
                call initialize_existing_long_culverts(structure_files)
@@ -1490,7 +1505,7 @@ contains
       end do
    end subroutine initialize_existing_long_culverts
 
-   subroutine makelongculverts_commandline(md_1dfiles)
+   subroutine makelongculverts_commandline(md_1dfiles, write_converted_files)
       use m_readstructures
       use string_module, only: strsplit
       use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
@@ -1506,7 +1521,7 @@ contains
 
       type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files
-      character(len=10), allocatable :: md_culvertprefix
+      character(len=:), allocatable :: md_culvertprefix
       character(len=:), allocatable :: converted_fnamesstring
       character(len=:), allocatable :: converted_crsdefsstring
       character(len=:), allocatable :: tempstring_crsdef
@@ -1515,7 +1530,14 @@ contains
       character(len=200), dimension(:), allocatable :: fnames
       ! character(len=IDLEN) :: temppath, tempname, tempext
 
+      logical :: write_converted_files_
       integer :: istat, ifil, ierr, i
+
+      write_converted_files_ = .false.
+      if (present(write_converted_files)) then
+         write_converted_files_ = write_converted_files
+      end if
+
       call findcells(0)
       md_culvertprefix = 'converted_'
       if (len_trim(md_1dfiles%structures) > 0) then
@@ -1523,12 +1545,12 @@ contains
          call strsplit(md_1dfiles%structures, 1, fnames, 1)
 
          if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
-            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions)
+            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions, write_converted_files=write_converted_files_)
          else
-            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat)
+            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, write_converted_files=write_converted_files_)
          end if
          do ifil = 2, size(fnames)
-            call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat)
+            call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat, write_converted_files=write_converted_files_)
             converted_crsdefsstring = trim(trim(converted_crsdefsstring)//', ')//tempstring_crsdef
             converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
          end do
