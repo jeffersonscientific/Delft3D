@@ -6,7 +6,7 @@ function(check_style_double_precision target_name)
     add_custom_command(TARGET ${target_name}
                        PRE_BUILD
                        COMMAND Python::Interpreter convert_double.py "--check" "--directory" "${target_source_dir}"
-                       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../../tools/double_precision_conversion
+                       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../../tools/deltares_fortran_styler
                        VERBATIM
                        )
 endfunction()

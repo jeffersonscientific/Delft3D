@@ -442,7 +442,7 @@ class FortranDoubleConverter:
 
                 # Add tip for auto-fixing after all errors for this file
                 if literal_matches or declaration_matches or dble_matches:
-                    print(f"{input_path}(1): note: Run 'python tools/double_precision_conversion/convert_double.py \"{input_path}\"' to automatically fix these errors")
+                    print(f"{input_path}(1): note: Run 'python tools/deltares_fortran_styler/convert_double.py \"{input_path}\"' to automatically fix these errors")
 
                 return True
 
