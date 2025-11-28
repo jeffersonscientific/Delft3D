@@ -12672,10 +12672,10 @@ contains
             contact1d2didx(1, contactnlinks + L) = mesh1indexes(L)
             contact1d2didx(2, contactnlinks + L) = mesh2indexes(L)
             contactnetlinks(contactnlinks + L) = numl_last + L
-            
+
             kn(3, numl_last + l) = contacttype(l)
 
-            ! new 2D node coordinates            
+            ! new 2D node coordinates
             XK(numk_last + l) = xface(mesh2indexes(l))
             YK(numk_last + l) = yface(mesh2indexes(l))
             kn(2, numl_last + l) = numk_last + l
@@ -15905,7 +15905,7 @@ contains
                   L1 = n1dedges !> don't remap edgebranchIDX if original array is incomplete
                end if
                ! i.e., as was read from input *_net.nc file.
-               if(associated(meshgeom1d%ngeopointx)) then
+               if (associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
                end if
