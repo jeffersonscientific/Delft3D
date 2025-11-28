@@ -2192,7 +2192,7 @@ contains
       integer :: ierr !< Result status. NF90_NOERR if successful.
       character(len=:), allocatable :: varname
 
-      integer :: i_start, i2, n
+      integer :: i1, i2, n
 
       allocate (character(len=0) :: varname)
       varname = ''
@@ -2201,49 +2201,49 @@ contains
          goto 999
       end if
 
-      i_start = 1
+      i1 = 1
       n = len_trim(varname)
 
       ! TODO: AvD: I'd rather use a string tokenizer here.
       ! TODO: UNST-2408, support multiple sets of coordinates.
-      i2 = index(varname(i_start:n), ' ')
+      i2 = index(varname(i1:n), ' ')
       if (i2 == 0) then
          i2 = n
       else
-         i2 = i_start + i2 - 1
+         i2 = i1 + i2 - 1
       end if
-      ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idx)
-      i_start = i2 + 1
+      ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idx)
+      i1 = i2 + 1
 
-      i2 = index(varname(i_start:n), ' ')
+      i2 = index(varname(i1:n), ' ')
       if (i2 == 0) then
          i2 = n + 1
       else
-         i2 = i_start + i2 - 1
+         i2 = i1 + i2 - 1
       end if
-      ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idy)
-      i_start = i2 + 1
+      ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idy)
+      i1 = i2 + 1
 
       if (present(idz)) then
-         i2 = index(varname(i_start:n), ' ')
+         i2 = index(varname(i1:n), ' ')
          if (i2 == 0) then
             i2 = n + 1
          else
-            i2 = i_start + i2 - 1
+            i2 = i1 + i2 - 1
          end if
-         ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idz)
-         i_start = i2 + 1
+         ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idz)
+         i1 = i2 + 1
       end if
 
       if (present(idw)) then
-         i2 = index(varname(i_start:n), ' ')
+         i2 = index(varname(i1:n), ' ')
          if (i2 == 0) then
             i2 = n + 1
          else
-            i2 = i_start + i2 - 1
+            i2 = i1 + i2 - 1
          end if
-         ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idw)
-         i_start = i2 + 1
+         ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idw)
+         i1 = i2 + 1
       end if
 
       deallocate (varname)
