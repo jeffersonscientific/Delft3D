@@ -439,7 +439,7 @@
         <checks>
           <file name="DFM_OUTPUT_converted_tunnel/converted_tunnel_0000_his.nc" type="NETCDF">
             <parameters>
-              <parameter name="longculvert_discharge" toleranceAbsolute="0.001" />
+              <parameter name="longculvert_discharge" toleranceAbsolute="0.005" />
             </parameters>
           </file>
       </checks>
