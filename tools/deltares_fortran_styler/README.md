@@ -122,15 +122,42 @@ The styler is designed for good performance:
 
 ## Testing
 
-Run a quick test:
+### Running Tests
+
+The project uses pytest for unit testing. To run the tests:
 
 ```bash
-# Check the test file
-python fortran_styler.py --check test_sample.f90
+# Create and activate a virtual environment
+python -m venv .venv # (first time only)
+.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # Linux/Mac
 
-# Convert the test file
-python fortran_styler.py test_sample.f90
+# Install the package with development dependencies
+pip install -e ".[dev]"
+
+# Run all tests
+pytest
+
+# Run tests with verbose output
+pytest -v
+
+# Run a specific test file
+pytest tests/test_double_precision_converter.py
 ```
+
+### Test Structure
+
+Tests are organized following standard pytest conventions:
+- Test files are in the `tests/` directory
+- Test files are named `test_*.py`
+- Test classes are named `Test*`
+- Test functions are named `test_*`
+
+The test suite includes:
+- Unit tests for all converter functionality
+- Tests for edge cases (comments, strings, nested structures)
+- Tests for module/submodule handling
+- Parametrized tests for format variations
 
 ## Error Codes
 

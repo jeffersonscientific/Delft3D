@@ -291,13 +291,26 @@ class DoublePrecisionConverter(FortranConverter):
         # Reconstruct the text
         before_module = text[:module_end]
         if insert_line_idx == 0:
-            # Insert right after module declaration
-            after_insert = '\n'.join(lines)
-            new_text = before_module + '\n' + precision_import + '\n' + after_insert
+            # Insert right after module declaration, before first non-empty line
+            # If first line is empty (from newline after module), keep it that way
+            if lines and not lines[0]:
+                # Format: module\n\n use precision... \n implicit none...
+                new_text = before_module + '\n' + precision_import + '\n' + '\n'.join(lines[1:])
+            else:
+                # No newline after module, insert with newline
+                new_text = before_module + '\n' + precision_import + '\n' + '\n'.join(lines)
         else:
             before_insert = '\n'.join(lines[:insert_line_idx])
             after_insert = '\n'.join(lines[insert_line_idx:])
-            new_text = before_module + '\n' + before_insert + '\n' + precision_import + '\n' + after_insert
+            # If before_insert starts with newline (from empty first line), don't add extra newline
+            if before_insert and not before_insert.startswith('\n'):
+                new_text = before_module + '\n' + before_insert + '\n' + precision_import + '\n' + after_insert
+            elif before_insert:
+                # before_insert starts with \n (from empty lines[0]), so skip one newline
+                new_text = before_module + before_insert + '\n' + precision_import + '\n' + after_insert
+            else:
+                # before_insert is completely empty
+                new_text = before_module + '\n' + precision_import + '\n' + after_insert
 
         return new_text
 
