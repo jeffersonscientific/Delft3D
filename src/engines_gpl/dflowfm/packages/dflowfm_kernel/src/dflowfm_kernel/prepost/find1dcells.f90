@@ -70,7 +70,7 @@ contains
       temp_threads = omp_get_max_threads() !> Save old number of threads
       call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
 #endif
-      !$OMP PARALLEL DO
+      !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
       do L = 1, NUML1D
          if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
             call INCELLS(Xk(KN(1, L)), Yk(KN(1, L)), left_2D_cells(L))
