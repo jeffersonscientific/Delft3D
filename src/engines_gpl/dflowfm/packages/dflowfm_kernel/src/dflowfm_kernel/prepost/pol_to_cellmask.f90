@@ -56,7 +56,12 @@ contains
 
    subroutine pol_to_cellmask()
    use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
-
+   use m_partitioninfo, only: jampi
+#ifdef _OPENMP
+      use omp_lib
+      integer :: temp_threads
+#endif
+   integer :: k
    if (allocated(cellmask)) deallocate(cellmask)
    allocate(cellmask(nump1d2d))
    cellmask = 0
@@ -65,9 +70,20 @@ contains
 
    ! Initialize once
    call dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
-
-   ! Vectorized assignment - beautiful and simple!
-   cellmask(1:nump) = dbpinpol_cellmask(xzw(1:nump), yzw(1:nump))
+#ifdef _OPENMP
+      temp_threads = omp_get_max_threads() !> Save old number of threads
+      if (jampi == 0) then
+         call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
+      end if !> no else, in MPI mode omp num threads is already set to 1
+#endif
+      !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
+      do k = 1, nump
+         cellmask(k) = dbpinpol_cellmask(xzw(k), yzw(k))
+      end do
+      !$OMP END PARALLEL DO
+#ifdef _OPENMP
+      call omp_set_num_threads(temp_threads)
+#endif
 
    ! Cleanup
    call dbpinpol_cellmask_cleanup()
@@ -184,9 +200,6 @@ end subroutine pol_to_cellmask
              yp < ypmin_cellmask(ipoly) .or. yp > ypmax_cellmask(ipoly)) cycle
 
          ! Point-in-polygon test using globals dmiss and JINS
-         !call pinpok(xp, yp, iend - istart + 1, &
-         !            xpl_cellmask(istart:iend), ypl_cellmask(istart:iend), &
-         !            in_test, JINS, dmiss)
          in_test = pinpok_elemental(xp, yp, iend - istart + 1)
 
          if (zpl_start_cellmask(ipoly) > 0.0_dp) then
@@ -222,7 +235,6 @@ end subroutine pol_to_cellmask
       Npoly_cellmask = 0
       cellmask_initialized = .false.
 
-      return
    end subroutine dbpinpol_cellmask_cleanup
 
    !> Optimized elemental point-in-polygon test using ray casting algorithm.
@@ -279,7 +291,6 @@ end subroutine pol_to_cellmask
                goto 999
             end if
          end if
-         
          j = i
       end do
 
