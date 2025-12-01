@@ -38,10 +38,12 @@ module m_output_to_polygon
       character(len=idLen) :: filename
       logical :: is_defined
       integer, allocatable, dimension(:) :: cell_indices
-      integer, allocatable, dimension(:) :: vertex_indices
-      integer, allocatable, dimension(:, :) :: link_to_nodes
       integer, allocatable, dimension(:) :: link_indices
+      integer, allocatable, dimension(:, :) :: link_to_nodes
+      integer, allocatable, dimension(:) :: links_mask
       integer, allocatable, dimension(:,:) :: netlink_to_netnodes
+      integer, allocatable, dimension(:) :: netnode_indices
+      integer, allocatable, dimension(:) :: netlink_indices
       integer :: ndx
       integer :: ndxi
       integer :: ndx2d
@@ -50,6 +52,9 @@ module m_output_to_polygon
       integer :: lnx1d
       integer :: lnx1db  
       integer :: lnxi
+      integer :: numk
+      integer :: numl
+      integer :: numl1d
       real(kind=dp), pointer :: cell_values(:)
    contains
    procedure :: create_mask_arrays => create_mask_arrays_impl

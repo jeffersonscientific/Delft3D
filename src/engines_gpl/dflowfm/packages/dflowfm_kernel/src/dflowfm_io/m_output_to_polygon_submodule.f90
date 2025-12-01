@@ -54,7 +54,7 @@ contains
       end if
       allocate (this%cell_indices(ndx))
       allocate (cells_mask(ndx))
-      allocate (this%vertex_indices(lnx))
+      allocate (this%link_indices(lnx))
       allocate (this%link_to_nodes(2, lnx))
       allocate (links_mask(lnx))
 
@@ -65,13 +65,13 @@ contains
          this%ndx2d = ndx2d
          this%ndx1db = ndx1db
          this%cell_indices = [(k, k=1, ndx)]
-         this%vertex_indices = [(k, k=1, lnx)]
+         this%link_indices = [(k, k=1, lnx)]
          this%link_to_nodes = ln
          return
       end if
 
       associate (cell_indices => this%cell_indices, &
-                 vertex_indices => this%vertex_indices, &
+                 link_indices => this%link_indices, &
                  num_vertices_inside => this%lnx, &
                  link_to_nodes => this%link_to_nodes)
 
@@ -81,7 +81,7 @@ contains
          this%ndx2d = get_newindex(cells_mask, ndx2d)
          this%ndx1db = get_newindex(cells_mask, ndx1db)
 
-         call find_vertices_inside_polygon(this, cells_mask, links_mask)
+         call find_vertices_inside_polygon(this, cells_mask)
          this%lnx1d = get_newindex(links_mask, lnx1d)
          this%lnx1db = get_newindex(links_mask, lnx1db)
          this%lnxi = get_newindex(links_mask, lnxi)
@@ -91,7 +91,7 @@ contains
 
       call realloc(this%cell_indices, this%ndx, &
                    keepExisting=.true.)
-      call realloc(this%vertex_indices, this%lnx, &
+      call realloc(this%link_indices, this%lnx, &
                    keepExisting=.true.)
       call realloc(this%link_to_nodes, [2, this%lnx], &
                    keepExisting=.true.)
@@ -166,24 +166,24 @@ contains
 
    end subroutine findcells_inside_polygon_impl
 
-   subroutine find_vertices_inside_polygon(this, cells_mask, links_mask)
+   subroutine find_vertices_inside_polygon(this, cells_mask)
       use m_flowgeom, only: lnx, ln
 
       class(t_variables_inside_polygon), intent(inout) :: this
       integer, dimension(:), intent(in) :: cells_mask
-      integer, dimension(:), intent(inout) :: links_mask
 
       integer :: L
 
-      associate (vertex_indices => this%vertex_indices, &
+      associate (link_indices => this%link_indices, &
                  link_to_nodes => this%link_to_nodes, &
-                 num_vertices_inside => this%lnx)
+                 num_vertices_inside => this%lnx, &
+                 links_mask => this%links_mask)
          num_vertices_inside = 0
          links_mask = 0
          do L = 1, lnx
             if (cells_mask(ln(1, L)) > 0 .and. cells_mask(ln(2, L)) > 0) then
                num_vertices_inside = num_vertices_inside + 1
-               vertex_indices(num_vertices_inside) = L
+               link_indices(num_vertices_inside) = L
                links_mask(L) = num_vertices_inside
                link_to_nodes(1, num_vertices_inside) = cells_mask(ln(1, L))
                link_to_nodes(2, num_vertices_inside) = cells_mask(ln(2, L))
@@ -195,27 +195,42 @@ contains
 
    subroutine find_netnodes_inside_polygon(this, cells_mask)
       use m_flowgeom, only: nd
-      use network_data, only: numk
+      use network_data, only: numk, numL
+      use m_alloc, only: realloc
+
       class(t_variables_inside_polygon), intent(inout) :: this
       integer, dimension(:), intent(in) :: cells_mask
 
       integer, dimension(:), allocatable :: netnodes_mask
 
-      integer :: k, L, node1, node2
+      integer :: i, k, L, node1, node2, max_netnodes
 
       allocate (netnodes_mask(numk), this%netnode_indices(numk))
+      allocate (this%netnode_indices(numk))
+      allocate (this%netlink_indices(numL))
       netnodes_mask = 0
-      
-      associate(ndx => this%ndx, &
-                link_to_nodes => this%link_to_nodes, &
-                vertex_indices => this%vertex_indices, &
-                netnode_indices => this%netnode_indices)
 
+      associate (ndx => this%ndx, &
+                 netnode_indices => this%netnode_indices)
+         do k = 1, ndx
+            do i = 1, size(nd(k)%nod)
+               netnodes_mask(nd(k)%nod(i)) = 1
+            end do
+         end do
 
-         netnode_indices = 0
-         do L = 1, this%lnx 
+         max_netnodes = 0
+         do k = 1, numk
+            if (netnodes_mask(k) == 1) then
+               max_netnodes = max_netnodes + 1
+               netnode_indices(max_netnodes) = k
+               netnodes_mask(k) = max_netnodes
+            end if
          end do
       end associate
+      call realloc(this%netnode_indices, max_netnodes, &
+                   keepExisting=.true.)
+
+
    end subroutine find_netnodes_inside_polygon
 
 end submodule m_output_to_polygon_sub

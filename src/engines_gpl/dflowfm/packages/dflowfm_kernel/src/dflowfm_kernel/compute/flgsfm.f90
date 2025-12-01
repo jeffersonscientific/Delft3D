@@ -268,6 +268,13 @@ contains
                   if (ausav(1, n) > 0) ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
                   if (ausav(2, n) > 0) ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
                   if (ausav(3, n) > 0) ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+
+                  ! boven_kant laag =  min(zti(1), zws(kk))
+                  ! hoogte_tov_crest = boven_kant laag - zbi(1)
+                  ! fractie_opening_tot_crest(1, LL - Lb + 1) = max(0.0_dp, hoogte_tov_crest) / hhi(1)
+                  ! au_per_laag = crest width * bovenkant_laag - onderkant_laag
+                  ! au_per_laag = au_totaal * (fractie_opening_tot_crest(1, LL - Lb + 1) - fractie_opening_tot_crest(1, LL - Lb))
+
                end do
 
                au0 = 0.0_dp
