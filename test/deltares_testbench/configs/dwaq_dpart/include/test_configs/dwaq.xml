@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
         <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-11-17T08:09:54.514000">e03_waq/f02_hongkong/c04_statistics</path>
+        <path version="2025-12-01T12:49:27.992000">e03_waq/f02_hongkong/c04_statistics</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
             <file name="group2-test004.ada" type="NEFIS">
@@ -2258,7 +2258,7 @@
     </testCase>
     <testCase name="e03_f02_c03_loadscenario1" ref="dwaq_default">
         <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-11-19T14:01:06.942000">e03_waq/f02_hongkong/c03_loadscenario1</path>
+        <path version="2025-12-01T12:49:14.722000">e03_waq/f02_hongkong/c03_loadscenario1</path>
         <checks>
             <file name="group2-test003.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2364,7 +2364,7 @@
     </testCase>
     <testCase name="e03_f02_c05_eutrophication_scheme15" ref="dwaq_default">
         <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-11-17T08:09:56.442000">e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
+        <path version="2025-12-01T12:49:30.134000">e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
         <checks>
             <file name="group2-test005.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6685,7 +6685,7 @@
 
     <!-- Test cases for "new" bloom tests-->
     <testCase name="e03_f06_c01_blmdef" ref="dwaq_default">
-        <path version="2025-11-27T15:12:17.810000">e03_waq/f06_bloom_new/c01_blmdef</path>
+        <path version="2025-12-01T12:49:32.081000">e03_waq/f06_bloom_new/c01_blmdef</path>
         <checks>
             <file name="n_blmdef.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6734,7 +6734,7 @@
         </checks>
     </testCase>
      <testCase name="e03_f06_c02_blmlcm" ref="dwaq_default">
-        <path version="2025-11-27T15:13:31.551000">e03_waq/f06_bloom_new/c02_blmclm</path>
+        <path version="2025-12-01T12:49:33.826000">e03_waq/f06_bloom_new/c02_blmclm</path>
         <checks>
             <file name="n_blmclm.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6783,7 +6783,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c03_blmmix" ref="dwaq_default">
-        <path version="2025-11-27T15:12:20.191000">e03_waq/f06_bloom_new/c03_blmmix</path>
+        <path version="2025-12-01T12:49:35.612000">e03_waq/f06_bloom_new/c03_blmmix</path>
         <checks>
             <file name="n_blmmix.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6834,7 +6834,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c04_blmnfx" ref="dwaq_default">
-        <path version="2025-11-27T15:12:21.756000">e03_waq/f06_bloom_new/c04_blmnfx</path>
+        <path version="2025-12-01T12:49:37.388000">e03_waq/f06_bloom_new/c04_blmnfx</path>
         <checks>
             <file name="n_blmnfx.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
