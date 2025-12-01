@@ -2,6 +2,13 @@
 
 set -e  # Exit on error
 
+# Check if dvc is available
+if ! command -v dvc >/dev/null 2>&1; then
+    echo "Warning: DVC is not installed. Skipping DVC checks in pre-commit hook."
+    echo "To install DVC, run: pip install dvc"
+    exit 0
+fi
+
 readonly MAX_FILES_TO_SHOW=20
 
 # Extract value from .dvc file
