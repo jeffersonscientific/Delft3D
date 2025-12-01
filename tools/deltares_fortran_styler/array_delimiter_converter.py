@@ -104,7 +104,7 @@ class ArrayDelimiterConverter(FortranConverter):
 
                         # Convert to square brackets
                         result.append('[')
-                        result.append(content)
+                        result.append(content.rstrip())
                         result.append(']')
 
                         conversions_made = True
