@@ -41,6 +41,8 @@ class ResolveHandler(ABC):
             r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path
         ):  # assume network path starts with either [//] or [\\]
             return HandlerType.NET
+        elif path.endswith(".dvc"):
+            return HandlerType.DVC
         elif re.search(r"[A-Za-z]{1}\:\\|^\/{1}[A-Za-z0-9]|\.\.", path):  # assume local path handler [X:\] or [/]
             return HandlerType.PATH
         elif re.search(r"^ftp(s)?://", path):
