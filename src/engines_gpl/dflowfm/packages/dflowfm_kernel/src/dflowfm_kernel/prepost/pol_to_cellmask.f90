@@ -79,6 +79,7 @@ end subroutine pol_to_cellmask
    subroutine dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
       use m_alloc
       use m_missing, only: dp, dmiss
+      use geometry_module, only: get_startend
 
       implicit none
 
