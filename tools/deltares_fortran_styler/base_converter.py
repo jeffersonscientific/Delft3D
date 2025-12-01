@@ -7,17 +7,15 @@ Each converter should be independent and handle a specific aspect of Fortran cod
 
 from abc import ABC, abstractmethod
 from typing import Tuple, List
-from dataclasses import dataclass
 
-
-@dataclass
 class ConversionIssue:
     """Represents a style issue found during checking."""
-    line_number: int
-    error_code: str
-    message: str
-    original_text: str
 
+    def __init__(self, line_number: int, error_code: str, message: str, original_text: str):
+        self.line_number = line_number
+        self.error_code = error_code
+        self.message = message
+        self.original_text = original_text
 
 class FortranConverter(ABC):
     """
