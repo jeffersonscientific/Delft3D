@@ -1,0 +1,6 @@
+outs:
+- md5: 6e81e1147f59eae595137e3fa987a83b.dir
+  size: 886536
+  nfiles: 30
+  hash: md5
+  path: e02_f002_c101_longculvert_timeseries_valve
