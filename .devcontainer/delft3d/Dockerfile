@@ -38,7 +38,7 @@ RUN curl -LsSf https://astral.sh/uv/0.8.4/install.sh | sh
 ENV PATH=/home/dev/.local/bin:$PATH \
     UV_LINK_MODE=copy
 RUN <<"EOF"
-uv python install 3.12
+uv python install 3.11.9
 uv tool install fortls
 uv tool install fprettify
 uv tool install "dvc[s3]"
@@ -72,6 +72,7 @@ source /home/dev/.local/bin/git-prompt.sh
 
 # Aliases
 alias ls='ls --color=auto'
+alias python='python3'
 
 # Set bash prompt.
 export PS1='[\u@\h \w\$(__git_ps1 " (%s)")]\n\\$ '
