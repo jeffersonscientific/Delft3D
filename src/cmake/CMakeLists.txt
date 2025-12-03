@@ -126,7 +126,19 @@ if (UNIX)
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
-
+    #
+    # yoder
+    # this appears to be all I needed to make MPI work...
+    include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+    # the rest of these come from other references.
+    #add_library(MPI INTERFACE)
+    #target_include_directories(MPI INTERFACE ${mpi_include_path})
+    ##target_link_libraries(MyMPIProgram PUBLIC MPI::MPI_CXX) # For C++
+    #target_link_libraries(MPI INTERFACE MPI::MPI_CXX)
+    #target_link_libraries(MPI INTERFACE MPI::MPI_C)
+    #target_link_libraries(MPI INTERFACE MPI::MPI_Fortran)
+    #####
+    #
     #NetCDF
     pkg_check_modules(NETCDF     REQUIRED netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED netcdf-fortran)

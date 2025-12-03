@@ -6,13 +6,14 @@ if (WIN32)
     message(FATAL_ERROR "GNU compilers are not supported on Windows. CMake will exit.")
 endif(WIN32)
 
+
 if (UNIX)
     # Set optional flags:
     message(STATUS "Setting Fortran compiler flags in Unix")
 
     set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC -fopenmp")
     set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC -fopenmp")
-    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -fopenmp -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch")
+    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -fopenmp -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC -fopenmp")
     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC -fopenmp")
     

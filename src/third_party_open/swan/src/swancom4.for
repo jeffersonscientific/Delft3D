@@ -14,10 +14,10 @@
 !             interactions)
 !     RANGE4 (compute the counters for the different types of
 !             computations for the nonlinear wave interactions)
-!     SWSNL1 (nonlinear four wave interactions; semi-implicit and computed
+!     SWSNL1 (nonlinear four wave interactions; semi-implicit and computed!
 !             for all bins that fall within a sweep with DIA technique.
 !             Interaction are calculated per sweep)
-!     SWSNL2 (nonlinear four wave interactions; fully explicit and computed
+!     SWSNL2 (nonlinear four wave interactions; fully explicit and compute!d
 !             for all bins that fall within a sweep with DIA technique.
 !             Interaction are calculated per sweep)
 !     SWSNL3 (calculate nonlinear four wave interactions fully explicitly
@@ -46,27 +46,27 @@
 !              Collinear Triad Approximation of Booij et al, 2009)
 !     SWDNCTA (triad-wave interactions calculated with the Distributed
 !              NonCollinear Triad Approximation)
-!     SWFTIM  (triad-wave interactions calculated using the full integration
+!     SWFTIM  (triad-wave interactions calculated using the full integrati!on
 !              and the parametrized bispectrum)
-!     PEREXC  (includes periodic exchange between first and second harmonics
+!     PEREXC  (includes periodic exchange between first and second harmoni!cs
 !              for estimating biphase based on Saprykina et al, 2017)
-!     SWBIDW  (compute the biphase based on the parametrization of De Wit, 2022)
+!     SWBIDW  (compute the biphase based on the parametrization of De Wit,! 2022)
 !     SWBIPM  (spatially filter the De Wit's biphase)
 !
 !----------------------------------------------------------------------
 !
 !******************************************************************
 !
-      SUBROUTINE FAC4WW (XIS   ,SNLC1 ,                                   40.41 34.00
-     &                  DAL1  ,DAL2  ,DAL3         ,SPCSIG,               34.00
-     &                  WWINT ,WWAWG ,WWSWG                )              40.17 34.00
+      SUBROUTINE FAC4WW (XIS   ,SNLC1 ,                                   !40.41 34.00
+     &                  DAL1  ,DAL2  ,DAL3         ,SPCSIG,               !34.00
+     &                  WWINT ,WWAWG ,WWSWG                )              !40.17 34.00
 !
 !******************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
-      USE M_SNL4                                                          40.17
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
+      USE M_SNL4                                                          !40.17
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -81,8 +81,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -92,7 +92,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -103,11 +103,11 @@
 !
 !  1. Updates
 !
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG f!or SWAN
 !     40.17, Dec. 01: Implementation of Multiple DIA
 !     40.41, Sep. 04: compute indices for interactions which will be
 !                     interpolated in piecewise constant manner
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose :
 !
@@ -118,9 +118,9 @@
 !
 !  4. Argument variables
 !
-!     SPCSIG: Relative frequencies in computational domain in sigma-space 30.72
+!     SPCSIG: Relative frequencies in computational domain in sigma-space !30.72
 !
-      REAL    SPCSIG(MSC)                                                 30.72
+      REAL    SPCSIG(MSC)                                                 !30.72
 !
 !     INTEGERS:
 !     ---------
@@ -154,7 +154,7 @@
 !     XIS,XISLN         Difference between succeeding frequencies
 !     PI                3.14
 !     FREQ              Auxiliary frequency to fill scaling array
-!     DDIR,RADE         band width in directional space and factor        34.00
+!     DDIR,RADE         band width in directional space and factor        !34.00
 !
 !     ARRAYS
 !     ------
@@ -205,21 +205,21 @@
 !
 !****************************************************************
 !
-      INTEGER     MSC2  ,MSC1  ,IS    ,IDP   ,IDP1  ,                     40.41 34.00
-     &            IDM   ,IDM1  ,ISP   ,ISP1  ,ISM   ,ISM1  ,              34.00
-     &            IDPP  ,IDMM  ,ISPP  ,ISMM  ,                            40.41
+      INTEGER     MSC2  ,MSC1  ,IS    ,IDP   ,IDP1  ,                     !40.41 34.00
+     &            IDM   ,IDM1  ,ISP   ,ISP1  ,ISM   ,ISM1  ,              !34.00
+     &            IDPP  ,IDMM  ,ISPP  ,ISMM  ,                            !40.41
      &            ISLOW ,ISHGH ,ISCLW ,ISCHG ,IDLOW ,IDHGH ,
-     &            MSCMAX,MDCMAX                                           34.00
+     &            MSCMAX,MDCMAX                                           !34.00
 !
-      REAL        SNLC1 ,LAMM2 ,LAMP2 ,DELTH3,                            40.17 34.00
+      REAL        SNLC1 ,LAMM2 ,LAMP2 ,DELTH3,                            !40.17 34.00
      &            AUX1  ,DELTH4,DAL1  ,DAL2  ,DAL3  ,CIDP  ,WIDP  ,
      &            WIDP1 ,CIDM  ,WIDM  ,WIDM1 ,XIS   ,XISLN ,WISP  ,
      &            WISP1 ,WISM  ,WISM1 ,AWG1  ,AWG2  ,AWG3  ,AWG4  ,
      &            AWG5  ,AWG6  ,AWG7  ,AWG8  ,SWG1  ,SWG2  ,SWG3  ,
-     &            SWG4  ,SWG5  ,SWG6  ,SWG7  ,SWG8  ,FREQ  ,              34.00
-     &            RADE                                                    34.00
+     &            SWG4  ,SWG5  ,SWG6  ,SWG7  ,SWG8  ,FREQ  ,              !34.00
+     &            RADE                                                    !34.00
 !
-      REAL       WWAWG(*)               ,                                 40.17
+      REAL       WWAWG(*)               ,                                 !40.17
      &           WWSWG(*)
 !
       INTEGER    WWINT(*)
@@ -229,52 +229,52 @@
 
       IF (LTRACE) CALL STRACE (IENT,'FAC4WW')
 
-      IF (ALLOCATED(AF11)) DEALLOCATE(AF11)                               40.17
+      IF (ALLOCATED(AF11)) DEALLOCATE(AF11)                               !40.17
 
 !     *** Compute frequency indices                               ***
 !     *** XIS is the relative increment of the relative frequency ***
 !
       MSC2   = INT ( FLOAT(MSC) / 2.0 )
       MSC1   = MSC2 - 1
-      XIS    = SPCSIG(MSC2) / SPCSIG(MSC1)                                30.72
+      XIS    = SPCSIG(MSC2) / SPCSIG(MSC1)                                !30.72
 !
 !     *** set values for the nonlinear four-wave interactions ***
 !
-      SNLC1  = 1. / GRAV**4                                               40.17 34.00
+      SNLC1  = 1. / GRAV**4                                               !40.17 34.00
 !
-      LAMM2  = (1.-PQUAD(1))**2                                           40.17
-      LAMP2  = (1.+PQUAD(1))**2                                           40.17
+      LAMM2  = (1.-PQUAD(1))**2                                           !40.17
+      LAMP2  = (1.+PQUAD(1))**2                                           !40.17
       DELTH3 = ACOS( (LAMM2**2+4.-LAMP2**2) / (4.*LAMM2) )
       AUX1   = SIN(DELTH3)
       DELTH4 = ASIN(-AUX1*LAMM2/LAMP2)
 !
-      DAL1   = 1. / (1.+PQUAD(1))**4                                      40.17
-      DAL2   = 1. / (1.-PQUAD(1))**4                                      40.17
+      DAL1   = 1. / (1.+PQUAD(1))**4                                      !40.17
+      DAL2   = 1. / (1.-PQUAD(1))**4                                      !40.17
       DAL3   = 2. * DAL1 * DAL2
 !
 !     *** Compute directional indices in sigma and theta space ***
 !
-      CIDP   = ABS(DELTH4/DDIR)                                           40.00
+      CIDP   = ABS(DELTH4/DDIR)                                           !40.00
       IDP   = INT(CIDP)
       IDP1  = IDP + 1
       WIDP   = CIDP - REAL(IDP)
       WIDP1  = 1.- WIDP
 !
-      CIDM   = ABS(DELTH3/DDIR)                                           40.00
+      CIDM   = ABS(DELTH3/DDIR)                                           !40.00
       IDM   = INT(CIDM)
       IDM1  = IDM + 1
       WIDM   = CIDM - REAL(IDM)
       WIDM1  = 1.- WIDM
       XISLN  = LOG( XIS )
 !
-      ISP    = INT( LOG(1.+PQUAD(1)) / XISLN )                            40.17
+      ISP    = INT( LOG(1.+PQUAD(1)) / XISLN )                            !40.17
       ISP1   = ISP + 1
-      WISP   = (1.+PQUAD(1) - XIS**ISP) / (XIS**ISP1 - XIS**ISP)          40.17
+      WISP   = (1.+PQUAD(1) - XIS**ISP) / (XIS**ISP1 - XIS**ISP)          !40.17
       WISP1  = 1. - WISP
 !
-      ISM    = INT( LOG(1.-PQUAD(1)) / XISLN )                            40.17
+      ISM    = INT( LOG(1.-PQUAD(1)) / XISLN )                            !40.17
       ISM1   = ISM - 1
-      WISM   = (XIS**ISM -(1.-PQUAD(1))) / (XIS**ISM - XIS**ISM1)         40.17
+      WISM   = (XIS**ISM -(1.-PQUAD(1))) / (XIS**ISM - XIS**ISM1)         !40.17
       WISM1  = 1. - WISM
 !
 !     *** Range of calculations ***
@@ -317,8 +317,8 @@
       SWG7   = AWG7**2
       SWG8   = AWG8**2
 !
-!     --- determine discrete counters for piecewise                       40.41
-!         constant interpolation                                          40.41
+!     --- determine discrete counters for piecewise                       !40.41
+!         constant interpolation                                          !40.41
 !
       IF (AWG1.LT.AWG2) THEN
          IF (AWG2.LT.AWG3) THEN
@@ -405,10 +405,10 @@
       WWINT(18)= MDC4MA
       WWINT(19)= MSCMAX
       WWINT(20)= MDCMAX
-      WWINT(21)= IDPP                                                     40.41
-      WWINT(22)= IDMM                                                     40.41
-      WWINT(23)= ISPP                                                     40.41
-      WWINT(24)= ISMM                                                     40.41
+      WWINT(21)= IDPP                                                     !40.41
+      WWINT(22)= IDMM                                                     !40.41
+      WWINT(23)= ISPP                                                     !40.41
+      WWINT(24)= ISMM                                                     !40.41
 !
       WWAWG(1) = AWG1
       WWAWG(2) = AWG2
@@ -428,18 +428,18 @@
       WWSWG(7) = SWG7
       WWSWG(8) = SWG8
 
-      ALLOCATE (AF11(MSC4MI:MSC4MA))                                      40.17
+      ALLOCATE (AF11(MSC4MI:MSC4MA))                                      !40.17
 
 !     *** Fill scaling array (f**11)                     ***
 !     *** compute the radian frequency**11 for IS=1, MSC ***
 !
       DO 100 IS=1, MSC
-        AF11(IS) = ( SPCSIG(IS) / ( 2. * PI ) )**11                       30.72
+        AF11(IS) = ( SPCSIG(IS) / ( 2. * PI ) )**11                       !30.72
  100  CONTINUE
 !
 !     *** compute the radian frequency for the IS = MSC+1, ISHGH ***
 !
-      FREQ   = SPCSIG(MSC) / ( 2. * PI )                                  30.72
+      FREQ   = SPCSIG(MSC) / ( 2. * PI )                                  !30.72
       DO 110 IS = MSC+1, ISHGH
         FREQ   = FREQ * XIS
         AF11(IS) = FREQ**11
@@ -447,7 +447,7 @@
 !
 !     *** compute the radian frequency for IS = 0, ISLOW ***
 !
-      FREQ   = SPCSIG(1) / ( 2. * PI )                                    30.72
+      FREQ   = SPCSIG(1) / ( 2. * PI )                                    !30.72
       DO 120 IS = 0, ISLOW, -1
         FREQ   = FREQ / XIS
         AF11(IS) = FREQ**11
@@ -499,13 +499,13 @@
 !
 !******************************************************************
 !
-      SUBROUTINE RANGE4 (WWINT ,IDDLOW,IDDTOP)                            40.00
+      SUBROUTINE RANGE4 (WWINT ,IDDLOW,IDDTOP)                            !40.00
 !
 !******************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -521,8 +521,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -532,7 +532,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -544,7 +544,7 @@
 !  1. Updates
 !
 !     40.10, Mar. 00: Made modification for exact quadruplets
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose :
 !
@@ -628,7 +628,7 @@
 !
 !****************************************************************
 !
-      INTEGER     IDDLOW,IDDTOP                                           40.00
+      INTEGER     IDDLOW,IDDTOP                                           !40.00
 !
       INTEGER     WWINT(*)
 !
@@ -638,7 +638,7 @@
 !
 !     *** Range in directional domain ***
 !
-      IF ( IQUAD .LT. 3 .AND. IQUAD .GT. 0 ) THEN                         40.10
+      IF ( IQUAD .LT. 3 .AND. IQUAD .GT. 0 ) THEN                         !40.10
 !       *** counters based on bins which fall within a sweep ***
         WWINT(13) = IDDLOW - MAX( WWINT(4), WWINT(2) )
         WWINT(14) = IDDTOP + MAX( WWINT(4), WWINT(2) )
@@ -683,21 +683,21 @@
 !
 !********************************************************************
 !
-      SUBROUTINE SWSNL1 (WWINT   ,WWAWG   ,WWSWG   ,                      34.00
-     &                   IDCMIN  ,IDCMAX  ,UE      ,SA1     ,             40.17
+      SUBROUTINE SWSNL1 (WWINT   ,WWAWG   ,WWSWG   ,                      !34.00
+     &                   IDCMIN  ,IDCMAX  ,UE      ,SA1     ,             !40.17
      &                   SA2     ,DA1C    ,DA1P    ,DA1M    ,DA2C    ,
-     &                   DA2P    ,DA2M    ,SPCSIG  ,SNLC1   ,KMESPC  ,    30.72
+     &                   DA2P    ,DA2M    ,SPCSIG  ,SNLC1   ,KMESPC  ,    !30.72
      &                   FACHFR  ,ISSTOP  ,DAL1    ,DAL2    ,DAL3    ,
      &                   SFNL    ,DSNL    ,DEP2    ,AC2     ,IMATDA  ,
-     &                   IMATRA  ,PLNL4S  ,PLNL4D  ,                      34.00
-     &                   IDDLOW  ,IDDTOP  ,REDC0   ,REDC1   )             40.85 34.00
+     &                   IMATRA  ,PLNL4S  ,PLNL4D  ,                      !34.00
+     &                   IDDLOW  ,IDDTOP  ,REDC0   ,REDC1   )             !40.85 34.00
 !
 !********************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
-      USE M_SNL4                                                          40.17
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
+      USE M_SNL4                                                          !40.17
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -712,8 +712,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -723,7 +723,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -737,10 +737,10 @@
 !
 !  1. Updates
 !
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG f!or SWAN
 !     40.17, Dec. 01: Implentation of Multiple DIA
 !     40.23, Aug. 02: some corrections
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.85, Aug. 08: store quadruplets for output purposes
 !
 !  2. Purpose
@@ -797,9 +797,9 @@
 !
 !  4. Argument variables
 !
-!     SPCSIG: Relative frequencies in computational domain in sigma-space 30.72
+!     SPCSIG: Relative frequencies in computational domain in sigma-space !30.72
 !
-      REAL    SPCSIG(MSC)                                                 30.72
+      REAL    SPCSIG(MSC)                                                 !30.72
 !
 !     Data in PARAMETER statements :
 !     ----------------------------------------------------------------
@@ -869,17 +869,17 @@
 !
 !*************************************************************
 !
-      INTEGER   IS     ,ID     ,I      ,J      ,                          34.00
+      INTEGER   IS     ,ID     ,I      ,J      ,                          !34.00
      &          ISHGH  ,IDLOW  ,ISP    ,ISP1   ,IDP    ,IDP1   ,
      &          ISM    ,ISM1   ,IDHGH  ,IDM    ,IDM1   ,ISCLW  ,
-     &          ISCHG  ,IDDLOW ,IDDTOP                                    34.00
+     &          ISCHG  ,IDDLOW ,IDDTOP                                    !34.00
 !
       REAL      X      ,X2     ,CONS   ,FACTOR ,SNLCS1 ,SNLCS2 ,SNLCS3,
      &          E00    ,EP1    ,EM1    ,EP2    ,EM2    ,SA1A   ,SA1B  ,
      &          SA2A   ,SA2B   ,KMESPC ,FACHFR ,AWG1   ,AWG2   ,AWG3  ,
      &          AWG4   ,AWG5   ,AWG6   ,AWG7   ,AWG8   ,DAL1   ,DAL2  ,
      &          DAL3   ,SNLC1  ,SWG1   ,SWG2   ,SWG3   ,SWG4   ,SWG5  ,
-     &          SWG6   ,SWG7   ,SWG8           ,JACOBI ,SIGPI             34.00
+     &          SWG6   ,SWG7   ,SWG8           ,JACOBI ,SIGPI             !34.00
 !
       REAL      AC2(MDC,MSC,MCGRD)                    ,
      &          DEP2(MCGRD)                           ,
@@ -896,12 +896,12 @@
      &          DSNL(MSC4MI:MSC4MA , MDC4MI:MDC4MA )  ,
      &          IMATDA(MDC,MSC)                       ,
      &          IMATRA(MDC,MSC)                       ,
-     &          PLNL4S(MDC,MSC,NPTST)                 ,                   40.00
+     &          PLNL4S(MDC,MSC,NPTST)                 ,                   !40.00
      &          PLNL4D(MDC,MSC,NPTST)                 ,
      &          WWAWG(*)                              ,
      &          WWSWG(*)
-      REAL :: REDC0 (MDC,MSC,MREDS)                                       40.85
-      REAL :: REDC1 (MDC,MSC,MREDS)                                       40.85
+      REAL :: REDC0 (MDC,MSC,MREDS)                                       !40.85
+      REAL :: REDC1 (MDC,MSC,MREDS)                                       !40.85
 !
       INTEGER   IDCMIN(MSC)        ,
      &          IDCMAX(MSC)        ,
@@ -966,11 +966,11 @@
 !
 !     *** Calculate factor R(X) to calculate the NL wave-wave ***
 !     *** interaction for shallow water                       ***
-!     *** SNLC1 = 1/GRAV**4                                   ***         40.17
+!     *** SNLC1 = 1/GRAV**4                                   ***         !40.17
 !
-      SNLCS1 = PQUAD(3)                                                   34.00
-      SNLCS2 = PQUAD(4)                                                   34.00
-      SNLCS3 = PQUAD(5)                                                   34.00
+      SNLCS1 = PQUAD(3)                                                   !34.00
+      SNLCS2 = PQUAD(4)                                                   !34.00
+      SNLCS3 = PQUAD(5)                                                   !34.00
       X      = MAX ( 0.75 * DEP2(KCGRD(1)) * KMESPC , 0.5 )
       X2     = MAX ( -1.E15, SNLCS3*X)
       CONS   = SNLC1 * ( 1. + SNLCS1/X * (1.-SNLCS2*X) * EXP(X2))
@@ -1000,7 +1000,7 @@
       DO IDDUM = IDLOW - IIID, IDHGH + IIID
         ID = MOD ( IDDUM - 1 + MDC , MDC ) + 1
         DO IS = 1, MSC
-          UE(IS,IDDUM) = AC2(ID,IS,KCGRD(1)) * SPCSIG(IS) * JACOBI        30.72
+          UE(IS,IDDUM) = AC2(ID,IS,KCGRD(1)) * SPCSIG(IS) * JACOBI        !30.72
         ENDDO
       ENDDO
 !
@@ -1041,10 +1041,10 @@
 !
           FACTOR = CONS * AF11(IS) * E00
 !
-          SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 ) * PQUAD(2)               40.17
-          SA1B   = SA1A - EP1*EM1*DAL3 * PQUAD(2)                         40.17
-          SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 ) * PQUAD(2)               40.17
-          SA2B   = SA2A - EP2*EM2*DAL3 * PQUAD(2)                         40.17
+          SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 ) * PQUAD(2)               !40.17
+          SA1B   = SA1A - EP1*EM1*DAL3 * PQUAD(2)                         !40.17
+          SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 ) * PQUAD(2)               !40.17
+          SA2B   = SA2A - EP2*EM2*DAL3 * PQUAD(2)                         !40.17
 !
           SA1 (IS,ID) = FACTOR * SA1B
           SA2 (IS,ID) = FACTOR * SA2B
@@ -1061,12 +1061,12 @@
           END IF
 !
           DA1C(IS,ID) = CONS * AF11(IS) * ( SA1A + SA1B )
-          DA1P(IS,ID) = FACTOR * ( DAL1*E00 - DAL3*EM1 ) * PQUAD(2)       40.23
-          DA1M(IS,ID) = FACTOR * ( DAL2*E00 - DAL3*EP1 ) * PQUAD(2)       40.23
+          DA1P(IS,ID) = FACTOR * ( DAL1*E00 - DAL3*EM1 ) * PQUAD(2)       !40.23
+          DA1M(IS,ID) = FACTOR * ( DAL2*E00 - DAL3*EP1 ) * PQUAD(2)       !40.23
 !
           DA2C(IS,ID) = CONS * AF11(IS) * ( SA2A + SA2B )
-          DA2P(IS,ID) = FACTOR * ( DAL1*E00 - DAL3*EM2 ) * PQUAD(2)       40.23
-          DA2M(IS,ID) = FACTOR * ( DAL2*E00 - DAL3*EP2 ) * PQUAD(2)       40.23
+          DA2P(IS,ID) = FACTOR * ( DAL1*E00 - DAL3*EM2 ) * PQUAD(2)       !40.23
+          DA2M(IS,ID) = FACTOR * ( DAL2*E00 - DAL3*EP2 ) * PQUAD(2)       !40.23
         ENDDO
       ENDDO
 !
@@ -1103,7 +1103,7 @@
 !
       PI3   = (2. * PI)**3
       DO I = 1, ISSTOP
-        SIGPI = SPCSIG(I) * JACOBI                                        30.72
+        SIGPI = SPCSIG(I) * JACOBI                                        !30.72
         DO J = IDCMIN(I), IDCMAX(I)
           ID = MOD ( J - 1 + MDC , MDC ) + 1
           SFNL(I,ID) =   - 2. * ( SA1(I,J) + SA2(I,J) )
@@ -1129,19 +1129,19 @@
 !         *** store results in IMATDA and IMATRA ***
 !
           IF(TESTFL) THEN
-            PLNL4S(ID,I,IPTST) = SFNL(I,ID) / SIGPI                       40.00
-            PLNL4D(ID,I,IPTST) = DSNL(I,ID) / PI3                         40.85 40.00
+            PLNL4S(ID,I,IPTST) = SFNL(I,ID) / SIGPI                       !40.00
+            PLNL4D(ID,I,IPTST) = DSNL(I,ID) / PI3                         !40.85 40.00
           END IF
-          REDC0(ID,I,1) = REDC0(ID,I,1) + SFNL(I,ID) / SIGPI              40.85
-          REDC1(ID,I,1) = REDC1(ID,I,1) + DSNL(I,ID) / PI3                40.85
+          REDC0(ID,I,1) = REDC0(ID,I,1) + SFNL(I,ID) / SIGPI              !40.85
+          REDC1(ID,I,1) = REDC1(ID,I,1) + DSNL(I,ID) / PI3                !40.85
 !
           IMATRA(ID,I) = IMATRA(ID,I) + SFNL(I,ID) / SIGPI
           IMATDA(ID,I) = IMATDA(ID,I) - DSNL(I,ID) / PI3
 !
           IF(ITEST.GE.90 .AND. TESTFL) THEN
             WRITE(PRINTF,9006) I,J,SFNL(I,ID),DSNL(I,ID),
-     &       SPCSIG(I)                                                    30.72
- 9006       FORMAT (' IS ID SFNL DSNL SPCSIG:',2I4,3E12.4)                30.72
+     &       SPCSIG(I)                                                    !30.72
+ 9006       FORMAT (' IS ID SFNL DSNL SPCSIG:',2I4,3E12.4)                !30.72
           END IF
 !
         ENDDO
@@ -1181,19 +1181,19 @@
 !
 !*******************************************************************
 !
-      SUBROUTINE SWSNL2 (IDDLOW  ,IDDTOP  ,WWINT   ,                      34.00
-     &                   WWAWG   ,UE      ,SA1     ,ISSTOP  ,             40.17
-     &                   SA2     ,SPCSIG  ,SNLC1   ,DAL1    ,DAL2    ,    30.72
+      SUBROUTINE SWSNL2 (IDDLOW  ,IDDTOP  ,WWINT   ,                      !34.00
+     &                   WWAWG   ,UE      ,SA1     ,ISSTOP  ,             !40.17
+     &                   SA2     ,SPCSIG  ,SNLC1   ,DAL1    ,DAL2    ,    !30.72
      &                   DAL3    ,SFNL    ,DEP2    ,AC2     ,KMESPC  ,
-     &                            REDC0   ,REDC1   ,IMATDA  ,IMATRA  ,    40.85 40.23 34.00
-     &                   FACHFR  ,PLNL4S  ,         IDCMIN  ,IDCMAX  )    34.00
+     &                            REDC0   ,REDC1   ,IMATDA  ,IMATRA  ,    !40.85 40.23 34.00
+     &                   FACHFR  ,PLNL4S  ,         IDCMIN  ,IDCMAX  )    !34.00
 !
 !*******************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
-      USE M_SNL4                                                          40.17
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
+      USE M_SNL4                                                          !40.17
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -1208,8 +1208,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1219,7 +1219,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -1233,10 +1233,10 @@
 !
 !  1. Updates
 !
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG f!or SWAN
 !     40.17, Dec. 01: Implemented Multiple DIA
-!     40.23, Aug. 02: rhs and main diagonal adjusted according to Patankar-rules
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.23, Aug. 02: rhs and main diagonal adjusted according to Patankar!-rules
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.85, Aug. 08: store quadruplets for output purposes
 !
 !  2. Purpose
@@ -1296,9 +1296,9 @@
 !
 !  4. Argument variables
 !
-!     SPCSIG: Relative frequencies in computational domain in sigma-space 30.72
+!     SPCSIG: Relative frequencies in computational domain in sigma-space !30.72
 !
-      REAL    SPCSIG(MSC)                                                 30.72
+      REAL    SPCSIG(MSC)                                                 !30.72
 !
 !  7. Common blocks used
 !
@@ -1330,29 +1330,29 @@
 !
 !*******************************************************************
 !
-      INTEGER   IS     ,ID     ,I      ,J                      ,ISHGH  ,  34.00
+      INTEGER   IS     ,ID     ,I      ,J                      ,ISHGH  ,  !34.00
      &          ISSTOP ,ISP    ,ISP1   ,IDP    ,IDP1   ,ISM    ,ISM1   ,
-     &          IDM    ,IDM1   ,ISCLW  ,ISCHG  ,                          34.00
-     &                  IDLOW  ,IDHGH  ,IDDLOW ,IDDTOP ,IDCLOW ,IDCHGH    34.00
+     &          IDM    ,IDM1   ,ISCLW  ,ISCHG  ,                          !34.00
+     &                  IDLOW  ,IDHGH  ,IDDLOW ,IDDTOP ,IDCLOW ,IDCHGH    !34.00
 !
       REAL      X      ,X2     ,CONS   ,FACTOR ,SNLCS1 ,SNLCS2 ,SNLCS3 ,
      &          E00    ,EP1    ,EM1    ,EP2    ,EM2    ,SA1A   ,SA1B   ,
      &          SA2A   ,SA2B   ,KMESPC ,FACHFR ,AWG1   ,AWG2   ,AWG3   ,
      &          AWG4   ,AWG5   ,AWG6   ,AWG7   ,AWG8   ,DAL1   ,DAL2   ,
-     &          DAL3           ,JACOBI ,SIGPI                             34.00
+     &          DAL3           ,JACOBI ,SIGPI                             !34.00
 !
-      REAL      AC2(MDC,MSC,MCGRD)                    ,                   30.21
-     &          DEP2(MCGRD)                           ,                   30.21
+      REAL      AC2(MDC,MSC,MCGRD)                    ,                   !30.21
+     &          DEP2(MCGRD)                           ,                   !30.21
      &          UE(MSC4MI:MSC4MA , MDC4MI:MDC4MA )    ,
      &          SA1(MSC4MI:MSC4MA , MDC4MI:MDC4MA )   ,
      &          SA2(MSC4MI:MSC4MA , MDC4MI:MDC4MA )   ,
      &          SFNL(MSC4MI:MSC4MA , MDC4MI:MDC4MA)   ,
      &          IMATRA(MDC,MSC)                       ,
-     &          IMATDA(MDC,MSC)                       ,                   40.23
-     &          PLNL4S(MDC,MSC,NPTST)                 ,                   40.00
+     &          IMATDA(MDC,MSC)                       ,                   !40.23
+     &          PLNL4S(MDC,MSC,NPTST)                 ,                   !40.00
      &          WWAWG(*)
-      REAL :: REDC0 (MDC,MSC,MREDS)                                       40.85
-      REAL :: REDC1 (MDC,MSC,MREDS)                                       40.85
+      REAL :: REDC0 (MDC,MSC,MREDS)                                       !40.85
+      REAL :: REDC1 (MDC,MSC,MREDS)                                       !40.85
 !
       INTEGER   WWINT(*)         ,
      &          IDCMIN(MSC)      ,
@@ -1402,11 +1402,11 @@
 !     *** Calculate prop. constant.                           ***
 !     *** Calculate factor R(X) to calculate the NL wave-wave ***
 !     *** interaction for shallow water                       ***
-!     *** SNLC1 = 1/GRAV**4                                   ***         40.17
+!     *** SNLC1 = 1/GRAV**4                                   ***         !40.17
 !
-      SNLCS1 = PQUAD(3)                                                   34.00
-      SNLCS2 = PQUAD(4)                                                   34.00
-      SNLCS3 = PQUAD(5)                                                   34.00
+      SNLCS1 = PQUAD(3)                                                   !34.00
+      SNLCS2 = PQUAD(4)                                                   !34.00
+      SNLCS3 = PQUAD(5)                                                   !34.00
       X      = MAX ( 0.75 * DEP2(KCGRD(1)) * KMESPC , 0.5 )
       X2     = MAX ( -1.E15, SNLCS3*X)
       CONS   = SNLC1 * ( 1. + SNLCS1/X * (1.-SNLCS2*X) * EXP(X2))
@@ -1436,7 +1436,7 @@
       DO IDDUM = IDLOW - IIID , IDHGH + IIID
         ID = MOD ( IDDUM - 1 + MDC , MDC ) + 1
         DO IS = 1, MSC
-          UE(IS,IDDUM) = AC2(ID,IS,KCGRD(1)) * SPCSIG(IS) * JACOBI        30.72
+          UE(IS,IDDUM) = AC2(ID,IS,KCGRD(1)) * SPCSIG(IS) * JACOBI        !30.72
         ENDDO
       ENDDO
 !
@@ -1477,10 +1477,10 @@
 !
           FACTOR = CONS * AF11(IS) * E00
 !
-          SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 ) * PQUAD(2)               40.17
-          SA1B   = SA1A - EP1*EM1*DAL3 * PQUAD(2)                         40.17
-          SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 ) * PQUAD(2)               40.17
-          SA2B   = SA2A - EP2*EM2*DAL3 * PQUAD(2)                         40.17
+          SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 ) * PQUAD(2)               !40.17
+          SA1B   = SA1A - EP1*EM1*DAL3 * PQUAD(2)                         !40.17
+          SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 ) * PQUAD(2)               !40.17
+          SA2B   = SA2A - EP2*EM2*DAL3 * PQUAD(2)                         !40.17
 !
           SA1 (IS,ID) = FACTOR * SA1B
           SA2 (IS,ID) = FACTOR * SA2B
@@ -1518,7 +1518,7 @@
 !     ***  is used)                                              ***
 !
       DO I = 1, ISSTOP
-        SIGPI = SPCSIG(I) * JACOBI                                        30.72
+        SIGPI = SPCSIG(I) * JACOBI                                        !30.72
         DO J = IDCMIN(I), IDCMAX(I)
           ID = MOD ( J - 1 + MDC , MDC ) + 1
           SFNL(I,ID) =   - 2. * ( SA1(I,J) + SA2(I,J) )
@@ -1532,18 +1532,18 @@
      &        + AWG8 * ( SA1(I-ISM ,J+IDM ) + SA2(I-ISM ,J-IDM ) )
 !
 !         *** store results in rhv ***
-!         *** store results in rhs and main diagonal according ***        40.23
-!         *** to Patankar-rules                                ***        40.23
+!         *** store results in rhs and main diagonal according ***        !40.23
+!         *** to Patankar-rules                                ***        !40.23
 !
-          IF(TESTFL) PLNL4S(ID,I,IPTST) =  SFNL(I,ID) / SIGPI             40.00
-          IF (SFNL(I,ID).GT.0.) THEN                                      40.23
+          IF(TESTFL) PLNL4S(ID,I,IPTST) =  SFNL(I,ID) / SIGPI             !40.00
+          IF (SFNL(I,ID).GT.0.) THEN                                      !40.23
              IMATRA(ID,I) = IMATRA(ID,I) + SFNL(I,ID) / SIGPI
-             REDC0(ID,I,1)= REDC0(ID,I,1)+ SFNL(I,ID) / SIGPI             40.85
+             REDC0(ID,I,1)= REDC0(ID,I,1)+ SFNL(I,ID) / SIGPI             !40.85
           ELSE
              IMATDA(ID,I) = IMATDA(ID,I) - SFNL(I,ID) /
      &                      MAX(1.E-18,AC2(ID,I,KCGRD(1))*SIGPI)
-             REDC1(ID,I,1)= REDC1(ID,I,1)+ SFNL(I,ID) /                   40.85
-     &                      MAX(1.E-18,AC2(ID,I,KCGRD(1))*SIGPI)          40.85
+             REDC1(ID,I,1)= REDC1(ID,I,1)+ SFNL(I,ID) /                   !40.85
+     &                      MAX(1.E-18,AC2(ID,I,KCGRD(1))*SIGPI)          !40.85
           END IF
 !
         ENDDO
@@ -1583,17 +1583,17 @@
 !************************************************************
 !
 
-      SUBROUTINE SWSNL3 (                  WWINT   ,WWAWG   ,             40.17
-     &                   UE      ,SA1     ,SA2     ,SPCSIG  ,SNLC1   ,    40.17
-     &                   DAL1    ,DAL2    ,DAL3    ,SFNL    ,DEP2    ,    40.17
-     &                   AC2     ,KMESPC  ,MEMNL4  ,FACHFR           )    40.17
+      SUBROUTINE SWSNL3 (                  WWINT   ,WWAWG   ,             !40.17
+     &                   UE      ,SA1     ,SA2     ,SPCSIG  ,SNLC1   ,    !40.17
+     &                   DAL1    ,DAL2    ,DAL3    ,SFNL    ,DEP2    ,    !40.17
+     &                   AC2     ,KMESPC  ,MEMNL4  ,FACHFR           )    !40.17
 !
 !*******************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
-      USE M_SNL4                                                          40.17
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
+      USE M_SNL4                                                          !40.17
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -1608,8 +1608,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1619,7 +1619,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -1630,9 +1630,9 @@
 !
 !  1. Updates
 !
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG f!or SWAN
 !     40.17, Dec. 01: Implemented Multiple DIA
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -1717,22 +1717,22 @@
 !     KMESPC: mean average wavenumber over full spectrum
 !     MEMNL4
 !     PI    : circular constant
-!     SA1   : interaction contribution of first quadruplet (unfolded space)
-!     SA2   : interaction contribution of second quadruplet (unfolded space)
+!     SA1   : interaction contribution of first quadruplet (unfolded space!)
+!     SA2   : interaction contribution of second quadruplet (unfolded spac!e)
 !     SFNL
 !     SNLC1
 !     SPCSIG: relative frequencies in computational domain in sigma-space
 !     UE    : "unfolded" spectrum
 !     WWAWG : weight coefficients for the quadruplet interactions
 !
-      REAL    DAL1, DAL2, DAL3, FACHFR, KMESPC, SNLC1                     40.17
+      REAL    DAL1, DAL2, DAL3, FACHFR, KMESPC, SNLC1                     !40.17
       REAL    AC2(MDC,MSC,MCGRD)
       REAL    DEP2(MCGRD)
       REAL    MEMNL4(MDC,MSC,MCGRD)
       REAL    SA1(MSC4MI:MSC4MA,MDC4MI:MDC4MA)
       REAL    SA2(MSC4MI:MSC4MA,MDC4MI:MDC4MA)
       REAL    SFNL(MSC4MI:MSC4MA,MDC4MI:MDC4MA)
-      REAL    SPCSIG(MSC)                                                 30.72
+      REAL    SPCSIG(MSC)                                                 !30.72
       REAL    UE(MSC4MI:MSC4MA,MDC4MI:MDC4MA)
       REAL    WWAWG(*)
 !
@@ -1820,12 +1820,12 @@
 !     *** Calculate prop. constant.                           ***
 !     *** Calculate factor R(X) to calculate the NL wave-wave ***
 !     *** interaction for shallow water                       ***
-!     *** SNLC1 = 1/GRAV**4                                   ***         40.17
+!     *** SNLC1 = 1/GRAV**4                                   ***         !40.17
 !
-      SNLCS1 = PQUAD(3)                                                   34.00
-      SNLCS2 = PQUAD(4)                                                   34.00
-      SNLCS3 = PQUAD(5)                                                   34.00
-      X      = MAX ( 0.75 * DEP2(KCGRD(1)) * KMESPC , 0.5 )               30.21
+      SNLCS1 = PQUAD(3)                                                   !34.00
+      SNLCS2 = PQUAD(4)                                                   !34.00
+      SNLCS3 = PQUAD(5)                                                   !34.00
+      X      = MAX ( 0.75 * DEP2(KCGRD(1)) * KMESPC , 0.5 )               !30.21
       X2     = MAX ( -1.E15, SNLCS3*X)
       CONS   = SNLC1 * ( 1. + SNLCS1/X * (1.-SNLCS2*X) * EXP(X2))
       JACOBI = 2. * PI
@@ -1835,7 +1835,7 @@
       DO IDDUM = IDLOW, IDHGH
         ID = MOD ( IDDUM - 1 + MDC , MDC ) + 1
         DO IS=1, MSC
-          UE (IS,IDDUM) = AC2(ID,IS,KCGRD(1)) * SPCSIG(IS) * JACOBI       30.72
+          UE (IS,IDDUM) = AC2(ID,IS,KCGRD(1)) * SPCSIG(IS) * JACOBI       !30.72
         ENDDO
       ENDDO
 !
@@ -1872,10 +1872,10 @@
 !
           FACTOR = CONS * AF11(IS) * E00
 !
-          SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 ) * PQUAD(2)               40.17
-          SA1B   = SA1A - EP1*EM1*DAL3 * PQUAD(2)                         40.17
-          SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 ) * PQUAD(2)               40.17
-          SA2B   = SA2A - EP2*EM2*DAL3 * PQUAD(2)                         40.17
+          SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 ) * PQUAD(2)               !40.17
+          SA1B   = SA1A - EP1*EM1*DAL3 * PQUAD(2)                         !40.17
+          SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 ) * PQUAD(2)               !40.17
+          SA2B   = SA2A - EP2*EM2*DAL3 * PQUAD(2)                         !40.17
 !
           SA1 (IS,ID) = FACTOR * SA1B
           SA2 (IS,ID) = FACTOR * SA2B
@@ -1911,7 +1911,7 @@
 !     *** J=MDC is used)  ----                             ***
 !
       DO I = 1, MSC
-        SIGPI = SPCSIG(I) * JACOBI                                        30.72
+        SIGPI = SPCSIG(I) * JACOBI                                        !30.72
         DO J = 1, MDC
           SFNL(I,J) =   - 2. * ( SA1(I,J) + SA2(I,J) )
      &        + AWG1 * ( SA1(I-ISP1,J-IDP1) + SA2(I-ISP1,J+IDP1) )
@@ -1926,7 +1926,7 @@
 !         *** store value in auxiliary array and use values in ***
 !         *** next four sweeps (see subroutine FILNL3)         ***
 !
-          MEMNL4(J,I,KCGRD(1)) = SFNL(I,J) / SIGPI                        30.21
+          MEMNL4(J,I,KCGRD(1)) = SFNL(I,J) / SIGPI                        !30.21
         ENDDO
       ENDDO
 !
@@ -1960,9 +1960,9 @@
         IF(ITEST.GE. 150 ) THEN
           DO I=1, MSC
             DO J=1, MDC
-              WRITE(PRINTF,2006) I,J,MEMNL4(J,I,KCGRD(1)),SFNL(I,J),      30.21
-     &                           SPCSIG(I)                                30.72
- 2006         FORMAT (' I J MEMNL() SFNL() SPCSIG:',2I4,3E12.4)           30.72
+              WRITE(PRINTF,2006) I,J,MEMNL4(J,I,KCGRD(1)),SFNL(I,J),      !30.21
+     &                           SPCSIG(I)                                !30.72
+ 2006         FORMAT (' I J MEMNL() SFNL() SPCSIG:',2I4,3E12.4)           !30.72
             ENDDO
           ENDDO
         END IF
@@ -1982,9 +1982,9 @@
 !
 !*******************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
       USE M_SNL4
 !
 !   --|-----------------------------------------------------------|--
@@ -2000,8 +2000,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2011,7 +2011,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -2022,7 +2022,7 @@
 !  1. Updates
 !
 !     40.17, Dec. 01: New Subroutine based on SWSNL3
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -2108,8 +2108,8 @@
 !     KMESPC: mean average wavenumber over full spectrum
 !     MEMNL4
 !     PI    : circular constant
-!     SA1   : interaction contribution of first quadruplet (unfolded space)
-!     SA2   : interaction contribution of second quadruplet (unfolded space)
+!     SA1   : interaction contribution of first quadruplet (unfolded space!)
+!     SA2   : interaction contribution of second quadruplet (unfolded spac!e)
 !     SFNL
 !     SNLC1
 !     SPCSIG: relative frequencies in computational domain in sigma-space
@@ -2218,9 +2218,9 @@
 !     *** interaction for shallow water                       ***
 !     *** SNLC1 = 1/GRAV**4                                   ***
 !
-      SNLCS1 = PQUAD(3)                                                   34.00
-      SNLCS2 = PQUAD(4)                                                   34.00
-      SNLCS3 = PQUAD(5)                                                   34.00
+      SNLCS1 = PQUAD(3)                                                   !34.00
+      SNLCS2 = PQUAD(4)                                                   !34.00
+      SNLCS3 = PQUAD(5)                                                   !34.00
       X      = MAX ( 0.75 * DEP2(KCGRD(1)) * KMESPC , 0.5 )
       X2     = MAX ( -1.E15, SNLCS3*X)
       CONS   = SNLC1 * ( 1. + SNLCS1/X * (1.-SNLCS2*X) * EXP(X2))
@@ -2307,10 +2307,10 @@
 !     *** Put source term together (To save space I=IS and ***
 !     *** J=MDC is used)                                   ***
 !
-      FAC = 1.                                                            40.17
+      FAC = 1.                                                            !40.17
 
       DO I = 1, MSC
-        SIGPI = SPCSIG(I) * JACOBI                                        30.72
+        SIGPI = SPCSIG(I) * JACOBI                                        !30.72
         DO J = 1, MDC
           SFNL(I,J) =   - 2. * ( SA1(I,J) + SA2(I,J) )
      &        + AWG1 * ( SA1(I-ISP1,J-IDP1) + SA2(I-ISP1,J+IDP1) )
@@ -2384,9 +2384,9 @@
      &                   DEP2    ,AC2     ,KMESPC  ,MEMNL4  ,FACHFR  )
 !*********************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
       USE M_SNL4
 !
       IMPLICIT NONE
@@ -2404,8 +2404,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2415,7 +2415,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -2426,7 +2426,7 @@
 !
 !     40.41, Sep. 04: piecewise constant interpolation instead
 !                     of bi-linear one
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -2493,8 +2493,8 @@
 !     KMESPC: mean average wavenumber over full spectrum
 !     MEMNL4
 !     PI    : circular constant
-!     SA1   : interaction contribution of first quadruplet (unfolded space)
-!     SA2   : interaction contribution of second quadruplet (unfolded space)
+!     SA1   : interaction contribution of first quadruplet (unfolded space!)
+!     SA2   : interaction contribution of second quadruplet (unfolded spac!e)
 !     SFNL
 !     SNLC1
 !     SPCSIG: relative frequencies in computational domain in sigma-space
@@ -2667,14 +2667,14 @@
 !
 !*******************************************************************
 !
-      SUBROUTINE FILNL3 (IDCMIN  ,IDCMAX  ,IMATRA  ,IMATDA  ,AC2     ,    40.23
-     &                   MEMNL4  ,PLNL4S  ,ISSTOP  ,REDC0   ,REDC1   )    40.85 40.41
+      SUBROUTINE FILNL3 (IDCMIN  ,IDCMAX  ,IMATRA  ,IMATDA  ,AC2     ,    !40.23
+     &                   MEMNL4  ,PLNL4S  ,ISSTOP  ,REDC0   ,REDC1   )    !40.85 40.41
 !
 !*******************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE OCPCOMM4                                                        40.41
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
+      USE OCPCOMM4                                                        !40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -2690,8 +2690,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2701,7 +2701,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -2712,13 +2712,13 @@
 !
 !  1. Updates
 !
-!     40.23, Aug. 02: rhs and main diagonal adjusted according to Patankar-rules
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.23, Aug. 02: rhs and main diagonal adjusted according to Patankar!-rules
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.85, Aug. 08: store quadruplets for output purposes
 !
 !  2. Purpose
 !
-!     Fill the IMATRA/IMATDA arrays with the nonlinear wave-wave interaction
+!     Fill the IMATRA/IMATDA arrays with the nonlinear wave-wave interacti!on
 !     source term for a gridpoint ix,iy per sweep direction
 !
 !  3. Method
@@ -2753,15 +2753,15 @@
       INTEGER   IS      ,ID      ,ISSTOP
 !
       REAL      IMATRA(MDC,MSC)           ,
-     &          IMATDA(MDC,MSC)           ,                               40.23
-     &          AC2(MDC,MSC,MCGRD)        ,                               40.23
-     &          PLNL4S(MDC,MSC,NPTST)     ,                               40.00
-     &          MEMNL4(MDC,MSC,MCGRD)                                     30.21
+     &          IMATDA(MDC,MSC)           ,                               !40.23
+     &          AC2(MDC,MSC,MCGRD)        ,                               !40.23
+     &          PLNL4S(MDC,MSC,NPTST)     ,                               !40.00
+     &          MEMNL4(MDC,MSC,MCGRD)                                     !30.21
 !
       INTEGER   IDCMIN(MSC)         ,
      &          IDCMAX(MSC)
-      REAL ::   REDC0 (MDC,MSC,MREDS)                                     40.85
-      REAL ::   REDC1 (MDC,MSC,MREDS)                                     40.85
+      REAL ::   REDC0 (MDC,MSC,MREDS)                                     !40.85
+      REAL ::   REDC1 (MDC,MSC,MREDS)                                     !40.85
 !
       SAVE IENT
       DATA IENT/0/
@@ -2770,15 +2770,15 @@
       DO 990 IS=1, ISSTOP
         DO 980 IDDUM = IDCMIN(IS), IDCMAX(IS)
           ID = MOD ( IDDUM - 1 + MDC , MDC ) + 1
-          IF(TESTFL) PLNL4S(ID,IS,IPTST) = MEMNL4(ID,IS,KCGRD(1))         40.00
-          IF (MEMNL4(ID,IS,KCGRD(1)).GT.0.) THEN                          40.23
+          IF(TESTFL) PLNL4S(ID,IS,IPTST) = MEMNL4(ID,IS,KCGRD(1))         !40.00
+          IF (MEMNL4(ID,IS,KCGRD(1)).GT.0.) THEN                          !40.23
              IMATRA(ID,IS) = IMATRA(ID,IS) + MEMNL4(ID,IS,KCGRD(1))
-             REDC0(ID,IS,1)= REDC0(ID,IS,1)+ MEMNL4(ID,IS,KCGRD(1))       40.85
+             REDC0(ID,IS,1)= REDC0(ID,IS,1)+ MEMNL4(ID,IS,KCGRD(1))       !40.85
           ELSE
              IMATDA(ID,IS) = IMATDA(ID,IS) - MEMNL4(ID,IS,KCGRD(1)) /
      &                       MAX(1.E-18,AC2(ID,IS,KCGRD(1)))
-             REDC1(ID,IS,1)= REDC1(ID,IS,1)+ MEMNL4(ID,IS,KCGRD(1)) /     40.85
-     &                       MAX(1.E-18,AC2(ID,IS,KCGRD(1)))              40.85
+             REDC1(ID,IS,1)= REDC1(ID,IS,1)+ MEMNL4(ID,IS,KCGRD(1)) /     !40.85
+     &                       MAX(1.E-18,AC2(ID,IS,KCGRD(1)))              !40.85
           END IF
   980   CONTINUE
   990 CONTINUE
@@ -2790,7 +2790,7 @@
           DO IS=1, ISSTOP
             DO IDDUM = IDCMIN(IS), IDCMAX(IS)
               ID = MOD ( IDDUM - 1 + MDC , MDC ) + 1
-              WRITE(PRINTF,6001) IS,ID,MEMNL4(ID,IS,KCGRD(1))             30.21
+              WRITE(PRINTF,6001) IS,ID,MEMNL4(ID,IS,KCGRD(1))             !30.21
  6001         FORMAT(' FILNL3: IS ID MEMNL()          :',2I6,E12.4)
             ENDDO
           ENDDO
@@ -2817,8 +2817,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2828,7 +2828,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
       USE M_PARALL
@@ -2836,7 +2836,7 @@
       USE m_xnldata
 !
       IMPLICIT NONE
-!-----------------------------------------------------------------------------------
+!-------------------------------------------------------------------------!----------
 !
 !  0. Update history
 !
@@ -2854,7 +2854,7 @@
 !     02/02/2001 Interface modified, was N(k), now A(sigma) like SWAN
 !     06/11/2001 Bug fixed in initialisation of Snl
 !     08/08/2002 Version 4
-!     22/08/2002 Size of direction array modified to conform with SWAN 40.11
+!     22/08/2002 Size of direction array modified to conform with SWAN 40.!11
 !     09/09/2002 Release 5
 !     18/05/2004 Implemented in SWAN 40.41, with adapted values of IQTYPE
 !
@@ -2872,23 +2872,23 @@
 !  3. Parameter list:
 !
 ! Type     I/O         Name      Description
-!----------------------------------------------------------------------------------
-      INTEGER, INTENT(IN) :: NDIR                    ! number of directions
-      INTEGER, INTENT(IN) :: NSIG                    ! number of sigma values in array
-      INTEGER, INTENT(IN) :: NGRID                   ! number of sea points in the comp. grid
-      INTEGER, INTENT(IN) :: IQTYPE                  ! method of computing nonlinear quadruplet
+!-------------------------------------------------------------------------!---------
+      INTEGER, INTENT(IN) :: NDIR                    ! number of direction!s
+      INTEGER, INTENT(IN) :: NSIG                    ! number of sigma val!ues in array
+      INTEGER, INTENT(IN) :: NGRID                   ! number of sea point!s in the comp. grid
+      INTEGER, INTENT(IN) :: IQTYPE                  ! method of computing! nonlinear quadruplet
 !                                                      interactions
-      REAL   , INTENT(IN) :: ASWAN(NDIR,NSIG,NGRID)  ! action density spectrum as a
-!                                                    ! function of (sigma,dir)
-      REAL   , INTENT(IN) :: SIGMA(NSIG)             ! Intrinsic frequencies
-      REAL   , INTENT(IN) :: DIR(NDIR,6)             ! directions in radians (when second index =1)
+      REAL   , INTENT(IN) :: ASWAN(NDIR,NSIG,NGRID)  ! action density spec!trum as a
+!                                                    ! function of (sigma,!dir)
+      REAL   , INTENT(IN) :: SIGMA(NSIG)             ! Intrinsic frequenci!es
+      REAL   , INTENT(IN) :: DIR(NDIR,6)             ! directions in radia!ns (when second index =1)
       REAL   , INTENT(IN) :: DEPTH(NGRID)            ! depth array
-      INTEGER, INTENT(IN) :: ICMAX                   ! number of points of the computational stencil
-      INTEGER, INTENT(IN) :: KCGRD(ICMAX)            ! grid addresses for points of computational stencil
-      REAL   , INTENT(OUT):: SNL(NDIR,NSIG,NGRID)    ! nonlinear quadruplet interaction computed with
-!                                                    ! a certain exact method (sigma,dir)
-      INTEGER, INTENT(OUT):: IERROR                  ! Error indicator. If no errors are detected IERR=0
-!--------------------------------------------------------------------------------------------------
+      INTEGER, INTENT(IN) :: ICMAX                   ! number of points of! the computational stencil
+      INTEGER, INTENT(IN) :: KCGRD(ICMAX)            ! grid addresses for !points of computational stencil
+      REAL   , INTENT(OUT):: SNL(NDIR,NSIG,NGRID)    ! nonlinear quadruple!t interaction computed with
+!                                                    ! a certain exact met!hod (sigma,dir)
+      INTEGER, INTENT(OUT):: IERROR                  ! Error indicator. If! no errors are detected IERR=0
+!-------------------------------------------------------------------------!-------------------------
 !
 !  4. Error messages
 !
@@ -2918,7 +2918,7 @@
 !  9. Switches
 !
 ! 10. Source code
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------!-----
 !     Local parameters
 !
       INTEGER ISIG,IDIR            ! counters
@@ -2930,8 +2930,8 @@
       REAL AQUAD(NSIG,NDIR)        ! action density spectrum A(sigma,dir)
       REAL XNL(NSIG,NDIR)          ! transfer rate dA/dt(sigma,dir)
       REAL DIAG(NSIG,NDIR)         ! diagonal term (dXnl/dA)
-      REAL DIRR(NDIR)              ! single array with directions in radians
-!------------------------------------------------------------------------------
+      REAL DIRR(NDIR)              ! single array with directions in radia!ns
+!-------------------------------------------------------------------------!-----
 !
 !     --- initialisations
 !
@@ -2970,7 +2970,7 @@
 !     IQTYPE/IQUAD = 52/2   ! deep water transfer with WAM depth scaling
 !     IQTYPE/IQUAD = 53/3   ! finite depth transfer
 !
-!     --- call of main subroutine to compute nonlinear quadruplet interactions
+!     --- call of main subroutine to compute nonlinear quadruplet interact!ions
 !         for a given action density spectrum on a given spectral grid
 !
       XNL   = 0.
@@ -2980,7 +2980,7 @@
 !
       IF (IERROR.NE.0) GOTO 9999
 !
-!     --- convert nonlinear transfer to SWAN convention, only sequence of indices
+!     --- convert nonlinear transfer to SWAN convention, only sequence of !indices
 !
       DO ISIG = 1, NSIG
         DO IDIR = 1, NDIR
@@ -3019,8 +3019,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3030,7 +3030,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -3054,7 +3054,7 @@
 !
 !     R_m,p-m = (k_m + k_p-m)^2 * [0.5 + (w_m*w_p-m / g*h*k_m*k_p-m)]
 !
-!     S_p     = -2/g * ( g*h*k_p + 2*B*g*h^3*k_p^3 - (B+(1/3))*h^2*w_p^2*k_p )
+!     S_p     = -2/g * ( g*h*k_p + 2*B*g*h^3*k_p^3 - (B+(1/3))*h^2*w_p^2*k!_p )
 !
 !     where: B = 1/15
 !
@@ -3068,7 +3068,7 @@
 !     R           numerator of transfer function
 !     S           denominator of transfer function
 !
-!     W1, W2, W12 w_p, w_m, w_I      where I represents the sum or difference, i.e.
+!     W1, W2, W12 w_p, w_m, w_I      where I represents the sum or differe!nce, i.e.
 !     K1, K2, K12 k_p, k_m, k_I      I=p-m and I=p+m, respectively
 !
       REAL :: W1, W2, W12
@@ -3085,21 +3085,21 @@
 !     A2          second optimization parameter for QuadWave1D
 !     A3          third optimization parameter for QuadWave1D
 !
-!     Note: these optimization parameters minimize the error in nonlinearity
-!           while maintaining the dispersion properties of the Bredmose et al (2005)
+!     Note: these optimization parameters minimize the error in nonlineari!ty
+!           while maintaining the dispersion properties of the Bredmose et! al (2005)
 !           model
 !
       REAL, PARAMETER :: A1 = 1.
-      REAL, PARAMETER :: A2 = 0.4  ! note: original value of 1.4 yields too much
+      REAL, PARAMETER :: A2 = 0.4  ! note: original value of 1.4 yields to!o much
                                    !       energy in high-frequency part
       REAL, PARAMETER :: A3 = 5.5
 !
 !  6. Local variables
 !
 !     ITRF  : indicates type of transfer function for triad interaction
-!             =1; classic Boussinesq: Freilich and Guza (1984), Herbers and Burton (1997)
+!             =1; classic Boussinesq: Freilich and Guza (1984), Herbers an!d Burton (1997)
 !             =2; deterministic Boussinesq of Madsen and Sorensen (1993)
-!             =3; exact second order transfer coefficient of Bredmose et al (2005)
+!             =3; exact second order transfer coefficient of Bredmose et a!l (2005)
 !             =4; QuadWave of Akrish et al (2024)
 !
       INTEGER :: IENT, ITRF
@@ -3145,7 +3145,7 @@
       B3    = B + 1./3.
 !
       IF ( ITRF.EQ.1 ) THEN !classic Boussinesq
-!          R = 0.75 * (W2 + W12) should be W1! See Herbers and Burton, Eq. 11
+!          R = 0.75 * (W2 + W12) should be W1! See Herbers and Burton, Eq.! 11
           R = 0.75 * W1
           S = -DEP * SQRT(GRAV*DEP)
 !
@@ -3204,8 +3204,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3215,7 +3215,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -3521,7 +3521,7 @@
                      KB = PTRIAD(6)*KM + PTRIAD(7)
                      FT = KB * DF / (DK*DK + KB*KB)
                   ELSE IF ( ITRIAD.EQ.3 ) THEN
-!                    based on the quasi-normal closure using parametrized biphase
+!                    based on the quasi-normal closure using parametrized !biphase
 !                    (see routine SWFTIM)
                      FT = DF / MAX( ABS(DK), 0.1*K1 )
                   ENDIF
@@ -3596,7 +3596,7 @@
                      KB = PTRIAD(6)*KM + PTRIAD(7)
                      FT = KB * DF / (DK*DK + KB*KB)
                   ELSE IF ( ITRIAD.EQ.3 ) THEN
-!                    based on the quasi-normal closure using parametrized biphase
+!                    based on the quasi-normal closure using parametrized !biphase
 !                    (see routine SWFTIM)
                      FT = DF / MAX( ABS(DK), 0.1*K1 )
                   ENDIF
@@ -3653,7 +3653,7 @@
                   K2   = K     (IS2)
                   CG2  = CG    (IS2)
 !
-!                 --- determine third component by means of quasi-resonance condition
+!                 --- determine third component by means of quasi-resonanc!e condition
                   SIG3 = ABS(SIG2 - SIG1)
 !
                   J = J + 1
@@ -3738,8 +3738,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3749,7 +3749,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -3817,11 +3817,11 @@
 !     - The interactions are calculated up to 2.5 times the mean
 !       frequency only.
 !
-!     - The consistent collinear approximation (CCA) of Salmon et al (2016)
+!     - The consistent collinear approximation (CCA) of Salmon et al (2016!)
 !       is applied. The directional integration as given by their Eq. 13
 !       is determined by a tunable parameter.
 !
-!     - Since the spectral grid is logarithmically distributed in frequency
+!     - Since the spectral grid is logarithmically distributed in frequenc!y
 !       space, the interactions between central bin and interacting bin
 !       are interpolated such that the distance between these bins is
 !       factor 2 (nearly).
@@ -3837,7 +3837,7 @@
 !  4. Argument variables
 !
 !     AC2         action density
-!     BIPHAS      parameterized biphase of the spectrum                   41.97
+!     BIPHAS      parameterized biphase of the spectrum                   !41.97
 !     CGO         group velocity
 !     DEP2        water depth
 !     IDCMIN      minimum counter in directional space
@@ -3849,10 +3849,10 @@
 !     ISSTOP      maximum frequency counter in a sweep
 !     PLTRI       triad contribution in TEST points
 !     QTL2        frequency-dependent scaling factor
-!     REDC0       explicit part of energy redistribution for output purposes
-!     REDC1       implicit part of energy redistribution for output purposes
+!     REDC0       explicit part of energy redistribution for output purpos!es
+!     REDC1       implicit part of energy redistribution for output purpos!es
 !     SMEBRK      average (angular) frequency
-!     SPCSIG      relative frequencies in computational domain in sigma-space
+!     SPCSIG      relative frequencies in computational domain in sigma-sp!ace
 !     URSELL      Ursell number
 !
       INTEGER IDDLOW, IDDTOP, ISSTOP
@@ -3867,10 +3867,10 @@
       REAL :: CGO(MSC,MICMAX)
       REAL :: PLTRI(MDC,MSC,NPTST)
       REAL :: URSELL(MCGRD)
-      REAL :: BIPHAS(MCGRD)                                               41.97
-      REAL :: QTL2(MSC,2)                                                 42.11 42.01
-      REAL :: REDC0 (MDC,MSC,MREDS)                                       40.85
-      REAL :: REDC1 (MDC,MSC,MREDS)                                       40.85
+      REAL :: BIPHAS(MCGRD)                                               !41.97
+      REAL :: QTL2(MSC,2)                                                 !42.11 42.01
+      REAL :: REDC0 (MDC,MSC,MREDS)                                       !40.85
+      REAL :: REDC1 (MDC,MSC,MREDS)                                       !40.85
 !
 !  6. Local variables
 !
@@ -3878,16 +3878,16 @@
 !     CG    :     local group velocity
 !     DEP   :     water depth
 !     E     :     energy density as function of frequency
-!     E0    :     energy density of bound super harmonic (=p)             42.11
-!     ED    :     integral energy density over directions                 41.44
-!     ED0   :     integral energy density over directions of harmonic p   42.11 41.44
-!     EDM   :     integral energy density over directions of second       42.11 41.44
-!                 primary harmonic (m)                                    42.11
-!     EDPM  :     integral energy density over directions of first        42.11
-!                 primary harmonic (p-m)                                  42.11
-!     EEx   :     quadratic products of energy density                    42.11
-!     EM    :     energy density of second primary harmonic (m)           42.11
-!     EPM   :     energy density of first primary harmonic (p-m)          42.11
+!     E0    :     energy density of bound super harmonic (=p)             !42.11
+!     ED    :     integral energy density over directions                 !41.44
+!     ED0   :     integral energy density over directions of harmonic p   !42.11 41.44
+!     EDM   :     integral energy density over directions of second       !42.11 41.44
+!                 primary harmonic (m)                                    !42.11
+!     EDPM  :     integral energy density over directions of first        !42.11
+!                 primary harmonic (p-m)                                  !42.11
+!     EEx   :     quadratic products of energy density                    !42.11
+!     EM    :     energy density of second primary harmonic (m)           !42.11
+!     EPM   :     energy density of first primary harmonic (p-m)          !42.11
 !     FT    :     multiplication factor for triad contribution
 !     ID    :     counter
 !     ID1   :     first directional index
@@ -3902,7 +3902,7 @@
 !                 which the triad interactions are calculated (cut-off)
 !     PWDTH :     integral range in rad. / 2
 !     SA    :     contribution of triad self interaction
-!     SA3   :     contribution of triad sum interaction                   42.11
+!     SA3   :     contribution of triad sum interaction                   !42.11
 !     SIGPI :     frequency times 2pi
 !     SINBPH:     sine of biphase
 !     STRI  :     total triad contribution
@@ -3911,7 +3911,7 @@
       REAL    BIPH, CG, DEP, E0, ED0, EDM, EDPM, EE1, EE2, EE3, EM, EPM,
      &        FT, PWDTH, SIGPI, SINBPH, STRI
       REAL    E(MSC), ED(MSC),
-     &        SA(MDC,MSC+ISP1(2)), SA3(MDC,MSC+ISP1(3))                   42.11
+     &        SA(MDC,MSC+ISP1(2)), SA3(MDC,MSC+ISP1(3))                   !42.11
 !
 !  9. Subroutines calling
 !
@@ -3954,8 +3954,8 @@
           ISMAX = IS
         ENDIF
       ENDDO
-      ISMAX = MIN ( ISMAX, MIN( MSC+ISP1(2),MSC+ISP1(3) ) )               42.11
-      IF (ITRIAD.EQ.1 .AND. .NOT.PTRIAD(2).NE.-1.) ISMAX = MSC            42.11
+      ISMAX = MIN ( ISMAX, MIN( MSC+ISP1(2),MSC+ISP1(3) ) )               !42.11
+      IF (ITRIAD.EQ.1 .AND. .NOT.PTRIAD(2).NE.-1.) ISMAX = MSC            !42.11
 !
 !     --- compute 3 wave-wave interactions
 !
@@ -3977,13 +3977,13 @@
 !
 !        --- calculate integral of E(f,t) over all directions, if desired
          IF ( IDW.EQ.-1 ) THEN
-            ED(:) = SUM(AC2(:,:,KCGRD(1)),DIM=1) * 2.*PI*SPCSIG(:) *DDIR  41.44
+            ED(:) = SUM(AC2(:,:,KCGRD(1)),DIM=1) * 2.*PI*SPCSIG(:) *DDIR  !41.44
          ENDIF
 !
          DO II = IDDLOW, IDDTOP
             ID = MOD ( II - 1 + MDC , MDC ) + 1
 !
-!           --- initialize array with E(f) for the direction theta considered
+!           --- initialize array with E(f) for the direction theta conside!red
 !
             E(:) = AC2(ID,:,KCGRD(1)) * 2. * PI * SPCSIG(:)
 !
@@ -4029,7 +4029,7 @@
 
                FT = QTL2(IS,1) * SINBPH
 
-               SA(ID,IS) = MAX(0., FT * ( EDM * (EM - E0) - ED0 * EM ))   41.44
+               SA(ID,IS) = MAX(0., FT * ( EDM * (EM - E0) - ED0 * EM ))   !41.44
 
 !              --- primary wave (sum interaction)
                IF ( IS.GT.-ISM1(3,1) ) THEN
@@ -4065,7 +4065,7 @@
                FT = QTL2(IS,2) * SINBPH
                IF (ITRIAD.EQ.11) FT = 0.
 
-               SA3(ID,IS) = MAX(0., FT * ( EE1 - EE2 - EE3 ))             42.11
+               SA3(ID,IS) = MAX(0., FT * ( EE1 - EE2 - EE3 ))             !42.11
 
             END DO
          END DO
@@ -4096,12 +4096,12 @@
                IF(TESTFL) PLTRI(ID,IS,IPTST) = STRI / SIGPI
                IF (STRI.GT.0.) THEN
                   IMATRA(ID,IS) = IMATRA(ID,IS) + STRI / SIGPI
-                  REDC0(ID,IS,2)= REDC0(ID,IS,2)+ STRI / SIGPI            40.85
+                  REDC0(ID,IS,2)= REDC0(ID,IS,2)+ STRI / SIGPI            !40.85
                ELSE
                   IMATDA(ID,IS) = IMATDA(ID,IS) - STRI /
      &                            MAX(1.E-18,AC2(ID,IS,KCGRD(1))*SIGPI)
-                  REDC1(ID,IS,2)= REDC1(ID,IS,2)+ STRI /                  40.85
-     &                            MAX(1.E-18,AC2(ID,IS,KCGRD(1))*SIGPI)   40.85
+                  REDC1(ID,IS,2)= REDC1(ID,IS,2)+ STRI /                  !40.85
+     &                            MAX(1.E-18,AC2(ID,IS,KCGRD(1))*SIGPI)   !40.85
                END IF
             END DO
          END DO
@@ -4155,8 +4155,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4166,7 +4166,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -4206,8 +4206,8 @@
 !     k  is wave number
 !     p  is a shape coefficient to force the high-frequency tail
 !
-!     Note that factor T is a heuristically determined coefficient that depends
-!     on the group velocity, water depth, mean frequency and mean wave number
+!     Note that factor T is a heuristically determined coefficient that de!pends
+!     on the group velocity, water depth, mean frequency and mean wave num!ber
 !
 !     Note that the interactions are calculated in terms of energy
 !     density instead of action density
@@ -4228,10 +4228,10 @@
 !     PLTRI       triad contribution in TEST points
 !     QTL1        frequency-dependent interpolation factors
 !     QTL2        frequency-dependent scaling factors
-!     REDC0       explicit part of energy redistribution for output purposes
-!     REDC1       implicit part of energy redistribution for output purposes
+!     REDC0       explicit part of energy redistribution for output purpos!es
+!     REDC1       implicit part of energy redistribution for output purpos!es
 !     SIGM        mean angular frequency
-!     SPCSIG      relative frequencies in computational domain in sigma-space
+!     SPCSIG      relative frequencies in computational domain in sigma-sp!ace
 !     URSELL      Ursell number
 !
       INTEGER IDDLOW, IDDTOP, ISSTOP
@@ -4344,14 +4344,14 @@
                  SIG2 = SPCSIG(IS2)
                  E2   = E     (IS2)
 !
-!                --- determine third component by means of quasi-resonance condition
+!                --- determine third component by means of quasi-resonance! condition
                  SIG3 = SIG2 - SIG1
 !
                  J = J + 1
 !
                  IF ( SIG3.GT.SPCSIG(1) ) THEN
 !
-!                   --- obtain third energy density by means of interpolation
+!                   --- obtain third energy density by means of interpolat!ion
 !
                     WIS = QTL1(J,1)
                     IS3 = INT(QTL1(J,2))
@@ -4436,8 +4436,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4447,7 +4447,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -4487,8 +4487,8 @@
 !     k  is wave number
 !     p  is a shape coefficient to force the high-frequency tail
 !
-!     Note that factor T is a heuristically determined coefficient that depends
-!     on the group velocity, water depth, mean frequency and mean wave number
+!     Note that factor T is a heuristically determined coefficient that de!pends
+!     on the group velocity, water depth, mean frequency and mean wave num!ber
 !
 !     Note that the interactions are calculated in terms of energy
 !     density instead of action density
@@ -4511,8 +4511,8 @@
 !     PLTRI       triad contribution in TEST points
 !     QTL1        frequency-dependent interpolation factors
 !     QTL2        frequency-dependent scaling factors
-!     REDC0       explicit part of energy redistribution for output purposes
-!     REDC1       implicit part of energy redistribution for output purposes
+!     REDC0       explicit part of energy redistribution for output purpos!es
+!     REDC1       implicit part of energy redistribution for output purpos!es
 !     SIGM        mean angular frequency
 !     SPCDIR      (*,1); spectral directions (radians)
 !                 (*,2); cosine of spectral directions
@@ -4520,7 +4520,7 @@
 !                 (*,4); cosine^2 of spectral directions
 !                 (*,5); cosine*sine of spectral directions
 !                 (*,6); sine^2 of spectral directions
-!     SPCSIG      relative frequencies in computational domain in sigma-space
+!     SPCSIG      relative frequencies in computational domain in sigma-sp!ace
 !     URSELL      Ursell number
 !
       INTEGER IDDLOW, IDDTOP, ISSTOP
@@ -4680,12 +4680,12 @@
                     ECOS2 = SPCDIR(ID2,2)
                     ESIN2 = SPCDIR(ID2,3)
 !
-!                   --- determine third component by means of quasi-resonance condition
+!                   --- determine third component by means of quasi-resona!nce condition
                     SIG3 = ABS(SIG2 - SIG1)
 !
                     IF ( SIG3.GT.SPCSIG(1) ) THEN
 !
-!                      --- compute wave number of the sum or difference wave number vector
+!                      --- compute wave number of the sum or difference wa!ve number vector
 !
                        SIN12 = ESIN1*ECOS2 - ECOS1*ESIN2
                        COS12 = ECOS1*ECOS2 + ESIN1*ESIN2
@@ -4702,7 +4702,7 @@
                           TH3 = TH1 - ASIN(-K2/K12*SIN12)
                        ENDIF
 !
-!                      --- obtain third energy density by means of interpolation
+!                      --- obtain third energy density by means of interpo!lation
 !
                        WIS = QTL1(J,1)
                        IS3 = INT(QTL1(J,2))
@@ -4959,8 +4959,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4970,7 +4970,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -5023,9 +5023,9 @@
 !     PLTRI       triad contribution in TEST points
 !     QTL1        frequency-dependent interpolation factors
 !     QTL2        frequency-dependent scaling factors
-!     REDC0       explicit part of energy redistribution for output purposes
-!     REDC1       implicit part of energy redistribution for output purposes
-!     SPCSIG      relative frequencies in computational domain in sigma-space
+!     REDC0       explicit part of energy redistribution for output purpos!es
+!     REDC1       implicit part of energy redistribution for output purpos!es
+!     SPCSIG      relative frequencies in computational domain in sigma-sp!ace
 !     URSELL      Ursell number
 !
       INTEGER IDDLOW, IDDTOP, ISSTOP
@@ -5135,7 +5135,7 @@
          DO II = IDDLOW, IDDTOP
             ID = MOD ( II - 1 + MDC , MDC ) + 1
 !
-!           --- initialize array with E(f) for the direction theta considered
+!           --- initialize array with E(f) for the direction theta conside!red
 !
             E(:) = AC2(ID,:,KCGRD(1)) * 2. * PI * SPCSIG(:)
 !
@@ -5184,7 +5184,7 @@
 !
                   J = J + 1
 !
-!                 --- obtain primary energy density by means of interpolation
+!                 --- obtain primary energy density by means of interpolat!ion
 !
                   IF ( WPM.GT.SPCSIG(1) ) THEN
 !
@@ -5238,7 +5238,7 @@
 !
                   J = J + 1
 !
-!                 --- obtain primary energy density by means of interpolation
+!                 --- obtain primary energy density by means of interpolat!ion
 !
                   IF ( WPM.LT.SPCSIG(MSC) ) THEN
 !
@@ -5335,8 +5335,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5346,7 +5346,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -5447,7 +5447,7 @@
       END
 !****************************************************************
 !
-      SUBROUTINE SWBIDW( BIP, AC2, SPCSIG, RDX, RDY, BOTLV, ECOS, ESIN )  41.97
+      SUBROUTINE SWBIDW( BIP, AC2, SPCSIG, RDX, RDY, BOTLV, ECOS, ESIN )  !41.97
 !
 !****************************************************************
 !
@@ -5470,8 +5470,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5481,7 +5481,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -5512,7 +5512,7 @@
       REAL, INTENT(IN)  :: AC2(MDC,MSC,MCGRD)   ! action densities
       REAL, INTENT(OUT) :: BIP                  ! unscaled biphase
       REAL, INTENT(IN)  :: BOTLV(MCGRD)         ! bottom levels
-      REAL, INTENT(IN)  :: ECOS(MDC), ESIN(MDC) ! cos/sin of spectral dirs
+      REAL, INTENT(IN)  :: ECOS(MDC), ESIN(MDC) ! cos/sin of spectral dirs!
       REAL, INTENT(IN)  :: RDX(MICMAX),         ! geometric coeffs for
      &                     RDY(MICMAX)          ! spatial derivatives
       REAL, INTENT(IN)  :: SPCSIG(MSC)          ! relative frequencies
@@ -5520,7 +5520,7 @@
 !  5. Parameter variables
 !
 !     IDIM        number of interpolation nodes related to the bed slopes
-!     JDIM        number of interpolation nodes related to the peak periods
+!     JDIM        number of interpolation nodes related to the peak period!s
 !
       INTEGER, PARAMETER :: IDIM = 8
       INTEGER, PARAMETER :: JDIM = 5
@@ -5696,7 +5696,7 @@
 !
 !****************************************************************
 !
-      SUBROUTINE SWBIPM( BIPHAS, DEP2, HSIBC )                            41.97
+      SUBROUTINE SWBIPM( BIPHAS, DEP2, HSIBC )                            !41.97
 !
 !****************************************************************
 !
@@ -5723,8 +5723,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5734,7 +5734,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors

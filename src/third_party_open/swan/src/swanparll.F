@@ -37,8 +37,8 @@
 #ifdef USE_MPI
       USE MPI
 #endif
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -56,8 +56,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -67,7 +67,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -78,7 +78,7 @@
 !  1. Updates
 !
 !     40.30, Jan. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -115,7 +115,7 @@
 !     INTSTR           Converts integer to string
 #ifdef USE_MPI
 !     MPI_COMM_RANK    Get rank of processes in MPI communication context
-!     MPI_COMM_SIZE    Get number of processes in MPI communication context
+!     MPI_COMM_SIZE    Get number of processes in MPI communication contex!t
 !     MPI_INIT         Enroll in MPI
 #endif
 !     MSGERR           Writes error message
@@ -239,7 +239,7 @@
 #ifdef USE_MPI
       USE MPI
 #endif
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM4                                                        !40.41
 #ifndef SWANEXE
       USE M_PARALL, ONLY: COMM
 #endif
@@ -260,8 +260,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -271,7 +271,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -282,7 +282,7 @@
 !  1. Updates
 !
 !     40.30, Jan. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -376,8 +376,8 @@
 #ifdef USE_MPI
       USE MPI
 #endif
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -395,8 +395,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -406,7 +406,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -417,7 +417,7 @@
 !  1. Updates
 !
 !     40.30, Jan. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -511,8 +511,8 @@
 #ifdef USE_MPI
       USE MPI
 #endif
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -530,8 +530,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -541,7 +541,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -552,7 +552,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -655,8 +655,8 @@
 #ifdef USE_MPI
       USE MPI
 #endif
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -674,8 +674,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -685,7 +685,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -696,7 +696,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -805,8 +805,8 @@
 #ifdef USE_MPI
       USE MPI
 #endif
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -824,8 +824,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -835,7 +835,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -846,7 +846,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -946,8 +946,8 @@
 #ifdef USE_MPI
       USE MPI
 #endif
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -965,8 +965,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -976,7 +976,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -987,7 +987,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -1149,8 +1149,8 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -1168,8 +1168,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1179,7 +1179,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -1191,8 +1191,8 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
-!     40.96, Dec. 08: call SWREDUCI/R instead of passing startaddress of the array
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
+!     40.96, Dec. 08: call SWREDUCI/R instead of passing startaddress of t!he array
 !
 !  2. Purpose
 !
@@ -1285,8 +1285,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1296,7 +1296,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -1430,8 +1430,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1441,7 +1441,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -1553,7 +1553,7 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -1571,8 +1571,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1582,7 +1582,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -1593,7 +1593,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -1754,7 +1754,7 @@
 !JAC!
 !JAC!****************************************************************
 !JAC!
-!JAC      USE OCPCOMM4                                                        40.41
+!JAC      USE OCPCOMM4                                                    !    40.41
 !JAC!
 !JAC      IMPLICIT NONE
 !JAC!
@@ -1772,8 +1772,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1783,7 +1783,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !JAC!
 !JAC!  0. Authors
@@ -1794,7 +1794,7 @@
 !JAC!  1. Updates
 !JAC!
 !JAC!     40.30, Feb. 03: New subroutine
-!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files! removed
 !JAC!
 !JAC!  2. Purpose
 !JAC!
@@ -1838,7 +1838,7 @@
 !JAC!     JPART :     a part counter
 !JAC!     MXCI  :     maximum counter of gridpoints in x/y-direction
 !JAC!     MYCI  :     maximum counter of gridpoints in y/x-direction
-!JAC!     NBACK :     number of points in a row already assigned to a part
+!JAC!     NBACK :     number of points in a row already assigned to a part!
 !JAC!     NFORW :     number of points in a row remaining to be assigned
 !JAC!     NINPRT:     number of points currently assigned to a new part
 !JAC!
@@ -1871,7 +1871,7 @@
 !JAC!           when current part has reached its planned size
 !JAC!              see how many points in this row remain to be assigned
 !JAC!              if no more points to be assigned, go on to next part
-!JAC!              else, if majority of row has been assigned take the rest
+!JAC!              else, if majority of row has been assigned take the res!t
 !JAC!              else, leave this row to next part
 !JAC!           assign point IC to part that is currently being created
 !JAC!
@@ -1907,7 +1907,7 @@
 !JAC
 !JAC            IC = IX*INCX + IY*INCY - MXC
 !JAC
-!JAC!           --- if this point belongs to the part that must be partitioned then
+!JAC!           --- if this point belongs to the part that must be partiti!oned then
 !JAC
 !JAC            IF ( IPOWN(IC).EQ.IPART ) THEN
 !JAC
@@ -1915,17 +1915,17 @@
 !JAC
 !JAC               IF ( NINPRT.GE.LPARTS(2,JPART) ) THEN
 !JAC
-!JAC!                 --- see how many points in this row have been assigned
+!JAC!                 --- see how many points in this row have been assign!ed
 !JAC
 !JAC                  NBACK = 0
 !JAC                  DO IYY = 1, IY-1
 !JAC
 !JAC                     ICC = IX*INCX + IYY*INCY - MXC
-!JAC                     IF (IPOWN(ICC).EQ.LPARTS(1,JPART)) NBACK = NBACK +1
+!JAC                     IF (IPOWN(ICC).EQ.LPARTS(1,JPART)) NBACK = NBACK !+1
 !JAC
 !JAC                  END DO
 !JAC
-!JAC!                 --- see how many points in this row remain to be assigned
+!JAC!                 --- see how many points in this row remain to be ass!igned
 !JAC
 !JAC                  NFORW = 0
 !JAC                  DO IYY = IY, MYCI
@@ -1935,7 +1935,7 @@
 !JAC
 !JAC                  END DO
 !JAC
-!JAC!                 --- if no more points to be assigned, go on to next part
+!JAC!                 --- if no more points to be assigned, go on to next !part
 !JAC
 !JAC                  IF ( NFORW.EQ.0 ) THEN
 !JAC
@@ -1944,7 +1944,7 @@
 !JAC
 !JAC                  ELSE IF ( (NBACK-NFORW).GT.0 ) THEN
 !JAC
-!JAC!                    --- if majority of row has been assigned take the rest
+!JAC!                    --- if majority of row has been assigned take the! rest
 !JAC
 !JAC                     LPARTS(2,JPART  ) = LPARTS(2,JPART  ) + NFORW
 !JAC                     LPARTS(2,JPART+1) = LPARTS(2,JPART+1) - NFORW
@@ -1971,7 +1971,7 @@
 !JAC
 !JAC               END IF
 !JAC
-!JAC!              --- assign point IC to part that is currently being created
+!JAC!              --- assign point IC to part that is currently being cre!ated
 !JAC
 !JAC               IPOWN(IC) = LPARTS(1,JPART)
 !JAC               NINPRT    = NINPRT + 1
@@ -1990,7 +1990,7 @@
 !JAC!
 !JAC!****************************************************************
 !JAC!
-!JAC      USE OCPCOMM4                                                        40.41
+!JAC      USE OCPCOMM4                                                    !    40.41
 !JAC!
 !JAC      IMPLICIT NONE
 !JAC!
@@ -2008,8 +2008,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2019,7 +2019,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !JAC!
 !JAC!  0. Authors
@@ -2030,7 +2030,7 @@
 !JAC!  1. Updates
 !JAC!
 !JAC!     40.30, Feb. 03: New subroutine
-!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files! removed
 !JAC!
 !JAC!  2. Purpose
 !JAC!
@@ -2039,7 +2039,7 @@
 !JAC!  3. Method
 !JAC!
 !JAC!     Starting with a single part (the entire domain), each part is
-!JAC!     recursively partitioned by bisecting it, until all parts have been
+!JAC!     recursively partitioned by bisecting it, until all parts have be!en
 !JAC!     created. The bisection direction is swapped in each direction.
 !JAC!
 !JAC!     This method is described in Ph.D. Thesis of M. Roest
@@ -2071,7 +2071,7 @@
 !JAC!     IENT  :     number of entries
 !JAC!     IP    :     counter of parts to be splitted
 !JAC!     ISPLIT:     counter of parts to be created in splitting
-!JAC!     ISSUCC:     flag indicating success in reducing a difference in size
+!JAC!     ISSUCC:     flag indicating success in reducing a difference in !size
 !JAC!                 0=no
 !JAC!                 1=yes
 !JAC!     IWORK :     see description LPARTS
@@ -2080,12 +2080,12 @@
 !JAC!     JPARTE:     number of last part in 1..npart belonging to jpart
 !JAC!     JPARTS:     number of first part in 1..npart belonging to jpart
 !JAC!     JSTART:     number of first new part to be created by splitting
-!JAC!     KSPLIT:     number of parts to be created in a particular splitting
-!JAC!     NP    :     number of parts to be created in a particular recursion
-!JAC!     NSPLIT:     maximum number of parts to be created in one splitting
+!JAC!     KSPLIT:     number of parts to be created in a particular splitt!ing
+!JAC!     NP    :     number of parts to be created in a particular recurs!ion
+!JAC!     NSPLIT:     maximum number of parts to be created in one splitti!ng
 !JAC!                 (NB: 2 = bisection, 4 = quadrisection)
 !JAC
-!JAC      INTEGER IDIFF, IENT, IP, ISPLIT, ISSUCC, J, JEND, JPARTE, JPARTS,
+!JAC      INTEGER IDIFF, IENT, IP, ISPLIT, ISSUCC, J, JEND, JPARTE, JPARTS!,
 !JAC     &        JSTART, KSPLIT, NP, NSPLIT
 !JAC      INTEGER*8 IWORK(2,NPART)
 !JAC      PARAMETER(NSPLIT = 2)
@@ -2094,7 +2094,7 @@
 !JAC!
 !JAC!     MSGERR           Writes error message
 !JAC!     STRACE           Tracing routine for debugging
-!JAC!     SWSTRIP          Performs a stripwise partitioning with straight
+!JAC!     SWSTRIP          Performs a stripwise partitioning with straight!
 !JAC!                      interfaces
 !JAC!
 !JAC!  9. Subroutines calling
@@ -2134,7 +2134,7 @@
 !JAC      DATA IENT/0/
 !JAC      IF (LTRACE) CALL STRACE (IENT,'SWORB')
 !JAC
-!JAC!     --- while not enough parts have been created, do another recursion
+!JAC!     --- while not enough parts have been created, do another recursi!on
 !JAC
 !JAC      NP = 1
 !JAC100   IF ( NP.LE.NPART ) THEN
@@ -2152,16 +2152,16 @@
 !JAC
 !JAC            IF ( (JPARTE-JPARTS+1).GT.1 ) THEN
 !JAC
-!JAC!              --- determine into how many parts this part must be split
+!JAC!              --- determine into how many parts this part must be spl!it
 !JAC
 !JAC               KSPLIT = MIN(NSPLIT,JPARTE-JPARTS+1)
 !JAC
-!JAC!              --- determine the sizes and numbers of parts to be created
+!JAC!              --- determine the sizes and numbers of parts to be crea!ted
 !JAC
 !JAC               DO ISPLIT = 1, KSPLIT
 !JAC
 !JAC                  JSTART = JPARTS+(ISPLIT-1)*(JPARTE-JPARTS+1)/KSPLIT
-!JAC                  JEND   = JPARTS+    ISPLIT*(JPARTE-JPARTS+1)/KSPLIT-1
+!JAC                  JEND   = JPARTS+    ISPLIT*(JPARTE-JPARTS+1)/KSPLIT-!1
 !JAC
 !JAC                  IWORK(1,ISPLIT) = JSTART
 !JAC
@@ -2176,20 +2176,20 @@
 !JAC
 !JAC               CALL SWSTRIP (IPOWN,IDIR,JPARTS,KSPLIT,IWORK,MXC,MYC)
 !JAC
-!JAC!              --- determine whether objective partsizes have been modified
+!JAC!              --- determine whether objective partsizes have been mod!ified
 !JAC!                  in SWSTRIP in order to make straight interfaces
 !JAC
 !JAC               DO ISPLIT = 1, KSPLIT
 !JAC
 !JAC                  JSTART = JPARTS+(ISPLIT-1)*(JPARTE-JPARTS+1)/KSPLIT
-!JAC                  JEND   = JPARTS+    ISPLIT*(JPARTE-JPARTS+1)/KSPLIT-1
+!JAC                  JEND   = JPARTS+    ISPLIT*(JPARTE-JPARTS+1)/KSPLIT-!1
 !JAC
 !JAC                  DO J = JSTART, JEND
 !JAC                     IWORK(2,ISPLIT) = IWORK(2,ISPLIT) - LPARTS(2,J)
 !JAC                  END DO
 !JAC
-!JAC!                 --- and distribute the difference over the contiguous
-!JAC!                     parts making sure not to cause negative subdomain-sizes
+!JAC!                 --- and distribute the difference over the contiguou!s
+!JAC!                     parts making sure not to cause negative subdomai!n-sizes
 !JAC
 !JAC                  J      = JSTART
 !JAC                  ISSUCC = 0
@@ -2203,7 +2203,7 @@
 !JAC
 !JAC200               IF ( IWORK(2,ISPLIT).NE.0 ) THEN
 !JAC
-!JAC!                    --- only adjust parts if their size remains valid
+!JAC!                    --- only adjust parts if their size remains valid!
 !JAC
 !JAC                     IF ( LPARTS(2,J).GT.0 .AND.
 !JAC     &                    ((LPARTS(2,J)+IDIFF).GT.0) ) THEN
@@ -2216,15 +2216,15 @@
 !JAC
 !JAC                     J = J + 1
 !JAC
-!JAC!                    --- when all parts have been visited, go back to first
+!JAC!                    --- when all parts have been visited, go back to !first
 !JAC
 !JAC                     IF ( J.GT.JEND ) THEN
 !JAC
-!JAC!                       --- check whether any reduction of the difference
+!JAC!                       --- check whether any reduction of the differe!nce
 !JAC!                           was done in last pass over all parts
 !JAC
 !JAC                        IF ( ISSUCC.EQ.0 ) THEN
-!JAC                           CALL MSGERR (4,'Internal problem in SWORB')
+!JAC                           CALL MSGERR (4,'Internal problem in SWORB')!
 !JAC                           RETURN
 !JAC                        END IF
 !JAC                        J = JSTART
@@ -2256,8 +2256,8 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -2275,8 +2275,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2286,7 +2286,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -2298,7 +2298,7 @@
 !
 !     40.30, Feb. 03: New subroutine
 !     40.41, Sep. 04: determines load per processor based on speed
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -2343,7 +2343,7 @@
 !     STPNOW           Logical indicating whether program must
 !                      terminated or not
 !     STRACE           Tracing routine for debugging
-!JAC!     SWORB            Performs an Orthogonal Recursive Bisection partitioning
+!JAC!     SWORB            Performs an Orthogonal Recursive Bisection part!itioning
 !     SWSTRIP          Performs a stripwise partitioning with straight
 !                      interfaces
 !
@@ -2425,8 +2425,8 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -2444,8 +2444,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2455,7 +2455,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -2467,7 +2467,7 @@
 !
 !     40.30, Feb. 03: New subroutine
 !     40.41, Jul. 04: determine global bounds in subdomains
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -2519,7 +2519,7 @@
 !                                respect to present subdomain
 !                                (resp. top, bottom, right, left)
 !                   IWORK(3,i) = size of interface to i-th neighbour
-!     JOFFS :     offsets at which a point of a neigbhour domain can be found
+!     JOFFS :     offsets at which a point of a neigbhour domain can be fo!und
 !     MSGSTR:     string to pass message to call MSGERR
 !     MXSIZ :     size of present subdomain in x-direction
 !     MYSIZ :     size of present subdomain in y-direction
@@ -2768,9 +2768,9 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM3                                                         !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -2788,8 +2788,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2799,7 +2799,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -2810,7 +2810,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -2890,10 +2890,10 @@
       MXL     = MXC
       MYF     = 1
       MYL     = MYC
-      LMXF    = MXF.EQ.1                                                  40.41
-      LMXL    = MXL.EQ.MXCGL                                              40.41
-      LMYF    = MYF.EQ.1                                                  40.41
-      LMYL    = MYL.EQ.MYCGL                                              40.41
+      LMXF    = MXF.EQ.1                                                  !40.41
+      LMXL    = MXL.EQ.MXCGL                                              !40.41
+      LMYF    = MYF.EQ.1                                                  !40.41
+      LMYL    = MYL.EQ.MYCGL                                              !40.41
 
 !     --- if not parallel, return
       IF (.NOT.PARLL) RETURN
@@ -2933,9 +2933,9 @@
 !JAC!
 !JAC!****************************************************************
 !JAC!
-!JAC      USE OCPCOMM4                                                        40.41
-!JAC      USE SWCOMM3                                                         40.41
-!JAC      USE M_PARALL                                                        40.31
+!JAC      USE OCPCOMM4                                                    !    40.41
+!JAC      USE SWCOMM3                                                     !    40.41
+!JAC      USE M_PARALL                                                    !    40.31
 !JAC!
 !JAC      IMPLICIT NONE
 !JAC!
@@ -2953,8 +2953,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2964,7 +2964,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !JAC!
 !JAC!  0. Authors
@@ -2975,7 +2975,7 @@
 !JAC!  1. Updates
 !JAC!
 !JAC!     40.30, Feb. 03: New subroutine
-!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files! removed
 !JAC!
 !JAC!  2. Purpose
 !JAC!
@@ -2990,7 +2990,7 @@
 !JAC!
 !JAC!  4. Argument variables
 !JAC!
-!JAC!     FIELD       geographical field array for which 'halo' values must
+!JAC!     FIELD       geographical field array for which 'halo' values mus!t
 !JAC!                 be copied from neighbouring subdomains
 !JAC!     KGRPNT      indirect addressing for grid points
 !JAC!     SWPDIR      sweep direction (0=all directions together)
@@ -3163,9 +3163,9 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM3                                                         !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -3183,8 +3183,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3194,7 +3194,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -3205,7 +3205,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -3351,9 +3351,9 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM3                                                         !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -3371,8 +3371,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3382,7 +3382,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -3393,7 +3393,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -3515,9 +3515,9 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM3                                                         !40.41
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -3535,8 +3535,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3546,7 +3546,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -3557,7 +3557,7 @@
 !  1. Updates
 !
 !     40.30, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. Purpose
 !
@@ -3679,10 +3679,10 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE M_GENARR                                                        40.31
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM3                                                         !40.41
+      USE M_GENARR                                                        !40.31
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -3700,8 +3700,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3711,7 +3711,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -3723,7 +3723,7 @@
 !  1. Updates
 !
 !     40.30, Mar. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.51, Feb. 05: extended to full arrays
 !
 !  2. Purpose
@@ -3954,18 +3954,18 @@
       END
 !****************************************************************
 !
-      SUBROUTINE SWCOLOUT ( OURQT, BLKND )                                40.51
+      SUBROUTINE SWCOLOUT ( OURQT, BLKND )                                !40.51
 !
 !****************************************************************
 !
-      USE TIMECOMM                                                        40.41
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM1                                                         40.41
-      USE SWCOMM2                                                         40.51
-      USE SWCOMM3                                                         40.41
+      USE TIMECOMM                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM1                                                         !40.41
+      USE SWCOMM2                                                         !40.51
+      USE SWCOMM3                                                         !40.41
       USE OUTP_DATA
-      USE M_PARALL                                                        40.31
-      USE SwanGriddata, ONLY: nvertsg                                     41.36
+      USE M_PARALL                                                        !40.31
+      USE SwanGriddata, ONLY: nvertsg                                     !41.36
 !
       IMPLICIT NONE
 !
@@ -3983,8 +3983,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3994,7 +3994,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -4007,7 +4007,7 @@
 !  1. Updates
 !
 !     40.30, May  03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.41, Dec. 04: optimization output with respect to COMPGRID
 !     40.51, Feb. 05: re-design output process in parallel mode
 !     41.36, Jun. 06: collecting data for PunSWAN
@@ -4024,12 +4024,12 @@
 !
 !  4. Argument variables
 !
-!     BLKND       collected array giving node number per subdomain        40.41
-!     OURQT       array indicating at what time requested output          40.51
-!                 is processed                                            40.51
+!     BLKND       collected array giving node number per subdomain        !40.41
+!     OURQT       array indicating at what time requested output          !40.51
+!                 is processed                                            !40.51
 !
-      REAL    BLKND(MXCGL,MYCGL)                                          40.51
-      REAL*8  OURQT(MAX_OUTP_REQ)                                         40.51
+      REAL    BLKND(MXCGL,MYCGL)                                          !40.51
+      REAL*8  OURQT(MAX_OUTP_REQ)                                         !40.51
 !
 !  6. Local variables
 !
@@ -4077,10 +4077,10 @@
       INTEGER   ILPOS, IPROC
       REAL*8    DIF, TNEXT
       REAL      RTMP1, RTMP2, RTMP3, RTMP4
-      REAL, ALLOCATABLE :: XC(:), YC(:), XP(:), YP(:)                     40.51
+      REAL, ALLOCATABLE :: XC(:), YC(:), XP(:), YP(:)                     !40.51
       LOGICAL   OPENED
       LOGICAL   EXIST
-      LOGICAL, ALLOCATABLE :: CROSS(:,:)                                  40.86
+      LOGICAL, ALLOCATABLE :: CROSS(:,:)                                  !40.86
       CHARACTER PSTYPE*1, RTYPE*4, SNAMPF*8, DTTIWR*18
       TYPE(ORQDAT), POINTER :: CORQ
       TYPE(OPSDAT), POINTER :: CUOPS
@@ -4094,7 +4094,7 @@
 !     SWCOLBLK         Collects block output
 !     SWCOLSPC         Collects spectral output
 !     SWCOLTAB         Collects table ouput
-!     SWOEXC           Computes coordinates of output points              40.51
+!     SWOEXC           Computes coordinates of output points              !40.51
 !
       LOGICAL   EQREAL, STPNOW
 !
@@ -4166,7 +4166,7 @@
 
                DIF = TFINC - TIMCO
                IF ( IT.EQ.IT0 .AND. IC.EQ.1 ) THEN
-                  CORQ%OQR(1) = OURQT(IRQ)                                40.51
+                  CORQ%OQR(1) = OURQT(IRQ)                                !40.51
                END IF
                IF (CORQ%OQR(1).LT.TINIC) THEN
                   TNEXT = TINIC
@@ -4182,7 +4182,7 @@
                END IF
 
                RTYPE  = CORQ%RQTYPE
-               IF (RTYPE.EQ.'BLKV') GOTO 50  ! note: no collection VTK files
+               IF (RTYPE.EQ.'BLKV') GOTO 50  ! note: no collection VTK fil!es
                SNAMPF = CORQ%PSNAME
 
                IF (SNAMPF.EQ.'COMPGRID') THEN
@@ -4219,9 +4219,9 @@
                IF (.NOT.ALLOCATED(YC)) ALLOCATE(YC(MIP))
                IF (.NOT.ALLOCATED(XP)) ALLOCATE(XP(MIP))
                IF (.NOT.ALLOCATED(YP)) ALLOCATE(YP(MIP))
-               IF (.NOT.ALLOCATED(CROSS)) ALLOCATE(CROSS(4,MIP))          40.86
+               IF (.NOT.ALLOCATED(CROSS)) ALLOCATE(CROSS(4,MIP))          !40.86
 
-!              --- compute coordinates of output points                   40.51
+!              --- compute coordinates of output points                   !40.51
 
                ITMP1  = MXC
                ITMP2  = MYC
@@ -4250,7 +4250,7 @@
      &                      YP                  ,XC                  ,
      &                      YC                  ,KGRPGL              ,
      &                      XGRDGL              ,YGRDGL              ,
-     &                      CROSS               )                         40.86
+     &                      CROSS               )                         !40.86
                MXC    = ITMP1
                MYC    = ITMP2
                MCGRD  = ITMP3
@@ -4319,14 +4319,14 @@
 
                IF ( RTYPE(1:3).EQ.'TAB' ) THEN
                  IF ( RTYPE.EQ.'TABC') THEN
-!                 --- use "block" intermediate file facility to pass data between cores
+!                 --- use "block" intermediate file facility to pass data !between cores
                   CALL SWCOLBLK ( RTYPE, CORQ%OQI, CORQ%OQR, CORQ%IVTYP,
      &                            CORQ%FAC, SNAMPF, MIP, 1, IRQ,
      &                            BLKND, XC, YC )
                   IF (STPNOW()) RETURN
                  ELSE
                   CALL SWCOLTAB ( RTYPE, CORQ%OQI, CORQ%IVTYP, MIP, IRQ,
-     &                            BLKND, XC, YC, XP, YP )                 40.51 40.41
+     &                            BLKND, XC, YC, XP, YP )                 !40.51 40.41
                   IF (STPNOW()) RETURN
                  ENDIF
                END IF
@@ -4335,8 +4335,8 @@
 !                  output locations
 
                IF ( RTYPE(1:2).EQ.'SP' ) THEN
-                  CALL SWCOLSPC ( RTYPE, CORQ%OQI, CORQ%OQR, MIP,         41.40 40.51 40.41
-     &                            IRQ  , BLKND   , XC      , YC )         40.51
+                  CALL SWCOLSPC ( RTYPE, CORQ%OQI, CORQ%OQR, MIP,         !41.40 40.51 40.41
+     &                            IRQ  , BLKND   , XC      , YC )         !40.51
                   IF (STPNOW()) RETURN
                END IF
 
@@ -4344,18 +4344,18 @@
 !                  output data
 
                IF ( RTYPE(1:3).EQ.'BLK' ) THEN
-                  CALL SWCOLBLK ( RTYPE, CORQ%OQI, CORQ%OQR, CORQ%IVTYP,  41.40
-     &                            CORQ%FAC, SNAMPF, MXK, MYK, IRQ,        40.51 40.41
-     &                            BLKND, XC, YC )                         40.51 40.41
+                  CALL SWCOLBLK ( RTYPE, CORQ%OQI, CORQ%OQR, CORQ%IVTYP,  !41.40
+     &                            CORQ%FAC, SNAMPF, MXK, MYK, IRQ,        !40.51 40.41
+     &                            BLKND, XC, YC )                         !40.51 40.41
                   IF (STPNOW()) RETURN
                END IF
 
-               IF (ALLOCATED(XP)) DEALLOCATE(XP)                          40.51
-               IF (ALLOCATED(YP)) DEALLOCATE(YP)                          40.51
-               IF (ALLOCATED(XC)) DEALLOCATE(XC)                          40.51
-               IF (ALLOCATED(YC)) DEALLOCATE(YC)                          40.51
+               IF (ALLOCATED(XP)) DEALLOCATE(XP)                          !40.51
+               IF (ALLOCATED(YP)) DEALLOCATE(YP)                          !40.51
+               IF (ALLOCATED(XC)) DEALLOCATE(XC)                          !40.51
+               IF (ALLOCATED(YC)) DEALLOCATE(YC)                          !40.51
 
-               IF (ALLOCATED(CROSS)) DEALLOCATE(CROSS)                    40.86
+               IF (ALLOCATED(CROSS)) DEALLOCATE(CROSS)                    !40.86
 
   50           CONTINUE
                CORQ => CORQ%NEXTORQ
@@ -4383,18 +4383,18 @@
       END
 !****************************************************************
 !
-      SUBROUTINE SWCOLTAB ( RTYPE, OQI, IVTYP, MIP, IRQ, BLKND,           40.51
-     &                      XC   , YC , XP   , YP )                       40.51
+      SUBROUTINE SWCOLTAB ( RTYPE, OQI, IVTYP, MIP, IRQ, BLKND,           !40.51
+     &                      XC   , YC , XP   , YP )                       !40.51
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM1                                                         40.41
-      USE SWCOMM2, ONLY: OPTG                                             41.36
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM1                                                         !40.41
+      USE SWCOMM2, ONLY: OPTG                                             !41.36
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
       USE OUTP_DATA
-      USE M_PARALL                                                        40.31
+      USE M_PARALL                                                        !40.31
 !
       IMPLICIT NONE
 !
@@ -4412,8 +4412,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4423,7 +4423,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -4437,7 +4437,7 @@
 !  1. Updates
 !
 !     40.30, May  03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.41, Dec. 04: optimization output with respect to COMPGRID
 !     40.51, Feb. 05: further optimization
 !     40.51, Feb. 05: re-design output process in parallel mode
@@ -4462,7 +4462,7 @@
 !     YP          user y-coordinate of output point
 !
       INTEGER   IRQ, MIP, OQI(4), IVTYP(OQI(3))
-      REAL      BLKND(MXCGL,MYCGL), XC(MIP), YC(MIP), XP(MIP), YP(MIP)    40.51
+      REAL      BLKND(MXCGL,MYCGL), XC(MIP), YC(MIP), XP(MIP), YP(MIP)    !40.51
       CHARACTER RTYPE*4
 !
 !  6. Local variables
@@ -4534,8 +4534,8 @@
 !           open individual process output files and
 !           write heading to generic output file
 !
-!     read output data from the proper process file and write             40.51
-!     it in appropriate manner to generic output file                     40.51
+!     read output data from the proper process file and write             !40.51
+!     it in appropriate manner to generic output file                     !40.51
 !
 ! 13. Source text
 !
@@ -4625,8 +4625,8 @@
 
       END IF
 
-!     --- read output data from the proper process file and write         40.51
-!         it in appropriate manner to generic output file                 40.51
+!     --- read output data from the proper process file and write         !40.51
+!         it in appropriate manner to generic output file                 !40.51
 
       IF ( NREF.NE.PRINTF ) THEN
          IF ( RTYPE.EQ.'TABS' .AND. NSTATM.EQ.1 ) THEN
@@ -4637,9 +4637,9 @@
                IF (IPROC.EQ.1) WRITE (NREF, '(A)') OUTLIN(1:IL)
             END DO
          END IF
-         IPLOOP : DO IP = 1, MIP                                          40.51
-            IXK = INT(XC(IP))                                             41.07 40.51
-            IYK = INT(YC(IP))                                             41.07 40.51
+         IPLOOP : DO IP = 1, MIP                                          !40.51
+            IXK = INT(XC(IP))                                             !41.07 40.51
+            IYK = INT(YC(IP))                                             !41.07 40.51
             IF (OPTG.NE.5) THEN
                RVAL1 = FLOAT(IXK)
                RVAL2 = FLOAT(IYK)
@@ -4651,98 +4651,98 @@
                IXK = IXK + 1
                IYK = IYK + 1
             ENDIF
-            IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.            41.07 40.51
-     &           IYK.GT.MYCGL ) THEN                                      41.07 40.51
-               CALL WREXCV                                                40.51
-               CYCLE IPLOOP                                               40.51
-            END IF                                                        40.51
-            IPROC = 1                                                     40.51
-            PROCLOOP : DO                                                 40.51
-              IF ( NINT(BLKND(IXK,IYK)).EQ.IPROC ) THEN                   40.51
-                 IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC         40.51
-                 READ (IUNIT,'(A)') OUTLIN                                40.51
-                 CALL TXPBLA(OUTLIN,IF,IL)                                40.51
-                 WRITE (NREF, '(A)') OUTLIN(1:IL)                         40.51
-                 EXIT PROCLOOP                                            40.51
-              ELSE                                                        40.51
-                 IPROC = IPROC + 1                                        40.51
-                 IF ( IPROC.LE.NPROC ) THEN                               40.51
-                    CYCLE PROCLOOP                                        40.51
-                 ELSE                                                     40.51
-                    CALL WREXCV                                           40.51
-                    EXIT PROCLOOP                                         40.51
-                 END IF                                                   40.51
-              END IF                                                      40.51
-            END DO PROCLOOP                                               40.51
-         END DO IPLOOP                                                    40.51
-      END IF                                                              40.51
+            IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.            !41.07 40.51
+     &           IYK.GT.MYCGL ) THEN                                      !41.07 40.51
+               CALL WREXCV                                                !40.51
+               CYCLE IPLOOP                                               !40.51
+            END IF                                                        !40.51
+            IPROC = 1                                                     !40.51
+            PROCLOOP : DO                                                 !40.51
+              IF ( NINT(BLKND(IXK,IYK)).EQ.IPROC ) THEN                   !40.51
+                 IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC         !40.51
+                 READ (IUNIT,'(A)') OUTLIN                                !40.51
+                 CALL TXPBLA(OUTLIN,IF,IL)                                !40.51
+                 WRITE (NREF, '(A)') OUTLIN(1:IL)                         !40.51
+                 EXIT PROCLOOP                                            !40.51
+              ELSE                                                        !40.51
+                 IPROC = IPROC + 1                                        !40.51
+                 IF ( IPROC.LE.NPROC ) THEN                               !40.51
+                    CYCLE PROCLOOP                                        !40.51
+                 ELSE                                                     !40.51
+                    CALL WREXCV                                           !40.51
+                    EXIT PROCLOOP                                         !40.51
+                 END IF                                                   !40.51
+              END IF                                                      !40.51
+            END DO PROCLOOP                                               !40.51
+         END DO IPLOOP                                                    !40.51
+      END IF                                                              !40.51
       RETURN
 
-      CONTAINS                                                            40.51
-      SUBROUTINE WREXCV                                                   40.51
-      IL = 1                                                              40.51
-      OUTLIN = '    '                                                     40.51
-      IF (RTYPE.EQ.'TABI') THEN                                           40.51
-!        --- write point sequence number as first column                  40.51
-         WRITE (OUTLIN(1:8), '(I8)') IP                                   40.51
-         IL = 9                                                           40.51
-         OUTLIN(IL:IL) = ' '                                              40.51
-      END IF                                                              40.51
-      DO JVAR = 1, NVAR                                                   40.51
-         IVTYPE = IVTYP(JVAR)                                             40.51
-         IF (IVTYPE.EQ.40) THEN                                           40.51
-!           --- for time, 18 characters are needed                        40.51
-            FSTR   = '(A18)'                                              40.51
-            LFIELD = 18                                                   40.51
-            OUTLIN(IL:IL+LFIELD-1) = CHTIME                               40.51
-         ELSE                                                             40.51
-           IF (RTYPE.EQ.'TABD') THEN                                      40.51
-              FSTR   = FLT_TABLE                                          40.51
-              LFIELD = FLD_TABLE                                          40.51
-           ELSE                                                           40.51
-              FSTR   = '(F11.X)'                                          40.51
-              LFIELD = 11                                                 40.51
-              NUMDEC = MAX (0,6-NINT(LOG10(ABS(OVHEXP(IVTYPE)))))         40.51
-              IF (NUMDEC.GT.9) NUMDEC = 9                                 40.51
-              WRITE (FSTR(6:6), '(I1)') NUMDEC                            40.51
-           END IF                                                         40.51
-!          --- write value into OUTLIN                                    40.51
-           IF (IVTYPE.EQ.1) THEN                                          40.51
-              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) XP(IP)             40.51
-           ELSE IF (IVTYPE.EQ.2) THEN                                     40.51
-              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) YP(IP)             40.51
-           ELSE                                                           40.51
-              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) OVEXCV(IVTYPE)     40.51
-           END IF                                                         40.51
-           IF (OVSVTY(IVTYPE).EQ.3) THEN                                  40.51
-              IL = IL + LFIELD + 1                                        40.51
-!             --- write second component of a vectorial quantity          40.51
-              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) OVEXCV(IVTYPE)     40.51
-           END IF                                                         40.51
-         END IF                                                           40.51
-         IL = IL + LFIELD + 1                                             40.51
-         OUTLIN(IL-1:IL) = '  '                                           40.51
-      END DO                                                              40.51
-      CALL TXPBLA(OUTLIN,IF,IL)                                           40.51
-      WRITE (NREF, '(A)') OUTLIN(1:IL)                                    40.51
-      RETURN                                                              40.51
-      END SUBROUTINE WREXCV                                               40.51
+      CONTAINS                                                            !40.51
+      SUBROUTINE WREXCV                                                   !40.51
+      IL = 1                                                              !40.51
+      OUTLIN = '    '                                                     !40.51
+      IF (RTYPE.EQ.'TABI') THEN                                           !40.51
+!        --- write point sequence number as first column                  !40.51
+         WRITE (OUTLIN(1:8), '(I8)') IP                                   !40.51
+         IL = 9                                                           !40.51
+         OUTLIN(IL:IL) = ' '                                              !40.51
+      END IF                                                              !40.51
+      DO JVAR = 1, NVAR                                                   !40.51
+         IVTYPE = IVTYP(JVAR)                                             !40.51
+         IF (IVTYPE.EQ.40) THEN                                           !40.51
+!           --- for time, 18 characters are needed                        !40.51
+            FSTR   = '(A18)'                                              !40.51
+            LFIELD = 18                                                   !40.51
+            OUTLIN(IL:IL+LFIELD-1) = CHTIME                               !40.51
+         ELSE                                                             !40.51
+           IF (RTYPE.EQ.'TABD') THEN                                      !40.51
+              FSTR   = FLT_TABLE                                          !40.51
+              LFIELD = FLD_TABLE                                          !40.51
+           ELSE                                                           !40.51
+              FSTR   = '(F11.X)'                                          !40.51
+              LFIELD = 11                                                 !40.51
+              NUMDEC = MAX (0,6-NINT(LOG10(ABS(OVHEXP(IVTYPE)))))         !40.51
+              IF (NUMDEC.GT.9) NUMDEC = 9                                 !40.51
+              WRITE (FSTR(6:6), '(I1)') NUMDEC                            !40.51
+           END IF                                                         !40.51
+!          --- write value into OUTLIN                                    !40.51
+           IF (IVTYPE.EQ.1) THEN                                          !40.51
+              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) XP(IP)             !40.51
+           ELSE IF (IVTYPE.EQ.2) THEN                                     !40.51
+              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) YP(IP)             !40.51
+           ELSE                                                           !40.51
+              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) OVEXCV(IVTYPE)     !40.51
+           END IF                                                         !40.51
+           IF (OVSVTY(IVTYPE).EQ.3) THEN                                  !40.51
+              IL = IL + LFIELD + 1                                        !40.51
+!             --- write second component of a vectorial quantity          !40.51
+              WRITE (OUTLIN(IL:IL+LFIELD-1), FMT=FSTR) OVEXCV(IVTYPE)     !40.51
+           END IF                                                         !40.51
+         END IF                                                           !40.51
+         IL = IL + LFIELD + 1                                             !40.51
+         OUTLIN(IL-1:IL) = '  '                                           !40.51
+      END DO                                                              !40.51
+      CALL TXPBLA(OUTLIN,IF,IL)                                           !40.51
+      WRITE (NREF, '(A)') OUTLIN(1:IL)                                    !40.51
+      RETURN                                                              !40.51
+      END SUBROUTINE WREXCV                                               !40.51
 
       END
 !****************************************************************
 !
-      SUBROUTINE SWCOLSPC ( RTYPE, OQI, OQR, MIP, IRQ, BLKND, XC, YC )    41.40 40.51
+      SUBROUTINE SWCOLSPC ( RTYPE, OQI, OQR, MIP, IRQ, BLKND, XC, YC )    !41.40 40.51
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM1                                                         40.41
-      USE SWCOMM2, ONLY: OPTG, XOFFS, YOFFS                               43.01 41.36
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM1                                                         !40.41
+      USE SWCOMM2, ONLY: OPTG, XOFFS, YOFFS                               !43.01 41.36
+      USE SWCOMM3                                                         !40.41
+      USE SWCOMM4                                                         !40.41
       USE OUTP_DATA
-      USE M_PARALL                                                        40.31
-      USE swn_outnc, ONLY: swn_outnc_colspc                               41.40
+      USE M_PARALL                                                        !40.31
+      USE swn_outnc, ONLY: swn_outnc_colspc                               !41.40
       USE SwanGriddata, ONLY: xcugrdgl, ycugrdgl
 !
       IMPLICIT NONE
@@ -4761,8 +4761,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4772,7 +4772,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -4786,7 +4786,7 @@
 !  1. Updates
 !
 !     40.30, May  03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.41, Dec. 04: optimization output with respect to COMPGRID
 !     40.51, Feb. 05: further optimization
 !     40.51, Feb. 05: re-design output process in parallel mode
@@ -4809,8 +4809,8 @@
 !     YC          computational grid y-coordinate of output point
 !
       INTEGER   IRQ, MIP, OQI(4)
-      REAL*8    OQR(2)                                                    41.40
-      REAL      BLKND(MXCGL,MYCGL), XC(MIP), YC(MIP)                      40.51
+      REAL*8    OQR(2)                                                    !41.40
+      REAL      BLKND(MXCGL,MYCGL), XC(MIP), YC(MIP)                      !40.51
       CHARACTER RTYPE*4
 !
 !  6. Local variables
@@ -4845,7 +4845,7 @@
      &              IUNIT, IUT, IXK, IYK, NLINES, NREF, OTYPE
       REAL          RVAL1, RVAL2
       LOGICAL       EMPTY, EXIST, OPENED, EQREAL
-      LOGICAL, SAVE :: NCF = .FALSE.                                      41.40
+      LOGICAL, SAVE :: NCF = .FALSE.                                      !41.40
       CHARACTER*80  MSGSTR
       CHARACTER (LEN=LENSPO) OUTLIN
       CHARACTER (LEN=8) :: CRFORM = '(2F14.4)'
@@ -4885,8 +4885,8 @@
 !           open individual process output files and
 !           write heading to generic output file
 !
-!     read output data from the proper process file and write             40.51
-!     it in appropriate manner to generic output file                     40.51
+!     read output data from the proper process file and write             !40.51
+!     it in appropriate manner to generic output file                     !40.51
 !
 ! 13. Source text
 !
@@ -4895,10 +4895,10 @@
       IF (LTRACE) CALL STRACE (IENT,'SWCOLSPC')
 
       FILENM = OUTP_FILES(OQI(2))
-      NCF = INDEX( FILENM, '.NC' ).NE.0 .OR.                              41.40
-     &      INDEX (FILENM, '.nc' ).NE.0                                   41.40
+      NCF = INDEX( FILENM, '.NC' ).NE.0 .OR.                              !41.40
+     &      INDEX (FILENM, '.nc' ).NE.0                                   !41.40
 !
-      IF ( NCF ) THEN                                                     41.40
+      IF ( NCF ) THEN                                                     !41.40
          CALL swn_outnc_colspc( RTYPE, OQI, OQR, MIP, KGRPGL )
          RETURN
       ENDIF
@@ -4962,7 +4962,7 @@
                END DO
             END DO
 
-!           --- write number of locations in case of whole unstructured grid
+!           --- write number of locations in case of whole unstructured gr!id
             IF ( OPTG.EQ.5 .AND. LCOMPGRD ) THEN
                WRITE (NREF,'(I6,T41,A)') MIP, 'number of locations'
             ENDIF
@@ -4971,14 +4971,14 @@
 !               output file
 
             IF ( OPTG.NE.5 .OR. .NOT.LCOMPGRD ) THEN
-               DO IP = 1, MIP                                             40.51
-                  IF ( XC(IP).LT.-0.01 .OR. YC(IP).LT.-0.01 .OR.          40.51
-     &                 XC(IP).GT.REAL(MXCGL-1)+0.01 .OR.                  40.51
-     &                 YC(IP).GT.REAL(MYCGL-1)+0.01 ) THEN                40.51
-                     IBLKN = NPROC+1                                      40.51
-                  ELSE                                                    40.51
-                     IXK = INT(XC(IP))                                    41.07 40.51
-                     IYK = INT(YC(IP))                                    41.07 40.51
+               DO IP = 1, MIP                                             !40.51
+                  IF ( XC(IP).LT.-0.01 .OR. YC(IP).LT.-0.01 .OR.          !40.51
+     &                 XC(IP).GT.REAL(MXCGL-1)+0.01 .OR.                  !40.51
+     &                 YC(IP).GT.REAL(MYCGL-1)+0.01 ) THEN                !40.51
+                     IBLKN = NPROC+1                                      !40.51
+                  ELSE                                                    !40.51
+                     IXK = INT(XC(IP))                                    !41.07 40.51
+                     IYK = INT(YC(IP))                                    !41.07 40.51
                      IF (OPTG.NE.5) THEN
                         RVAL1 = FLOAT(IXK)
                         RVAL2 = FLOAT(IYK)
@@ -4990,14 +4990,14 @@
                         IXK = IXK + 1
                         IYK = IYK + 1
                      ENDIF
-                     IBLKN = NINT(BLKND(IXK,IYK))                         40.51
-                  END IF                                                  40.51
+                     IBLKN = NINT(BLKND(IXK,IYK))                         !40.51
+                  END IF                                                  !40.51
                   EMPTY = .TRUE.
                   DO IPROC = 1, NPROC
                      IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC
                      READ (IUNIT,'(A)') OUTLIN
                      CALL TXPBLA(OUTLIN,IF,IL)
-                     IF (EMPTY.AND.IBLKN.EQ.IPROC) THEN                   40.51
+                     IF (EMPTY.AND.IBLKN.EQ.IPROC) THEN                   !40.51
                         WRITE (NREF, '(A)') OUTLIN(1:IL)
                         EMPTY = .FALSE.
                      END IF
@@ -5006,8 +5006,8 @@
                END DO
             ELSE
                DO IP = 1, MIP
-                  WRITE (NREF, FMT=CRFORM) DBLE(xcugrdgl(IP)+XOFFS),      43.01
-     &                                     DBLE(ycugrdgl(IP)+YOFFS)       43.01
+                  WRITE (NREF, FMT=CRFORM) DBLE(xcugrdgl(IP)+XOFFS),      !43.01
+     &                                     DBLE(ycugrdgl(IP)+YOFFS)       !43.01
                ENDDO
             ENDIF
 
@@ -5047,8 +5047,8 @@
          END IF
       END IF
 
-!     --- read output data from the proper process file and write         40.51
-!         it in appropriate manner to generic output file                 40.51
+!     --- read output data from the proper process file and write         !40.51
+!         it in appropriate manner to generic output file                 !40.51
 
       IF ( NSTATM.EQ.1 ) THEN
          DO IPROC = 1, NPROC
@@ -5059,9 +5059,9 @@
          END DO
       END IF
 
-      IPLOOP : DO IP = 1, MIP                                             40.51
-         IXK = INT(XC(IP))                                                41.07 40.51
-         IYK = INT(YC(IP))                                                41.07 40.51
+      IPLOOP : DO IP = 1, MIP                                             !40.51
+         IXK = INT(XC(IP))                                                !41.07 40.51
+         IYK = INT(YC(IP))                                                !41.07 40.51
          IF (OPTG.NE.5) THEN
             RVAL1 = FLOAT(IXK)
             RVAL2 = FLOAT(IYK)
@@ -5073,67 +5073,67 @@
             IXK = IXK + 1
             IYK = IYK + 1
          ENDIF
-         IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.               41.07 40.51
-     &        IYK.GT.MYCGL ) THEN                                         41.07 40.51
-            WRITE (NREF, '(A)') 'NODATA'                                  40.51
-            CYCLE IPLOOP                                                  40.51
-         END IF                                                           40.51
-         IPROC = 1                                                        40.51
-         PROCLOOP : DO                                                    40.51
-           IF ( NINT(BLKND(IXK,IYK)).EQ.IPROC ) THEN                      40.51
-              IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC            40.51
-              READ (IUNIT,'(A)') OUTLIN                                   40.51
-              CALL TXPBLA(OUTLIN,IF,IL)                                   40.51
-              WRITE (NREF, '(A)') OUTLIN(1:IL)                            40.51
-              IF ( OUTLIN(IF:IL).NE.'NODATA' ) THEN                       40.51
-                 IF ( ABS(OTYPE).EQ.1 ) THEN                              40.51
-                    DO IS = 1, MSC                                        40.51
-                       READ (IUNIT,'(A)') OUTLIN                          40.51
-                       CALL TXPBLA(OUTLIN,IF,IL)                          40.51
-                       WRITE (NREF, '(A)') OUTLIN(1:IL)                   40.51
-                    END DO                                                40.51
-                 ELSE                                                     40.51
-                    IF ( OUTLIN(IF:IL).NE.'ZERO' ) THEN                   40.51
-                       DO IS = 1, 1+MSC                                   40.51
-                          READ (IUNIT,'(A)') OUTLIN                       40.51
-                          CALL TXPBLA(OUTLIN,IF,IL)                       40.51
-                          WRITE (NREF, '(A)') OUTLIN(1:IL)                40.51
-                       END DO                                             40.51
-                    END IF                                                40.51
-                 END IF                                                   40.51
-              END IF                                                      40.51
-              EXIT PROCLOOP                                               40.51
-           ELSE                                                           40.51
-              IPROC = IPROC + 1                                           40.51
-              IF ( IPROC.LE.NPROC ) THEN                                  40.51
-                 CYCLE PROCLOOP                                           40.51
-              ELSE                                                        40.51
-                 WRITE (NREF, '(A)') 'NODATA'                             40.51
-                 EXIT PROCLOOP                                            40.51
-              END IF                                                      40.51
-           END IF                                                         40.51
-         END DO PROCLOOP                                                  40.51
+         IF ( IXK.LT.1 .OR. IYK.LT.1 .OR. IXK.GT.MXCGL .OR.               !41.07 40.51
+     &        IYK.GT.MYCGL ) THEN                                         !41.07 40.51
+            WRITE (NREF, '(A)') 'NODATA'                                  !40.51
+            CYCLE IPLOOP                                                  !40.51
+         END IF                                                           !40.51
+         IPROC = 1                                                        !40.51
+         PROCLOOP : DO                                                    !40.51
+           IF ( NINT(BLKND(IXK,IYK)).EQ.IPROC ) THEN                      !40.51
+              IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC            !40.51
+              READ (IUNIT,'(A)') OUTLIN                                   !40.51
+              CALL TXPBLA(OUTLIN,IF,IL)                                   !40.51
+              WRITE (NREF, '(A)') OUTLIN(1:IL)                            !40.51
+              IF ( OUTLIN(IF:IL).NE.'NODATA' ) THEN                       !40.51
+                 IF ( ABS(OTYPE).EQ.1 ) THEN                              !40.51
+                    DO IS = 1, MSC                                        !40.51
+                       READ (IUNIT,'(A)') OUTLIN                          !40.51
+                       CALL TXPBLA(OUTLIN,IF,IL)                          !40.51
+                       WRITE (NREF, '(A)') OUTLIN(1:IL)                   !40.51
+                    END DO                                                !40.51
+                 ELSE                                                     !40.51
+                    IF ( OUTLIN(IF:IL).NE.'ZERO' ) THEN                   !40.51
+                       DO IS = 1, 1+MSC                                   !40.51
+                          READ (IUNIT,'(A)') OUTLIN                       !40.51
+                          CALL TXPBLA(OUTLIN,IF,IL)                       !40.51
+                          WRITE (NREF, '(A)') OUTLIN(1:IL)                !40.51
+                       END DO                                             !40.51
+                    END IF                                                !40.51
+                 END IF                                                   !40.51
+              END IF                                                      !40.51
+              EXIT PROCLOOP                                               !40.51
+           ELSE                                                           !40.51
+              IPROC = IPROC + 1                                           !40.51
+              IF ( IPROC.LE.NPROC ) THEN                                  !40.51
+                 CYCLE PROCLOOP                                           !40.51
+              ELSE                                                        !40.51
+                 WRITE (NREF, '(A)') 'NODATA'                             !40.51
+                 EXIT PROCLOOP                                            !40.51
+              END IF                                                      !40.51
+           END IF                                                         !40.51
+         END DO PROCLOOP                                                  !40.51
       END DO IPLOOP
 
       RETURN
       END
 !****************************************************************
 !
-      SUBROUTINE SWCOLBLK ( RTYPE , OQI, OQR, IVTYP, FAC  ,               41.40
-     &                      PSNAME, MXK, MYK, IRQ  , BLKND,               40.51
-     &                      XC    , YC )                                  40.51
+      SUBROUTINE SWCOLBLK ( RTYPE , OQI, OQR, IVTYP, FAC  ,               !41.40
+     &                      PSNAME, MXK, MYK, IRQ  , BLKND,               !40.51
+     &                      XC    , YC )                                  !40.51
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM1                                                         40.41
-      USE SWCOMM2, ONLY: OPTG                                             41.36
-      USE SWCOMM3, ONLY: NSTATM                                           41.62
-      USE SWCOMM4, ONLY: KSPHER                                           41.62
+      USE OCPCOMM4                                                        !40.41
+      USE SWCOMM1                                                         !40.41
+      USE SWCOMM2, ONLY: OPTG                                             !41.36
+      USE SWCOMM3, ONLY: NSTATM                                           !41.62
+      USE SWCOMM4, ONLY: KSPHER                                           !41.62
       USE OUTP_DATA
       USE M_PARALL
-      USE SwanGridData, ONLY: XCUGRDGL, YCUGRDGL                          41.40
-      USE swn_outnc                                                       41.40
+      USE SwanGridData, ONLY: XCUGRDGL, YCUGRDGL                          !41.40
+      USE swn_outnc                                                       !41.40
 !
       IMPLICIT NONE
 !
@@ -5151,8 +5151,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5162,7 +5162,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. Authors
@@ -5178,7 +5178,7 @@
 !
 !     40.31, Dec. 03: New subroutine
 !     40.41, Jun. 04: some improvements with respect to MATLAB
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !     40.41, Dec. 04: optimization output with respect to COMPGRID
 !     40.51, Feb. 05: further optimization
 !     40.51, Feb. 05: re-design output process in parallel mode
@@ -5206,9 +5206,9 @@
 !     YC          computational grid y-coordinate of output point
 !
       INTEGER   MXK, MYK, IRQ, OQI(4), IVTYP(OQI(3))
-      REAL      BLKND(MXCGL,MYCGL), XC(MXK*MYK), YC(MXK*MYK)              40.51
-      REAL*8    OQR(2)                                                    41.40
-      REAL      FAC(OQI(3))                                               41.40
+      REAL      BLKND(MXCGL,MYCGL), XC(MXK*MYK), YC(MXK*MYK)              !40.51
+      REAL*8    OQR(2)                                                    !41.40
+      REAL      FAC(OQI(3))                                               !41.40
       CHARACTER RTYPE*4, PSNAME*8
 !
 !  6. Local variables
@@ -5256,17 +5256,17 @@
       REAL         DFAC, FMAX, FTIP, FTIP1, FTIP2
       REAL         RVAL1, RVAL2
       LOGICAL      EXIST, OPENED, EQREAL
-      INTEGER, SAVE :: IREC(MAX_OUTP_REQ)=0                               40.51 40.41
-      LOGICAL, SAVE :: MATLAB=.FALSE.                                     40.41
-      LOGICAL, SAVE :: NCF   =.FALSE.                                     41.40
-      LOGICAL, SAVE :: RAWPRT=.FALSE.                                     41.62
+      INTEGER, SAVE :: IREC(MAX_OUTP_REQ)=0                               !40.51 40.41
+      LOGICAL, SAVE :: MATLAB=.FALSE.                                     !40.41
+      LOGICAL, SAVE :: NCF   =.FALSE.                                     !41.40
+      LOGICAL, SAVE :: RAWPRT=.FALSE.                                     !41.62
       CHARACTER(len=80) MSGSTR
-      CHARACTER (LEN=20) :: CTIM                                          40.41
-      CHARACTER (LEN=30) :: NAMVAR                                        40.41
-      CHARACTER (LEN=80) :: HTXT(3)                                       41.62
+      CHARACTER (LEN=20) :: CTIM                                          !40.41
+      CHARACTER (LEN=30) :: NAMVAR                                        !40.41
+      CHARACTER (LEN=80) :: HTXT(3)                                       !41.62
       CHARACTER (LEN=80), ALLOCATABLE :: ID(:)
       REAL, ALLOCATABLE :: VOQ(:,:)
-      INTEGER VOQR(NMOVAR)                                                41.62
+      INTEGER VOQR(NMOVAR)                                                !41.62
 !
 !  8. Subroutines used
 !
@@ -5275,7 +5275,7 @@
 !     STRACE           Tracing routine for debugging
 !     SWRMAT           Writes block output to a binary Matlab file
 !     TABHED           Prints heading
-!     TXPBLA           Removes leading and trailing blanks in string      40.41
+!     TXPBLA           Removes leading and trailing blanks in string      !40.41
 !
 !  9. Subroutines calling
 !
@@ -5299,8 +5299,8 @@
 !
 !           open individual process output files
 !
-!     read data from the proper process file and write                    40.51
-!     it in appropriate manner to generic output file                     40.51
+!     read data from the proper process file and write                    !40.51
+!     it in appropriate manner to generic output file                     !40.51
 !
 ! 13. Source text
 !
@@ -5329,12 +5329,12 @@
          ILPOS  = INDEX(FILENM, '-0')
          IF (ILPOS.NE.0) FILENM = FILENM(1:ILPOS-1)
          INQUIRE ( FILE=FILENM, OPENED=OPENED, NUMBER=IUT )
-         MATLAB = INDEX( FILENM, '.MAT' ).NE.0 .OR.                       40.41
-     &            INDEX (FILENM, '.mat' ).NE.0                            40.41
-         NCF    = INDEX( FILENM, '.NC'  ).NE.0 .OR.                       41.40
-     &            INDEX (FILENM, '.nc'  ).NE.0                            41.40
-         RAWPRT = INDEX( FILENM, '.RAW' ).NE.0 .OR.                       41.62
-     &            INDEX (FILENM, '.raw' ).NE.0                            41.62
+         MATLAB = INDEX( FILENM, '.MAT' ).NE.0 .OR.                       !40.41
+     &            INDEX (FILENM, '.mat' ).NE.0                            !40.41
+         NCF    = INDEX( FILENM, '.NC'  ).NE.0 .OR.                       !41.40
+     &            INDEX (FILENM, '.nc'  ).NE.0                            !41.40
+         RAWPRT = INDEX( FILENM, '.RAW' ).NE.0 .OR.                       !41.62
+     &            INDEX (FILENM, '.raw' ).NE.0                            !41.62
 
 !        --- if it is not open or already open thru another request
 
@@ -5344,7 +5344,7 @@
 
             ALLOCATE(CHARACTER(LEN=80)::ID(IDLEN))
             ID(1)=' '
-            IF (NCF .AND. .NOT.OPENED) THEN                               41.40
+            IF (NCF .AND. .NOT.OPENED) THEN                               !41.40
                 IUT    = HIOPEN + IRQ
                 OQI(1) = IUT
                 IF (OPTG.NE.5) THEN
@@ -5380,11 +5380,11 @@
                CLOSE(NREF)
                OPEN(UNIT=NREF, FILE=FILENM, FORM='UNFORMATTED',
      &              STATUS='REPLACE',
-     &              ACCESS='DIRECT', RECL=1)                              41.08
-               IREC(IRQ) = 1                                              40.51
+     &              ACCESS='DIRECT', RECL=1)                              !41.08
+               IREC(IRQ) = 1                                              !40.51
             END IF
 
-            IF (RAWPRT .AND. IPD.EQ.1 .AND. .NOT.OPENED) THEN             41.62
+            IF (RAWPRT .AND. IPD.EQ.1 .AND. .NOT.OPENED) THEN             !41.62
               IF (NSTATM.EQ.1) THEN
                  WRITE (HTXT(1),'(a)') ' yyyymmdd hhmmss'
               ELSE
@@ -5403,7 +5403,7 @@
      &                                    TRIM(HTXT(3))
               WRITE(NREF,'(A31,A20)') '        hs     tp     lp       ',
      &                                'theta     sp      wf'
-            END IF                                                        41.62
+            END IF                                                        !41.62
 
 !           --- open individual process output files
 
@@ -5430,12 +5430,12 @@
 
       END IF
 
-!     --- read data from the proper process file and write                40.51
-!         it in appropriate manner to generic output file                 40.51
+!     --- read data from the proper process file and write                !40.51
+!         it in appropriate manner to generic output file                 !40.51
 
-      CTIM = CHTIME                                                       40.41
-      CALL TXPBLA(CTIM,IF,IL)                                             40.41
-      CTIM(9:9)='_'                                                       40.41
+      CTIM = CHTIME                                                       !40.41
+      CALL TXPBLA(CTIM,IF,IL)                                             !40.41
+      CTIM(9:9)='_'                                                       !40.41
 
       IF (.NOT.RAWPRT) THEN
          ALLOCATE(VOQ(MXK*MYK,2))
@@ -5449,16 +5449,16 @@
          IVTYPE = IVTYP(JVAR)
          DFAC   = FAC(JVAR)
 
-         IF (.NOT.RAWPRT) THEN                                            41.62
+         IF (.NOT.RAWPRT) THEN                                            !41.62
             VOQ = OVEXCV(IVTYPE)
             J   = 1
          ELSE
             J   = IVTYPE
          ENDIF
 
-         DO IP = 1, MXK*MYK                                               40.51
-            IXK = INT(XC(IP))                                             41.07 40.51
-            IYK = INT(YC(IP))                                             41.07 40.51
+         DO IP = 1, MXK*MYK                                               !40.51
+            IXK = INT(XC(IP))                                             !41.07 40.51
+            IYK = INT(YC(IP))                                             !41.07 40.51
             IF (OPTG.NE.5) THEN
                RVAL1 = FLOAT(IXK)
                RVAL2 = FLOAT(IYK)
@@ -5478,27 +5478,27 @@
                IBLKN = NINT(BLKND(IXK,IYK))
                IPROC = 1
             END IF
-            PROCLOOP1 : DO                                                40.51
-              IF ( IBLKN.EQ.IPROC ) THEN                                  40.51
-                 IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC         40.51
-                 READ (IUNIT) VOQ(IP,J)                                   40.51
-                 EXIT PROCLOOP1                                           40.51
-              ELSE                                                        40.51
-                 IPROC = IPROC + 1                                        40.51
-                 IF ( IPROC.LE.NPROC ) THEN                               40.51
-                    CYCLE PROCLOOP1                                       40.51
-                 ELSE                                                     40.51
-                    EXIT PROCLOOP1                                        40.51
-                 END IF                                                   40.51
-              END IF                                                      40.51
-            END DO PROCLOOP1                                              40.51
-         END DO                                                           40.51
+            PROCLOOP1 : DO                                                !40.51
+              IF ( IBLKN.EQ.IPROC ) THEN                                  !40.51
+                 IUNIT = HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC         !40.51
+                 READ (IUNIT) VOQ(IP,J)                                   !40.51
+                 EXIT PROCLOOP1                                           !40.51
+              ELSE                                                        !40.51
+                 IPROC = IPROC + 1                                        !40.51
+                 IF ( IPROC.LE.NPROC ) THEN                               !40.51
+                    CYCLE PROCLOOP1                                       !40.51
+                 ELSE                                                     !40.51
+                    EXIT PROCLOOP1                                        !40.51
+                 END IF                                                   !40.51
+              END IF                                                      !40.51
+            END DO PROCLOOP1                                              !40.51
+         END DO                                                           !40.51
 
          IF ( OVSVTY(IVTYPE).GE.3 ) THEN
 
-            DO IP = 1, MXK*MYK                                            40.51
-               IXK = INT(XC(IP))                                          41.07 40.51
-               IYK = INT(YC(IP))                                          41.07 40.51
+            DO IP = 1, MXK*MYK                                            !40.51
+               IXK = INT(XC(IP))                                          !41.07 40.51
+               IYK = INT(YC(IP))                                          !41.07 40.51
                IF (OPTG.NE.5) THEN
                   RVAL1 = FLOAT(IXK)
                   RVAL2 = FLOAT(IYK)
@@ -5518,24 +5518,24 @@
                   IBLKN = NINT(BLKND(IXK,IYK))
                   IPROC = 1
                END IF
-               PROCLOOP2 : DO                                             40.51
-                 IF ( IBLKN.EQ.IPROC ) THEN                               40.51
-                    IUNIT=HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC        40.51
-                    READ (IUNIT) VOQ(IP,J+1)                              40.51
-                    EXIT PROCLOOP2                                        40.51
-                 ELSE                                                     40.51
-                    IPROC = IPROC + 1                                     40.51
-                    IF ( IPROC.LE.NPROC ) THEN                            40.51
-                       CYCLE PROCLOOP2                                    40.51
-                    ELSE                                                  40.51
-                       EXIT PROCLOOP2                                     40.51
-                    END IF                                                40.51
-                 END IF                                                   40.51
-               END DO PROCLOOP2                                           40.51
-            END DO                                                        40.51
+               PROCLOOP2 : DO                                             !40.51
+                 IF ( IBLKN.EQ.IPROC ) THEN                               !40.51
+                    IUNIT=HIOPEN+NREOQ+(NREF-HIOPEN-1)*NPROC+IPROC        !40.51
+                    READ (IUNIT) VOQ(IP,J+1)                              !40.51
+                    EXIT PROCLOOP2                                        !40.51
+                 ELSE                                                     !40.51
+                    IPROC = IPROC + 1                                     !40.51
+                    IF ( IPROC.LE.NPROC ) THEN                            !40.51
+                       CYCLE PROCLOOP2                                    !40.51
+                    ELSE                                                  !40.51
+                       EXIT PROCLOOP2                                     !40.51
+                    END IF                                                !40.51
+                 END IF                                                   !40.51
+               END DO PROCLOOP2                                           !40.51
+            END DO                                                        !40.51
          END IF
 
-         IF (RAWPRT) CYCLE JLOOP                                          41.62
+         IF (RAWPRT) CYCLE JLOOP                                          !41.62
 
          IF ( IPD.EQ.1 ) THEN
             IF ( DFAC.LE.0. ) THEN
@@ -5568,15 +5568,15 @@
 
          IF (OVSVTY(IVTYPE) .LT. 3) THEN
             IF (MATLAB) THEN
-               IF (IL.EQ.1 .OR. IVTYPE.LT.3 .OR. IVTYPE.EQ.52) THEN       40.94 40.41
-                  NAMVAR = OVSNAM(IVTYPE)                                 40.41
-               ELSE                                                       40.41
-                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   40.41
-     &                     '_'//CTIM                                      40.41
-               END IF                                                     40.41
+               IF (IL.EQ.1 .OR. IVTYPE.LT.3 .OR. IVTYPE.EQ.52) THEN       !40.94 40.41
+                  NAMVAR = OVSNAM(IVTYPE)                                 !40.41
+               ELSE                                                       !40.41
+                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   !40.41
+     &                     '_'//CTIM                                      !40.41
+               END IF                                                     !40.41
                CALL SWRMAT( MYK, MXK, NAMVAR, VOQ(1,1), NREF,
-     &                      IREC(IRQ), IDLA, OVEXCV(IVTYPE) )             40.51
-            ELSE IF (NCF) THEN                                            41.40
+     &                      IREC(IRQ), IDLA, OVEXCV(IVTYPE) )             !40.51
+            ELSE IF (NCF) THEN                                            !41.40
                IF ( ( IVTYPE.GT.2 .OR. PSNAME.NE.'COMPGRID')
      &                .AND.IVTYPE.NE.40 ) THEN
                   CALL swn_outnc_appendblock(MYK, MXK, IVTYPE, OQI(1),
@@ -5589,25 +5589,25 @@
             END IF
          ELSE
             IF (MATLAB) THEN
-               IF (IL.EQ.1) THEN                                          40.41
-                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   40.41
-     &                     '_x'                                           40.41
-               ELSE                                                       40.41
-                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   40.41
-     &                     '_x_'//CTIM                                    40.41
-               END IF                                                     40.41
+               IF (IL.EQ.1) THEN                                          !40.41
+                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   !40.41
+     &                     '_x'                                           !40.41
+               ELSE                                                       !40.41
+                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   !40.41
+     &                     '_x_'//CTIM                                    !40.41
+               END IF                                                     !40.41
                CALL SWRMAT( MYK, MXK, NAMVAR,
-     &                 VOQ(1,1), NREF, IREC(IRQ), IDLA, OVEXCV(IVTYPE) )  40.51
-               IF (IL.EQ.1) THEN                                          40.41
-                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   40.41
-     &                     '_y'                                           40.41
-               ELSE                                                       40.41
-                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   40.41
-     &                     '_y_'//CTIM                                    40.41
-               END IF                                                     40.41
+     &                 VOQ(1,1), NREF, IREC(IRQ), IDLA, OVEXCV(IVTYPE) )  !40.51
+               IF (IL.EQ.1) THEN                                          !40.41
+                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   !40.41
+     &                     '_y'                                           !40.41
+               ELSE                                                       !40.41
+                  NAMVAR = OVSNAM(IVTYPE)(1:LEN_TRIM(OVSNAM(IVTYPE)))//   !40.41
+     &                     '_y_'//CTIM                                    !40.41
+               END IF                                                     !40.41
                CALL SWRMAT( MYK, MXK, NAMVAR,
-     &                 VOQ(1,2), NREF, IREC(IRQ), IDLA, OVEXCV(IVTYPE) )  40.51
-            ELSE IF (NCF) THEN                                            41.40
+     &                 VOQ(1,2), NREF, IREC(IRQ), IDLA, OVEXCV(IVTYPE) )  !40.51
+            ELSE IF (NCF) THEN                                            !41.40
                IF ( IVTYPE.GT.3 ) THEN
                   CALL swn_outnc_appendblock(MYK, MXK, IVTYPE, OQI(1),
      &                                       IRQ, VOQ(1,1),
@@ -5629,9 +5629,9 @@
       END DO JLOOP
 
 !     generate a dump of the raw partition data, if appropriate
-      IF (RAWPRT) CALL SRAWPT ( NREF, VOQR, VOQ, MXK, MYK )               41.62
+      IF (RAWPRT) CALL SRAWPT ( NREF, VOQR, VOQ, MXK, MYK )               !41.62
 
-      IF ( NCF ) CALL swn_outnc_close_on_end(OQI(1), IRQ)                 41.40
+      IF ( NCF ) CALL swn_outnc_close_on_end(OQI(1), IRQ)                 !41.40
 
       IF (IPD.EQ.1 .AND. NREF.EQ.PRINTF) WRITE (PRINTF, 111)
 
@@ -5647,9 +5647,9 @@
 !JAC!
 !JAC!****************************************************************
 !JAC!
-!JAC      USE OCPCOMM4                                                        40.41
-!JAC      USE SWCOMM3                                                         40.41
-!JAC      USE M_PARALL                                                        40.31
+!JAC      USE OCPCOMM4                                                    !    40.41
+!JAC      USE SWCOMM3                                                     !    40.41
+!JAC      USE M_PARALL                                                    !    40.31
 !JAC!
 !JAC      IMPLICIT NONE
 !JAC!
@@ -5667,8 +5667,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5678,7 +5678,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !JAC!
 !JAC!  0. Authors
@@ -5689,7 +5689,7 @@
 !JAC!  1. Updates
 !JAC!
 !JAC!     40.30, Mar. 03: New subroutine
-!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!JAC!     40.41, Oct. 04: common blocks replaced by modules, include files! removed
 !JAC!
 !JAC!  2. Purpose
 !JAC!
@@ -5785,7 +5785,7 @@
 !JAC!        adjust color in y-direction of own subdomain
 !JAC!        check whether all subdomains have been coloured
 !JAC!
-!JAC!     if not all subdomains have been coloured gives message and stops
+!JAC!     if not all subdomains have been coloured gives message and stops!
 !JAC!
 !JAC!     finally, subdomains are coloured by taking the product of two
 !JAC!     color directions
@@ -5876,7 +5876,7 @@
 !JAC!     --- if not all subdomains have been coloured
 !JAC!         gives message and stops
 !JAC
-!JAC      IF (ICONV.NE.0 .AND. (IXCOL.EQ.IWHITE .OR. IYCOL.EQ.IWHITE)) THEN
+!JAC      IF (ICONV.NE.0 .AND. (IXCOL.EQ.IWHITE .OR. IYCOL.EQ.IWHITE)) THE!N
 !JAC         CHARS = INTSTR(INODE)
 !JAC         CALL TXPBLA(CHARS,IF,IL)
 !JAC         MSGSTR = 'Subdomain '//CHARS(IF:IL)//

@@ -1,7 +1,7 @@
 !     Contents of this file
 !
-!     W3ODATMD           Parameters required for partitioning model output
-!     SWPARTMD           Spectral partitioning according to the watershed method
+!     W3ODATMD           Parameters required for partitioning model output!!
+!     SWPARTMD           Spectral partitioning according to the watershed !!method
 !        includes the subroutines :
 !        SWPART     (interface to watershed routines)
 !        PTSORT     (sort discretized image)
@@ -26,8 +26,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!!
+!     it under the terms of the GNU General Public License as published by!!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -37,7 +37,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!!
 !
 !
 !  0. Authors
@@ -50,7 +50,7 @@
 !
 !  2. Purpose
 !
-!     This module considers the parameters required for partitioned model output
+!     This module considers the parameters required for partitioned model !!output
 !     (from the WAVEWATCH III codes w3odatmd.ftn and ww3_grid.ftn)
 !
 !  3. Method
@@ -93,7 +93,7 @@
 
         ! These hardcoded values (from ww3_grid.ftn) can be made
         ! user-defined with the OUTPUT command
-        PARAMETER             (IHMAX=100, HSPMIN=0.05, WSMULT=1.7,        41.62
+        PARAMETER             (IHMAX=100, HSPMIN=0.05, WSMULT=1.7,        !!41.62
      &                         WSCUT=0.333, FLCOMB=.FALSE.)
 !
 !  8. Subroutines and functions used
@@ -124,7 +124,7 @@
 
       MODULE SWPARTMD
 !
-      USE W3ODATMD, ONLY: IHMAX, HSPMIN, WSMULT                           41.62
+      USE W3ODATMD, ONLY: IHMAX, HSPMIN, WSMULT                           !!41.62
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -139,8 +139,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!!
+!     it under the terms of the GNU General Public License as published by!!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -150,7 +150,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!!
 !
 !
 !  0. Authors
@@ -229,9 +229,9 @@
 !                                                                      *
 !***********************************************************************
 !
-      USE W3ODATMD, ONLY: WSCUT, FLCOMB                                   41.62
-      USE SWCOMM3 , ONLY: MSC, MDC                                        41.62
-      USE OCPCOMM4, ONLY: PRINTF                                          41.62
+      USE W3ODATMD, ONLY: WSCUT, FLCOMB                                   !!41.62
+      USE SWCOMM3 , ONLY: MSC, MDC                                        !!41.62
+      USE OCPCOMM4, ONLY: PRINTF                                          !!41.62
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -247,8 +247,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!!
+!     it under the terms of the GNU General Public License as published by!!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -258,7 +258,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!!
 !
 !
 !  0. Authors
@@ -289,11 +289,11 @@
 !
 !       SPEC    R.A.   I   2D spectrum E(f,theta)
 !       UABS    Real   I   Wind speed
-!       UDIR    Real   I   Wind direction (Cartesian)                     41.62
+!       UDIR    Real   I   Wind direction (Cartesian)                     !!41.62
 !       DEPTH   Real   I   Water depth
 !       WN      R.A.   I   Wavenumbers for each frequency
-!       SPCDIR  REAL   I   Spectral directions                            41.62
-!       SPCSIG  REAL   I   Spectral frequencies                           41.62
+!       SPCDIR  REAL   I   Spectral directions                            !!41.62
+!       SPCSIG  REAL   I   Spectral frequencies                           !!41.62
 !       NP      Int.   O   Number of partitions
 !                           -1 : Spectrum without minumum energy
 !                            0 : Spectrum with minumum energy
@@ -307,8 +307,8 @@
       REAL, INTENT(IN)              :: SPEC(MSC,MDC), WN(MSC), UABS,
      &                                 UDIR, DEPTH
       REAL, INTENT(OUT)             :: XP(7,0:DIMXP)
-      REAL, INTENT(IN)              :: SPCDIR(MDC,6)                      41.62
-      REAL, INTENT(IN)              :: SPCSIG(MSC)                        41.62
+      REAL, INTENT(IN)              :: SPCDIR(MDC,6)                      !!41.62
+      REAL, INTENT(IN)              :: SPCSIG(MSC)                        !!41.62
 !
 !  6. Parameter variables
 !
@@ -323,7 +323,7 @@
       INTEGER                 :: PMAP(DIMXP)
       REAL                    :: ZP(MSC*MDC), ZMIN, ZMAX, Z(MSC*MDC),
      &                           FACT, WSMAX, HSMAX
-      REAL                    :: TP(7,DIMXP)                              41.62  extended from TP(6,1:DIMXP)
+      REAL                    :: TP(7,DIMXP)                              !!41.62  extended from TP(6,1:DIMXP)
 
 !
 !  8. Subroutines and functions used
@@ -397,7 +397,7 @@
 !     NP and NX initialized inside routine
 !
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,
-     &              SPCSIG, SPCDIR, NP, XP, DIMXP, PMAP )                 41.62
+     &              SPCSIG, SPCDIR, NP, XP, DIMXP, PMAP )                 !!41.62
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Sort and recombine wind seas as needed
@@ -430,7 +430,7 @@
           END DO
 !
           CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,
-     &                  SPCSIG, SPCDIR, NP, XP, DIMXP, PMAP )             41.62
+     &                  SPCSIG, SPCDIR, NP, XP, DIMXP, PMAP )             !!41.62
           IF ( NP .LE. 1 ) RETURN
 !
           TP(:,1:NP)  = XP(:,1:NP)
@@ -467,7 +467,7 @@
         TP(1,IT(1)) = -1.
       END DO
 
-!>      IF (ALLOCATED(NEIGH )) DEALLOCATE(NEIGH )                           41.62
+!>      IF (ALLOCATED(NEIGH )) DEALLOCATE(NEIGH )                         !!  41.62
 !
 ! -------------------------------------------------------------------- /
 ! 4.  End of routine
@@ -483,7 +483,7 @@
 !                                                                      *
 !***********************************************************************
 !
-      USE SWCOMM3, ONLY: MSC, MDC                                         41.62
+      USE SWCOMM3, ONLY: MSC, MDC                                         !!41.62
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -498,8 +498,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!!
+!     it under the terms of the GNU General Public License as published by!!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -509,7 +509,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!!
 !
 !
 !  0. Authors
@@ -620,8 +620,8 @@
 !                                                                      *
 !***********************************************************************
 !
-      USE SWCOMM3, ONLY: MSC, MDC                                         41.62
-      USE OCPCOMM4, ONLY: PRINTF                                          41.62
+      USE SWCOMM3, ONLY: MSC, MDC                                         !!41.62
+      USE OCPCOMM4, ONLY: PRINTF                                          !!41.62
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -636,8 +636,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!!
+!     it under the terms of the GNU General Public License as published by!!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -647,7 +647,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!!
 !
 !
 !  0. Authors
@@ -852,7 +852,7 @@
 !                                                                      *
 !***********************************************************************
 !
-      USE SWCOMM3, ONLY: MSC, MDC                                         41.62
+      USE SWCOMM3, ONLY: MSC, MDC                                         !!41.62
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -868,8 +868,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!!
+!     it under the terms of the GNU General Public License as published by!!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -879,7 +879,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!!
 !
 !
 !  0. Authors
@@ -1192,13 +1192,13 @@
 !***********************************************************************
 !                                                                      *
       SUBROUTINE PTMEAN ( NPI, IMO, ZP, DEPTH, UABS, UDIR, WN,
-     &                    SPCSIG, SPCDIR, NPO, XP, DIMXP, PMAP )          41.62
+     &                    SPCSIG, SPCDIR, NPO, XP, DIMXP, PMAP )          !!41.62
 !                                                                      *
 !***********************************************************************
 !
-      USE SWCOMM3, ONLY: MSC, MDC, DDIR, PI2, DEGRAD, FRINTF              41.62
-      USE SWCOMM1, ONLY: OUTPAR                                           41.62
-      USE OCPCOMM4, ONLY: PRINTF                                          41.62
+      USE SWCOMM3, ONLY: MSC, MDC, DDIR, PI2, DEGRAD, FRINTF              !!41.62
+      USE SWCOMM1, ONLY: OUTPAR                                           !!41.62
+      USE OCPCOMM4, ONLY: PRINTF                                          !!41.62
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -1214,8 +1214,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!!
+!     it under the terms of the GNU General Public License as published by!!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1225,7 +1225,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!!
 !
 !
 !  0. Authors
@@ -1258,10 +1258,10 @@
 !       ZP      R.A.   I   Input spectrum
 !       DEPTH   Real   I   Water depth
 !       UABS    Real   I   Wind speed
-!       UDIR    Real   I   Wind direction (Cartesian)                     41.62
+!       UDIR    Real   I   Wind direction (Cartesian)                     !!41.62
 !       WN      R.A.   I   Wavenumebers for each frequency
-!       SPCDIR  REAL   I   Spectral directions                            41.62
-!       SPCSIG  REAL   I   Spectral frequencies                           41.62
+!       SPCDIR  REAL   I   Spectral directions                            !!41.62
+!       SPCSIG  REAL   I   Spectral frequencies                           !!41.62
 !       NPO     Int.   O   Number of partitions with mean parameters
 !       XP      R.A.   O   Array with output parameters
 !       DIMXP   int.   I   Second dimesion of XP
@@ -1271,8 +1271,8 @@
       INTEGER, INTENT(OUT)    :: NPO, PMAP(DIMXP)
       REAL, INTENT(IN)        :: ZP(MSC*MDC), DEPTH, UABS, UDIR, WN(MSC)
       REAL, INTENT(OUT)       :: XP(7,0:DIMXP)
-      REAL, INTENT(IN)        :: SPCDIR(MDC,6)                            41.62
-      REAL, INTENT(IN)        :: SPCSIG(MSC)                              41.62
+      REAL, INTENT(IN)        :: SPCDIR(MDC,6)                            !!41.62
+      REAL, INTENT(IN)        :: SPCSIG(MSC)                              !!41.62
 !
 !  6. Parameter variables
 !
@@ -1286,10 +1286,10 @@
      &                           SUME(0:NPI), SUMEW(0:NPI),
      &                           SUMEX(0:NPI), SUMEY(0:NPI),
      &                           EFPMAX(0:NPI), FCDIR(MDC)
-      REAL                    :: SUMFK(MSC,0:NPI), SUMEK(0:NPI)           41.62
+      REAL                    :: SUMFK(MSC,0:NPI), SUMEK(0:NPI)           !!41.62
       REAL                    :: HS, XL, XH, XL2, XH2, EL, EH, DENOM,
      &                           SIGP, WNP, CGP, UPAR, C(MSC), RD, FACT
-      REAL                    :: DS, FTE                                  41.62
+      REAL                    :: DS, FTE                                  !!41.62
 !
 !  8. Subroutines and functions used
 !
@@ -1331,12 +1331,12 @@
       SUMFW  = 0.
       SUMFX  = 0.
       SUMFY  = 0.
-      SUMFK  = 0.                                                         41.62
+      SUMFK  = 0.                                                         !!41.62
       SUME   = 0.
       SUMEW  = 0.
       SUMEX  = 0.
       SUMEY  = 0.
-      SUMEK  = 0.                                                         41.62
+      SUMEK  = 0.                                                         !!41.62
       IFPMAX = 0
       EFPMAX = 0.
 !
@@ -1347,7 +1347,7 @@
       DO ITH=1, MDC
         UPAR   = WSMULT * UABS * MAX(0.,COS(SPCDIR(ITH,1)-DEGRAD*UDIR))
         IF ( UPAR .LT. C(MSC) ) THEN
-           FCDIR(ITH) = SPCSIG(MSC)*(1+FRINTF)                            41.62
+           FCDIR(ITH) = SPCSIG(MSC)*(1+FRINTF)                            !!41.62
         ELSE
            DO IS=MSC-1, 2, -1
               IF ( UPAR .LT. C(IS) ) EXIT
@@ -1366,7 +1366,7 @@
 ! 3.a Integrals
 !     NOTE: Factor DDIR only used in Hs computation
 !
-      DO IS=2, MSC                                                        41.62
+      DO IS=2, MSC                                                        !!41.62
         DO ITH=1, MDC
           ISP    = IS + (ITH-1)*MSC
           IP     = IMO(ISP)
@@ -1377,35 +1377,35 @@
           SUMFW(IS, 0) = SUMFW(IS, 0) + ZP(ISP) * FACT
           SUMFX(IS, 0) = SUMFX(IS, 0) + ZP(ISP) * SPCDIR(ITH,2)
           SUMFY(IS, 0) = SUMFY(IS, 0) + ZP(ISP) * SPCDIR(ITH,3)
-          SUMFK(IS, 0) = SUMFK(IS, 0) + ZP(ISP) * WN(IS)**OUTPAR(3)       41.62 !WLEN - tail not added
+          SUMFK(IS, 0) = SUMFK(IS, 0) + ZP(ISP) * WN(IS)**OUTPAR(3)       !!41.62 !WLEN - tail not added
           IF ( IP .EQ. 0 ) CYCLE
           SUMF (IS,IP) = SUMF (IS,IP) + ZP(ISP)
           SUMFW(IS,IP) = SUMFW(IS,IP) + ZP(ISP) * FACT
           SUMFX(IS,IP) = SUMFX(IS,IP) + ZP(ISP) * SPCDIR(ITH,2)
           SUMFY(IS,IP) = SUMFY(IS,IP) + ZP(ISP) * SPCDIR(ITH,3)
-          SUMFK(IS,IP) = SUMFK(IS,IP) + ZP(ISP) * WN(IS)**OUTPAR(3)       41.62 !WLEN - tail not added
+          SUMFK(IS,IP) = SUMFK(IS,IP) + ZP(ISP) * WN(IS)**OUTPAR(3)       !!41.62 !WLEN - tail not added
         END DO
       END DO
-!>      SUMF(MSC+1,:) = SUMF(MSC,:) * FACHFE                                41.62 !Tail addition deativated
+!>      SUMF(MSC+1,:) = SUMF(MSC,:) * FACHFE                              !!  41.62 !Tail addition deativated
 !
       DO IP=0, NPI
-        DO IS=2, MSC                                                      41.62
+        DO IS=2, MSC                                                      !!41.62
           DS = SPCSIG(IS) * FRINTF
 !          SUME (IP) = SUME (IP) + SUMF (IS,IP) * DS
 !          SUMEW(IP) = SUMEW(IP) + SUMFW(IS,IP) * DS
 !          SUMEX(IP) = SUMEX(IP) + SUMFX(IS,IP) * DS
 !          SUMEY(IP) = SUMEY(IP) + SUMFY(IS,IP) * DS
-          !Replaced original with more accurate trapezoidal rule          41.62
-          SUME (IP) = SUME (IP) + 0.5*(SPCSIG(IS)*SUMF(IS,IP) +           41.62
-     &                            SPCSIG(IS-1)*SUMF(IS-1,IP))*DS          41.62
-          SUMEW(IP) = SUMEW(IP) + 0.5*(SPCSIG(IS)*SUMFW(IS,IP) +          41.62
-     &                            SPCSIG(IS-1)*SUMFW(IS-1,IP))*DS         41.62
-          SUMEX(IP) = SUMEX(IP) + 0.5*(SPCSIG(IS)*SUMFX(IS,IP) +          41.62
-     &                            SPCSIG(IS-1)*SUMFX(IS-1,IP))*DS         41.62
-          SUMEY(IP) = SUMEY(IP) + 0.5*(SPCSIG(IS)*SUMFY(IS,IP) +          41.62
-     &                            SPCSIG(IS-1)*SUMFY(IS-1,IP))*DS         41.62
-          SUMEK(IP) = SUMEK(IP) + 0.5*(SPCSIG(IS)*SUMFK(IS,IP) +          41.62 !WLEN - tail not added
-     &                            SPCSIG(IS-1)*SUMFK(IS-1,IP))*DS         41.62 !WLEN - tail not added
+          !Replaced original with more accurate trapezoidal rule          !!41.62
+          SUME (IP) = SUME (IP) + 0.5*(SPCSIG(IS)*SUMF(IS,IP) +           !!41.62
+     &                            SPCSIG(IS-1)*SUMF(IS-1,IP))*DS          !!41.62
+          SUMEW(IP) = SUMEW(IP) + 0.5*(SPCSIG(IS)*SUMFW(IS,IP) +          !!41.62
+     &                            SPCSIG(IS-1)*SUMFW(IS-1,IP))*DS         !!41.62
+          SUMEX(IP) = SUMEX(IP) + 0.5*(SPCSIG(IS)*SUMFX(IS,IP) +          !!41.62
+     &                            SPCSIG(IS-1)*SUMFX(IS-1,IP))*DS         !!41.62
+          SUMEY(IP) = SUMEY(IP) + 0.5*(SPCSIG(IS)*SUMFY(IS,IP) +          !!41.62
+     &                            SPCSIG(IS-1)*SUMFY(IS-1,IP))*DS         !!41.62
+          SUMEK(IP) = SUMEK(IP) + 0.5*(SPCSIG(IS)*SUMFK(IS,IP) +          !!41.62 !WLEN - tail not added
+     &                            SPCSIG(IS-1)*SUMFK(IS-1,IP))*DS         !!41.62 !WLEN - tail not added
           IF ( SUMF(IS,IP) .GT. EFPMAX(IP) ) THEN
             IFPMAX(IP) = IS
             EFPMAX(IP) = SUMF(IS,IP)
@@ -1420,7 +1420,7 @@
 !
       DO IP=0, NPI
 !
-        HS     = 4. * SQRT ( SUME(IP) * DDIR )                            41.62
+        HS     = 4. * SQRT ( SUME(IP) * DDIR )                            !!41.62
         IF ( HS .LT. HSPMIN ) CYCLE
 !
         XL     = 1./(1+FRINTF) - 1.
@@ -1439,20 +1439,20 @@
         XP(1,NPO) = HS
         XP(2,NPO) = PI2 / SIGP
 !>        XP(3,NPO) = PI2 / WNP
-        IF ( SUMEK(IP) .GT. 0 ) THEN                                      41.62
-           XP(3,NPO) = PI2 * (SUME(IP) / SUMEK(IP)) ** (1./OUTPAR(3))     41.62
-        ELSE                                                              41.62
-           XP(3,NPO) = 0.                                                 41.62
-        END IF                                                            41.62
-        XP(4,NPO) = MOD( 630.-ATAN2(SUMEY(IP),SUMEX(IP))/DEGRAD , 360. )  41.62
+        IF ( SUMEK(IP) .GT. 0 ) THEN                                      !!41.62
+           XP(3,NPO) = PI2 * (SUME(IP) / SUMEK(IP)) ** (1./OUTPAR(3))     !!41.62
+        ELSE                                                              !!41.62
+           XP(3,NPO) = 0.                                                 !!41.62
+        END IF                                                            !!41.62
+        XP(4,NPO) = MOD( 630.-ATAN2(SUMEY(IP),SUMEX(IP))/DEGRAD , 360. )  !!41.62
         XP(5,NPO) = (1/DEGRAD) * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT (
      &          MAX(0.,(SUMEX(IP)**2+SUMEY(IP)**2)/SUME(IP)**2) ) ) ) )
         XP(6,NPO) = SUMEW(IP) / SUME(IP)
-        IF ( XP(3,NPO) .GT. 0. ) THEN                                     41.62
-           XP(7,NPO) = HS / XP(3,NPO)                                     41.62
-        ELSE                                                              41.62
-           XP(7,NPO) = 0.                                                 41.62
-        END IF                                                            41.62
+        IF ( XP(3,NPO) .GT. 0. ) THEN                                     !!41.62
+           XP(7,NPO) = HS / XP(3,NPO)                                     !!41.62
+        ELSE                                                              !!41.62
+           XP(7,NPO) = 0.                                                 !!41.62
+        END IF                                                            !!41.62
 !
       END DO
 !
@@ -1461,12 +1461,12 @@
 ! Escape locations read errors --------------------------------------- *
 !
  2000 CONTINUE
-      WRITE (PRINTF,1000) NPO+1                                           41.62
+      WRITE (PRINTF,1000) NPO+1                                           !!41.62
       RETURN
 !
 ! Formats
 !
- 1000 FORMAT (/' *** ERROR IN PTMEAN :'/                                  41.62
+ 1000 FORMAT (/' *** ERROR IN PTMEAN :'/                                  !!41.62
      &         '     XP ARRAY TOO SMALL AT PARTITION',I6/)
 
 !     end of subroutine PTMEAN

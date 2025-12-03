@@ -8,56 +8,56 @@
 !     INFRAM
 !     DISTR
 !     KSCIP1
-!     KSCIP2                                                              40.59
-!     NG                                                                  40.59
+!     KSCIP2                                                            !  40.59
+!     NG                                                                !  40.59
 !     AC2TST
-!     CVCHEK                                                              30.60
-!     CVMESH                                                              30.60
-!     NEWTON                                                              30.60
-!     EVALF                                                               30.60
-!     SWOBST                                                              30.60
-!     TCROSS                                                              40.04
+!     CVCHEK                                                            !  30.60
+!     CVMESH                                                            !  30.60
+!     NEWTON                                                            !  30.60
+!     EVALF                                                             !  30.60
+!     SWOBST                                                            !  30.60
+!     TCROSS                                                            !  40.04
 !     SWTRCF
 !     REFLECT
-!     SSHAPE                                                              40.00
-!     SINTRP                                                              40.00
-!     HSOBND                                                              32.01
-!     CHGBAS                                                              40.00
-!     GAMMAF                                                              40.00
-!     WRSPEC                                                              40.00
-!TIMG!     SWTSTA                                                              40.23
-!TIMG!     SWTSTO                                                              40.23
-!TIMG!     SWPRTI                                                              40.23
-!     TXPBLA                                                              40.23
-!     INTSTR                                                              40.23
-!     NUMSTR                                                              40.23
-!     SWCOPI                                                              40.23
-!     SWCOPR                                                              40.23
-!MatL4!     SWI2B                                                               40.30
-!MatL4!     SWR2B                                                               40.30
-!     MKPATH                                                              41.95
+!     SSHAPE                                                            !  40.00
+!     SINTRP                                                            !  40.00
+!     HSOBND                                                            !  32.01
+!     CHGBAS                                                            !  40.00
+!     GAMMAF                                                            !  40.00
+!     WRSPEC                                                            !  40.00
+!TIMG!     SWTSTA                                                       !       40.23
+!TIMG!     SWTSTO                                                       !       40.23
+!TIMG!     SWPRTI                                                       !       40.23
+!     TXPBLA                                                            !  40.23
+!     INTSTR                                                            !  40.23
+!     NUMSTR                                                            !  40.23
+!     SWCOPI                                                            !  40.23
+!     SWCOPR                                                            !  40.23
+!MatL4!     SWI2B                                                       !        40.30
+!MatL4!     SWR2B                                                       !        40.30
+!     MKPATH                                                            !  41.95
 !
 !  functions:
 !  ----------
-!  DEGCNV  (converts from cartesian convention to nautical and            32.01
-!           vice versa)                                                   32.01
-!  ANGRAD  (converts radians to degrees)                                  32.01
-!  ANGDEG  (converts degrees to radians)                                  32.01
+!  DEGCNV  (converts from cartesian convention to nautical and          !  32.01
+!           vice versa)                                                 !  32.01
+!  ANGRAD  (converts radians to degrees)                                !  32.01
+!  ANGDEG  (converts degrees to radians)                                !  32.01
 !
 !  subroutines:
 !  ------------
-!  HSOBND  (Hs is calculated after a SWAN computation at all sides.       32.01
-!           The calculated wave height from SWAN is then compared with    32.01
-!           the wave heigth as provided by the user                       32.01
+!  HSOBND  (Hs is calculated after a SWAN computation at all sides.     !  32.01
+!           The calculated wave height from SWAN is then compared with  !  32.01
+!           the wave heigth as provided by the user                     !  32.01
 !
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       SUBROUTINE READXY (NAMX, NAMY, XX, YY, KONT, XSTA, YSTA)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM1                                                        40.41
-      USE SWCOMM2                                                         40.41
+      USE OCPCOMM1                                                      !  40.41
+      USE SWCOMM2                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -73,8 +73,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -84,7 +84,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -94,11 +94,11 @@
 !
 !  1. UPDATE
 !
-!       Nov. 1996               offset values are added to standard values
+!       Nov. 1996               offset values are added to standard valu!es
 !                               because they will be subtracted later
 !     40.13, Nov. 01: a valid value for YY is required if a valid value
 !                     for XX has been given; ocpcomm1.inc reactivated
-!     40.51, Feb. 05: correction to location points equal to offset values
+!     40.51, Feb. 05: correction to location points equal to offset valu!es
 !
 !  2. PURPOSE
 !
@@ -110,9 +110,9 @@
 !
 !  4. PARAMETERLIST
 !
-!       NAMX, NAMY   inp char    names of the two coordinates as given in
+!       NAMX, NAMY   inp char    names of the two coordinates as given i!n
 !                                the user manual
-!       XX, YY       out real    values of x and y taking into account offset
+!       XX, YY       out real    values of x and y taking into account o!ffset
 !       KONT         inp char    what to be done if values are missing
 !                                see doc. of INDBLE (Ocean Pack doc.)
 !       XSTA, YSTA   inp real    standard values of x and y
@@ -136,14 +136,14 @@
 !
 !  9. STRUCTURE
 !
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       Read x and y in double prec.
 !       If this is first couple of values
 !       Then assign values to XOFFS and YOFFS
 !            make LXOFFS True
 !       ---------------------------------------------------------------
 !       make XX and YY equal to x and y taking into account offset
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !
 ! 10. SOURCE TEXT
 !
@@ -154,42 +154,42 @@
       CALL  STRACE (IENT,'READXY')
 !
       CALL INDBLE (NAMX, XTMP, KONT, DBLE(XSTA)+DBLE(XOFFS))
-      IF (CHGVAL) THEN                                                    40.13
-!       a valid value was given for XX                                    40.13
-        CALL INDBLE (NAMY, YTMP, 'REQ', DBLE(YSTA)+DBLE(YOFFS))           40.13
-      ELSE                                                                40.13
+      IF (CHGVAL) THEN                                                  !  40.13
+!       a valid value was given for XX                                  !  40.13
+        CALL INDBLE (NAMY, YTMP, 'REQ', DBLE(YSTA)+DBLE(YOFFS))         !  40.13
+      ELSE                                                              !  40.13
         CALL INDBLE (NAMY, YTMP, KONT, DBLE(YSTA)+DBLE(YOFFS))
-      ENDIF                                                               40.13
+      ENDIF                                                             !  40.13
       IF (.NOT.LXOFFS) THEN
         XOFFS = REAL(XTMP)
         YOFFS = REAL(YTMP)
         LXOFFS = .TRUE.
       ENDIF
-      IF (.NOT.EQREAL(XOFFS,REAL(XTMP))) THEN                             40.51
+      IF (.NOT.EQREAL(XOFFS,REAL(XTMP))) THEN                           !  40.51
          XX = REAL(XTMP-DBLE(XOFFS))
-      ELSE IF (OPTG.EQ.3) THEN                                            40.51
-         XX = 1.E-5                                                       40.51
-      ELSE                                                                40.51
-         XX = 0.                                                          40.51
-      END IF                                                              40.51
-      IF (.NOT.EQREAL(YOFFS,REAL(YTMP))) THEN                             40.51
+      ELSE IF (OPTG.EQ.3) THEN                                          !  40.51
+         XX = 1.E-5                                                     !  40.51
+      ELSE                                                              !  40.51
+         XX = 0.                                                        !  40.51
+      END IF                                                            !  40.51
+      IF (.NOT.EQREAL(YOFFS,REAL(YTMP))) THEN                           !  40.51
          YY = REAL(YTMP-DBLE(YOFFS))
-      ELSE IF (OPTG.EQ.3) THEN                                            40.51
-         YY = 1.E-5                                                       40.51
-      ELSE                                                                40.51
-         YY = 0.                                                          40.51
-      END IF                                                              40.51
+      ELSE IF (OPTG.EQ.3) THEN                                          !  40.51
+         YY = 1.E-5                                                     !  40.51
+      ELSE                                                              !  40.51
+         YY = 0.                                                        !  40.51
+      END IF                                                            !  40.51
 !
       RETURN
 ! * end of subroutine READXY  *
       END
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       SUBROUTINE REFIXY (NDS, XX, YY, IERR, ID)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE SWCOMM2                                                         40.41
+      USE SWCOMM2                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -205,8 +205,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -216,7 +216,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -238,8 +238,8 @@
 !  4. PARAMETERLIST
 !
 !       NDS          in  int     file reference number
-!       XX, YY       out real    values of x and y taking into account offset
-!       IERR         out int     error indicator: IERR=0: no error, =-1: end-
+!       XX, YY       out real    values of x and y taking into account o!ffset
+!       IERR         out int     error indicator: IERR=0: no error, =-1:! end-
 !                                of-file, =-2: read error
 !
 !  5. SUBROUTINES CALLING
@@ -260,13 +260,13 @@
 !
 !  9. STRUCTURE
 !
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       If this is first couple of values
 !       Then assign values to XOFFS and YOFFS
 !            make LXOFFS True
 !       ---------------------------------------------------------------
 !       make XX and YY equal to x and y taking into account offset
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !
 ! 10. SOURCE TEXT
 !
@@ -294,20 +294,20 @@
         YOFFS = REAL(YTMP)
         LXOFFS = .TRUE.
       ENDIF
-      IF (.NOT.EQREAL(XOFFS,REAL(XTMP))) THEN                             40.51
+      IF (.NOT.EQREAL(XOFFS,REAL(XTMP))) THEN                           !  40.51
          XX = REAL(XTMP-DBLE(XOFFS))
-      ELSE IF (OPTG.EQ.3) THEN                                            40.51
-         XX = 1.E-5                                                       40.51
-      ELSE                                                                40.51
-         XX = 0.                                                          40.51
-      END IF                                                              40.51
-      IF (.NOT.EQREAL(YOFFS,REAL(YTMP))) THEN                             40.51
+      ELSE IF (OPTG.EQ.3) THEN                                          !  40.51
+         XX = 1.E-5                                                     !  40.51
+      ELSE                                                              !  40.51
+         XX = 0.                                                        !  40.51
+      END IF                                                            !  40.51
+      IF (.NOT.EQREAL(YOFFS,REAL(YTMP))) THEN                           !  40.51
          YY = REAL(YTMP-DBLE(YOFFS))
-      ELSE IF (OPTG.EQ.3) THEN                                            40.51
-         YY = 1.E-5                                                       40.51
-      ELSE                                                                40.51
-         YY = 0.                                                          40.51
-      END IF                                                              40.51
+      ELSE IF (OPTG.EQ.3) THEN                                          !  40.51
+         YY = 1.E-5                                                     !  40.51
+      ELSE                                                              !  40.51
+         YY = 0.                                                        !  40.51
+      END IF                                                            !  40.51
 !
       IERR = 0
       RETURN
@@ -319,14 +319,14 @@
       RETURN
 ! * end of subroutine REFIXY  *
       END
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       LOGICAL FUNCTION  INFRAM (XQQ, YQQ)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM1                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM1                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -342,8 +342,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -353,7 +353,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -361,12 +361,12 @@
 !
 !  1. UPDATE
 !
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. PURPOSE
 !
 !       Checking whether a point given in frame coordinates is located
-!       in the plotting frame (INFRAM = .TRUE.) or not (INFRAM = .FALSE.)
+!       in the plotting frame (INFRAM = .TRUE.) or not (INFRAM = .FALSE.!)
 !
 !  3. METHOD
 !
@@ -395,11 +395,11 @@
 !
 !  9. STRUCTURE
 !
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       Give INFRAM initial value true
 !       IF XQQ < 0, XQQ > XQLEN, YQQ < 0 OR YQQ > YQLEN, THEN
 !           INFRAM = false
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !
 ! 10. SOURCE TEXT
 !
@@ -416,14 +416,14 @@
       RETURN
 ! * end of function INFRAM *
       END
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE DISTR (CDIR, DIR, COEF, SPCDIR)                          20.43
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE DISTR (CDIR, DIR, COEF, SPCDIR)                        !  20.43
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -439,8 +439,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -450,7 +450,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !
@@ -465,11 +465,11 @@
 !      0.1 , Jul. 87: Standard heading added
 !      0.2 , Dec. 89: Value for energy outside of the sector changed
 !                     from 0. to 1.E-6
-!            Oct. 90: Value for energy outside the sector changed to 1.E-10
-!                     logical BDIR introduced to take care for case where
+!            Oct. 90: Value for energy outside the sector changed to 1.E!-10
+!                     logical BDIR introduced to take care for case wher!e
 !                     none of the values is positive
 !     30.82, Oct. 98: Updated description of several variables
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. PURPOSE
 !
@@ -482,14 +482,14 @@
 !
 !  4. Argument variables
 !
-! i   SPCDIR: (*,1); spectral directions (radians)                        30.82
-!             (*,2); cosine of spectral directions                        30.82
-!             (*,3); sine of spectral directions                          30.82
-!             (*,4); cosine^2 of spectral directions                      30.82
-!             (*,5); cosine*sine of spectral directions                   30.82
-!             (*,6); sine^2 of spectral directions                        30.82
+! i   SPCDIR: (*,1); spectral directions (radians)                      !  30.82
+!             (*,2); cosine of spectral directions                      !  30.82
+!             (*,3); sine of spectral directions                        !  30.82
+!             (*,4); cosine^2 of spectral directions                    !  30.82
+!             (*,5); cosine*sine of spectral directions                 !  30.82
+!             (*,6); sine^2 of spectral directions                      !  30.82
 !
-      REAL    SPCDIR(MDC,6)                                               30.82
+      REAL    SPCDIR(MDC,6)                                             !  30.82
 !
 !       CDIR    REAL   output   array containing the coefficients of
 !                               (energy) distribution
@@ -514,19 +514,19 @@
 !
 !  9. STRUCTURE
 !
-!       -----------------------------------------------------------------
+!       ----------------------------------------------------------------!-
 !       For every direction of the grid do
 !           If the direction deviates less than PI/2 from the main wave
 !            direction, then
 !               Compute the coefficient cos**n
 !           Else
 !               Coefficient is 1.E-10
-!       -----------------------------------------------------------------
+!       ----------------------------------------------------------------!-
 !       If any of the directions deviated less than PI/2
 !       Then Compute the total of the coefficients
 !            For every direction of the grid do
 !                Divide the fraction of the distribution by the total
-!       -----------------------------------------------------------------
+!       ----------------------------------------------------------------!-
 !
 ! 13. Source text
 !
@@ -565,14 +565,14 @@
       RETURN
 ! * end of subroutine DISTR *
       END
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       SUBROUTINE KSCIP1 (MMT, SIG, D, K, CG, N, ND)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
 !
       IMPLICIT NONE
 !
@@ -591,8 +591,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -602,7 +602,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -615,9 +615,9 @@
 !  1. Updates
 !
 !     Aug. 94, ver. 10.10: arguments N and ND added
-!     Dec. 98, ND corrected, argument list adjusted and IMPLICIT NONE added
+!     Dec. 98, ND corrected, argument list adjusted and IMPLICIT NONE ad!ded
 !     40.41, Aug. 04: tables replaced by Pade and other formulas
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !     41.16, Mar. 11: correction: add dk/dh to dn/dh
 !
 !  2. Purpose
@@ -703,49 +703,49 @@
       DATA IENT /0/
       IF (LTRACE) CALL STRACE (IENT, 'KSCIP1')
       
-      IF (D .LT. 0.0) RETURN                                              JRE
+      IF (D .LT. 0.0) RETURN                                            !  JRE
 !
-      ROOTDG = SQRT(D/GRAV)                                               30.81
-      WGD    = ROOTDG*GRAV                                                30.81
+      ROOTDG = SQRT(D/GRAV)                                             !  30.81
+      WGD    = ROOTDG*GRAV                                              !  30.81
       DO 200 IS = 1, MMT
 !       SND is dimensionless frequency
         SND = SIG(IS) * ROOTDG
         IF (SND .GE. 2.5) THEN
 !       ******* deep water *******
-          K(IS)  = SIG(IS) * SIG(IS) / GRAV                               30.81
-          CG(IS) = 0.5 * GRAV / SIG(IS)                                   30.81
+          K(IS)  = SIG(IS) * SIG(IS) / GRAV                             !  30.81
+          CG(IS) = 0.5 * GRAV / SIG(IS)                                 !  30.81
           N(IS)  = 0.5
           ND(IS) = 0.
         ELSE IF (SND.LT.1.E-6) THEN
-!       *** very shallow water ***                                        30.81
-          K(IS)  = SND/D                                                  30.81
+!       *** very shallow water ***                                      !  30.81
+          K(IS)  = SND/D                                                !  30.81
           CG(IS) = WGD
           N(IS)  = 1.
           ND(IS) = 0.
         ELSE
-          SND2  = SND*SND                                                 40.41
-          C     = SQRT(GRAV*D/(SND2+1./(1.+0.666*SND2+0.445*SND2**2       40.41
-     &                                  -0.105*SND2**3+0.272*SND2**4)))   40.41
-          K(IS) = SIG(IS)/C                                               40.41
-          KND   = K(IS)*D                                                 40.41
-          FAC1  = 2.*KND/SINH(2.*KND)                                     40.41
-          N(IS) = 0.5*(1.+FAC1)                                           40.41
-          CG(IS)= N(IS)*C                                                 40.41
-          FAC2  = SND2/KND                                                40.41
-          FAC3  = 2.*FAC2/(1.+FAC2*FAC2)                                  40.41
-          FAC2  = -K(IS)*(2.*N(IS)-1.)/(2.*D*N(IS))                       41.16
-          ND(IS)= FAC1*(0.5/D - K(IS)/FAC3 + FAC2*(0.5/K(IS) - D/FAC3))   41.16 40.41
+          SND2  = SND*SND                                               !  40.41
+          C     = SQRT(GRAV*D/(SND2+1./(1.+0.666*SND2+0.445*SND2**2     !  40.41
+     &                                  -0.105*SND2**3+0.272*SND2**4))) !  40.41
+          K(IS) = SIG(IS)/C                                             !  40.41
+          KND   = K(IS)*D                                               !  40.41
+          FAC1  = 2.*KND/SINH(2.*KND)                                   !  40.41
+          N(IS) = 0.5*(1.+FAC1)                                         !  40.41
+          CG(IS)= N(IS)*C                                               !  40.41
+          FAC2  = SND2/KND                                              !  40.41
+          FAC3  = 2.*FAC2/(1.+FAC2*FAC2)                                !  40.41
+          FAC2  = -K(IS)*(2.*N(IS)-1.)/(2.*D*N(IS))                     !  41.16
+          ND(IS)= FAC1*(0.5/D - K(IS)/FAC3 + FAC2*(0.5/K(IS) - D/FAC3)) !  41.16 40.41
         ENDIF
   200 CONTINUE
 !
       RETURN
 !     end of subroutine KSCIP1 *
       END
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       SUBROUTINE KSCIP2 (MMT, SIG, D, K, CG, N, ND, DMW, DM)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
       USE OCPCOMM4
       USE SWCOMM3
@@ -766,8 +766,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -777,7 +777,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -791,11 +791,11 @@
 !  2. Purpose
 !
 !     Calculation of the wave number, group velocity, group number N
-!     and the derivative of N w.r.t. depth (=ND) in case of muddy bottom
+!     and the derivative of N w.r.t. depth (=ND) in case of muddy bottom!
 !
 !  3. Method
 !
-!     Wave number based on Ng (2000) and other quantities derived thereof
+!     Wave number based on Ng (2000) and other quantities derived thereo!f
 !
 !  4. Argument variables
 !
@@ -883,7 +883,7 @@
         IF ( KND.LT.10. .AND. DM.GT.1.E-5 ) THEN
           SBLTM  = SQRT(2.*KINVISM/SIG(IS))
           DTILDE = DM/SBLTM
-!         calculate muddy wave number and dissipation rate using Ng (2000)
+!         calculate muddy wave number and dissipation rate using Ng (200!0)
           CALL NG(SIG(IS),D,DTILDE,ZETA,SBLTM,GAMMA,K(IS),KMUD,DMW(IS))
           K(IS)  = KMUD
 !         calculate ratio N, CG and derivative of N w.r.t. D
@@ -899,7 +899,7 @@
           FAC2   = SIG(IS) * C / GRAV
           FAC3   = 2.*FAC2/(1.+FAC2*FAC2)
           FAC2   = -K(IS)*(2.*N(IS)-1.)/(2.*D*N(IS))
-          ND(IS) = FAC1*(0.5/D - K(IS)/FAC3 + FAC2*(0.5/K(IS) - D/FAC3))
+          ND(IS) = FAC1*(0.5/D - K(IS)/FAC3 + FAC2*(0.5/K(IS) - D/FAC3))!
         ELSE
           DMW(IS)= 0.
         ENDIF
@@ -908,11 +908,11 @@
       RETURN
 !     end of subroutine KSCIP2 *
       END
-!************************************************************************
-!                                                                       *
-      SUBROUTINE NG(SIGMA,H_WDEPTH,DTILDE,ZETA,SBLTM,GAMMA,WK,WKDR,DISS)
-!                                                                       *
-!************************************************************************
+!***********************************************************************!*
+!                                                                       !*
+      SUBROUTINE NG(SIGMA,H_WDEPTH,DTILDE,ZETA,SBLTM,GAMMA,WK,WKDR,DISS)!
+!                                                                       !*
+!***********************************************************************!*
 !
       USE OCPCOMM4
 !
@@ -932,8 +932,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -943,7 +943,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -972,16 +972,16 @@
 !  4. Argument variables
 !
       REAL, INTENT(IN)  ::  SIGMA   ! radian frequency (rad)
-      REAL, INTENT(IN)  ::  H_WDEPTH! water depth, denoted "h" in Ng (m)
-      REAL, INTENT(IN)  ::  DTILDE  ! normalized mud depth = mud depth / SBLTM,
-                                    ! delta is the sblt= sqrt(2*visc/sigma)
-      REAL, INTENT(IN)  ::  ZETA    ! this is zeta as used in Ng pg. 238. it is
-                                    ! the ratio of Stokes boundary layer
+      REAL, INTENT(IN)  ::  H_WDEPTH! water depth, denoted "h" in Ng (m)!
+      REAL, INTENT(IN)  ::  DTILDE  ! normalized mud depth = mud depth /! SBLTM,
+                                    ! delta is the sblt= sqrt(2*visc/sig!ma)
+      REAL, INTENT(IN)  ::  ZETA    ! this is zeta as used in Ng pg. 238!. it is
+                                    ! the ratio of Stokes boundary layer!
                                     ! thicknesses, or SBLTM/delta_w
-      REAL, INTENT(IN)  ::  GAMMA   ! this is the gamma used in Ng pg. 238.
-                                    ! this is density(water)/density(mud)
-      REAL, INTENT(IN)  ::  SBLTM   ! SBLTM is what you get if you calculate
-                                    ! sblt using the viscosity of the mud,
+      REAL, INTENT(IN)  ::  GAMMA   ! this is the gamma used in Ng pg. 2!38.
+                                    ! this is density(water)/density(mud!)
+      REAL, INTENT(IN)  ::  SBLTM   ! SBLTM is what you get if you calcu!late
+                                    ! sblt using the viscosity of the mu!d,
                                     ! SBLTM=sqrt(2*visc_m/sigma)
                                     ! .....also delta_m
       REAL, INTENT(IN)  :: WK       ! unmuddy wavenumber
@@ -1003,7 +1003,7 @@
 !
 ! 11. Remarks
 !
-!     Calculations for the "B coefficients" came from a code by Jim Kaihatu
+!     Calculations for the "B coefficients" came from a code by Jim Kaih!atu
 !
 ! 13. Source text
 !
@@ -1041,17 +1041,17 @@
       RETURN
 
       END SUBROUTINE NG
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       SUBROUTINE AC2TST (XYTST, AC2,KGRPNT)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM2                                                         41.13
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM2                                                       !  41.13
+      USE SWCOMM3                                                       !  40.41
+      USE SWCOMM4                                                       !  40.41
+      USE M_PARALL                                                      !  40.31
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -1067,8 +1067,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1078,7 +1078,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !     0. Authors
@@ -1088,39 +1088,39 @@
 !
 !
       INTEGER   XYTST(*) ,KGRPNT(MXC,MYC)
-      REAL      AC2(MDC,MSC,MCGRD)                                        30.21
+      REAL      AC2(MDC,MSC,MCGRD)                                      !  30.21
 !.................................................................
       IF ( ITEST .GE. 100 .AND. TESTFL) THEN
         DO II = 1, NPTST
-          IF (OPTG.NE.5) THEN                                             40.80
+          IF (OPTG.NE.5) THEN                                           !  40.80
              IX = XYTST(2*II-1)
              IY = XYTST(2*II)
              INDEX = KGRPNT(IX,IY)
-             WRITE (PRINTF, 618) IX+MXF-2, IY+MYF-2, KGRPNT(IX,IY)        40.30
-          ELSE                                                            40.80
-             INDEX = XYTST(II)                                            40.80
-             WRITE (PRINTF, 619) INDEX                                    40.80
-          ENDIF                                                           40.80
+             WRITE (PRINTF, 618) IX+MXF-2, IY+MYF-2, KGRPNT(IX,IY)      !  40.30
+          ELSE                                                          !  40.80
+             INDEX = XYTST(II)                                          !  40.80
+             WRITE (PRINTF, 619) INDEX                                  !  40.80
+          ENDIF                                                         !  40.80
           DO ID = 1, MDC
-            WRITE (PRINTF, 620) (AC2(ID,IS,INDEX), IS=1,MIN(10,MSC))      30.21
+            WRITE (PRINTF, 620) (AC2(ID,IS,INDEX), IS=1,MIN(10,MSC))    !  30.21
           ENDDO
         ENDDO
       ENDIF
  618  FORMAT(/,'Spectrum for test point(index):', 2I5,2X,'(',I5,')')
- 619  FORMAT(/,'Spectrum for test point: (',I5,')')                       40.80
+ 619  FORMAT(/,'Spectrum for test point: (',I5,')')                     !  40.80
  620  FORMAT (10(1X,E12.4))
       RETURN
       END
 !****************************************************************
 !
-      SUBROUTINE CVCHEK (KGRPNT, XCGRID, YCGRID)                          30.72
+      SUBROUTINE CVCHEK (KGRPNT, XCGRID, YCGRID)                        !  30.72
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM2                                                         40.41
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM2                                                       !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE SWCOMM4                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -1136,8 +1136,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1147,7 +1147,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !  0. Authors
 !
@@ -1158,9 +1158,9 @@
 !  1. Updates
 !
 !            May  96: New subroutine
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG! for SWAN
 !     40.13, Mar. 01: messages corrected and extended
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -1177,12 +1177,12 @@
 !
 !     KGRPNT: input  Array of indirect addressing
 !
-      INTEGER KGRPNT(MXC,MYC)                                             30.72
+      INTEGER KGRPNT(MXC,MYC)                                           !  30.72
 !
-!     XCGRID: input  Coordinates of computational grid in x-direction     30.72
-!     YCGRID: input  Coordinates of computational grid in y-direction     30.72
+!     XCGRID: input  Coordinates of computational grid in x-direction   !  30.72
+!     YCGRID: input  Coordinates of computational grid in y-direction   !  30.72
 !
-      REAL    XCGRID(MXC,MYC),    YCGRID(MXC,MYC)                         30.72
+      REAL    XCGRID(MXC,MYC),    YCGRID(MXC,MYC)                       !  30.72
 !
 !
 !     5. SUBROUTINES CALLING
@@ -1226,7 +1226,7 @@
 !                           Then Make CVleft = False
 !                           Else Make CVleft = True
 !                      ----------------------------------------------
-!                      If ((CVleft and Det<0) or (not CVleft and Det>0))
+!                      If ((CVleft and Det<0) or (not CVleft and Det>0))!
 !                      Then Write error message with IX, IY, ISIDE
 !   ------------------------------------------------------------
 !
@@ -1252,7 +1252,7 @@
           DO 6 IIX = 1, MXC
             ICON = ICON + 1
             WRITE(PRINTF,7)IIX-1,IIY-1,KGRPNT(IIX,IIY),
-     &      XCGRID(IIX,IIY)+XOFFS, YCGRID(IIX,IIY)+YOFFS                  30.72 40.13
+     &      XCGRID(IIX,IIY)+XOFFS, YCGRID(IIX,IIY)+YOFFS                !  30.72 40.13
  6        CONTINUE
  5      CONTINUE
       ENDIF
@@ -1264,55 +1264,55 @@
         DO 15 IY = 1,MYC-1
           DO 20 ISIDE = 1,4
             IF (ISIDE .EQ. 1) THEN
-              IX1 = IX                                                    40.13
-              IY1 = IY                                                    40.13
-              IX2 = IX+1                                                  40.13
-              IY2 = IY                                                    40.13
-              IX3 = IX+1                                                  40.13
-              IY3 = IY+1                                                  40.13
+              IX1 = IX                                                  !  40.13
+              IY1 = IY                                                  !  40.13
+              IX2 = IX+1                                                !  40.13
+              IY2 = IY                                                  !  40.13
+              IX3 = IX+1                                                !  40.13
+              IY3 = IY+1                                                !  40.13
             ELSE IF (ISIDE .EQ. 2) THEN
-              IX1 = IX+1                                                  40.13
-              IY1 = IY                                                    40.13
-              IX2 = IX+1                                                  40.13
-              IY2 = IY+1                                                  40.13
-              IX3 = IX                                                    40.13
-              IY3 = IY+1                                                  40.13
+              IX1 = IX+1                                                !  40.13
+              IY1 = IY                                                  !  40.13
+              IX2 = IX+1                                                !  40.13
+              IY2 = IY+1                                                !  40.13
+              IX3 = IX                                                  !  40.13
+              IY3 = IY+1                                                !  40.13
             ELSE IF (ISIDE .EQ. 3) THEN
-              IX1 = IX+1                                                  40.13
-              IY1 = IY+1                                                  40.13
-              IX2 = IX                                                    40.13
-              IY2 = IY+1                                                  40.13
-              IX3 = IX                                                    40.13
-              IY3 = IY                                                    40.13
+              IX1 = IX+1                                                !  40.13
+              IY1 = IY+1                                                !  40.13
+              IX2 = IX                                                  !  40.13
+              IY2 = IY+1                                                !  40.13
+              IX3 = IX                                                  !  40.13
+              IY3 = IY                                                  !  40.13
             ELSE IF (ISIDE .EQ. 4) THEN
-              IX1 = IX                                                    40.13
-              IY1 = IY+1                                                  40.13
-              IX2 = IX                                                    40.13
-              IY2 = IY                                                    40.13
-              IX3 = IX+1                                                  40.13
-              IY3 = IY                                                    40.13
+              IX1 = IX                                                  !  40.13
+              IY1 = IY+1                                                !  40.13
+              IX2 = IX                                                  !  40.13
+              IY2 = IY                                                  !  40.13
+              IX3 = IX+1                                                !  40.13
+              IY3 = IY                                                  !  40.13
             ENDIF
-            K1  = KGRPNT(IX1,IY1)                                         40.13
-            XC1 = XCGRID(IX1,IY1)                                         40.13 30.72
-            YC1 = YCGRID(IX1,IY1)                                         40.13 30.72
-            K2  = KGRPNT(IX2,IY2)                                         40.13
-            XC2 = XCGRID(IX2,IY2)                                         40.13 30.72
-            YC2 = YCGRID(IX2,IY2)                                         40.13 30.72
-            K3  = KGRPNT(IX3,IY3)                                         40.13
-            XC3 = XCGRID(IX3,IY3)                                         30.72
-            YC3 = YCGRID(IX3,IY3)                                         30.72
+            K1  = KGRPNT(IX1,IY1)                                       !  40.13
+            XC1 = XCGRID(IX1,IY1)                                       !  40.13 30.72
+            YC1 = YCGRID(IX1,IY1)                                       !  40.13 30.72
+            K2  = KGRPNT(IX2,IY2)                                       !  40.13
+            XC2 = XCGRID(IX2,IY2)                                       !  40.13 30.72
+            YC2 = YCGRID(IX2,IY2)                                       !  40.13 30.72
+            K3  = KGRPNT(IX3,IY3)                                       !  40.13
+            XC3 = XCGRID(IX3,IY3)                                       !  30.72
+            YC3 = YCGRID(IX3,IY3)                                       !  30.72
             DET   = 0.
             IF (K1 .GE. 2 .AND. K2 .GE. 2 .AND. K3 .GE. 2) THEN
               DET = ((XC3 - XC1) * (YC2 - YC1)) -
      &              ((YC3 - YC1) * (XC2 - XC1))
               IF (DET .EQ. 0.) THEN
-!               three grid points on one line                             40.13
-                CALL MSGERR (2,'3 comp. grid points on one line')         40.13
+!               three grid points on one line                           !  40.13
+                CALL MSGERR (2,'3 comp. grid points on one line')       !  40.13
                 WRITE (PRINTF, 112)
-     &               IX1-1, IY1-1, XC1+XOFFS, YC1+YOFFS,                  40.13
-     &               IX2-1, IY2-1, XC2+XOFFS, YC2+YOFFS,                  40.13
-     &               IX3-1, IY3-1, XC3+XOFFS, YC3+YOFFS                   40.13
- 112            FORMAT (3(1X, 2I3, 2(1X, F14.4)))                         40.13
+     &               IX1-1, IY1-1, XC1+XOFFS, YC1+YOFFS,                !  40.13
+     &               IX2-1, IY2-1, XC2+XOFFS, YC2+YOFFS,                !  40.13
+     &               IX3-1, IY3-1, XC3+XOFFS, YC3+YOFFS                 !  40.13
+ 112            FORMAT (3(1X, 2I3, 2(1X, F14.4)))                       !  40.13
               ENDIF
 !
               IF (FIRST) THEN
@@ -1325,12 +1325,12 @@
               ENDIF
               IF (     (      CVLEFT .AND. DET .GT. 0.)
      &            .OR. (.NOT. CVLEFT .AND. DET .LT. 0.)) THEN
-!               crossing grid lines in a mesh                             40.13
-                CALL MSGERR (2,'Grid angle <0 or >180 degrees')           40.13
+!               crossing grid lines in a mesh                           !  40.13
+                CALL MSGERR (2,'Grid angle <0 or >180 degrees')         !  40.13
                 WRITE (PRINTF, 112)
-     &               IX1-1, IY1-1, XC1+XOFFS, YC1+YOFFS,                  40.13
-     &               IX2-1, IY2-1, XC2+XOFFS, YC2+YOFFS,                  40.13
-     &               IX3-1, IY3-1, XC3+XOFFS, YC3+YOFFS                   40.13
+     &               IX1-1, IY1-1, XC1+XOFFS, YC1+YOFFS,                !  40.13
+     &               IX2-1, IY2-1, XC2+XOFFS, YC2+YOFFS,                !  40.13
+     &               IX3-1, IY3-1, XC3+XOFFS, YC3+YOFFS                 !  40.13
               ENDIF
             ENDIF
  20       CONTINUE
@@ -1339,16 +1339,16 @@
       RETURN
 !     *** end of subroutine CVCHEK ***
       END
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE CVMESH (XP, YP, XC, YC, KGRPNT, XCGRID ,YCGRID, KGRBND)
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE CVMESH (XP, YP, XC, YC, KGRPNT, XCGRID ,YCGRID, KGRBND)!
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM2                                                         40.41
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM2                                                       !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE SWCOMM4                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -1364,8 +1364,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1375,7 +1375,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -1388,13 +1388,13 @@
 !  1. Updates
 !
 !     30.21, Jun. 96: New for curvilinear version
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG! for SWAN
 !     40.00, May  98: procedure for points outside grid accelerated
 !     40.00, Feb  99: procedure extended for 1D case
 !                     XOFFS and YOFFS added in write statements
-!     40.02, Mar. 00: Fixed bug that placed dry testpoints outside computational grid
+!     40.02, Mar. 00: Fixed bug that placed dry testpoints outside compu!tational grid
 !     40.13, Mar. 01: message "CVMESH 2nd attempt .." suppressed
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !     40.41, Nov. 04: search for boundary points improved
 !
 !  2. Purpose
@@ -1406,33 +1406,33 @@
 !
 !     First attempt: use Newton-Raphson method to find XC and YC
 !     (Note: in the program XC and YC indicate the mesh and position in
-!     the mesh) in a few steps; this may be most efficient if a series of
+!     the mesh) in a few steps; this may be most efficient if a series o!f
 !     points is processed, because the previous point provides a good
 !     first estimate.
-!     This procedure may fail if the number of iterations is larger than
+!     This procedure may fail if the number of iterations is larger than!
 !     a previously set limit (default=5).
 !
-!     If the first attempt fails then determine whether the points (XP,YP)
-!     is inside the mesh. If so, then the Newton-Raphson procedure is used
-!     again with the pivoting point like first guess. Otherwise, scan the
-!     boundaries whether the point is on the boundaries. If this fails, it
+!     If the first attempt fails then determine whether the points (XP,Y!P)
+!     is inside the mesh. If so, then the Newton-Raphson procedure is us!ed
+!     again with the pivoting point like first guess. Otherwise, scan th!e
+!     boundaries whether the point is on the boundaries. If this fails, !it
 !     may be concluded that the point (XP,YP) is outside the grid.
 !
 !  4. Argument variables
 !
-!     XCGRID  input  Coordinates of computational grid in x-direction     30.72
-!     YCGRID  input  Coordinates of computational grid in y-direction     30.72
+!     XCGRID  input  Coordinates of computational grid in x-direction   !  30.72
+!     YCGRID  input  Coordinates of computational grid in y-direction   !  30.72
 !     XP, YP  input  a point given in problem coordinates
 !     XC, YC  outp   same point in computational grid coordinates
 !
-      REAL     XCGRID(MXC,MYC),    YCGRID(MXC,MYC)                        30.72
+      REAL     XCGRID(MXC,MYC),    YCGRID(MXC,MYC)                      !  30.72
       REAL     XP, YP, XC, YC
 !
 !     KGRPNT   input   array(MXC,MYC)  grid numbers
 !                      if KGRPNT <= 1, point is not in comp. grid.
 !     KGRBND   input   lists all boundary grid points consecutively
 !
-      INTEGER  KGRPNT(MXC,MYC), KGRBND(*)                                 40.00
+      INTEGER  KGRPNT(MXC,MYC), KGRBND(*)                               !  40.00
 !
 !     Local variables
 !
@@ -1449,17 +1449,17 @@
 !
 !     INMESH   if True, point (XP,YP) is inside the computational grid
 !     FINDXY   if True, Newton-Raphson procedure succeeded
-!     ONBND    if True, given point is on boundary                        40.41
+!     ONBND    if True, given point is on boundary                      !  40.41
 !
       LOGICAL  INMESH ,FINDXY, ONBND
 !
-!     DISMIN   minimal distance found                                     40.41
+!     DISMIN   minimal distance found                                   !  40.41
 !     XPC1     user coordinate of a computational grid point
 !     YPC1     user coordinate of a computational grid point
 !     XC0      grid coordinate of grid point closest to (XP,YP)
 !     YC0      grid coordinate of grid point closest to (XP,YP)
 !
-      REAL       :: DISMIN                                                40.41
+      REAL       :: DISMIN                                              !  40.41
       REAL       :: XPC1, YPC1, XC0, YC0
 !
 !  5. SUBROUTINES CALLING
@@ -1487,7 +1487,7 @@
 !       Procedure is ready; Return values of XC and YC
 !       return
 !     else
-!     ---------------------------------------------------------------------
+!     ------------------------------------------------------------------!---
 !     For ix=1 to MXC-1 do
 !         For iy=1 to MYC-1 do
 !             Inmesh = True
@@ -1497,11 +1497,11 @@
 !                 2: K1 = KGRPNT(ix+1,iy), K2 = KGRPNT(ix+1,iy+1)
 !                 3: K1 = KGRPNT(ix+1,iy+1), K2 = KGRPNT(ix,iy+1)
 !                 4: K1 = KGRPNT(ix,iy+1), K2 = KGRPNT(ix,iy)
-!                 ----------------------------------------------------------
+!                 ------------------------------------------------------!----
 !                 If K1>0 and K2>0
 !                 Then Det = (xp-xpg(K1))*(ypg(K2)-ypg(K1)) -
 !                            (yp-ypg(K1))*(xpg(K2)-xpg(K1))
-!                      If ((CVleft and Det>0) or (not CVleft and Det<0))
+!                      If ((CVleft and Det>0) or (not CVleft and Det<0))!
 !                      Then Make Inmesh = False
 !                      Else  Inmesh = true and XC = IX and YC = IY
 !                 Else Make Inmesh = False
@@ -1510,10 +1510,10 @@
 !             Then Determine XC and YC using Newton-Raphson iteration
 !                  process
 !                  Procedure is ready; Return values of XC and YC
-!     ---------------------------------------------------------------------
+!     ------------------------------------------------------------------!---
 !     No mesh is found: Make XC and YC = exception value
 !     Return values of XC and YC
-!     ---------------------------------------------------------------------
+!     ------------------------------------------------------------------!---
 !
 !****************************************************************
 !
@@ -1521,13 +1521,13 @@
       IF (LTRACE) CALL STRACE (IENT,'CVMESH')
 !
       IF (ONED) THEN
-        CALL NEWT1D  (XP, YP, XCGRID, YCGRID, KGRPNT,                     40.00
+        CALL NEWT1D  (XP, YP, XCGRID, YCGRID, KGRPNT,                   !  40.00
      &                XC ,YC ,FINDXY)
         IF (.NOT.FINDXY) THEN
           XC = -99.
           YC = -99.
           IF (ITEST .GE. 150 .OR. INTES .GE. 20) THEN
-            WRITE(PRINTF, 85) XP+XOFFS, YP+YOFFS                          40.00
+            WRITE(PRINTF, 85) XP+XOFFS, YP+YOFFS                        !  40.00
           ENDIF
         ENDIF
         GOTO 99
@@ -1537,10 +1537,10 @@
         YC = 1.
 !       --- First attempt, to find XC,YC with Newton-Raphson method
         MXITNR = 5
-        CALL NEWTON  (XP, YP, XCGRID, YCGRID,                             40.00
-     &                MXITNR ,ITER, XC ,YC ,FINDXY)                       40.41 40.02
-        IF ((ITEST .GE. 150 .OR. INTES .GE. 20) .AND. FINDXY) THEN        40.02
-           WRITE(PRINTF,25) XP+XOFFS ,YP+YOFFS ,XC ,YC                    40.03
+        CALL NEWTON  (XP, YP, XCGRID, YCGRID,                           !  40.00
+     &                MXITNR ,ITER, XC ,YC ,FINDXY)                     !  40.41 40.02
+        IF ((ITEST .GE. 150 .OR. INTES .GE. 20) .AND. FINDXY) THEN      !  40.02
+           WRITE(PRINTF,25) XP+XOFFS ,YP+YOFFS ,XC ,YC                  !  40.03
         ENDIF
  25     FORMAT (' CVMESH: (XP,YP)=','(',F12.4,',',F12.4,
      &          '), (XC,YC)=','(',F9.2,',',F9.2,')')
@@ -1568,8 +1568,8 @@
           MXITNR = 20
           XC0 = REAL(IXMIN)
           YC0 = REAL(IYMIN)
-!         ITEST condition changed from 20 to 120                          40.13
-          IF (ITEST.GE.120) WRITE (PRTEST, 55) XP+XOFFS ,YP+YOFFS ,       40.13
+!         ITEST condition changed from 20 to 120                        !  40.13
+          IF (ITEST.GE.120) WRITE (PRTEST, 55) XP+XOFFS ,YP+YOFFS ,     !  40.13
      &          XC0-1. ,YC0-1.
   55      FORMAT (' CVMESH 2nd attempt, (XP,YP)=','(',F12.4,',',F12.4,
      &          '), (XC,YC)=','(',F9.2,',',F9.2,')')
@@ -1587,29 +1587,29 @@
               XC = XC0 + 0.2
               YC = YC0 - 0.2
             ENDIF
-            CALL NEWTON  (XP, YP, XCGRID, YCGRID,                         40.00
-     &                    MXITNR ,ITER, XC ,YC ,FINDXY)                   40.41 40.02
+            CALL NEWTON  (XP, YP, XCGRID, YCGRID,                       !  40.00
+     &                    MXITNR ,ITER, XC ,YC ,FINDXY)                 !  40.41 40.02
             IF (FINDXY) THEN
               IF (ITEST .GE. 150 .OR. INTES .GE. 20) THEN
-                WRITE(PRINTF,25) XP+XOFFS ,YP+YOFFS ,XC ,YC               40.00
+                WRITE(PRINTF,25) XP+XOFFS ,YP+YOFFS ,XC ,YC             !  40.00
               ENDIF
               GOTO 80
             ENDIF
           ENDDO
-          IF (ITER.GE.MXITNR) THEN                                        40.41
-             WRITE (PRINTF, 75) XP+XOFFS, YP+YOFFS, MXITNR                40.00
-  75         FORMAT (' search for point with location ', 2F12.4,          40.41
-     &               ' fails in', I3, ' iterations')                      40.41
-          END IF                                                          40.41
+          IF (ITER.GE.MXITNR) THEN                                      !  40.41
+             WRITE (PRINTF, 75) XP+XOFFS, YP+YOFFS, MXITNR              !  40.00
+  75         FORMAT (' search for point with location ', 2F12.4,        !  40.41
+     &               ' fails in', I3, ' iterations')                    !  40.41
+          END IF                                                        !  40.41
         ELSE
-!         scan boundary to see whether the point is close to the boundary
-          DISMIN=99999.                                                   40.41
-          ONBND =.FALSE.                                                  40.41
-          IX1 = 0                                                         40.41
-          IY1 = 0                                                         40.51
+!         scan boundary to see whether the point is close to the boundar!y
+          DISMIN=99999.                                                 !  40.41
+          ONBND =.FALSE.                                                !  40.41
+          IX1 = 0                                                       !  40.41
+          IY1 = 0                                                       !  40.51
           IX2 = 0
           DO IBND = 1, NGRBND
-            IF (IX2.NE.0) THEN                                            40.41
+            IF (IX2.NE.0) THEN                                          !  40.41
                IX1 = IX2
                IY1 = IY2
                XP1 = XP2
@@ -1617,43 +1617,43 @@
             END IF
             IX2 = KGRBND(2*IBND-1)
             IY2 = KGRBND(2*IBND)
-            IF (IX2.NE.0 .AND. (ABS(IX2-IX1).GT.1 .OR.                    40.51
-     &                          ABS(IY2-IY1).GT.1)) IX1 = 0               40.51
+            IF (IX2.NE.0 .AND. (ABS(IX2-IX1).GT.1 .OR.                  !  40.51
+     &                          ABS(IY2-IY1).GT.1)) IX1 = 0             !  40.51
             IF (IX2.GT.0) THEN
               XP2 = XCGRID(IX2,IY2)
               YP2 = YCGRID(IX2,IY2)
-              IF (IBND.GT.1 .AND. IX1.GT.0) THEN                          40.51
+              IF (IBND.GT.1 .AND. IX1.GT.0) THEN                        !  40.51
 !               --- determine relative distance from boundary segment
 !                   with respect to the length of that segment
                 SLEN2  = (XP2-XP1)**2 + (YP2-YP1)**2
                 RELDIS = ABS((XP-XP1)*(YP2-YP1)-(YP-YP1)*(XP2-XP1)) /
      &                   SLEN2
-                IF (RELDIS.LT.0.01) THEN                                  40.41
+                IF (RELDIS.LT.0.01) THEN                                !  40.41
 !                 --- determine location on the boundary section
-                  IF (RELDIS-DISMIN.LE.0.01) THEN                         40.41
-                     DISMIN = RELDIS                                      40.41
+                  IF (RELDIS-DISMIN.LE.0.01) THEN                       !  40.41
+                     DISMIN = RELDIS                                    !  40.41
                      RELLOC = ((XP-XP1)*(XP2-XP1)+(YP-YP1)*(YP2-YP1)) /
      &                        SLEN2
-                     IF (RELLOC.GE.-0.001 .AND. RELLOC.LE.1.001) THEN     40.41
-                        RELLCM = RELLOC                                   40.41
-                        IF (RELLCM.LT.0.01) RELLCM=0.                     40.41
-                        IF (RELLCM.GT.0.99) RELLCM=1.                     40.41
-                        IX1M  = IX1                                       40.41
-                        IX2M  = IX2                                       40.41
-                        IY1M  = IY1                                       40.41
-                        IY2M  = IY2                                       40.41
-                        ONBND = .TRUE.                                    40.41
-                     ENDIF                                                40.41
+                     IF (RELLOC.GE.-0.001 .AND. RELLOC.LE.1.001) THEN   !  40.41
+                        RELLCM = RELLOC                                 !  40.41
+                        IF (RELLCM.LT.0.01) RELLCM=0.                   !  40.41
+                        IF (RELLCM.GT.0.99) RELLCM=1.                   !  40.41
+                        IX1M  = IX1                                     !  40.41
+                        IX2M  = IX2                                     !  40.41
+                        IY1M  = IY1                                     !  40.41
+                        IY2M  = IY2                                     !  40.41
+                        ONBND = .TRUE.                                  !  40.41
+                     ENDIF                                              !  40.41
                   ENDIF
                 ENDIF
               ENDIF
             ENDIF
           ENDDO
-          IF (ONBND) THEN                                                 40.41
-             XC = FLOAT(IX1M) + RELLCM * FLOAT(IX2M-IX1M) - 1.            40.41
-             YC = FLOAT(IY1M) + RELLCM * FLOAT(IY2M-IY1M) - 1.            40.41
+          IF (ONBND) THEN                                               !  40.41
+             XC = FLOAT(IX1M) + RELLCM * FLOAT(IX2M-IX1M) - 1.          !  40.41
+             YC = FLOAT(IY1M) + RELLCM * FLOAT(IY2M-IY1M) - 1.          !  40.41
              IF (ITEST .GE. 150 .OR. INTES .GE. 20) THEN
-                WRITE(PRINTF, 65) XP+XOFFS, YP+YOFFS, XC, YC              40.00
+                WRITE(PRINTF, 65) XP+XOFFS, YP+YOFFS, XC, YC            !  40.00
   65            FORMAT (' CVMESH: (XP,YP)=','(',F12.4,',',F12.4,
      &                  ') is on the boundary, (XC,YC)=(',
      &                  F9.2,',',F9.2,')')
@@ -1663,31 +1663,31 @@
           XC = -99.
           YC = -99.
           IF (ITEST .GE. 150 .OR. INTES .GE. 20) THEN
-            WRITE(PRINTF, 85) XP+XOFFS, YP+YOFFS                          40.00
+            WRITE(PRINTF, 85) XP+XOFFS, YP+YOFFS                        !  40.00
   85        FORMAT (' CVMESH: (XP,YP)=','(',F12.4,',',F12.4,
      &              ') is outside grid')
           ENDIF
           GOTO 99
         ENDIF
-      ENDIF                                                               40.00
+      ENDIF                                                             !  40.00
   80  IF (KGRPNT(INT(XC+3.001)-2,INT(YC+3.001)-2).LE.1) THEN
-         WRITE (PRINTF, 90) XP+XOFFS, YP+YOFFS                            40.41
-  90     FORMAT (' point with location ',2F12.4,' is not active')         40.41
+         WRITE (PRINTF, 90) XP+XOFFS, YP+YOFFS                          !  40.41
+  90     FORMAT (' point with location ',2F12.4,' is not active')       !  40.41
          XC = -99.
          YC = -99.
       ENDIF
   99  RETURN
       END
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       LOGICAL FUNCTION INMESH (XP, YP, XCGRID ,YCGRID, KGRBND)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM2                                                         40.41
-      USE SWCOMM3                                                         40.41
-      USE M_PARALL                                                        40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM2                                                       !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE M_PARALL                                                      !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -1703,8 +1703,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1714,7 +1714,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -1726,8 +1726,8 @@
 !  1. Updates
 !
 !       New function for curvilinear version (ver. 40.00). May '98
-!       40.03, Dec 99: test output added; commons swcomm2 and ocpcomm4 added
-!       40.41, Oct. 04: common blocks replaced by modules, include files removed
+!       40.03, Dec 99: test output added; commons swcomm2 and ocpcomm4 a!dded
+!       40.41, Oct. 04: common blocks replaced by modules, include files! removed
 !       40.41, Nov. 04: search for points restricted to subdomain
 !       40.51, Feb. 05: determining number of crossing points improved
 !
@@ -1797,10 +1797,10 @@
       DATA     IENT/0/
       CALL STRACE (IENT,'INMESH')
 !
-      IF (XP.LT.XCLMIN .OR. XP.GT.XCLMAX .OR.                             40.41
-     &    YP.LT.YCLMIN .OR. YP.GT.YCLMAX) THEN                            40.41
-        IF (ITEST.GE.70) WRITE (PRTEST, 22) XP+XOFFS, YP+YOFFS,           40.03
-     &    XCLMIN+XOFFS, XCLMAX+XOFFS, YCLMIN+YOFFS, YCLMAX+YOFFS          40.41
+      IF (XP.LT.XCLMIN .OR. XP.GT.XCLMAX .OR.                           !  40.41
+     &    YP.LT.YCLMIN .OR. YP.GT.YCLMAX) THEN                          !  40.41
+        IF (ITEST.GE.70) WRITE (PRTEST, 22) XP+XOFFS, YP+YOFFS,         !  40.03
+     &    XCLMIN+XOFFS, XCLMAX+XOFFS, YCLMIN+YOFFS, YCLMAX+YOFFS        !  40.41
   22    FORMAT (1X, 2F12.4, ' is outside region ', 4F12.4)
         INMESH = .FALSE.
         GOTO 90
@@ -1832,28 +1832,28 @@
            IX2 = KGRBND(2*IBND-1)
            IY2 = KGRBND(2*IBND)
         ENDIF
-        IF (IX2.NE.0 .AND. (ABS(IX2-IX1).GT.1 .OR.                        40.51
-     &                      ABS(IY2-IY1).GT.1)) IX1 = 0                   40.51
+        IF (IX2.NE.0 .AND. (ABS(IX2-IX1).GT.1 .OR.                      !  40.51
+     &                      ABS(IY2-IY1).GT.1)) IX1 = 0                 !  40.51
         IF (IX2.GT.0) THEN
           XP2 = XCGRID(IX2,IY2)
           YP2 = YCGRID(IX2,IY2)
-          IF (ITEST.GE.180) WRITE (PRTEST, 28) XP2+XOFFS,                 40.03
+          IF (ITEST.GE.180) WRITE (PRTEST, 28) XP2+XOFFS,               !  40.03
      &    YP2+YOFFS
   28      FORMAT (' boundary point ', 2F12.4)
-          IF (IBND.GT.1 .AND. IX1.GT.0) THEN                              40.51
+          IF (IBND.GT.1 .AND. IX1.GT.0) THEN                            !  40.51
             IF (((XP1.GT.XP).AND.(XP2.LE.XP)).OR.
      &          ((XP1.LE.XP).AND.(XP2.GT.XP))) THEN
               IF (YP1.GT.YP .OR. YP2.GT.YP) THEN
 !               determine y-coordinate of crossing point
                 YPS = YP1 + (XP-XP1) * (YP2-YP1) / (XP2-XP1)
-!               determine relative distance from boundary segment         40.51
-!               with respect to the length of that segment                40.51
-                RELDO  = RELDIS                                           40.51
-                RELDIS = ABS(YP-YPS) / SQRT((XP2-XP1)**2 + (YP2-YP1)**2)  40.51
-                IF (YPS.GT.YP.AND.ABS(RELDIS-RELDO).GT.0.1) THEN          40.51
+!               determine relative distance from boundary segment       !  40.51
+!               with respect to the length of that segment              !  40.51
+                RELDO  = RELDIS                                         !  40.51
+                RELDIS = ABS(YP-YPS) / SQRT((XP2-XP1)**2 + (YP2-YP1)**2)!  40.51
+                IF (YPS.GT.YP.AND.ABS(RELDIS-RELDO).GT.0.1) THEN        !  40.51
                   NUMCRS = NUMCRS + 1
-                  IF (ITEST.GE.70) WRITE (PRTEST, 32) NUMCRS,             40.03
-     &            XP+XOFFS, YP+YOFFS, YPS+YOFFS                           40.03
+                  IF (ITEST.GE.70) WRITE (PRTEST, 32) NUMCRS,           !  40.03
+     &            XP+XOFFS, YP+YOFFS, YPS+YOFFS                         !  40.03
   32              FORMAT (' crossing ', I1, ' point ', 3F12.4)
                 ENDIF
               ENDIF
@@ -1869,16 +1869,16 @@
       ENDIF
   90  RETURN
       END
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE NEWTON (XP, YP, XCGRID, YCGRID,                          40.00
-     &                   MXITNR, ITER, XC, YC, FIND)                      40.41 40.02
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE NEWTON (XP, YP, XCGRID, YCGRID,                        !  40.00
+     &                   MXITNR, ITER, XC, YC, FIND)                    !  40.41 40.02
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE SWCOMM4                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -1894,8 +1894,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1905,7 +1905,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !  0. Authors
 !
@@ -1917,16 +1917,16 @@
 !  1. Updates
 !
 !     30.21, Jun. 96: New for curvilinear version
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG! for SWAN
 !     30.82, Oct. 98: Updated description of several variables
 !     30.80, Oct. 98: computation of update of XC,YC modified to avoid
 !                     division by 0
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
-!     Solve eqs. and find a point  (XC,YC) in a curvilinear grid (compt.
-!     grid) for a given point (XP ,YP) in a cartesian grid (problem coord).
+!     Solve eqs. and find a point  (XC,YC) in a curvilinear grid (compt.!
+!     grid) for a given point (XP ,YP) in a cartesian grid (problem coor!d).
 !
 !  3. Method
 !
@@ -1947,23 +1947,23 @@
 !
 !  4. Argument variables
 !
-! i   MXITNR: Maximum number of iterations                                30.82
+! i   MXITNR: Maximum number of iterations                              !  30.82
 !
-      INTEGER MXITNR, ITER                                                40.41 40.02
+      INTEGER MXITNR, ITER                                              !  40.41 40.02
 !
-!   o XC    : X-coordinate in computational coordinates                   30.82
-! i   XCGRID: Coordinates of computational grid in x-direction            30.72
-! i   XP    : X-coordinate in problem coordinates                         30.82
-!   o YC    : Y-coordinate in computational coordinates                   30.82
-! i   YCGRID: Coordinates of computational grid in y-direction            30.72
-! i   YP    : Y-coordinate in problem coordinates                         30.82
+!   o XC    : X-coordinate in computational coordinates                 !  30.82
+! i   XCGRID: Coordinates of computational grid in x-direction          !  30.72
+! i   XP    : X-coordinate in problem coordinates                       !  30.82
+!   o YC    : Y-coordinate in computational coordinates                 !  30.82
+! i   YCGRID: Coordinates of computational grid in y-direction          !  30.72
+! i   YP    : Y-coordinate in problem coordinates                       !  30.82
 !
-      REAL    XC, XCGRID(MXC,MYC), XP                                     30.82
-      REAL    YC, YCGRID(MXC,MYC), YP                                     30.82
+      REAL    XC, XCGRID(MXC,MYC), XP                                   !  30.82
+      REAL    YC, YCGRID(MXC,MYC), YP                                   !  30.82
 !
-!   o FIND  : Whether XC and YC are found                                 30.82
+!   o FIND  : Whether XC and YC are found                               !  30.82
 !
-      LOGICAL FIND                                                        30.82
+      LOGICAL FIND                                                      !  30.82
 !
 !  6. SUBROUTINES USED
 !
@@ -1980,8 +1980,8 @@
 !
 !  9. STRUCTURE
 !
-!       -----------------------------------------------------------------
-!       -----------------------------------------------------------------
+!       ----------------------------------------------------------------!-
+!       ----------------------------------------------------------------!-
 !
 ! 13. Source text
 !
@@ -1997,19 +1997,19 @@
         WRITE(PRINTF,*) ' Coordinates in subroutine NEWTON '
         DO J = 1, MYC
           DO I = 1, MXC
-            WRITE(PRINTF,30) I ,J ,XCGRID(I,J) ,YCGRID(I,J)               30.72
+            WRITE(PRINTF,30) I ,J ,XCGRID(I,J) ,YCGRID(I,J)             !  30.72
           ENDDO
         ENDDO
       ENDIF
  30   FORMAT(2(2X,I5),2(2X,E12.4))
 !
       DO 14 K = 1 ,MXITNR
-        ITER = K                                                          40.41
-        IF (XC .LT. 1. ) XC = 1.                                          BJXX
-        IF (YC .LT. 1. ) YC = 1.                                          BJXX
-        IF (XC .GT. MXC) XC = FLOAT(MXC)                                  BJXX
-        IF (YC .GT. MYC) YC = FLOAT(MYC)                                  BJXX
-        I1   = INT(XC)                                                    40.00
+        ITER = K                                                        !  40.41
+        IF (XC .LT. 1. ) XC = 1.                                        !  BJXX
+        IF (YC .LT. 1. ) YC = 1.                                        !  BJXX
+        IF (XC .GT. MXC) XC = FLOAT(MXC)                                !  BJXX
+        IF (YC .GT. MYC) YC = FLOAT(MYC)                                !  BJXX
+        I1   = INT(XC)                                                  !  40.00
         J1   = INT(YC)
         IF (I1 .EQ. MXC) I1 = I1 - 1
         IF (J1 .EQ. MYC) J1 = J1 - 1
@@ -2038,25 +2038,25 @@
      &          (FI2-XC )*(YCGRID(I1,J2) - YCGRID(I1,J1))
 !
         IF (ITEST .GE. 150)
-     &    WRITE(PRINTF,35) K, XC-1., YC-1., XP, YP, XVC, YVC              40.00
- 35     FORMAT(' NEWTON  iter=', I2, ' (XC,YC)=', 2(1X,F10.2),/,          40.00
+     &    WRITE(PRINTF,35) K, XC-1., YC-1., XP, YP, XVC, YVC            !  40.00
+ 35     FORMAT(' NEWTON  iter=', I2, ' (XC,YC)=', 2(1X,F10.2),/,        !  40.00
      &         ' (XP,YP)=', 2(1X,F10.2),
      &         '  X,Y(XC,YC) = ', 2(1X,F10.2))
         IF (ITEST .GE. 180) WRITE(PRINTF,36)
      &     XCGRID(I1,J1), XCGRID(I1,J2), XCGRID(I2,J1), XCGRID(I2,J2),
      &     YCGRID(I1,J1), YCGRID(I1,J2), YCGRID(I2,J1), YCGRID(I2,J2),
-     &                     DXDXC, DXDYC, DYDXC, DYDYC                     40.00
+     &                     DXDXC, DXDYC, DYDXC, DYDYC                   !  40.00
  36     FORMAT(' NEWTON grid coord:', 8(1x, F10.0), /
-     &         '        deriv=', 4(1X,F10.2))                             40.00
+     &         '        deriv=', 4(1X,F10.2))                           !  40.00
 !
 !       *** the derivated terms of the eqs. are evaluated and  ***
 !       *** the eqs. are solved                                ***
-        DDEN = DXDXC*DYDYC - DYDXC*DXDYC                                  30.80
-        DXP  = XP - XVC                                                   30.80
-        DYP  = YP - YVC                                                   30.80
+        DDEN = DXDXC*DYDYC - DYDXC*DXDYC                                !  30.80
+        DXP  = XP - XVC                                                 !  30.80
+        DYP  = YP - YVC                                                 !  30.80
         IF ( DDEN.NE.0. ) THEN
-           DXC = ( DYDYC*DXP - DXDYC*DYP) / DDEN                          30.80
-           DYC = (-DYDXC*DXP + DXDXC*DYP) / DDEN                          30.80
+           DXC = ( DYDYC*DXP - DXDYC*DYP) / DDEN                        !  30.80
+           DYC = (-DYDXC*DXP + DXDXC*DYP) / DDEN                        !  30.80
         ENDIF
 !
         XC = XC + DXC
@@ -2070,8 +2070,8 @@
         IF (YC .GT. MYC) YC = FLOAT(MYC)
 !
         IF (ITEST .GE. 120 .OR. INTES .GE. 50 .OR. IOUTES .GE. 50)
-     &    WRITE(PRINTF,42) DXC, DYC, XC-1., YC-1.                         40.00
- 42     FORMAT(' (DXC,DYC)=', 2(1X,F10.2), ' (XC,YC)=', 2(1X,F10.2))      40.00
+     &    WRITE(PRINTF,42) DXC, DYC, XC-1., YC-1.                       !  40.00
+ 42     FORMAT(' (DXC,DYC)=', 2(1X,F10.2), ' (XC,YC)=', 2(1X,F10.2))    !  40.00
 !
 !       *** If the accuracy is reached stop the iteration,  ***
         IF (ABS(DXC) .LE. TOLDC .AND. ABS(DYC) .LE. TOLDC) THEN
@@ -2086,16 +2086,16 @@
       RETURN
 !     *** end of subroutine NEWTON ***
       END
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE NEWT1D (XP, YP, XCGRID, YCGRID, KGRPNT,                  40.00
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE NEWT1D (XP, YP, XCGRID, YCGRID, KGRPNT,                !  40.00
      &                   XC, YC, FIND)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM2                                                         40.41
-      USE SWCOMM3                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM2                                                       !  40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -2111,8 +2111,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2122,7 +2122,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !  0. Authors
 !
@@ -2133,13 +2133,13 @@
 !
 !     40.00, Feb. 99: New (adaptation from subr NEWTON for 1D case)
 !     40.13, Feb. 01: DX and DY renamed to DELX and DELY (DX and DY are
-!                     common var.); error in expression for RS corrected
+!                     common var.); error in expression for RS corrected!
 !                     PRINTF replaced by PRTEST in test output
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
-!     Finds broken coordinate XC for a given point XP in a rectilinear grid
+!     Finds broken coordinate XC for a given point XP in a rectilinear g!rid
 !
 !  3. Method
 !
@@ -2155,27 +2155,27 @@
 !
 !  4. Argument variables
 !
-! i   KGRPNT: Grid adresses                                               40.00
+! i   KGRPNT: Grid adresses                                             !  40.00
 !
-      INTEGER KGRPNT(MXC,MYC)                                             40.00
+      INTEGER KGRPNT(MXC,MYC)                                           !  40.00
 !
-!   o XC    : X-coordinate in computational coordinates                   30.82
-! i   XCGRID: Coordinates of computational grid in x-direction            30.72
-! i   XP    : X-coordinate in problem coordinates                         30.82
-!   o YC    : Y-coordinate in computational coordinates                   30.82
-! i   YCGRID: Coordinates of computational grid in y-direction            30.72
-! i   YP    : Y-coordinate in problem coordinates                         30.82
+!   o XC    : X-coordinate in computational coordinates                 !  30.82
+! i   XCGRID: Coordinates of computational grid in x-direction          !  30.72
+! i   XP    : X-coordinate in problem coordinates                       !  30.82
+!   o YC    : Y-coordinate in computational coordinates                 !  30.82
+! i   YCGRID: Coordinates of computational grid in y-direction          !  30.72
+! i   YP    : Y-coordinate in problem coordinates                       !  30.82
 !
-      REAL    XC, XCGRID(MXC,MYC), XP                                     30.82
-      REAL    YC, YCGRID(MXC,MYC), YP                                     30.82
+      REAL    XC, XCGRID(MXC,MYC), XP                                   !  30.82
+      REAL    YC, YCGRID(MXC,MYC), YP                                   !  30.82
 !
-!   o FIND  : Whether XC and YC are found                                 30.82
+!   o FIND  : Whether XC and YC are found                               !  30.82
 !
-      LOGICAL FIND                                                        30.82
+      LOGICAL FIND                                                      !  30.82
 !
 !     Local variables:
 
-      REAL :: DELX, DELY   ! grid line                                    40.13
+      REAL :: DELX, DELY   ! grid line                                  !  40.13
 !
 !  6. SUBROUTINES USED
 !
@@ -2191,8 +2191,8 @@
 !
 !  9. STRUCTURE
 !
-!       -----------------------------------------------------------------
-!       -----------------------------------------------------------------
+!       ----------------------------------------------------------------!-
+!       ----------------------------------------------------------------!-
 !
 ! 13. Source text
 !
@@ -2200,10 +2200,10 @@
       DATA     IENT/0/
       IF (LTRACE) CALL STRACE (IENT,'NEWT1D')
 !
-      IF (ITEST .GE. 120) THEN                                            40.13
-        WRITE(PRTEST,*) ' Coordinates in subroutine NEWT1D '              40.13
+      IF (ITEST .GE. 120) THEN                                          !  40.13
+        WRITE(PRTEST,*) ' Coordinates in subroutine NEWT1D '            !  40.13
         DO I = 1, MXC
-          WRITE(PRTEST,30) I, XCGRID(I,1)+XOFFS ,YCGRID(I,1)+YOFFS        40.13
+          WRITE(PRTEST,30) I, XCGRID(I,1)+XOFFS ,YCGRID(I,1)+YOFFS      !  40.13
         ENDDO
       ENDIF
  30   FORMAT(2X,I5,2(2X,E12.4))
@@ -2224,13 +2224,13 @@
         ENDIF
 !       both ends of the step are valid grid points
 !       now verify whether projection of (Xp,Yp) is within the step
-        DELX = X2 - X1                                                    40.13
-        DELY = Y2 - Y1                                                    40.13
-        RS = ((XP - X1) * DELX + (YP - Y1) * DELY) /                      40.13
-     &              (DELX * DELX + DELY * DELY)                           40.13
+        DELX = X2 - X1                                                  !  40.13
+        DELY = Y2 - Y1                                                  !  40.13
+        RS = ((XP - X1) * DELX + (YP - Y1) * DELY) /                    !  40.13
+     &              (DELX * DELX + DELY * DELY)                         !  40.13
         IF (RS.GE.0. .AND. RS.LE.1.) THEN
           FIND = .TRUE.
-          XC = REAL(IX-2) + RS                                            40.00
+          XC = REAL(IX-2) + RS                                          !  40.00
           YC = 0.
           GOTO 50
         ENDIF
@@ -2238,14 +2238,14 @@
   50  RETURN
 !     *** end of subroutine NEWT1D ***
       END
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE EVALF (XC ,YC ,XVC ,YVC ,XCGRID ,YCGRID)                 30.72
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE EVALF (XC ,YC ,XVC ,YVC ,XCGRID ,YCGRID)               !  30.72
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -2261,8 +2261,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2272,7 +2272,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -2283,12 +2283,12 @@
 !  1. Updates
 !
 !     30.21, Jun. 96: New for curvilinear version
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG! for SWAN
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
-!     Evaluate the coordinates (in problem coordinates) of point (XC,YC)
+!     Evaluate the coordinates (in problem coordinates) of point (XC,YC)!
 !     given in computational coordinates
 !
 !  3. Method
@@ -2297,13 +2297,13 @@
 !
 !  4. Argument variables
 !
-!     XCGRID: input  Coordinates of computational grid in x-direction     30.72
-!     YCGRID: input  Coordinates of computational grid in y-direction     30.72
+!     XCGRID: input  Coordinates of computational grid in x-direction   !  30.72
+!     YCGRID: input  Coordinates of computational grid in y-direction   !  30.72
 !
-      REAL    XCGRID(MXC,MYC),    YCGRID(MXC,MYC)                         30.72
+      REAL    XCGRID(MXC,MYC),    YCGRID(MXC,MYC)                       !  30.72
 !
-!       XC, YC      real, outp    point in computational grid coordinates
-!       XVC, YCV    real, OUTP    same point  but in problem coordinates
+!       XC, YC      real, outp    point in computational grid coordinate!s
+!       XVC, YCV    real, OUTP    same point  but in problem coordinates!
 !
 !  6. SUBROUTINES USED
 !
@@ -2318,8 +2318,8 @@
 !
 !  9. STRUCTURE
 !
-!       -----------------------------------------------------------------
-!       -----------------------------------------------------------------
+!       ----------------------------------------------------------------!-
+!       ----------------------------------------------------------------!-
 !
 ! 10. SOURCE TEXT
 !
@@ -2340,32 +2340,32 @@
       T = XC - FLOAT(I)
       U = YC - FLOAT(J)
 !     *** For x-coord. ***
-      P1 = XCGRID(I,J)                                                    30.72
-      P2 = XCGRID(I+1,J)                                                  30.72
-      P3 = XCGRID(I+1,J+1)                                                30.72
-      P4 = XCGRID(I,J+1)                                                  30.72
+      P1 = XCGRID(I,J)                                                  !  30.72
+      P2 = XCGRID(I+1,J)                                                !  30.72
+      P3 = XCGRID(I+1,J+1)                                              !  30.72
+      P4 = XCGRID(I,J+1)                                                !  30.72
       XVC = (1.-T)*(1.-U)*P1+T*(1.-U)*P2+T*U*P3+(1.-T)*U*P4
 !     *** For y-coord. ***
-      P1 = YCGRID(I,J)                                                    30.72
-      P2 = YCGRID(I+1,J)                                                  30.72
-      P3 = YCGRID(I+1,J+1)                                                30.72
-      P4 = YCGRID(I,J+1)                                                  30.72
+      P1 = YCGRID(I,J)                                                  !  30.72
+      P2 = YCGRID(I+1,J)                                                !  30.72
+      P3 = YCGRID(I+1,J+1)                                              !  30.72
+      P4 = YCGRID(I,J+1)                                                !  30.72
       YVC = (1.-T)*(1.-U)*P1+T*(1.-U)*P2+T*U*P3+(1.-T)*U*P4
       RETURN
 !     *** end of subroutine EVALF ***
       END
 !
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE SWOBST (XCGRID, YCGRID, KGRPNT, CROSS)                   40.31 30.70
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE SWOBST (XCGRID, YCGRID, KGRPNT, CROSS)                 !  40.31 30.70
+!                                                                      *!
+!***********************************************************************!
 
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE M_OBSTA                                                         40.31
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE M_OBSTA                                                       !  40.31
 
-      IMPLICIT NONE                                                       40.04
+      IMPLICIT NONE                                                     !  40.04
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -2381,8 +2381,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2392,7 +2392,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -2408,14 +2408,14 @@
 !  1. Updates
 !
 !     30.70, Feb. 98: check if neighbouring point is a true grid point
-!                     loop over grid points moved from calling routine into this
+!                     loop over grid points moved from calling routine i!nto this
 !                     argument list changed
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG! for SWAN
 !     40.04, Nov. 99: IMPLICIT NONE added, header updated
 !                   : Removed include files that are not used
 !     40.28, Feb. 02: Adjustments for extended REFLECTION option
 !     40.31, Oct. 03: changes w.r.t. obstacles
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -2432,11 +2432,11 @@
 !                    central point and its neighbour CROSS is equal
 !                    to the number of the obstacle
 !     KGRPNT  input  Indirect addressing for computational grid points
-!     XCGRID  input  Coordinates of computational grid in x-direction     30.72
-!     YCGRID  input  Coordinates of computational grid in y-direction     30.72
+!     XCGRID  input  Coordinates of computational grid in x-direction   !  30.72
+!     YCGRID  input  Coordinates of computational grid in y-direction   !  30.72
 !
       INTEGER KGRPNT(MXC,MYC), CROSS(2,MCGRD)
-      REAL    XCGRID(MXC,MYC), YCGRID(MXC,MYC)                            30.72
+      REAL    XCGRID(MXC,MYC), YCGRID(MXC,MYC)                          !  30.72
 !
 !  5. Parameter variables
 !
@@ -2460,15 +2460,15 @@
       INTEGER    ICC, ICGRD, IENT, ILINK, IX, IY, JJ, JP
       INTEGER    NUMCOR
       REAL       X1, X2, X3, X4, Y1, Y2, Y3, Y4
-      LOGICAL    XONOBST                                                  40.04
-      TYPE(OBSTDAT), POINTER :: COBST                                     40.31
+      LOGICAL    XONOBST                                                !  40.04
+      TYPE(OBSTDAT), POINTER :: COBST                                   !  40.31
 !
 !  8. Subroutines used
 !
-!     TCROSS                                                              40.04
+!     TCROSS                                                            !  40.04
 !     STRACE
 !
-      LOGICAL    TCROSS                                                   40.04
+      LOGICAL    TCROSS                                                 !  40.04
 !
 !  9. Subroutines calling
 !
@@ -2479,30 +2479,30 @@
 ! 11. Remarks
 !
 ! 12. Structure
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       Read number of obstacles from array OBSTA
 !       For every obstacle do
 !           Read number of corners of the obstacle
 !           For every corner of the obstacle do
 !               For every grid point do
-!                   call function TCROSS to search if there is crossing   40.04
-!                   point                                                 40.04
-!                   between the line of two points of the stencil and the
+!                   call function TCROSS to search if there is crossing !  40.04
+!                   point                                               !  40.04
+!                   between the line of two points of the stencil and th!e
 !                   line of the corners of the obstacle.
 !                   If there is crossing point then
-!                   then CROSS(link,kcgrd) = number of the crossing obstacle
+!                   then CROSS(link,kcgrd) = number of the crossing obst!acle
 !                   else CROSS(link,kcgrd) = 0
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !
 ! 13. Source text
-! ======================================================================
+! ======================================================================!
       SAVE IENT
       DATA IENT/0/
       IF (LTRACE) CALL STRACE (IENT,'SWOBST')
 !
       IF (NUMOBS .GT. 0) THEN
 !       NUMOBS is the number of obstacles ***
-        COBST => FOBSTAC                                                  40.31
+        COBST => FOBSTAC                                                !  40.31
         DO 120 JJ = 1, NUMOBS
 !         number of corner points of the obstacle
           NUMCOR = COBST%NCRPTS
@@ -2511,43 +2511,43 @@
  50         FORMAT( ' Obstacle number : ', I4,'  has ',I4,' corners')
           ENDIF
 !         *** X1 X2 X3 ETC. are the coordinates of point according ***
-!         *** with the scheme in the subroutine TCROSS header      ***    40.04
-          X3 = COBST%XCRP(1)                                              40.31
-          Y3 = COBST%YCRP(1)                                              40.31
+!         *** with the scheme in the subroutine TCROSS header      ***  !  40.04
+          X3 = COBST%XCRP(1)                                            !  40.31
+          Y3 = COBST%YCRP(1)                                            !  40.31
           IF (ITEST.GE. 120)  WRITE(PRINTF,30) 1,X3,Y3
           DO 110 JP = 2, NUMCOR
-            X4 = COBST%XCRP(JP)                                           40.31
-            Y4 = COBST%YCRP(JP)                                           40.31
+            X4 = COBST%XCRP(JP)                                         !  40.31
+            Y4 = COBST%YCRP(JP)                                         !  40.31
             IF (ITEST.GE. 120) WRITE(PRINTF,30) JP,X4,Y4
-  30        FORMAT(' Corner number:', I4,'    XP: ',E10.4,' YP: ',E11.4)
+  30        FORMAT(' Corner number:', I4,'    XP: ',E10.4,' YP: ',E11.4)!
             DO 100 IX = 1, MXC
               DO 90 IY = 1, MYC
                 ICC = KGRPNT(IX,IY)
                 IF (ICC .GT. 1) THEN
-                  X1 = XCGRID(IX,IY)                                      30.72
-                  Y1 = YCGRID(IX,IY)                                      30.72
+                  X1 = XCGRID(IX,IY)                                    !  30.72
+                  Y1 = YCGRID(IX,IY)                                    !  30.72
 !
-!                 *** "ILINK" indicates which link is analyzed. Initial  ***
-!                 *** neighbour in x , second link with neighbouring in y***
+!                 *** "ILINK" indicates which link is analyzed. Initial ! ***
+!                 *** neighbour in x , second link with neighbouring in !y***
                   DO 80 ILINK = 1, 2
                     IF (ILINK.EQ.1 .AND. IX.GT.1) THEN
-                      X2    = XCGRID(IX-1,IY)                             30.72
-                      Y2    = YCGRID(IX-1,IY)                             30.72
-                      ICGRD = KGRPNT(IX-1,IY)                             30.70
+                      X2    = XCGRID(IX-1,IY)                           !  30.72
+                      Y2    = YCGRID(IX-1,IY)                           !  30.72
+                      ICGRD = KGRPNT(IX-1,IY)                           !  30.70
                     ELSE IF (ILINK.EQ.2 .AND. IY.GT.1) THEN
-                      X2    = XCGRID(IX,IY-1)                             30.72
-                      Y2    = YCGRID(IX,IY-1)                             30.72
-                      ICGRD = KGRPNT(IX,IY-1)                             30.70
+                      X2    = XCGRID(IX,IY-1)                           !  30.72
+                      Y2    = YCGRID(IX,IY-1)                           !  30.72
+                      ICGRD = KGRPNT(IX,IY-1)                           !  30.70
                     ELSE
                       ICGRD = 0
                     ENDIF
-                    IF (ICGRD.GT.1) THEN                                  30.70
+                    IF (ICGRD.GT.1) THEN                                !  30.70
 !
-!                     *** All links are analyzed in each point otherwise the   ***
-!                     *** boundaries can be excluded                           ***
+!                     *** All links are analyzed in each point otherwise! the   ***
+!                     *** boundaries can be excluded                    !       ***
 !
-                      IF (TCROSS(X1, X2, X3, X4, Y1, Y2, Y3, Y4,          40.04
-     &                           XONOBST)) THEN                           40.04
+                      IF (TCROSS(X1, X2, X3, X4, Y1, Y2, Y3, Y4,        !  40.04
+     &                           XONOBST)) THEN                         !  40.04
                         CROSS(ILINK,ICC) = JJ
                       ENDIF
                     ENDIF
@@ -2566,15 +2566,15 @@
       RETURN
 ! * end of subroutine SWOBST *
       END
-!***********************************************************************
-!                                                                      *
-      LOGICAL FUNCTION TCROSS (X1, X2, X3, X4, Y1, Y2, Y3, Y4, X1ONOBST)
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      LOGICAL FUNCTION TCROSS (X1, X2, X3, X4, Y1, Y2, Y3, Y4, X1ONOBST)!
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM4                                                      !  40.41
 !
-      IMPLICIT NONE                                                       40.04
+      IMPLICIT NONE                                                     !  40.04
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -2590,8 +2590,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2601,7 +2601,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -2615,11 +2615,11 @@
 !       30.70, Feb 98: argument list simplified
 !                      subroutine changed into logical function
 !       40.00, Aug 98: division by zero prevented
-!       40.04, Aug 99: method corrected, IMPLICIT NONE added, XCONOBST added,
-!                      introduced TINY and EPSILON (instead of comparing to 0)
+!       40.04, Aug 99: method corrected, IMPLICIT NONE added, XCONOBST a!dded,
+!                      introduced TINY and EPSILON (instead of comparing! to 0)
 !                      replaced 0 < LMBD,MIU by  0 <= LMBD,MIU
 !                      XCONOBST added to argument list
-!       40.41, Oct. 04: common blocks replaced by modules, include files removed
+!       40.41, Oct. 04: common blocks replaced by modules, include files! removed
 !
 !  2. Purpose
 !
@@ -2656,12 +2656,12 @@
 !       | YC |    | Y1 |           | Y2 - Y1 |
 !
 !
-!       | XC |    | X3 |           | X4 - X3 |                            40.04
+!       | XC |    | X3 |           | X4 - X3 |                          !  40.04
 !       |    | =  |    | +  MIU  * |         |
-!       | YC |    | Y3 |           | Y4 - Y3 |                            40.04
+!       | YC |    | Y3 |           | Y4 - Y3 |                          !  40.04
 !
 !
-!     If solution exist and (0 <= LMBD <= 1 and 0 <= MIU <= 1)            40.04
+!     If solution exist and (0 <= LMBD <= 1 and 0 <= MIU <= 1)          !  40.04
 !     there is an obstacle crossing the stencil
 !
 !  4. Argument variables
@@ -2670,7 +2670,7 @@
 !     X2, Y2  inp    user coordinates of other end of grid link
 !     X3, Y3  inp    user coordinates of one end of obstacle side
 !     X4, Y4  inp    user coordinates of other end of obstacle side
-!     X1ONOBST outp   boolean which tells whether (X1,Y1) is on obstacle
+!     X1ONOBST outp   boolean which tells whether (X1,Y1) is on obstacle!
 !
       REAL       EPS, X1, X2, X3, X4, Y1, Y2, Y3, Y4
       LOGICAL    X1ONOBST
@@ -2683,8 +2683,8 @@
 !     DIV1       denominator of value of LMBD (or MIU)
 !     E,F        dummy variables
 !     IENT       number of entries
-!     LMBD       coefficient in vector equation for stencil points (or obstacle)
-!     MIU        coefficient in vector equation for obstacle (or stencil points)
+!     LMBD       coefficient in vector equation for stencil points (or o!bstacle)
+!     MIU        coefficient in vector equation for obstacle (or stencil! points)
 !
       INTEGER    IENT
       REAL       A, B, C, D, DIV1, E, F, LMBD, MIU
@@ -2703,28 +2703,28 @@
 ! 12. Structure
 !
 !     Calculate MIU and LMBD
-!     If 0 <= MIU, LMBD <= 1                                              40.04
+!     If 0 <= MIU, LMBD <= 1                                            !  40.04
 !     Then TCROSS is .True.
 !     Else TCROSS is .False.
 !
 ! 13. Source text
-! ======================================================================
+! ======================================================================!
       SAVE IENT
       DATA IENT/0/
       IF (LTRACE) CALL STRACE (IENT,'TCROSS')
 !
-      EPS = EPSILON(X1)*SQRT((X2-X1)*(X2-X1)+(Y2-Y1)*(Y2-Y1))             40.04
-      IF (EPS ==0.) EPS = TINY(X1)                                        40.04
+      EPS = EPSILON(X1)*SQRT((X2-X1)*(X2-X1)+(Y2-Y1)*(Y2-Y1))           !  40.04
+      IF (EPS ==0.) EPS = TINY(X1)                                      !  40.04
       A    = X2 - X1
 !     A not equal to zero
-      IF (ABS(A) .GT. TINY(X1)) THEN                                      40.04
+      IF (ABS(A) .GT. TINY(X1)) THEN                                    !  40.04
         B    = X4 - X3
         C    = X3 - X1
         D    = Y2 - Y1
         E    = Y4 - Y3
         F    = Y3 - Y1
       ELSE
-!       exchange MIU and LMBD                                             40.04
+!       exchange MIU and LMBD                                           !  40.04
         A    = X4 - X3
         B    = X2 - X1
         C    = X1 - X3
@@ -2732,38 +2732,38 @@
         E    = Y2 - Y1
         F    = Y1 - Y3
       ENDIF
-      DIV1 = ((A*E) - (D*B))                                              40.00
+      DIV1 = ((A*E) - (D*B))                                            !  40.00
 !
-!     DIV1 = 0 means that obstacle is parallel to line through            40.04
-!     stencil points, or (X3,Y3) = (X4,Y4);                               40.04
-!     A = 0 means trivial set of equations X4= X3 and X2 =X1              40.04
+!     DIV1 = 0 means that obstacle is parallel to line through          !  40.04
+!     stencil points, or (X3,Y3) = (X4,Y4);                             !  40.04
+!     A = 0 means trivial set of equations X4= X3 and X2 =X1            !  40.04
 !
-      IF ((ABS(DIV1).LE.TINY(X1)) .OR.                                    40.04
-     &    (ABS(A).LE.TINY(X1))) THEN                                      40.04
-        MIU = -1.                                                         40.00
-        LMBD = -1.                                                        40.04
-      ELSE                                                                40.00
+      IF ((ABS(DIV1).LE.TINY(X1)) .OR.                                  !  40.04
+     &    (ABS(A).LE.TINY(X1))) THEN                                    !  40.04
+        MIU = -1.                                                       !  40.00
+        LMBD = -1.                                                      !  40.04
+      ELSE                                                              !  40.00
         MIU  = ((D*C) - (A*F)) / DIV1
         LMBD = (C + (B*MIU)) / A
-      END IF                                                              40.00
+      END IF                                                            !  40.00
 !
-      IF (MIU  .GE. 0. .AND. MIU  .LE. 1. .AND.                           40.04
-     &    LMBD .GE. 0. .AND. LMBD .LE. 1.) THEN                           40.04
+      IF (MIU  .GE. 0. .AND. MIU  .LE. 1. .AND.                         !  40.04
+     &    LMBD .GE. 0. .AND. LMBD .LE. 1.) THEN                         !  40.04
 !
-!       Only (X1,Y1) is checked, because of otherwise possible double     40.04
-!       counting                                                          40.04
-        IF ((LMBD.LE.EPS .AND. ABS(X2-X1).GT.EPS).OR.                     40.04
-     &      (MIU .LE.EPS .AND. ABS(X2-X1).LE.EPS))THEN                    40.04
-          X1ONOBST = .TRUE.                                               40.04
-        ELSE                                                              40.04
-          X1ONOBST = .FALSE.                                              40.04
-        ENDIF                                                             40.04
+!       Only (X1,Y1) is checked, because of otherwise possible double   !  40.04
+!       counting                                                        !  40.04
+        IF ((LMBD.LE.EPS .AND. ABS(X2-X1).GT.EPS).OR.                   !  40.04
+     &      (MIU .LE.EPS .AND. ABS(X2-X1).LE.EPS))THEN                  !  40.04
+          X1ONOBST = .TRUE.                                             !  40.04
+        ELSE                                                            !  40.04
+          X1ONOBST = .FALSE.                                            !  40.04
+        ENDIF                                                           !  40.04
 !
 !       *** test output ***
         IF (ITEST .GE. 120) THEN
           WRITE(PRINTF,70)X1,Y1,X2,Y2,X3,Y3,X4,Y4
   70      FORMAT(' Obstacle crossing  :',/,
-     &    ' Coordinates of comp grid points and corners of obstacle:',/,
+     &    ' Coordinates of comp grid points and corners of obstacle:',/,!
      &    ' P1(',E10.4,',',E10.4,')',' P2(',E10.4,',',E10.4,')',/,
      &    ' P3(',E10.4,',',E10.4,')',' P4(',E10.4,',',E10.4,')')
         ENDIF
@@ -2777,28 +2777,28 @@
       RETURN
       END
 !
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE SWTRCF (DEP2  , WLEV2 , CHS   ,                          41.71 40.31 40.00
-     &                   LINK  , OBREDF,                                  40.03
-     &                   AC2   , REFLSO, KGRPNT, XCGRID,                  40.41 40.09
-     &                   YCGRID, CAX,    CAY   , RDX   , RDY , ANYBIN,    40.09
-     &                   SPCSIG, SPCDIR, CGO   , KWAVE , HSS2, TSS2  ,    42.06 41.82 40.13 40.28
-     &                   DSS2  )                                          42.06
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE SWTRCF (DEP2  , WLEV2 , CHS   ,                        !  41.71 40.31 40.00
+     &                   LINK  , OBREDF,                                !  40.03
+     &                   AC2   , REFLSO, KGRPNT, XCGRID,                !  40.41 40.09
+     &                   YCGRID, CAX,    CAY   , RDX   , RDY , ANYBIN,  !  40.09
+     &                   SPCSIG, SPCDIR, CGO   , KWAVE , HSS2, TSS2  ,  !  42.06 41.82 40.13 40.28
+     &                   DSS2  )                                        !  42.06
+!                                                                      *!
+!***********************************************************************!
 
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM2                                                         40.66
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-      USE M_OBSTA                                                         40.31
-      USE M_PARALL                                                        40.31
-      USE SwanGriddata                                                    40.80
-      USE SwanCompdata                                                    40.80
-      USE SwanIEM, only: ntf, Ebig                                        41.85
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM2                                                       !  40.66
+      USE SWCOMM3                                                       !  40.41
+      USE SWCOMM4                                                       !  40.41
+      USE M_OBSTA                                                       !  40.31
+      USE M_PARALL                                                      !  40.31
+      USE SwanGriddata                                                  !  40.80
+      USE SwanCompdata                                                  !  40.80
+      USE SwanIEM, only: ntf, Ebig                                      !  41.85
 !
-      IMPLICIT NONE                                                       40.09
+      IMPLICIT NONE                                                     !  40.09
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -2814,8 +2814,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2825,7 +2825,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -2857,25 +2857,25 @@
 !     40.03, Jul. 00: LINK1 and LINK2 in argumentlist replaced by LINK
 !     40.09, Nov. 99: IMPLICIT NONE added, Method corrected
 !                     Reflection option for obstacle added
-!     40.14, Dec. 00: Reflection call corrected: reduced to neighbouring
+!     40.14, Dec. 00: Reflection call corrected: reduced to neighbouring!
 !                     linepiece of obstacle (bug fix 40.11D)
-!            Jan. 01: Constant waterlevel taken into account as well (bug fix 40.11E)
-!     40.18, Apr. 01: Scattered reflection against obstacles added        40.18
+!            Jan. 01: Constant waterlevel taken into account as well (bu!g fix 40.11E)
+!     40.18, Apr. 01: Scattered reflection against obstacles added      !  40.18
 !     40.28, Dec. 01: Frequency dependent reflection added
 !     40.13, Aug. 02: subroutine restructured:
-!                     loop in reflection procedure changed to avoid double
+!                     loop in reflection procedure changed to avoid doub!le
 !                     reflection
 !                     argument list of subr REFLECT revised
 !                     argument SPCDIR added
-!     40.30, Mar. 03: correcting indices of test point with offsets MXF, MYF
+!     40.30, Mar. 03: correcting indices of test point with offsets MXF,! MYF
 !     40.08, Mar. 03: Dimensioning of RDX, RDX changed to be consistent
 !                     with other subroutines
 !     40.31, Oct. 03: changes w.r.t. obstacles
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
-!     40.66, Mar. 07: extension with d'Angremond and Van der Meer transmission
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
+!     40.66, Mar. 07: extension with d'Angremond and Van der Meer transm!ission
 !     40.80, Mar. 08: extension to unstructured grids
-!     41.65, Jun. 16: extension frequency and direction dependent tranmission coefficients
-!     41.71, Dec. 18: extension freeboard dependent transmission and reflection
+!     41.65, Jun. 16: extension frequency and direction dependent tranmi!ssion coefficients
+!     41.71, Dec. 18: extension freeboard dependent transmission and ref!lection
 !     41.82, Aug. 21: introduce FIG source term
 !     41.85, May  19: implementation of IEM (surfbeat model)
 !     41.93, May  22: radiated seaward FIG
@@ -2889,75 +2889,75 @@
 !
 !      compute the transmision coeficient in case obstacle DAM
 !      based on Goda (1967) [from Seelig (1979)]
-!      or d'Angremond and Van der Meer formula's (1996)                   40.66
+!      or d'Angremond and Van der Meer formula's (1996)                 !  40.66
 !
-!      if reflections are switched on, calculate sourceterm in            40.09
-!      subroutine REFLECT                                                 40.09
+!      if reflections are switched on, calculate sourceterm in          !  40.09
+!      subroutine REFLECT                                               !  40.09
 !
 !  3. Method
 !
-!     Calculate transmission coefficient based on Goda (1967)             40.09
-!     from Seelig (1979)                                                  40.09
+!     Calculate transmission coefficient based on Goda (1967)           !  40.09
+!     from Seelig (1979)                                                !  40.09
 !     Kt = 0.5*(1-sin {pi/(2*alpha)*(WATHIG/Hi +beta)})
 !     where
 !     Kt         transmission coefficient
 !
 !     alpha,beta coefficients dependent on structure of obstacle
 !                and waves
-!     WATHIG     = F = h-d is the freeboard of the dam, where h is the    40.09
-!                crest level of the dam above the reference level and d   40.09
-!                is the mean water level (relative to reference level)    40.09
-!     Hi         incident (significant) wave height                       40.09
-!                                                                         40.09
-!     If reflection are switched on and obstacle is not exactly on line   40.09
-!     of two neighbouring gridpoints, calculate reflections               40.09
+!     WATHIG     = F = h-d is the freeboard of the dam, where h is the  !  40.09
+!                crest level of the dam above the reference level and d !  40.09
+!                is the mean water level (relative to reference level)  !  40.09
+!     Hi         incident (significant) wave height                     !  40.09
+!                                                                       !  40.09
+!     If reflection are switched on and obstacle is not exactly on line !  40.09
+!     of two neighbouring gridpoints, calculate reflections             !  40.09
 !
 !  4. Argument variables
 !
-!     AC2      input     Action density array                             40.09
-!     ANYBIN   input     Set a particular bin TRUE or FALSE depending on  40.09
-!                        SECTOR                                           40.09
-!     CAX      input     Propagation velocity                             40.09
-!     CAY      input     Propagation velocity                             40.09
+!     AC2      input     Action density array                           !  40.09
+!     ANYBIN   input     Set a particular bin TRUE or FALSE depending on!  40.09
+!                        SECTOR                                         !  40.09
+!     CAX      input     Propagation velocity                           !  40.09
+!     CAY      input     Propagation velocity                           !  40.09
 !     CHS      input     Hs in all computational grid points
-!     DEP2     input     Water depth in grid points                       41.71
-!     DSS2     input     sea-swell mean wave direction in all grid points 42.06
-!     HSS2     input     sea-swell sig wave height in all grid points     41.82
-!     KCGRD    input     Grid address of points of computational stencil
-!     LINK     input     indicates whether link in stencil                40.03
-!                        crosses an obstacle                              40.03
+!     DEP2     input     Water depth in grid points                     !  41.71
+!     DSS2     input     sea-swell mean wave direction in all grid point!s 42.06
+!     HSS2     input     sea-swell sig wave height in all grid points   !  41.82
+!     KCGRD    input     Grid address of points of computational stencil!
+!     LINK     input     indicates whether link in stencil              !  40.03
+!                        crosses an obstacle                            !  40.03
 !     OBREDF   output    Array of action density reduction coefficients
 !                        (reduction at the obstacle)
-!     REFLSO   inp/outp  contribution to the source term of action        40.41
-!                        balance equation due to reflection               40.41
-!     RDX,RDY  input     Array containing spatial derivative coefficients 40.09
-!     TSS2     input     sea-swell mean wave period in all grid points    41.82
+!     REFLSO   inp/outp  contribution to the source term of action      !  40.41
+!                        balance equation due to reflection             !  40.41
+!     RDX,RDY  input     Array containing spatial derivative coefficient!s 40.09
+!     TSS2     input     sea-swell mean wave period in all grid points  !  41.82
 !     WLEV2    input     Water level in grid points
 !
       INTEGER  KGRPNT(MXC,MYC)
-      INTEGER  LINK(2)                                                    40.03
-      REAL     CHS(MCGRD), OBREDF(MDC,MSC,2), WLEV2(MCGRD), DEP2(MCGRD)   41.71 30.70
-      REAL     :: AC2(MDC,MSC,MCGRD)                                      40.09 40.22
-!     Changed ICMAX to MICMAX, since MICMAX doesn't vary over gridpoint   40.22
-      REAL     :: CAX(MDC,MSC,MICMAX), CAY(MDC,MSC,MICMAX)                40.09 40.22
-      REAL     :: REFLSO(MDC,MSC), RDX(MICMAX), RDY(MICMAX)               40.41 40.09 40.22 40.08
-      REAL     :: SPCSIG(MSC), SPCDIR(MDC,6)                              40.13 40.28
-      REAL     :: CGO(MSC,MICMAX), KWAVE(MSC,MICMAX)                      41.82
-      REAL     :: HSS2(MCGRD), TSS2(MCGRD), DSS2(MCGRD)                   42.06 41.82
-      LOGICAL  :: ANYBIN(MDC,MSC)                                         40.09
+      INTEGER  LINK(2)                                                  !  40.03
+      REAL     CHS(MCGRD), OBREDF(MDC,MSC,2), WLEV2(MCGRD), DEP2(MCGRD) !  41.71 30.70
+      REAL     :: AC2(MDC,MSC,MCGRD)                                    !  40.09 40.22
+!     Changed ICMAX to MICMAX, since MICMAX doesn't vary over gridpoint !  40.22
+      REAL     :: CAX(MDC,MSC,MICMAX), CAY(MDC,MSC,MICMAX)              !  40.09 40.22
+      REAL     :: REFLSO(MDC,MSC), RDX(MICMAX), RDY(MICMAX)             !  40.41 40.09 40.22 40.08
+      REAL     :: SPCSIG(MSC), SPCDIR(MDC,6)                            !  40.13 40.28
+      REAL     :: CGO(MSC,MICMAX), KWAVE(MSC,MICMAX)                    !  41.82
+      REAL     :: HSS2(MCGRD), TSS2(MCGRD), DSS2(MCGRD)                 !  42.06 41.82
+      LOGICAL  :: ANYBIN(MDC,MSC)                                       !  40.09
 !
 !  5. Parameter variables
 !
 !  6. Local variables
 !
 !     ALOW     Lower limit for FVH
-!     BK       crest width                                                40.66
+!     BK       crest width                                              !  40.66
 !     BUPL     Upper limit for FVH
-!     BVH      Bk/Hsin                                                    40.66
-!     FD1      Coeff. for freq. dep. reflection: vertical displacement    40.28
-!     FD2      Coeff. for freq. dep. reflection: shape parameter          40.28
-!     FD3      Coeff. for freq. dep. reflection: directional coefficient  40.28
-!     FD4      Coeff. for freq. dep. reflection: bending point of freq.   40.28
+!     BVH      Bk/Hsin                                                  !  40.66
+!     FD1      Coeff. for freq. dep. reflection: vertical displacement  !  40.28
+!     FD2      Coeff. for freq. dep. reflection: shape parameter        !  40.28
+!     FD3      Coeff. for freq. dep. reflection: directional coefficient!  40.28
+!     FD4      Coeff. for freq. dep. reflection: bending point of freq. !  40.28
 !     FVH      WATHIG/Hsin
 !     HGT      elevation of top of obstacle above reference level
 !     HSIN     incoming significant wave height
@@ -2968,16 +2968,16 @@
 !     IS       counter in frequency space
 !     ITRAS    indicates kind of obstacle: 0 -> constant transm
 !                                          1 -> dam, Goda
-!                                          2 -> dam, d'Angremond and      40.66
-!                                                    Van der Meer         40.66
+!                                          2 -> dam, d'Angremond and    !  40.66
+!                                                    Van der Meer       !  40.66
 !     JP       counter for number of corner points of obstacles
-!     L0P      wave length in deep water                                  40.66
-!     LREFDIFF indicates whether reflected energy should be               40.18
-!              scattered (1) or not (0)                                   40.18
-!     LREFL    if LREFL=0, no reflection; if LREFL=1, constant            40.13
-!              reflection coeff.                                          40.13
-!     LRFRD    Indicates whether frequency dependent reflection is        40.28
-!              active (#0.) or not (=0.)                                  40.28
+!     L0P      wave length in deep water                                !  40.66
+!     LREFDIFF indicates whether reflected energy should be             !  40.18
+!              scattered (1) or not (0)                                 !  40.18
+!     LREFL    if LREFL=0, no reflection; if LREFL=1, constant          !  40.13
+!              reflection coeff.                                        !  40.13
+!     LRFRD    Indicates whether frequency dependent reflection is      !  40.28
+!              active (#0.) or not (=0.)                                !  40.28
 !     NMPO     link number
 !     NUMCOR   number of corner points of obstacle
 !     OBET     user defined coefficient (beta) in formulation of
@@ -2985,10 +2985,10 @@
 !     OBHKT    transmission coefficient in terms of wave height
 !     OGAM     user defined coefficient (alpha) in formulation of
 !              Goda/Seelig (1967/1979)
-!     POWN     user defined power of redistribution function              40.28
+!     POWN     user defined power of redistribution function            !  40.28
 !     REFLCOEF reflection coefficient in terms of action density
-!     REFLTST  used to test Refl^2+Transm^2 <=1                           40.13
-!     SLOPE    slope of obstacle                                          40.66
+!     REFLTST  used to test Refl^2+Transm^2 <=1                         !  40.13
+!     SLOPE    slope of obstacle                                        !  40.66
 !     SQRTREF  dummy variable
 !     TRCF     transmission coefficient in terms of action density
 !              (user defined or calculated (in terms of waveheight))
@@ -2997,169 +2997,169 @@
 !     X3, Y3   user coordinates of one end of obstacle side
 !     X4, Y4   user coordinates of other end of obstacle side
 !     XCGRID   Coordinates of computational grid in x-direction
-!     XI0P     breaker parameter                                          40.66
-!     XOBS     x-coordinate of obstacle point                             40.80
-!     XONOBST  Indicates whether computational point (X1,Y1) is on        40.14
-!              obstacle                                                   40.14
-!     XV       x-coordinate of vertex of face                             40.80
+!     XI0P     breaker parameter                                        !  40.66
+!     XOBS     x-coordinate of obstacle point                           !  40.80
+!     XONOBST  Indicates whether computational point (X1,Y1) is on      !  40.14
+!              obstacle                                                 !  40.14
+!     XV       x-coordinate of vertex of face                           !  40.80
 !     YCGRID   Coordinates of computational grid in y-direction
-!     YOBS     y-coordinate of obstacle point                             40.80
-!     YV       y-coordinate of vertex of face                             40.80
+!     YOBS     y-coordinate of obstacle point                           !  40.80
+!     YV       y-coordinate of vertex of face                           !  40.80
 !     WATHIG   freeboard of the dam (= HGT-waterlevel)
 !
       INTEGER    ID, IENT, ILINK, ITRAS, IS, JP, ICGRD, LREFL,
      &           NUMCOR, NMPO, ISIGM, IFIG
-      INTEGER    LREFDIFF, LRFRD                                          40.31
-      INTEGER    LFREE, LQUAY                                             41.71
+      INTEGER    LREFDIFF, LRFRD                                        !  40.31
+      INTEGER    LFREE, LQUAY                                           !  41.71
       REAL       ALOW, BUPL, FVH, HGT, HSIN, OBET, OBHKT,
-     &           SLOPE, BK, L0P, XI0P, BVH, EMAX, ETD, TP,                40.66
+     &           SLOPE, BK, L0P, XI0P, BVH, EMAX, ETD, TP,              !  40.66
      &           FAC1, FAC2,
-     &           POWN, OGAM, REFLCOEF,                                    40.18 40.09
+     &           POWN, OGAM, REFLCOEF,                                  !  40.18 40.09
      &           X1, X2, X3, X4, Y1, Y2, Y3, Y4, WATHIG
-      REAL       TRCF(MSC,MDC)                                            41.65
-      REAL       FD1, FD2, FD3, FD4                                       40.31 40.28
-      REAL       GAMR, GAMT, FBR, FBT                                     41.71
-      REAL       ALPHA, AIG, ACOEF, SIG, SFAC, FRQD, FIGSRC, HSS, TSS     42.06 41.82
-      REAL       BNORM, SDET, X, Y                                        41.93
-      REAL       ACOS, CDIR, CTOT, DSS, FIGS, MS, SSTH, TOUT              42.06
-      REAL       SQRTREF                                                  40.09
-      LOGICAL    XONOBST                                                  40.14
-      LOGICAL :: REFLTST                                                  40.13
+      REAL       TRCF(MSC,MDC)                                          !  41.65
+      REAL       FD1, FD2, FD3, FD4                                     !  40.31 40.28
+      REAL       GAMR, GAMT, FBR, FBT                                   !  41.71
+      REAL       ALPHA, AIG, ACOEF, SIG, SFAC, FRQD, FIGSRC, HSS, TSS   !  42.06 41.82
+      REAL       BNORM, SDET, X, Y                                      !  41.93
+      REAL       ACOS, CDIR, CTOT, DSS, FIGS, MS, SSTH, TOUT            !  42.06
+      REAL       SQRTREF                                                !  40.09
+      LOGICAL    XONOBST                                                !  40.14
+      LOGICAL :: REFLTST                                                !  40.13
       REAL       XCGRID(MXC,MYC), YCGRID(MXC,MYC)
       INTEGER    ICC, JJ
-      REAL    :: XOBS(2), XV(2), YOBS(2), YV(2)                           40.80
-      LOGICAL :: SwanCrossObstacle                                        40.80
-      TYPE(OBSTDAT), POINTER :: COBST                                     40.31
+      REAL    :: XOBS(2), XV(2), YOBS(2), YV(2)                         !  40.80
+      LOGICAL :: SwanCrossObstacle                                      !  40.80
+      TYPE(OBSTDAT), POINTER :: COBST                                   !  40.31
 !
 !  8. Subroutines used
 !
-!     DEGCNV           direction in Cartesian or nautical degrees         42.06
+!     DEGCNV           direction in Cartesian or nautical degrees       !  42.06
 !     EQREAL           indicates whether two reals are equal or not
-!     GAMMAF           the gamma function                                 42.06
+!     GAMMAF           the gamma function                               !  42.06
 !     MSGERR           writes error message
 !     REFLECT          computes effect of reflection
-!     TCROSS           searches for crossing point if exist               40.14
+!     TCROSS           searches for crossing point if exist             !  40.14
 !
-      REAL    DEGCNV                                                      42.06
-      REAL    GAMMAF                                                      42.06
+      REAL    DEGCNV                                                    !  42.06
+      REAL    GAMMAF                                                    !  42.06
       LOGICAL EQREAL
-      LOGICAL TCROSS                                                      40.14
+      LOGICAL TCROSS                                                    !  40.14
 !
 !  9. Subroutines calling
 !
-!     SWOMPU                                                              30.70
+!     SWOMPU                                                            !  30.70
 !
 ! 10. Error messages
 !
 ! 11. Remarks
 !
-!     Here the formulation of the transmission coefficients concerns the  40.09
-!     ratio of action densities!                                          40.09
+!     Here the formulation of the transmission coefficients concerns the!  40.09
+!     ratio of action densities!                                        !  40.09
 !
 ! 12. Structure
 !
-!     ------------------------------------------------------------------
-!     For both links from grid point (X1,Y1) do                           40.13
-!         calculate transmission coefficients                             40.09
-!         assign values to OBREDF                                         40.13
-!         If there is reflection                                          40.13
-!         Then select obstacle side which crosses the grid link           40.13
-!              calculate reflection source terms                          40.09
-!     ------------------------------------------------------------------  40.13
+!     ------------------------------------------------------------------!
+!     For both links from grid point (X1,Y1) do                         !  40.13
+!         calculate transmission coefficients                           !  40.09
+!         assign values to OBREDF                                       !  40.13
+!         If there is reflection                                        !  40.13
+!         Then select obstacle side which crosses the grid link         !  40.13
+!              calculate reflection source terms                        !  40.09
+!     ------------------------------------------------------------------!  40.13
 !
 ! 13. Source text
-! ======================================================================
+! ======================================================================!
 !
       SAVE IENT
       DATA IENT/0/
       IF (LTRACE) CALL STRACE (IENT,'SWTRCF')
 !
-      REFLTST = .TRUE.                                                    40.13
+      REFLTST = .TRUE.                                                  !  40.13
       DO 90 ILINK = 1 ,2
 !       default transmission coefficient
         TRCF = 1.
         NMPO = LINK(ILINK)
         IF (NMPO .EQ. 0) THEN
-           OBREDF(1:MDC,1:MSC,ILINK) = 1.                                 40.13
+           OBREDF(1:MDC,1:MSC,ILINK) = 1.                               !  40.13
            GOTO 90
         END IF
 !       incoming wave height
-        HSIN = CHS(KCGRD(ILINK+1))                                        40.03
+        HSIN = CHS(KCGRD(ILINK+1))                                      !  40.03
         IF (HSIN.LT.0.1E-4) HSIN = 0.1E-4
-        COBST => FOBSTAC                                                  40.31
-        DO JJ = 1, NMPO-1                                                 40.31
-           IF (.NOT.ASSOCIATED(COBST%NEXTOBST)) EXIT                      40.31
-           COBST => COBST%NEXTOBST                                        40.31
-        END DO                                                            40.31
-!       in case of freeboard dependent transmission/reflection            41.71
-        LFREE = COBST%FBTYP1                                              41.71
-        LQUAY = COBST%FBTYP2                                              41.71
-        IF ( LFREE.EQ.1 ) THEN                                            41.71
-           HGT  = COBST%FBCOEF(1)                                         41.71
-           GAMT = COBST%FBCOEF(2)                                         41.71
-           GAMR = COBST%FBCOEF(3)                                         41.71
-!          compute relative freeboard                                     41.71
-           WATHIG = HGT - WLEV2(KCGRD(1)) - WLEV                          41.71
-           FVH    = WATHIG/HSIN                                           41.71
-!          compute freeboard dependent transmission/reflection factors    41.71
-!          NOTE: these factors only to be applied to constant coeffs      41.71
-           FBT = 0.5 * ( 1. - TANH(2.*FVH/GAMT) )                         41.71
-           FBR = 0.5 * ( 1. + TANH(2.*FVH/GAMR) )                         41.71
-           IF (TESTFL) WRITE (PRTEST, 18) IXCGRD(1)+MXF-2,                41.71
-     &                                    IYCGRD(1)+MYF-2,                41.71
-     &                                    ILINK, HGT, FVH, FBT, FBR       41.71
-  18       FORMAT (' test FREEB  ', 2X, 3I5, ' dam level=', F6.2,         41.71
-     &             ' FVH=', F6.2, ' FBT=', F6.2, ' FBR=', F6.2)           41.71
-           IF ( LQUAY.EQ.1 ) THEN                                         41.71
-              IF ( DEP2(KCGRD(ILINK+1)).LT.DEP2(KCGRD(1)) ) THEN          41.71
-                 FBT = 99999.                                             41.71
-                 FBR = 0.                                                 41.71
+        COBST => FOBSTAC                                                !  40.31
+        DO JJ = 1, NMPO-1                                               !  40.31
+           IF (.NOT.ASSOCIATED(COBST%NEXTOBST)) EXIT                    !  40.31
+           COBST => COBST%NEXTOBST                                      !  40.31
+        END DO                                                          !  40.31
+!       in case of freeboard dependent transmission/reflection          !  41.71
+        LFREE = COBST%FBTYP1                                            !  41.71
+        LQUAY = COBST%FBTYP2                                            !  41.71
+        IF ( LFREE.EQ.1 ) THEN                                          !  41.71
+           HGT  = COBST%FBCOEF(1)                                       !  41.71
+           GAMT = COBST%FBCOEF(2)                                       !  41.71
+           GAMR = COBST%FBCOEF(3)                                       !  41.71
+!          compute relative freeboard                                   !  41.71
+           WATHIG = HGT - WLEV2(KCGRD(1)) - WLEV                        !  41.71
+           FVH    = WATHIG/HSIN                                         !  41.71
+!          compute freeboard dependent transmission/reflection factors  !  41.71
+!          NOTE: these factors only to be applied to constant coeffs    !  41.71
+           FBT = 0.5 * ( 1. - TANH(2.*FVH/GAMT) )                       !  41.71
+           FBR = 0.5 * ( 1. + TANH(2.*FVH/GAMR) )                       !  41.71
+           IF (TESTFL) WRITE (PRTEST, 18) IXCGRD(1)+MXF-2,              !  41.71
+     &                                    IYCGRD(1)+MYF-2,              !  41.71
+     &                                    ILINK, HGT, FVH, FBT, FBR     !  41.71
+  18       FORMAT (' test FREEB  ', 2X, 3I5, ' dam level=', F6.2,       !  41.71
+     &             ' FVH=', F6.2, ' FBT=', F6.2, ' FBR=', F6.2)         !  41.71
+           IF ( LQUAY.EQ.1 ) THEN                                       !  41.71
+              IF ( DEP2(KCGRD(ILINK+1)).LT.DEP2(KCGRD(1)) ) THEN        !  41.71
+                 FBT = 99999.                                           !  41.71
+                 FBR = 0.                                               !  41.71
               ENDIF
-              IF (TESTFL .AND. ITEST.GE.140) WRITE(PRTEST, 19)            41.71
-     &           ILINK,DEP2(KCGRD(ILINK+1)),DEP2(KCGRD(1)),FBT,FBR        41.71
-  19          FORMAT (8X, I3, 4E12.4)                                     41.71
-           ENDIF                                                          41.71
+              IF (TESTFL .AND. ITEST.GE.140) WRITE(PRTEST, 19)          !  41.71
+     &           ILINK,DEP2(KCGRD(ILINK+1)),DEP2(KCGRD(1)),FBT,FBR      !  41.71
+  19          FORMAT (8X, I3, 4E12.4)                                   !  41.71
+           ENDIF                                                        !  41.71
         ELSE
            FBT = 1.
            FBR = 1.
         ENDIF
-        ITRAS  = COBST%TRTYPE                                             40.31
+        ITRAS  = COBST%TRTYPE                                           !  40.31
         IF (ITRAS .EQ. 0) THEN
 !       constant transmission coefficient
-!         User defined transmission coefficient concerns ratio of         40.09
-!         wave heights, so                                                40.09
-          OBHKT = MIN(1.,FBT * COBST%TRCOEF(1))                           41.71 40.31
-          TRCF(1,1) = OBHKT * OBHKT                                       40.09
+!         User defined transmission coefficient concerns ratio of       !  40.09
+!         wave heights, so                                              !  40.09
+          OBHKT = MIN(1.,FBT * COBST%TRCOEF(1))                         !  41.71 40.31
+          TRCF(1,1) = OBHKT * OBHKT                                     !  40.09
         ELSE IF (ITRAS .EQ. 1) THEN
 !       transmission coefficient according to Goda and Seelig
-          HGT    =  COBST%TRCOEF(1)                                       40.31
-          OGAM   =  COBST%TRCOEF(2)                                       40.31
-          OBET   =  COBST%TRCOEF(3)                                       40.31
+          HGT    =  COBST%TRCOEF(1)                                     !  40.31
+          OGAM   =  COBST%TRCOEF(2)                                     !  40.31
+          OBET   =  COBST%TRCOEF(3)                                     !  40.31
 !         level of dam above the water surface (freeboard)
-          WATHIG =  HGT - WLEV2(KCGRD(1)) - WLEV                          40.14 30.70
+          WATHIG =  HGT - WLEV2(KCGRD(1)) - WLEV                        !  40.14 30.70
 !
-!         *** Here the transmission coeff. is that of Goda and Seelig ***
+!         *** Here the transmission coeff. is that of Goda and Seelig **!*
           FVH  = WATHIG/HSIN
-          ALOW = -OBET-OGAM                                               40.09
+          ALOW = -OBET-OGAM                                             !  40.09
           BUPL = OGAM-OBET
 !
           IF (FVH.LT.ALOW) FVH = ALOW
           IF (FVH.GT.BUPL) FVH = BUPL
           OBHKT = 0.5*(1.0-SIN(PI*(FVH+OBET)/(2.0*OGAM)))
-          IF (TESTFL) WRITE (PRTEST, 20) IXCGRD(1)+MXF-2,                 40.30
-     &           IYCGRD(1)+MYF-2,                                         40.30
-     &           ILINK, HGT, WATHIG, HSIN, OBHKT                          40.01
+          IF (TESTFL) WRITE (PRTEST, 20) IXCGRD(1)+MXF-2,               !  40.30
+     &           IYCGRD(1)+MYF-2,                                       !  40.30
+     &           ILINK, HGT, WATHIG, HSIN, OBHKT                        !  40.01
   20      FORMAT (' test SWTRCF ', 2X, 3I5, ' dam level=', F6.2,
-     &            ' depth=', F6.2, ' Hs=', F6.2, ' transm=', F6.3)        40.01
+     &            ' depth=', F6.2, ' Hs=', F6.2, ' transm=', F6.3)      !  40.01
           IF (TESTFL .AND. ITEST.GE.140) WRITE (PRTEST, 22)
-     &           OGAM, OBET, ALOW, BUPL, FVH                              40.01
-  22      FORMAT (8X, 5E12.4)                                             40.01
+     &           OGAM, OBET, ALOW, BUPL, FVH                            !  40.01
+  22      FORMAT (8X, 5E12.4)                                           !  40.01
 !
-!         Formulation of Goda/Seelig concerns ratio of waveheights.       40.09
-!         Here we use action density, so                                  40.09
+!         Formulation of Goda/Seelig concerns ratio of waveheights.     !  40.09
+!         Here we use action density, so                                !  40.09
           TRCF(1,1) = OBHKT * OBHKT
-        ELSE IF (ITRAS.EQ.2) THEN                                         40.66
-!       d'Angremond and Van der Meer formulae (1996)                      40.66
+        ELSE IF (ITRAS.EQ.2) THEN                                       !  40.66
+!       d'Angremond and Van der Meer formulae (1996)                    !  40.66
           HGT   = COBST%TRCOEF(1)
           SLOPE = COBST%TRCOEF(2)
           BK    = COBST%TRCOEF(3)
@@ -3195,19 +3195,19 @@
              IF (OBHKT.LT.0.075) OBHKT = 0.075
              IF (OBHKT.GT.0.900) OBHKT = 0.9
           ELSE IF (BVH.LT.8.) THEN
-             OBHKT= -0.40*FVH + 0.64*(BVH**(-0.31))*(1.-EXP(-0.50*XI0P))
+             OBHKT= -0.40*FVH + 0.64*(BVH**(-0.31))*(1.-EXP(-0.50*XI0P))!
              IF (OBHKT.LT.0.075) OBHKT = 0.075
              IF (OBHKT.GT.0.900) OBHKT = 0.9
           ELSE IF (BVH.GT.12.) THEN
-             OBHKT= -0.35*FVH + 0.51*(BVH**(-0.65))*(1.-EXP(-0.41*XI0P))
+             OBHKT= -0.35*FVH + 0.51*(BVH**(-0.65))*(1.-EXP(-0.41*XI0P))!
              IF (OBHKT.GT.0.93-0.006*BVH) OBHKT = 0.93-0.006*BVH
              IF (OBHKT.LT.0.05          ) OBHKT = 0.05
           ELSE
 !            linear interpolation
-             FAC1 = -0.40*FVH + 0.64*( 8.**(-0.31))*(1.-EXP(-0.50*XI0P))
+             FAC1 = -0.40*FVH + 0.64*( 8.**(-0.31))*(1.-EXP(-0.50*XI0P))!
              IF (FAC1.LT.0.075) FAC1 = 0.075
              IF (FAC1.GT.0.900) FAC1 = 0.9
-             FAC2 = -0.35*FVH + 0.51*(12.**(-0.65))*(1.-EXP(-0.41*XI0P))
+             FAC2 = -0.35*FVH + 0.51*(12.**(-0.65))*(1.-EXP(-0.41*XI0P))!
              IF (FAC2.LT.0.050) FAC2 = 0.050
              IF (FAC2.GT.0.858) FAC2 = 0.858
              OBHKT = 3.*FAC1 - 2.*FAC2 + BVH*(FAC2 - FAC1)/4.
@@ -3220,36 +3220,36 @@
             Y1 = ycugrd(vs(1))+YOFFS
           ENDIF
           WRITE (PRINTF, 23) X1, Y1,
-     &       ILINK, HGT, WATHIG, HSIN, SQRT(L0P/1.5613), XI0P, OBHKT      40.66
-  23      FORMAT (' Transmission: ', 2X, 2F12.4, I5, ' dam level=',F6.2,
+     &       ILINK, HGT, WATHIG, HSIN, SQRT(L0P/1.5613), XI0P, OBHKT    !  40.66
+  23      FORMAT (' Transmission: ', 2X, 2F12.4, I5, ' dam level=',F6.2,!
      &            ' board=', F6.2, ' Hs=', F6.2, ' Tp=', F6.2,
-     &            ' Xi0p=', F6.3, ' Kt=', F6.3)                           40.66
+     &            ' Xi0p=', F6.3, ' Kt=', F6.3)                         !  40.66
           IF (TESTFL .AND. ITEST.GE.140) WRITE (PRTEST, 22)
      &           TAN(SLOPE*PI/180.), FVH, BVH, L0P, XI0P
 !
 !         Formulation of d'Angremond concerns ratio of waveheights
 !         Here we use action density, so
           TRCF(1,1) = OBHKT * OBHKT
-        ELSE IF (ITRAS .EQ. 11) THEN                                      41.65
-!       frequency dependent transmission coefficients                     41.65
-!       user defined values concerns ratio of wave heights, so            41.65
+        ELSE IF (ITRAS .EQ. 11) THEN                                    !  41.65
+!       frequency dependent transmission coefficients                   !  41.65
+!       user defined values concerns ratio of wave heights, so          !  41.65
           DO IS = 1, MSC
-             OBHKT      = COBST%TRCF1D(IS)                                41.65
-             TRCF(IS,1) = OBHKT * OBHKT                                   41.65
+             OBHKT      = COBST%TRCF1D(IS)                              !  41.65
+             TRCF(IS,1) = OBHKT * OBHKT                                 !  41.65
           ENDDO
-        ELSE IF (ITRAS .EQ. 12) THEN                                      41.65
-!       frequency and direction dependent transmission coefficients       41.65
-!       user defined values concerns ratio of wave heights, so            41.65
+        ELSE IF (ITRAS .EQ. 12) THEN                                    !  41.65
+!       frequency and direction dependent transmission coefficients     !  41.65
+!       user defined values concerns ratio of wave heights, so          !  41.65
           DO ID = 1, MDC
              DO IS = 1, MSC
-                OBHKT       = COBST%TRCF2D(ID,IS)                         41.65
-                TRCF(IS,ID) = OBHKT * OBHKT                               41.65
+                OBHKT       = COBST%TRCF2D(ID,IS)                       !  41.65
+                TRCF(IS,ID) = OBHKT * OBHKT                             !  41.65
              ENDDO
           ENDDO
         ENDIF
 !
 !       assign values to array OBREDF
-        IF (ITRAS.EQ.11) THEN                                             41.65
+        IF (ITRAS.EQ.11) THEN                                           !  41.65
            DO IS = 1, MSC
               DO ID = 1, MDC
                  OBREDF(ID,IS,ILINK) = TRCF(IS,1)
@@ -3269,205 +3269,205 @@
            ENDDO
         ENDIF
 !
-!       reflection and FIG energy                                         41.93
-        LREFL = COBST%RFTYP1                                              40.13
-        IFIG  = COBST%IGTYP                                               41.93
-        IF ( LREFL.GT.0 .OR. IFIG.NE.0 ) THEN                             41.93 40.31
+!       reflection and FIG energy                                       !  41.93
+        LREFL = COBST%RFTYP1                                            !  40.13
+        IFIG  = COBST%IGTYP                                             !  41.93
+        IF ( LREFL.GT.0 .OR. IFIG.NE.0 ) THEN                           !  41.93 40.31
 !
 !          check crossing with obstacle
-           IF (OPTG.NE.5) THEN                                            40.80
+           IF (OPTG.NE.5) THEN                                          !  40.80
 !             determine grid points (X1,Y1) and (X2,Y2) of link
-              ICC   = KCGRD(1)                                            40.09
-              ICGRD = 0                                                   40.09
-              IF ( ICC.GT.1 ) THEN                                        40.09
-                 X1 = XCGRID(IXCGRD(1),IYCGRD(1))                         40.09
-                 Y1 = YCGRID(IXCGRD(1),IYCGRD(1))                         40.09
-                 IF (KGRPNT(IXCGRD(ILINK+1),IYCGRD(ILINK+1)).GT.1) THEN   40.09
-                    X2    = XCGRID(IXCGRD(ILINK+1),IYCGRD(ILINK+1))       40.09
-                    Y2    = YCGRID(IXCGRD(ILINK+1),IYCGRD(ILINK+1))       40.09
-                    ICGRD = KCGRD(ILINK+1)                                40.09
+              ICC   = KCGRD(1)                                          !  40.09
+              ICGRD = 0                                                 !  40.09
+              IF ( ICC.GT.1 ) THEN                                      !  40.09
+                 X1 = XCGRID(IXCGRD(1),IYCGRD(1))                       !  40.09
+                 Y1 = YCGRID(IXCGRD(1),IYCGRD(1))                       !  40.09
+                 IF (KGRPNT(IXCGRD(ILINK+1),IYCGRD(ILINK+1)).GT.1) THEN !  40.09
+                    X2    = XCGRID(IXCGRD(ILINK+1),IYCGRD(ILINK+1))     !  40.09
+                    Y2    = YCGRID(IXCGRD(ILINK+1),IYCGRD(ILINK+1))     !  40.09
+                    ICGRD = KCGRD(ILINK+1)                              !  40.09
                  ENDIF
               ENDIF
-              IF (ICGRD.EQ.0) GOTO 90                                     40.13
+              IF (ICGRD.EQ.0) GOTO 90                                   !  40.13
 !             select obstacle side crossing the grid link
-              X3 = COBST%XCRP(1)                                          40.31
-              Y3 = COBST%YCRP(1)                                          40.31
-              NUMCOR = COBST%NCRPTS                                       40.31
-              DO JP = 2, NUMCOR                                           40.09
-                 X4 = COBST%XCRP(JP)                                      40.31
-                 Y4 = COBST%YCRP(JP)                                      40.31
-                 IF (TCROSS(X1,X2,X3,X4,Y1,Y2,Y3,Y4,XONOBST)) GOTO 70     40.14
-                 X3 = X4                                                  40.09
-                 Y3 = Y4                                                  40.09
+              X3 = COBST%XCRP(1)                                        !  40.31
+              Y3 = COBST%YCRP(1)                                        !  40.31
+              NUMCOR = COBST%NCRPTS                                     !  40.31
+              DO JP = 2, NUMCOR                                         !  40.09
+                 X4 = COBST%XCRP(JP)                                    !  40.31
+                 Y4 = COBST%YCRP(JP)                                    !  40.31
+                 IF (TCROSS(X1,X2,X3,X4,Y1,Y2,Y3,Y4,XONOBST)) GOTO 70   !  40.14
+                 X3 = X4                                                !  40.09
+                 Y3 = Y4                                                !  40.09
               ENDDO
-           ELSE                                                           40.80
-!             determine begin and end points of link (unstructured)       40.80
-              X1 = xcugrd(vs(1))                                          40.80
-              Y1 = ycugrd(vs(1))                                          40.80
-              X2 = xcugrd(vs(ILINK+1))                                    40.80
-              Y2 = ycugrd(vs(ILINK+1))                                    40.80
-              XV(1) = X1                                                  40.80
-              YV(1) = Y1                                                  40.80
-              XV(2) = X2                                                  40.80
-              YV(2) = Y2                                                  40.80
-!             select obstacle side crossing the grid link                 40.80
-              X3 = COBST%XCRP(1)                                          40.80
-              Y3 = COBST%YCRP(1)                                          40.80
-              XOBS(1) = X3                                                40.80
-              YOBS(1) = Y3                                                40.80
-              DO JP = 2, COBST%NCRPTS                                     40.80
-                 X4 = COBST%XCRP(JP)                                      40.80
-                 Y4 = COBST%YCRP(JP)                                      40.80
-                 XOBS(2) = X4                                             40.80
-                 YOBS(2) = Y4                                             40.80
-                 IF ( SwanCrossObstacle( XV, YV, XOBS, YOBS ) ) GOTO 70   40.80
-                 X3 = X4                                                  40.80
-                 Y3 = Y4                                                  40.80
-                 XOBS(1) = X3                                             40.80
-                 YOBS(1) = Y3                                             40.80
-              ENDDO                                                       40.80
-           ENDIF                                                          40.80
+           ELSE                                                         !  40.80
+!             determine begin and end points of link (unstructured)     !  40.80
+              X1 = xcugrd(vs(1))                                        !  40.80
+              Y1 = ycugrd(vs(1))                                        !  40.80
+              X2 = xcugrd(vs(ILINK+1))                                  !  40.80
+              Y2 = ycugrd(vs(ILINK+1))                                  !  40.80
+              XV(1) = X1                                                !  40.80
+              YV(1) = Y1                                                !  40.80
+              XV(2) = X2                                                !  40.80
+              YV(2) = Y2                                                !  40.80
+!             select obstacle side crossing the grid link               !  40.80
+              X3 = COBST%XCRP(1)                                        !  40.80
+              Y3 = COBST%YCRP(1)                                        !  40.80
+              XOBS(1) = X3                                              !  40.80
+              YOBS(1) = Y3                                              !  40.80
+              DO JP = 2, COBST%NCRPTS                                   !  40.80
+                 X4 = COBST%XCRP(JP)                                    !  40.80
+                 Y4 = COBST%YCRP(JP)                                    !  40.80
+                 XOBS(2) = X4                                           !  40.80
+                 YOBS(2) = Y4                                           !  40.80
+                 IF ( SwanCrossObstacle( XV, YV, XOBS, YOBS ) ) GOTO 70 !  40.80
+                 X3 = X4                                                !  40.80
+                 Y3 = Y4                                                !  40.80
+                 XOBS(1) = X3                                           !  40.80
+                 YOBS(1) = Y3                                           !  40.80
+              ENDDO                                                     !  40.80
+           ENDIF                                                        !  40.80
 !          no crossing found, skip procedure
            GOTO 90
 
   70       IF ( LREFL.GT.0 ) THEN
-!             reflections are activated                                   40.09
-              SQRTREF  = FBR * COBST%RFCOEF(1)                            41.71 40.31
-              REFLCOEF = SQRTREF * SQRTREF                                40.09
-              LREFDIFF = COBST%RFTYP2                                     40.31
-              POWN     = COBST%RFCOEF(2)                                  40.31
-              FD1      = COBST%RFCOEF(3)                                  40.31
-              FD2      = COBST%RFCOEF(4)                                  40.31
-              FD3      = COBST%RFCOEF(5)                                  40.31
-              FD4      = COBST%RFCOEF(6)                                  40.31
-              LRFRD    = COBST%RFTYP3                                     40.31
+!             reflections are activated                                 !  40.09
+              SQRTREF  = FBR * COBST%RFCOEF(1)                          !  41.71 40.31
+              REFLCOEF = SQRTREF * SQRTREF                              !  40.09
+              LREFDIFF = COBST%RFTYP2                                   !  40.31
+              POWN     = COBST%RFCOEF(2)                                !  40.31
+              FD1      = COBST%RFCOEF(3)                                !  40.31
+              FD2      = COBST%RFCOEF(4)                                !  40.31
+              FD3      = COBST%RFCOEF(5)                                !  40.31
+              FD4      = COBST%RFCOEF(6)                                !  40.31
+              LRFRD    = COBST%RFTYP3                                   !  40.31
               IF ( LSRFB .AND. ntf.GT.0 ) THEN
-!                impose bound ig components at obstacle                   41.85
-                 CALL REFLECT(Ebig, REFLSO, X1, Y1, X2, Y2,               41.85
-     &                 X3, Y3, X4, Y4, CAX,                               41.85
-     &                 CAY, RDX, RDY, ILINK,                              41.85
-     &                 REFLCOEF, LREFDIFF, POWN, ANYBIN,                  41.85
-     &                 LRFRD, SPCSIG, SPCDIR, FD1, FD2, FD3, FD4,         41.85
-     &                 OBREDF, REFLTST)                                   41.85
+!                impose bound ig components at obstacle                 !  41.85
+                 CALL REFLECT(Ebig, REFLSO, X1, Y1, X2, Y2,             !  41.85
+     &                 X3, Y3, X4, Y4, CAX,                             !  41.85
+     &                 CAY, RDX, RDY, ILINK,                            !  41.85
+     &                 REFLCOEF, LREFDIFF, POWN, ANYBIN,                !  41.85
+     &                 LRFRD, SPCSIG, SPCDIR, FD1, FD2, FD3, FD4,       !  41.85
+     &                 OBREDF, REFLTST)                                 !  41.85
               ELSE
-                 CALL REFLECT(AC2, REFLSO, X1, Y1, X2, Y2,                40.13
-     &                 X3, Y3, X4, Y4, CAX,                               40.13
-     &                 CAY, RDX, RDY, ILINK,                              40.13
-     &                 REFLCOEF, LREFDIFF, POWN, ANYBIN,                  40.13
-     &                 LRFRD, SPCSIG, SPCDIR, FD1, FD2, FD3, FD4,         40.13
-     &                 OBREDF, REFLTST)                                   40.13
+                 CALL REFLECT(AC2, REFLSO, X1, Y1, X2, Y2,              !  40.13
+     &                 X3, Y3, X4, Y4, CAX,                             !  40.13
+     &                 CAY, RDX, RDY, ILINK,                            !  40.13
+     &                 REFLCOEF, LREFDIFF, POWN, ANYBIN,                !  40.13
+     &                 LRFRD, SPCSIG, SPCDIR, FD1, FD2, FD3, FD4,       !  40.13
+     &                 OBREDF, REFLTST)                                 !  40.13
               ENDIF
            ENDIF
 !
-           IF ( IFIG.NE.0 ) THEN                                          41.93
-!             compute seaward-radiated FIG source energy and              41.93
-!             add to right hand side of matrix                            41.93
-              X = X4 - X3                                                 41.93
-              Y = Y4 - Y3                                                 41.93
-              IF ( EQREAL(X,0.) .AND. EQREAL(Y,0.) ) GOTO 90              41.93
-!             sign of inner product with normal finds position            41.93
-!             of (X1,Y1) with respect to obstacle line                    41.93
-              SDET = Y*(X1-X3) - X*(Y1-Y3)                                41.93
-              IF ( .NOT. SDET.LT.0. ) GOTO 90                             41.93
-!             direction of normal pointing outwards from the obstacle,    41.93
-!             i.e. towards point (X1,Y1)                                  41.93
-              BNORM = ATAN2(Y,X) + 0.5*PI                                 41.93
-              ALPHA = COBST%IGCOEF(1)                                     41.82
-              IF ( VARHSS ) THEN                                          41.82
-                 HSS = HSS2(KCGRD(1))                                     41.82
-              ELSE                                                        41.82
-                 HSS = COBST%IGCOEF(2)                                    41.82
-              ENDIF                                                       41.82
-              IF ( VARTSS ) THEN                                          41.82
-                 TSS = TSS2(KCGRD(1))                                     41.82
-              ELSE                                                        41.82
-                 TSS = COBST%IGCOEF(3)                                    41.82
-              ENDIF                                                       41.82
-              IF ( VARDSS ) THEN                                          42.06
-                 DSS = DSS2(KCGRD(1))                                     42.06
-              ELSE                                                        42.06
-                 DSS = COBST%IGCOEF(4)                                    42.06
-              ENDIF                                                       42.06
-              MS = COBST%IGCOEF(5)                                        42.06
-              IF ( .NOT. DSS.NE.-999. ) MS = 0.                           42.06
-!             DSS is incoming sea-swell direction                         42.06
-              DSS = DSS + 180.                                            42.06
-              SSTH = PI * DEGCNV(DSS) / 180.                              42.06
-!             limit sea-swell direction to range [normal-90,normal+90]    42.06
-              SSTH = MAX(SSTH,-0.5*PI+BNORM)                              42.06
-              SSTH = MIN(SSTH, 0.5*PI+BNORM)                              42.06
-!             compute outgoing sea-swell direction (specular reflection)  42.06
-              TOUT = 2.*BNORM - SSTH                                      42.06
-              IF (MS.LT.12.) THEN                                         42.06
-                 CTOT = GAMMAF(0.5*MS+1.)/(SQRT(PI)*GAMMAF(0.5*MS+0.5))   42.06
-              ELSE                                                        42.06
-                 CTOT = SQRT (0.5*MS/PI)/(1. - 0.25/MS)                   42.06
-              ENDIF                                                       42.06
-              AIG   = HSS * TSS**2.                                       41.82
-              ACOEF = 1.2 * ALPHA**2. * (AIG/4.)**2.                      41.82
-              DO IS = 1, MSC                                              41.82
-!                factor to convert back to N(sigma,theta)                 41.82
-                 SIG = SPCSIG(IS)                                         42.06 41.82
-!                shoaling factor                                          41.82
-                 SFAC   = (KWAVE(IS,1)*GRAV**2.)/(CGO(IS,1)*SPCSIG(IS))   41.82
-!                frequency distribution for FIG source                    41.82
-                 FRQD   = COBST%IGFRQD(IS)                                41.82
-!                FIG source contribution according to the                 41.93
-!                parametrization of Ardhuin et al. (2014)                 41.93
-                 FIGS = ACOEF * SFAC * FRQD / SIG                         42.06 41.82
-                 DO ID = 1, MDC                                           41.82
-                    ACOS = ABS( COS( 0.5*(SPCDIR(ID,1) - TOUT) ) )        42.06
-                    IF ( .NOT. MS.NE.0. ) THEN                            42.06
-                       CDIR = 1./PI                                       42.06
-                    ELSE IF ( COS( BNORM - SPCDIR(ID,1) ).GT.0. ) THEN    42.06
-                       CDIR = CTOT * MAX (ACOS**MS, 1.E-10)               42.06
-                    ELSE                                                  42.06
-                       CDIR = 0.                                          42.06
-                    ENDIF                                                 42.06
-                    FIGSRC = CDIR * FIGS                                  42.06
-                    IF ( ANYBIN(ID,IS) ) THEN                             41.82
-!                      only FIG energy away from obstacle is              41.93
-!                      taken into account                                 41.93
-                       IF ( COS( BNORM - SPCDIR(ID,1) ).GT.0. )           41.93
-     &                          REFLSO(ID,IS) = REFLSO(ID,IS) + FIGSRC *  41.93 41.82
-     &               (RDX(ILINK)*CAX(ID,IS,1) + RDY(ILINK)*CAY(ID,IS,1))  41.82
-                    ENDIF                                                 41.82
-                 ENDDO                                                    41.82
-              ENDDO                                                       41.82
-           ENDIF                                                          41.93
+           IF ( IFIG.NE.0 ) THEN                                        !  41.93
+!             compute seaward-radiated FIG source energy and            !  41.93
+!             add to right hand side of matrix                          !  41.93
+              X = X4 - X3                                               !  41.93
+              Y = Y4 - Y3                                               !  41.93
+              IF ( EQREAL(X,0.) .AND. EQREAL(Y,0.) ) GOTO 90            !  41.93
+!             sign of inner product with normal finds position          !  41.93
+!             of (X1,Y1) with respect to obstacle line                  !  41.93
+              SDET = Y*(X1-X3) - X*(Y1-Y3)                              !  41.93
+              IF ( .NOT. SDET.LT.0. ) GOTO 90                           !  41.93
+!             direction of normal pointing outwards from the obstacle,  !  41.93
+!             i.e. towards point (X1,Y1)                                !  41.93
+              BNORM = ATAN2(Y,X) + 0.5*PI                               !  41.93
+              ALPHA = COBST%IGCOEF(1)                                   !  41.82
+              IF ( VARHSS ) THEN                                        !  41.82
+                 HSS = HSS2(KCGRD(1))                                   !  41.82
+              ELSE                                                      !  41.82
+                 HSS = COBST%IGCOEF(2)                                  !  41.82
+              ENDIF                                                     !  41.82
+              IF ( VARTSS ) THEN                                        !  41.82
+                 TSS = TSS2(KCGRD(1))                                   !  41.82
+              ELSE                                                      !  41.82
+                 TSS = COBST%IGCOEF(3)                                  !  41.82
+              ENDIF                                                     !  41.82
+              IF ( VARDSS ) THEN                                        !  42.06
+                 DSS = DSS2(KCGRD(1))                                   !  42.06
+              ELSE                                                      !  42.06
+                 DSS = COBST%IGCOEF(4)                                  !  42.06
+              ENDIF                                                     !  42.06
+              MS = COBST%IGCOEF(5)                                      !  42.06
+              IF ( .NOT. DSS.NE.-999. ) MS = 0.                         !  42.06
+!             DSS is incoming sea-swell direction                       !  42.06
+              DSS = DSS + 180.                                          !  42.06
+              SSTH = PI * DEGCNV(DSS) / 180.                            !  42.06
+!             limit sea-swell direction to range [normal-90,normal+90]  !  42.06
+              SSTH = MAX(SSTH,-0.5*PI+BNORM)                            !  42.06
+              SSTH = MIN(SSTH, 0.5*PI+BNORM)                            !  42.06
+!             compute outgoing sea-swell direction (specular reflection)!  42.06
+              TOUT = 2.*BNORM - SSTH                                    !  42.06
+              IF (MS.LT.12.) THEN                                       !  42.06
+                 CTOT = GAMMAF(0.5*MS+1.)/(SQRT(PI)*GAMMAF(0.5*MS+0.5)) !  42.06
+              ELSE                                                      !  42.06
+                 CTOT = SQRT (0.5*MS/PI)/(1. - 0.25/MS)                 !  42.06
+              ENDIF                                                     !  42.06
+              AIG   = HSS * TSS**2.                                     !  41.82
+              ACOEF = 1.2 * ALPHA**2. * (AIG/4.)**2.                    !  41.82
+              DO IS = 1, MSC                                            !  41.82
+!                factor to convert back to N(sigma,theta)               !  41.82
+                 SIG = SPCSIG(IS)                                       !  42.06 41.82
+!                shoaling factor                                        !  41.82
+                 SFAC   = (KWAVE(IS,1)*GRAV**2.)/(CGO(IS,1)*SPCSIG(IS)) !  41.82
+!                frequency distribution for FIG source                  !  41.82
+                 FRQD   = COBST%IGFRQD(IS)                              !  41.82
+!                FIG source contribution according to the               !  41.93
+!                parametrization of Ardhuin et al. (2014)               !  41.93
+                 FIGS = ACOEF * SFAC * FRQD / SIG                       !  42.06 41.82
+                 DO ID = 1, MDC                                         !  41.82
+                    ACOS = ABS( COS( 0.5*(SPCDIR(ID,1) - TOUT) ) )      !  42.06
+                    IF ( .NOT. MS.NE.0. ) THEN                          !  42.06
+                       CDIR = 1./PI                                     !  42.06
+                    ELSE IF ( COS( BNORM - SPCDIR(ID,1) ).GT.0. ) THEN  !  42.06
+                       CDIR = CTOT * MAX (ACOS**MS, 1.E-10)             !  42.06
+                    ELSE                                                !  42.06
+                       CDIR = 0.                                        !  42.06
+                    ENDIF                                               !  42.06
+                    FIGSRC = CDIR * FIGS                                !  42.06
+                    IF ( ANYBIN(ID,IS) ) THEN                           !  41.82
+!                      only FIG energy away from obstacle is            !  41.93
+!                      taken into account                               !  41.93
+                       IF ( COS( BNORM - SPCDIR(ID,1) ).GT.0. )         !  41.93
+     &                          REFLSO(ID,IS) = REFLSO(ID,IS) + FIGSRC *!  41.93 41.82
+     &               (RDX(ILINK)*CAX(ID,IS,1) + RDY(ILINK)*CAY(ID,IS,1))!  41.82
+                    ENDIF                                               !  41.82
+                 ENDDO                                                  !  41.82
+              ENDDO                                                     !  41.82
+           ENDIF                                                        !  41.93
         ENDIF
 !
         IF (ITEST .GE. 120)  WRITE (PRTEST,10)
      &  IXCGRD(1)-1, IYCGRD(1)-1, NMPO, TRCF(1,1)
-  10    FORMAT(' SWTRCF: Point=', 2I5, ' NMPO  = ', I5, ' transm ',       40.03
-     &  F8.3)                                                             40.03
+  10    FORMAT(' SWTRCF: Point=', 2I5, ' NMPO  = ', I5, ' transm ',     !  40.03
+     &  F8.3)                                                           !  40.03
   90  CONTINUE
-      IF (.NOT.REFLTST) THEN                                              40.13
-        CALL MSGERR(3,'Kt^2 + Kr^2 > 1 ')                                 40.13
-        IF (ITEST.LT.50) THEN                                             40.13
-          WRITE (PRTEST, 74) IXCGRD(1)-1, IYCGRD(1)-1                     40.13
-  74      FORMAT (' Kt^2 + Kr^2 > 1 in grid point:', 2I4)                 40.13
-        ENDIF                                                             40.13
-      ENDIF                                                               40.13
+      IF (.NOT.REFLTST) THEN                                            !  40.13
+        CALL MSGERR(3,'Kt^2 + Kr^2 > 1 ')                               !  40.13
+        IF (ITEST.LT.50) THEN                                           !  40.13
+          WRITE (PRTEST, 74) IXCGRD(1)-1, IYCGRD(1)-1                   !  40.13
+  74      FORMAT (' Kt^2 + Kr^2 > 1 in grid point:', 2I4)               !  40.13
+        ENDIF                                                           !  40.13
+      ENDIF                                                             !  40.13
       RETURN
 !     * end of SUBROUTINE SWTRCF
       END
 !
-!************************************************************************
-!                                                                       *
-      SUBROUTINE REFLECT (AC2, REFLSO, X1, Y1, X2, Y2, X3, Y3,            40.13
-     &                    X4, Y4, CAX, CAY, RDX, RDY,                     40.13
-     &                    ILINK, REF0, LREFDIFF, POWN, ANYBIN,            40.13
-     &                    LRFRD, SPCSIG, SPCDIR, FD1, FD2, FD3, FD4,      40.13
-     &                    OBREDF, REFLTST)                                40.13
-!                                                                       *
-!************************************************************************
-!                                                                         40.09
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE SWCOMM4                                                         40.41
-!                                                                         40.09
-      IMPLICIT NONE                                                       40.09
+!***********************************************************************!*
+!                                                                       !*
+      SUBROUTINE REFLECT (AC2, REFLSO, X1, Y1, X2, Y2, X3, Y3,          !  40.13
+     &                    X4, Y4, CAX, CAY, RDX, RDY,                   !  40.13
+     &                    ILINK, REF0, LREFDIFF, POWN, ANYBIN,          !  40.13
+     &                    LRFRD, SPCSIG, SPCDIR, FD1, FD2, FD3, FD4,    !  40.13
+     &                    OBREDF, REFLTST)                              !  40.13
+!                                                                       !*
+!***********************************************************************!*
+!                                                                       !  40.09
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE SWCOMM4                                                       !  40.41
+!                                                                       !  40.09
+      IMPLICIT NONE                                                     !  40.09
 !
 !
 !
@@ -3484,8 +3484,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3495,114 +3495,114 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
-!  0. Authors                                                             40.09
-!                                                                         40.09
-!     40.09  Annette Kieftenburg                                          40.09
+!  0. Authors                                                           !  40.09
+!                                                                       !  40.09
+!     40.09  Annette Kieftenburg                                        !  40.09
 !     40.13  Nico Booij
-!     40.18  Annette Kieftenburg                                          40.18
-!     40.28  Annette Kieftenburg                                          40.28
-!     40.38  Annette Kieftenburg                                          40.38
+!     40.18  Annette Kieftenburg                                        !  40.18
+!     40.28  Annette Kieftenburg                                        !  40.28
+!     40.38  Annette Kieftenburg                                        !  40.38
 !     40.41: Marcel Zijlema
 !     41.73: Ad Reniers
-!                                                                         40.09
-!  1. Updates                                                             40.09
-!                                                                         40.09
-!     40.09, Nov. 99: Subroutine created                                  40.09
-!     40.18, Apr. 01: Scattered reflection against obstacles added        40.18
-!     40.28, Dec. 01: Frequency dependent reflection added                40.28
-!     40.38, Feb. 02: Diffuse reflection against obstacles added          40.38
+!                                                                       !  40.09
+!  1. Updates                                                           !  40.09
+!                                                                       !  40.09
+!     40.09, Nov. 99: Subroutine created                                !  40.09
+!     40.18, Apr. 01: Scattered reflection against obstacles added      !  40.18
+!     40.28, Dec. 01: Frequency dependent reflection added              !  40.28
+!     40.38, Feb. 02: Diffuse reflection against obstacles added        !  40.38
 !     40.13, Sep. 02: Subroutine restructured
 !                     assumptions changed: reflected energy can come
 !                     from Th_norm-PI/2 to Th_norm+PI/2
-!     40.08, Mar. 03: Dimensioning of RDX, RDX changed to be consistent   40.08
-!                     with other subroutines                              40.08
+!     40.08, Mar. 03: Dimensioning of RDX, RDX changed to be consistent !  40.08
+!                     with other subroutines                            !  40.08
 !     40.13, Nov. 03: test on refl + transm added
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !     41.73, Apr. 20: bug fix reflection in case of 360->0
-!                                                                         40.09
-!  2. Purpose                                                             40.09
-!                                                                         40.09
-!     Computation of REFLECTIONS near obstacles                           40.09
-!                                                                         40.09
-!  3. Method                                                              40.09
-!                                                                         40.09
-!     Determine the angle of the obstacle,                                40.09
-!     Determine the angles between which reflections should be taken      40.09
-!     into account                                                        40.09
-!     Determine redistribution function                                   40.18
+!                                                                       !  40.09
+!  2. Purpose                                                           !  40.09
+!                                                                       !  40.09
+!     Computation of REFLECTIONS near obstacles                         !  40.09
+!                                                                       !  40.09
+!  3. Method                                                            !  40.09
+!                                                                       !  40.09
+!     Determine the angle of the obstacle,                              !  40.09
+!     Determine the angles between which reflections should be taken    !  40.09
+!     into account                                                      !  40.09
+!     Determine redistribution function                                 !  40.18
 !     determine expression of reflection coefficient for frequency
-!     dependency, if appropriate                                          40.28
-!     Determine reflected action density (corrected for angle obstacle    40.09
-!     and if option is on: redistribute energy)                           40.18
-!     Add reflected spectrum to contribution for the right hand side      40.41 40.09
-!     of matrix equation                                                  40.09
-!                                                                         40.09
-!  4. Modules used                                                        40.18
-!                                                                         40.18
-!     --                                                                  40.18
-!                                                                         40.18
-!  5. Argument variables                                                  40.09
-!                                                                         40.09
+!     dependency, if appropriate                                        !  40.28
+!     Determine reflected action density (corrected for angle obstacle  !  40.09
+!     and if option is on: redistribute energy)                         !  40.18
+!     Add reflected spectrum to contribution for the right hand side    !  40.41 40.09
+!     of matrix equation                                                !  40.09
+!                                                                       !  40.09
+!  4. Modules used                                                      !  40.18
+!                                                                       !  40.18
+!     --                                                                !  40.18
+!                                                                       !  40.18
+!  5. Argument variables                                                !  40.09
+!                                                                       !  40.09
 !     AC2      inp  action density
 !     ANYBIN   inp  Determines whether a bin fall within a sweep
-!     CAX      inp  Propagation velocity in x-direction                   40.09
-!     CAY      inp  Propagation velocity in y-direction                   40.09
-!     FD1      inp  Coeff. freq. dep. reflection: vertical displacement   40.28
-!     FD2      inp  Coeff. freq. dep. reflection: shape parameter         40.28
-!     FD3      inp  Coeff. freq. dep. reflection: directional coefficient 40.28
-!     FD4      inp  Coeff. freq. dep. reflection: bending point of freq.  40.28
-!     ILINK    inp  Indicates which link is analyzed: 1 -> neighbour in x 40.09
-!                                                     2 -> neighbour in y 40.09
-!     LREFDIFF inp  Indicates whether reflected energy should be          40.18
-!                   scattered (1) or not (0)                              40.18
-!     LRFRD    inp  Indicates whether frequency dependent reflection is   40.28
-!                   active (#0.) or not (=0.)                             40.28
+!     CAX      inp  Propagation velocity in x-direction                 !  40.09
+!     CAY      inp  Propagation velocity in y-direction                 !  40.09
+!     FD1      inp  Coeff. freq. dep. reflection: vertical displacement !  40.28
+!     FD2      inp  Coeff. freq. dep. reflection: shape parameter       !  40.28
+!     FD3      inp  Coeff. freq. dep. reflection: directional coefficien!t 40.28
+!     FD4      inp  Coeff. freq. dep. reflection: bending point of freq.!  40.28
+!     ILINK    inp  Indicates which link is analyzed: 1 -> neighbour in !x 40.09
+!                                                     2 -> neighbour in !y 40.09
+!     LREFDIFF inp  Indicates whether reflected energy should be        !  40.18
+!                   scattered (1) or not (0)                            !  40.18
+!     LRFRD    inp  Indicates whether frequency dependent reflection is !  40.28
+!                   active (#0.) or not (=0.)                           !  40.28
 !     OBREDF   inp  transmission coefficients
-!     POWN     inp  User defined power of redistribution function         40.18
+!     POWN     inp  User defined power of redistribution function       !  40.18
 !     REF0     inp  reflection coefficient in terms of action density
-!     REFLSO   i/o  contribution to the source term due to reflection     40.41
-!     REFLTST  i/o  used to test Refl^2+Transm^2 <=1                      40.13
-!     RDX,RDY  inp  Array containing spatial derivative coefficients      40.09
+!     REFLSO   i/o  contribution to the source term due to reflection   !  40.41
+!     REFLTST  i/o  used to test Refl^2+Transm^2 <=1                    !  40.13
+!     RDX,RDY  inp  Array containing spatial derivative coefficients    !  40.09
 !     SPCDIR(*,1)   spectral directions (radians)
-!     SPCSIG   inp  Relative frequency (= 2*PI*Freq.)                     40.28
-!     X1, Y1   inp  Coordinates of computational grid point under         40.09
-!                   consideration                                         40.09
-!     X2, Y2   inp  Coordinates of computational grid point neighbour     40.09
-!     X3, Y3   inp  User coordinates of one end of obstacle side          40.09
-!     X4, Y4   inp  User coordinates of other end of obstacle side        40.09
-!                                                                         40.09
-      REAL       :: AC2(MDC,MSC,MCGRD)                                    40.18
-!     Changed ICMAX to MICMAX, since MICMAX doesn't vary over gridpoint   40.22
-      REAL       :: CAX(MDC,MSC,MICMAX), CAY(MDC,MSC,MICMAX)              40.18 40.22
-      REAL       :: REFLSO(MDC,MSC), OBREDF(MDC,MSC,2)                    40.41 40.18
-      REAL       :: RDX(MICMAX), RDY(MICMAX)                              40.18 40.08
-      REAL       :: FD1, FD2, FD3, FD4, SPCSIG(MSC), SPCDIR(MDC,6)        40.41 40.28
-      REAL       :: REF0                                                  40.18
-      REAL       :: X1, X2, X3, X4, Y1, Y2, Y3, Y4                        40.18
-      LOGICAL    :: ANYBIN(MDC,MSC)                                       40.18
-      INTEGER    :: ILINK                                                 40.18
-      REAL       :: POWN                                                  40.41 40.18
-      INTEGER    :: LREFDIFF, LRFRD                                       40.41
-      LOGICAL    :: REFLTST                                               40.13
-!                                                                         40.18
-      INTENT (IN)     AC2, CAX, CAY, OBREDF,                              40.18
-     &                FD1, FD2, FD3, FD4, LRFRD,                          40.28
-     &                RDX, RDY, SPCSIG, SPCDIR, X1, X2,                   40.18
-     &                X3, X4, Y1, Y2, Y3, Y4, ANYBIN, ILINK,              40.18
-     &                POWN, LREFDIFF                                      40.18
-      INTENT (IN OUT) REF0, REFLSO                                        40.41 40.18
-!                                                                         40.09
-!  6. Parameter variables                                                 40.09
-!                                                                         40.18
-!  7. Local variables                                                     40.09
-!                                                                         40.09
+!     SPCSIG   inp  Relative frequency (= 2*PI*Freq.)                   !  40.28
+!     X1, Y1   inp  Coordinates of computational grid point under       !  40.09
+!                   consideration                                       !  40.09
+!     X2, Y2   inp  Coordinates of computational grid point neighbour   !  40.09
+!     X3, Y3   inp  User coordinates of one end of obstacle side        !  40.09
+!     X4, Y4   inp  User coordinates of other end of obstacle side      !  40.09
+!                                                                       !  40.09
+      REAL       :: AC2(MDC,MSC,MCGRD)                                  !  40.18
+!     Changed ICMAX to MICMAX, since MICMAX doesn't vary over gridpoint !  40.22
+      REAL       :: CAX(MDC,MSC,MICMAX), CAY(MDC,MSC,MICMAX)            !  40.18 40.22
+      REAL       :: REFLSO(MDC,MSC), OBREDF(MDC,MSC,2)                  !  40.41 40.18
+      REAL       :: RDX(MICMAX), RDY(MICMAX)                            !  40.18 40.08
+      REAL       :: FD1, FD2, FD3, FD4, SPCSIG(MSC), SPCDIR(MDC,6)      !  40.41 40.28
+      REAL       :: REF0                                                !  40.18
+      REAL       :: X1, X2, X3, X4, Y1, Y2, Y3, Y4                      !  40.18
+      LOGICAL    :: ANYBIN(MDC,MSC)                                     !  40.18
+      INTEGER    :: ILINK                                               !  40.18
+      REAL       :: POWN                                                !  40.41 40.18
+      INTEGER    :: LREFDIFF, LRFRD                                     !  40.41
+      LOGICAL    :: REFLTST                                             !  40.13
+!                                                                       !  40.18
+      INTENT (IN)     AC2, CAX, CAY, OBREDF,                            !  40.18
+     &                FD1, FD2, FD3, FD4, LRFRD,                        !  40.28
+     &                RDX, RDY, SPCSIG, SPCDIR, X1, X2,                 !  40.18
+     &                X3, X4, Y1, Y2, Y3, Y4, ANYBIN, ILINK,            !  40.18
+     &                POWN, LREFDIFF                                    !  40.18
+      INTENT (IN OUT) REF0, REFLSO                                      !  40.41 40.18
+!                                                                       !  40.09
+!  6. Parameter variables                                               !  40.09
+!                                                                       !  40.18
+!  7. Local variables                                                   !  40.09
+!                                                                       !  40.09
       REAL :: AC2REF     ! reflected action density of one spectral bin
-      REAL :: BETA       ! local angle of obstacle                        40.09
+      REAL :: BETA       ! local angle of obstacle                      !  40.09
       REAL :: X, Y
-      REAL, ALLOCATABLE :: PRDIF(:)   ! scattering filter                 40.13
+      REAL, ALLOCATABLE :: PRDIF(:)   ! scattering filter               !  40.13
       REAL    :: TH_INC         ! direction of incident wave
       REAL    :: TH_NORM        ! direction of normal to obstacle
       REAL    :: TH_OUT         ! direction of outgoing wave
@@ -3617,31 +3617,31 @@
       INTEGER :: ID_I1, ID_I2   ! counters of incoming directions
       INTEGER :: IDA, IDB       ! counters of incoming directions
       INTEGER :: IENT           ! number of entries
-!                                                                         40.18
-!  8. Subroutines used                                                    40.09
-!                                                                         40.09
-!  9. Subroutines calling                                                 40.09
-!                                                                         40.09
-!     SWTRCF                                                              40.09
-!                                                                         40.09
-! 11. Remarks                                                             40.09
-!                                                                         40.09
-!    -In case the obstacle cuts exactly through computational grid point, 40.09
-!    -The length of the obstacle linepiece is assumed to be               40.09
-!     'long enough' compared to grid resolution (> 0.5*sqrt(dx^2+dy^2))   40.09
-!     (if this restriction is violated, the reflections due to an obsta-  40.09
-!     cle of one straight line can be very different from a similar line  40.09
-!     consisting of several pieces (because only the directions of the    40.09
-!     spectrum that are directed towards the obstacle linepiece are       40.09
-!     reflected).                                                         40.09
-!    -There should be only one intersection per computational gridcell.   40.09
-!     Therefore it is better to avoid sharp edges in obstacles.           40.18
-!                                                                         40.09
-! 12. Structure                                                           40.09
-!                                                                         40.09
+!                                                                       !  40.18
+!  8. Subroutines used                                                  !  40.09
+!                                                                       !  40.09
+!  9. Subroutines calling                                               !  40.09
+!                                                                       !  40.09
+!     SWTRCF                                                            !  40.09
+!                                                                       !  40.09
+! 11. Remarks                                                           !  40.09
+!                                                                       !  40.09
+!    -In case the obstacle cuts exactly through computational grid point!, 40.09
+!    -The length of the obstacle linepiece is assumed to be             !  40.09
+!     'long enough' compared to grid resolution (> 0.5*sqrt(dx^2+dy^2)) !  40.09
+!     (if this restriction is violated, the reflections due to an obsta-!  40.09
+!     cle of one straight line can be very different from a similar line!  40.09
+!     consisting of several pieces (because only the directions of the  !  40.09
+!     spectrum that are directed towards the obstacle linepiece are     !  40.09
+!     reflected).                                                       !  40.09
+!    -There should be only one intersection per computational gridcell. !  40.09
+!     Therefore it is better to avoid sharp edges in obstacles.         !  40.18
+!                                                                       !  40.09
+! 12. Structure                                                         !  40.09
+!                                                                       !  40.09
 !     -----------------------------------------------------------------
-!     Determine angle of obstacle, Beta                                   40.09
-!     Determine angle of normal from (X1,Y1) to obstacle                  40.13
+!     Determine angle of obstacle, Beta                                 !  40.09
+!     Determine angle of normal from (X1,Y1) to obstacle                !  40.13
 !     If there is constant diffuse reflection
 !     Then determine scattering distribution
 !     -----------------------------------------------------------------
@@ -3661,14 +3661,14 @@
 !                 multiply incoming action with scattering coefficient
 !                 add this to array AC2REF
 !     -----------------------------------------------------------------
-!                                                                         40.09
-!     Add reflected spectrum to right hand side of matrix equation        40.09
-!                                                                         40.09
-! 13. Source text                                                         40.09
-!                                                                         40.18
-      SAVE     IENT                                                       40.09
-      DATA     IENT /0/                                                   40.09
-      CALL STRACE (IENT, 'REFLECT')                                       40.09
+!                                                                       !  40.09
+!     Add reflected spectrum to right hand side of matrix equation      !  40.09
+!                                                                       !  40.09
+! 13. Source text                                                       !  40.09
+!                                                                       !  40.18
+      SAVE     IENT                                                     !  40.09
+      DATA     IENT /0/                                                 !  40.09
+      CALL STRACE (IENT, 'REFLECT')                                     !  40.09
 
       IF ( LREFDIFF.EQ.0 ) THEN
         ALLOCATE (PRDIF(0:0))
@@ -3678,27 +3678,27 @@
         MAXIDR = MDC/2
         ALLOCATE (PRDIF(0:MDC/2))
       ENDIF
-!                                                                         40.09
-!     determine angle of obstacle BETA                                    40.09
-!                                                                         40.09
+!                                                                       !  40.09
+!     determine angle of obstacle BETA                                  !  40.09
+!                                                                       !  40.09
       X = X4 - X3
       Y = Y4 - Y3
       IF ( X.NE.0. .OR. Y.NE.0. ) THEN
         BETA = ATAN2(Y,X)
-      ELSE                                                                40.09
-        CALL MSGERR (2, 'obstacle is a zero-dimensional point')           40.09
-      END IF                                                              40.09
+      ELSE                                                              !  40.09
+        CALL MSGERR (2, 'obstacle is a zero-dimensional point')         !  40.09
+      END IF                                                            !  40.09
 !     determine direction of normal                         (4)
 !     this is the normal from (X1,Y1)                        |
 !     towards the obstacle                                   |
 !     see sketch to establish sign                    (2)----+------(1)
 !                                                            |
 !                                                           (3)
-      IF ( (X1-X3)*Y - (Y1-Y3)*X.GT.0. ) THEN                             40.13
+      IF ( (X1-X3)*Y - (Y1-Y3)*X.GT.0. ) THEN                           !  40.13
         TH_NORM = BETA + 0.5*PI
       ELSE
         TH_NORM = BETA - 0.5*PI
-      ENDIF                                                               40.13
+      ENDIF                                                             !  40.13
 
 !     prepare directional filter in case of diffuse reflection
       IF (LREFDIFF.EQ.1) THEN
@@ -3729,23 +3729,23 @@
       DO IS = 1, MSC
         IF (LRFRD.EQ.1) THEN
 !         amount of reflection varies with wave frequency
-          REF0 = FD1 +                                                    40.13
-     &           FD2/PI * ATAN2(PI*FD3*(SPCSIG(IS)-FD4),FD2)              40.13
-          IF (REF0 > 1.) REF0 = 1.                                        40.28
-          IF (REF0 < 0.) REF0 = 0.                                        40.28
+          REF0 = FD1 +                                                  !  40.13
+     &           FD2/PI * ATAN2(PI*FD3*(SPCSIG(IS)-FD4),FD2)            !  40.13
+          IF (REF0 > 1.) REF0 = 1.                                      !  40.28
+          IF (REF0 < 0.) REF0 = 0.                                      !  40.28
 !         >>> should REF0 not be squared? <<<
         ENDIF
-!       check whether reflection + transmission <= 1                      40.13
-        DO ID = 1, MDC                                                    40.13
-          IF ((REF0 + OBREDF(ID,IS,ILINK)) .GT. 1.) THEN                  40.13
-            REFLTST = .FALSE.                                             40.13
-            IF (ITEST.GE.50) THEN                                         40.13
-              WRITE (PRTEST, 72) IXCGRD(1)-1, IYCGRD(1)-1, ILINK,         40.13
-     &               IS, ID, REF0, OBREDF(ID,IS,ILINK)                    40.13
-  72          FORMAT (' Refl+Transm>1 in ', 2I4, 2X, 3I3, 2X, 2F6.2)      40.13
-            ENDIF                                                         40.13
-          ENDIF                                                           40.13
-        ENDDO                                                             40.13
+!       check whether reflection + transmission <= 1                    !  40.13
+        DO ID = 1, MDC                                                  !  40.13
+          IF ((REF0 + OBREDF(ID,IS,ILINK)) .GT. 1.) THEN                !  40.13
+            REFLTST = .FALSE.                                           !  40.13
+            IF (ITEST.GE.50) THEN                                       !  40.13
+              WRITE (PRTEST, 72) IXCGRD(1)-1, IYCGRD(1)-1, ILINK,       !  40.13
+     &               IS, ID, REF0, OBREDF(ID,IS,ILINK)                  !  40.13
+  72          FORMAT (' Refl+Transm>1 in ', 2I4, 2X, 3I3, 2X, 2F6.2)    !  40.13
+            ENDIF                                                       !  40.13
+          ENDIF                                                         !  40.13
+        ENDDO                                                           !  40.13
 
         IF (LREFDIFF.EQ.2) THEN
 !         spreading varies with frequency; not yet implemented
@@ -3754,17 +3754,17 @@
           IF (ANYBIN(ID,IS)) THEN
             AC2REF = 0.
             TH_OUT = SPCDIR(ID,1)
-!           corresponding incident direction (assuming specular reflection)
+!           corresponding incident direction (assuming specular reflecti!on)
             TH_INC = 2.*BETA-TH_OUT
-            IF ( TH_INC.LT.0. ) TH_INC = TH_INC + 2.*PI                   41.73
+            IF ( TH_INC.LT.0. ) TH_INC = TH_INC + 2.*PI                 !  41.73
 !           determine counter for which direction is TH_INC:
             IANG = MOD (TH_INC-SPCDIR(1,1), 2.*PI) / DDIR
-            IF ( IANG.LT.0. ) IANG = IANG + REAL(MDC)                     41.73
+            IF ( IANG.LT.0. ) IANG = IANG + REAL(MDC)                   !  41.73
 !           incident angle is between ID_I1 and ID_I2
             ID_I1 = 1 + INT (IANG)
             ID_I2 = ID_I1+1
-            IF ( ID_I2.GT.MDC ) ID_I2 = ID_I2 - MDC                       41.73
-!           W1 and W2 are weighting coefficients for the above directions
+            IF ( ID_I2.GT.MDC ) ID_I2 = ID_I2 - MDC                     !  41.73
+!           W1 and W2 are weighting coefficients for the above direction!s
 !           by linear interpolation
             W2 = IANG + 1. - REAL(ID_I1)
             W1 = 1. - W2
@@ -3773,7 +3773,7 @@
               IDB = ID_I2 + IDR
               IF (FULCIR) THEN
                 IDA = 1+MOD(2*MDC+IDA-1,MDC)
-!               only outgoing reflected waves, i.e. not towards obstacle
+!               only outgoing reflected waves, i.e. not towards obstacle!
                 IF (COS(TH_NORM-SPCDIR(IDA,1)) .GT. 0.)
      &          AC2REF = AC2REF +
      &          REF0 * W1 * PRDIF(ABS(IDR)) * AC2(IDA,IS,KCGRD(1))
@@ -3796,24 +3796,24 @@
             ENDDO
 !           add reflected energy to right hand side of matrix
             REFLSO(ID,IS) = REFLSO(ID,IS) + AC2REF *
-     &      (RDX(ILINK)*CAX(ID,IS,1) + RDY(ILINK)*CAY(ID,IS,1))           40.13
-          END IF                                                          40.09
-        END DO                                                            40.09
-      END DO                                                              40.09
-!                                                                         40.18
+     &      (RDX(ILINK)*CAX(ID,IS,1) + RDY(ILINK)*CAY(ID,IS,1))         !  40.13
+          END IF                                                        !  40.09
+        END DO                                                          !  40.09
+      END DO                                                            !  40.09
+!                                                                       !  40.18
       IF (LREFDIFF .GT. 0) DEALLOCATE (PRDIF)
-      RETURN                                                              40.09
-!     End of subroutine REFLECT                                           40.09
-      END                                                                 40.09
+      RETURN                                                            !  40.09
+!     End of subroutine REFLECT                                         !  40.09
+      END                                                               !  40.09
 !
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       SUBROUTINE SSHAPE (ACLOC, SPCSIG, SPCDIR, FSHAPL, DSHAPL)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -3829,8 +3829,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -3840,7 +3840,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -3863,8 +3863,8 @@
 !     30.80, Oct. 98: correction suggested by Mauro Sclavo, and renames
 !                     computation of tail added to improve accuracy
 !     30.82, Oct. 98: Updated description of several variables
-!     40.02, Oct. 00: Modified test write statement to avoid division by MS=0
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.02, Oct. 00: Modified test write statement to avoid division by! MS=0
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !     41.99, Aug. 22: correction to cos m-model
 !
 !  2. Purpose
@@ -3873,8 +3873,8 @@
 !
 !  3. Method (updated...)
 !
-!     see: M. Yamaguchi: Approximate expressions for integral properties
-!          of the JONSWAP spectrum; Proc. JSCE, No. 345/II-1, pp. 149-152,
+!     see: M. Yamaguchi: Approximate expressions for integral properties!
+!          of the JONSWAP spectrum; Proc. JSCE, No. 345/II-1, pp. 149-15!2,
 !          1984.
 !
 !     computation of mean period: see Swan system documentation
@@ -3882,17 +3882,17 @@
 !  4. Argument variables
 !
 !   o ACLOC : Energy density at a point in space
-! i   SPCDIR: (*,1); spectral directions (radians)                        30.82
-!             (*,2); cosine of spectral directions                        30.82
-!             (*,3); sine of spectral directions                          30.82
-!             (*,4); cosine^2 of spectral directions                      30.82
-!             (*,5); cosine*sine of spectral directions                   30.82
-!             (*,6); sine^2 of spectral directions                        30.82
-! i   SPCSIG: Relative frequencies in computational domain in sigma-space 30.82
+! i   SPCDIR: (*,1); spectral directions (radians)                      !  30.82
+!             (*,2); cosine of spectral directions                      !  30.82
+!             (*,3); sine of spectral directions                        !  30.82
+!             (*,4); cosine^2 of spectral directions                    !  30.82
+!             (*,5); cosine*sine of spectral directions                 !  30.82
+!             (*,6); sine^2 of spectral directions                      !  30.82
+! i   SPCSIG: Relative frequencies in computational domain in sigma-spac!e 30.82
 !
       REAL    ACLOC(MDC,MSC)
-      REAL    SPCDIR(MDC,6)                                               30.82
-      REAL    SPCSIG(MSC)                                                 30.82
+      REAL    SPCDIR(MDC,6)                                             !  30.82
+      REAL    SPCSIG(MSC)                                               !  30.82
 !
 ! i   DSHAPL: Directional distribution
 ! i   FSHAPL: Shape of spectrum:
@@ -3904,7 +3904,7 @@
 !             (if >0: period is interpreted as peak per.
 !              if <0: period is interpreted as mean per.)
 !
-      INTEGER FSHAPL, DSHAPL                                              40.00
+      INTEGER FSHAPL, DSHAPL                                            !  40.00
 !
 !  5. Parameter variables
 !
@@ -3916,7 +3916,7 @@
 !
       INTEGER  ID, IS, LSHAPE
 !
-!     PKPER    peak period                                                30.80
+!     PKPER    peak period                                              !  30.80
 !     APSHAP   aux. var. used in computation of spectrum
 !     AUX1     auxiliary variable
 !     AUX2     auxiliary variable
@@ -3925,7 +3925,7 @@
 !     CPSHAP   aux. var. used in computation of spectrum
 !     CTOT     total energy
 !     CTOTT    total energy (used for comparison)
-!     DD       directional width (in degrees)                             41.99
+!     DD       directional width (in degrees)                           !  41.99
 !     DIFPER   auxiliary variable used to select bin closest
 !              to given frequency
 !     MPER
@@ -3935,7 +3935,7 @@
 !     SF       frequency (Hz)
 !     SF4      SF**4
 !     SF5      SF**5
-!     FPK      frequency corresponding to peak period (1/PKPER)           30.80
+!     FPK      frequency corresponding to peak period (1/PKPER)         !  30.80
 !     FPK4     FPK**4
 !     SYF      peakedness parameter
 !
@@ -3944,12 +3944,12 @@
       REAL     MS
       REAL     RA    ,SALPHA,SF   ,SF4   ,SF5   ,FPK   ,FPK4, FAC
       REAL     DP, K, N, CG, ND
-      REAL     DD                                                         41.99
+      REAL     DD                                                       !  41.99
 !
 !     LOGPM    indicates whether peak or mean frequency is used
 !     DVERIF   logical used in verification of incident direction
 !
-      LOGICAL  LOGPM, DVERIF                                              40.00
+      LOGICAL  LOGPM, DVERIF                                            !  40.00
 !
 !     PSHAPE   coefficients of spectral distribution (see remarks)
 !     SPPARM   array containing integral wave parameters (see remarks)
@@ -3964,24 +3964,24 @@
 !
 ! 11. Remarks
 !
-!     PSHAPE(1): SY0, peak enhancement factor (gamma) in Jonswap spectrum
+!     PSHAPE(1): SY0, peak enhancement factor (gamma) in Jonswap spectru!m
 !     PSHAPE(2): spectral width in case of Gauss spectrum in rad/s
 !
 !     SPPARM    real     input    incident wave parameters (Hs, Period,
 !                                 direction, Ms (dir. spread))
 !     SPPARM(1): Hs, sign. wave height
-!     SPPARM(2): Wave period given by the user (either peak or mean)      30.80
+!     SPPARM(2): Wave period given by the user (either peak or mean)    !  30.80
 !     SPPARM(3): average direction
 !     SPPARM(4): directional spread
 !
-!     ---------------------------------------------------------------------
+!     ------------------------------------------------------------------!---
 !
-!     In the case of a JONSWAP spectrum the initial conditions are given by
+!     In the case of a JONSWAP spectrum the initial conditions are given! by
 !                   _               _       _       _       _
 !                  |       _   _ -4  |     |       | S - S   |
 !             2    |      |  S  |    |     |       |      p  |
-!          a g     |      |  _  |    |  exp|-1/2 * |________ |* 2/pi COS(T-T  )
-! E(S,D )= ___  exp|-5/4 *|  S  |    | G   |       | e * S   |              wi
+!          a g     |      |  _  |    |  exp|-1/2 * |________ |* 2/pi COS!(T-T  )
+! E(S,D )= ___  exp|-5/4 *|  S  |    | G   |       | e * S   |          !    wi
 !      wa    5     |      |   p |    |     |_      |_     p _|
 !           S      |      |_   _|    |
 !                  |_               _|
@@ -4006,7 +4006,7 @@
 !
 ! 12. Structure
 !
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       case shape
 !       =1:   calculate value of Pierson-Moskowitz spectrum
 !       =2:   calculate value of Jonswap spectrum
@@ -4014,16 +4014,16 @@
 !       =4:   calculate value of Gauss spectrum
 !       =5:   calculate value of TMA spectrum
 !       else: Give error message because of wrong shape
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       if LOGPM is True
 !       then calculate average period
 !            if it differs from given average period
 !            then recalculate peak period
 !                 restart procedure to compute spectral shape
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       for all spectral bins do
 !            multiply all action densities by directional distribution
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !
 ! 13. Source text
 !
@@ -4042,8 +4042,8 @@
         LOGPM  = .TRUE.
       ENDIF
 !
-      IF (SPPARM(1).LE.0.)                                                40.31
-     &   CALL MSGERR(1,'sign. wave height at boundary is not positive')   40.31
+      IF (SPPARM(1).LE.0.)                                              !  40.31
+     &   CALL MSGERR(1,'sign. wave height at boundary is not positive') !  40.31
 !
       PKPER = SPPARM(2)
       ITPER = 0
@@ -4058,10 +4058,10 @@
         ENDDO
       ENDIF
 !
-!     compute spectral shape using peak period PKPER                      30.80
+!     compute spectral shape using peak period PKPER                    !  30.80
 !
       FAC  = 1.
- 100  FPK  = (1./PKPER)                                                   30.80
+ 100  FPK  = (1./PKPER)                                                 !  30.80
       FPK4 = FPK**4
       IF (LSHAPE.EQ.1) THEN
         SALPHA = ((SPPARM(1) ** 2) * (FPK4)) * 5. / 16.
@@ -4075,7 +4075,7 @@
       ENDIF
 !
       CTOTT = 0.
-      DO 300 IS = 1, MSC                                                  30.80
+      DO 300 IS = 1, MSC                                                !  30.80
 !
         IF (LSHAPE.EQ.1) THEN
 !         *** LSHAPE = 1 : Pierson and Moskowitz ***
@@ -4091,7 +4091,7 @@
           SF4 = SF**4
           SF5 = SF**5
           CPSHAP = 1.25 * FPK4 / SF4
-          IF (CPSHAP.GT.10.) THEN                                         30.50
+          IF (CPSHAP.GT.10.) THEN                                       !  30.50
             RA = 0.
           ELSE
             RA = (SALPHA/SF5) * EXP(-CPSHAP)
@@ -4107,7 +4107,7 @@
             COEFF = 0.09
           ENDIF
           APSHAP =  0.5 * ((SF-FPK) / (COEFF*FPK)) **2
-          IF (APSHAP.GT.10.) THEN                                         30.50
+          IF (APSHAP.GT.10.) THEN                                       !  30.50
             SYF = 1.
           ELSE
             PPSHAP = EXP(-APSHAP)
@@ -4168,53 +4168,53 @@
           AM1 = AM1 + AS3
         ENDDO
 !       contribution of tail to total energy density
-        PPTAIL = PWTAIL(1) - 1.                                           30.80
-        APTAIL = 1. / (PPTAIL * (1. + PPTAIL * (FRINTH-1.)))              30.80
-        AM0 = AM0 * FRINTF + APTAIL * AS2                                 30.80
-        PPTAIL = PWTAIL(1) - 2.                                           30.80
-        EPTAIL = 1. / (PPTAIL * (1. + PPTAIL * (FRINTH-1.)))              30.80
-        AM1 = AM1 * FRINTF + EPTAIL * AS3                                 30.80
+        PPTAIL = PWTAIL(1) - 1.                                         !  30.80
+        APTAIL = 1. / (PPTAIL * (1. + PPTAIL * (FRINTH-1.)))            !  30.80
+        AM0 = AM0 * FRINTF + APTAIL * AS2                               !  30.80
+        PPTAIL = PWTAIL(1) - 2.                                         !  30.80
+        EPTAIL = 1. / (PPTAIL * (1. + PPTAIL * (FRINTH-1.)))            !  30.80
+        AM1 = AM1 * FRINTF + EPTAIL * AS3                               !  30.80
 !       Mean period:
-        IF ( AM1.NE.0. ) THEN                                             40.31
+        IF ( AM1.NE.0. ) THEN                                           !  40.31
            MPER = PI2 * AM0 / AM1
-        ELSE                                                              40.31
-           CALL MSGERR(3, ' first moment is zero in calculating the')     40.31
-           CALL MSGERR(3, ' spectrum at boundary using param. bc.')       40.31
-        END IF                                                            40.31
+        ELSE                                                            !  40.31
+           CALL MSGERR(3, ' first moment is zero in calculating the')   !  40.31
+           CALL MSGERR(3, ' spectrum at boundary using param. bc.')     !  40.31
+        END IF                                                          !  40.31
         IF (ITEST.GE.80) WRITE (PRTEST, 72) ITPER, SPPARM(2), MPER,
      &          PKPER
   72    FORMAT (' SSHAPE iter=', I2, '  period values:', 3F7.2)
         IF (ABS(MPER-SPPARM(2)) .GT. 0.01*SPPARM(2)) THEN
 !         modification suggested by Mauro Sclavo
-          PKPER = (SPPARM(2) / MPER) * PKPER                              30.80
+          PKPER = (SPPARM(2) / MPER) * PKPER                            !  30.80
           GOTO 100
         ENDIF
       ENDIF
 !
       IF (ITPER.GE.10) THEN
-        CALL MSGERR(3, 'No convergence calculating the spectrum')         30.82
-        CALL MSGERR(3, 'at the boundary using parametric bound. cond.')   30.82
+        CALL MSGERR(3, 'No convergence calculating the spectrum')       !  30.82
+        CALL MSGERR(3, 'at the boundary using parametric bound. cond.') !  30.82
       ENDIF
 !
 !     now introduce distribution over directions
 !
-      ADIR = PI * DEGCNV(SPPARM(3)) / 180.                                40.00
+      ADIR = PI * DEGCNV(SPPARM(3)) / 180.                              !  40.00
       IF (DSHAPL.EQ.1) THEN
-        DD = SPPARM(4)                                                    41.99
-        IF (DD.GT.23.) THEN                                               41.99
-           FAC = 1.2                                                      41.99
-        ELSEIF (DD.GT.17.) THEN                                           41.99
-           FAC = 1.096                                                    41.99
-        ELSE                                                              41.99
-           FAC = 1.01                                                     41.99
-        ENDIF                                                             41.99
+        DD = SPPARM(4)                                                  !  41.99
+        IF (DD.GT.23.) THEN                                             !  41.99
+           FAC = 1.2                                                    !  41.99
+        ELSEIF (DD.GT.17.) THEN                                         !  41.99
+           FAC = 1.096                                                  !  41.99
+        ELSE                                                            !  41.99
+           FAC = 1.01                                                   !  41.99
+        ENDIF                                                           !  41.99
         DSPR = PI * SPPARM(4) / 180.
-        MS = MAX (FAC*DSPR**(-2) - 2., 1.)                                41.99
+        MS = MAX (FAC*DSPR**(-2) - 2., 1.)                              !  41.99
       ELSE
         MS = SPPARM(4)
       ENDIF
       IF (MS.LT.12.) THEN
-        CTOT = GAMMAF(0.5*MS+1.) / (SQRT(PI) * GAMMAF(0.5*MS+0.5))        41.99
+        CTOT = GAMMAF(0.5*MS+1.) / (SQRT(PI) * GAMMAF(0.5*MS+0.5))      !  41.99
       ELSE
         CTOT =  SQRT (0.5*MS/PI) / (1. - 0.25/MS)
       ENDIF
@@ -4223,10 +4223,10 @@
         DO IS = 1, MSC
           ESOM = ESOM + FRINTF * SPCSIG(IS)**2 * ACLOC(MDC,IS)
         ENDDO
-        GAM1 = GAMMAF(0.5*MS+1. )                                         40.84
-        GAM2 = GAMMAF(0.5*MS+0.5)                                         41.99 40.84
+        GAM1 = GAMMAF(0.5*MS+1. )                                       !  40.84
+        GAM2 = GAMMAF(0.5*MS+0.5)                                       !  41.99 40.84
         WRITE (PRTEST, *) ' SSHAPE dir ', 4.*SQRT(ABS(ESOM)),
-     &        SPPARM(1), CTOT, MS, GAM1, GAM2, CTOT                       40.84 40.02
+     &        SPPARM(1), CTOT, MS, GAM1, GAM2, CTOT                     !  40.84 40.02
       ENDIF
       DVERIF = .FALSE.
       CTOTT = 0.
@@ -4264,8 +4264,8 @@
 !                                                                  *
 !*******************************************************************
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -4280,8 +4280,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4291,7 +4291,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -4307,9 +4307,9 @@
 !     30.73, Nov. 97: revised
 !     40.00, Apr. 98: procedure to maintain peakedness introduced
 !     30.82, Oct. 98: Update description of several variables
-!     30.82, Oct. 98: Made arguments in ATAN2 double precision to prevent
+!     30.82, Oct. 98: Made arguments in ATAN2 double precision to preven!t
 !                     underflows
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -4319,31 +4319,31 @@
 !
 !     linear interpolation with peakedness maintained
 !     interpolated average direction and frequency are determined
-!     average direction and frequency of interpolated spectrum are determ.
-!     shifts in frequency and direction are determined from spectrum 1 and
+!     average direction and frequency of interpolated spectrum are deter!m.
+!     shifts in frequency and direction are determined from spectrum 1 a!nd
 !     2 to the interpolated spectrum
 !     bilinear interpolation in spectral space is used to calculate
 !     contributions from spectrum 1 and 2.
-!     in full circle cases interpolation crosses the boundary 0-360 degr.
+!     in full circle cases interpolation crosses the boundary 0-360 degr!.
 !
 !  4. Argument variables
 !
 !   o FL    : Interpolated spectrum.
 ! i   FL1   : Input spectrum 1.
 ! i   FL2   : Input spectrum 2.
-! i   SPCDIR: (*,1); spectral directions (radians)                        30.82
-!             (*,2); cosine of spectral directions                        30.82
-!             (*,3); sine of spectral directions                          30.82
-!             (*,4); cosine^2 of spectral directions                      30.82
-!             (*,5); cosine*sine of spectral directions                   30.82
-!             (*,6); sine^2 of spectral directions                        30.82
-! i   SPCSIG: Relative frequencies in computational domain in sigma-space 30.82
+! i   SPCDIR: (*,1); spectral directions (radians)                      !  30.82
+!             (*,2); cosine of spectral directions                      !  30.82
+!             (*,3); sine of spectral directions                        !  30.82
+!             (*,4); cosine^2 of spectral directions                    !  30.82
+!             (*,5); cosine*sine of spectral directions                 !  30.82
+!             (*,6); sine^2 of spectral directions                      !  30.82
+! i   SPCSIG: Relative frequencies in computational domain in sigma-spac!e 30.82
 ! i   W1    : Weighting coefficient for spectrum 1.
 ! i   W2    : Weighting coefficient for spectrum 2.
 !
       REAL    FL1(MDC,MSC), FL2(MDC,MSC), FL(MDC, MSC)
-      REAL    SPCDIR(MDC,6)                                               30.82
-      REAL    SPCSIG(MSC)                                                 30.82
+      REAL    SPCDIR(MDC,6)                                             !  30.82
+      REAL    SPCSIG(MSC)                                               !  30.82
       REAL    W1, W2
 !
 !  5. Parameter variables
@@ -4393,7 +4393,7 @@
 !
 ! 12. Structure
 !
-!      -----------------------------------------------------------------
+!      -----------------------------------------------------------------!
 !      If W1 close to 1
 !      Then copy FL from FL1
 !      Else If W2 close to 1
@@ -4412,8 +4412,8 @@
 !                          determine frequency shift from FL1
 !                          determine frequency shift from FL2
 !                          For all spectral components do
-!                              compose FL from components of FL1 and FL2
-!      -----------------------------------------------------------------
+!                              compose FL from components of FL1 and FL2!
+!      -----------------------------------------------------------------!
 !
 ! 13. Source text
 !
@@ -4474,18 +4474,18 @@
           AXTOT  = W1 * AXTOT1 + W2 * AXTOT2
           AYTOT  = W1 * AYTOT1 + W2 * AYTOT2
           IF (ITEST.GE.80) THEN
-            WRITE (PRTEST, 509)  ATOT1, ATOT2,                            40.02
+            WRITE (PRTEST, 509)  ATOT1, ATOT2,                          !  40.02
      &            AXTOT, AXTOT1, AXTOT2, AYTOT, AYTOT1, AYTOT2
  509        FORMAT (' SINTRP factors ', 8E11.4, /, 15X, 4F7.3)
           ENDIF
 !         DELD1 is the difference in direction between spectrum 1 and
 !         the interpolated spectrum in number of directional steps
-          DELD1  = REAL(ATAN2(DBLE(AXTOT*AYTOT1 - AYTOT*AXTOT1),          30.82
-     &                        DBLE(AXTOT*AXTOT1 + AYTOT*AYTOT1))) / DDIR  30.82
+          DELD1  = REAL(ATAN2(DBLE(AXTOT*AYTOT1 - AYTOT*AXTOT1),        !  30.82
+     &                        DBLE(AXTOT*AXTOT1 + AYTOT*AYTOT1))) / DDIR!  30.82
 !         DELD2 is the difference between spectrum 2 and
 !         the interpolated spectrum
-          DELD2  = REAL(ATAN2(DBLE(AXTOT*AYTOT2 - AYTOT*AXTOT2),          30.82
-     &                        DBLE(AXTOT*AXTOT2 + AYTOT*AYTOT2))) / DDIR  30.82
+          DELD2  = REAL(ATAN2(DBLE(AXTOT*AYTOT2 - AYTOT*AXTOT2),        !  30.82
+     &                        DBLE(AXTOT*AXTOT2 + AYTOT*AYTOT2))) / DDIR!  30.82
           IDD1A  = NINT(DELD1)
           RDD1B  = DELD1 - REAL(IDD1A)
           IF (RDD1B .LT. 0.) THEN
@@ -4512,7 +4512,7 @@
           ASTOT  = W1 * ASTOT1 + W2 * ASTOT2
           ASIG   = ASTOT / ATOT
 !
-!         DELSG1 is shift in frequency between spectrum 1 and interpolated
+!         DELSG1 is shift in frequency between spectrum 1 and interpolat!ed
 !         spectrum in number of frequency steps
           DELSG1 = ALOG (ASIG1 / ASIG) / FRINTF
           IDS1A  = NINT(DELSG1)
@@ -4524,7 +4524,7 @@
           IDS1B  = IDS1A + 1
           RDS1A  = 1. - RDS1B
 !
-!         DELSG2 is shift in frequency between spectrum 2 and interpolated
+!         DELSG2 is shift in frequency between spectrum 2 and interpolat!ed
 !         spectrum in number of frequency steps
           DELSG2 = ALOG (ASIG2 / ASIG) / FRINTF
           IDS2A  = NINT(DELSG2)
@@ -4658,13 +4658,13 @@
       RETURN
 !  end of subroutine of SINTRP
       END
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       REAL FUNCTION DEGCNV (DEGREE)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE SWCOMM3                                                         40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -4680,8 +4680,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4691,7 +4691,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -4755,7 +4755,7 @@
 !
 ! 10. SOURCE TEXT
 !
-!***********************************************************************
+!***********************************************************************!
 !
       SAVE IENT
       DATA IENT /0/
@@ -4781,13 +4781,13 @@
       RETURN
       END
 !
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       REAL FUNCTION ANGRAD (DEGREE)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE SWCOMM3                                                         40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -4803,8 +4803,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4814,7 +4814,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -4863,7 +4863,7 @@
 !
 ! 10. SOURCE TEXT
 !
-!***********************************************************************
+!***********************************************************************!
 !
       SAVE IENT
       DATA IENT /0/
@@ -4877,13 +4877,13 @@
       RETURN
       END
 !
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       REAL FUNCTION ANGDEG (RADIAN)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 !
-      USE SWCOMM3                                                         40.41
+      USE SWCOMM3                                                       !  40.41
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -4899,8 +4899,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -4910,7 +4910,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -4959,7 +4959,7 @@
 !
 ! 10. SOURCE TEXT
 !
-!***********************************************************************
+!***********************************************************************!
 !
       SAVE IENT
       DATA IENT /0/
@@ -4973,15 +4973,15 @@
       RETURN
       END
 !
-!***********************************************************************
-!                                                                      *
-      SUBROUTINE HSOBND (AC2   ,SPCSIG,HSIBC ,KGRPNT)                     40.00
-!                                                                      *
-!***********************************************************************
+!***********************************************************************!
+!                                                                      *!
+      SUBROUTINE HSOBND (AC2   ,SPCSIG,HSIBC ,KGRPNT)                   !  40.00
+!                                                                      *!
+!***********************************************************************!
 !
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE M_PARALL                                                        40.31
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE M_PARALL                                                      !  40.31
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -4997,8 +4997,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5008,7 +5008,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -5023,11 +5023,11 @@
 !
 !     32.01, Sep. 97: new for SWAN
 !     30.72, Jan. 98: Changed number of elements for HSI to MCGRD
-!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG for SWAN
+!     30.72, Feb. 98: Introduced generic names XCGRID, YCGRID and SPCSIG! for SWAN
 !     30.70, Feb. 98: structure scheme corrected
 !     40.00, Mar. 98: integration method changed (as in SNEXTI)
 !                     structure corrected
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -5042,10 +5042,10 @@
 !
 !  4. Argument variables
 !
-!     SPCSIG: input  Relative frequencies in computational domain in      30.72
-!                    sigma-space                                          30.72
+!     SPCSIG: input  Relative frequencies in computational domain in    !  30.72
+!                    sigma-space                                        !  30.72
 !
-      REAL    SPCSIG(MSC)                                                 30.72
+      REAL    SPCSIG(MSC)                                               !  30.72
 !
 !       REALS:
 !       ------
@@ -5081,21 +5081,21 @@
 !
 !  9. STRUCTURE
 !
-!     ------------------------------------------------------------------
-!     for all computational grid points do                                30.70
+!     ------------------------------------------------------------------!
+!     for all computational grid points do                              !  30.70
 !         if HSI is non-zero
 !         then compute Hs from action density array
 !              if relative difference is large than HSRERR
 !              then write error message
-!    -------------------------------------------------------------------
+!    -------------------------------------------------------------------!
 !
 ! 10. SOURCE TEXT
 !
-!***********************************************************************
+!***********************************************************************!
 !
-      REAL      AC2(MDC,MSC,MCGRD) ,HSIBC(MCGRD)                          30.72
+      REAL      AC2(MDC,MSC,MCGRD) ,HSIBC(MCGRD)                        !  30.72
 !
-      REAL      ETOT  ,HSC                                                40.00
+      REAL      ETOT  ,HSC                                              !  40.00
 !
       INTEGER   ID    ,IS     ,IX     ,IY    ,INDX
 !
@@ -5109,7 +5109,7 @@
 !
 !     *** initializing ***
 !
-      HSRR = .TRUE.                                                       40.03
+      HSRR = .TRUE.                                                     !  40.03
 !
       DO IY = MYC, 1, -1
         DO IX = 1, MXC
@@ -5118,8 +5118,8 @@
 !           *** compute Hs for boundary point (without tail) ***
             ETOT  = 0.
             DO ID = 1, MDC
-              DO IS = 1, MSC                                              40.00
-                ETOT = ETOT + SPCSIG(IS)**2 * AC2(ID,IS,INDX)             40.00
+              DO IS = 1, MSC                                            !  40.00
+                ETOT = ETOT + SPCSIG(IS)**2 * AC2(ID,IS,INDX)           !  40.00
               ENDDO
             ENDDO
             IF (ETOT .GT. 1.E-8) THEN
@@ -5127,7 +5127,7 @@
             ELSE
               HSC = 0.
             ENDIF
-            HSREL = ABS(HSIBC(INDX) - HSC) / HSIBC(INDX)                  40.51 40.00
+            HSREL = ABS(HSIBC(INDX) - HSC) / HSIBC(INDX)                !  40.51 40.00
             IF (HSREL .GT. HSRERR) THEN
               IF ( HSRR ) THEN
                 WRITE (PRINTF,*) ' ** WARNING : ',
@@ -5144,7 +5144,7 @@
                 HSRR = .FALSE.
               ENDIF
               WRITE (PRINTF,'(2(1x,I5),I7,3(1x,F10.2))')
-     &                 IX+MXF-1, IY+MYF-1, INDX, HSIBC(INDX), HSC, HSREL
+     &                 IX+MXF-1, IY+MYF-1, INDX, HSIBC(INDX), HSC, HSREL!
             ENDIF
           ENDIF
         ENDDO
@@ -5183,8 +5183,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5194,12 +5194,12 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Update history
 !
-!       ver 20.48: also accomodates periodic variables such as directions
+!       ver 20.48: also accomodates periodic variables such as direction!s
 !
 !  1. Purpose
 !
@@ -5241,18 +5241,18 @@
 !
 !  7. Structure
 !
-!       ------------------------------------------------------------------
+!       ----------------------------------------------------------------!--
 !       Make all values of Y2 = 0
 !       For each cell in X1 do
 !           determine boundaries of cell in X1
-!           --------------------------------------------------------------
+!           ------------------------------------------------------------!--
 !           For each cell in X2 do
-!               determine overlap with cell in X1; limits: RLOW and RUPP
+!               determine overlap with cell in X1; limits: RLOW and RUPP!
 !               add to Y2: Y1 * length of overlapping interval
-!       ------------------------------------------------------------------
+!       ----------------------------------------------------------------!--
 !       For each cell in X2 do
 !           divide Y2 value by cell length
-!       ------------------------------------------------------------------
+!       ----------------------------------------------------------------!--
 !
 !  8. Source text
 !
@@ -5350,7 +5350,7 @@
             X2B = 0.5 * (X2(I2) + X2(I2+1))
           ENDIF
 !
-!         (RLOW,RUPP) is overlapping interval of (X1A,X1B) and (X2A,X2B)
+!         (RLOW,RUPP) is overlapping interval of (X1A,X1B) and (X2A,X2B)!
 !
           IF (X1A.LT.X2B) THEN
             RLOW = MAX (X1A, X2A)
@@ -5427,7 +5427,7 @@
 !   Subroutines used
 !     GAMMLN  (Numerical Recipes)
 !
-      REAL XX, YY, ABIG                                                   40.00
+      REAL XX, YY, ABIG                                                 !  40.00
       SAVE IENT, ABIG
       DATA IENT /0/, ABIG /30./
       CALL STRACE (IENT, 'GAMMAF')
@@ -5461,17 +5461,17 @@
       GAMMLN=TMP+LOG(STP*SER)
       RETURN
       END
-!***********************************************************************
-!                                                                      *
+!***********************************************************************!
+!                                                                      *!
       SUBROUTINE WRSPEC (NREF, ACLOC)
-!                                                                      *
-!***********************************************************************
+!                                                                      *!
+!***********************************************************************!
 
-      USE OCPCOMM4                                                        40.41
-      USE SWCOMM3                                                         40.41
-      USE OUTP_DATA                                                       40.13
+      USE OCPCOMM4                                                      !  40.41
+      USE SWCOMM3                                                       !  40.41
+      USE OUTP_DATA                                                     !  40.13
 
-      IMPLICIT NONE                                                       40.13
+      IMPLICIT NONE                                                     !  40.13
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -5487,8 +5487,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5498,7 +5498,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -5509,9 +5509,9 @@
 !  1. UPDATE
 !
 !     new subroutine, update 40.00
-!     40.03, Mar. 00: precision increased; 2 decimals more in output table
+!     40.03, Mar. 00: precision increased; 2 decimals more in output tab!le
 !     40.13, July 01: variable format using module OUTP_DATA
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. PURPOSE
 !
@@ -5554,18 +5554,18 @@
 !
 ! 12. Structure
 !
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !       determine maximum value of ACLOC
 !       if maximum = 0
 !       then write 'ZERO' to file
 !       else write 'FACTOR'
 !            determine multiplication factor, write this to file
 !            write values of ACLOC/factor to file
-!       ----------------------------------------------------------------
+!       ----------------------------------------------------------------!
 !
 ! 13. Source text
 !
-      INTEGER, SAVE :: IENT = 0                                           40.13
+      INTEGER, SAVE :: IENT = 0                                         !  40.13
       IF (LTRACE) CALL STRACE (IENT, 'WRSPEC')
 !
 !     first determine maximum energy density
@@ -5580,17 +5580,17 @@
         ENDDO
       ENDDO
       IF (EFAC .LE. 1.E-10) THEN
-        WRITE (NREF, 12) 'ZERO'                                           40.00
+        WRITE (NREF, 12) 'ZERO'                                         !  40.00
   12    FORMAT (A4)
       ELSE
-        EFAC = 1.01 * EFAC * 10.**(-DEC_SPEC)                             40.13
+        EFAC = 1.01 * EFAC * 10.**(-DEC_SPEC)                           !  40.13
 !       factor PI/180 introduced to account for change from rad to degr
 !       factor 2*PI to account for transition from rad/s to Hz
         WRITE (NREF, 95) EFAC * 2. * PI**2 / 180.
-  95    FORMAT ('FACTOR', /, E18.8)                                       40.13
+  95    FORMAT ('FACTOR', /, E18.8)                                     !  40.13
         DO IS = 1, MSC
 !         write spectral energy densities to file
-          WRITE (NREF, FIX_SPEC) (NINT(ACLOC(ID,IS)/EFAC), ID=1,MDC)      40.13
+          WRITE (NREF, FIX_SPEC) (NINT(ACLOC(ID,IS)/EFAC), ID=1,MDC)    !  40.13
         ENDDO
       ENDIF
       RETURN
@@ -5602,8 +5602,8 @@
 !
 !****************************************************************
 !
-      USE SWCOMM3                                                         40.41
-      USE OCPCOMM4                                                        40.41
+      USE SWCOMM3                                                       !  40.41
+      USE OCPCOMM4                                                      !  40.41
 !
       IMPLICIT NONE
 !
@@ -5621,8 +5621,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5632,7 +5632,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -5643,7 +5643,7 @@
 !  1. Updates
 !
 !     40.23, Sep. 02: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -5654,8 +5654,8 @@
 !     AC2         action density
 !     AC2OLD      action density at previous iteration
 !     ACNRMS      array containing infinity norms
-!     IDCMIN      integer array containing minimum counter of directions
-!     IDCMAX      integer array containing maximum counter of directions
+!     IDCMIN      integer array containing minimum counter of directions!
+!     IDCMAX      integer array containing maximum counter of directions!
 !     ISSTOP      maximum frequency counter in this sweep
 !
       INTEGER IDCMIN(MSC), IDCMAX(MSC), ISSTOP
@@ -5703,7 +5703,7 @@
             DIFFAC = ABS(AC2(ID,IS,KCGRD(1)) - AC2OLD(ID,IS))
             IF (DIFFAC.GT.ACNRMS(1)) ACNRMS(1) = DIFFAC
             IF (ABS(AC2(ID,IS,KCGRD(1))).GT.ACNRMS(2))
-     &                              ACNRMS(2) = ABS(AC2(ID,IS,KCGRD(1)))
+     &                              ACNRMS(2) = ABS(AC2(ID,IS,KCGRD(1)))!
 
          END DO
       END DO
@@ -5716,8 +5716,8 @@
 !TIMG!
 !TIMG!****************************************************************
 !TIMG!
-!TIMG      USE TIMECOMM                                                        40.41
-!TIMG      USE OCPCOMM4                                                        40.41
+!TIMG      USE TIMECOMM                                                 !       40.41
+!TIMG      USE OCPCOMM4                                                 !       40.41
 !TIMG!
 !TIMG      IMPLICIT NONE
 !TIMG!
@@ -5735,8 +5735,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5746,7 +5746,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !TIMG!
 !TIMG!  0. Authors
@@ -5757,7 +5757,7 @@
 !TIMG!  1. Updates
 !TIMG!
 !TIMG!     40.23, Aug. 02: New subroutine
-!TIMG!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!TIMG!     40.41, Oct. 04: common blocks replaced by modules, include fi!les removed
 !TIMG!
 !TIMG!  2. Purpose
 !TIMG!
@@ -5796,7 +5796,7 @@
 !TIMG!  8. Subroutines used
 !TIMG!
 !TIMG!F95!     CPU_TIME         Returns real value from cpu-time clock
-!TIMG!     SYSTEM_CLOCK     Returns integer values from a real-time clock
+!TIMG!     SYSTEM_CLOCK     Returns integer values from a real-time cloc!k
 !TIMG!
 !TIMG!  9. Subroutines calling
 !TIMG!
@@ -5835,7 +5835,7 @@
 !TIMG         GOTO 100
 !TIMG      END IF
 !TIMG
-!TIMG      IF (IFOUND.EQ.0 .AND. IFREE.EQ.0 .AND. LASTTM.LT.MXTIMR) THEN
+!TIMG      IF (IFOUND.EQ.0 .AND. IFREE.EQ.0 .AND. LASTTM.LT.MXTIMR) THEN!
 !TIMG         LASTTM=LASTTM+1
 !TIMG         IFREE =LASTTM
 !TIMG      END IF
@@ -5848,7 +5848,7 @@
 !TIMG     &      ITIMER,' not closed properly/will be ignored.'
 !TIMG      END IF
 !TIMG!
-!TIMG!     --- produce error if not found and no free position available
+!TIMG!     --- produce error if not found and no free position available!
 !TIMG!
 !TIMG      IF (IFOUND.EQ.0 .AND. IFREE.EQ.0) THEN
 !TIMG         WRITE(PRINTF,*)
@@ -5883,8 +5883,8 @@
 !TIMG!
 !TIMG!****************************************************************
 !TIMG!
-!TIMG      USE TIMECOMM                                                        40.41
-!TIMG      USE OCPCOMM4                                                        40.41
+!TIMG      USE TIMECOMM                                                 !       40.41
+!TIMG      USE OCPCOMM4                                                 !       40.41
 !TIMG!
 !TIMG      IMPLICIT NONE
 !TIMG!
@@ -5902,8 +5902,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -5913,7 +5913,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !TIMG!
 !TIMG!  0. Authors
@@ -5924,7 +5924,7 @@
 !TIMG!  1. Updates
 !TIMG!
 !TIMG!     40.23, Aug. 02: New subroutine
-!TIMG!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!TIMG!     40.41, Oct. 04: common blocks replaced by modules, include fi!les removed
 !TIMG!
 !TIMG!  2. Purpose
 !TIMG!
@@ -5962,7 +5962,7 @@
 !TIMG!  8. Subroutines used
 !TIMG!
 !TIMG!F95!     CPU_TIME         Returns real value from cpu-time clock
-!TIMG!     SYSTEM_CLOCK     Returns integer values from a real-time clock
+!TIMG!     SYSTEM_CLOCK     Returns integer values from a real-time cloc!k
 !TIMG!
 !TIMG!  9. Subroutines calling
 !TIMG!
@@ -6042,9 +6042,9 @@
 !TIMG!
 !TIMG!****************************************************************
 !TIMG!
-!TIMG      USE OCPCOMM4                                                        40.41
-!TIMG      USE TIMECOMM                                                        40.41
-!TIMG      USE M_PARALL                                                        40.31
+!TIMG      USE OCPCOMM4                                                 !       40.41
+!TIMG      USE TIMECOMM                                                 !       40.41
+!TIMG      USE M_PARALL                                                 !       40.31
 !TIMG
 !TIMG      IMPLICIT NONE
 !TIMG!
@@ -6062,8 +6062,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -6073,7 +6073,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !TIMG!
 !TIMG!  0. Authors
@@ -6086,8 +6086,8 @@
 !TIMG!  1. Updates
 !TIMG!
 !TIMG!     40.23, Aug. 02: New subroutine
-!TIMG!     40.30, Jan. 03: introduction distributed-memory approach using MPI
-!TIMG!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!TIMG!     40.30, Jan. 03: introduction distributed-memory approach usin!g MPI
+!TIMG!     40.41, Oct. 04: common blocks replaced by modules, include fi!les removed
 !TIMG!     41.75, Jan. 19: adding sea ice
 !TIMG!
 !TIMG!  2. Purpose
@@ -6104,7 +6104,7 @@
 !TIMG!     J     :     loop counter
 !TIMG!     K     :     loop counter
 !TIMG!     MYPRC :     own process number
-!TIMG!     TABLE :     array for computing aggregate cpu- and wallclock-times
+!TIMG!     TABLE :     array for computing aggregate cpu- and wallclock-!times
 !TIMG!
 !TIMG      INTEGER          :: IENT, J, K, IDEBUG, MYPRC
 !TIMG      DOUBLE PRECISION :: TABLE(33,2)
@@ -6134,7 +6134,7 @@
 !TIMG!
 !TIMG      MYPRC = INODE
 !TIMG!
-!TIMG!     --- compile table with overview of cpu/wall clock time used in
+!TIMG!     --- compile table with overview of cpu/wall clock time used i!n
 !TIMG!         important parts of SWAN and write to PRINT file
 !TIMG!
 !TIMG      IF ( ITEST.GE.1 .OR. IDEBUG.GE.1 ) THEN
@@ -6364,49 +6364,49 @@
 !TIMG         WRITE(PRINTF,110) MYPRC
 !TIMG         WRITE(PRINTF,112) MYPRC
 !TIMG         WRITE(PRINTF,110) MYPRC
-!TIMG         WRITE(PRINTF,115) MYPRC,'total time:'       ,(TABLE(1,J),J=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'total time:'       ,(TABLE(1,J),J!=1,2)
 !TIMG         WRITE(PRINTF,110) MYPRC
 !TIMG         WRITE(PRINTF,115) MYPRC,'total pre-processing:',
-!TIMG     &                                                (TABLE(2,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'total calculation:',(TABLE(3,j),j=1,2)
+!TIMG     &                                                (TABLE(2,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'total calculation:',(TABLE(3,j),j!=1,2)
 !TIMG         WRITE(PRINTF,115) MYPRC,'total communication:',
-!TIMG     &                                                (TABLE(4,j),j=1,2)
+!TIMG     &                                                (TABLE(4,j),j!=1,2)
 !TIMG         WRITE(PRINTF,115) MYPRC,'total post-processing:',
-!TIMG     &                                                (TABLE(5,j),j=1,2)
+!TIMG     &                                                (TABLE(5,j),j!=1,2)
 !TIMG         WRITE(PRINTF,110) MYPRC
 !TIMG         WRITE(PRINTF,113) MYPRC
 !TIMG         WRITE(PRINTF,110) MYPRC
-!TIMG         WRITE(PRINTF,115) MYPRC,'calc. propagation:',(TABLE(6,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'exchanging data:'  ,(TABLE(7,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'calc. sources:'    ,(TABLE(8,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'solving system:'   ,(TABLE(9,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'reductions:'      ,(TABLE(10,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'collecting data:' ,(TABLE(11,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'calc. setup:'     ,(TABLE(12,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'other computing:' ,(TABLE(13,j),j=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'calc. propagation:',(TABLE(6,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'exchanging data:'  ,(TABLE(7,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'calc. sources:'    ,(TABLE(8,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'solving system:'   ,(TABLE(9,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'reductions:'      ,(TABLE(10,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'collecting data:' ,(TABLE(11,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'calc. setup:'     ,(TABLE(12,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'other computing:' ,(TABLE(13,j),j!=1,2)
 !TIMG         WRITE(PRINTF,110) MYPRC
 !TIMG         WRITE(PRINTF,114) MYPRC
 !TIMG         WRITE(PRINTF,110) MYPRC
-!TIMG         WRITE(PRINTF,115) MYPRC,'prop. velocities:',(TABLE(14,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'x-y advection:'   ,(TABLE(15,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'sigma advection:' ,(TABLE(16,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'theta advection:' ,(TABLE(17,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'wind:'            ,(TABLE(18,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'whitecapping:'    ,(TABLE(19,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'bottom friction:' ,(TABLE(20,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'fluid mud:'       ,(TABLE(28,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'vegetation:'      ,(TABLE(29,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'turbulence:'      ,(TABLE(30,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'sea ice:'         ,(TABLE(31,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'wave breaking:'   ,(TABLE(21,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'quadruplets:'     ,(TABLE(22,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'triads:'          ,(TABLE(23,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'Bragg scattering:',(TABLE(32,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'QC scattering:'   ,(TABLE(33,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'limiter:'         ,(TABLE(24,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'rescaling:'       ,(TABLE(25,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'reflections:'     ,(TABLE(26,j),j=1,2)
-!TIMG         WRITE(PRINTF,115) MYPRC,'diffraction:'     ,(TABLE(27,j),j=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'prop. velocities:',(TABLE(14,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'x-y advection:'   ,(TABLE(15,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'sigma advection:' ,(TABLE(16,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'theta advection:' ,(TABLE(17,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'wind:'            ,(TABLE(18,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'whitecapping:'    ,(TABLE(19,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'bottom friction:' ,(TABLE(20,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'fluid mud:'       ,(TABLE(28,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'vegetation:'      ,(TABLE(29,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'turbulence:'      ,(TABLE(30,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'sea ice:'         ,(TABLE(31,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'wave breaking:'   ,(TABLE(21,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'quadruplets:'     ,(TABLE(22,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'triads:'          ,(TABLE(23,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'Bragg scattering:',(TABLE(32,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'QC scattering:'   ,(TABLE(33,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'limiter:'         ,(TABLE(24,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'rescaling:'       ,(TABLE(25,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'reflections:'     ,(TABLE(26,j),j!=1,2)
+!TIMG         WRITE(PRINTF,115) MYPRC,'diffraction:'     ,(TABLE(27,j),j!=1,2)
 !TIMG
 !TIMG      END IF
 !TIMG
@@ -6426,7 +6426,7 @@
 !TIMG  114 FORMAT(i3,' # Overview source contributions:')
 !TIMG  115 FORMAT(i3,1x,'#',1x,a22,2f11.2)
 !TIMG
-!TIMG  120 FORMAT(/,i3,' #    item     cpu-time    real time     count')
+!TIMG  120 FORMAT(/,i3,' #    item     cpu-time    real time     count')!
 !TIMG  121 FORMAT(i3,1x,'#',4x,i4,2f13.4,i10)
 !TIMG
 !TIMG      RETURN
@@ -6453,8 +6453,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -6464,7 +6464,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -6553,8 +6553,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -6564,7 +6564,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -6625,7 +6625,7 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM4                                                      !  40.41
 !
       IMPLICIT NONE
 !
@@ -6643,8 +6643,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -6654,7 +6654,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -6665,7 +6665,7 @@
 !  1. Updates
 !
 !     40.23, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -6705,7 +6705,7 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM4                                                      !  40.41
 !
       IMPLICIT NONE
 !
@@ -6723,8 +6723,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -6734,7 +6734,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -6745,7 +6745,7 @@
 !  1. Updates
 !
 !     40.23, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -6818,7 +6818,7 @@
 !
 !****************************************************************
 !
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM4                                                      !  40.41
 !
       IMPLICIT NONE
 !
@@ -6836,8 +6836,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -6847,7 +6847,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -6858,7 +6858,7 @@
 !  1. Updates
 !
 !     40.23, Feb. 03: New subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files r!emoved
 !
 !  2. Purpose
 !
@@ -6931,7 +6931,7 @@
 !MatL4!
 !MatL4!****************************************************************
 !MatL4!
-!MatL4      USE OCPCOMM4                                                        40.41
+!MatL4      USE OCPCOMM4                                                !        40.41
 !MatL4!
 !MatL4      IMPLICIT NONE
 !MatL4!
@@ -6949,8 +6949,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -6960,7 +6960,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !MatL4!
 !MatL4!  0. Authors
@@ -6971,7 +6971,7 @@
 !MatL4!  1. Updates
 !MatL4!
 !MatL4!     40.30, May 03: New subroutine
-!MatL4!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!MatL4!     40.41, Oct. 04: common blocks replaced by modules, include f!iles removed
 !MatL4!
 !MatL4!  2. Purpose
 !MatL4!
@@ -6979,22 +6979,22 @@
 !MatL4!
 !MatL4!  3. Method
 !MatL4!
-!MatL4!     The representation of an integer number is divided into 4 parts
-!MatL4!     of 8 bits each, resulting in 32-bit word in memory. Generally,
-!MatL4!     storage words are represented with bits counted from the right,
-!MatL4!     making bit 0 the lower-order bit and bit 31 the high-order bit,
+!MatL4!     The representation of an integer number is divided into 4 pa!rts
+!MatL4!     of 8 bits each, resulting in 32-bit word in memory. Generall!y,
+!MatL4!     storage words are represented with bits counted from the rig!ht,
+!MatL4!     making bit 0 the lower-order bit and bit 31 the high-order b!it,
 !MatL4!     which is also the sign bit.
 !MatL4!
 !MatL4!     The integer number is always an exact representation of an
-!MatL4!     integer of value positive, negative, or zero. Each bit, except
-!MatL4!     the leftmost bit, corresponds to the actual exponent as power
+!MatL4!     integer of value positive, negative, or zero. Each bit, exce!pt
+!MatL4!     the leftmost bit, corresponds to the actual exponent as powe!r
 !MatL4!     of two.
 !MatL4!
 !MatL4!     For representing negative numbers, the method called
-!MatL4!     "excess 2**(m - 1)" is used, which represents an m-bit number by
-!MatL4!     storing it as the sum of itself and 2**(m - 1). For a 32-bit
+!MatL4!     "excess 2**(m - 1)" is used, which represents an m-bit numbe!r by
+!MatL4!     storing it as the sum of itself and 2**(m - 1). For a 32-bit!
 !MatL4!     machine, m = 32. This results in a positive number, so the
-!MatL4!     leftmost bit need to be reversed. This method is identical to the
+!MatL4!     leftmost bit need to be reversed. This method is identical t!o the
 !MatL4!     two's complement method.
 !MatL4!
 !MatL4!     An example:
@@ -7022,7 +7022,7 @@
 !MatL4!     I     :     loop counter
 !MatL4!     IENT  :     number of entries
 !MatL4!     IQUOT :     auxiliary integer with quotient
-!MatL4!     M     :     maximal exponent number possible (for 32-bit machine, m=32)
+!MatL4!     M     :     maximal exponent number possible (for 32-bit mac!hine, m=32)
 !MatL4!
 !MatL4      INTEGER I, IENT, IQUOT, M
 !MatL4!
@@ -7070,7 +7070,7 @@
 !MatL4!
 !MatL4!****************************************************************
 !MatL4!
-!MatL4      USE OCPCOMM4                                                        40.41
+!MatL4      USE OCPCOMM4                                                !        40.41
 !MatL4!
 !MatL4      IMPLICIT NONE
 !MatL4!
@@ -7088,8 +7088,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -7099,7 +7099,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !MatL4!
 !MatL4!  0. Authors
@@ -7110,7 +7110,7 @@
 !MatL4!  1. Updates
 !MatL4!
 !MatL4!     40.30, May 03: New subroutine
-!MatL4!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!MatL4!     40.41, Oct. 04: common blocks replaced by modules, include f!iles removed
 !MatL4!
 !MatL4!  2. Purpose
 !MatL4!
@@ -7118,40 +7118,40 @@
 !MatL4!
 !MatL4!  3. Method
 !MatL4!
-!MatL4!     The representation of a floating-point number is divided into 4
+!MatL4!     The representation of a floating-point number is divided int!o 4
 !MatL4!     parts of 8 bits each, resulting in 32-bit word in memory.
-!MatL4!     Generally, storage words are represented with bits counted from
+!MatL4!     Generally, storage words are represented with bits counted f!rom
 !MatL4!     the right, making bit 0 the lower-order bit and bit 31 the
 !MatL4!     high-order bit, which is also the sign bit.
 !MatL4!
-!MatL4!     The floating-point number is a processor approximation. Its format
-!MatL4!     has an 8-bit biased exponent and a 23-bit fraction or mantissa. The
-!MatL4!     leftmost bit is the sign bit which is zero for plus and 1 for
-!MatL4!     minus. The biased exponent equals the bias and the actual exponent
-!MatL4!     (power of two) of the number. For a 32-bit machine, bias=127.
+!MatL4!     The floating-point number is a processor approximation. Its !format
+!MatL4!     has an 8-bit biased exponent and a 23-bit fraction or mantis!sa. The
+!MatL4!     leftmost bit is the sign bit which is zero for plus and 1 fo!r
+!MatL4!     minus. The biased exponent equals the bias and the actual ex!ponent
+!MatL4!     (power of two) of the number. For a 32-bit machine, bias=127!.
 !MatL4!
-!MatL4!     Furthermore, the floating-point number is usually stored in the
-!MatL4!     normalized form, i.e. it has a binary point to the left of the
-!MatL4!     mantissa and an implied leading 1 to the left of the binary point.
-!MatL4!     Thus, if X is a floating-point number, then it is calculated as
+!MatL4!     Furthermore, the floating-point number is usually stored in !the
+!MatL4!     normalized form, i.e. it has a binary point to the left of t!he
+!MatL4!     mantissa and an implied leading 1 to the left of the binary !point.
+!MatL4!     Thus, if X is a floating-point number, then it is calculated! as
 !MatL4!     follows:
 !MatL4!
-!MatL4!         X = (-1)**sign bit 1.fraction * 2**(biased exponent-bias)
+!MatL4!         X = (-1)**sign bit 1.fraction * 2**(biased exponent-bias!)
 !MatL4!
-!MatL4!     There are several exceptions. Let a fraction, biased exponent
-!MatL4!     and sign bit be denoted as F, E and S, respectively. The following
+!MatL4!     There are several exceptions. Let a fraction, biased exponen!t
+!MatL4!     and sign bit be denoted as F, E and S, respectively. The fol!lowing
 !MatL4!     formats adhere to IEEE standard:
 !MatL4!
 !MatL4!     S = 0, E = 00000000 and F  = 00 ... 0 : X = 0
-!MatL4!     S = 0, E = 00000000 and F <> 00 ... 0 : X = +0.fraction * 2**(1-bias)
-!MatL4!     S = 1, E = 00000000 and F <> 00 ... 0 : X = -0.fraction * 2**(1-bias)
+!MatL4!     S = 0, E = 00000000 and F <> 00 ... 0 : X = +0.fraction * 2*!*(1-bias)
+!MatL4!     S = 1, E = 00000000 and F <> 00 ... 0 : X = -0.fraction * 2*!*(1-bias)
 !MatL4!     S = 0, E = 11111111 and F  = 00 ... 0 : X = +Inf
 !MatL4!     S = 1, E = 11111111 and F  = 00 ... 0 : X = -Inf
 !MatL4!     S = 0, E = 11111111 and F <> 00 ... 0 : X = NaN
 !MatL4!
 !MatL4!     A NaN (Not a Number) is a value reserved for signalling an
 !MatL4!     attempted invalid operation, like 0/0. Its representation
-!MatL4!     equals the representation of +Inf plus 1, i.e. 2**31 - 2**23 + 1
+!MatL4!     equals the representation of +Inf plus 1, i.e. 2**31 - 2**23! + 1
 !MatL4!
 !MatL4!     An example:
 !MatL4!
@@ -7163,16 +7163,16 @@
 !MatL4!
 !MatL4!        since,
 !MatL4!
-!MatL4!        23.1 = 2^4 + 2^2 + 2^1 + 2^0 + 2^-4 + 2^-5 + 2^-8 + 2^-9 +
+!MatL4!        23.1 = 2^4 + 2^2 + 2^1 + 2^0 + 2^-4 + 2^-5 + 2^-8 + 2^-9 !+
 !MatL4!               2^-12 + 2^-13 + 2^-16 + 2^-17 + 2^-19
 !MatL4!
-!MatL4!        so that the biased exponent = 4 + 127 = 131 = 10000011 = E
-!MatL4!        and the sign bit = 0 = S. The remaining of the 32-bit word is
+!MatL4!        so that the biased exponent = 4 + 127 = 131 = 10000011 = !E
+!MatL4!        and the sign bit = 0 = S. The remaining of the 32-bit wor!d is
 !MatL4!        the fraction, which is
 !MatL4!
-!MatL4!    3 2 1 0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19
+!MatL4!    3 2 1 0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15 -1!6 -17 -18 -19
 !MatL4!
-!MatL4! F= 0 1 1 1  0  0  0  1  1  0  0  1  1   0   0   1   1   0   0   1   1   0   1
+!MatL4! F= 0 1 1 1  0  0  0  1  1  0  0  1  1   0   0   1   1   0   0   !1   1   0   1
 !MatL4!
 !MatL4!  4. Argument variables
 !MatL4!
@@ -7205,7 +7205,7 @@
 !MatL4!
 !MatL4! 12. Structure
 !MatL4!
-!MatL4!     initialise 4 parts of the representation and biased exponent
+!MatL4!     initialise 4 parts of the representation and biased exponent!
 !MatL4!     determine leading number and fraction
 !MatL4!     do while leading number >= 1
 !MatL4!        calculate positive exponent as power of two
@@ -7220,7 +7220,7 @@
 !MatL4      DATA IENT/0/, LFRAC/23/, BIAS/127/
 !MatL4      IF (LTRACE) CALL STRACE (IENT,'SWR2B')
 !MatL4
-!MatL4!     --- initialise 4 parts of the representation and biased exponent
+!MatL4!     --- initialise 4 parts of the representation and biased expo!nent
 !MatL4
 !MatL4      DO 10 I = 1, 4
 !MatL4         BVAL(I) = 0
@@ -7351,8 +7351,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modi!fy
+!     it under the terms of the GNU General Public License as published !by
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -7362,7 +7362,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/!>.
 !
 !
 !  0. Authors
@@ -7424,7 +7424,7 @@
          IERR = 2
       ELSE IF (ESTAT.NE.0) THEN
          WRITE (MSGSTR, '(A,I5)')
-     &                        'Error while creating path '//TRIM(PATH)//
+     &                        'Error while creating path '//TRIM(PATH)//!
      &                        ' - exit status number is ', ESTAT
          CALL MSGERR( 2, TRIM(MSGSTR) )
          IERR = 3

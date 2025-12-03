@@ -183,7 +183,13 @@ function InstallDimr () {
 # ============
 # === MAIN ===
 # ============
-
+#
+# yoder:
+MPI_DIR=$(dirname $(dirname $(which mpicc)))/include
+export CPATH=$MPI_DIR/include:${CPATH}
+export LD_LIBRARY_PATH=$MPI_DIR/include:$LD_LIBRARY_PATH
+export LIBRARY_PATH=$MPI_DIR/include:$LIBRARY_PATH
+export FFLAGS="-L${MPI_DIR}/include -I${MPI_DIR}/include"
 #
 ## Defaults
 prepareonly=0
@@ -247,6 +253,10 @@ case $key in
     ;;
     delft3d4)
     config="delft3d4"
+    shift
+    ;;
+    d3d4-suite)
+    config=d3d4-suite
     shift
     ;;
     flow2d3d)
@@ -316,6 +326,10 @@ if [ ! -z "$chkutils" ]; then
     echo "Install missing programs and retry."
     exit 1
 fi
+
+# yoder:
+echo "*** COMPILER: $compiler"
+#exit 42
 
 CreateCMakedir ${config} ${buildDirExtension}
 

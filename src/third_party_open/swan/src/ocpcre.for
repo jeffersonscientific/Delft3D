@@ -26,10 +26,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -47,8 +47,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -58,7 +58,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -67,7 +67,7 @@
 !
 !  1. UPDATES
 !
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -101,7 +101,7 @@
       DATA IENT/0/
       CALL STRACE (IENT,'RDINIT')
       KAR = ';'
-      KARNR = LINELN + 1                                                  40.00
+      KARNR = LINELN + 1                                                  !40.00
       ELTYPE = 'USED'
       BLANK = '    '
       RETURN
@@ -112,10 +112,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -133,8 +133,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -144,7 +144,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -156,9 +156,9 @@
 !  1. UPDATES
 !
 !     34.01, Feb. 99: Changed STOP statement in a MSGERR(4,'message')
-!     40.03, Apr. 99: length of command lines changed from 80 to LINELN (=120)
+!     40.03, Apr. 99: length of command lines changed from 80 to LINELN (=!120)
 !                     name of input file included in error message
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -198,7 +198,7 @@
       IF (ELTYPE.EQ.'INT') GOTO 50
       IF (ELTYPE.EQ.'REAL') GOTO 50
       IF (ELTYPE.EQ.'CHAR') GOTO 50
-      IF (KARNR.LE.LINELN) GOTO 50                                        40.03
+      IF (KARNR.LE.LINELN) GOTO 50                                        !40.03
 !     The end of the previous line is reached, there are no more
 !     unprocessed data items on that line.
 !     Jump to new line can take place.
@@ -209,8 +209,8 @@
       ELTYPE='USED'
       GOTO 5
   90  IF (ITEST.GE.10) THEN
-        INQUIRE (UNIT=INPUTF, NAME=FILENM)                                40.03
-        WRITE (PRINTF, *) ' end of input file '//FILENM                   40.03
+        INQUIRE (UNIT=INPUTF, NAME=FILENM)                                !40.03
+        WRITE (PRINTF, *) ' end of input file '//FILENM                   !40.03
       ENDIF
   50  RETURN
       END
@@ -220,10 +220,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -241,8 +241,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -252,7 +252,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -262,7 +262,7 @@
 !  1. UPDATES
 !
 !     ver 30.70, Jan. 1998: data type 'OTHR' is condidered
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -347,7 +347,7 @@
         CALL MSGERR (2, 'Data field skipped:'//ELTEXT)
         GOTO 510
       ENDIF
-      IF (ELTYPE.EQ.'CHAR' .OR. ELTYPE.EQ.'OTHR') THEN                    30.70
+      IF (ELTYPE.EQ.'CHAR' .OR. ELTYPE.EQ.'OTHR') THEN                    !30.70
         CALL MSGERR (2, 'Data field skipped:'//ELTEXT)
         GOTO 510
       ENDIF
@@ -367,10 +367,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -388,8 +388,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -399,7 +399,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -413,7 +413,7 @@
 !                     user changes value of an input parameter via INREAL
 !     30.82, Sep. 98: To avoid errors using the Cray-cf90 compiler
 !                     introduced a dummy
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -433,7 +433,7 @@
 !     KONT   : What to do with the variable?
 !              ='REQ' : variable is required
 !              ='UNC' : if no variable, then variable will not be changed
-!              ='STA' : if no variable, then variable will get value of RSTA
+!              ='STA' : if no variable, then variable will get value of RS!TA
 !              ='RQI' : variable may not have the value of RSTA
 !              ='REP' : (REPEAT)
 !              ='NSKP': (NO SKIP) if data item is of different type,
@@ -472,8 +472,8 @@
       CALL STRACE ( IENT, 'INREAL')
 !
       RDBL = DBLE(R)
-      DRSTA  = DBLE(RSTA)                                                 30.82
-      CALL INDBLE (NAAM, RDBL, KONT, DRSTA)                               30.82
+      DRSTA  = DBLE(RSTA)                                                 !30.82
+      CALL INDBLE (NAAM, RDBL, KONT, DRSTA)                               !30.82
 !
 !     RDBL may have changed due to the value of KONT
 !
@@ -490,10 +490,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -511,8 +511,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -522,7 +522,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -533,11 +533,11 @@
 !
 !  1. UPDATES
 !
-!     30.72, Oct. 97: Introduced logical function EQREAL for floating point
+!     30.72, Oct. 97: Introduced logical function EQREAL for floating poin!t
 !                     comparisons
 !     20.05, Aug. 93: NEW subroutine for double prec. data
 !     40.03, Feb. 00: local copy of NAAM used in error message
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -573,13 +573,13 @@
 !
       INTEGER   IENT, LENNM
 !
-!     NAAM_L : local copy of NAAM                                         40.03
+!     NAAM_L : local copy of NAAM                                         !40.03
 !
-      CHARACTER (LEN=40) :: NAAM_L                                        40.03
+      CHARACTER (LEN=40) :: NAAM_L                                        !40.03
 !
 !     EQREAL :
 !
-      LOGICAL   EQREAL                                                    30.72
+      LOGICAL   EQREAL                                                    !30.72
 !
 !  8. SUBROUTINE USED
 !
@@ -600,7 +600,7 @@
 !     if necessary, a new data item is read
 !
       CHGVAL = .FALSE.
-      NAAM_L = NAAM                                                       40.03
+      NAAM_L = NAAM                                                       !40.03
       IF (ELTYPE.EQ.'USED') CALL  LEESEL
 !     consider type of data item
       IF (ELTYPE.EQ.'KEY') THEN
@@ -617,13 +617,13 @@
   12  IF (ELTYPE.EQ.'REAL') THEN
         R      = ELREAL
         ELTYPE = 'USED'
-        IF (.NOT.EQREAL(REAL(R),REAL(RSTA))) CHGVAL = .TRUE.              30.72
+        IF (.NOT.EQREAL(REAL(R),REAL(RSTA))) CHGVAL = .TRUE.              !30.72
         GOTO 80
       ENDIF
   14  IF (ELTYPE.EQ.'INT') THEN
         R      = DBLE(ELINT)
         ELTYPE = 'USED'
-        IF  (.NOT.EQREAL(REAL(R),REAL(RSTA))) CHGVAL = .TRUE.             30.72
+        IF  (.NOT.EQREAL(REAL(R),REAL(RSTA))) CHGVAL = .TRUE.             !30.72
         GOTO 80
       ENDIF
       IF (ELTYPE.EQ.'EOR') THEN
@@ -639,14 +639,14 @@
         GOTO 20
       ENDIF
       IF (ELTYPE.EQ.'ERR') GOTO 50
-      IF (ELTYPE.EQ.'CHAR' .OR. ELTYPE.EQ.'OTHR') THEN                    30.04
+      IF (ELTYPE.EQ.'CHAR' .OR. ELTYPE.EQ.'OTHR') THEN                    !30.04
         IF (KONT.EQ.'NSKP') GOTO 70
         CALL MSGERR (3,
-     &           'Wrong type of data for variable '//NAAM_L)              40.03
+     &           'Wrong type of data for variable '//NAAM_L)              !40.03
         WRITE (PRINTF,18) NAAM, ELTEXT(1:LENCST)
   18    FORMAT (' -> ',A, '  item=', A)
         ELTYPE='USED'
-        GOTO 70                                                           20.01
+        GOTO 70                                                           !20.01
       ENDIF
       CALL MSGERR (3, 'Error subr. INREAL')
       WRITE (PRINTF, '(1X,A,A)') ELTYPE, KONT
@@ -664,12 +664,12 @@
       WRITE (PRINTF, '(1X,A,A)') ELTYPE, KONT
       GOTO 70
 !
-  28  IF  (.NOT.EQREAL(REAL(R),REAL(RSTA))) GOTO 80                       30.72
-  30  CALL MSGERR (3, 'No value for variable '//NAAM_L)                   40.03
+  28  IF  (.NOT.EQREAL(REAL(R),REAL(RSTA))) GOTO 80                       !30.72
+  30  CALL MSGERR (3, 'No value for variable '//NAAM_L)                   !40.03
       WRITE (PRINTF,18) NAAM, ELTEXT(1:LENCST)
       GOTO 70
 !
-  50  CALL MSGERR (3, 'Read error with variable '//NAAM_L)                40.03
+  50  CALL MSGERR (3, 'Read error with variable '//NAAM_L)                !40.03
       WRITE (PRINTF,18) NAAM, ELTEXT(1:LENCST)
       ELTYPE='USED'
 !
@@ -684,10 +684,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -705,8 +705,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -716,7 +716,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -730,7 +730,7 @@
 !                          it is made True if user changes value
 !                          of an input parameter via ININTG
 !     40.03, Feb. 00: local copy of NAAM used in error message
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -747,7 +747,7 @@
 !
 !     NAAM   :  name of the variable according to the user manual
 !     KONT   : What to do with the variable?
-!              ='REQ'; error message if no value is found in the input file
+!              ='REQ'; error message if no value is found in the input fil!e
 !              ='UNC'; If no value, then variable will not be changed
 !              ='STA'; If no value, then variable will get default value
 !              ='RQI'; Variable may not have the value of RSTA
@@ -768,9 +768,9 @@
 !
       INTEGER   IENT, LENNM
 !
-!     NAAM_L : local copy of NAAM                                         40.03
+!     NAAM_L : local copy of NAAM                                         !40.03
 !
-      CHARACTER (LEN=40) :: NAAM_L                                        40.03
+      CHARACTER (LEN=40) :: NAAM_L                                        !40.03
 !
 !  8. SUBROUTINE USED
 !
@@ -789,7 +789,7 @@
       CALL  STRACE ( IENT, 'ININTG')
 !
       CHGVAL = .FALSE.
-      NAAM_L = NAAM                                                       40.03
+      NAAM_L = NAAM                                                       !40.03
 !     IF NECESSARY, A NEW DATA ITEM IS READ
       IF (ELTYPE.EQ.'USED') CALL  LEESEL
 !     CONSIDER TYPE OF DAT ITEM.
@@ -808,7 +808,7 @@
       GOTO 80
   14  IF (KONT.NE.'REP') GOTO 20
       ELTYPE='USED'
-      GOTO 70                                                             20.01
+      GOTO 70                                                             !20.01
   16  LENNM = LEN(NAAM)
       IF (NAAM.NE.ELTEXT(1:LENNM)) GOTO 20
       CALL LEESEL
@@ -822,18 +822,18 @@
       IF (KONT.EQ.'NSKP') GOTO 70
       GOTO 80
   28  IF (IV.NE.ISTA) GOTO 80
-  30  CALL MSGERR (2, 'No value for variable '//NAAM_L)                   40.03
-      GOTO 70                                                             20.01
+  30  CALL MSGERR (2, 'No value for variable '//NAAM_L)                   !40.03
+      GOTO 70                                                             !20.01
   40  IF (KONT.EQ.'NSKP') GOTO 70
-      CALL MSGERR (2, 'Wrong type of data for variable '//NAAM_L)         40.03
-      WRITE (PRINTF,41) NAAM, ELTEXT(1:LENCST)                            30.04
+      CALL MSGERR (2, 'Wrong type of data for variable '//NAAM_L)         !40.03
+      WRITE (PRINTF,41) NAAM, ELTEXT(1:LENCST)                            !30.04
   41  FORMAT (' -> ',A8, '  item read=', A)
       ELTYPE='USED'
-      GOTO 70                                                             20.01
-  50  CALL MSGERR (2, 'Read error with variable '//NAAM_L)                40.03
-      WRITE (PRINTF,41) NAAM, ELTEXT(1:LENCST)                            30.04
+      GOTO 70                                                             !20.01
+  50  CALL MSGERR (2, 'Read error with variable '//NAAM_L)                !40.03
+      WRITE (PRINTF,41) NAAM, ELTEXT(1:LENCST)                            !30.04
       ELTYPE='USED'
-  70  IV=ISTA                                                             20.01
+  70  IV=ISTA                                                             !20.01
   80  IF (ITEST.GE.10) WRITE (PRINTF, 85) NAAM, IV
   85  FORMAT (1X,A8,'=',I6)
       RETURN
@@ -844,10 +844,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -865,8 +865,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -876,7 +876,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -890,7 +890,7 @@
 !                          it is made True if user changes value
 !                          of an input parameter via INCSTR
 !     40.03, Feb. 00: local copy of NAAM used in error message
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -902,7 +902,7 @@
 !
 !     NAAM   : name of the variable according to the user manual
 !     KONT   : What to do with the variable?
-!              ='REQ'; error message if no value is found in the input file
+!              ='REQ'; error message if no value is found in the input fil!e
 !              ='UNC'; If no value, then variable will not be changed
 !              ='STA'; If no value, then variable will get default value
 !              ='RQI'; Variable may not have the value of CSTA
@@ -927,9 +927,9 @@
 !
       INTEGER   IENT, LENNM, LENW, NS
 !
-!     NAAM_L : local copy of NAAM                                         40.03
+!     NAAM_L : local copy of NAAM                                         !40.03
 !
-      CHARACTER (LEN=40) :: NAAM_L                                        40.03
+      CHARACTER (LEN=40) :: NAAM_L                                        !40.03
 !
 !  8. SUBROUTINE USED
 !
@@ -948,7 +948,7 @@
       CALL  STRACE ( IENT, 'INCSTR')
 !
       CHGVAL = .FALSE.
-      NAAM_L = NAAM                                                       40.03
+      NAAM_L = NAAM                                                       !40.03
       LENW = LEN(C)
 !     IF NECESSARY, A NEW DATA ITEM IS READ.
       IF (ELTYPE.EQ.'USED') CALL  LEESEL
@@ -966,7 +966,7 @@
 !       TYPE IS 'CHAR', VALUE IS ASSIGNED.
         IF (LENCST.GT.LENW) THEN
           CALL MSGERR (2,
-     &       'too long string given for: '//NAAM_L)                       40.03
+     &       'too long string given for: '//NAAM_L)                       !40.03
           WRITE (PRINTF, 13) NAAM, ELTEXT(1:LENCST)
   13      FORMAT (' name=', A, ' string=', A)
         ENDIF
@@ -989,7 +989,7 @@
       IF (ELTYPE.EQ.'ERR') GOTO 50
       IF (ELTYPE.EQ.'INT') GOTO 40
       IF (ELTYPE.EQ.'REAL') GOTO 40
-      IF (ELTYPE.EQ.'OTHR') GOTO 40                                       30.04
+      IF (ELTYPE.EQ.'OTHR') GOTO 40                                       !30.04
       CALL MSGERR (3, 'Error subr. INCSTR')
       WRITE (PRINTF, '(1X,A,1X,A)') ELTYPE, KONT
       GOTO 80
@@ -1004,18 +1004,18 @@
       IF (KONT.EQ.'UNC') GOTO 80
       CALL MSGERR (3, 'Error subr. INCSTR')
       WRITE (PRINTF, '(1X,A,1X,A)') ELTYPE, KONT
-      GOTO 70                                                             20.01
+      GOTO 70                                                             !20.01
 !
   28  IF (C(1:LENW).NE.CSTA(1:LENW)) GOTO 80
-  30  CALL MSGERR (3, 'No value for variable '//NAAM_L)                   40.03
-      GOTO 70                                                             20.01
+  30  CALL MSGERR (3, 'No value for variable '//NAAM_L)                   !40.03
+      GOTO 70                                                             !20.01
   40  IF (KONT.EQ.'NSKP') GOTO 70
-      CALL MSGERR (3, 'Wrong type of data for variable '//NAAM_L)         40.03
+      CALL MSGERR (3, 'Wrong type of data for variable '//NAAM_L)         !40.03
       WRITE (PRINTF,41) NAAM, ELTEXT(1:LENCST)
   41  FORMAT (' -> ',A8)
       ELTYPE='USED'
-      GOTO 70                                                             20.01
-  50  CALL MSGERR (3, 'Read error with variable '//NAAM_L)                40.03
+      GOTO 70                                                             !20.01
+  50  CALL MSGERR (3, 'Read error with variable '//NAAM_L)                !40.03
       WRITE (PRINTF,41) NAAM, ELTEXT(1:LENCST)
       ELTYPE='USED'
 !
@@ -1028,7 +1028,7 @@
         C(1:LENW) = CSTA(1:LENW)
         LENCST = LENW
       ENDIF
-  80  IF (ITEST.GE.10) WRITE (PRINTF, 85) TRIM(NAAM), C, LENCST           40.03
+  80  IF (ITEST.GE.10) WRITE (PRINTF, 85) TRIM(NAAM), C, LENCST           !40.03
   85  FORMAT (1X, A, ' = ', A, 4X, 'length:', I3)
       RETURN
       END
@@ -1038,10 +1038,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -1059,8 +1059,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1070,7 +1070,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -1081,11 +1081,11 @@
 !
 !  1. UPDATES
 !
-!     30.72, Oct. 97: Introduced logical function EQREAL for floating point
+!     30.72, Oct. 97: Introduced logical function EQREAL for floating poin!t
 !                     comparisons
 !     30.04, Mar. 95: New subroutine
 !     40.03, Feb. 00: local copy of NAAM used in error message
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -1107,7 +1107,7 @@
 !
 !     NAAM   : name of the variable according to the user manual
 !     KONT   : What to do with the variable?
-!              ='REQ'; error message if no value is found in the input file
+!              ='REQ'; error message if no value is found in the input fil!e
 !              ='UNC'; If no value, then variable will not be changed
 !              ='STA'; If no value, then variable will get default value
 !              ='RQI'; Variable may not have the value of RSTA
@@ -1128,13 +1128,13 @@
 !
       INTEGER    IENT, LENNM
 !
-!     NAAM_L : local copy of NAAM                                         40.03
+!     NAAM_L : local copy of NAAM                                         !40.03
 !
-      CHARACTER (LEN=40) :: NAAM_L                                        40.03
+      CHARACTER (LEN=40) :: NAAM_L                                        !40.03
 !
 !     EQDBLE : logical function, True if arguments are equal
 !
-      LOGICAL    EQDBLE                                                   30.72
+      LOGICAL    EQDBLE                                                   !30.72
 !
 !  8. SUBROUTINE USED
 !
@@ -1153,7 +1153,7 @@
       CALL STRACE ( IENT, 'INCTIM')
 !
       CHGVAL = .FALSE.
-      NAAM_L = NAAM                                                       40.03
+      NAAM_L = NAAM                                                       !40.03
 !     If necessary, a new data item is read.
       IF (ELTYPE.EQ.'USED') CALL  LEESEL
 !     Consider type of data item.
@@ -1171,7 +1171,7 @@
      &    .OR. ELTYPE.EQ.'REAL' .OR. ELTYPE.EQ.'INT') THEN
 !       TYPE IS 'CHAR' etc., time is read from string
         CALL DTRETI (ELTEXT(1:LENCST), IOPTIM, RV)
-        IF  (.NOT.EQDBLE(RV,RSTA)) CHGVAL = .TRUE.                        30.72
+        IF  (.NOT.EQDBLE(RV,RSTA)) CHGVAL = .TRUE.                        !30.72
         ELTYPE='USED'
         GOTO 80
       ENDIF
@@ -1189,7 +1189,7 @@
       IF (ELTYPE.EQ.'ERR') GOTO 50
       IF (ELTYPE.EQ.'INT') GOTO 40
       IF (ELTYPE.EQ.'REAL') GOTO 40
-      CALL MSGERR (3, 'Error subr. INCTIM')                               40.00
+      CALL MSGERR (3, 'Error subr. INCTIM')                               !40.00
       WRITE (PRINTF, '(1X,A,1X,A)') ELTYPE, KONT
       GOTO 80
 !     --------------------------------------------------------
@@ -1201,21 +1201,21 @@
       IF (KONT.EQ.'STA') GOTO 70
       IF (KONT.EQ.'NSKP') GOTO 70
       IF (KONT.EQ.'UNC') GOTO 80
-      CALL MSGERR (3, 'Error subr. INCTIM')                               40.00
+      CALL MSGERR (3, 'Error subr. INCTIM')                               !40.00
       WRITE (PRINTF, '(1X,A,1X,A)') ELTYPE, KONT
-      GOTO 70                                                             20.01
+      GOTO 70                                                             !20.01
 !
   28  IF  (.NOT.EQDBLE(RV,RSTA)) GOTO 80
-  30  CALL MSGERR (3, 'No value for variable '//NAAM_L)                   40.03
+  30  CALL MSGERR (3, 'No value for variable '//NAAM_L)                   !40.03
       WRITE (PRINTF,31) NAAM, ELTEXT(1:LENCST)
   31  FORMAT (' -> ',A, '  item read=', A)
-      GOTO 70                                                             20.01
+      GOTO 70                                                             !20.01
   40  IF (KONT.EQ.'NSKP') GOTO 70
-      CALL MSGERR (3, 'Wrong type of data for variable '//NAAM_L)         40.03
+      CALL MSGERR (3, 'Wrong type of data for variable '//NAAM_L)         !40.03
       WRITE (PRINTF,31) NAAM, ELTEXT(1:LENCST)
       ELTYPE='USED'
-      GOTO 70                                                             20.01
-  50  CALL MSGERR (3, 'Read error with variable '//NAAM_L)                40.03
+      GOTO 70                                                             !20.01
+  50  CALL MSGERR (3, 'Read error with variable '//NAAM_L)                !40.03
       WRITE (PRINTF,31) NAAM, ELTEXT(1:LENCST)
       ELTYPE='USED'
 !
@@ -1226,14 +1226,14 @@
       END
 !*******************************************************************
 !                                                                  *
-      SUBROUTINE ININTV (NAME, RVAR, KONT, RSTA)                          30.09
+      SUBROUTINE ININTV (NAME, RVAR, KONT, RSTA)                          !30.09
 !                                                                  *
 !*******************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -1251,8 +1251,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1262,7 +1262,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -1272,7 +1272,7 @@
 !  1. UPDATES
 !
 !     Dec 1995, ver 30.09 : new subroutine
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -1284,7 +1284,7 @@
 !
 !     NAAM   : name of the variable according to the user manual
 !     KONT   : What to do with the variable?
-!              ='REQ'; error message if no value is found in the input file
+!              ='REQ'; error message if no value is found in the input fil!e
 !              ='UNC'; If no value, then variable will not be changed
 !              ='STA'; If no value, then variable will get default value
 !              ='RQI'; Variable may not have the value of RSTA
@@ -1345,7 +1345,7 @@
 !
       SAVE IENT
       DATA IENT /0/
-      CALL STRACE (IENT, 'ININTV')                                        30.09
+      CALL STRACE (IENT, 'ININTV')                                        !30.09
 !
       CALL INREAL (NAME, RI, KONT, RSTA)
       IF (CHGVAL) THEN
@@ -1365,7 +1365,7 @@
       ENDIF
       RVAR = FAC * RI
       RETURN
-!     end of subroutine ININTV                                            30.09
+!     end of subroutine ININTV                                            !30.09
       END
 !*******************************************************************
 !                                                                  *
@@ -1394,8 +1394,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1405,7 +1405,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -1426,7 +1426,7 @@
 !
 !     NAAM   : name of the variable according to the user manual
 !     KONT   : What to do with the variable?
-!              ='REQ'; error message if no value is found in the input file
+!              ='REQ'; error message if no value is found in the input fil!e
 !              ='UNC'; If no value, then variable will not be changed
 !              ='STA'; If no value, then variable will get default value
 !              ='RQI'; Variable may not have the value of RSTA
@@ -1515,10 +1515,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -1536,8 +1536,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1547,7 +1547,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -1559,7 +1559,7 @@
 !
 !     Jan. 1994, mod. 20.05: ELREAL is made double precision
 !     40.13, Jan. 01: ! is now added as comment sign
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -1582,7 +1582,7 @@
 !
 !  3. METHOD
 !
-!     difference between comment signs $ and !:                           40.13
+!     difference between comment signs $ and !:                           !40.13
 !     everything on an input line behind a ! is ignored
 !     text between two $-signs (on one line) is intepreted as comment
 !     text behind two $-signs is intepreted as valid input
@@ -1628,7 +1628,7 @@
 !
 ! 13. SOURCE TEXT
 !
-      SAVE  IENT, QUOTE, NREP                                             40.00
+      SAVE  IENT, QUOTE, NREP                                             !40.00
       DATA  QUOTE/''''/ , IENT/0/, NREP/1/
       CALL  STRACE ( IENT, 'LEESEL')
 !
@@ -1640,7 +1640,7 @@
 !     initialisations
 !
    2  NREP = 1
-      DO  4 J=1,LINELN,4                                                  40.00
+      DO  4 J=1,LINELN,4                                                  !40.00
         ELTEXT(J:J+3) = '    '
    4  CONTINUE
       JKAR = 1
@@ -1651,14 +1651,14 @@
 !
       IF (KARNR.EQ.0) GOTO 12
 !     process a new character
-  10  IF (KAR.EQ.'!' .OR. KARNR.GT.LINELN) THEN                           40.13
+  10  IF (KAR.EQ.'!' .OR. KARNR.GT.LINELN) THEN                           !40.13
 !       end of the line is reached, if repetition factor is >1
 !       the data item is assumed to be empty
         IF (NREP.GT.1) GOTO 28
 !       end of the line is reached, if no repetition factor appears
 !       the data item is assumed to be of type 'EOR'
         ELTYPE='EOR'
-        IF (KAR.EQ.'!') KARNR = LINELN+1                                  40.13
+        IF (KAR.EQ.'!') KARNR = LINELN+1                                  !40.13
         GOTO 190
       ENDIF
 !     skip leading blanks or Tab characters
@@ -1677,10 +1677,10 @@
   28  ELTYPE='EMPT'
       GOTO 190
 !     Notice: jump to label 28 (empty data field)
-!     if after repetition a comment, a keyword, end of record etc. is found.
+!     if after repetition a comment, a keyword, end of record etc. is foun!d.
 !     --------------------------------------------------------
 !     see whether end of repeat (; or /) is marked
-  30  IF (INDEX(';/',KAR).GT.0) THEN                                      40.00
+  30  IF (INDEX(';/',KAR).GT.0) THEN                                      !40.00
         IF (NREP.GT.1) GOTO 28
         ELTYPE='EOR'
         CALL GETKAR
@@ -1689,11 +1689,11 @@
 !     ( marks the beginning of a data item group; is ignored
   38  IF (KAR.EQ.'(') GOTO 12
 !     --------------------------------------------------------
-!     comment; data enclosed in comment identifiers is interpreted as comment
+!     comment; data enclosed in comment identifiers is interpreted as comm!ent
   40  IF (KAR.EQ.COMID) THEN
         IF (NREP.GT.1) GOTO 28
   41    CALL  GETKAR
-        IF (KARNR.GT.LINELN) GOTO 10                                      40.00
+        IF (KARNR.GT.LINELN) GOTO 10                                      !40.00
         IF (KAR.NE.COMID) GOTO 41
         GOTO 12
       ENDIF
@@ -1738,7 +1738,7 @@
   57  IF (INDEX('0123456789',KAR).EQ.0) GOTO 58
       IRK=1
       ISTATE=6
-      RMANT = RMANT + DBLE(INDEX('123456789',KAR))*1.D1**JJ               20.05
+      RMANT = RMANT + DBLE(INDEX('123456789',KAR))*1.D1**JJ               !20.05
       JJ=JJ-1
       CALL PUTKAR (ELTEXT, KAR, JKAR)
       CALL GETKAR
@@ -1771,15 +1771,15 @@
      &  RMANT, ISIGN2, NUM2
  699  FORMAT (1X, A4, 2I6, F12.9, 2I6)
       IF (ELTYPE.EQ.'REAL') ELREAL =
-     &  ISIGN1*(DBLE(NUM1)+RMANT) * 1.D1**(ISIGN2*NUM2)                   20.05
+     &  ISIGN1*(DBLE(NUM1)+RMANT) * 1.D1**(ISIGN2*NUM2)                   !20.05
       IF (ELTYPE.EQ.'INT') ELINT = ISIGN1*NUM1
-      LENCST = JKAR - 1                                                   30.03
+      LENCST = JKAR - 1                                                   !30.03
 !     skip trailing blanks
   67  IF (KAR.NE.' ' .AND. KAR.NE.TABC) GOTO 68
       ISTATE=1
       CALL GETKAR
       GOTO 67
-!     If a * is encountered now, it is interpreted as a repetition factor.
+!     If a * is encountered now, it is interpreted as a repetition factor.!
   68  IF (KAR.EQ.'*') THEN
         IF (ELTYPE.EQ.'INT' .AND. ELINT.GT.0) THEN
           NREP = ELINT
@@ -1805,13 +1805,13 @@
 !     ----------------------------------------------------------
 !     a character string is read; it start and ends with a quote
 !     ----------------------------------------------------------
-  80  IF (KAR.EQ.QUOTE) THEN                                              40.00
+  80  IF (KAR.EQ.QUOTE) THEN                                              !40.00
         ELTYPE='CHAR'
-        LENCST = 0                                                          30.02
+        LENCST = 0                                                        !  30.02
         JJ=1
   82    CALL GETKAR
 !       end of the string: end of record or closing quote
-        IF (KARNR.GT.LINELN) GOTO 190                                     40.00
+        IF (KARNR.GT.LINELN) GOTO 190                                     !40.00
         IF (KAR.EQ.QUOTE) THEN
           CALL GETKAR
 !         new character is not a quote; end of the string
@@ -1836,13 +1836,13 @@
 !     a keyword starts with a letter (upper or lower case)
 !     -------------------------------------------------------
   90  CALL UPCASE (KAR)
-      IF (INDEX('ABCDEFGHIJKLMNOPQRSTUVWXYZ',KAR).GT.0) THEN              40.00
+      IF (INDEX('ABCDEFGHIJKLMNOPQRSTUVWXYZ',KAR).GT.0) THEN              !40.00
         IF (NREP.GT.1) GOTO 28
         ELTYPE='KEY'
         ISTATE=2
         JJ=1
   92    ELTEXT(JJ:JJ) = KAR
-        LENCST = JJ                                                       30.02
+        LENCST = JJ                                                       !30.02
         CALL GETKAR
         CALL UPCASE (KAR)
         JJ=JJ+1
@@ -1871,8 +1871,8 @@
 !     other type of data
 !     --------------------------------------------------
  120  ELTYPE='OTHR'
- 122  ELTEXT(JKAR:JKAR) = KAR                                             30.04
-      LENCST = JKAR                                                       30.02
+ 122  ELTEXT(JKAR:JKAR) = KAR                                             !30.04
+      LENCST = JKAR                                                       !30.02
       JKAR=JKAR+1
       CALL GETKAR
       IF (INDEX(' ,;', KAR).GE.1 .OR. KAR.EQ.TABC) GOTO 126
@@ -1880,14 +1880,14 @@
  126  CALL GETKAR
 ! 127  CALL MSGERR (3, 'Read error in: ')
 !      WRITE (PRINTF,129) ELTEXT
-! 129  FORMAT (A)                                                         40.00
+! 129  FORMAT (A)                                                         !40.00
 !      RETURN
 !     --------------------------------------------------
 !     test output and return to calling program
 !     --------------------------------------------------
  190  IF (ITEST.GE.120) WRITE (PRTEST, 199) KAR, KARNR, ELTYPE, ELREAL,
      &  ELINT, NREP, ELTEXT(1:LENCST)
- 199  FORMAT (' test LEESEL: ', A1, 1X, I4, 1X, A4, D12.4, 2I6, 2X, A)    20.05
+ 199  FORMAT (' test LEESEL: ', A1, 1X, I4, 1X, A4, D12.4, 2I6, 2X, A)    !20.05
       RETURN
       END
 !****************************************************************
@@ -1896,10 +1896,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -1917,8 +1917,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -1928,7 +1928,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -1939,7 +1939,7 @@
 !  1. UPDATES
 !
 !     40.13, Jan. 2001: TRIM used to limit output
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -1977,12 +1977,12 @@
       CALL STRACE (IENT, 'GETKAR')
       IF (KARNR.EQ.0) THEN
         READ (INPUTF, 7, END=20) KAART
-   7    FORMAT (A)                                                        40.00
-        IF (ITEST.GE.-10) WRITE (PRINTF, 8) TRIM(KAART)                   40.13
-   8    FORMAT (1X,A)                                                     40.00
+   7    FORMAT (A)                                                        !40.00
+        IF (ITEST.GE.-10) WRITE (PRINTF, 8) TRIM(KAART)                   !40.13
+   8    FORMAT (1X,A)                                                     !40.00
         KARNR=1
       ENDIF
-      IF (KARNR.GT.LINELN) THEN                                           40.00
+      IF (KARNR.GT.LINELN) THEN                                           !40.00
         KAR=';'
         GOTO 90
       ENDIF
@@ -2003,10 +2003,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -2024,8 +2024,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2035,7 +2035,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -2044,7 +2044,7 @@
 !
 !  1. UPDATES
 !
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -2102,10 +2102,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -2123,8 +2123,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2134,7 +2134,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -2143,7 +2143,7 @@
 !
 !  1. UPDATES
 !
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -2156,7 +2156,7 @@
 !
 !     CHARST : a character string
 !
-      CHARACTER(len=*) CHARST                                                40.31
+      CHARACTER(len=*) CHARST                                             !   40.31
 !
 !  5. PARAMETER VARIABLES
 !
@@ -2208,10 +2208,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -2229,8 +2229,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2240,7 +2240,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -2249,7 +2249,7 @@
 !
 !  1. UPDATES
 !
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -2318,10 +2318,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -2339,8 +2339,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2350,7 +2350,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -2360,7 +2360,7 @@
 !  1. UPDATES
 !
 !     40.00, July
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -2373,7 +2373,7 @@
 !
 !  4. ARGUMENT VARIABLES
 !
-!     STRING : a keyword which is compared with a keyword found in the input file
+!     STRING : a keyword which is compared with a keyword found in the inp!ut file
 !
       CHARACTER STRING *(*)
 !
@@ -2416,7 +2416,7 @@
       DO  20  J=1, LENSS
         KAR1 = KEYWRD(J:J)
         KAR2 = STRING(J:J)
-        IF (KAR1.NE.KAR2 .AND. KAR2.NE.' ') THEN                          40.00
+        IF (KAR1.NE.KAR2 .AND. KAR2.NE.' ') THEN                          !40.00
           KEYWIS=.FALSE.
           GOTO 30
         ENDIF
@@ -2430,10 +2430,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -2451,8 +2451,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2462,7 +2462,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -2471,7 +2471,7 @@
 !
 !  1. UPDATES
 !
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
@@ -2517,10 +2517,10 @@
 !                                                               *
 !****************************************************************
 !
-      USE OCPCOMM1                                                        40.41
-      USE OCPCOMM2                                                        40.41
-      USE OCPCOMM3                                                        40.41
-      USE OCPCOMM4                                                        40.41
+      USE OCPCOMM1                                                        !40.41
+      USE OCPCOMM2                                                        !40.41
+      USE OCPCOMM3                                                        !40.41
+      USE OCPCOMM4                                                        !40.41
 !
       IMPLICIT NONE
 !
@@ -2538,8 +2538,8 @@
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
 !     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
+!     This program is free software: you can redistribute it and/or modify!
+!     it under the terms of the GNU General Public License as published by!
 !     the Free Software Foundation, either version 3 of the License, or
 !     (at your option) any later version.
 !
@@ -2549,7 +2549,7 @@
 !     GNU General Public License for more details.
 !
 !     You should have received a copy of the GNU General Public License
-!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.!
 !
 !
 !  0. AUTHORS
@@ -2558,7 +2558,7 @@
 !
 !  1. UPDATES
 !
-!     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     40.41, Oct. 04: common blocks replaced by modules, include files rem!oved
 !
 !  2. PURPOSE
 !
