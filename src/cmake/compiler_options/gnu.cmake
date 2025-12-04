@@ -11,9 +11,10 @@ if (UNIX)
     # Set optional flags:
     message(STATUS "Setting Fortran compiler flags in Unix")
 
-    set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC -fopenmp")
-    set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC -fopenmp")
-    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -fopenmp -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
+    # yoder: remove -fopenmp from all the things.
+    set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC ")
+    set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC")
+    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC -fopenmp")
     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC -fopenmp")
     

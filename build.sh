@@ -190,6 +190,11 @@ export CPATH=$MPI_DIR/include:${CPATH}
 export LD_LIBRARY_PATH=$MPI_DIR/include:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$MPI_DIR/include:$LIBRARY_PATH
 export FFLAGS="-L${MPI_DIR}/include -I${MPI_DIR}/include"
+
+export CC=$(which mpicc)
+export CXX=$(which mpicxx)
+export FC=$(which mpifort)
+
 #
 ## Defaults
 prepareonly=0
