@@ -64,8 +64,18 @@ function CreateCMakedir () {
     echo "Create CMake dir for $1$2 ..."
     cd     $root
     rm -rf $root/build_$1$2
-    mkdir  $root/build_$1$2
-
+    mkdir  -p $root/build_$1$2
+    #
+    # yoder:
+    for p in bin lib share
+    do
+      pth=$root/build_$1$2/install/$p
+      if [[ ! -d $pth ]]; then
+        printf "*** Create dir: $pth"
+        mkdir -p $pth
+      fi
+    done
+    #
     return
 }
 
@@ -194,7 +204,6 @@ export FFLAGS="-L${MPI_DIR}/include -I${MPI_DIR}/include"
 export CC=$(which mpicc)
 export CXX=$(which mpicxx)
 export FC=$(which mpifort)
-
 #
 ## Defaults
 prepareonly=0
@@ -333,7 +342,7 @@ if [ ! -z "$chkutils" ]; then
 fi
 
 # yoder:
-echo "*** COMPILER: $compiler"
+#echo "*** COMPILER: $compiler"
 #exit 42
 
 CreateCMakedir ${config} ${buildDirExtension}
