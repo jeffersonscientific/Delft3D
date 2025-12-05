@@ -74,8 +74,8 @@ module m_unit_utils
    subroutine set_available_units()
        ! yoder: pad values so they are all the same length.
        available_units = [ &
-          t_unit_category('velocity', ['m/s  ', 'm s-1', 'ms-1 ', 'meter per second']), &
-          t_unit_category('from_direction', ['degrees', 'deg', 'degree', 'degreen']) &
+          t_unit_category('velocity', ['m/s             ', 'm s-1           ', 'ms-1            ', 'meter per second']), &
+          t_unit_category('from_direction', ['degrees', 'deg    ', 'degree ', 'degreen']) &
        ]
    end subroutine set_available_units   
 
