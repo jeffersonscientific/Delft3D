@@ -1,3 +1,13 @@
+# Yoder:
+Herein is an effort to port this code to compile with GCC. So far, this is based on the `main` branch, where it appears that a similar effort has been undertaken -- or at least the preliminary steps of said effort.
+
+See also:
+https://github.com/SH801/Delft3D-for-Arm64 
+
+For an Ubuntu+Docker solutioon.
+
+
+# From DElft3d:
 # Tarball
 Please use the tarball containing the latest released version of the source code, located at:
 https://oss.deltares.nl/en/web/delft3dfm/get-started#Download%20source%20code
