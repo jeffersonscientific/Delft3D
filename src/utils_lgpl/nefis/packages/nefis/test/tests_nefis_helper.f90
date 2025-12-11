@@ -77,10 +77,12 @@ contains
             call get_next_line(unit2, skiplines, line2, line_found, ios2)
             lineno2 = lineno2 + 1
          end do
-
-         write (linestr1, '(i)') lineno1
-         write (linestr2, '(i)') lineno2
-
+         
+         ! yoder:
+         !write (linestr1, '(i)') lineno1
+         !write (linestr2, '(i)') lineno2
+         write (linestr1, '(I9)') lineno1
+         write (linestr2, '(I9)') lineno2
          if (ios1 /= 0 .or. ios2 /= 0) exit
 
          lines_are_the_same = (trim(line1) == trim(line2))

@@ -32,7 +32,10 @@ module m_nefis_tests
    use tests_nefis_helper
    implicit none
 
-   character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
+   ! yoder:
+   !character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
+   character(len=30), dimension(3) :: skiplines = ["Version", "version",&
+"-------"]
 
 contains
 
