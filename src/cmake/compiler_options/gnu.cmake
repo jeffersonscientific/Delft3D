@@ -12,12 +12,15 @@ if (UNIX)
     message(STATUS "Setting Fortran compiler flags in Unix")
 
     # yoder: remove -fopenmp from all the things.
-    #   As it is, we can eitehr compile with MPI or OpenMP... or at lest we cannot compile with OpenMP (have not actually tried building without MPI)
+    #   As it is, it looks like swan  we can eitehr compile with MPI or OpenMP... or at lest we cannot compile with OpenMP (have not actually tried building without MPI)
     #   Having both triggers, "Error: invalid branch to/from OpenMP structured block"
+    #   Unfortunately, there appear to be other packages that explicitly require OpenMP, so let's see if we can take out -pthread here, and add it into the CmakeLists.txt
+    #   for those modules.
     #
-    set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC -pthread")
-    set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC -pthread")
-    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -pthread -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
+    #set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC -pthread")
+    set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC ")
+    set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC ")
+    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC ")
     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC ")
     

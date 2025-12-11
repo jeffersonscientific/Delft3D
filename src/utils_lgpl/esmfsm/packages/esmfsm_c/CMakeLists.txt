@@ -45,3 +45,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${esm_files}
                                                     ${fsm_files}
                                                     ${header_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/esmfsm)
+
+# yoder:
+find_package(OpenMP REQUIRED)
+
+
