@@ -2,6 +2,9 @@ set(library_name waq_kernel)
 
 create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . recursive)
 
+# yoder:
+find_package(OpenMP REQUIRED)
+
 # Set dependencies
 set(oss_dependencies deltares_common
         part_data_f
@@ -14,7 +17,10 @@ set(oss_dependencies deltares_common
         waq_process
         waq_data
         waq_netcdf
-        waq_hyd_data)
+        waq_hyd_data
+        OpenMP::OpenMP_CXX
+        OpenMP::OpenMP_C
+        OpenMP::OpenMP_Fortran)
 
 target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 

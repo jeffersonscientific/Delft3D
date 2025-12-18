@@ -44,6 +44,11 @@ if(WIN32)
 endif(WIN32)
 if(UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_CONFIG_H")
+    # yoder:
+    target_link_libraries(${library_name} PUBLIC 
+                         m
+                         ${CMAKE_DL_LIBS}
+                         )
 endif(UNIX)
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

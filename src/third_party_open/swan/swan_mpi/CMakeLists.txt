@@ -55,8 +55,11 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
+    # yoder: add -lm
     target_link_libraries(${executable_name} PRIVATE
-         netcdff)
+         netcdff
+         m
+         )
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}

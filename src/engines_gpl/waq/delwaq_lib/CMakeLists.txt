@@ -46,9 +46,15 @@ if(WIN32)
         target_link_options(${library_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
+find_package(OpenMP REQUIRED)
 if(UNIX)
         target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
-                uuid)
+                uuid
+                m
+                OpenMP::OpenMP_Fortran
+                OpenMP::OpenMP_CXX
+                OpenMP::OpenMP_C
+                )
         target_link_options(${library_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 

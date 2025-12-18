@@ -87,7 +87,9 @@ subroutine GAreadheader (lunhis  ,filnamhis ,nstepsim ,dtsim   ,&
 !
 !     Open his file
 !
-   open(lunhis , file = filnamhis , form = 'binary')
+   ! yoder:
+   !open(lunhis , file = filnamhis , form = 'binary')
+   open(lunhis , file = filnamhis , access='stream', form = 'unformatted')
 !
    read   (lunhis)  (dattim,i=1,4)
    read   (lunhis)  nvar,nloc

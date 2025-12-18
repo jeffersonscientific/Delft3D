@@ -55,7 +55,9 @@ endif(WIN32)
 
 if(UNIX)
     target_link_libraries(${executable_name} PRIVATE
-         netcdff)
+         netcdff
+         m
+         )
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}

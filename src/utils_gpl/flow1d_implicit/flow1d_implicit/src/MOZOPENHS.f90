@@ -13,7 +13,9 @@ SUBROUTINE MOZOPENHS (IN, NAME, IOPT)
 
    ELSE
 
-      OPEN(IN, FILE=NAME, FORM='BINARY', STATUS='unknown')
+      ! yoder:
+      !OPEN(IN, FILE=NAME, FORM='BINARY', STATUS='unknown')
+      OPEN(IN, FILE=NAME, access = 'stream', form = 'unformatted')
 
    ENDIF
 !

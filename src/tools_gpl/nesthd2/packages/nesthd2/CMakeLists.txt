@@ -21,7 +21,8 @@ add_executable(${executable_name} ${sources} ${fortran_version_file})
 # Set dependencies
 set(oss_dependencies    deltares_common
                         deltares_common_c
-                        nefis)
+                        nefis
+                        m)
 
 # Add dependencies
 if (UNIX)

@@ -218,7 +218,8 @@ void STDCALL BMI_GET_VAR_POINTER(int64_t* sharedDLLHandle, char* var_name, void*
 
 void STDCALL BMI_GET_VAR_SHAPE(int64_t * sharedDLLHandle,
    char   * var_name,
-   int    * values,
+//   int    * values,
+   double ** values,
    int      var_name_len)
 {
    typedef void * (STDCALL * MyProc)(char *, double**);

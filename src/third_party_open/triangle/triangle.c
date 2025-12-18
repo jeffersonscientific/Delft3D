@@ -9448,7 +9448,8 @@ int axis;
   int badedge;
   int leftfinished, rightfinished;
   triangle ptr;                         /* Temporary variable used by sym(). */
-  VOID* testptr;
+  //VOID* testptr;
+  double * testptr;
   int i;
 
   testptr=**(farright->tri);

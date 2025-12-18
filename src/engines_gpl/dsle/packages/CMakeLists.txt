@@ -110,6 +110,9 @@ set_target_properties(dsle-static PROPERTIES
 )
 
 target_include_directories(dsle-static INTERFACE src)
+# yoder:
+target_link_libraries(dsle-static PUBLIC m)
+target_link_libraries(dsle PUBLIC m)
 
 set(INSTALL_TARGETS dsle dsle-static)
 

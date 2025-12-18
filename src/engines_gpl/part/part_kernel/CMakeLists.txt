@@ -1,4 +1,6 @@
 set(library_name part_kernel_f)
+# yoder:
+find_package(OpenMP REQUIRED)
 
 create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir .)
 set(oss_dependencies deltares_common
@@ -14,7 +16,10 @@ set(oss_dependencies deltares_common
         io_netcdf
         waq_hyd_data
         netcdff
-)
+        OpenMP::OpenMP_CXX
+        OpenMP::OpenMP_C
+        OpenMP::OpenMP_Fortran 
+        )
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

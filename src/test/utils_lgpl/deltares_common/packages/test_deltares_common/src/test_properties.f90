@@ -265,7 +265,7 @@ contains
       ! Retrieve strings - array dimension large enough/limited
       !                  - default character
       !
-      expected = ['A', 'B', 'C', '', 'D', 'E', '?', '?', '?', '?']
+      expected = ['A', 'B', 'C', ' ', 'D', 'E', '?', '?', '?', '?']
       string = '?'
       call prop_get(tree, 'multiple', 'setOfStrings1', size(string), string, success)
 

@@ -50,7 +50,8 @@ if(UNIX)
    set(oss_dependencies    deltares_common_c
                            getopt
                            d_hydro_lib
-                           expat)
+                           expat
+                           m)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 

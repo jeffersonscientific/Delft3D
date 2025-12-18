@@ -4,10 +4,13 @@ set(library_name waqpb_lib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir .)
+#add_library(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir .)
 
 set(oss_dependencies deltares_common
                      nefis
-                     waq_utils_f)
+                     waq_utils_f
+                     m
+                     )
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

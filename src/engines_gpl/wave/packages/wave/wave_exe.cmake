@@ -37,7 +37,8 @@ endif(WIN32)
 if(UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-
+    find_package(OpenMP REQUIRED)
+    #
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
 
@@ -57,12 +58,17 @@ if(UNIX)
                             swan
                             esmfsm
                             netcdff
+                            OpenMP::OpenMP_CXX
+                            OpenMP::OpenMP_C
+                            OpenMP::OpenMP_Fortran
                             )
 
+    # yoder: add OpenMP flags
     target_link_libraries(${executable_name}
          ${exe_dependencies}
          PkgConfig::NETCDF
          )
+
 endif(UNIX)
 
 include_directories(${mpi_module_path} ${version_include_dir})

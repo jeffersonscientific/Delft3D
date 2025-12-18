@@ -8,7 +8,7 @@ set(library_name rr_rtc_tools)
 add_library(${library_name} ${source_files})
 
 # Specify dependencies
-set(oss_dependencies)
+set(oss_dependencies m)
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

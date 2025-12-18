@@ -689,7 +689,8 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
     endif
     if (.not. nan_check(u1    , 'U1 (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb, 1)) ierror = 1
     if (.not. nan_check(v1    , 'V1 (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb, 1)) ierror = 1
-    if (has_umean /= 0) then
+    !if (has_umean /= 0) then
+    if (has_umean ) then
        if (.not. nan_check(umnldf, 'UMNLDF (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb)) ierror = 1
        if (.not. nan_check(vmnldf, 'VMNLDF (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb)) ierror = 1
     endif
