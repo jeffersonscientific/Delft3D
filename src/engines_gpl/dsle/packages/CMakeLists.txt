@@ -101,6 +101,11 @@ set_target_properties (dsle PROPERTIES
 
 add_library(dsle-static STATIC ${DSLE_SOURCE_FILES})
 
+# yoder:
+if (UNIX)
+  target_link_libraries(dsle-static PRIVATE m)
+endif(UNIX)
+
 set_target_properties(dsle-static PROPERTIES
     COMPILE_DEFINITIONS "DSLE_STATIC"
     OUTPUT_NAME "dsle-static"

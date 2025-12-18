@@ -218,7 +218,9 @@ void STDCALL BMI_GET_VAR_POINTER(int64_t* sharedDLLHandle, char* var_name, void*
 
 void STDCALL BMI_GET_VAR_SHAPE(int64_t * sharedDLLHandle,
    char   * var_name,
-   int    * values,
+   // yoder: match this declaration and its subsequent call to the typedef statement, where MyProc is defined in this function.
+   //int    * values,
+   double     * values,
    int      var_name_len)
 {
    typedef void * (STDCALL * MyProc)(char *, double**);
@@ -229,7 +231,7 @@ void STDCALL BMI_GET_VAR_SHAPE(int64_t * sharedDLLHandle,
    char * c_var_name = strFcpy(var_name, var_name_len);
    if (proc != NULL)
    {
-      (void *)(*proc)(var_name, values);
+      (void *)(*proc)(var_name, &values);
    }
 
    free(c_var_name); c_var_name = NULL;

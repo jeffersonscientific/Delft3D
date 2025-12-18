@@ -9448,7 +9448,10 @@ int axis;
   int badedge;
   int leftfinished, rightfinished;
   triangle ptr;                         /* Temporary variable used by sym(). */
-  VOID* testptr;
+  //
+  // yoder: re-type testprt. getting type error trying to assign double to this.
+  //VOID* testptr;
+  double * testptr;
   int i;
 
   testptr=**(farright->tri);
