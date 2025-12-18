@@ -27,7 +27,8 @@ set(oss_dependencies    deltares_common
                         deltares_common_c
                         deltares_common_mpi
                         lint_f
-                        nefis)
+                        nefis
+                        m)
 
 if (WIN32)
     # Set linker options

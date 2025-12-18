@@ -467,9 +467,10 @@ end subroutine deallocstructure
 
    pure function GetStrucType_from_string(string) result(istrtype)
       use string_module, only: str_lower
-
+      !
       !character(len=*), value :: string         ! yoder: constant length required.
       character(len=256), value :: string        ! yoder:
+      !
       integer :: istrtype
       call str_lower(string, 999)
       select case(trim(string))

@@ -97,9 +97,10 @@
          if (iform .eq. 1) then
             OPEN (newunit=iunit, FILE=Name, STATUS='Old',ACTION='READ')
          elseif (iform .eq. 2) then
-           open (newunit=iunit, File=Name, Status='Old',mode='Read', Form='Unformatted')
+           open (newunit=iunit, File=Name, Status='Old',action='Read', Form='unformatted')
          else
-           open (newunit=iunit, File=Name, Status='Old',mode='Read', Form='Binary')
+           !open (newunit=iunit, File=Name, Status='Old',mode='Read', Form='Binary')
+           open (newunit=iunit, File=Name, Status='Old', action='Read', form='unformatted')
          endif
       elseif (icheck .eq. 2) then
          if (iform .eq. 1) then
@@ -107,7 +108,8 @@
          elseif (iform .eq. 2) then
             open (newunit=iunit, File=Name, Status='Unknown', Form='Unformatted')
          elseif (iform .eq. 3) then
-            open (newunit=iunit, File=Name, Status='Unknown', Form='Binary')
+            !open (newunit=iunit, File=Name, Status='Unknown', Form='Binary')
+            open (newunit=iunit, File=Name, Status='Unknown', Form='unformatted')
          endif
       elseif (icheck .eq. 3) then
          if (iform .eq. 1) then
@@ -115,7 +117,8 @@
          elseif (iform .eq. 2) then
             open (newunit=iunit, File=Name, Status='Unknown', Form='Unformatted')
          elseif (iform .eq. 3) then
-            open (newunit=iunit, File=Name, Status='Unknown', Form='Binary')
+            !open (newunit=iunit, File=Name, Status='Unknown', Form='Binary')
+            open (newunit=iunit, File=Name, Status='Unknown', Form='unformatted')
          endif
       endif
 !

@@ -58,6 +58,7 @@ module m_waqpb_base_settings
          import waqpb_base_settings
          class(waqpb_base_settings), intent(in) :: this
          character(len=256), dimension(:), allocatable :: accepted_flag_args
+ 
       end function get_accepted_flag_args_interface
 
       function get_accepted_keyval_args_interface(this) result(accepted_keyval_args)
@@ -90,7 +91,8 @@ contains
          call this%show_help()
          stop
       end if
-
+      !
+      ! yoder: These throw a compile-time seg-fault. ?
       accepted_flag_args = this%get_accepted_flag_args()
       accepted_keyval_args = this%get_accepted_keyval_args()
 
@@ -127,7 +129,16 @@ contains
       character(len=256), dimension(:), allocatable :: accepted_flag_args
 
       ! This subroutine can be overridden in derived classes to provide specific flag arguments
-      accepted_flag_args = ['-h    ', '--help ', '--usage']
+      accepted_flag_args = ['-h     ', '--help ', '--usage']
+      !
+      ! yoder: is this syntax just incomplete? some docs indicate this would be
+      ! the more rigorous syntax: 
+      !allocate(accepted_flag_args(3))
+      !accepted_flag_args(1) = "-h"
+      !accepted_flag_args(2) = "--help"
+      !accepted_flag_args(3) = "--usage"
+
+      !
    end function get_accepted_flag_args_base
 
    !> Get the accepted key-value arguments for the base settings

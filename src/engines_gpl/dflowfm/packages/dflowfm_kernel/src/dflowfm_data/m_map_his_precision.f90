@@ -45,7 +45,9 @@ contains
       use MessageHandling, only: mess, LEVEL_ERROR
       use string_module, only: str_tolower
 
-      character(len=*), value, intent(in) :: nc_precision_string !< Description of the data type
+      ! yoder:
+      !character(len=*), value, intent(in) :: nc_precision_string !< Description of the data type
+      character(len=256), value, intent(in) :: nc_precision_string
 
       integer :: nc_data_type !< Result type as used by the NetCDF library
 

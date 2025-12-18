@@ -1,5 +1,8 @@
 set(library_name waq_process)
 
+# yoder:
+find_package(OpenMP REQUIRED)
+
 create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . target_type "library" recursive)
 # Set dependencies
 set(oss_dependencies waq_definition
@@ -11,7 +14,12 @@ set(oss_dependencies waq_definition
         waq_data
         waq_hyd_data
         waq_utils_c
-        waq_utils_f)
+        waq_utils_f
+        OpenMP::OpenMP_CXX
+        OpenMP::OpenMP_C
+        OpenMP::OpenMP_Fortran
+        ${CMAKE_DL_LIBS}
+        )
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

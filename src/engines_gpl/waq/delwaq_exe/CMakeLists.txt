@@ -19,9 +19,15 @@ create_target(
 set(oss_dependencies waq_external_access_layer
         waq_logging)
 
+find_package(OpenMP REQUIRED)
 if(UNIX)
         target_link_libraries(${executable_name} PRIVATE
-                uuid)
+                uuid
+                OpenMP::OpenMP_Fortran
+                OpenMP::OpenMP_CXX
+                OpenMP::OpenMP_C
+                m
+                )
 endif(UNIX)
 
 target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
@@ -55,7 +61,8 @@ if(WIN32)
                 "Winspool.lib"
                 "netcdf.lib"
                 "${mpi_fortran_library}"
-                "pthreadVC2.lib")
+                "pthreadVC2.lib"
+                 )
 
         # Set linker options
         target_link_options(${executable_name} PRIVATE ${nologo_flag})

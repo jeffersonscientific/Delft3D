@@ -61,7 +61,9 @@ program waqpb_export
 
    call settings%init()
 
-   inquire (directory=settings%process_definition_folder_path, exist=status)
+! yoder: directory is non-standard. can we just use file?
+!   inquire (directory=settings%process_definition_folder_path, exist=status)
+inquire (file=settings%process_definition_folder_path, exist=status)
    if (.not. status) then
       write (*, '(A,A,A)') 'Error: "', trim(settings%process_definition_folder_path), '" is not a valid path for the process definition folder.'
       stop 1

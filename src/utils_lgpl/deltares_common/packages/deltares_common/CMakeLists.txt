@@ -28,7 +28,9 @@ add_library(${library_name} ${source}
                             ${fortran_version_file}
 )
 
-target_link_libraries(${library_name} PRIVATE deltares_common_c)
+target_link_libraries(${library_name} PRIVATE deltares_common_c
+                                              m
+                                              )
 
 if(UNIX)
    add_definitions(-DHAVE_CONFIG_H=1)

@@ -210,7 +210,8 @@ subroutine test_convert_to_logical
     !
     ! True values
     !
-    strings = ['TRUE', 'TRUE with comments', 'T', '1', '1.0', '2.0', '-1e5', 'Yes', 'Y', 'ja', 'j']
+    strings = ['TRUE              ', 'TRUE with comments', 'T                 ', '1                 ', '1.0               ', &
+    '2.0               ', '-1e5              ', 'Yes               ', 'Y                 ', 'ja                ', 'j                 ']
     do i = 1, size(strings)
        call convert_to_logical( strings(i), value, ierr )
        call assert_true( value, "The value should be true when parsing: "//trim(strings(i)) )
@@ -219,7 +220,8 @@ subroutine test_convert_to_logical
     !
     ! False values
     !
-    strings = ['FALSE', 'FALSE with comments', 'F', '0', '0.0', '0e0', 'No', 'nee', 'n' ]
+    strings = ['FALSE              ', 'FALSE with comments', 'F                  ', '0                  ', '0.0                ',&
+     '0e0                ', 'No                 ', 'nee                ', 'n                  ' ]
     do i = 1, size(strings)
        call convert_to_logical( strings(i), value, ierr )
        call assert_false( value, "The value should be false when parsing: "//trim(strings(i)) )
@@ -228,7 +230,10 @@ subroutine test_convert_to_logical
     !
     ! Invalid value
     !
-    strings = [' ', 'INVALID', '1.0_dp', 'TRUEwith_comments_attached' ]
+    strings = ['                           ',&
+               'INVALID                    ', &
+               '1.0_dp                     ', &
+               'TRUE with_comments_attached' ]
     do i = 1, size(strings)
        call convert_to_logical( strings(i), value, ierr )
        if (i == 1) then
@@ -284,7 +289,7 @@ subroutine test_convert_to_real
     !
     ! Invalid real values
     !
-    strings = [' ', 'INVALID', '1.0_dp', '3.14pi' ]
+    strings = ['       ', 'INVALID', '1.0_dp ', '3.14pi ' ]
     do i = 1, size(strings)
        call convert_to_real( strings(i), value_dp, ierr )
        if (i == 1) then

@@ -466,9 +466,13 @@ end program waqpb_import
 subroutine iniind()
    use m_waqpb_data, only: &
       nitemm, nfortm, nprocm, ninpum, noutpm, noutfm, nstocm, nvelom, ndispm, &
-      item_i, fort_i, proc_i, inpu_i, outp_i, outf_i, stoc_i, velo_i, disp_i
+      item_i, fort_i, proc_i, inpu_i, outp_i, outf_i, stoc_i, velo_i, disp_i, &
+      nsgrp                                                                    ! yoder
 
    integer :: iitem, ifort, iproc, iinpu, ioutp, ioutf, istoc, ivelo, idisp
+   !
+!   ! yoder:
+!   integer :: nsgrp
 
    !     Initialise indexes arrays
 
@@ -517,8 +521,14 @@ subroutine cratab(grp, newtab, initialConfgId, initialConfgName)
    use m_waqpb_data, only: &
       nproc, nconf, ncnpr, nitem, ncnsb, ncnsbm, &
       procid, confid, conpro, itemid, itemgr, r1_pid, r1_cid, &
-      r2_cid, r2_sid, sgrpid, grp, sgrpnm, confnm
+      r2_cid, r2_sid, sgrpid, sgrpnm, confnm, nsgrp             ! yoder
+!      r2_cid, r2_sid, sgrpid, grp, sgrpnm, confnm
 
+   ! yoder
+   implicit none
+
+   ! this needs to be (len=50), to be compatible with sgrpnm ?
+   !   from w_waqpb_data, sgrpid[30], sgrpnm[50]
    character(len=30) :: grp
    character(len=10) :: initialConfgId
    character(len=50) :: initialConfgName
@@ -531,7 +541,7 @@ subroutine cratab(grp, newtab, initialConfgId, initialConfgName)
       ! Dummy versions of tables P1 and P5
       nsgrp = 1
       sgrpid(1) = grp
-      sgrpnm(1) = grp
+      sgrpnm(1)(1:30) = grp
       nconf = 1
       confid(1) = initialConfgId
       confnm(1) = initialConfgName

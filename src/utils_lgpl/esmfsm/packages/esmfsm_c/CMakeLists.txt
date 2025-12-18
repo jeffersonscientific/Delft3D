@@ -33,7 +33,9 @@ add_library(${library_name} ${esm_files}
                             ${esm_global_header_files})
 
 # Set dependencies
-set(oss_dependencies    esmfsm_version_number) 
+set(oss_dependencies    esmfsm_version_number
+                        Threads::Threads
+                        ) 
 
 if(UNIX)
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})        

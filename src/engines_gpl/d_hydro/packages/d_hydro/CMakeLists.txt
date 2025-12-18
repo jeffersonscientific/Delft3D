@@ -52,6 +52,7 @@ if(UNIX)
                            d_hydro_lib
                            expat
                            ${CMAKE_DL_LIBS}          # yoder
+                           m
                            )
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)

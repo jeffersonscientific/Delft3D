@@ -16,6 +16,10 @@ if (UNIX)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
     add_definitions(-DHAVE_CONFIG_H)
+    #
+    # yoder:
+    # (we need to add_library first?)
+    #target_link_libraries(${library_name} PUBLIC ${CMAKE_DL_LIBS})
 endif(UNIX)
 
 set(headers ${configFile})
@@ -24,6 +28,12 @@ set(source  src/f902c.c)
 
 
 add_library(${library_name} ${source} ${headers})
+
+# yoder:
+if (UNIX)
+    target_link_libraries(${library_name} PUBLIC ${CMAKE_DL_LIBS})
+endif(UNIX)
+
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${headers})

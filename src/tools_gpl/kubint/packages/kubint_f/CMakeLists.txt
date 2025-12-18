@@ -27,7 +27,9 @@ add_library(${library_name} ${source_files}
 # Set dependencies
 set(oss_dependencies    deltares_common
                         deltares_common_c
-                        nefis) 
+                        nefis
+                        m
+                        ) 
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

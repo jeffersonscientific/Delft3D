@@ -32,4 +32,8 @@ endif()
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(dwaq)
 
+# yoder:
+find_package(OpenMP REQUIRED)
+#target_link_libraries(dwaq PUBLIC OpenMP::OpenMP_CXX OpenMP::OpenMP_Fortran OpenMP::OPenMP_C )
+
 list(POP_BACK CMAKE_MESSAGE_INDENT)

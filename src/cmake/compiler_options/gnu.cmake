@@ -18,9 +18,11 @@ if (UNIX)
     #   for those modules.
     #
     #set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC -pthread")
-    set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC ")
-    set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC ")
-    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
+    # -lm really does not belong here, but there are about 1000 CMakeLists.txt files, and so far most of them need target_link_libraries(${executable_name} PRIVATE m) (or similar...)
+    #   so let's just try it and see how we go.
+    set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC -lm ")
+    set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC -lm ")
+    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -lm -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC ")
     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC ")
     

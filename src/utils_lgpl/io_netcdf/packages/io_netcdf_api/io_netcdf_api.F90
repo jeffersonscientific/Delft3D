@@ -575,20 +575,33 @@ function ionc_get_var_chars_dll(ioncid, meshid, c_varname, c_values_ptr, nval) r
    integer,                intent(in)    :: ioncid                  !< The IONC data set id.
    integer,                intent(in)    :: meshid                  !< The mesh id in the specified data set.
    character(kind=c_char), intent(in)    :: c_varname(MAXSTRLEN)    !< The name of the variable to be found. Should be without any "meshnd_" prefix.
-   type(t_ug_charinfo),  intent(inout)   :: c_values_ptr(nval)      !< Pointer to the array of values
-   character(len=ug_idsLen)              :: values(nval)            !< Temporary array to store the read values
+   !
+   ! yoder:
+   !type(t_ug_charinfo),  intent(inout)   :: c_values_ptr(nval)      !< Pointer to the array of values
+   type(c_ptr),          intent(inout)   :: c_values_ptr
+   type(t_ug_charinfo),  pointer         :: c_values_ptr_f(:)
+   !  is values supposed to be the ptr_f corresponding to c_values_ptr ? They
+   !  appear to have different types.
+   !!!!!!!!
+   !
+   !character(len=ug_idsLen)              :: values(nval)            !< Temporary array to store the read values
+   character(len=ug_idsLen), pointer     :: values(:)
    integer,                intent(in)    :: nval                    !< The number of values in the target array. TODO: AvD: remove this somehow, now only required to call c_f_pointer
    integer                               :: i, ierr                 !< Result status, ionc_noerr if successful.
    character(len=MAXSTRLEN)              :: varname
-
-
+   !
+   ! yoder:
+   ! but... look at the previous function; I think c_values_ptr is supposed to map to values
+   call c_f_pointer(c_values_ptr, c_values_ptr_f, [ nval ])
+   
    ! Store the name
    varname = char_array_to_string(c_varname, strlen(c_varname))
 
    ierr = ionc_get_var_chars(ioncid, meshid, varname, values)
 
     do i=1,nval
-        c_values_ptr(i)%id = values(i)
+        !:xc_values_ptr_f(i)%id = values(i)
+        c_values_ptr_f(i)%id = transfer(values(i), c_values_ptr_f(i)%id)
     end do
 
 end function ionc_get_var_chars_dll
@@ -622,21 +635,33 @@ end function ionc_put_var_1D_EightByteReal_dll
 !> Puts the charaters values for a named variable into the specified dataset on the specified mesh.
 function ionc_put_var_chars_dll(ioncid, meshid, c_varname, c_values_ptr, nval) result(ierr) bind(C, name="ionc_put_var_chars")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_put_var_chars_dll
-
+   implicit none 
+   !
    integer,                intent(in)    :: ioncid                  !< The IONC data set id.
    integer,                intent(in)    :: meshid                  !< The mesh id in the specified data set.
    character(kind=c_char), intent(in)    :: c_varname(MAXSTRLEN)    !< The name of the variable to be found. Should be without any "meshnd_" prefix.
    integer,                intent(in)    :: nval                    !< The number of values in the target array.
-   type(t_ug_charinfo),    intent(in)    :: c_values_ptr(nval)      !< The array of character arrays, here passed using t_ug_charinfo type. In the future, we could use the field longnames to pass more charaters (e.g. the longnames/descriptions).
+   !
+   ! yoder:
+   !type(t_ug_charinfo),    intent(in)    :: c_values_ptr           !< The array of character arrays, here passed using t_ug_charinfo type. In the future, we could use the field longnames to pass more charaters (e.g. the longnames/descriptions).
+   type(c_ptr),             intent(in)   :: c_values_ptr
+   type(t_ug_charinfo),     pointer      :: f_values_ptr(:)
+   !
    character(len=ug_idsLen)              :: values(nval)            !< The array to write.
    character(len=MAXSTRLEN)              :: varname                 !< The variable name where the data are stored.
    integer                               :: i, ierr                 !< Result status, ionc_noerr if successful.
 
+   ! yoder: (add nval?)
+   call c_f_pointer(c_values_ptr, f_values_ptr, [nval])
+   !
    !Decode the variable name
    varname = char_array_to_string(c_varname, strlen(c_varname))
 
    do i=1,nval
-       values(i) = c_values_ptr(i)%id
+       !values(i) = c_values_ptr(i)%id
+       ! should this be?:
+       values(i) = transfer(f_values_ptr(i)%id, values(i))
+       !values(i) = f_values_ptr(i)%id
    end do
 
    ierr = ionc_put_var_chars(ioncid, meshid, varname, values)
@@ -645,18 +670,30 @@ end function ionc_put_var_chars_dll
 
 ! TODO ******* DERIVED TYPE GIVEN BY C/C++/C#-PROGRAM
 !> Add the global attributes to a NetCDF file
-function ionc_add_global_attributes_dll(ioncid, meta) result(ierr)  bind(C, name="ionc_add_global_attributes")
+!function ionc_add_global_attributes_dll(ioncid, meta) result(ierr)  bind(C, name="ionc_add_global_attributes")
+function ionc_add_global_attributes_dll(ioncid, meta_ptr_c) result(ierr)  bind(C, name="ionc_add_global_attributes")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_add_global_attributes_dll
    integer(kind=c_int),    intent(in)    :: ioncid      !< The IONC data set id.
-   type (t_ug_meta),       intent(in)    :: meta
-   integer(kind=c_int)                   :: ierr        !< Result status, ionc_noerr if successful.!
-   character(len=ug_strLenMeta)          :: institution, source, references, version, modelname !< variables to be passed to io_netcdf for construction of the metadata structure
+   !integer(kind=c_int),    intent(out)   :: ierr      ! yoder
+   !
+   ! yoder: let's take a stab at converting this to an opaque pointer:
+   type(c_ptr), intent(in) :: meta_ptr_c
+   !type (t_ug_meta),       intent(in)    :: meta
+   !
+   type(t_ug_meta), pointer :: meta_ptr_f
+   !!!!!!!!!
+   !
+   integer(kind=c_int)                   :: ierr        !< Result status, ionc_noerr if successful.! 
+   !
+   character(len=ug_strLenMeta)          :: institution, source, references,  version, modelname  !< variables to be passed to io_netcdf for construction of the metadata structure
 
-   institution = meta%institution
-   source      = meta%source
-   references  = meta%references
-   version     = meta%version
-   modelname   = meta%modelname
+   call c_f_pointer(meta_ptr_c, meta_ptr_f)    ! yoder
+
+   institution = meta_ptr_f%institution
+   source      = meta_ptr_f%source
+   references  = meta_ptr_f%references
+   version     = meta_ptr_f%version
+   modelname   = meta_ptr_f%modelname
 
    ierr = ionc_add_global_attributes(ioncid, institution,source,references,version,modelname)
 
@@ -734,34 +771,52 @@ function ionc_create_1d_network_dll(ioncid, networkid, c_networkName, nNodes, nB
 
 end function ionc_create_1d_network_dll
 
-function ionc_write_1d_network_nodes_dll(ioncid,networkid, c_nodesX, c_nodesY, nodeinfo, nNodes) result(ierr) bind(C, name="ionc_write_1d_network_nodes")
+! yoder: convert to opaque pointer via nodeinfo --> nodeinfo_ptr_c
+function ionc_write_1d_network_nodes_dll(ioncid,networkid, c_nodesX, c_nodesY, nodeinfo_ptr_c, nNodes) result(ierr) bind(C, name="ionc_write_1d_network_nodes")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_write_1d_network_nodes_dll
-
+! yoder: see t_ug_meta above...
    integer(kind=c_int),     intent(in)    :: ioncid,networkid, nNodes
    type(c_ptr),             intent(in)    :: c_nodesX, c_nodesY
-   type(t_ug_charinfo),     intent(in)    :: nodeinfo(nNodes)
+   !
+   ! yoder:
+   !type(t_ug_charinfo),     intent(in)    :: nodeinfo(nNodes)
+   type(c_ptr),     intent(in)             :: nodeinfo_ptr_c
+   type(t_ug_charinfo),      pointer      :: nodeinfo_ptr_f(:)
+   !
    double precision, pointer              :: nodesX(:), nodesY(:)
    integer                                :: ierr, i
    character(len=ug_idsLen)               :: nodeids(nNodes)
    character(len=ug_idsLongNamesLen)      :: nodeLongnames(nNodes)
 
-   call c_f_pointer(c_nodesX, nodesX, (/ nNodes /))
-   call c_f_pointer(c_nodesY, nodesY, (/ nNodes /))
+   call c_f_pointer(c_nodesX, nodesX, [nNodes])
+   call c_f_pointer(c_nodesY, nodesY, [nNodes])
+   !
+   ! yoder:
+   call c_f_pointer(nodeinfo_ptr_c, nodeinfo_ptr_f, [nNodes])
+
    do i=1,nNodes
-       nodeids(i)       = nodeinfo(i)%id
-       nodeLongnames(i) = nodeinfo(i)%longname
+      ! nodeids(i)       = nodeinfo(i)%id
+      ! nodeLongnames(i) = nodeinfo(i)%longname
+       nodeids(i)       = nodeinfo_ptr_f(i)%id
+       nodeLongnames(i) = nodeinfo_ptr_f(i)%longname
    end do
 
    ierr = ionc_write_1d_network_nodes_ugrid(ioncid, networkId, nodesX, nodesY, nodeids, nodeLongnames)
 
 end function ionc_write_1d_network_nodes_dll
 
-function ionc_put_1d_network_branches_dll(ioncid,networkid, c_sourcenodeid, c_targetnodeid, branchinfo, c_branchlengths, c_nbranchgeometrypoints, nBranches,startIndex) result(ierr) bind(C, name="ionc_put_1d_network_branches")
+! yoder: convert branchinfo --> branchinfo_ptr_c to opaque pointer:
+function ionc_put_1d_network_branches_dll(ioncid,networkid, c_sourcenodeid, c_targetnodeid, branchinfo_ptr_c, c_branchlengths, c_nbranchgeometrypoints, nBranches,startIndex) result(ierr) bind(C, name="ionc_put_1d_network_branches")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_put_1d_network_branches_dll
 
   integer(kind=c_int), intent(in)    :: ioncid, networkid, startIndex
   type(c_ptr),intent(in)             :: c_sourcenodeid, c_targetnodeid,c_nbranchgeometrypoints,c_branchlengths
-  type(t_ug_charinfo),  intent(in)   :: branchinfo(nBranches)
+  !
+  ! yoder:
+  !type(t_ug_charinfo),  intent(in)   :: branchinfo(nBranches)
+  type(c_ptr),  intent(in)            :: branchinfo_ptr_c
+  type(t_ug_charinfo),    pointer     :: branchinfo_ptr_f(:)
+  !
   integer(kind=c_int), intent(in)    :: nBranches
   integer, pointer                   :: sourcenodeid(:), targetnodeid(:),nbranchgeometrypoints(:)
   double precision, pointer          :: branchlengths(:)
@@ -769,14 +824,17 @@ function ionc_put_1d_network_branches_dll(ioncid,networkid, c_sourcenodeid, c_ta
   character(len=ug_idsLongNamesLen)  :: branchlongnames(nBranches)
   integer ::ierr,i
 
-  call c_f_pointer(c_sourcenodeid, sourcenodeid, (/ nBranches /))
-  call c_f_pointer(c_targetnodeid, targetnodeid, (/ nBranches /))
-  call c_f_pointer(c_nbranchgeometrypoints, nbranchgeometrypoints, (/ nBranches /))
-  call c_f_pointer(c_branchlengths, branchlengths, (/ nBranches /))
+  call c_f_pointer(c_sourcenodeid, sourcenodeid, [nBranches] )
+  call c_f_pointer(c_targetnodeid, targetnodeid, [nBranches] )
+  call c_f_pointer(c_nbranchgeometrypoints, nbranchgeometrypoints, [nBranches] )
+  call c_f_pointer(c_branchlengths, branchlengths, [nBranches] )
+  !
+  ! yoder:
+  call c_f_pointer(branchinfo_ptr_c, branchinfo_ptr_f, [nBranches] )
 
   do i=1, nBranches
-       branchids(i)       = branchinfo(i)%id
-       branchlongnames(i) = branchinfo(i)%longname
+       branchids(i)       = branchinfo_ptr_f(i)%id
+       branchlongnames(i) = branchinfo_ptr_f(i)%longname
   end do
 
   ierr = ionc_put_1d_network_branches_ugrid(ioncid, networkid, sourcenodeid, targetnodeid, branchids, branchlengths, branchlongnames, nbranchgeometrypoints, nBranches, startIndex)
@@ -912,35 +970,51 @@ function ionc_get_1d_network_branches_geometry_coordinate_count_dll(ioncid, netw
 
 end function ionc_get_1d_network_branches_geometry_coordinate_count_dll
 
-function ionc_read_1d_network_nodes_dll(ioncid, networkid, c_nodesX, c_nodesY, nodeinfo, nNodes) result(ierr) bind(C, name="ionc_read_1d_network_nodes")
+! yoder: convert to opaque pointer; nodeinfo --> nodeinfo_ptr_c
+function ionc_read_1d_network_nodes_dll(ioncid, networkid, c_nodesX, c_nodesY, nodeinfo_ptr_c, nNodes) result(ierr) bind(C, name="ionc_read_1d_network_nodes")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_read_1d_network_nodes_dll
 
   integer(kind=c_int), intent(in)       :: ioncid, networkid, nNodes !< The dataset where i do want to create the dataset.
-  type(t_ug_charinfo), intent(inout)    :: nodeinfo(nNodes)
+  !
+  ! yoder:
+  !type(t_ug_charinfo), intent(inout)    :: nodeinfo(nNodes)
+  type(c_ptr),          intent(inout)    :: nodeinfo_ptr_c
+  type(t_ug_charinfo),  pointer          :: nodeinfo_ptr_f(:)
+  !
   type(c_ptr),         intent(inout)    :: c_nodesX, c_nodesY
   double precision,    pointer          :: nodesX(:),  nodesY(:)
   character(len=ug_idsLen)              :: nodeids(nNodes)
   character(len=ug_idsLongNamesLen)     :: nodelongnames(nNodes)
   integer                               :: ierr,i
 
-  call c_f_pointer(c_nodesX, nodesX, (/ nNodes /))
-  call c_f_pointer(c_nodesY, nodesY, (/ nNodes /))
+  call c_f_pointer(c_nodesX, nodesX, [nNodes])
+  call c_f_pointer(c_nodesY, nodesY, [nNodes])
+  call c_f_pointer(nodeinfo_ptr_c, nodeinfo_ptr_f, [nNodes])
 
   ierr = ionc_read_1d_network_nodes_ugrid(ioncid, networkid, nodesX, nodesY, nodeids, nodelongnames)
 
   do i=1,nNodes
-       nodeinfo(i)%id = nodeids(i)
-       nodeinfo(i)%longname = nodelongnames(i)
+       !nodeinfo(i)%id = nodeids(i)
+       !nodeinfo(i)%longname = nodelongnames(i)
+       nodeinfo_ptr_f(i)%id = nodeids(i)
+       nodeinfo_ptr_f(i)%longname = nodelongnames(i)
   end do
 
 end function ionc_read_1d_network_nodes_dll
 
-function ionc_get_1d_network_branches_dll(ioncid, networkid, c_sourcenodeid, c_targetnodeid, c_branchlengths, branchinfo, c_nbranchgeometrypoints, nBranches, startIndex)  result(ierr) bind(C, name="ionc_get_1d_network_branches")
+function ionc_get_1d_network_branches_dll(ioncid, networkid, c_sourcenodeid, c_targetnodeid, c_branchlengths, branchinfo_ptr_c, c_nbranchgeometrypoints, nBranches, startIndex)  result(ierr) bind(C, name="ionc_get_1d_network_branches")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_get_1d_network_branches_dll
 
   integer(kind=c_int), intent(in)       :: ioncid, networkid, startIndex  !< The dataset where i do want to create the dataset.
   type(c_ptr),intent(inout)             :: c_sourcenodeid, c_targetnodeid, c_nbranchgeometrypoints,c_branchlengths
-  type(t_ug_charinfo),  intent(inout)   :: branchinfo(nBranches)
+  !
+  ! yoder: (note that we could bundle this with the above type(c_ptr)
+  ! declarations...
+  !type(t_ug_charinfo),  intent(inout)   :: branchinfo(nBranches)
+  !type(c_ptr), intent(inout)               :: branchinfo_ptr_c(nBranches)
+  type(c_ptr), intent(inout)               :: branchinfo_ptr_c     ! put the dimension into c_f_pointer()
+  type(t_ug_charinfo), pointer          :: branchinfo(:)  
+
   integer,pointer                       :: sourcenodeid(:), targetnodeid(:),nbranchgeometrypoints(:)
   character(len=ug_idsLen)              :: branchids(nBranches)
   character(len=ug_idsLongNamesLen)     :: branchlongnames(nBranches)
@@ -951,12 +1025,19 @@ function ionc_get_1d_network_branches_dll(ioncid, networkid, c_sourcenodeid, c_t
   call c_f_pointer(c_targetnodeid, targetnodeid, (/ nBranches /))
   call c_f_pointer(c_nbranchgeometrypoints, nbranchgeometrypoints, (/ nBranches /))
   call c_f_pointer(c_branchlengths, branchlengths, (/ nBranches /))
+  !
+  ! yoder:
+  call c_f_pointer( branchinfo_ptr_c, branchinfo, (/ nBranches /))
 
   ierr = ionc_get_1d_network_branches_ugrid(ioncid, networkid, sourcenodeid, targetnodeid, branchids, branchlengths, branchlongnames, nbranchgeometrypoints, startIndex)
 
   do i=1,nBranches
-    branchinfo(i)%id = branchids(i)
-    branchinfo(i)%longname = branchlongnames(i)
+    ! yoder:
+    !branchinfo(i)%id = branchids(i)
+    !branchinfo(i)%longname = branchlongnames(i)
+
+    branchinfo(i)%id = transfer(branchids(i)(1:ug_idsLen), branchinfo(i)%id)
+    branchinfo(i)%longname = transfer(branchlongnames(i)(1:ug_idsLongNamesLen),branchinfo(i)%longname)
   end do
 
 end function ionc_get_1d_network_branches_dll
@@ -977,8 +1058,9 @@ function ionc_read_1d_network_nodes_v1_dll(ioncid, networkid, c_nodesX, c_nodesY
   call c_f_pointer(c_nodesY, nodesY, (/ nNodes /))
   call c_f_pointer(c_ids, ids, (/ nNodes /))
   call c_f_pointer(c_longnames, longnames, (/ nNodes /))
-
-  ierr = ionc_read_1d_network_nodes_ugrid(ioncid, networkid, nodesX, nodesY, ids, longnames)
+  
+  ! yoder: where did this come from?
+  !call c_f_pointer(c_sourcenodeid, sourcenodeid, (/ nBranches /))
 
 end function ionc_read_1d_network_nodes_v1_dll
 
@@ -1101,11 +1183,16 @@ function ionc_def_mesh_ids_dll(ioncid, meshid, locationType) result(ierr) bind(C
 
 end function ionc_def_mesh_ids_dll
 
-function ionc_put_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo, nmeshpoints, startIndex) result(ierr) bind(C, name="ionc_put_1d_mesh_discretisation_points")
+function ionc_put_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo_ptr_c, nmeshpoints, startIndex) result(ierr) bind(C, name="ionc_put_1d_mesh_discretisation_points")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_put_1d_mesh_discretisation_points_dll
   integer(kind=c_int), intent(in)     :: ioncid, meshid, nmeshpoints, startIndex
   type(c_ptr), intent(in)             :: c_branchidx,c_offset
-  type(t_ug_charinfo),  intent(in)    :: nodesinfo(nmeshpoints)
+  !
+  ! yoder
+  !type(t_ug_charinfo),  intent(in)    :: nodesinfo(nmeshpoints)
+  type(c_ptr),  intent(in)    :: nodesinfo_ptr_c
+  type(t_ug_charinfo),  pointer    :: nodesinfo_ptr_f(:)
+
   integer,pointer                     :: branchidx(:)
   double precision,pointer            :: offset(:)
   character(len=ug_idsLen)            :: nodeids(nmeshpoints)
@@ -1114,15 +1201,18 @@ function ionc_put_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx,
   character(len=15)                   :: varnamelongnames
   integer                             :: ierr,i
 
-  call c_f_pointer(c_branchidx, branchidx, (/ nmeshpoints /))
-  call c_f_pointer(c_offset, offset, (/ nmeshpoints /))
+  call c_f_pointer(c_branchidx, branchidx, [ nmeshpoints ] )
+  call c_f_pointer(c_offset, offset, [ nmeshpoints ])
+  !
+  ! yoder:
+  call c_f_pointer(nodesinfo_ptr_c, nodesinfo_ptr_f, [ nmeshpoints ])
 
   ierr = ionc_put_1d_mesh_discretisation_points_ugrid(ioncid, meshid, branchidx, offset, startIndex)
 
   !get and write the node_ids
   do i=1,nmeshpoints
-        nodeids(i)       = nodesinfo(i)%id
-        nodelongnames(i) = nodesinfo(i)%longname
+        nodeids(i)       = nodesinfo_ptr_f(i)%id
+        nodelongnames(i) = nodesinfo_ptr_f(i)%longname
   end do
 
   !these are hard-coded variable names for node ids of the network
@@ -1133,11 +1223,18 @@ function ionc_put_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx,
 
 end function ionc_put_1d_mesh_discretisation_points_dll
 
-function ionc_put_1d_mesh_discretisation_points_v1_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo, nmeshpoints, startIndex, c_coordx, c_coordy) result(ierr) bind(C, name="ionc_put_1d_mesh_discretisation_points_v1")
+function ionc_put_1d_mesh_discretisation_points_v1_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo_ptr_c, nmeshpoints, startIndex, c_coordx, c_coordy) result(ierr) bind(C, name="ionc_put_1d_mesh_discretisation_points_v1")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_put_1d_mesh_discretisation_points_v1_dll
+! yoder: convert nodesinfo to opaque pointer.
+!
   integer(kind=c_int), intent(in)     :: ioncid, meshid, nmeshpoints, startIndex
   type(c_ptr), intent(in)             :: c_branchidx, c_offset, c_coordx, c_coordy
-  type(t_ug_charinfo),  intent(in)    :: nodesinfo(nmeshpoints)
+  !
+  ! yoder:
+  !type(t_ug_charinfo),  intent(in)    :: nodesinfo(nmeshpoints)
+  type(c_ptr), intent(in)             :: nodesinfo_ptr_c
+  type(t_ug_charinfo), pointer        :: nodesinfo_ptr_f(:)
+  !
   integer,pointer                     :: branchidx(:)
   double precision,pointer            :: offset(:)
   double precision,pointer            :: coordx(:)
@@ -1148,17 +1245,25 @@ function ionc_put_1d_mesh_discretisation_points_v1_dll(ioncid, meshid, c_branchi
   character(len=15)                   :: varnamelongnames
   integer                             :: ierr,i
 
-  call c_f_pointer(c_branchidx, branchidx, (/ nmeshpoints /))
-  call c_f_pointer(c_offset, offset, (/ nmeshpoints /))
-  call c_f_pointer(c_coordx, coordx, (/ nmeshpoints /))
-  call c_f_pointer(c_coordy, coordy, (/ nmeshpoints /))
+  call c_f_pointer(c_branchidx, branchidx, [ nmeshpoints ] )
+  call c_f_pointer(c_offset, offset, [ nmeshpoints ] )
+  call c_f_pointer(c_coordx, coordx, [ nmeshpoints ] )
+  call c_f_pointer(c_coordy, coordy, [ nmeshpoints ] )
+  !
+  call c_f_pointer(nodesinfo_ptr_c, nodesinfo_ptr_f, [nmeshpoints])
 
   ierr = ionc_put_1d_mesh_discretisation_points_ugrid_v1(ioncid, meshid, branchidx, offset, startIndex, coordx, coordy)
 
   !get and write the node_ids
   do i=1,nmeshpoints
-        nodeids(i)       = nodesinfo(i)%id
-        nodelongnames(i) = nodesinfo(i)%longname
+        !nodeids(i)       = nodesinfo(i)%id
+        !nodelongnames(i) = nodesinfo(i)%longname
+        !
+        ! "transfer()" data from pointer to local vars/array, or just assign from ptr_f ?
+        nodeids(i)       = nodesinfo_ptr_f(i)%id
+        nodelongnames(i) = nodesinfo_ptr_f(i)%longname
+
+
   end do
 
   !these are hard-coded variable names for node ids of the network
@@ -1234,11 +1339,16 @@ function ionc_get_1d_mesh_discretisation_points_count_dll(ioncid, meshid, nmeshp
 end function ionc_get_1d_mesh_discretisation_points_count_dll
 
 
-function ionc_get_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo, nmeshpoints, startIndex) result(ierr) bind(C, name="ionc_get_1d_mesh_discretisation_points")
+function ionc_get_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo_ptr_c, nmeshpoints, startIndex) result(ierr) bind(C, name="ionc_get_1d_mesh_discretisation_points")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_get_1d_mesh_discretisation_points_dll
   integer(kind=c_int), intent(in)   :: ioncid, meshid, nmeshpoints,startIndex
   type(c_ptr), intent(inout)        :: c_branchidx, c_offset
-  type(t_ug_charinfo),  intent(inout)  :: nodesinfo(nmeshpoints)
+  !type(t_ug_charinfo),  intent(inout)  :: nodesinfo(nmeshpoints)
+  !
+  ! yoder:
+  type(c_ptr), intent(in) :: nodesinfo_ptr_c
+  type(t_ug_charinfo), pointer :: nodesinfo_ptr_f(:)
+
   character(len=ug_idsLen)          :: nodeids(nmeshpoints)
   character(len=ug_idsLongNamesLen) :: nodelongnames(nmeshpoints)
   double precision,pointer          :: offset(:)
@@ -1249,6 +1359,8 @@ function ionc_get_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx,
 
   call c_f_pointer(c_branchidx, branchidx, (/ nmeshpoints /))
   call c_f_pointer(c_offset, offset, (/ nmeshpoints /))
+
+  call c_f_pointer(nodesinfo_ptr_c, nodesinfo_ptr_f, (/ nmeshpoints /) )   ! yoder
 
   ierr = ionc_get_1d_mesh_discretisation_points_ugrid(ioncid, meshid, branchidx, offset, startIndex)
 
@@ -1269,17 +1381,23 @@ function ionc_get_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx,
   end if
 
   do i=1,nmeshpoints
-     nodesinfo(i)%id       = nodeids(i)
-     nodesinfo(i)%longname = nodelongnames(i)
+     !nodesinfo_ptr_f(i)%id       = nodeids(i)
+     nodesinfo_ptr_f(i)%id       = transfer(nodeids(i)(1:ug_idsLen),nodesinfo_ptr_f(i)%id)
+     !nodesinfo_ptr_f(i)%longname = nodelongnames(i)
+     nodesinfo_ptr_f(i)%longname = transfer(nodelongnames(i)(1:ug_idsLongNamesLen), nodesinfo_ptr_f(i)%longname)
   end do
 
 end function ionc_get_1d_mesh_discretisation_points_dll
 
-function ionc_get_1d_mesh_discretisation_points_v1_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo, nmeshpoints, startIndex, c_coordx, c_coordy) result(ierr) bind(C, name="ionc_get_1d_mesh_discretisation_points_v1")
+function ionc_get_1d_mesh_discretisation_points_v1_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo_ptr_c, nmeshpoints, startIndex, c_coordx, c_coordy) result(ierr) bind(C, name="ionc_get_1d_mesh_discretisation_points_v1")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_get_1d_mesh_discretisation_points_v1_dll
   integer(kind=c_int), intent(in)   :: ioncid, meshid, nmeshpoints,startIndex
   type(c_ptr), intent(inout)        :: c_branchidx, c_offset, c_coordx, c_coordy
-  type(t_ug_charinfo),  intent(inout)  :: nodesinfo(nmeshpoints)
+  !  
+  !type(t_ug_charinfo),  intent(inout)  :: nodesinfo(nmeshpoints)
+  type(c_ptr), intent(in) :: nodesinfo_ptr_c
+  type(t_ug_charinfo), pointer :: nodesinfo(:)
+
   character(len=ug_idsLen)          :: nodeids(nmeshpoints)
   character(len=ug_idsLongNamesLen) :: nodelongnames(nmeshpoints)
   double precision,pointer          :: offset(:)
@@ -1294,7 +1412,9 @@ function ionc_get_1d_mesh_discretisation_points_v1_dll(ioncid, meshid, c_branchi
   call c_f_pointer(c_offset, offset, (/ nmeshpoints /))
   call c_f_pointer(c_coordx, coordx, (/ nmeshpoints /))
   call c_f_pointer(c_coordy, coordy, (/ nmeshpoints /))
-
+  
+  ! yoder:
+  call c_f_pointer(nodesinfo_ptr_c, nodesinfo, [nmeshpoints])
   ierr = ionc_get_1d_mesh_discretisation_points_ugrid_v1(ioncid, meshid, branchidx, offset, startIndex, coordx, coordy )
 
   !The names of the variables are hard-coded
@@ -1425,23 +1545,39 @@ function ionc_get_contacts_count_dll(ioncid, contactid, ncontacts) result(ierr) 
 
 end function ionc_get_contacts_count_dll
 
-function ionc_put_mesh_contact_dll(ioncid, contactsmesh, c_mesh1indexes, c_mesh2indexes, c_contacttype, contactsinfo, ncontacts, startIndex) result(ierr) bind(C, name="ionc_put_mesh_contact")
+! yoder: convert contactsinfo to opaque pointer:
+function ionc_put_mesh_contact_dll(ioncid, contactsmesh, c_mesh1indexes, c_mesh2indexes, c_contacttype, contactsinfo_ptr_c, ncontacts, startIndex) result(ierr) bind(C, name="ionc_put_mesh_contact")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_put_mesh_contact_dll
    integer, intent(in)                   :: ioncid, contactsmesh, ncontacts, startIndex
    type(c_ptr), intent(in)               :: c_mesh1indexes, c_mesh2indexes, c_contacttype
-   type(t_ug_charinfo),  intent(in)      :: contactsinfo(ncontacts)
+   !
+   ! yoder:
+   !type(t_ug_charinfo),  intent(in)      :: contactsinfo(ncontacts)
+   type(c_ptr),           intent(in)      :: contactsinfo_ptr_c
+   type(t_ug_charinfo),   pointer         :: contactsinfo_ptr_f(:)
+
    integer,pointer                       :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
    character(len=ug_idsLen)              :: contactsids(ncontacts)
    character(len=ug_idsLongNamesLen)     :: contactslongnames(ncontacts)
    integer                               :: ierr,i
 
-   call c_f_pointer(c_mesh1indexes, mesh1indexes, (/ ncontacts /))
-   call c_f_pointer(c_mesh2indexes, mesh2indexes, (/ ncontacts /))
-   call c_f_pointer(c_contacttype, contacttype, (/ ncontacts /))
+   call c_f_pointer(c_mesh1indexes, mesh1indexes, [ncontacts])
+   call c_f_pointer(c_mesh2indexes, mesh2indexes, [ncontacts])
+   call c_f_pointer(c_contacttype, contacttype, [ncontacts])
+   !
+   ! yoder:
+   call c_f_pointer(contactsinfo_ptr_c, contactsinfo_ptr_f, [ncontacts])
+
 
    do i=1,ncontacts
-      contactsids(i) = contactsinfo(i)%id
-      contactslongnames(i) = contactsinfo(i)%longname
+      !contactsids(i) = contactsinfo(i)%id
+      !contactslongnames(i) = contactsinfo(i)%longname
+      !
+      ! yoder:
+      ! do we need to use transfer() to copy _from_ the f_pointer? or just _to_ the f_pointer?
+      contactsids(i) = contactsinfo_ptr_f(i)%id
+      contactslongnames(i) = contactsinfo_ptr_f(i)%longname
+
    end do
 
    ierr = ionc_put_mesh_contact_ugrid(ioncid, contactsmesh, mesh1indexes, mesh2indexes, contactsids, contactslongnames, contacttype, startIndex)
@@ -1458,12 +1594,12 @@ function ionc_put_mesh_contact_v1_dll(ioncid, contactsmesh, c_mesh1indexes, c_me
    character(kind=c_char, len=ug_idsLen),pointer               :: ids(:)
    character(kind=c_char, len=ug_idsLongNamesLen),pointer      :: longnames(:)
 
-   call c_f_pointer(c_mesh1indexes, mesh1indexes, (/ ncontacts /))
-   call c_f_pointer(c_mesh2indexes, mesh2indexes, (/ ncontacts /))
-   call c_f_pointer(c_contacttype, contacttype, (/ ncontacts /))
+   call c_f_pointer(c_mesh1indexes, mesh1indexes, [ncontacts] )
+   call c_f_pointer(c_mesh2indexes, mesh2indexes, [ncontacts])
+   call c_f_pointer(c_contacttype, contacttype, [ncontacts])
 
-   call c_f_pointer(c_ids, ids, (/ ncontacts /))
-   call c_f_pointer(c_longnames, longnames, (/ ncontacts /))
+   call c_f_pointer(c_ids, ids, [ncontacts])
+   call c_f_pointer(c_longnames, longnames, [ncontacts])
 
    ierr = ionc_put_mesh_contact_ugrid(ioncid, contactsmesh, mesh1indexes, mesh2indexes, ids, longnames, contacttype, startIndex)
 
@@ -1476,25 +1612,34 @@ function ionc_write_mesh_1d_edge_nodes_dll(ioncid, meshid, numEdge, c_mesh_1d_ed
    integer,pointer                                             :: mesh_1d_edge_nodes(:,:)
    integer                                                     :: ierr
 
-   call c_f_pointer(c_mesh_1d_edge_nodes, mesh_1d_edge_nodes, (/ numEdge /))
+   ! Totally guessin here (so expecting some nice seg-faluts). This is how we found this, with SHAPE=[numEdge], so I'm going to guess that
+   !   ifort can interpret this to be numEdge sub-arrays, [ [], [], [], ... []], and that each edge associates to two nodes
+   !   so this is [numEdge, 2]. That said, I've seen references to [2,numEdge], and then there's C-Fortran matrix transposition...
+   !call c_f_pointer(c_mesh_1d_edge_nodes, mesh_1d_edge_nodes, [numEdge] )
+   call c_f_pointer(c_mesh_1d_edge_nodes, mesh_1d_edge_nodes, [numEdge, 2] )   ! yoder: let's try [numEdge,2] ??
 
    ierr = ionc_write_mesh_1d_edge_nodes (ioncid, meshid, numEdge, mesh_1d_edge_nodes, start_index)
 
 end function ionc_write_mesh_1d_edge_nodes_dll
 
-function ionc_get_mesh_contact_dll(ioncid, contactsmesh, c_mesh1indexes, c_mesh2indexes, c_contacttype, contactsinfo, ncontacts, startIndex) result(ierr) bind(C, name="ionc_get_mesh_contact")
+function ionc_get_mesh_contact_dll(ioncid, contactsmesh, c_mesh1indexes, c_mesh2indexes, c_contacttype, c_contactsinfo, ncontacts, startIndex) result(ierr) bind(C, name="ionc_get_mesh_contact")
 !DEC$ ATTRIBUTES DLLEXPORT :: ionc_get_mesh_contact_dll
    integer, intent(in)                   :: ioncid, contactsmesh, ncontacts, startIndex
    type(c_ptr), intent(inout)            :: c_mesh1indexes, c_mesh2indexes, c_contacttype
    integer,    pointer                   :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
    character(len=ug_idsLen)              :: contactsids(ncontacts)
    character(len=ug_idsLongNamesLen)     :: contactslongnames(ncontacts)
-   type(t_ug_charinfo),  intent(inout)   :: contactsinfo(ncontacts)
+   !type(t_ug_charinfo),  intent(inout)   :: contactsinfo(ncontacts)
+   type(c_ptr), intent(inout)      :: c_contactsinfo
+   type(t_ug_charinfo),  pointer   :: contactsinfo(:)
    integer                               :: ierr, i
 
    call c_f_pointer(c_mesh1indexes, mesh1indexes, (/ ncontacts /))
    call c_f_pointer(c_mesh2indexes, mesh2indexes, (/ ncontacts /))
    call c_f_pointer(c_contacttype, contacttype, (/ ncontacts /))
+   !
+   ! yoder:
+   call c_f_pointer(c_contactsinfo, contactsinfo, (/ ncontacts /))
 
    ierr = ionc_get_mesh_contact_ugrid(ioncid, contactsmesh, mesh1indexes, mesh2indexes, contactsids, contactslongnames, contacttype, startIndex)
 

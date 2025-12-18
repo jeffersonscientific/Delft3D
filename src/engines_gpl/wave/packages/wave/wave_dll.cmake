@@ -71,6 +71,9 @@ if(UNIX)
                                 swan
                                 esmfsm
                                 netcdff
+                                OpenMP::OpenMP_CXX
+                                OpenMP::OpenMP_C
+                                OpenMP::OpenMP_Fortran
                                 )
 
     target_link_libraries(${library_name}

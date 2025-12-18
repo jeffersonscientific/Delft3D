@@ -196,9 +196,11 @@ contains
    subroutine fm_ice_alloc(ndx)
       integer, intent(in) :: ndx !< number of cells in the D-Flow FM domain
 
-      integer :: istat !< status flag for allocation
+      !integer :: istat !< status flag for allocation
+      logical :: istat !< status flag for allocation
 
-      if (.not. is_allocated_icecover(ice_data)) then
+      !if (.not. is_allocated_icecover(ice_data)) then
+      if (is_allocated_icecover(ice_data) .eq. 0 ) then
          istat = alloc_icecover(ice_data, 1, ndx)
          call fm_ice_update_spatial_pointers()
       end if
