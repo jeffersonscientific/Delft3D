@@ -1,0 +1,752 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineSystem.cmake:205 (message)"
+      - "CMakeLists.txt"
+    message: |
+      The system is: Linux - 3.10.0-1160.119.1.el7.tuxcare.els21.x86_64 - x86_64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /share/software/user/open/gcc/12.4.0/bin/gcc 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+      
+      The C compiler identification is GNU, found in:
+        /home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/3.31.4/CompilerIdC/a.out
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /share/software/user/open/gcc/12.4.0/bin/c++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+      
+      The CXX compiler identification is GNU, found in:
+        /home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/3.31.4/CompilerIdCXX/a.out
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-a7buso"
+      binary: "/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-a7buso"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-a7buso'
+        
+        Run Build Command(s): /share/software/user/open/cmake/3.31.4/bin/cmake -E env VERBOSE=1 /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake -f Makefile cmTC_bcc45/fast
+        /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake  -f CMakeFiles/cmTC_bcc45.dir/build.make CMakeFiles/cmTC_bcc45.dir/build
+        gmake[1]: Entering directory '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-a7buso'
+        Building C object CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o
+        /share/software/user/open/gcc/12.4.0/bin/gcc   -v -o CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o -c /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCCompilerABI.c
+        Using built-in specs.
+        COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/gcc
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c,c++,fortran,go --enable-multilib
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 12.4.0 (GCC) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bcc45.dir/'
+         /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/cc1 -quiet -v /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_bcc45.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -o /tmp/ccWPr4ow.s
+        GNU C17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 12.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring nonexistent directory "/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../x86_64-pc-linux-gnu/include"
+        ignoring duplicate directory "/share/software/user/open/gcc/12.4.0/include"
+          as it is a non-system directory that duplicates a system directory
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /share/software/user/open/expat/2.2.3/include
+         /share/software/user/open/curl/8.4.0/include
+         /share/software/user/open/subversion/1.12.2/include
+         /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include
+         /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13
+         /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include
+         /share/software/user/open/valgrind/3.14.0/include
+         /share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include
+         /share/software/user/open/sqlite/3.51.1/include
+         /share/software/user/open/readline/8.2/include
+         /share/software/user/open/ncurses/6.4/include
+         /share/software/user/open/tcltk/8.6.6/include
+         /share/software/user/open/libressl/3.2.1/include
+         /share/software/user/open/zlib/1.2.11/include
+         /share/software/user/open/openssl/3.0.7/include
+         /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include
+         /usr/local/include
+         /share/software/user/open/gcc/12.4.0/include
+         /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed
+         /usr/include
+        End of search list.
+        GNU C17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 12.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        Compiler executable checksum: 3fd2876acbd5c4893abf1780e4f7e03c
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bcc45.dir/'
+         as -v --64 -o CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o /tmp/ccWPr4ow.s
+        GNU assembler version 2.27 (x86_64-redhat-linux) using BFD version version 2.27-44.base.el7_9.1.tuxcare.els2
+        COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.'
+        Linking C executable cmTC_bcc45
+        /share/software/user/open/cmake/3.31.4/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bcc45.dir/link.txt --verbose=1
+        Using built-in specs.
+        COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/gcc
+        COLLECT_LTO_WRAPPER=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c,c++,fortran,go --enable-multilib
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 12.4.0 (GCC) 
+        COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_bcc45' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_bcc45.'
+         /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/collect2 -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cclyksfy.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_bcc45 /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o
+        collect2 version 12.4.0
+        /usr/bin/ld -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cclyksfy.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_bcc45 /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o
+        GNU ld version 2.27-44.base.el7_9.1.tuxcare.els2
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_bcc45' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_bcc45.'
+        /share/software/user/open/gcc/12.4.0/bin/gcc  -v -Wl,-v -rdynamic CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o -o cmTC_bcc45
+        gmake[1]: Leaving directory '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-a7buso'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:182 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/share/software/user/open/expat/2.2.3/include]
+          add: [/share/software/user/open/curl/8.4.0/include]
+          add: [/share/software/user/open/subversion/1.12.2/include]
+          add: [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include]
+          add: [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13]
+          add: [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include]
+          add: [/share/software/user/open/valgrind/3.14.0/include]
+          add: [/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include]
+          add: [/share/software/user/open/sqlite/3.51.1/include]
+          add: [/share/software/user/open/readline/8.2/include]
+          add: [/share/software/user/open/ncurses/6.4/include]
+          add: [/share/software/user/open/tcltk/8.6.6/include]
+          add: [/share/software/user/open/libressl/3.2.1/include]
+          add: [/share/software/user/open/zlib/1.2.11/include]
+          add: [/share/software/user/open/openssl/3.0.7/include]
+          add: [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include]
+          add: [/usr/local/include]
+          add: [/share/software/user/open/gcc/12.4.0/include]
+          add: [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/share/software/user/open/expat/2.2.3/include] ==> [/share/software/user/open/expat/2.2.3/include]
+        collapse include dir [/share/software/user/open/curl/8.4.0/include] ==> [/share/software/user/open/curl/8.4.0/include]
+        collapse include dir [/share/software/user/open/subversion/1.12.2/include] ==> [/share/software/user/open/subversion/1.12.2/include]
+        collapse include dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include]
+        collapse include dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13] ==> [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13]
+        collapse include dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include] ==> [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include]
+        collapse include dir [/share/software/user/open/valgrind/3.14.0/include] ==> [/share/software/user/open/valgrind/3.14.0/include]
+        collapse include dir [/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include] ==> [/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include]
+        collapse include dir [/share/software/user/open/sqlite/3.51.1/include] ==> [/share/software/user/open/sqlite/3.51.1/include]
+        collapse include dir [/share/software/user/open/readline/8.2/include] ==> [/share/software/user/open/readline/8.2/include]
+        collapse include dir [/share/software/user/open/ncurses/6.4/include] ==> [/share/software/user/open/ncurses/6.4/include]
+        collapse include dir [/share/software/user/open/tcltk/8.6.6/include] ==> [/share/software/user/open/tcltk/8.6.6/include]
+        collapse include dir [/share/software/user/open/libressl/3.2.1/include] ==> [/share/software/user/open/libressl/3.2.1/include]
+        collapse include dir [/share/software/user/open/zlib/1.2.11/include] ==> [/share/software/user/open/zlib/1.2.11/include]
+        collapse include dir [/share/software/user/open/openssl/3.0.7/include] ==> [/share/software/user/open/openssl/3.0.7/include]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include] ==> [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/include] ==> [/share/software/user/open/gcc/12.4.0/include]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed] ==> [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/share/software/user/open/expat/2.2.3/include;/share/software/user/open/curl/8.4.0/include;/share/software/user/open/subversion/1.12.2/include;/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include;/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13;/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include;/share/software/user/open/valgrind/3.14.0/include;/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include;/share/software/user/open/sqlite/3.51.1/include;/share/software/user/open/readline/8.2/include;/share/software/user/open/ncurses/6.4/include;/share/software/user/open/tcltk/8.6.6/include;/share/software/user/open/libressl/3.2.1/include;/share/software/user/open/zlib/1.2.11/include;/share/software/user/open/openssl/3.0.7/include;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include;/usr/local/include;/share/software/user/open/gcc/12.4.0/include;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
+        ignore line: [Change Dir: '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-a7buso']
+        ignore line: []
+        ignore line: [Run Build Command(s): /share/software/user/open/cmake/3.31.4/bin/cmake -E env VERBOSE=1 /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake -f Makefile cmTC_bcc45/fast]
+        ignore line: [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake  -f CMakeFiles/cmTC_bcc45.dir/build.make CMakeFiles/cmTC_bcc45.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-a7buso']
+        ignore line: [Building C object CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o]
+        ignore line: [/share/software/user/open/gcc/12.4.0/bin/gcc   -v -o CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o -c /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCCompilerABI.c]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/gcc]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c c++ fortran go --enable-multilib]
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 12.4.0 (GCC) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bcc45.dir/']
+        ignore line: [ /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/cc1 -quiet -v /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_bcc45.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -o /tmp/ccWPr4ow.s]
+        ignore line: [GNU C17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 12.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring nonexistent directory "/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [ignoring duplicate directory "/share/software/user/open/gcc/12.4.0/include"]
+        ignore line: [  as it is a non-system directory that duplicates a system directory]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /share/software/user/open/expat/2.2.3/include]
+        ignore line: [ /share/software/user/open/curl/8.4.0/include]
+        ignore line: [ /share/software/user/open/subversion/1.12.2/include]
+        ignore line: [ /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include]
+        ignore line: [ /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13]
+        ignore line: [ /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include]
+        ignore line: [ /share/software/user/open/valgrind/3.14.0/include]
+        ignore line: [ /share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include]
+        ignore line: [ /share/software/user/open/sqlite/3.51.1/include]
+        ignore line: [ /share/software/user/open/readline/8.2/include]
+        ignore line: [ /share/software/user/open/ncurses/6.4/include]
+        ignore line: [ /share/software/user/open/tcltk/8.6.6/include]
+        ignore line: [ /share/software/user/open/libressl/3.2.1/include]
+        ignore line: [ /share/software/user/open/zlib/1.2.11/include]
+        ignore line: [ /share/software/user/open/openssl/3.0.7/include]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/include]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [GNU C17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 12.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [Compiler executable checksum: 3fd2876acbd5c4893abf1780e4f7e03c]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bcc45.dir/']
+        ignore line: [ as -v --64 -o CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o /tmp/ccWPr4ow.s]
+        ignore line: [GNU assembler version 2.27 (x86_64-redhat-linux) using BFD version version 2.27-44.base.el7_9.1.tuxcare.els2]
+        ignore line: [COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.']
+        ignore line: [Linking C executable cmTC_bcc45]
+        ignore line: [/share/software/user/open/cmake/3.31.4/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bcc45.dir/link.txt --verbose=1]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/gcc]
+        ignore line: [COLLECT_LTO_WRAPPER=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c c++ fortran go --enable-multilib]
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 12.4.0 (GCC) ]
+        ignore line: [COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_bcc45' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_bcc45.']
+        link line: [ /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/collect2 -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cclyksfy.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_bcc45 /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o]
+          arg [/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/cclyksfy.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-export-dynamic] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_bcc45] ==> ignore
+          arg [/lib/../lib64/crt1.o] ==> obj [/lib/../lib64/crt1.o]
+          arg [/lib/../lib64/crti.o] ==> obj [/lib/../lib64/crti.o]
+          arg [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o] ==> obj [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib64/../lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib64/../lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/../lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib/../lib64]
+          arg [-L/share/software/user/open/libffi/3.2.1/lib64/../lib64] ==> dir [/share/software/user/open/libffi/3.2.1/lib64/../lib64]
+          arg [-L/share/software/user/open/openssl/3.0.7/lib64/../lib64] ==> dir [/share/software/user/open/openssl/3.0.7/lib64/../lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0] ==> dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/share/software/user/open/expat/2.2.3/lib] ==> dir [/share/software/user/open/expat/2.2.3/lib]
+          arg [-L/share/software/user/open/curl/8.4.0/lib] ==> dir [/share/software/user/open/curl/8.4.0/lib]
+          arg [-L/share/software/user/open/subversion/1.12.2/lib] ==> dir [/share/software/user/open/subversion/1.12.2/lib]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib] ==> dir [/share/software/user/open/gcc/12.4.0/lib]
+          arg [-L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib] ==> dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib]
+          arg [-L/share/software/user/open/valgrind/3.14.0/lib] ==> dir [/share/software/user/open/valgrind/3.14.0/lib]
+          arg [-L/share/software/user/open/libffi/3.2.1/lib64] ==> dir [/share/software/user/open/libffi/3.2.1/lib64]
+          arg [-L/share/software/user/open/sqlite/3.51.1/lib] ==> dir [/share/software/user/open/sqlite/3.51.1/lib]
+          arg [-L/share/software/user/open/readline/8.2/lib] ==> dir [/share/software/user/open/readline/8.2/lib]
+          arg [-L/share/software/user/open/ncurses/6.4/lib] ==> dir [/share/software/user/open/ncurses/6.4/lib]
+          arg [-L/share/software/user/open/tcltk/8.6.6/lib] ==> dir [/share/software/user/open/tcltk/8.6.6/lib]
+          arg [-L/share/software/user/open/libressl/3.2.1/lib] ==> dir [/share/software/user/open/libressl/3.2.1/lib]
+          arg [-L/share/software/user/open/zlib/1.2.11/lib] ==> dir [/share/software/user/open/zlib/1.2.11/lib]
+          arg [-L/share/software/user/open/openssl/3.0.7/lib64] ==> dir [/share/software/user/open/openssl/3.0.7/lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../..] ==> dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../..]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [-lc] ==> lib [c]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o] ==> obj [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o]
+          arg [/lib/../lib64/crtn.o] ==> obj [/lib/../lib64/crtn.o]
+        ignore line: [collect2 version 12.4.0]
+        ignore line: [/usr/bin/ld -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/cclyksfy.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_bcc45 /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_bcc45.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o]
+        linker tool for 'C': /usr/bin/ld
+        collapse obj [/lib/../lib64/crt1.o] ==> [/lib64/crt1.o]
+        collapse obj [/lib/../lib64/crti.o] ==> [/lib64/crti.o]
+        collapse obj [/lib/../lib64/crtn.o] ==> [/lib64/crtn.o]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib64/../lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/../lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/share/software/user/open/libffi/3.2.1/lib64/../lib64] ==> [/share/software/user/open/libffi/3.2.1/lib64]
+        collapse library dir [/share/software/user/open/openssl/3.0.7/lib64/../lib64] ==> [/share/software/user/open/openssl/3.0.7/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0] ==> [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/share/software/user/open/expat/2.2.3/lib] ==> [/share/software/user/open/expat/2.2.3/lib]
+        collapse library dir [/share/software/user/open/curl/8.4.0/lib] ==> [/share/software/user/open/curl/8.4.0/lib]
+        collapse library dir [/share/software/user/open/subversion/1.12.2/lib] ==> [/share/software/user/open/subversion/1.12.2/lib]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib] ==> [/share/software/user/open/gcc/12.4.0/lib]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib] ==> [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib]
+        collapse library dir [/share/software/user/open/valgrind/3.14.0/lib] ==> [/share/software/user/open/valgrind/3.14.0/lib]
+        collapse library dir [/share/software/user/open/libffi/3.2.1/lib64] ==> [/share/software/user/open/libffi/3.2.1/lib64]
+        collapse library dir [/share/software/user/open/sqlite/3.51.1/lib] ==> [/share/software/user/open/sqlite/3.51.1/lib]
+        collapse library dir [/share/software/user/open/readline/8.2/lib] ==> [/share/software/user/open/readline/8.2/lib]
+        collapse library dir [/share/software/user/open/ncurses/6.4/lib] ==> [/share/software/user/open/ncurses/6.4/lib]
+        collapse library dir [/share/software/user/open/tcltk/8.6.6/lib] ==> [/share/software/user/open/tcltk/8.6.6/lib]
+        collapse library dir [/share/software/user/open/libressl/3.2.1/lib] ==> [/share/software/user/open/libressl/3.2.1/lib]
+        collapse library dir [/share/software/user/open/zlib/1.2.11/lib] ==> [/share/software/user/open/zlib/1.2.11/lib]
+        collapse library dir [/share/software/user/open/openssl/3.0.7/lib64] ==> [/share/software/user/open/openssl/3.0.7/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../..] ==> [/share/software/user/open/gcc/12.4.0/lib]
+        implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+        implicit objs: [/lib64/crt1.o;/lib64/crti.o;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o;/lib64/crtn.o]
+        implicit dirs: [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64;/share/software/user/open/gcc/12.4.0/lib64;/share/software/user/open/libffi/3.2.1/lib64;/share/software/user/open/openssl/3.0.7/lib64;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0;/lib64;/usr/lib64;/share/software/user/open/expat/2.2.3/lib;/share/software/user/open/curl/8.4.0/lib;/share/software/user/open/subversion/1.12.2/lib;/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib;/share/software/user/open/gcc/12.4.0/lib;/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib;/share/software/user/open/valgrind/3.14.0/lib;/share/software/user/open/sqlite/3.51.1/lib;/share/software/user/open/readline/8.2/lib;/share/software/user/open/ncurses/6.4/lib;/share/software/user/open/tcltk/8.6.6/lib;/share/software/user/open/libressl/3.2.1/lib;/share/software/user/open/zlib/1.2.11/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Running the C compiler's linker: "/usr/bin/ld" "-v"
+      GNU ld version 2.27-44.base.el7_9.1.tuxcare.els2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-4ytWZE"
+      binary: "/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-4ytWZE"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-4ytWZE'
+        
+        Run Build Command(s): /share/software/user/open/cmake/3.31.4/bin/cmake -E env VERBOSE=1 /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake -f Makefile cmTC_4079d/fast
+        /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake  -f CMakeFiles/cmTC_4079d.dir/build.make CMakeFiles/cmTC_4079d.dir/build
+        gmake[1]: Entering directory '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-4ytWZE'
+        Building CXX object CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o
+        /share/software/user/open/gcc/12.4.0/bin/c++   -v -o CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o -c /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp
+        Using built-in specs.
+        COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/c++
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c,c++,fortran,go --enable-multilib
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 12.4.0 (GCC) 
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_4079d.dir/'
+         /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/cc1plus -quiet -v -D_GNU_SOURCE /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_4079d.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -o /tmp/cczP1apZ.s
+        GNU C++17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 12.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring nonexistent directory "/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../x86_64-pc-linux-gnu/include"
+        ignoring duplicate directory "/share/software/user/open/gcc/12.4.0/include"
+          as it is a non-system directory that duplicates a system directory
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /share/software/user/open/expat/2.2.3/include
+         /share/software/user/open/curl/8.4.0/include
+         /share/software/user/open/subversion/1.12.2/include
+         /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include
+         /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13
+         /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include
+         /share/software/user/open/valgrind/3.14.0/include
+         /share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include
+         /share/software/user/open/sqlite/3.51.1/include
+         /share/software/user/open/readline/8.2/include
+         /share/software/user/open/ncurses/6.4/include
+         /share/software/user/open/tcltk/8.6.6/include
+         /share/software/user/open/libressl/3.2.1/include
+         /share/software/user/open/zlib/1.2.11/include
+         /share/software/user/open/openssl/3.0.7/include
+         /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0
+         /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/x86_64-pc-linux-gnu
+         /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/backward
+         /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include
+         /usr/local/include
+         /share/software/user/open/gcc/12.4.0/include
+         /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed
+         /usr/include
+        End of search list.
+        GNU C++17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)
+        	compiled by GNU C version 12.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        Compiler executable checksum: 6a40f224690fcaaf56c6e370babaf871
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_4079d.dir/'
+         as -v --64 -o CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o /tmp/cczP1apZ.s
+        GNU assembler version 2.27 (x86_64-redhat-linux) using BFD version version 2.27-44.base.el7_9.1.tuxcare.els2
+        COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.'
+        Linking CXX executable cmTC_4079d
+        /share/software/user/open/cmake/3.31.4/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4079d.dir/link.txt --verbose=1
+        Using built-in specs.
+        COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/c++
+        COLLECT_LTO_WRAPPER=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper
+        Target: x86_64-pc-linux-gnu
+        Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c,c++,fortran,go --enable-multilib
+        Thread model: posix
+        Supported LTO compression algorithms: zlib
+        gcc version 12.4.0 (GCC) 
+        COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/
+        LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_4079d' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_4079d.'
+         /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/collect2 -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccC2xXv1.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_4079d /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o
+        collect2 version 12.4.0
+        /usr/bin/ld -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccC2xXv1.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_4079d /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o
+        GNU ld version 2.27-44.base.el7_9.1.tuxcare.els2
+        COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_4079d' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_4079d.'
+        /share/software/user/open/gcc/12.4.0/bin/c++  -v -Wl,-v -rdynamic CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_4079d
+        gmake[1]: Leaving directory '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-4ytWZE'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:182 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/share/software/user/open/expat/2.2.3/include]
+          add: [/share/software/user/open/curl/8.4.0/include]
+          add: [/share/software/user/open/subversion/1.12.2/include]
+          add: [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include]
+          add: [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13]
+          add: [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include]
+          add: [/share/software/user/open/valgrind/3.14.0/include]
+          add: [/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include]
+          add: [/share/software/user/open/sqlite/3.51.1/include]
+          add: [/share/software/user/open/readline/8.2/include]
+          add: [/share/software/user/open/ncurses/6.4/include]
+          add: [/share/software/user/open/tcltk/8.6.6/include]
+          add: [/share/software/user/open/libressl/3.2.1/include]
+          add: [/share/software/user/open/zlib/1.2.11/include]
+          add: [/share/software/user/open/openssl/3.0.7/include]
+          add: [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0]
+          add: [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/x86_64-pc-linux-gnu]
+          add: [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/backward]
+          add: [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include]
+          add: [/usr/local/include]
+          add: [/share/software/user/open/gcc/12.4.0/include]
+          add: [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/share/software/user/open/expat/2.2.3/include] ==> [/share/software/user/open/expat/2.2.3/include]
+        collapse include dir [/share/software/user/open/curl/8.4.0/include] ==> [/share/software/user/open/curl/8.4.0/include]
+        collapse include dir [/share/software/user/open/subversion/1.12.2/include] ==> [/share/software/user/open/subversion/1.12.2/include]
+        collapse include dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include]
+        collapse include dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13] ==> [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13]
+        collapse include dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include] ==> [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include]
+        collapse include dir [/share/software/user/open/valgrind/3.14.0/include] ==> [/share/software/user/open/valgrind/3.14.0/include]
+        collapse include dir [/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include] ==> [/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include]
+        collapse include dir [/share/software/user/open/sqlite/3.51.1/include] ==> [/share/software/user/open/sqlite/3.51.1/include]
+        collapse include dir [/share/software/user/open/readline/8.2/include] ==> [/share/software/user/open/readline/8.2/include]
+        collapse include dir [/share/software/user/open/ncurses/6.4/include] ==> [/share/software/user/open/ncurses/6.4/include]
+        collapse include dir [/share/software/user/open/tcltk/8.6.6/include] ==> [/share/software/user/open/tcltk/8.6.6/include]
+        collapse include dir [/share/software/user/open/libressl/3.2.1/include] ==> [/share/software/user/open/libressl/3.2.1/include]
+        collapse include dir [/share/software/user/open/zlib/1.2.11/include] ==> [/share/software/user/open/zlib/1.2.11/include]
+        collapse include dir [/share/software/user/open/openssl/3.0.7/include] ==> [/share/software/user/open/openssl/3.0.7/include]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0] ==> [/share/software/user/open/gcc/12.4.0/include/c++/12.4.0]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/x86_64-pc-linux-gnu] ==> [/share/software/user/open/gcc/12.4.0/include/c++/12.4.0/x86_64-pc-linux-gnu]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/backward] ==> [/share/software/user/open/gcc/12.4.0/include/c++/12.4.0/backward]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include] ==> [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/include] ==> [/share/software/user/open/gcc/12.4.0/include]
+        collapse include dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed] ==> [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/share/software/user/open/expat/2.2.3/include;/share/software/user/open/curl/8.4.0/include;/share/software/user/open/subversion/1.12.2/include;/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include;/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13;/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include;/share/software/user/open/valgrind/3.14.0/include;/share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include;/share/software/user/open/sqlite/3.51.1/include;/share/software/user/open/readline/8.2/include;/share/software/user/open/ncurses/6.4/include;/share/software/user/open/tcltk/8.6.6/include;/share/software/user/open/libressl/3.2.1/include;/share/software/user/open/zlib/1.2.11/include;/share/software/user/open/openssl/3.0.7/include;/share/software/user/open/gcc/12.4.0/include/c++/12.4.0;/share/software/user/open/gcc/12.4.0/include/c++/12.4.0/x86_64-pc-linux-gnu;/share/software/user/open/gcc/12.4.0/include/c++/12.4.0/backward;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include;/usr/local/include;/share/software/user/open/gcc/12.4.0/include;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
+        ignore line: [Change Dir: '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-4ytWZE']
+        ignore line: []
+        ignore line: [Run Build Command(s): /share/software/user/open/cmake/3.31.4/bin/cmake -E env VERBOSE=1 /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake -f Makefile cmTC_4079d/fast]
+        ignore line: [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/gmake  -f CMakeFiles/cmTC_4079d.dir/build.make CMakeFiles/cmTC_4079d.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/groups/bprogers/myoder96/Delft3D/src/tools_gpl/waq_tools/waqpb/waqpb_lib/CMakeFiles/CMakeScratch/TryCompile-4ytWZE']
+        ignore line: [Building CXX object CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/share/software/user/open/gcc/12.4.0/bin/c++   -v -o CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o -c /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/c++]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c c++ fortran go --enable-multilib]
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 12.4.0 (GCC) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_4079d.dir/']
+        ignore line: [ /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/cc1plus -quiet -v -D_GNU_SOURCE /share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_4079d.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -o /tmp/cczP1apZ.s]
+        ignore line: [GNU C++17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 12.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring nonexistent directory "/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [ignoring duplicate directory "/share/software/user/open/gcc/12.4.0/include"]
+        ignore line: [  as it is a non-system directory that duplicates a system directory]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /share/software/user/open/expat/2.2.3/include]
+        ignore line: [ /share/software/user/open/curl/8.4.0/include]
+        ignore line: [ /share/software/user/open/subversion/1.12.2/include]
+        ignore line: [ /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/include]
+        ignore line: [ /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include/python3.13]
+        ignore line: [ /home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/include]
+        ignore line: [ /share/software/user/open/valgrind/3.14.0/include]
+        ignore line: [ /share/software/user/open/libffi/3.2.1/lib/libffi-3.2.1/include]
+        ignore line: [ /share/software/user/open/sqlite/3.51.1/include]
+        ignore line: [ /share/software/user/open/readline/8.2/include]
+        ignore line: [ /share/software/user/open/ncurses/6.4/include]
+        ignore line: [ /share/software/user/open/tcltk/8.6.6/include]
+        ignore line: [ /share/software/user/open/libressl/3.2.1/include]
+        ignore line: [ /share/software/user/open/zlib/1.2.11/include]
+        ignore line: [ /share/software/user/open/openssl/3.0.7/include]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/x86_64-pc-linux-gnu]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../include/c++/12.4.0/backward]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/include]
+        ignore line: [ /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/include-fixed]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [GNU C++17 (GCC) version 12.4.0 (x86_64-pc-linux-gnu)]
+        ignore line: [	compiled by GNU C version 12.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [Compiler executable checksum: 6a40f224690fcaaf56c6e370babaf871]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_4079d.dir/']
+        ignore line: [ as -v --64 -o CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o /tmp/cczP1apZ.s]
+        ignore line: [GNU assembler version 2.27 (x86_64-redhat-linux) using BFD version version 2.27-44.base.el7_9.1.tuxcare.els2]
+        ignore line: [COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.']
+        ignore line: [Linking CXX executable cmTC_4079d]
+        ignore line: [/share/software/user/open/cmake/3.31.4/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4079d.dir/link.txt --verbose=1]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/share/software/user/open/gcc/12.4.0/bin/c++]
+        ignore line: [COLLECT_LTO_WRAPPER=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper]
+        ignore line: [Target: x86_64-pc-linux-gnu]
+        ignore line: [Configured with: ../configure --prefix=/share/software/user/open/gcc/12.4.0/ --enable-shared --enable-threads=posix --enable-languages=c c++ fortran go --enable-multilib]
+        ignore line: [Thread model: posix]
+        ignore line: [Supported LTO compression algorithms: zlib]
+        ignore line: [gcc version 12.4.0 (GCC) ]
+        ignore line: [COMPILER_PATH=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/]
+        ignore line: [LIBRARY_PATH=/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/../lib64/:/share/software/user/open/libffi/3.2.1/lib64/../lib64/:/share/software/user/open/openssl/3.0.7/lib64/../lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/share/software/user/open/expat/2.2.3/lib/:/share/software/user/open/curl/8.4.0/lib/:/share/software/user/open/subversion/1.12.2/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/:/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/:/share/software/user/open/gcc/12.4.0/lib64/:/share/software/user/open/gcc/12.4.0/lib/:/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib/:/share/software/user/open/valgrind/3.14.0/lib/:/share/software/user/open/libffi/3.2.1/lib64/:/share/software/user/open/sqlite/3.51.1/lib/:/share/software/user/open/readline/8.2/lib/:/share/software/user/open/ncurses/6.4/lib/:/share/software/user/open/tcltk/8.6.6/lib/:/share/software/user/open/libressl/3.2.1/lib/:/share/software/user/open/zlib/1.2.11/lib/:/share/software/user/open/openssl/3.0.7/lib64/:/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../:/lib/:/usr/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_4079d' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_4079d.']
+        link line: [ /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/collect2 -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccC2xXv1.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_4079d /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o]
+          arg [/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccC2xXv1.res] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lc] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+          arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-export-dynamic] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_4079d] ==> ignore
+          arg [/lib/../lib64/crt1.o] ==> obj [/lib/../lib64/crt1.o]
+          arg [/lib/../lib64/crti.o] ==> obj [/lib/../lib64/crti.o]
+          arg [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o] ==> obj [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib64/../lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib64/../lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/../lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib/../lib64]
+          arg [-L/share/software/user/open/libffi/3.2.1/lib64/../lib64] ==> dir [/share/software/user/open/libffi/3.2.1/lib64/../lib64]
+          arg [-L/share/software/user/open/openssl/3.0.7/lib64/../lib64] ==> dir [/share/software/user/open/openssl/3.0.7/lib64/../lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0] ==> dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/share/software/user/open/expat/2.2.3/lib] ==> dir [/share/software/user/open/expat/2.2.3/lib]
+          arg [-L/share/software/user/open/curl/8.4.0/lib] ==> dir [/share/software/user/open/curl/8.4.0/lib]
+          arg [-L/share/software/user/open/subversion/1.12.2/lib] ==> dir [/share/software/user/open/subversion/1.12.2/lib]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib]
+          arg [-L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64] ==> dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib64] ==> dir [/share/software/user/open/gcc/12.4.0/lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib] ==> dir [/share/software/user/open/gcc/12.4.0/lib]
+          arg [-L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib] ==> dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib]
+          arg [-L/share/software/user/open/valgrind/3.14.0/lib] ==> dir [/share/software/user/open/valgrind/3.14.0/lib]
+          arg [-L/share/software/user/open/libffi/3.2.1/lib64] ==> dir [/share/software/user/open/libffi/3.2.1/lib64]
+          arg [-L/share/software/user/open/sqlite/3.51.1/lib] ==> dir [/share/software/user/open/sqlite/3.51.1/lib]
+          arg [-L/share/software/user/open/readline/8.2/lib] ==> dir [/share/software/user/open/readline/8.2/lib]
+          arg [-L/share/software/user/open/ncurses/6.4/lib] ==> dir [/share/software/user/open/ncurses/6.4/lib]
+          arg [-L/share/software/user/open/tcltk/8.6.6/lib] ==> dir [/share/software/user/open/tcltk/8.6.6/lib]
+          arg [-L/share/software/user/open/libressl/3.2.1/lib] ==> dir [/share/software/user/open/libressl/3.2.1/lib]
+          arg [-L/share/software/user/open/zlib/1.2.11/lib] ==> dir [/share/software/user/open/zlib/1.2.11/lib]
+          arg [-L/share/software/user/open/openssl/3.0.7/lib64] ==> dir [/share/software/user/open/openssl/3.0.7/lib64]
+          arg [-L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../..] ==> dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../..]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [-lstdc++] ==> lib [stdc++]
+          arg [-lm] ==> lib [m]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o] ==> obj [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o]
+          arg [/lib/../lib64/crtn.o] ==> obj [/lib/../lib64/crtn.o]
+        ignore line: [collect2 version 12.4.0]
+        ignore line: [/usr/bin/ld -plugin /share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/liblto_plugin.so -plugin-opt=/share/software/user/open/gcc/12.4.0/libexec/gcc/x86_64-pc-linux-gnu/12.4.0/lto-wrapper -plugin-opt=-fresolution=/tmp/ccC2xXv1.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --eh-frame-hdr -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_4079d /lib/../lib64/crt1.o /lib/../lib64/crti.o /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64 -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/../lib64 -L/share/software/user/open/libffi/3.2.1/lib64/../lib64 -L/share/software/user/open/openssl/3.0.7/lib64/../lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/share/software/user/open/expat/2.2.3/lib -L/share/software/user/open/curl/8.4.0/lib -L/share/software/user/open/subversion/1.12.2/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib -L/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64 -L/share/software/user/open/gcc/12.4.0/lib64 -L/share/software/user/open/gcc/12.4.0/lib -L/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib -L/share/software/user/open/valgrind/3.14.0/lib -L/share/software/user/open/libffi/3.2.1/lib64 -L/share/software/user/open/sqlite/3.51.1/lib -L/share/software/user/open/readline/8.2/lib -L/share/software/user/open/ncurses/6.4/lib -L/share/software/user/open/tcltk/8.6.6/lib -L/share/software/user/open/libressl/3.2.1/lib -L/share/software/user/open/zlib/1.2.11/lib -L/share/software/user/open/openssl/3.0.7/lib64 -L/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../.. -v CMakeFiles/cmTC_4079d.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o /lib/../lib64/crtn.o]
+        linker tool for 'CXX': /usr/bin/ld
+        collapse obj [/lib/../lib64/crt1.o] ==> [/lib64/crt1.o]
+        collapse obj [/lib/../lib64/crti.o] ==> [/lib64/crti.o]
+        collapse obj [/lib/../lib64/crtn.o] ==> [/lib64/crtn.o]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib/../lib64] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64/../lib64] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib64/../lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/../lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/share/software/user/open/libffi/3.2.1/lib64/../lib64] ==> [/share/software/user/open/libffi/3.2.1/lib64]
+        collapse library dir [/share/software/user/open/openssl/3.0.7/lib64/../lib64] ==> [/share/software/user/open/openssl/3.0.7/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0] ==> [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../../../lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/share/software/user/open/expat/2.2.3/lib] ==> [/share/software/user/open/expat/2.2.3/lib]
+        collapse library dir [/share/software/user/open/curl/8.4.0/lib] ==> [/share/software/user/open/curl/8.4.0/lib]
+        collapse library dir [/share/software/user/open/subversion/1.12.2/lib] ==> [/share/software/user/open/subversion/1.12.2/lib]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64] ==> [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib64] ==> [/share/software/user/open/gcc/12.4.0/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib] ==> [/share/software/user/open/gcc/12.4.0/lib]
+        collapse library dir [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib] ==> [/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib]
+        collapse library dir [/share/software/user/open/valgrind/3.14.0/lib] ==> [/share/software/user/open/valgrind/3.14.0/lib]
+        collapse library dir [/share/software/user/open/libffi/3.2.1/lib64] ==> [/share/software/user/open/libffi/3.2.1/lib64]
+        collapse library dir [/share/software/user/open/sqlite/3.51.1/lib] ==> [/share/software/user/open/sqlite/3.51.1/lib]
+        collapse library dir [/share/software/user/open/readline/8.2/lib] ==> [/share/software/user/open/readline/8.2/lib]
+        collapse library dir [/share/software/user/open/ncurses/6.4/lib] ==> [/share/software/user/open/ncurses/6.4/lib]
+        collapse library dir [/share/software/user/open/tcltk/8.6.6/lib] ==> [/share/software/user/open/tcltk/8.6.6/lib]
+        collapse library dir [/share/software/user/open/libressl/3.2.1/lib] ==> [/share/software/user/open/libressl/3.2.1/lib]
+        collapse library dir [/share/software/user/open/zlib/1.2.11/lib] ==> [/share/software/user/open/zlib/1.2.11/lib]
+        collapse library dir [/share/software/user/open/openssl/3.0.7/lib64] ==> [/share/software/user/open/openssl/3.0.7/lib64]
+        collapse library dir [/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/../../..] ==> [/share/software/user/open/gcc/12.4.0/lib]
+        implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
+        implicit objs: [/lib64/crt1.o;/lib64/crti.o;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtbegin.o;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0/crtend.o;/lib64/crtn.o]
+        implicit dirs: [/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib64;/share/software/user/open/gcc/12.4.0/lib64;/share/software/user/open/libffi/3.2.1/lib64;/share/software/user/open/openssl/3.0.7/lib64;/share/software/user/open/gcc/12.4.0/lib/gcc/x86_64-pc-linux-gnu/12.4.0;/lib64;/usr/lib64;/share/software/user/open/expat/2.2.3/lib;/share/software/user/open/curl/8.4.0/lib;/share/software/user/open/subversion/1.12.2/lib;/home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/lib;/share/software/user/open/gcc/12.4.0/lib;/home/groups/sh_s-dss/share/sdss/software/no_arch/gcc/14.2.0/python/3.13.1/lib;/share/software/user/open/valgrind/3.14.0/lib;/share/software/user/open/sqlite/3.51.1/lib;/share/software/user/open/readline/8.2/lib;/share/software/user/open/ncurses/6.4/lib;/share/software/user/open/tcltk/8.6.6/lib;/share/software/user/open/libressl/3.2.1/lib;/share/software/user/open/zlib/1.2.11/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
+      - "/share/software/user/open/cmake/3.31.4/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Running the CXX compiler's linker: "/usr/bin/ld" "-v"
+      GNU ld version 2.27-44.base.el7_9.1.tuxcare.els2
+...
