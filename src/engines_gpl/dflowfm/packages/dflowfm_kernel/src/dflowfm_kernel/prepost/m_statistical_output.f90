@@ -52,6 +52,7 @@ module m_statistical_output
    interface dealloc
       module procedure deallocate_output_set
    end interface dealloc
+   !
 
 contains
 
@@ -204,7 +205,12 @@ contains
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
       type(t_output_quantity_config), intent(in) :: output_config !< Output quantity config linked to this output item, a copy will be stored in the new output item
       real(kind=dp), pointer, dimension(:), intent(in) :: data_pointer !< Pointer to output quantity data ("source input")
+      !
+      ! yoder: input procedure declared as a pointer. Either just declare this as a procedure (remove "pointer"), or be sure
+      !   arguments passed to it are also pointers. But if we do this, then "if (associated(...) )" throws an error.
       procedure(process_data_interface_double), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
+      !procedure(process_data_interface_double), optional :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
+
 
       type(t_output_variable_item) :: item ! new item to be added
       character(len=len_trim(output_config%input_value)) :: valuestring

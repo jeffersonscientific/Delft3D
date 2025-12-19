@@ -35,6 +35,41 @@ module fm_statistical_output
 
    logical, public :: apply_statistics_on_output
 
+   !!!!!!
+   ! yoder: can we declare a pointer to aggregate_obscrs_data? Otherwise, can we modify add_stat_output_items() to accept the 4th parameter
+   !    as a non-pointer. I think there needs to be an INTERFACE to declare the pointer, and I don't think there is one...
+   ABSTRACT INTERFACE
+      SUBROUTINE aod_interface(data_pointer)
+         ! original subroutine uses real(dp). dp should be defined from "use" above, but we get "has to be constant," so...
+         ! Declare arguments with their types and intents
+         !real(dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to constit_crs_obs_data, unused
+         real(8), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to constit_crs_obs_data, unused
+      END SUBROUTINE aod_interface
+   END INTERFACE
+   !
+   ! declare and associate pointer:
+   PROCEDURE(aod_interface), POINTER :: ptr_aggregate_obscrs_data => aggregate_obscrs_data
+   ! assignments will be like this. Can we do it here, or does it have to be inline?
+   !ptr_aggregate_obscrs_data => aggregate_obscrs_data
+   !!!!!!
+   ! yoder:
+   ABSTRACT INTERFACE
+      SUBROUTINE transform_qplat_interface(source_input)
+         !real(dp), pointer, dimension(:), intent(inout) :: source_input !< Unused
+         real(8), pointer, dimension(:), intent(inout) :: source_input
+      END SUBROUTINE transform_qplat_interface
+   END INTERFACE
+   procedure(transform_qplat_interface), pointer :: ptr_transform_qplat => transform_qplat
+
+   ABSTRACT INTERFACE
+      SUBROUTINE calculate_dredge_time_fraction_interface(source_input)
+        !use precision, only: dp
+        real(8), pointer, dimension(:), intent(inout) :: source_input
+      END SUBROUTINE calculate_dredge_time_fraction_interface
+   END INTERFACE
+   procedure(calculate_dredge_time_fraction_interface), pointer :: ptr_calculate_dredge_time_fraction => calculate_dredge_time_fraction
+   !!!!!
+
 contains
 
    subroutine close_fm_statistical_output()
@@ -2875,8 +2910,9 @@ contains
 
          !
          ! Basic flow quantities
-         !
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_DISCHARGE), obscrs_data(:, 1), aggregate_obscrs_data)
+         ptr_aggregate_obscrs_data => aggregate_obscrs_data
+         !call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_DISCHARGE), obscrs_data(:, 1), aggregate_obscrs_data)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_DISCHARGE), obscrs_data(:, 1), ptr_aggregate_obscrs_data )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_DISCHARGE_CUMUL), obscrs_data(:, 2))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_AREA), obscrs_data(:, 3))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_VELOCITY), obscrs_data(:, 4))
@@ -2895,7 +2931,8 @@ contains
       !
       if (jahislateral > 0 .and. numlatsg > 0) then
          allocate (qplat_data(size(qplat, dim=2)))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, transform_qplat)
+         !call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, transform_qplat)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, ptr_transform_qplat)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE), qplatAve)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS), qLatReal)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE), qLatRealAve)
@@ -2905,7 +2942,10 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_LINK_DISCHARGE), temp_pointer)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_DISCHARGE), dadpar%totvoldred)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DUMP_DISCHARGE), dadpar%totvoldump)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_TIME_FRAC), null(), calculate_dredge_time_fraction)
+         !
+         ! yoder:
+         !call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_TIME_FRAC), null(), calculate_dredge_time_fraction)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_TIME_FRAC), null(), ptr_calculate_dredge_time_fraction)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PLOUGH_TIME_FRAC), time_ploughed)
       end if
 

@@ -226,6 +226,7 @@ module m_partitioninfo
    integer :: jaoverlap !< overlap in solver (1) or not (0)
 
 #ifdef HAVE_MPI
+   ! yoder: recast these as logicals? or fix the evaluation statements?
    integer :: jampi = 1 !< use MPI (1) or not (0)
    integer :: ja_mpi_init_by_fm !< MPI_Init called by FM (1) or not (0). Not/0 in case FM runs in library mode and an outside runner program has taken care of MPI_Init.
 #else
@@ -5871,7 +5872,8 @@ contains
 
       ierror = 0
       allval = val
-      if (jampi) then
+      !if (jampi) then                              ! yoder
+      if (jampi == 1) then                          ! yoder
 #ifdef HAVE_MPI
          call mpi_allreduce(val, allval, 1, MPI_LOGICAL, MPI_LAND, DFM_COMM_DFMWORLD, ierror)
 #endif

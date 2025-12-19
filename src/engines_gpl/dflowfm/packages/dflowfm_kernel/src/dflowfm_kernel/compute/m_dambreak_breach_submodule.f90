@@ -28,7 +28,9 @@
 !-------------------------------------------------------------------------------
 
 submodule(m_dambreak_breach) m_dambreak_breach_submodule
-   use precision, only: dp
+   ! dp alredady being defined? we get a confilct with m_dambreak_breach
+   !use precision, only: dp
+   !
    use m_meteo, only: ec_undef_int
 
    implicit none
@@ -306,6 +308,7 @@ contains
 
    !> Calculate breach growth using vdKnaap model
    subroutine calculate_breach_growth_using_vdKnaap_model(dambreak, time, time_step)
+      ! import not allowed outside an INTERFACE block? I think this module is a work in progress...
       import t_dambreak
 
       class(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak

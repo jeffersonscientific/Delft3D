@@ -23,9 +23,18 @@ set_source_files_properties(
                    src/restartmodule.F90
                    src/RRModule.F90
                    src/UnpavedModule.F90
-                   PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+#                   PROPERTIES COMPILE_OPTIONS "-fdec ${file_preprocessor_flag}")
+#                   PROPERTIES COMPILE_OPTIONS "-fdec"
+                   )
+# yoder: throwing an error on the -cpp flag, so for now just pulling it out,then moving it to target_compile_options . I guess
+#.  this makes sense; source_file_properties sets up the source compile, eg. the --> *.o files; then target_ does the linking.
 
 target_compile_definitions(${library_name} PRIVATE "X64")
+#
+# yoder:
+if (UNIX)
+  target_compile_options(${library_name} PRIVATE "-fdec ${file_preprocessor_flag}")
+endif(UNIX)
 
 
 set(oss_dependencies_general 

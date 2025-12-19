@@ -3534,7 +3534,9 @@ contains
          end if
       end if
 
-      if (jaspacevarcharn .and. wind_drag_type /= CD_TYPE_CHARNOCK1955) then
+      ! yoder: jaspacevarcharn is int type; wind_drag_type is logical?
+      !if (jaspacevarcharn .and. wind_drag_type /= CD_TYPE_CHARNOCK1955) then
+      if ( (jaspacevarcharn > 0) .and. (wind_drag_type /= CD_TYPE_CHARNOCK1955) ) then
          write (msgbuf, '(a,i0,a)') 'A (time- and space-varying) Charnock coefficient was provided via the .ext file. [wind] ICdtyp has been reset from ', &
              wind_drag_type, ' to 4 (Charnock).'
          call mess(LEVEL_WARN, msgbuf)

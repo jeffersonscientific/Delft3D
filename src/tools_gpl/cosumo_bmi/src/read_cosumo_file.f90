@@ -262,10 +262,20 @@ subroutine find_n()
     integer :: idis
     !
     ! Body
-    call nearest_neighbour(nf_num_dif, x_diff  , y_diff  , null(), n_diff  , Huge(1.d0), fm_xzw, fm_yzw, fm_ndx, 0, 0)
-    call nearest_neighbour(nf_num_dif, x_intake, y_intake, null(), n_intake, Huge(1.d0), fm_xzw, fm_yzw, fm_ndx, 0, 0)
+    ! yoder: this throws an error, "Error: There is no specific subroutine for the generic ‘nearest_neighbour’ at (1)" ("1" is at the very end)
+    !  this may be due to the call signature not precisely matching any call signatures to a generic nearest_neighbor() function, eg in a math
+    !  library. In particulark the null() might be the problem -- we see that void, null, etc. can have different actual variable type implementations.
+    ! look here: src/utils_lgpl/ec_module/packages/ec_module/src/ec_basic_interpolation.f90
+    ! yoder: try this:
+    integer, pointer :: null_pointer(:)
+    nullify(null_pointer)
+    !
+    !call nearest_neighbour(nf_num_dif, x_diff  , y_diff  , null(), n_diff  , Huge(1.d0), fm_xzw, fm_yzw, fm_ndx, 0, 0)
+    call nearest_neighbour(nf_num_dif, x_diff  , y_diff  , null_pointer, n_diff  , Huge(1.d0), fm_xzw, fm_yzw, fm_ndx, 0, 0)
+    
+    call nearest_neighbour(nf_num_dif, x_intake, y_intake, null_pointer, n_intake, Huge(1.d0), fm_xzw, fm_yzw, fm_ndx, 0, 0)
     do idis = 1, nf_num_dif
-        call nearest_neighbour(no_amb(idis), x_amb(idis,:), y_amb(idis,:), null(), n_amb(idis,:), Huge(1.d0), fm_xzw, fm_yzw, fm_ndx, 0, 0)
+        call nearest_neighbour(no_amb(idis), x_amb(idis,:), y_amb(idis,:), null_pointer, n_amb(idis,:), Huge(1.d0), fm_xzw, fm_yzw, fm_ndx, 0, 0)
     enddo
 end subroutine find_n
 

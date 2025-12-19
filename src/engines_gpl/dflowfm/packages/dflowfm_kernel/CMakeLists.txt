@@ -258,6 +258,7 @@ endif(WIN32)
 
 if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    target_compile_options(${library_name} PRIVATE "-fdec-structure")
 endif(UNIX)
 
 # Create the folder structure in vfproj
