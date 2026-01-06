@@ -22,7 +22,8 @@ if (UNIX)
     #   so let's just try it and see how we go.
     set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC -lm ")
     set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC -lm ")
-    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -lm -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp")
+    # weird that adding -fdec here triggers a "dot() not defined error" somewhere, that does some sort of vector algebra something.dot(something-else).
+    set(CMAKE_Fortran_FLAGS          "-O2 -fPIC -lm -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp ") # -fdec")
     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC ")
     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC ")
     

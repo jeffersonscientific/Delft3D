@@ -268,7 +268,16 @@
 #if (defined(HAVE_CONFIG_H))
      Open (Iscren,FORM='FORMATTED')
 #else
-     Open (Iscren,carriagecontrol='FORTRAN')
+     ! yoder: let's comment out this and try the "new" format:
+     !Open (Iscren,carriagecontrol='FORTRAN')
+     ! yoder:
+     ! will not accept the -fdec option... and is this really all just to write
+     ! the stupid logo on the screen? And did they just not change this Open()
+     ! statement when they changed the not-else option?
+     Open (unit=Iscren, status='OLD', form='formatted')     ! The "modern" statement should be something like this
+     ! then, subsequent write() statements would use the ADVANCE='NO' option. My
+     ! guess is there will be a lot of these to correct, so I'd start by trying
+     ! to add the -fdec option to compile.
 #endif
     call WriteHeader(Iscren)
   endif

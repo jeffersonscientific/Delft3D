@@ -97,6 +97,8 @@ contains
             end if
             ! Time-interpolated value will be placed in structure's appropriate member field, available in
             ! %targetptr, when calling ec_gettimespacevalue.
+            ! yoder: I think the compiler interprets this as passing the functoin, not return value, to c_f_pointer(). Maybe
+            !   declare a return value, then pass that?
             call c_f_pointer(c_loc(pfrc%targetptr), tgtarr, [1])
             success = adduniformtimerelation_objects(qid, '', trim(pfrc%object_type), trim(pfrc%object_id), &
                                                      trim(pfrc%param_name), filename, 1, 1, tgtarr)

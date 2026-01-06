@@ -127,6 +127,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    integer, dimension(1), parameter :: UNITY_INDEX = 1
    integer, dimension(1) :: last_index
 
+! yoder: get rid of contains?
 contains
 
    !> allocate arrays and initialize variables
@@ -309,7 +310,7 @@ contains
    !> Calculate breach growth using vdKnaap model
    subroutine calculate_breach_growth_using_vdKnaap_model(dambreak, time, time_step)
       ! import not allowed outside an INTERFACE block? I think this module is a work in progress...
-      import t_dambreak
+      ! import t_dambreak
 
       class(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
       real(kind=dp), intent(in) :: time !< current time
@@ -354,7 +355,7 @@ contains
    subroutine calculate_breach_growth_using_Verheij_vdKnaap_model(dambreak, time, time_step)
       use ieee_arithmetic, only: ieee_is_nan
       use m_physcoef, only: gravity => ag
-      import t_dambreak
+      !import t_dambreak
 
       class(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
       real(kind=dp), intent(in) :: time !< current time
@@ -416,11 +417,13 @@ contains
    end subroutine calculate_breach_growth_using_Verheij_vdKnaap_model
 
    !> Calculate breach growth using tables
+   
    subroutine calculate_breach_growth_using_tables(dambreak, time, time_step)
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: irefdate, tunit, tzone
       use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
-      import t_dambreak
+      ! yoder: Can we just get rid of these?
+      !import t_dambreak
 
       class(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
       real(kind=dp), intent(in) :: time !< current time
@@ -450,6 +453,7 @@ contains
       dambreak%water_level_jump = calculate_water_level_jump(dambreak)
 
    end subroutine calculate_breach_growth_using_tables
+
 
    !> calculate the water level jump for dambreaks
    pure function calculate_water_level_jump(dambreak) result(water_level_jump)
