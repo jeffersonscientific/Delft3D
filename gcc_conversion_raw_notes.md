@@ -125,4 +125,59 @@ ie, wrapped in an OMP block. My guess is that the whole code block needs to be w
 I'll report this up to the delft3d developers and see what their plans are.
 
 
+#### C_pointer issue
+The syntax to declare and interact with C pointers has changed. Here it is...
+
+Most things are compiling. Now, in delft3d core codes, addressing a flurry like:
+Error: Variable ‘c_values_ptr’ at (1) is a dummy argument to the BIND(C) procedure ‘ionc_get_var_chars_dll’ but is not C interoperable because derived type ‘t_ug_charinfo’ is not C interoperable
+
+Google AI does a good job recommending a fix, and there is an example to work with for t_ug_meta.
+
+Summarizing, we substitute an "operable" type (cannot have a bunch of features, like EXTENDS() ) with an "opaque pointer." The gist is:
+1. Modify the declaration section to declare the original pass-through variable as a C pointer (c_ptr)
+2. Declare a corresponding Fortran pointer
+3. Use 1call c_f_pointer(C_ptr, F_ptr) to bind the two
+4. References to the original variable should be directed to the Fortran pointer (which they will, given the above workflow).
+
+Caveating (4), it might be helpful to show what's what in the variable names, so in the following example, we change our "dummy" (or passthrough) variable name from `nodesinfo` to `nodesinfo_ptr_c`, to show that it is a c_ptr , and we call our Fortran counterpart `nodesinfo_ptf_f`, to show that it is a pointer and that it compliments 1nodesinfo_ptr_c`.
+
+```
+--- function ionc_get_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo, nmeshpoints, startIndex) result(ierr) bind(C, name="ionc_get_1d_mesh_discretisation_points")
++++ function ionc_get_1d_mesh_discretisation_points_dll(ioncid, meshid, c_branchidx, c_offset, nodesinfo_ptr_c, nmeshpoints, startIndex) result(ierr) bind(C, name="ionc_get_1d_mesh_discretisation_points")
+!
+--- type(t_ug_charinfo),  intent(inout)  :: nodesinfo(nmeshpoints)
++++ type(c_ptr), intent(inout) :: nodesinfo_ptr_c(nmeshpoints)
++++ type(t_ug_charinfo), pointer :: nodesinfo_ptr_f
+!
+! do the rest of the declarations. Declarations must precede executable code
++++ ! bind the pointers
++++ call c_f_pointer(nodesinfo_ptr_c, nodesinfo_ptr_f)   ! yoder
+!
+! point references to the original nodesinfo to the Fortran pointer
+do i=1,nmeshpoints
+---       nodesinfo(i)%id       = nodeids(i)
+---       nodesinfo(i)%longname = nodelongnames(i)
++++       nodesinfo_ptr_f(i)%id       = nodeids(i)
++++       nodesinfo_ptr_f(i)%longname = nodelongnames(i)
+   end do
+But note that this might be the syntax we need:
+    do i=1,nval
+-       values(i) = c_values_ptr(i)%id
++!       values(i) = c_values_ptr(i)%id
++       values(i) = transfer(c_values_ptr(i)%id(1:ug_idsLen), values(i))
+    end do
+```
+
+there are variations on this syntax, that might affect how the array behavior is interpreted. Note that for this example, the developers have already converted a bunch of these:
+```
+   type(c_ptr),intent(inout)             :: c_sourcenodeid, c_targetnodeid, c_nbranchgeometrypoints,c_branchlengths
+   integer,pointer                       :: sourcenodeid(:), targetnodeid(:),nbranchgeometrypoints(:)
+   ...
+  call c_f_pointer(c_sourcenodeid, sourcenodeid, (/ nBranches /))
+  call c_f_pointer(c_targetnodeid, targetnodeid, (/ nBranches /))
+  call c_f_pointer(c_nbranchgeometrypoints, nbranchgeometrypoints, (/ nBranches /))
+  call c_f_pointer(c_branchlengths, branchlengths, (/ nBranches /))
+```
+Where it looks like `(/ nBranches /)` sets the array length, which we have (hopefully) done in the declaration. Not sure if these are equivalent.
+
 
