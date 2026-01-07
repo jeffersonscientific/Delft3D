@@ -6,6 +6,14 @@ https://github.com/SH801/Delft3D-for-Arm64
 
 For an Ubuntu+Docker solutioon.
 
+## Summarizing code modifications:
+### Note to myself:
+Most of these notes are in FD ticket, 94164
+
+Compile problems span a broad domain of CMake and Fortran coding errors. Whenever possible, CMake should usually be modified at the lowest level possible -- ie, for each module separately.
+
+TODO: Copy notes from 94164 to here; maybe creae multiple documents...
+
 
 # From DElft3d:
 # Tarball
