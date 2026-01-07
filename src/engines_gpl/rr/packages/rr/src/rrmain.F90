@@ -86,7 +86,10 @@
   timon = .true.
 
 #if defined(WIN32)
-  NrArg = nargs()
+  ! yoder: see comment in (X86)
+  !NrArg = nargs()
+  NrArg = command_argument_count() + 1
+  !
 ! For nice Progress bar also in Chinese Windows
   ReturnCode = SetConsoleOutputCP(1252)
 ! aanpassen kleuren; nog niet ok
@@ -94,7 +97,14 @@
 !  ReturnCode = SetConsoleTextAttribute(Iconsole,COMMON_LVB_REVERSE_VIDEO)
 !  ReturnCode = SetConsoleTextAttribute(Iconsole,FOREGROUND_RED)
 #elif defined(X64)
-  NrArg = nargs()
+  ! yoder: Another Intel, "are you kidding me?" moment here. Basically, nargs() is an ifort only,
+  ! non-portable function that returns the number of elements on the command line, so command + n_args, eg:
+  ! nargs() applied to, command -a -b c --> 4
+  ! The proper command in modern Fortran is, command_argument_count(), which returns only the count of argments,
+  ! command_argument_count() <-- command -a -b -c --> 3
+  !NrArg = nargs()
+  NrArg = command_argument_count() + 1
+  !
 ! For nice Progress bar also in Chinese Windows
 !  ReturnCode = SetConsoleOutputCP(1252)
 ! aanpassen kleuren; nog niet ok

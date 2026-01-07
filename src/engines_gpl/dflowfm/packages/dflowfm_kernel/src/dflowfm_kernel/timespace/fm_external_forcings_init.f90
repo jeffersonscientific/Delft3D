@@ -28,7 +28,11 @@
 !-------------------------------------------------------------------------------
 !
 submodule(fm_external_forcings) fm_external_forcings_init
-   use precision_basics, only: dp
+   ! yoder: fm_external_forcings "USE"s/imports this variable/type from precision_basics
+   !  I think without a subsequent re-definition, but compiler throws a conflict Error.
+   !  I think this is from a non-identical equivalence of the two types, but since this
+   !  is a submodule of fm_external_forcings, can we just skip the declaration?
+   !use precision_basics, only: dp
    implicit none
 
    integer, parameter :: INI_VALUE_LEN = 256
@@ -400,6 +404,13 @@ contains
       logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
       integer :: number_of_discharge_specifications, ierr
       integer, parameter :: maximum_number_of_discharge_specifications = 4
+      !
+!      ! yoder: We need integer analogs to some of the logical variables, so we can do arithmetic.
+!      !  note that we have to be careful about assignment, since different compilers might interpert i_val = l_val different.
+!      integer :: i_has_node_id = 0, i_has_branch_id = 0, i_has_chainage = 0, i_has_num_coordinates = 0, i_has_location_file = 0, &
+!         i_has_x_coordinates = 0, i_has_y_coordinates = 0
+      ! yoder: declare a counter index
+      integer :: i
 
       loc_spec_type = imiss
       node_id = ''
@@ -416,9 +427,30 @@ contains
       has_x_coordinates = has_key(node_ptr, 'Lateral', 'xCoordinates')
       has_y_coordinates = has_key(node_ptr, 'Lateral', 'yCoordinates')
       has_location_file = has_key(node_ptr, 'Lateral', 'locationFile')
+      !
+!      ! yoder:
+!      ! OK, went down the wrong rabbit hole, but I'm going to leave the comments. I think the compiler will
+!      !    handle this, but it illustrates that extra care might be necessary to properyl convert logical values
+!      !    to integers.
+!      ! NOTE: gcc will interpret this correctly; older INTEL might not, so...
+!      !i_has_node_id = has_node_id
+!      if (has_node_id) i_has_node_id = 1
+!      if (has_branch_id) i_has_branch_id = 1
+!      if (has_chainage) i_has_chainage = 1
+!      if (has_num_coordinates) i_has_num_coordinates = 1
+!      if (has_x_coordinates) i_has_x_coordinates = 1
+!      if (has_y_coordinates) i_has_y_coordinates = 1
+!      if (has_location_file) i_has_location_file = 1
 
       ! Test if multiple discharge methods were set
-      number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
+      !number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
+      number_of_discharge_specifications = sum([(1, i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
+!      !number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)],&
+!      !         [i_has_node_id, &
+!      !         merge(1,0, (has_branch_id .or. has_chainage)), &
+!      !         merge(1,0, (has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates)), &
+!      !         i_has_location_file])
+
 
       if (number_of_discharge_specifications < 1) then
          call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')

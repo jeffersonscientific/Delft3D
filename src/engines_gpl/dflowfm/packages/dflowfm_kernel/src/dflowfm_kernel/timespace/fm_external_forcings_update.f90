@@ -48,7 +48,12 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use dfm_error, only: dfm_noerr, dfm_extforcerror
    use m_calibration, only: calibration_backup_frcu
    use unstruc_channel_flow, only: network
-   use time_class, only: c_time, ecgetvalues
+   ! yoder:
+   !  ecgetvalues was moved from time_class?
+   ! use time_class, only: c_time, ecgetvalues
+   use m_meteo, only: ecgetvalues
+   use time_class, only: c_time
+   !
    use m_longculverts_data, only: nlongculverts
    use m_nearfield, only: nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
    use m_airdensity, only: get_airdensity

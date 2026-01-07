@@ -56,7 +56,10 @@ contains
       use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
       use m_1d_structures, only: update_bedlevels_for_bridges
-
+      !
+      ! yoder:
+      type(c_ptr) :: ptr_pfrc
+      !
       logical :: status
 
       integer :: i, link, k, n
@@ -99,7 +102,12 @@ contains
             ! %targetptr, when calling ec_gettimespacevalue.
             ! yoder: I think the compiler interprets this as passing the functoin, not return value, to c_f_pointer(). Maybe
             !   declare a return value, then pass that?
-            call c_f_pointer(c_loc(pfrc%targetptr), tgtarr, [1])
+            ! but this must be declared in advance...
+            !type(c_ptr) :: ptr_pfrc
+            ptr_pfrc = c_loc(pfrc%targetptr)
+            call c_f_pointer(ptr_pfrc, tgtarr, [1])
+            !call c_f_pointer(c_loc(pfrc%targetptr), tgtarr, [1])
+            !
             success = adduniformtimerelation_objects(qid, '', trim(pfrc%object_type), trim(pfrc%object_id), &
                                                      trim(pfrc%param_name), filename, 1, 1, tgtarr)
          end associate

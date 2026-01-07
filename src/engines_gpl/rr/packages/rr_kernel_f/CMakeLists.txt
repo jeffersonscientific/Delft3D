@@ -33,7 +33,7 @@ target_compile_definitions(${library_name} PRIVATE "X64")
 #
 # yoder:
 if (UNIX)
-  target_compile_options(${library_name} PUBLIC "-fdec ${file_preprocessor_flag}")
+  target_compile_options(${library_name} PUBLIC -fdec ${file_preprocessor_flag} )
   add_compile_options( -fdec )
   add_link_options( -fdec )
 endif(UNIX)
@@ -68,7 +68,7 @@ endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/rr COMPILE_OPTIONS "${file_preprocessor_flag}")
+set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/rr COMPILE_OPTIONS ${file_preprocessor_flag})
 # NOTE: also seen the -fdec-structure flag...
 
 
