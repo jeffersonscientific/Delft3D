@@ -1,5 +1,17 @@
 # GCC Compile Modifications: Raw notes
 
+## Summary
+Delft3d was originaly compiled using legacy (GCC based) Intel compilers. Unfortunately, the code employs a number of Intel specific functions and coding features that either 1) Intel compilers "handle" or allow, 2) have generally been identified and deprecated in newer compilers, 3) basically just dont work with (newer?) GCC compilers. Note that the Intel compilers are deprecated and no longer supported by Intel. Other developers have stopped supporting the various Intel compiler eccentricities, so finding a set of version-deprecated dependencies that will compile together and with the Intel compilers has become quite difficult, if not impossible.
+
+It appears that the Delft3d developers have recognized this, as the newer commits of their MAIN/MASTER branch include modifications that appear to be working towards GCC compile compatibility. We have cloned this branch and continued that work. Below, we include some notes from this process -- in various states of literary refinement. Modifications include a handful of basic themes:
+
+- Simple syntax differences between Intel and GCC compilers, eg. `#INCLUDE --> #include`
+- Fixed line compile errors, namely modules that assume fixed lines of a certain length and then hide comments (without a comment operator `!`) off the ends of those lines
+- Changes in the handling `c_ptr` types
+- LOTS of compile and linking flags, as well as other CMake-foo
+- Character array assignments must be of the same length (eg, `My_CHAR_Array = ['abcd', 'abc ', 'ab  ', 'a   ']`)
+- OMP and MPI: Some modules must be compiled with(out) MPI or OMP. These modules' `CMakeLists.txt` scripts need to be modified separately.
+
 ## On Sherlock:
 Rolling code mods below into a new gcc-dev branch, then take it from there...
 I have been running setup like, 
@@ -72,14 +84,23 @@ that need to be like:
 
 you can use `vim` to do this, 
 
+```
 :%s/. 41.62/!  41.62/gc
+```
+
 but you have to be careful about replacing the wrong thing, and it takes time...
 
 or you can use this awk-foo to pad all lines and terminate the functional width with a "!"
+
+```
 awk '{printf "%-72s\!%s\n", substr($0,1,72), substr($0, 73)}' /home/groups/bprogers/myoder96/Delft3D/src/third_party_open/swan/src/ocpids.F
+```
 
 BEST way! I think, uses sed:
+
+```
 sed -i 's/^\(.\{72\}\)/\1!/' your_file.txt
+```
 
 test without the `-I` option. Looks like this is maybe the best case. It will add the ! to lines >72 columns, but skip the short lines -- rather than padding them out.
 
@@ -94,18 +115,23 @@ all over the place. This is "fixed" by removing the `-fopenmp` flag, so it compi
 
 
 #### Status and next steps:
+(From a 3 December 2025 node)
+
 LOTS of formatting issues. In particular, comments written off the end of the expected fixed line width -- typically 72-74 characters. Unfortunately, this fixed width is not well defined. 72 is occasionally too short; 74 was too long. Maybe 73? But then other files have lines >>74 and should be compiled with -none. So used `sed` to fix these files (see below), but it's not easy, since you can't just `sed` all the files. You have to identify other ones with(out) the width limit  and treat appropriately.
 MPI was not properly referencing in some compile steps. Threw a bunch of CMake-foo at CMakeLists.txt until that worked. I think it's (mostly correct) at this point.
 Now getting loads of these -- just in the `swan` module:
+```
 /home/groups/bprogers/myoder96/Delft3D/src/third_party_open/swan/src/swancom1.F:2200:132:
 
  2200 |            IF (STPNOW()) RETURN                                           !40.30
       |                                                                                                                                    ^
 Error: invalid branch to/from OpenMP structured block
+```
 
 This look like a legitimate Fortran error. In particular, this looks like an illegal exit from an OMP loop, implemented only if compiled with MPI. This is probably something that the Intel compiler allowed (but probably should not have). It may be a limitation that the code can -- without further reengineering, be built as MPI *or* OMP, not both. 
 
 It appears like this:
+```
 !$OMP BARRIER                                                             !40.31
 !$OMP MASTER                                                              !40.31
       ARR(1) = HSMN2                                                      !40.30
@@ -119,6 +145,7 @@ It appears like this:
        SMN2 = ARR(2) / REAL(NINDX)                                        !40.30 30.82
 !$OMP END MASTER                                                          !40.31
 !$OMP BARRIER                                                             !40.31
+```
 
 ie, wrapped in an OMP block. My guess is that the whole code block needs to be written separately for OMP and MPI.
 
@@ -180,4 +207,40 @@ there are variations on this syntax, that might affect how the array behavior is
 ```
 Where it looks like `(/ nBranches /)` sets the array length, which we have (hopefully) done in the declaration. Not sure if these are equivalent.
 
+## CMake-foo
+There is quite a bit of `CMake` work to do. In particualr, there are a lot of compile and linking flags to set. If you are undertaking this project and unfamiliar with `CMake`, you will not be for long. A lot of the comments in these notes are phrased as questions because -- at the time, the were; I had no idea what I was doing, to take that into consideration if you think there is a better way to do any of this.
 
+### Example: Flags in swan/f90tw
+
+swan/f90tw does this:
+
+```
+cd /home/groups/bprogers/myoder96/Delft3D/build_swan/f90tw/f90tw-main/f90tw &&
+ /home/groups/sh_s-dss/share/sdss/spack_sdss/spack/var/spack/environments/delft3d/.spack-env/view/bin/mpif90 -DCOMMIT_VERSION="" -DHAVE_MPI  -O2 -fPIC -ffixed-line-length-132 -ffree-line-length-512 -fallow-argument-mismatch -cpp;-ffree-line-length-0 -O3 -J../../../fortran_module_dir -fPIC -ffree-form -c /home/groups/bprogers/myoder96/Delft3D/build_swan/f90tw/f90tw-main/f90tw/assertions_gtest.f90 -o CMakeFiles/f90twi_gtest.dir/assertions_gtest.f90.o
+```
+
+Note that flags from two sources are being concatenated incorrectly:
+
+```
+-fallow-argument-mismatch -cpp;-ffree-line-length-0
+```
+
+Which should be here:
+
+```
+src/third_party_open/f90tw/f90tw-main/CMakeLists.txt:9:#    set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS} "-ffree-line-length-none")
+src/third_party_open/f90tw/f90tw-main/CMakeLists.txt:10:     set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS} "-ffree-line-length-0")
+and also, sort of
+src/third_party_open/f90tw/f90tw-main/f90tw/CMakeLists.txt:135:        target_compile_options(${FLIBNAME} PRIVATE "-ffree-line-length-none")
+
+this is (apparently) solved by properly extending the quotation marks around the entire "value" field in
+
+```
+src/third_party_open/f90tw/f90tw-main/CMakeLists.txt
+#    set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS} "-ffree-line-length-none")
+     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-0")
+```
+
+
+
+```
